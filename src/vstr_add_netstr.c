@@ -43,7 +43,7 @@ size_t vstr_add_netstr2_beg(Vstr_base *base, size_t pos)
 
  ret = pos + 1;
  /* number will be overwritten so it's ok in OS/compile default locale */
- tmp = vstr_add_fmt(base, pos, "%lu%c", ULONG_MAX, VSTR__ASCII_COLON());
+ tmp = vstr_nx_add_fmt(base, pos, "%lu%c", ULONG_MAX, VSTR__ASCII_COLON());
 
  if (!tmp)
     return (0);
@@ -72,13 +72,13 @@ static int vstr__netstr_end_start(Vstr_base *base,
  if (netstr_end_pos > base->len)
    return (FALSE);
 
- assert(vstr_export_chr(base, netstr_beg_pos + VSTR__ULONG_MAX_LEN) ==
+ assert(vstr_nx_export_chr(base, netstr_beg_pos + VSTR__ULONG_MAX_LEN) ==
         VSTR__ASCII_COLON());
  
  /* + 1 because of the ':' */
  netstr_len = netstr_end_pos - (netstr_beg_pos + VSTR__ULONG_MAX_LEN);
 
- if (!vstr_add_buf(base, netstr_end_pos, comma, 1))
+ if (!vstr_nx_add_buf(base, netstr_end_pos, comma, 1))
    return (FALSE);
  
  *count = VSTR__ULONG_MAX_LEN;
@@ -117,13 +117,13 @@ int vstr_add_netstr2_end(Vstr_base *base,
     if (tmp > CONST_STRLEN(VSTR__CONST_STR_ZERO))
       tmp = CONST_STRLEN(VSTR__CONST_STR_ZERO);
     
-    vstr_sub_buf(base, netstr_beg_pos + len, tmp, VSTR__CONST_STR_ZERO, tmp);
+    vstr_nx_sub_buf(base, netstr_beg_pos + len, tmp, VSTR__CONST_STR_ZERO, tmp);
     len += tmp;
   }
 
   if (count != VSTR__ULONG_MAX_LEN)
-    vstr_sub_buf(base, netstr_beg_pos + count, VSTR__ULONG_MAX_LEN - count,
-                 buf + count, VSTR__ULONG_MAX_LEN - count);
+    vstr_nx_sub_buf(base, netstr_beg_pos + count, VSTR__ULONG_MAX_LEN - count,
+                    buf + count, VSTR__ULONG_MAX_LEN - count);
   
   return (TRUE);
 }
@@ -131,7 +131,7 @@ int vstr_add_netstr2_end(Vstr_base *base,
 /* NOTE: might want to use vstr_add_pos_buf()/_ref() eventually */
 size_t vstr_add_netstr_beg(Vstr_base *base, size_t pos)
 {
-  return (vstr_add_netstr2_beg(base, pos));
+  return (vstr_nx_add_netstr2_beg(base, pos));
 }
 
 int vstr_add_netstr_end(Vstr_base *base,
@@ -154,13 +154,13 @@ int vstr_add_netstr_end(Vstr_base *base,
     buf[--count] = VSTR__ASCII_DIGIT_0();
   }
   
-  if (count && !vstr_del(base, netstr_beg_pos, count))
+  if (count && !vstr_nx_del(base, netstr_beg_pos, count))
   {
-    vstr_del(base, netstr_end_pos + 1, 1); /* remove comma, always works */
+    vstr_nx_del(base, netstr_end_pos + 1, 1); /* remove comma, always works */
     return (FALSE);
   }
-  vstr_sub_buf(base, netstr_beg_pos, VSTR__ULONG_MAX_LEN - count,
-               buf + count, VSTR__ULONG_MAX_LEN - count);
+  vstr_nx_sub_buf(base, netstr_beg_pos, VSTR__ULONG_MAX_LEN - count,
+                  buf + count, VSTR__ULONG_MAX_LEN - count);
   
   return (TRUE);
 }

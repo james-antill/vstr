@@ -52,7 +52,6 @@
 
 #define VSTR__CONST_STR_ZERO VSTR__CONST_STR_ZERO_1024
 
-
 #define VSTR__UC(x) ((unsigned char)(x))
 #define VSTR__IS_ASCII_LOWER(x) ((VSTR__UC(x) >= 0x61) && (VSTR__UC(x) <= 0x7A))
 #define VSTR__IS_ASCII_UPPER(x) ((VSTR__UC(x) >= 0x41) && (VSTR__UC(x) <= 0x5A))
@@ -64,6 +63,8 @@
 #define VSTR__ASCII_DIGIT_0() (0x30)
 #define VSTR__ASCII_COLON() (0x3A)
 #define VSTR__ASCII_COMMA() (0x2C)
+
+#define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
@@ -94,7 +95,13 @@ typedef struct Vstr__sc_mmap_ref
  size_t mmap_len;
 } Vstr__sc_mmap_ref;
 
-extern Vstr__options vstr__options;
+#if defined(HAVE_ATTRIB_VISIBILITY)
+# define VSTR__H() __attribute__((visibility("hidden")))
+#else
+# define VSTR__H()
+#endif
+
+extern Vstr__options VSTR__H() vstr__options;
 
 /* the size of ULONG_MAX converted to a string */
 #ifndef VSTR_AUTOCONF_ULONG_MAX_LEN
@@ -169,6 +176,27 @@ extern void vstr__add_fmt_cleanup_spec(void);
 
 /* so the linker-script does the right thing */
 extern void vstr_version_func(void);
-    
+
+/* Setup _No eXtern_ symbols for use inside the library */
+#if defined(HAVE_ATTRIB_ALIAS) && defined(HAVE_ATTRIB_VISIBILITY) && \
+    defined(HAVE___TYPEOF)
+# define VSTR__AH(x) extern __typeof(vstr_ ## x) vstr_nx_ ## x \
+ __attribute__((alias("vstr_" #x ), visibility("hidden")));
+# include "vstr-alias-symbols.h"
+#else
+# include "vstr-cpp-symbols.h"
+#endif
+
+/* inline with the vstr_nx_* symbols */
+#if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
+# include "vstr-internal-inline.h"
+#endif
+
+#if defined(HAVE_ATTRIB_ALIAS) && defined(HAVE_ATTRIB_VISIBILITY) && \
+    defined(HAVE___TYPEOF)
+# include "vstr-alias-inline-symbols.h"
+#else
+# include "vstr-cpp-inline-symbols.h"
+#endif
 
 #endif

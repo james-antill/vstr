@@ -173,7 +173,7 @@ static void vstr__del_all(Vstr_base *base)
   ++num;
   
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del(((Vstr_node_ref *)*scan)->ref);
+    vstr_nx_ref_del(((Vstr_node_ref *)*scan)->ref);
   
   scan = &(*scan)->next;
  }
@@ -287,7 +287,7 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
   ++num;
   len -= (*scan)->len;
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del(((Vstr_node_ref *)(*scan))->ref);
+    vstr_nx_ref_del(((Vstr_node_ref *)(*scan))->ref);
   
   scan = &(*scan)->next;
  }
@@ -478,7 +478,7 @@ int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
  while (*pscan && (len >= (*pscan)->len))
  {
   if ((*pscan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del(((Vstr_node_ref *)(*pscan))->ref);
+    vstr_nx_ref_del(((Vstr_node_ref *)(*pscan))->ref);
   
   len -= (*pscan)->len;
   

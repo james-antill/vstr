@@ -6,10 +6,11 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 include_HEADERS = \
                   vstr-conf.h \
-                  vstr-switch.h \
                   vstr-const.h \
                   vstr-def.h \
                   vstr-extern.h \
+                  vstr-inline.h \
+                  vstr-switch.h \
                   vstr.h
 
 noinst_HEADERS = \

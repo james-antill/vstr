@@ -28,15 +28,15 @@ static int vstr__mov_slow(Vstr_base *base, size_t pos,
 
   assert(base != from_base);
 
-  ret = vstr_add_vstr(base, pos,
-                      from_base, from_pos, len, VSTR_TYPE_ADD_DEF);
+  ret = vstr_nx_add_vstr(base, pos,
+                         from_base, from_pos, len, VSTR_TYPE_ADD_DEF);
   if (!ret)
     return (FALSE);
 
-  ret = vstr_del(from_base, from_pos, len);
+  ret = vstr_nx_del(from_base, from_pos, len);
   if (!ret)
   {
-    ret = vstr_del(base, pos, len);
+    ret = vstr_nx_del(base, pos, len);
     assert(ret); /* this must work as a split can't happen */
     return (FALSE);
   }

@@ -1,3 +1,16 @@
+2002-07-17  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.8
+
+	* include/Makefile.am: Install the vstr-inline.h header. *sigh*
+
+2002-07-16  James Antill  <james@and.org>
+
+	* include/vstr-internal.h (VSTR__H): Add visibility hidden attribute to
+	internal variables that are abovee file scope.
+	(VSTR__AH): Add alias and visibility hidden attributes to exported
+	functions when used with the internal API of vstr_nx_*.
+
 2002-07-15  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.7

@@ -43,14 +43,14 @@ unsigned int vstr_join_buf(Vstr_base *base, size_t pos,
     }
 
     if (added)
-      if (!vstr_add_buf(base, pos, buf, buf_len))
+      if (!vstr_nx_add_buf(base, pos, buf, buf_len))
         goto failed_alloc;
 
     if (sects->ptr[scan].len)
     {
       /* allow flags for pass through */
-      if (!vstr_add_vstr(base, pos, from_base,
-                         sects->ptr[scan].pos, sects->ptr[scan].len, 0))
+      if (!vstr_nx_add_vstr(base, pos, from_base,
+                            sects->ptr[scan].pos, sects->ptr[scan].len, 0))
         goto failed_alloc;
 
       ++added;
@@ -63,7 +63,7 @@ unsigned int vstr_join_buf(Vstr_base *base, size_t pos,
   
  failed_alloc:
   if (base->len - orig_len)
-    vstr_del(base, start_pos, base->len - orig_len);
+    vstr_nx_del(base, start_pos, base->len - orig_len);
   
   return (0);
 }

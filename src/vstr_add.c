@@ -143,7 +143,7 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  if (num > base->conf-> spare_num) \
  { \
    num -= base->conf-> spare_num; \
-   if (vstr_make_spare_nodes(base->conf, int_type, num) != num) \
+   if (vstr_nx_make_spare_nodes(base->conf, int_type, num) != num) \
      return (FALSE); \
  } \
  \
@@ -420,7 +420,7 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
  
  VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_ref_beg);
 
- ((Vstr_node_ref *)scan)->ref = vstr_ref_add(ref);
+ ((Vstr_node_ref *)scan)->ref = vstr_nx_ref_add(ref);
  ((Vstr_node_ref *)scan)->off = off;
  off += len;
 
@@ -461,7 +461,7 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
 
       if (base->conf->spare_ref_num < 1)
       {
-        if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
+        if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
           return (FALSE);
       }
       
@@ -479,14 +479,14 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
       base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
       
       ref_node->len = (*scan)->len;
-      ((Vstr_node_ref *)ref_node)->ref = vstr_ref_add(ref);
+      ((Vstr_node_ref *)ref_node)->ref = vstr_nx_ref_add(ref);
       ((Vstr_node_ref *)ref_node)->off = 0;
       
       if (!(ref_node->next = (*scan)->next))
         base->end = ref_node;
 
       /* FIXME: hack alteration of type of node in cache */
-      if ((data = vstr_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
+      if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
           (data->node == *scan))
         data->node = ref_node;
       if (base->iovec_upto_date)
@@ -516,21 +516,21 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
   Vstr_ref *ref = NULL;
   size_t off = 0;
   
-  if (!(ref = vstr_export_ref(from_base, from_pos, len, &off)))
+  if (!(ref = vstr_nx_export_ref(from_base, from_pos, len, &off)))
   {
    base->conf->malloc_bad = TRUE;
    goto add_all_ref_fail;
   }
 
-  if (!vstr_add_ref(base, pos, ref, off, len))
+  if (!vstr_nx_add_ref(base, pos, ref, off, len))
     goto add_ref_all_ref_fail;
 
-  vstr_ref_del(ref);
+  vstr_nx_ref_del(ref);
   
   return (TRUE);
 
  add_ref_all_ref_fail:
-  vstr_ref_del(ref);
+  vstr_nx_ref_del(ref);
   
  add_all_ref_fail:
   
@@ -550,17 +550,18 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
       
       if (add_type == VSTR_TYPE_ADD_BUF_PTR)
       {
-        if (!vstr_add_ptr(base, pos, ((Vstr_node_buf *)scan)->buf + off, len))
+        if (!vstr_nx_add_ptr(base, pos,
+                             ((Vstr_node_buf *)scan)->buf + off, len))
           return (FALSE);
         break;
       }
       
-      if (!vstr_add_buf(base, pos, ((Vstr_node_buf *)scan)->buf + off, len))
+      if (!vstr_nx_add_buf(base, pos, ((Vstr_node_buf *)scan)->buf + off, len))
         return (FALSE);
       break;
       
     case VSTR_TYPE_NODE_NON:
-      if (!vstr_add_non(base, pos, len))
+      if (!vstr_nx_add_non(base, pos, len))
         return (FALSE);
       break;
       
@@ -570,12 +571,12 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
       
       if (add_type == VSTR_TYPE_ADD_ALL_BUF)
       {
-        if (!vstr_add_buf(base, pos, ptr + off, len))
+        if (!vstr_nx_add_buf(base, pos, ptr + off, len))
           return (FALSE);
         break;
       }
       
-      if (!vstr_add_ptr(base, pos, ptr + off, len))
+      if (!vstr_nx_add_ptr(base, pos, ptr + off, len))
         return (FALSE);
     }
     break;
@@ -585,12 +586,12 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
       if (add_type == VSTR_TYPE_ADD_ALL_BUF)
       {
         char *ptr = ((Vstr_node_ref *)scan)->ref->ptr;
-        if (!vstr_add_buf(base, pos, ptr + off, len))
+        if (!vstr_nx_add_buf(base, pos, ptr + off, len))
           return (FALSE);
         break;
       }
       
-      if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, len))
+      if (!vstr_nx_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, len))
         return (FALSE);
       break;
       
@@ -739,8 +740,8 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
                                      scan, from_pos, before, add_type)))
       goto fail;
     
-    assert(1 || VSTR_CMP_EQ(base, orig_pos + 1,  before,
-                            base, orig_from_pos, before));
+    assert(1 || !vstr_cmp(base, orig_pos + 1,  before,
+                          base, orig_from_pos, before));
     
     len -= before;
     from_pos = orig_from_pos + (before * 2);
@@ -761,7 +762,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
  fail:
   /* must work as orig_pos must now be at the begining of a node */
   from_base->conf->malloc_bad = TRUE;
-  vstr_del(base, orig_pos, base->len - orig_base_len);
+  vstr_nx_del(base, orig_pos, base->len - orig_base_len);
   assert(base->len == orig_len);
 
   DO_VALID_CHK();
@@ -796,7 +797,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   {
     size_t tmp = min - base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, tmp) != tmp)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, tmp) != tmp)
       return (0);
   }
   

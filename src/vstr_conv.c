@@ -77,20 +77,20 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
   {
     extra_nodes -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
-                              extra_nodes) != extra_nodes)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
+                                 extra_nodes) != extra_nodes)
       return (FALSE);
   }
   
   while (len)
   {
-    char tmp = vstr_export_chr(base, pos);
+    char tmp = vstr_nx_export_chr(base, pos);
     
     if (VSTR__IS_ASCII_UPPER(tmp))
     {
       tmp = VSTR__TO_ASCII_LOWER(tmp);
       
-      if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
+      if (!vstr_nx_sub_buf(base, pos, 1, &tmp, 1))
         return (FALSE);
     }
     
@@ -119,20 +119,20 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
   {
     extra_nodes -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
-                             extra_nodes) != extra_nodes)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
+                                 extra_nodes) != extra_nodes)
       return (FALSE);
   }
   
   while (len)
   {
-    char tmp = vstr_export_chr(base, pos);
+    char tmp = vstr_nx_export_chr(base, pos);
     
     if (VSTR__IS_ASCII_LOWER(tmp))
     {
       tmp = VSTR__TO_ASCII_UPPER(tmp);
       
-      if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
+      if (!vstr_nx_sub_buf(base, pos, 1, &tmp, 1))
       {
         assert(FALSE);
         return (FALSE);
@@ -179,17 +179,17 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
   {
     extra_nodes -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
-                             extra_nodes) != extra_nodes)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
+                                 extra_nodes) != extra_nodes)
       return (FALSE);
   }
    
   while (len)
   {
-    char tmp = vstr_export_chr(base, pos);
+    char tmp = vstr_nx_export_chr(base, pos);
 
     if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags) &&
-        !vstr_sub_buf(base, pos, 1, &swp, 1))
+        !vstr_nx_sub_buf(base, pos, 1, &swp, 1))
     {
       assert(FALSE);
       return (FALSE);
@@ -265,7 +265,7 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
     
     tmp -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, tmp) != tmp)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, tmp) != tmp)
       return (FALSE);
   }
    
@@ -275,7 +275,7 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
     
     tmp -= base->conf->spare_ptr_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, tmp) != tmp)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, tmp) != tmp)
       return (FALSE);
   }
    
@@ -285,17 +285,17 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
     
     tmp -= base->conf->spare_ref_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, tmp) != tmp)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, tmp) != tmp)
       return (FALSE);
   }
    
   while (len)
   {
-    char tmp = vstr_export_chr(base, pos);
+    char tmp = vstr_nx_export_chr(base, pos);
 
     if (VSTR__IS_ASCII_PRINTABLE(tmp, flags))
     {
-      if (del_pos && !vstr_del(base, del_pos, pos - del_pos))
+      if (del_pos && !vstr_nx_del(base, del_pos, pos - del_pos))
       {
         assert(FALSE);
         return (FALSE);
@@ -331,7 +331,7 @@ int vstr_conv_decode_qp(Vstr_base *base, size_t pos, size_t passed_len)
 
 int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 {
-  Vstr_sects *sects = vstr_sects_make(8);
+  Vstr_sects *sects = vstr_nx_sects_make(8);
   size_t count = 0;
   /* from section 2.4.3. of rfc2396 */
   char buf_disallowed[] = {
@@ -370,17 +370,17 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   
   while (len)
   {
-    count = vstr_cspn_buf_fwd(base, pos, len,
-                              buf_disallowed, sizeof(buf_disallowed));
+    count = vstr_nx_cspn_buf_fwd(base, pos, len,
+                                 buf_disallowed, sizeof(buf_disallowed));
     pos += count;
     len -= count;
 
     if (!len)
       break;
     
-    if (!vstr_sects_add(sects, pos, 1))
+    if (!vstr_nx_sects_add(sects, pos, 1))
     {
-      vstr_sects_free(sects);
+      vstr_nx_sects_free(sects);
       base->conf->malloc_bad = TRUE;
       return (FALSE);
     }
@@ -394,8 +394,8 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   {
     extra_nodes -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
-                              extra_nodes) != extra_nodes)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
+                                 extra_nodes) != extra_nodes)
       return (FALSE);
   }
   
@@ -406,20 +406,20 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 
     assert(sects->ptr[sects->num].len == 1);
 
-    bad = vstr_export_chr(base, sects->ptr[sects->num].pos);
+    bad = vstr_nx_export_chr(base, sects->ptr[sects->num].pos);
     sprintf(sub, "%%%02x", bad);
 
-    vstr_sub_buf(base, sects->ptr[sects->num].pos, 1, sub, 3);
+    vstr_nx_sub_buf(base, sects->ptr[sects->num].pos, 1, sub, 3);
   }
   
-  vstr_sects_free(sects);
+  vstr_nx_sects_free(sects);
   
   return (TRUE);
 }
 
 int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
 {
-  Vstr_sects *sects = vstr_sects_make(8);
+  Vstr_sects *sects = vstr_nx_sects_make(8);
   size_t srch_pos = 0;
   char buf_percent[1] = {0x25};
   unsigned int err = 0;
@@ -432,7 +432,7 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     return (FALSE);
   }
   
-  while ((srch_pos = vstr_srch_buf_fwd(base, pos, len, buf_percent, 1)))
+  while ((srch_pos = vstr_nx_srch_buf_fwd(base, pos, len, buf_percent, 1)))
   {
     size_t left = len - (srch_pos - pos);
     unsigned char sub = 0;
@@ -442,15 +442,15 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     pos = srch_pos + 1;
     len = left - 1;
 
-    sub = vstr_parse_ushort(base, srch_pos + 1, 2, 16 |
-                            VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
-                            &hex_len, &err);
+    sub = vstr_nx_parse_ushort(base, srch_pos + 1, 2, 16 |
+                               VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
+                               &hex_len, &err);
     if (err)
       continue;
     assert(hex_len == 2);
-    if (!vstr_sects_add(sects, srch_pos, 3))
+    if (!vstr_nx_sects_add(sects, srch_pos, 3))
     {
-      vstr_sects_free(sects);
+      vstr_nx_sects_free(sects);
       base->conf->malloc_bad = TRUE;
       return (FALSE);
     }
@@ -464,8 +464,8 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
   {
     extra_nodes -= base->conf->spare_buf_num;
     
-    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
-                              extra_nodes) != extra_nodes)
+    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF,
+                                 extra_nodes) != extra_nodes)
       return (FALSE);
   }
 
@@ -474,15 +474,16 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     unsigned char sub = 0;
 
     assert(sects->ptr[sects->num].len == 3);
-    sub = vstr_parse_ushort(base, sects->ptr[sects->num].pos + 1, 2,
-                            16 | VSTR_FLAG_PARSE_NUM_NO_BEG_PM, &hex_len, &err);
+    sub = vstr_nx_parse_ushort(base, sects->ptr[sects->num].pos + 1, 2,
+                               16 | VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
+                               &hex_len, &err);
     assert(!err);
     assert(hex_len == 2);
 
-    vstr_sub_buf(base, sects->ptr[sects->num].pos, 3, &sub, 1);
+    vstr_nx_sub_buf(base, sects->ptr[sects->num].pos, 3, &sub, 1);
   }  
   
-  vstr_sects_free(sects);
+  vstr_nx_sects_free(sects);
   
   return (TRUE);
 }

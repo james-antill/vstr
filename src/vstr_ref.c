@@ -46,7 +46,7 @@ void vstr_ref_cb_free_ptr(Vstr_ref *ref)
 
 void vstr_ref_cb_free_ptr_ref(Vstr_ref *ref)
 {
- vstr_ref_cb_free_ptr(ref);
+ vstr_nx_ref_cb_free_ptr(ref);
  free(ref);
 }
 

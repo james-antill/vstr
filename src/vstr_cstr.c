@@ -32,12 +32,12 @@ static Vstr__buf_ref *vstr__export_cstr_ref(const Vstr_base *base,
     return (NULL);
   }
   
-  ref->ref.func = vstr_ref_cb_free_ref;
+  ref->ref.func = vstr_nx_ref_cb_free_ref;
   ref->ref.ptr = ref->buf;
   ref->ref.ref = 1;
   
   if (len)
-    vstr_export_buf(base, pos, len, ref->buf);
+    vstr_nx_export_buf(base, pos, len, ref->buf);
   ref->buf[len] = 0;
 
   return (ref);
@@ -54,9 +54,9 @@ static Vstr__cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
   assert(base && pos && ((pos + len - 1) <= base->len));
   assert(len || (!base->len && (pos == 1)));
   
-  if (!(data = vstr_cache_get_data(base, off)))
+  if (!(data = vstr_nx_cache_get_data(base, off)))
   {
-    if (!vstr_cache_set_data(base, off, NULL))
+    if (!vstr_nx_cache_set_data(base, off, NULL))
       return (NULL);
     
     if (!(data = malloc(sizeof(Vstr__cache_data_cstr))))
@@ -66,7 +66,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
     }
     data->ref = NULL;
     
-    vstr_cache_set_data(base, off, data);
+    vstr_nx_cache_set_data(base, off, data);
   }
  
   if (data->ref)
@@ -83,7 +83,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
       }
     }
     
-    vstr_ref_del(data->ref);
+    vstr_nx_ref_del(data->ref);
     data->ref = NULL;
   }
 
@@ -128,7 +128,7 @@ Vstr_ref *vstr_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
   if (!(data = vstr__export_cstr(base, pos, len, ret_off)))
     return (NULL);
   
-  return (vstr_ref_add(data->ref));
+  return (vstr_nx_ref_add(data->ref));
 }
 
 void vstr_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
@@ -143,6 +143,6 @@ void vstr_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
     cpy_len = (buf_len - 1);
 
   if (cpy_len)
-    vstr_export_buf(base, pos, cpy_len, buf);
+    vstr_nx_export_buf(base, pos, cpy_len, buf);
   ((char *)buf)[cpy_len] = 0;
 }

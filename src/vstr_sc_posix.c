@@ -77,7 +77,7 @@ int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
   mmap_ref->ref.ptr = (char *)addr;
   mmap_ref->ref.ref = 0;
 
-  if (!vstr_add_ref(base, pos, &mmap_ref->ref, 0, len))
+  if (!vstr_nx_add_ref(base, pos, &mmap_ref->ref, 0, len))
     goto add_ref_failed;
 
   return (TRUE);
@@ -110,7 +110,7 @@ int vstr_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
     return (FALSE);
   }
 
-  ret = vstr_sc_add_fd(base, pos, fd, 0, 0, err);
+  ret = vstr_nx_sc_add_fd(base, pos, fd, 0, 0, err);
 
   if (*err)
     saved_errno = errno;
@@ -137,7 +137,7 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
     err = &dummy_err;
   *err = 0;
   
-  if (!vstr_add_iovec_buf_beg(base, pos, min, max, &iovs, &num))
+  if (!vstr_nx_add_iovec_buf_beg(base, pos, min, max, &iovs, &num))
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_MEM;
     errno = ENOMEM;
@@ -151,12 +151,12 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   
   if (bytes == -1)
   {
-    vstr_add_iovec_buf_end(base, pos, 0);
+    vstr_nx_add_iovec_buf_end(base, pos, 0);
     *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
     return (FALSE);
   }
 
-  vstr_add_iovec_buf_end(base, pos, (size_t)bytes);
+  vstr_nx_add_iovec_buf_end(base, pos, (size_t)bytes);
   
   if (!bytes)
   {
@@ -189,11 +189,11 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     ssize_t bytes = 0;
 
     if ((pos == 1) && (len == base->len) && base->cache_available)
-      len = vstr_export_iovec_ptr_all(base, &vec, &num);
+      len = vstr_nx_export_iovec_ptr_all(base, &vec, &num);
     else
     {
       vec = cpy_vec;
-      bytes = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
+      bytes = vstr_nx_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
       assert(bytes);
     }
     
@@ -218,7 +218,7 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     
     assert((size_t)bytes <= len);
     
-    vstr_del(base, pos, (size_t)bytes);
+    vstr_nx_del(base, pos, (size_t)bytes);
     len -= (size_t)bytes;
   }
 
@@ -247,7 +247,7 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
     return (FALSE);
   }
 
-  ret = vstr_sc_write_fd(base, pos, len, fd, err);
+  ret = vstr_nx_sc_write_fd(base, pos, len, fd, err);
 
   if (*err)
     saved_errno = errno;

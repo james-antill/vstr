@@ -1,15 +1,15 @@
 CC=gcc
 WARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-LOCAL=1
+LOCAL=0
 
 # PROF=-pg
 
 ifeq ($(LOCAL),1)
-CFLAGS=-I../include $(WARNS) -O2 $(PROF)
+CFLAGS=-I../include $(WARNS) $(PROF)
 LDFLAGS=../src/.libs/libvstr.a $(PROF)
 else
-CFLAGS=`pkg-config --cflags vstr` $(WARNS) $(PROF)
+CFLAGS=`pkg-config --cflags vstr` -O2 $(PROF)
 LDFLAGS=`pkg-config --libs vstr` $(PROF)
 endif
 

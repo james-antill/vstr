@@ -17,8 +17,16 @@
 #include "assert_loop-def.h"
 #include "assert_loop-extern.h"
 
-#include "vstr.h"
-#include "vstr-internal.h"
+/* vstr includes done by hand... */
+#define VSTR__HEADER_H
+
+#include "vstr-conf.h"
+#include "vstr-switch.h"
+#include "vstr-const.h"
+#include "vstr-def.h"
+#include "vstr-extern.h"
+
+#include "vstr-internal.h" /* inline done in here */
 
 #include "tools-def.h"
 #include "tools-extern.h"

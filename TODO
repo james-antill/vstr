@@ -21,3 +21,4 @@
 	Ie. vstr_x_pcre_*
 	vstr_x_hash_md5 vstr_x_hash_sha1
 
+. vstr_ref_add/del go inline.

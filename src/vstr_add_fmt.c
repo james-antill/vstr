@@ -25,6 +25,11 @@
 /* functions for portable printf functionality in a vstr */
 #include "main.h"
 
+static struct Vstr__fmt_spec *vstr__fmt_spec_make = NULL;
+static struct Vstr__fmt_spec *vstr__fmt_spec_list_beg = NULL;
+static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
+
+
 #define vstr__fmt_isdigit(x) (strchr("0123456789", (x)) != NULL)
 
 /* Increasingly misnamed "simple" fprintf like code... */
@@ -55,7 +60,7 @@
 #define IS_ZERO (1 << 29) /* is the number zero */
 #define IS_NEGATIVE (1 << 30) /* is the number negative */
 
-#define VSTR__FMT_ADD(x, y, z) vstr_add_buf((x), ((x)->len - pos_diff), y, z)
+#define VSTR__FMT_ADD(x, y, z) vstr_nx_add_buf((x), ((x)->len - pos_diff), y, z)
 
 static int vstr__add_spaces(Vstr_base *base, size_t pos_diff, size_t len)
 {
@@ -417,10 +422,6 @@ struct Vstr__fmt_spec
  
  struct Vstr__fmt_spec *next;
 };
-
-static struct Vstr__fmt_spec *vstr__fmt_spec_make = NULL;
-static struct Vstr__fmt_spec *vstr__fmt_spec_list_beg = NULL;
-static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 
 void vstr__add_fmt_cleanup_spec(void)
 { /* only done so leak detection is easier */
@@ -1357,7 +1358,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
 
  failed_alloc:
  if (base->len - orig_len)
-   vstr_del(base, start_pos, base->len - orig_len);
+   vstr_nx_del(base, start_pos, base->len - orig_len);
  
  no_format_for_arg:
  vstr__fmt_del_specs();
@@ -1372,7 +1373,7 @@ size_t vstr_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
  
  va_start(ap, fmt);
  
- len = vstr_add_vfmt(base, pos, fmt, ap);
+ len = vstr_nx_add_vfmt(base, pos, fmt, ap);
  
  va_end(ap);
  

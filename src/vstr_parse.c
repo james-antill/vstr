@@ -60,7 +60,7 @@ static int vstr__parse_num(const Vstr_base *base,
      
   if (flags & VSTR_FLAG_PARSE_NUM_SPACE)
   {
-    tmp = vstr_spn_buf_fwd(base, pos, len, &sym_space, 1);
+    tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_space, 1);
     if (tmp >= len)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_ONLY_S;
@@ -73,7 +73,7 @@ static int vstr__parse_num(const Vstr_base *base,
   
   if (!(flags & VSTR_FLAG_PARSE_NUM_NO_BEG_PM))
   {
-    tmp = vstr_spn_buf_fwd(base, pos, len, &sym_minus, 1);
+    tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_minus, 1);
     if (tmp > 1)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -81,7 +81,7 @@ static int vstr__parse_num(const Vstr_base *base,
     }
     else if (!tmp)
     {
-      tmp = vstr_spn_buf_fwd(base, pos, len, &sym_plus, 1);
+      tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_plus, 1);
       if (tmp > 1)
       {
         *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -101,7 +101,7 @@ static int vstr__parse_num(const Vstr_base *base,
     return (0);
   }
   
-  tmp = vstr_spn_buf_fwd(base, pos, len, &num_0, 1);
+  tmp = vstr_nx_spn_buf_fwd(base, pos, len, &num_0, 1);
   if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
   {
     *passed_len = len - 1;
@@ -126,7 +126,7 @@ static int vstr__parse_num(const Vstr_base *base,
 
     xX[0] = let_x_low;
     xX[1] = let_X_high;
-    tmp = vstr_spn_buf_fwd(base, pos, len, xX, 2);
+    tmp = vstr_nx_spn_buf_fwd(base, pos, len, xX, 2);
 
     if (tmp > 1)
     { /* It's a 0 */
@@ -150,7 +150,7 @@ static int vstr__parse_num(const Vstr_base *base,
         return (0);
       }
       
-      tmp = vstr_spn_buf_fwd(base, pos, len, &num_0, 1);
+      tmp = vstr_nx_spn_buf_fwd(base, pos, len, &num_0, 1);
     }
     else if (auto_base)
       num_base = 8;
@@ -229,7 +229,7 @@ static int vstr__parse_num(const Vstr_base *base,
 #define VSTR__PARSE_NUM_LOOP(num_type) do { \
   while (len) \
   { \
-    unsigned char scan = vstr_export_chr(base, pos); \
+    unsigned char scan = vstr_nx_export_chr(base, pos); \
     const char *end = NULL; \
     unsigned int add_num = 0; \
     num_type old_ret = ret; \
@@ -387,7 +387,8 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
     if (num_len > len)
       num_len = len;
     
-    tmp = vstr_parse_uint(base, pos, num_len, 10 | num_flags, &num_len, NULL);
+    tmp = vstr_nx_parse_uint(base, pos, num_len, 10 | num_flags,
+                             &num_len, NULL);
     if (!num_len)
     {
       *cidr = scan * 8;
@@ -438,7 +439,7 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
     if (scan == 4)
       break;
 
-    if (len && (vstr_export_chr(base, pos) != sym_dot))
+    if (len && (vstr_nx_export_chr(base, pos) != sym_dot))
       break;
     
     if (len)
@@ -469,13 +470,13 @@ static int vstr__parse_ipv4_cidr(const struct Vstr_base *base,
   size_t num_len = 0;
 
   if (len)
-    *cidr = vstr_parse_uint(base, pos, len, 10 | num_flags,
-                            &num_len, NULL);
+    *cidr = vstr_nx_parse_uint(base, pos, len, 10 | num_flags,
+                               &num_len, NULL);
   if (num_len)
   {
     if ((flags & VSTR_FLAG_PARSE_IPV4_NETMASK) &&
         (*cidr > 32) && (len > num_len) &&
-        (vstr_export_chr(base, pos + num_len) == sym_dot))
+        (vstr_nx_export_chr(base, pos + num_len) == sym_dot))
     {
       if (!vstr__parse_ipv4_netmask(base, pos, &len, flags, num_flags,
                                     sym_dot, cidr, err))
@@ -543,7 +544,8 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
     if (num_len > len)
       num_len = len;
     
-    tmp = vstr_parse_uint(base, pos, num_len, 10 | num_flags, &num_len, NULL);
+    tmp = vstr_nx_parse_uint(base, pos, num_len, 10 | num_flags,
+                             &num_len, NULL);
     if (!num_len)
       break;
 
@@ -561,10 +563,10 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
     if (scan == 4)
       break;
     
-    if (len && (vstr_export_chr(base, pos) == sym_slash))
+    if (len && (vstr_nx_export_chr(base, pos) == sym_slash))
       break;
     
-    if (len && (vstr_export_chr(base, pos) != sym_dot))
+    if (len && (vstr_nx_export_chr(base, pos) != sym_dot))
       break;
     
     if (len)
@@ -573,7 +575,7 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
       --len;
     }
 
-    if (len && (vstr_export_chr(base, pos) == sym_slash))
+    if (len && (vstr_nx_export_chr(base, pos) == sym_slash))
       break;
   }
 
@@ -595,7 +597,7 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
   if (!len)
     goto ret_len;
 
-  if (vstr_export_chr(base, pos) == sym_slash)
+  if (vstr_nx_export_chr(base, pos) == sym_slash)
   {
     if (flags & VSTR_FLAG_PARSE_IPV4_CIDR)
     {

@@ -10,6 +10,8 @@
 
 #include <float.h>
 
+#include <assert.h>
+
 #include "fix.h"
 
 #include "vstr.h"

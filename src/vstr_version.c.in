@@ -113,20 +113,20 @@ int     $0x80\n\t\
    * but can only be run via. ld.so */
  Vstr_base *str = NULL;
 
- vstr_init();
+ vstr_nx_init();
 
- str = vstr_make_base(NULL);
+ str = vstr_nx_make_base(NULL);
  if (!str)
    _exit (EXIT_FAILURE);
 
- VSTR_ADD_CSTR_PTR(str, 0, msg)
+ vstr_nx_add_ptr(str, 0, msg, strlen(msg));
 
- while (str->len && vstr_sc_write_fd(str, 1, str->len, fd, NULL))
+ while (str->len && vstr_nx_sc_write_fd(str, 1, str->len, fd, NULL))
  { /* do nothing */; }
 
- vstr_free_base(str);
+ vstr_nx_free_base(str);
 
- vstr_exit();
+ vstr_nx_exit();
 
  _exit (EXIT_SUCCESS);
 #endif

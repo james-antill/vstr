@@ -53,6 +53,10 @@ struct iovec
 #include <vstr-const.h>
 #include <vstr-def.h>
 #include <vstr-extern.h>
+
+#if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
+# include <vstr-inline.h>
+#endif
     
 #ifdef __cplusplus
 }

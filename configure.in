@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=7
+VSTR_MICRO_VERSION=8
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -1122,6 +1122,66 @@ local_cv_has_inline=no,
 AC_MSG_RESULT($local_cv_has_inline)
 case x$local_cv_has_inline in
 xyes) AC_DEFINE(HAVE_INLINE) ;;
+esac
+
+AC_MSG_CHECKING(if alias is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_alias,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int abcd(void) { return (0); }
+extern int func(void) __attribute__((alias("abcd"))) ; 
+
+int main() {
+ return func();
+}],
+local_cv_has_attrib_alias=yes,
+local_cv_has_attrib_alias=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_alias)
+case x$local_cv_has_attrib_alias in
+xyes) AC_DEFINE(HAVE_ATTRIB_ALIAS) ;;
+esac
+
+AC_MSG_CHECKING(if visibility is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_visibility,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(void) __attribute__((visibility("hidden"))) ; 
+int func(void) { return (0); }
+
+int main() {
+ return func();
+}],
+local_cv_has_attrib_visibility=yes,
+local_cv_has_attrib_visibility=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_visibility)
+case x$local_cv_has_attrib_visibility in
+xyes) AC_DEFINE(HAVE_ATTRIB_VISIBILITY) ;;
+esac
+
+AC_MSG_CHECKING(if __typeof is a valid keyword)
+AC_CACHE_VAL(local_cv_has___typeof,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(void) { return (0); }
+extern __typeof(func) abcd;
+
+int main() {
+ return func();
+}],
+local_cv_has___typeof=yes,
+local_cv_has___typeof=no,
+)])
+AC_MSG_RESULT($local_cv_has___typeof)
+case x$local_cv_has___typeof in
+xyes) AC_DEFINE(HAVE___TYPEOF) ;;
 esac
 
 TWOCAN_CONF_MSG(Output Substitution)

@@ -1410,7 +1410,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=7
+VSTR_MICRO_VERSION=8
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -15624,6 +15624,177 @@ echo "${ECHO_T}$local_cv_has_inline" >&6
 case x$local_cv_has_inline in
 xyes) cat >>confdefs.h <<\_ACEOF
 #define HAVE_INLINE 1
+_ACEOF
+ ;;
+esac
+
+echo "$as_me:$LINENO: checking if alias is a valid attribute" >&5
+echo $ECHO_N "checking if alias is a valid attribute... $ECHO_C" >&6
+if test "${local_cv_has_attrib_alias+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+
+int abcd(void) { return (0); }
+extern int func(void) __attribute__((alias("abcd"))) ;
+
+int main() {
+ return func();
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_attrib_alias=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_attrib_alias=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_attrib_alias" >&5
+echo "${ECHO_T}$local_cv_has_attrib_alias" >&6
+case x$local_cv_has_attrib_alias in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATTRIB_ALIAS 1
+_ACEOF
+ ;;
+esac
+
+echo "$as_me:$LINENO: checking if visibility is a valid attribute" >&5
+echo $ECHO_N "checking if visibility is a valid attribute... $ECHO_C" >&6
+if test "${local_cv_has_attrib_visibility+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(void) __attribute__((visibility("hidden"))) ;
+int func(void) { return (0); }
+
+int main() {
+ return func();
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_attrib_visibility=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_attrib_visibility=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_attrib_visibility" >&5
+echo "${ECHO_T}$local_cv_has_attrib_visibility" >&6
+case x$local_cv_has_attrib_visibility in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATTRIB_VISIBILITY 1
+_ACEOF
+ ;;
+esac
+
+echo "$as_me:$LINENO: checking if __typeof is a valid keyword" >&5
+echo $ECHO_N "checking if __typeof is a valid keyword... $ECHO_C" >&6
+if test "${local_cv_has___typeof+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(void) { return (0); }
+extern __typeof(func) abcd;
+
+int main() {
+ return func();
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has___typeof=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has___typeof=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has___typeof" >&5
+echo "${ECHO_T}$local_cv_has___typeof" >&6
+case x$local_cv_has___typeof in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE___TYPEOF 1
 _ACEOF
  ;;
 esac

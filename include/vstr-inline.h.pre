@@ -62,7 +62,7 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
     return (1);
   }
 
-  return (vstr_extern_inline_add_buf(base, pos, buffer, len));
+  return (@@@@vstr_extern_inline_add_buf(base, pos, buffer, len));
 }
 
 extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
@@ -129,7 +129,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
     return (1);
   }
 
-  return (vstr_extern_inline_del(base, pos, len));
+  return (@@@@vstr_extern_inline_del(base, pos, len));
 }
 
 extern inline int vstr_sects_add(struct Vstr_sects *sects,
@@ -140,7 +140,7 @@ extern inline int vstr_sects_add(struct Vstr_sects *sects,
     if (!sects->can_add_sz)
       return (0);
     
-    if (!vstr_extern_inline_sects_add(sects, pos, len))
+    if (!@@@@vstr_extern_inline_sects_add(sects, pos, len))
       return (0);
   }
   

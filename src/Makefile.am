@@ -39,7 +39,6 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_parse.c \
                         vstr_parse_netstr.c \
                         vstr_ref.c \
-                        vstr_sc.c \
                         vstr_sect.c \
                         vstr_spn.c \
                         vstr_split.c \

@@ -22,8 +22,6 @@
  */
 
 /* == macro functions == */
-#define VSTR_REF_INIT() { vstr_ref_cb_free_nothing, NULL, 0 }
-
 #define VSTR_SECTS_INIT(sects, p_sz, p_ptr, p_free_ptr) do { \
   (sects)->num = 0; \
   (sects)->sz = (p_sz); \
@@ -398,8 +396,11 @@ extern int vstr_sc_write_fd(struct Vstr_base *, size_t, size_t, int,
 extern int vstr_sc_write_file(struct Vstr_base *, size_t, size_t,
                               const char *, int, int, unsigned int *);
 
-    
-/* == inline functions == */
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
-# include <vstr-inline.h>
+/* == inline functions == */
+/* indented because they aren't documented */
+ extern int vstr_extern_inline_add_buf(struct Vstr_base *, size_t,
+                                       const void *, size_t);
+ extern int vstr_extern_inline_del(struct Vstr_base *, size_t, size_t);
+ extern int vstr_extern_inline_sects_add(struct Vstr_sects *, size_t, size_t);
 #endif

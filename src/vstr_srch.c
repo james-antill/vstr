@@ -62,7 +62,7 @@ static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
   while ((scan_pos < (pos + len - 1)) &&
          scan_len)
   {
-    size_t tmp = vstr_srch_chr_fwd(base, scan_pos, scan_len, srch);
+    size_t tmp = vstr_nx_srch_chr_fwd(base, scan_pos, scan_len, srch);
     if (!tmp)
       break;
 
@@ -88,7 +88,7 @@ size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
                           const char *srch, size_t chrs_len)
 {
-  size_t num = vstr_cspn_buf_fwd(base, pos, len, srch, chrs_len);
+  size_t num = vstr_nx_cspn_buf_fwd(base, pos, len, srch, chrs_len);
 
   if (num == len)
     return (0);
@@ -99,7 +99,7 @@ size_t vstr_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
                           const char *srch, size_t chrs_len)
 {
-  size_t num = vstr_cspn_buf_rev(base, pos, len, srch, chrs_len);
+  size_t num = vstr_nx_cspn_buf_rev(base, pos, len, srch, chrs_len);
 
   if (num == len)
     return (0);
@@ -110,7 +110,7 @@ size_t vstr_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
                            const char *srch, size_t chrs_len)
 {
-  size_t num = vstr_spn_buf_fwd(base, pos, len, srch, chrs_len);
+  size_t num = vstr_nx_spn_buf_fwd(base, pos, len, srch, chrs_len);
 
   if (num == len)
     return (0);
@@ -121,7 +121,7 @@ size_t vstr_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
                            const char *srch, size_t chrs_len)
 {
-  size_t num = vstr_spn_buf_rev(base, pos, len, srch, chrs_len);
+  size_t num = vstr_nx_spn_buf_rev(base, pos, len, srch, chrs_len);
 
   if (num == len)
     return (0);
@@ -158,7 +158,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  {
    if ((scan->type == VSTR_TYPE_NODE_NON) && !str)
    {
-     if (!vstr_cmp_buf(base, pos + (ret - len), str_len, NULL, str_len))
+     if (!vstr_nx_cmp_buf(base, pos + (ret - len), str_len, NULL, str_len))
        return (pos + (ret - len));
      goto next_loop;
    }
@@ -187,9 +187,9 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
      
      if (!memcmp(scan_str, str, tmp) &&
          ((tmp == str_len) ||
-          !vstr_cmp_buf(base,
-                        pos + ((ret - len) - scan_len) + tmp, str_len - tmp,
-                        str, str_len - tmp)))
+          !vstr_nx_cmp_buf(base,
+                           pos + ((ret - len) - scan_len) + tmp, str_len - tmp,
+                           str, str_len - tmp)))
        return (pos + ((ret - len) - scan_len));
      
      ++scan_str;
@@ -217,7 +217,7 @@ static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
   while ((scan_pos < (pos + len - 1)) &&
          (scan_len >= str_len))
   {
-    size_t tmp = vstr_srch_buf_fwd(base, scan_pos, scan_len, str, str_len);
+    size_t tmp = vstr_nx_srch_buf_fwd(base, scan_pos, scan_len, str, str_len);
     if (!tmp)
       break;
 
@@ -257,11 +257,11 @@ size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
     size_t tmp = 0;
     char cspn[1];
     
-    if (!vstr_cmp(base, scan_pos, scan_len, ndl_base, ndl_pos, ndl_len))
+    if (!vstr_nx_cmp(base, scan_pos, scan_len, ndl_base, ndl_pos, ndl_len))
       return (pos);
 
-    cspn[0] = vstr_export_chr(ndl_base, ndl_pos);
-    tmp = vstr_cspn_buf_fwd(base, scan_pos, scan_len - ndl_len + 1, cspn, 1);
+    cspn[0] = vstr_nx_export_chr(ndl_base, ndl_pos);
+    tmp = vstr_nx_cspn_buf_fwd(base, scan_pos, scan_len - ndl_len + 1, cspn, 1);
     
     scan_len -= tmp;
     scan_pos += scan_pos;
@@ -282,8 +282,8 @@ static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
   while ((scan_pos < (pos + len - 1)) &&
          (scan_len >= ndl_len))
   {
-    size_t tmp = vstr_srch_vstr_fwd(base, scan_pos, scan_len,
-                                    ndl_base, ndl_pos, ndl_len);
+    size_t tmp = vstr_nx_srch_vstr_fwd(base, scan_pos, scan_len,
+                                       ndl_base, ndl_pos, ndl_len);
     if (!tmp)
       break;
 
@@ -312,9 +312,9 @@ unsigned int vstr_srch_sects_add_buf_fwd(const Vstr_base *base,
   unsigned int orig_num = sects->num;
   size_t srch_pos = 0;
 
-  while ((srch_pos = vstr_srch_buf_fwd(base, pos, len, str, str_len)))
+  while ((srch_pos = vstr_nx_srch_buf_fwd(base, pos, len, str, str_len)))
   {
-    if (!vstr_sects_add(sects, srch_pos, str_len))
+    if (!vstr_nx_sects_add(sects, srch_pos, str_len))
     {
       if (sects->malloc_bad)
       {

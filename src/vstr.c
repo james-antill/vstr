@@ -21,6 +21,7 @@
 /* master file, contains all the base functions */
 #include "main.h"
 
+
 unsigned int vstr__num_node(Vstr_base *base, Vstr_node *node)
 {
   unsigned int num = 0;
@@ -268,10 +269,10 @@ void vstr__del_conf(Vstr_conf *conf)
  
  if (!--conf->ref)
  {
-  vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_BUF, conf->spare_buf_num);
-  vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, conf->spare_non_num);
-  vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);
-  vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, conf->spare_ref_num);
+  vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_BUF, conf->spare_buf_num);
+  vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, conf->spare_non_num);
+  vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);
+  vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, conf->spare_ref_num);
   
   free(conf->loc->name_lc_numeric_str);
   free(conf->loc->grouping);

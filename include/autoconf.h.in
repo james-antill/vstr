@@ -172,3 +172,10 @@
 #undef HAVE_POSIX_HOST
 
 #undef HAVE_INLINE
+
+#undef HAVE_ATTRIB_ALIAS
+
+/* #undef HAVE_ATTRIB_VISIBILITY */
+
+#undef HAVE___TYPEOF
+

@@ -166,7 +166,7 @@ char vstr_export_chr(const Vstr_base *base, size_t pos)
  char buf[1] = {0};
 
  /* errors, requests for data from NON nodes and real data are all == 0 */
- vstr_export_buf(base, pos, 1, buf);
+ vstr_nx_export_buf(base, pos, 1, buf);
  
  return (buf[0]);
 }
@@ -182,12 +182,12 @@ static Vstr__buf_ref *vstr__export_buf_ref(const Vstr_base *base,
     return (NULL);
   }
   
-  ref->ref.func = vstr_ref_cb_free_ref;
+  ref->ref.func = vstr_nx_ref_cb_free_ref;
   ref->ref.ptr = ref->buf;
   ref->ref.ref = 1;
   
   if (len)
-    vstr_export_buf(base, pos, len, ref->buf);
+    vstr_nx_export_buf(base, pos, len, ref->buf);
   
   return (ref);
 }
@@ -214,7 +214,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     if ((scan->len - pos) >= len)
     {
       *ret_off = pos + ((Vstr_node_ref *)scan)->off;
-      return (vstr_ref_add(((Vstr_node_ref *)scan)->ref));
+      return (vstr_nx_ref_add(((Vstr_node_ref *)scan)->ref));
     }
   }
   else if (scan->type == VSTR_TYPE_NODE_PTR)
@@ -228,11 +228,11 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
       }
       
       *ret_off = 0;
-      ref->func = vstr_ref_cb_free_ref;
+      ref->func = vstr_nx_ref_cb_free_ref;
       ref->ptr = ((char *)((Vstr_node_ptr *)scan)->ptr) + pos;
       ref->ref = 0;
       
-      return (vstr_ref_add(ref));
+      return (vstr_nx_ref_add(ref));
     }
   }
 
@@ -241,7 +241,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     Vstr__cache_data_cstr *data = NULL;
     unsigned int off = base->conf->cache_pos_cb_cstr;
     
-    if ((data = vstr_cache_get_data(base, off)) && data->ref)
+    if ((data = vstr_nx_cache_get_data(base, off)) && data->ref)
     {
       if (pos >= data->pos)
       {
@@ -249,7 +249,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
         if (data->len <= (len - tmp))
         {
           *ret_off = tmp;
-          return (vstr_ref_add(data->ref));
+          return (vstr_nx_ref_add(data->ref));
         }
       }
     }

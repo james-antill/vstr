@@ -27,5 +27,5 @@
 # define extern /* nothing */
 # undef inline
 # define inline /* nothing */
-# include "vstr-inline.h"
+# include "vstr-internal-inline.h"
 
