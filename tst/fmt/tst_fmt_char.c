@@ -25,21 +25,36 @@ int tst(void)
 
 
   {
-    int mfail_count = 0;
+    int spaces = 2;
+    
     /* test for memory failures... */
 
-    do
+    while (spaces < 10)
     {
-      tst_mfail_num(++mfail_count);
-    } while (!vstr_add_fmt(s3, 0, "%c%3c%-3c%c" "%lc%3lc%-3lc%C",
-                           'a', 'b', 'c', 'd',
-                           (wint_t) L'a', (wint_t) L'b',
-                           (wint_t) L'c', (wint_t) L'd'));
+      int mfail_count = 0;
+      const char *fmt = "%c%*c%*c%c" "%lc%*lc%-*lc%C";
+      
+      vstr_del(s3, 1, s3->len);
+      do
+      {
+        ASSERT(!s3->len);
+        vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+        tst_mfail_num(++mfail_count);
+      } while (!vstr_add_fmt(s3, 0, fmt,
+                             'a', spaces, 'b', -spaces, 'c', 'd',
+                             (wint_t) L'a', spaces, (wint_t) L'b',
+                             -spaces, (wint_t) L'c', (wint_t) L'd'));
 
-    TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len,
-                                        "a  bc  d" "a  bc  d"));
+      sprintf(buf, fmt,
+              'a', spaces, 'b', -spaces, 'c', 'd',
+              (wint_t) L'a', spaces, (wint_t) L'b',
+              -spaces, (wint_t) L'c', (wint_t) L'd');
+      
+      TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
-    tst_mfail_num(0);
+      tst_mfail_num(0);
+      ++spaces;
+    }
   }
 
   return (TST_B_RET(ret));

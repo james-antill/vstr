@@ -94,7 +94,14 @@ int tst(void)
     ASSERT(vstr_iter_fwd_beg(s1, 3, 1, iter));
     assert(VSTR__ITER_EQ_ALL_NODE(s1, iter));
   }
-  vstr_sub_cstr_ptr(s1, 3, 1, "a"); /* speed bug in 1.0.6 and earlier */
+  
+  do
+  { /* speed bug in 1.0.6 and earlier */
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_PTR, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_sub_cstr_ptr(s1, 3, 1, "a"));
+  
   vstr_del(s1, 1, 2);
   TST_B_TST(ret, 13, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
 

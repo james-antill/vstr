@@ -314,7 +314,16 @@
 <li class="obj"><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
 <li class="obj"><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
 <li class="obj"><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
+<li class="obj"><a href="#vstr_sc_add_grpbasenum_buf%28%29">vstr_sc_add_grpbasenum_buf()</a>
+<li class="obj"><a href="#vstr_sc_add_grpbasenum_ptr%28%29">vstr_sc_add_grpbasenum_ptr()</a>
+<li class="obj"><a href="#vstr_sc_add_grpbasenum_ref%28%29">vstr_sc_add_grpbasenum_ref()</a>
 <li class="obj"><a href="#vstr_sc_add_grpnum_buf%28%29">vstr_sc_add_grpnum_buf()</a>
+<li class="obj"><a href="#vstr_sc_add_cstr_grpbasenum_buf%28%29">vstr_sc_add_cstr_grpbasenum_buf()</a>
+<li class="obj"><a href="#vstr_sc_add_cstr_grpbasenum_ptr%28%29">vstr_sc_add_cstr_grpbasenum_ptr()</a>
+<li class="obj"><a href="#vstr_sc_add_cstr_grpbasenum_ref%28%29">vstr_sc_add_cstr_grpbasenum_ref()</a>
+<li class="obj"><a href="#VSTR_SC_ADD_CSTR_GRPBASENUM_BUF%28%29">VSTR_SC_ADD_CSTR_GRPBASENUM_BUF()</a>
+<li class="obj"><a href="#VSTR_SC_ADD_CSTR_GRPBASENUM_PTR%28%29">VSTR_SC_ADD_CSTR_GRPBASENUM_PTR()</a>
+<li class="obj"><a href="#VSTR_SC_ADD_CSTR_GRPBASENUM_REF%28%29">VSTR_SC_ADD_CSTR_GRPBASENUM_REF()</a>
 <li class="obj"><a href="#vstr_sc_add_cstr_grpnum_buf%28%29">vstr_sc_add_cstr_grpnum_buf()</a>
 <li class="obj"><a href="#VSTR_SC_ADD_CSTR_GRPNUM_BUF%28%29">VSTR_SC_ADD_CSTR_GRPNUM_BUF()</a>
 <li class="obj"><a href="#vstr_sc_conv_num_uint%28%29">vstr_sc_conv_num_uint()</a>
@@ -344,6 +353,14 @@
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv6_vec%28%29">vstr_sc_fmt_add_ipv6_vec()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv4_vec_cidr%28%29">vstr_sc_fmt_add_ipv4_vec_cidr()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv6_vec_cidr%28%29">vstr_sc_fmt_add_ipv6_vec_cidr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_upper_base2_uint%28%29">vstr_sc_fmt_add_upper_base2_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_upper_base2_ulong%28%29">vstr_sc_fmt_add_upper_base2_ulong()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_upper_base2_size%28%29">vstr_sc_fmt_add_upper_base2_size()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_upper_base2_uintmax%28%29">vstr_sc_fmt_add_upper_base2_uintmax()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_uint%28%29">vstr_sc_fmt_add_lower_base2_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_ulong%28%29">vstr_sc_fmt_add_lower_base2_ulong()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_size%28%29">vstr_sc_fmt_add_lower_base2_size()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_uintmax%28%29">vstr_sc_fmt_add_lower_base2_uintmax()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
 <li class="obj"><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
 <li class="obj"><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
@@ -779,6 +796,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
+</p><p>  If there are spare base objects, then no allocations are done.
 
 
 <a name="vstr_free_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -787,6 +805,12 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will free a Vstr string, allocated by <a href="functions.html#vstr_make_base()">vstr_make_base()</a>.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the base object <a href="constants.html#VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE</a> is of the same type
+ as it's configurations <a href="constants.html#VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE</a>, then the base
+ object will be turned into a spare object so it can be reused by
+ <a href="functions.html#vstr_make_base()">vstr_make_base()</a>.
 
 
 <a name="vstr_dup_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -799,10 +823,6 @@
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a>.
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="vstr_dup_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_ptr()
@@ -814,10 +834,6 @@
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a>.
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="vstr_dup_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_non()
@@ -827,10 +843,6 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_non()">vstr_add_non()</a>.
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
 
 
 <a name="vstr_dup_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -843,10 +855,6 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a>.
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
 
 
 <a name="vstr_dup_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -861,10 +869,6 @@
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_vstr()">vstr_add_vstr()</a>.
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="vstr_dup_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_rep_chr()
@@ -876,10 +880,6 @@
 </p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
  <a href="functions.html#vstr_add_rep_chr()">vstr_add_rep_chr()</a>.
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="vstr_dup_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_cstr_buf()
@@ -890,10 +890,6 @@
 </p><p>  This function calls <a href="functions.html#vstr_dup_buf()">vstr_dup_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="vstr_dup_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_cstr_ptr()
@@ -903,10 +899,6 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function calls <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
 
 
 <a name="vstr_dup_cstr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -921,10 +913,6 @@
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="VSTR_DUP_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_BUF()
@@ -935,10 +923,6 @@
 </p><p>  This macro function calls <a href="functions.html#vstr_dup_buf()">vstr_dup_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
 
 <a name="VSTR_DUP_CSTR_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_PTR()
@@ -948,10 +932,6 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
 
 
 <a name="VSTR_DUP_CSTR_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -965,10 +945,6 @@
 </p><p>  This macro function calls <a href="functions.html#vstr_dup_ref()">vstr_dup_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
 
 
 <a name="vstr_ref_make_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1176,7 +1152,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr string<br>Type<strong>[3]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Start position in the Vstr string (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length in the Vstr string (Parameter[3])<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (<a href="constants.html#vstr_add_vstr%28%29">VSTR_TYPE_ADD_*</a>)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Type for Vstr add (<a href="constants.html#vstr_add_vstr%28%29">VSTR_TYPE_ADD_*</a>)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add data in one Vstr string (Parameter[3]) to
  another Vstr string (Parameter[1]).
@@ -1592,7 +1568,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr sub (<a href="constants.html#vstr_sub_vstr%28%29">VSTR_TYPE_SUB_*</a>)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Type for Vstr sub (<a href="constants.html#vstr_sub_vstr%28%29">VSTR_TYPE_SUB_*</a>)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to substitute the data in the Vstr string
  (Parameter[1]) with the data in another Vstr string (Parameter[4]).
@@ -4116,6 +4092,48 @@
  return an empty length for the path "/".
 
 
+<a name="vstr_sc_add_grpbasenum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_grpbasenum_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to output a number with the Vstr strings
+ locale grouping characters, for a specific base.
+</p><p>  If copies both user data and locale data.
+
+<a name="vstr_sc_add_grpbasenum_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_grpbasenum_ptr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to output a number with the Vstr strings
+ locale grouping characters, for a specific base.
+</p><p>  If uses pointers for the user data and memory references for the locale data.
+
+
+<a name="vstr_sc_add_grpbasenum_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_grpbasenum_ref()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length of Vstr memory reference (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to output a number with the Vstr strings
+ locale grouping characters, for a specific base.
+</p><p>  If uses memory references for the user data and the locale data.
+
+
 <a name="vstr_sc_add_grpnum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_add_grpnum_buf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
@@ -4126,6 +4144,88 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is a helper function to output a number with the Vstr strings
  locale grouping characters.
+</p><p>  If copies both user data and locale data.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function always uses the default locale information, if you have setup
+ specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_*
+ etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
+
+
+<a name="vstr_sc_add_cstr_grpbasenum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_cstr_grpbasenum_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions.html#vstr_sc_add_grpbasenum_buf()">vstr_sc_add_grpbasenum_buf()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_sc_add_cstr_grpbasenum_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_cstr_grpbasenum_ptr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions.html#vstr_sc_add_grpbasenum_ptr()">vstr_sc_add_grpbasenum_ptr()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_sc_add_cstr_grpbasenum_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_cstr_grpbasenum_ref()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions.html#vstr_sc_add_grpbasenum_ref()">vstr_sc_add_grpbasenum_ref()</a> with the length being
+ the value of strlen() on memory from the Vstr memory reference (Parameter[4])
+ starting at offset (Parameter[5]).
+
+
+<a name="VSTR_SC_ADD_CSTR_GRPBASENUM_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_ADD_CSTR_GRPBASENUM_BUF()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls <a href="functions.html#vstr_sc_add_grpbasenum_buf()">vstr_sc_add_grpbasenum_buf()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="VSTR_SC_ADD_CSTR_GRPBASENUM_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_ADD_CSTR_GRPBASENUM_PTR()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls <a href="functions.html#vstr_sc_add_grpbasenum_ptr()">vstr_sc_add_grpbasenum_ptr()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="VSTR_SC_ADD_CSTR_GRPBASENUM_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_ADD_CSTR_GRPBASENUM_REF()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Base of the number in the data<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls <a href="functions.html#vstr_sc_add_grpbasenum_ref()">vstr_sc_add_grpbasenum_ref()</a> with the length being
+ the value of strlen() on memory from the Vstr memory reference (Parameter[4])
+ starting at offset (Parameter[5]).
 
 
 <a name="vstr_sc_add_cstr_grpnum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -4138,6 +4238,11 @@
 </p><p>  This function calls <a href="functions.html#vstr_sc_add_grpnum_buf()">vstr_sc_add_grpnum_buf()</a> with the length being the value
  of strlen() on the data parameter (Parameter[3]).
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function always uses the default locale information, if you have setup
+ specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_*
+ etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
+
 
 <a name="VSTR_SC_ADD_CSTR_GRPNUM_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SC_ADD_CSTR_GRPNUM_BUF()
@@ -4148,6 +4253,11 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls <a href="functions.html#vstr_sc_add_grpnum_buf()">vstr_sc_add_grpnum_buf()</a> with the length being
  the value of strlen() on the data parameter (Parameter[3]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This macro always uses the default locale information, if you have setup
+ specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_*
+ etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
 
 
 <a name="vstr_sc_conv_num_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -4670,6 +4780,174 @@
  used.
 </p><p>  It is recommended that you use the name &quot;{ipv6.v+C}&quot;, with the gcc warning
  compatible alternates using "{ipv6.v+C:%p%u%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_upper_base2_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_upper_base2_uint()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ an unsigned int number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{B.u}&quot;, with the gcc warning
+ compatible alternates using "{B.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_upper_base2_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_upper_base2_ulong()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ an unsigned long number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{B.lu}&quot;, with the gcc warning
+ compatible alternates using "{B.lu:%lu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_upper_base2_size%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_upper_base2_size()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a size_t number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{B.zu}&quot;, with the gcc warning
+ compatible alternates using "{B.zu:%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_upper_base2_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_upper_base2_uintmax()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a uintmax_t number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{B.ju}&quot;, with the gcc warning
+ compatible alternates using "{B.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_lower_base2_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_lower_base2_uint()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ an unsigned int number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{b.u}&quot;, with the gcc warning
+ compatible alternates using "{b.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_lower_base2_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_lower_base2_ulong()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ an unsigned long number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{b.lu}&quot;, with the gcc warning
+ compatible alternates using "{b.lu:%lu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_lower_base2_size%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_lower_base2_size()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a size_t number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{b.zu}&quot;, with the gcc warning
+ compatible alternates using "{b.zu:%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_lower_base2_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_lower_base2_uintmax()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a uintmax_t number in a base 2 form.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision, field width, #, + and - attributes all act as they would on
+ hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way
+ hex prints "0x".
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{b.ju}&quot;, with the gcc warning
+ compatible alternates using "{b.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 

@@ -237,6 +237,7 @@ int FIX_SYMBOL(vsnprintf)(char *str, size_t size, const char *fmt, va_list ap)
 {
   static FILE *fp = NULL;
 
+  ASSERT(!str && !size);
   if (!fp)
     fp = fopen("/dev/null", "ab");
 
@@ -255,6 +256,9 @@ int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
  sz = vsnprintf(NULL, 0, fmt, ap);
 
  va_end(ap);
+
+ if (sz == -1)
+   return (-1);
 
  if (!(*ret = malloc(sz + 1)))
    return (-1);

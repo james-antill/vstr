@@ -34,5 +34,8 @@ int tst(void)
   TST_B_TST(ret, 17, vstr_srch_cstr_chrs_rev(s1, 2, s1->len - 1, "x") != 6);
   TST_B_TST(ret, 18, vstr_srch_cstr_chrs_rev(s1, 2, s1->len - 2, "x") != 6);
 
+  /* misc */
+  TST_B_TST(ret, 19, vstr_srch_cstr_chrs_rev(s1, 1, s1->len, "Z") != 0);
+  
   return (TST_B_RET(ret));
 }

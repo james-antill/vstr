@@ -424,6 +424,10 @@ int tst(void)
 
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
 
+  /* en_US grouping */
+  vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP, ",");
+  vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP, "\3");
+
   num = 5;
   while (num--)
   {
@@ -511,6 +515,14 @@ int tst(void)
     vstr_del(s4, 1, s4->len);
     vstr_add_fmt(s3, s3->len, "<$'-8.16{intptr:%n}>", &num);
     FMT("'-8.16");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$#'-16.8{intptr:%n}>", &num);
+    FMT("#'-16.8");
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));

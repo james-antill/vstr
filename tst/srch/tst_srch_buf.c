@@ -31,6 +31,9 @@ static void tst_srch_buf(Vstr_base *t1, unsigned int off)
 
   ASSERT(!vstr_srch_buf_fwd(t1, 1, 0, "a", 1));
   ASSERT(!vstr_srch_buf_rev(t1, 1, 0, "a", 1));
+
+  ASSERT(vstr_srch_buf_fwd(t1, 3, 2, "a", 0) == 3);
+  ASSERT(vstr_srch_buf_rev(t1, 3, 2, "a", 0) == 4);
 }
 
 static void tst_srch_non_buf(Vstr_base *t1)

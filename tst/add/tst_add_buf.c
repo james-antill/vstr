@@ -73,12 +73,29 @@ int tst(void)
   TST_B_TST(ret, 16,  s3->iovec_upto_date); /* too much data */
 
   vstr_del(s1, 1, s1->len);
+  ASSERT(((0) == s1->len) && (vstr_num(s1, 1, s1->len) == 0));
+  TST_B_TST(ret, 17, !s1->iovec_upto_date);
+  VSTR_ADD_CSTR_BUF(s1, s1->len, "abcdX");
+  ASSERT(((5) == s1->len) && (vstr_num(s1, 1, s1->len) == 1));
+  TST_B_TST(ret, 18, !s1->iovec_upto_date);
+  vstr_del(s1, 1, s1->len);
+  ASSERT(((0) == s1->len) && (vstr_num(s1, 1, s1->len) == 0));
+  TST_B_TST(ret, 19, !s1->iovec_upto_date);
+  vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE, FALSE);
+  VSTR_ADD_CSTR_BUF(s1, s1->len, "abcdX");
+  ASSERT(((5) == s1->len) && (vstr_num(s1, 1, s1->len) == 1));
+  TST_B_TST(ret, 20,  s1->iovec_upto_date);
+  
   vstr_add_non(s1, 0, 2);
+  ASSERT(((2 + 5) == s1->len) && (vstr_num(s1, 1, s1->len) == 2));
   vstr_add_cstr_buf(s1, 1, "abcdX");
+  ASSERT(((1 + 5 + 1 + 5) == s1->len) && (vstr_num(s1, 1, s1->len) == 4));
   vstr_del(s1, 1, 1);
+  ASSERT(((5 + 1 + 5) == s1->len) && (vstr_num(s1, 1, s1->len) == 3));
   vstr_sc_reduce(s1, 1, s1->len, 1);
+  ASSERT(((5 + 1 + 4) == s1->len) && (vstr_num(s1, 1, s1->len) == 3));
 
-  TST_B_TST(ret, 17,
+  TST_B_TST(ret, 28,
             !VSTR_CMP_CSTR_EQ(s1, 1, 5, "abcdX"));
 
   return (TST_B_RET(ret));

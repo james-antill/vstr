@@ -5,7 +5,12 @@
 
  <link rel="stylesheet" type="text/css" href="f_c.css">
   <style>
-      A:hover { color: #20b2aa; }
+      A       { background: #FFF; color: #44F; }
+      A:hover {                   color: #20b2aa; }
+
+      A.anchor       { color: #000; }
+      A.anchor:hover { color: #000; }
+
       P { text-indent: 2em; }
 
       body { background: #FFF; }
@@ -68,7 +73,7 @@ the benifits of doing so. </li>
 <li><a href="#cppstrvstr">Convertion table</a>: From std. C++ std::string functions to Vstr functions. </li>
 </ul>
 
-<a id="hw_s">
+<a class="anchor" id="hw_s">
 <h2> Simplest Hello World </h2>
 </a>
 <p> Here is about the most simple Vstr application, this is a single function
@@ -123,7 +128,7 @@ string contains multiple nodes of informtion that are treated internally as a
 single entity.
 </p>
 
-<a id="hw_h">
+<a class="anchor" id="hw_h">
 <h2> Hello World Header </h2>
 </a>
 
@@ -216,7 +221,7 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <!--   done by ex_highlight -->
 
 
-<a id="hw_s2">
+<a class="anchor" id="hw_s2">
 <h2> Simple Hello World, using the helper functions </h2>
 </a>
 
@@ -249,7 +254,7 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <!--   done by ex_highlight -->
 
 
-<a id="hw_m">
+<a class="anchor" id="hw_m">
 <h2> Hello World, using multiple sources of data </h2>
 </a>
 
@@ -291,7 +296,7 @@ representative of what a networked application looks like...
 <!--   done by ex_highlight -->
 
 
-<a id="hw_x">
+<a class="anchor" id="hw_x">
 <h2> Complicated Hello World </h2>
 </a>
 
@@ -374,7 +379,7 @@ searching etc.).
 
 <hr>
 
-<a id="ex_h">
+<a class="anchor" id="ex_h">
 <h2> IO header file </h2>
 </a>
 
@@ -681,7 +686,7 @@ objects.</li>
 
 <hr>
 
-<a id="ex_cat">
+<a class="anchor" id="ex_cat">
 <h2> Unix cat command </h2>
 </a>
 
@@ -795,7 +800,7 @@ ex_cat.c and ex_utils.h combined.
 
 <hr>
 
-<a id="ex_nl">
+<a class="anchor" id="ex_nl">
 <h2> Unix nl command </h2>
 </a>
 
@@ -816,7 +821,7 @@ a reference is created and shared between the two strings.
 <span class="static">static</span> <span class="int">int</span> ex_nl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
 {
   <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> count = 0;
-  size_t pos = 0;
+  <span class="sizet">size_t</span> pos = 0;
 
   <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
   <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
@@ -935,7 +940,7 @@ a reference is created and shared between the two strings.
 <hr>
 
 
-<a id="ex_hexdump">
+<a class="anchor" id="ex_hexdump">
 <h2> Unix simple hexdump command </h2>
 </a>
 
@@ -1090,8 +1095,8 @@ util-linux-2.11r-10
   <span class="if">if</span> (last &amp;&amp; s2-&gt;len)
   { <span class="comment">/* do the same as above, but print the partial line for
      * the end of files */</span>
-    size_t got = s2-&gt;len;
-    size_t missing = EX_HEXDUMP_CHRS_PER_LINE - s2-&gt;len;
+    <span class="sizet">size_t</span> got = s2-&gt;len;
+    <span class="sizet">size_t</span> missing = EX_HEXDUMP_CHRS_PER_LINE - s2-&gt;len;
     <span class="const">const</span> <span class="char">char</span> *ptr = buf;
 
     missing -= (missing % 2);
@@ -1283,9 +1288,10 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
 
 <hr>
 
-<a id="cust-fmt">
-<a id="ex_lookup_ip">
+<a class="anchor" id="cust-fmt">
+<a class="anchor" id="ex_lookup_ip">
 <h2> Lookup a hostname and print the IP, a simple custom formatter example </h2>
+</a>
 </a>
 
 <p>
@@ -1332,8 +1338,8 @@ in a similar way to the POSIX basename function.
 
   <span class="if">if</span> (argc != 2) <span class="comment">/* if a hostname isn't given output an message to stderr */</span>
   {
-    size_t pos = 0;
-    size_t len = 0;
+    <span class="sizet">size_t</span> pos = 0;
+    <span class="sizet">size_t</span> len = 0;
 
     <span class="comment">/* add another format specifier for printing Vstr strings */</span>
     vstr_sc_fmt_add_vstr(s1-&gt;conf, <span class="str">"{Vstr:%p%zu%zu%u}"</span>);
@@ -1392,7 +1398,7 @@ in a similar way to the POSIX basename function.
 
 <hr>
 
-<a id="ex_gmp_factorials">
+<a class="anchor" id="ex_gmp_factorials">
 <h2> Factorials, GMP MPZ variables with custom formatters  </h2>
 </a>
 
@@ -1434,7 +1440,7 @@ gmp_asprintf(&amp;ret, <span class="str">"%s is an num %'d.\n"</span>, <span cla
 the GNU MP variable equvilent...
 </p>
 <pre class="c2html">
-mpz_t z;
+<span class="mpzt">mpz_t</span> z;
 <span class="char">char</span> *ret = <span class="null">NULL</span>;
 <span class="comment">/* ... */</span>
 gmp_asprintf(&amp;ret, <span class="str">"%s is an bignum %'Zd.\n"</span>, <span class="str">"mpz_t"</span>, z);
@@ -1462,7 +1468,7 @@ asprintf(&amp;ret, <span class="str">"%.*s is an num %d.\n"</span>, <span class=
 </p>
 
 <pre class="c2html">
-mpz_t z;
+<span class="mpzt">mpz_t</span> z;
 <span class="char">char</span> *ret = <span class="null">NULL</span>;
 <span class="comment">/* ... */</span>
 gmp_asprintf(&amp;ret, <span class="str">"%.*s is an bignum %Zd.\n"</span>, <span class="str">"mpz_t"</span>, z);
@@ -1485,25 +1491,20 @@ other custom types that you need to format, you'd need yet another function.</p>
 </ul>
 
 <p>
-  The custom formatter for mpz_t is about 23 lines of code in this example,
-it could possibly be a little less if you removed some features
-(Ie. supporting positive or negative values) or if some other GMP functions
-made things a little easier. However this not only fully implements everything
-that gmp_printf() can do for that variable, but
-<b>also implements grouping</b> (with an overhead of a single if test and
-function call).
+  The custom formatter for mpz_t is about 25 lines of code in this example,
+it could be a little less if you removed some features
+(Ie. supporting positive or negative values) or always got libgmp to
+allocate storage and then free it (or if some libgmp APIs were defined in a more
+user friendly manner).
+</p>
+<p>
+ However the actual complexity is pretty small, and this not only fully
+implements everything that gmp_printf() can do for that variable (safely),
+but <b>also implements grouping</b>.
 </p>
 
 <pre class="c2html">
-<span class="comment">/* Simple usage of the gmp library, see...
-
-http://www.gnu.org/manual/gmp/html_mono/gmp.html#Formatted%20Output%20Strings
-
-...it prints the factorial of the first argument, you can check the output
-against...
-
-http://www.newdream.net/~sage/old/numbers/fact.htm
-*/</span>
+<span class="comment">/* Simple libgmp command, it prints the factorial of the first argument */</span>
 
 <span class="comment">/* we only need output here, so turn off other IO functions */</span>
 #<span class="cppdefine">define</span> EX_UTILS_NO_USE_INPUT 1
@@ -1520,38 +1521,38 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 #<span class="cppdefine">define</span> EX_GMP_FACT_USE_FIELDWIDTH 1
 
 <span class="comment">/* This is the custom formatter.
- * Note that this deals with fmt_quote unlike the gmp_*printf() calls */</span>
-<span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, size_t pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
+ * Note that this deals with grouping unlike the gmp_*printf() calls */</span>
+<span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
                           <span class="comment">/* gmp args, need to be in paramter list */</span>
-                          <span class="const">const</span> mpz_t val)
+                          <span class="const">const</span> <span class="mpzt">mpz_t</span> val)
 {
-  <span class="char">char</span> *buf = <span class="null">NULL</span>;
-  <span class="char">char</span> *out_buf = <span class="null">NULL</span>;
   <span class="int">int</span> flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; <span class="comment">/* it's a number */</span>
-  size_t len = 0;
+  <span class="sizet">size_t</span> len = 0;
   <span class="int">int</span> ret = <span class="false">FALSE</span>;
+  <span class="char">char</span> ui_buf[sizeof(<span class="unsigned">unsigned</span> <span class="long">long</span>) * CHAR_BIT];
+  <span class="char">char</span> *buf = <span class="null">NULL</span>;
+  <span class="char">char</span> *out_buf = ui_buf;
 
-  <span class="comment">/* This is the simplist way of converting the bignum to a string,
-   * we could do extra work to avoid allocations for smaller values */</span>
-  
-  len = gmp_asprintf(&amp;buf, <span class="str">"%Zd"</span>, val); <span class="comment">/* dies on error */</span>
-
-  out_buf = buf; <span class="comment">/* need pointer to the begining */</span>
-  
-  <span class="if">if</span> (mpz_cmp_ui(val, 0) &lt; 0)
-  { <span class="comment">/* if it's a negative number, "remove" the '-' as
-     * vstr_sc_fmt_cb_beg will add it in the correct place */</span>
+  <span class="if">if</span> (mpz_sgn(val) == -1) <span class="comment">/* it's a negative number */</span>
     flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
-    ++out_buf;
-    --len;
-  }
   
+  <span class="if">if</span> (mpz_fits_ulong_p(val)) <span class="comment">/* it's a simple number */</span>
+    len = vstr_sc_conv_num10_ulong(ui_buf, sizeof(ui_buf), mpz_get_ui(val));
+  <span class="else">else</span> <span class="comment">/* bignum, so get libgmp to export it as a string */</span>
+  {
+    len = mpz_sizeinbase(val, 10); <span class="comment">/* doesn't include minus sign */</span>
+    out_buf = buf = mpz_get_str(<span class="null">NULL</span>, 10, val); <span class="comment">/* dies on malloc error */</span>
+
+    <span class="if">if</span> (mpz_sgn(val) == -1) ++out_buf; <span class="comment">/* skip the minus sign */</span>
+    <span class="if">if</span> (!out_buf[len - 1])  --len; <span class="comment">/* see documentation for mpz_sizeinbase() */</span>
+  }
+
   <span class="comment">/* this deals with things like having the the zero flag (Ie. %0d), or the
    * plus flag (Ie. %+d) or right shifted field widths */</span>
   <span class="if">if</span> (!vstr_sc_fmt_cb_beg(base, &amp;pos, spec, &amp;len, flags))
     <span class="goto">goto</span> mem_fail;
  
-  <span class="if">if</span> (spec-&gt;fmt_quote) <span class="comment">/* add number including thousands seperators */</span>
+  <span class="if">if</span> (spec-&gt;fmt_quote) <span class="comment">/* add number including grouping */</span>
     ret = vstr_sc_add_grpnum_buf(base, pos, out_buf, len);
   <span class="else">else</span> <span class="comment">/* just add the number */</span>
     ret = vstr_add_buf(base, pos, out_buf, len);
@@ -1571,7 +1572,7 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 
 <span class="comment">/* we need to jump though an extra function due to the way GMP defines the
  * mpz_t type */</span>
-<span class="static">static</span> <span class="int">int</span> ex_usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, size_t pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+<span class="static">static</span> <span class="int">int</span> ex_usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
 {
   <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, 0);
 
@@ -1579,7 +1580,7 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 }
 
 <span class="comment">/* The code to calculate the factorial... */</span>
-<span class="static">static</span> <span class="void">void</span> ex_gmp_fact(mpz_t bignum_ret, mpz_t bignum_cnt, mpz_t bignum_for,
+<span class="static">static</span> <span class="void">void</span> ex_gmp_fact(<span class="mpzt">mpz_t</span> bignum_ret, <span class="mpzt">mpz_t</span> bignum_cnt, <span class="mpzt">mpz_t</span> bignum_for,
                         <span class="int">int</span> out, <span class="vstrbase">Vstr_base</span> *s1, <span class="int">int</span> ret_max_sz, <span class="int">int</span> cnt_max_sz)
 {
   <span class="while">while</span> (mpz_cmp(bignum_cnt, bignum_for) &lt;= 0)
@@ -1610,9 +1611,9 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 <span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
 {
   <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>);
-  mpz_t bignum_ret;
-  mpz_t bignum_for;
-  mpz_t bignum_cnt;
+  <span class="mpzt">mpz_t</span> bignum_ret;
+  <span class="mpzt">mpz_t</span> bignum_for;
+  <span class="mpzt">mpz_t</span> bignum_cnt;
   <span class="int">int</span> cnt_max_sz = 1;
   <span class="int">int</span> ret_max_sz = 1;
   <span class="const">const</span> <span class="char">char</span> *loc_num_name = <span class="null">NULL</span>;
@@ -1633,14 +1634,14 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
   setlocale(LC_ALL, <span class="str">""</span>);
   loc_num_name = setlocale(LC_NUMERIC, <span class="null">NULL</span>);
   
-  <span class="comment">/* change thousands grouping to make numbers more readable, got from locale */</span>
+  <span class="comment">/* change grouping, from locale, to make numbers more readable */</span>
   <span class="if">if</span> (!vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
                       loc_num_name))
     <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Couldn't change numeric locale info"</span>);
   
-  mpz_init_set_str (bignum_for, argv[1], 0);
-  mpz_init_set_str (bignum_ret,     <span class="str">"1"</span>, 0);
-  mpz_init_set_str (bignum_cnt,     <span class="str">"1"</span>, 0);
+  mpz_init_set_str(bignum_for, argv[1], 0);
+  mpz_init_set_str(bignum_ret,     <span class="str">"1"</span>, 0);
+  mpz_init_set_str(bignum_cnt,     <span class="str">"1"</span>, 0);
 
   <span class="if">if</span> (EX_GMP_FACT_USE_FIELDWIDTH)
   { <span class="comment">/* find out the max length of the for values... */</span>
@@ -1662,8 +1663,8 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
     ret_max_sz = s1-&gt;len; vstr_del(s1, 1, s1-&gt;len);
 
     <span class="comment">/* reinit, so we can print everything...  */</span>
-    mpz_init_set_str (bignum_ret,     <span class="str">"1"</span>, 0);
-    mpz_init_set_str (bignum_cnt,     <span class="str">"1"</span>, 0);
+    mpz_init_set_str(bignum_ret,     <span class="str">"1"</span>, 0);
+    mpz_init_set_str(bignum_cnt,     <span class="str">"1"</span>, 0);
   }
   
   <span class="comment">/* do the calculations... */</span>
@@ -1681,14 +1682,131 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 }
 </pre>
 <!-- C to html convertion of ex_gmp_factorials.c -->
-<!--   done on Mon Sep 29 12:06:17 2003
+<!--   done on Wed Oct  1 00:21:14 2003
+ -->
+<!--   done by ex_highlight -->
+
+<p>
+  The above implements the equivalent of "%d", however with a couple of
+1 line changes "%x" and "%o" can be done (and they can be signed, if desired).
+For instance, here is just the custom formatter callback code to implement all
+three...
+</p>
+
+<a class="anchor" id="ex_gmp_nums"></a>
+<pre class="c2html">
+#<span class="cppifndef">ifndef</span> EX_GMP_NUMS
+#<span class="cppdefine">define</span> EX_GMP_NUMS
+<span class="comment">/* libgmp formatters need to include headers before this file */</span>
+
+
+<span class="comment">/* if this is enabled we add the malloc()d string as a reference,
+ * which saves doing an extra copy. */</span>
+#<span class="cppdefine">define</span> EX_GMP_NUMS_USE_REFS 0
+
+<span class="comment">/* This is the custom formatter.
+ * Note that this deals with grouping unlike the gmp_*printf() calls */</span>
+<span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
+                          <span class="char">char</span> fmt, <span class="const">const</span> <span class="mpzt">mpz_t</span> val)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> nb = 10;
+  <span class="int">int</span> flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; <span class="comment">/* it's a number */</span>
+  <span class="sizet">size_t</span> len = 0;
+  <span class="int">int</span> ret = <span class="false">FALSE</span>;
+  <span class="char">char</span> ui_buf[sizeof(<span class="unsigned">unsigned</span> <span class="long">long</span>) * CHAR_BIT];
+  <span class="char">char</span> *buf = <span class="null">NULL</span>;
+  <span class="char">char</span> *out_buf = ui_buf;
+  
+  <span class="switch">switch</span> (fmt)
+  {
+    <span class="case">case</span> <span class="chr">'d'</span>:                                                         <span class="break">break</span>;
+    <span class="case">case</span> <span class="chr">'x'</span>: nb = 16; flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L; <span class="break">break</span>;
+    <span class="case">case</span> <span class="chr">'o'</span>: nb =  8; flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM;   <span class="break">break</span>;
+    <span class="default">default</span>: <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);                                           <span class="break">break</span>;
+  }
+  
+  <span class="if">if</span> (mpz_sgn(val) == -1)
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
+  
+  <span class="if">if</span> (mpz_fits_ulong_p(val))
+    len = vstr_sc_conv_num_ulong(ui_buf, sizeof(ui_buf), mpz_get_ui(val),
+                                 <span class="str">"0123456789abcdef"</span>, nb);
+  <span class="else">else</span>
+  {
+    len = mpz_sizeinbase(val, nb);
+    out_buf = buf = mpz_get_str(<span class="null">NULL</span>, nb, val); <span class="comment">/* dies on malloc error */</span>
+
+    <span class="if">if</span> (mpz_sgn(val) == -1) ++out_buf;
+    <span class="if">if</span> (!out_buf[len - 1])  --len; <span class="comment">/* see documentation for mpz_sizeinbase() */</span>
+  }
+
+  <span class="assert">ASSERT</span>(strlen(out_buf) == len);
+  
+  <span class="if">if</span> (!vstr_sc_fmt_cb_beg(base, &amp;pos, spec, &amp;len, flags))
+    <span class="goto">goto</span> mem_fail;
+ 
+  <span class="if">if</span> (spec-&gt;fmt_quote) <span class="comment">/* add number including grouping */</span>
+    ret = vstr_sc_add_grpnum_buf(base, pos, out_buf, len);
+  <span class="else">else</span> <span class="if">if</span> (!EX_GMP_NUMS_USE_REFS || !buf) <span class="comment">/* just add the number */</span>
+    ret = vstr_add_buf(base, pos, out_buf, len);
+  <span class="else">else</span>
+  { <span class="comment">/* assumes mp_set_memory_functions() hasn't been called */</span>
+    Vstr_ref *ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ptr_ref);
+
+    <span class="if">if</span> (!ref)
+      <span class="goto">goto</span> mem_fail;
+
+    ret = vstr_add_ref(base, pos, ref, out_buf - buf, len);
+    
+    buf = <span class="null">NULL</span>; <span class="comment">/* memory is free'd when the reference is used up */</span>
+
+    <span class="comment">/* if !ret then this will free buf */</span>
+    vstr_ref_del(ref);
+  }
+  
+  <span class="if">if</span> (!ret || !vstr_sc_fmt_cb_end(base, pos, spec, len))
+    <span class="goto">goto</span> mem_fail;
+
+  free(buf);
+  
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+
+ mem_fail:
+  free(buf);
+  <span class="return">return</span> (<span class="false">FALSE</span>);
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_dmpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, 0);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'d'</span>, mpz));
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_ompz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, 0);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'o'</span>, mpz));
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_xmpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, 0);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'x'</span>, mpz));
+}
+#<span class="cppendinf">endif</span>
+</pre>
+<!-- C to html convertion of ex_gmp_nums.c -->
+<!--   done on Wed Oct  1 02:31:54 2003
  -->
 <!--   done by ex_highlight -->
 
 
 <hr>
 
-<a id="cstrvstr">
+<a class="anchor" id="cstrvstr">
 <h2> Convertion table for C functions to Vstr functions </h2>
 </a>
 
@@ -1733,7 +1851,7 @@ Vstr string functions...
 <tr class="r2"><td>strlen</td><td>-&gt;len (member variable, also always passed to functions)</td></tr>
 </table>
 
-<a id="cppstrvstr">
+<a class="anchor" id="cppstrvstr">
 <h2> Convertion table for C++ std::string functions to Vstr functions </h2>
 </a>
 
@@ -1787,7 +1905,7 @@ Vstr string functions...
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sat Aug  3 15:35:00 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 29 15:52:52 EDT 2003
+Last modified: Wed Oct  8 21:28:22 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

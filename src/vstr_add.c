@@ -34,9 +34,9 @@ static int vstr__cache_iovec_add_end(Vstr_base *base, Vstr_node *node,
   assert((node != base->beg) || !base->used);
 
   num = VSTR__CACHE(base)->vec->off + base->num - 1;
-  VSTR__CACHE(base)->vec->v[num].iov_len = len;
+  VSTR__CACHE(base)->vec->v[num].iov_len  = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
-  VSTR__CACHE(base)->vec->t[num] = node->type;
+  VSTR__CACHE(base)->vec->t[num]          = node->type;
 
   return (TRUE);
 }
@@ -51,9 +51,9 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
 
   num = --VSTR__CACHE(base)->vec->off;
 
-  VSTR__CACHE(base)->vec->v[num].iov_len = len;
+  VSTR__CACHE(base)->vec->v[num].iov_len  = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
-  VSTR__CACHE(base)->vec->t[num] = node->type;
+  VSTR__CACHE(base)->vec->t[num]          = node->type;
 
   return (TRUE);
 }
@@ -76,7 +76,7 @@ static void vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
 
   if (!base->iovec_upto_date)
     return;
-
+  
   if (at_end &&
       (base->num <= (VSTR__CACHE(base)->vec->sz - VSTR__CACHE(base)->vec->off)))
     vstr__cache_iovec_add_end(base, node, len);
@@ -142,7 +142,7 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
    pos_scan_next = base->beg; \
    assert(!pos); \
    vstr__base_zero_used(base); \
- } \
+ } else if (!pos && !base->len) pos = 1; \
  \
  scan = (Vstr_node *)base->conf-> spare_ ## node_type ## _beg; \
  if (pos_scan) \
@@ -191,8 +191,8 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
  \
  vstr__cache_add(base, orig_pos, orig_len); \
  \
- assert(vstr__check_spare_nodes(base->conf)); \
- assert(vstr__check_real_nodes(base)); \
+ ASSERT(vstr__check_spare_nodes(base->conf)); \
+ ASSERT(vstr__check_real_nodes(base)); \
 } while (FALSE)
 
 int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
@@ -524,11 +524,8 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
 
       if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, len))
         return (FALSE);
-      break;
 
-    default:
-      assert(FALSE);
-      return (FALSE);
+      ASSERT_NO_SWITCH_DEF();
   }
 
   return (TRUE);
@@ -695,7 +692,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   Vstr_node *scan = NULL;
 
   ASSERT(base && ret_iovs && num);
-  ASSERT(max && (max >= min));
+  ASSERT_RET(max && (max >= min), 0);
 
   ASSERT(vstr__check_spare_nodes(base->conf));
   ASSERT(vstr__check_real_nodes(base));
@@ -711,8 +708,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   if (sz > base->conf->spare_buf_num)
     sz = base->conf->spare_buf_num;
 
-  if (!sz)
-    return (0);
+  ASSERT(sz);
 
   if (!vstr__cache_iovec_alloc(base, base->num + sz))
     return (0);
@@ -720,7 +716,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   if (!vstr__cache_iovec_valid(base))
     assert(FALSE);
 
-  iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
+  iovs  = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
   *num = 0;
 
@@ -728,11 +724,9 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   {
     unsigned int scan_num = 0;
 
-    assert(base && pos && (pos <= base->len));
-
-    if (pos > base->len)
-      return (0);
-
+    ASSERT(base && pos && (pos <= base->len));
+    ASSERT_RET(pos && (pos <= base->len), 0);
+    
     scan = vstr_base__pos(base, &pos, &scan_num, TRUE);
     assert(scan);
 
@@ -747,13 +741,13 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
 
     if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
     {
-      if ((sz < max) && (sz < base->conf->spare_buf_num))
+      if (sz < max)
         ++sz;
 
-      iovs += scan_num - 1;
+      iovs  += scan_num - 1;
       types += scan_num - 1;
 
-      iovs[0].iov_len = (base->conf->buf_sz - pos);
+      iovs[0].iov_len  = (base->conf->buf_sz - pos);
       iovs[0].iov_base = (((Vstr_node_buf *)scan)->buf + pos);
 
       base->iovec_upto_date = FALSE;
@@ -763,7 +757,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
     }
     else
     {
-      iovs += scan_num;
+      iovs  += scan_num;
       types += scan_num;
 
       if (scan != base->end)
@@ -785,7 +779,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   {
     assert(scan->type == VSTR_TYPE_NODE_BUF);
 
-    iovs[*num].iov_len = base->conf->buf_sz;
+    iovs[*num].iov_len  = base->conf->buf_sz;
     iovs[*num].iov_base = ((Vstr_node_buf *)scan)->buf;
     types[*num] = VSTR_TYPE_NODE_BUF;
 
@@ -811,14 +805,14 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
 
   base->node_buf_used |= !!bytes;
 
-  iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
+  iovs  = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
   if (pos)
   {
     unsigned int scan_num = 0;
 
     scan = vstr_base__pos(base, &pos, &scan_num, TRUE);
-    iovs += scan_num - 1;
+    iovs  += scan_num - 1;
     types += scan_num - 1;
 
     assert(pos == scan->len);
@@ -952,7 +946,7 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
 
     while (tmp)
     {
-      iovs[count].iov_len = tmp->len;
+      iovs[count].iov_len  = tmp->len;
       iovs[count].iov_base = vstr_export__node_ptr(tmp);
       types[count] = tmp->type;
 
@@ -1010,7 +1004,7 @@ int vstr_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
     vstr__cache_iovec_add_node_end(base, num, tmp);
 
     base->len += tmp;
-    len -= tmp;
+    len       -= tmp;
 
     if (!len)
     {

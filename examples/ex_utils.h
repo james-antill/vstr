@@ -72,8 +72,8 @@
 
 
 
-#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\", FAILED at line %u", __LINE__); } while (FALSE)
-#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\", FAILED at line %u", __LINE__); } while (FALSE)
+#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
 
 
 

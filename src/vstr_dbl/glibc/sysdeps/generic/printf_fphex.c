@@ -149,7 +149,7 @@ __printf_fphex (FILE *fp,
   /* Nonzero if this is output on a wide character stream.  */
   /* int wide = info->wide; */
 
-  const size_t strlen_decimal = fp->base->conf->loc->decimal_point_len;
+  const size_t strlen_decimal = vstr__loc_num_pnt_len(fp->base->conf->loc, 16);
 
   /* Figure out the decimal point character.  */
   if (extra == 0)

@@ -1,3 +1,35 @@
+Name: MySQL
+RH-ref: RHSA-2003:281-01
+Type: BO
+Range: R
+
+Name: sane
+RH-ref: RHSA-2003:278-01
+Type: PE (First connection after starting isn't checked)
+Range: R
+Type: DOS (read of memory after allocation)
+Range: R
+Type: DOS (random amount of memory is attempted for allocation)
+Range: R
+Type: DOS (when debug printing, non-NIL terminated strings are assumed NIL terminated)
+Range: R
+Type: DOS (unbounded allocation)
+Range: R
+
+Name: perl
+RH-ref: RHSA-2003:256-02
+Type: IV ( (Redefining @_))
+Range: L
+Type: XSS
+Range: R
+
+Name: openssl
+RH-ref: RHSA-2003:292-01
+Type: IV ( (ASN.1 tag parsing))
+Range: R
+Type: DF
+Range: R
+
 Name: perl
 RH-ref: RHSA-2003:256-01
 Type: PE (can break out of safe.pm sandboxes)

@@ -71,28 +71,26 @@ static int vstr__sects_add(Vstr_sects *sects)
   if (!sz)
   {
     if (!(sects->ptr = VSTR__MK(sizeof(Vstr_sect_node) * 1)))
-    {
-      sects->malloc_bad = TRUE;
-      return (FALSE);
-    }
-    else
-    {
-      sects->sz = 1;
-      return (TRUE);
-    }
+      goto malloc_fail;
+
+    sects->sz = 1;
+    return (TRUE);
   }
   
   if (sects->alloc_double)
-  {
     sz <<= 1;
     
-    if (sz <= sects->sz)
-      sz = sects->sz + 1;
-  }
-  else
-    ++sz;
-
+  if (sz <= sects->sz)
+    sz = sects->sz + 1;
+  
+  if (sz <= sects->sz)
+    goto malloc_fail;
+  
   return (vstr__sects_mv(sects, sz));
+  
+ malloc_fail:
+  sects->malloc_bad = TRUE;
+  return (FALSE);
 }
 
 static int vstr__sects_del(Vstr_sects *sects)
@@ -117,14 +115,8 @@ int vstr_extern_inline_sects_add(Vstr_sects *sects,
 
 int vstr_sects_del(Vstr_sects *sects, unsigned int num)
 {
-  assert(sects->sz && num);
-  assert(sects->num >= num);
-
-  if (!sects->sz || !num)
-    return (FALSE);
-
-  if (num > sects->num)
-    return (FALSE);
+  ASSERT_RET((sects->sz && num), FALSE);
+  ASSERT_RET((sects->num >= num), FALSE);
 
   if (!sects->ptr[num - 1].pos)
     return (FALSE);
@@ -248,12 +240,11 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
   while (count < data->len)
   {
     Vstr_sects *sects = data->updates[count];
+    unsigned int scan = 0;
 
     switch (type)
     {
       case VSTR_TYPE_CACHE_ADD:
-      {
-        unsigned int scan = 0;
         while (scan < sects->num)
         {
           if (sects->ptr[scan].pos && sects->ptr[scan].len)
@@ -267,13 +258,9 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
 
           ++scan;
         }
-      }
-      break;
+        break;
 
       case VSTR_TYPE_CACHE_DEL:
-      {
-        unsigned int scan = 0;
-
         while (scan < sects->num)
         {
           if (sects->ptr[scan].pos && sects->ptr[scan].len)
@@ -296,14 +283,12 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
                 }
               }
             }
-            else if ((pos >= sects->ptr[scan].pos) &&
-                     (pos < (sects->ptr[scan].pos + sects->ptr[scan].len - 1)))
+            else if ((pos > sects->ptr[scan].pos) &&
+                     (pos <= (sects->ptr[scan].pos + sects->ptr[scan].len - 1)))
             {
               size_t tmp = pos - sects->ptr[scan].pos;
 
-              if (!tmp && (len >= sects->ptr[scan].len))
-                sects->ptr[scan].pos = 0;
-              else if (len >= (sects->ptr[scan].len - tmp))
+              if (len >= (sects->ptr[scan].len - tmp))
                 sects->ptr[scan].len = tmp;
               else
                 sects->ptr[scan].len -= len;
@@ -312,11 +297,7 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
 
           ++scan;
         }
-      }
-      break;
-
-      default:
-        ASSERT(FALSE);
+        ASSERT_NO_SWITCH_DEF();
     }
 
     ++count;
@@ -388,9 +369,17 @@ int vstr_sects_update_add(const Vstr_base *base,
     vstr_cache_set(base, base->conf->cache_pos_cb_sects, data);
   }
 
+  /* it can't be valid to have the same sects twice */
+  ASSERT(!vstr__sects_update_srch(data, sects));
+  
   sz = data->len + 1;
+
+  /* this is basically impossible to test... done this way for coverage */
+  ASSERT_RET((sz > data->len) && (base->conf->malloc_bad = TRUE), FALSE);
+  
   ASSERT(data->sz);
   ASSERT(data->len <= data->sz);
+  
   if (data->len >= data->sz)
   {
     Vstr__sects_cache_data *tmp_data = NULL;
@@ -420,19 +409,16 @@ int vstr_sects_update_del(const Vstr_base *base,
   Vstr__sects_cache_data *data = NULL;
   Vstr_sects **srch = NULL;
 
-  if (!sects || !base->conf->cache_pos_cb_sects)
+  if (!sects)
     return (FALSE);
+  
+  ASSERT_RET(base->conf->cache_pos_cb_sects, FALSE);
 
   data = vstr_cache_get(base, base->conf->cache_pos_cb_sects);
-  if (!data)
-    return (FALSE);
+  ASSERT_RET(data, FALSE);
 
   srch = vstr__sects_update_srch(data, sects);
-  if (!srch)
-  {
-    ASSERT(FALSE);
-    return (FALSE);
-  }
+  ASSERT_RET(srch, FALSE);
 
   vstr__sects_update_del(data, srch);
 

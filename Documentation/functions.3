@@ -1,4 +1,4 @@
-.TH vstr 3 "29-Sep-2003" "Vstr 1.0.9" "Vstr String Library"
+.TH vstr 3 "30-Oct-2003" "Vstr 1.0.10" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -1018,9 +1018,45 @@ int \fBvstr_sc_reduce\fR(struct Vstr_base *, size_t, size_t, size_t);
 .ti \w'  'u
 void \fBvstr_sc_basename\fR(const struct Vstr_base *, size_t, size_t, size_t *, size_t *);
 .br
+.in \w'  int \fBvstr_sc_add_grpbasenum_buf\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_grpbasenum_buf\fR(const struct Vstr_base *, size_t, unsigned int, const void *, size_t);
+.br
+.in \w'  int \fBvstr_sc_add_grpbasenum_ptr\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_grpbasenum_ptr\fR(const struct Vstr_base *, size_t, unsigned int, const void *, size_t);
+.br
+.in \w'  int \fBvstr_sc_add_grpbasenum_ref\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_grpbasenum_ref\fR(const struct Vstr_base *, size_t, unsigned int, Vstr_ref *, size_t, size_t);
+.br
 .in \w'  int \fBvstr_sc_add_grpnum_buf\fR('u
 .ti \w'  'u
 int \fBvstr_sc_add_grpnum_buf\fR(const struct Vstr_base *, size_t, const void *, size_t);
+.br
+.in \w'  int \fBvstr_sc_add_cstr_grpbasenum_buf\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_cstr_grpbasenum_buf\fR(const struct Vstr_base *, size_t, unsigned int, const char *);
+.br
+.in \w'  int \fBvstr_sc_add_cstr_grpbasenum_ptr\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_cstr_grpbasenum_ptr\fR(const struct Vstr_base *, size_t, unsigned int, const char *);
+.br
+.in \w'  int \fBvstr_sc_add_cstr_grpbasenum_ref\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_cstr_grpbasenum_ref\fR(const struct Vstr_base *, size_t, unsigned int, Vstr_ref *, size_t);
+.br
+.in \w'  int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_BUF\fR('u
+.ti \w'  'u
+int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_BUF\fR(const struct Vstr_base *, size_t, unsigned int, const char *);
+.br
+.in \w'  int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_PTR\fR('u
+.ti \w'  'u
+int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_PTR\fR(const struct Vstr_base *, size_t, unsigned int, const char *);
+.br
+.in \w'  int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_REF\fR('u
+.ti \w'  'u
+int \fBVSTR_SC_ADD_CSTR_GRPBASENUM_REF\fR(const struct Vstr_base *, size_t, unsigned int, Vstr_ref *, size_t);
 .br
 .in \w'  int \fBvstr_sc_add_cstr_grpnum_buf\fR('u
 .ti \w'  'u
@@ -1137,6 +1173,38 @@ int \fBvstr_sc_fmt_add_ipv4_vec_cidr\fR(struct Vstr_conf *, const char *);
 .in \w'  int \fBvstr_sc_fmt_add_ipv6_vec_cidr\fR('u
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_ipv6_vec_cidr\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_upper_base2_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_upper_base2_uint\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_upper_base2_ulong\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_upper_base2_ulong\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_upper_base2_size\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_upper_base2_size\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_upper_base2_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_upper_base2_uintmax\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_lower_base2_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_lower_base2_uint\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_lower_base2_ulong\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_lower_base2_ulong\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_lower_base2_size\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_lower_base2_size\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_lower_base2_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_lower_base2_uintmax\fR(struct Vstr_conf *, const char *);
 .br
 .in \w'  int \fBvstr_sc_fmt_add_all\fR('u
 .ti \w'  'u
@@ -2006,6 +2074,8 @@ Type\fB[1]\fR: struct Vstr_conf *
 
 .br
   If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  If there are spare base objects, then no allocations are done.
 
 .ti -2
 .br
@@ -2025,6 +2095,11 @@ Type\fB[1]\fR: struct Vstr_base *
 
 .br
   This function will free a Vstr string, allocated by vstr_make_base().
+.sp
+\fBNote:\fR
+
+.br
+  If the base object VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE is of the same type as it's configurations VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE, then the base object will be turned into a spare object so it can be reused by vstr_make_base().
 
 .ti -2
 .br
@@ -2054,11 +2129,6 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_buf().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2088,11 +2158,6 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_ptr().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2117,11 +2182,6 @@ Type\fB[2]\fR: size_t
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_non().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2156,11 +2216,6 @@ Type\fB[4]\fR: size_t
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_ref().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2200,11 +2255,6 @@ Type\fB[6]\fR: unsigned int
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_vstr().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2234,11 +2284,6 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivalent to calling vstr_make_base() and then vstr_add_rep_chr().
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2263,11 +2308,6 @@ Type\fB[2]\fR: const char *
 
 .br
   This function calls vstr_dup_buf() with the length being the value of strlen() on the data parameter (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2292,11 +2332,6 @@ Type\fB[2]\fR: const char *
 
 .br
   This function calls vstr_dup_ptr() with the length being the value of strlen() on the data parameter (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2327,11 +2362,6 @@ Type\fB[3]\fR: size_t
 
 .br
   This function calls vstr_dup_ref() with the length being the value of strlen() on the memory from the Vstr memory reference (Parameter[3]) starting at the offset (Parameter[4]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2356,11 +2386,6 @@ Type\fB[2]\fR: const char *
 
 .br
   This macro function calls vstr_dup_buf() with the length being the value of strlen() on the data parameter (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2385,11 +2410,6 @@ Type\fB[2]\fR: const char *
 
 .br
   This macro function calls vstr_dup_ptr() with the length being the value of strlen() on the data parameter (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2420,11 +2440,6 @@ Type\fB[3]\fR: size_t
 
 .br
   This macro function calls vstr_dup_ref() with the length being the value of strlen() on the memory from the Vstr memory reference (Parameter[3]) starting at the offset (Parameter[4]).
-.sp
-\fBNote:\fR
-
-.br
-  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -2856,7 +2871,7 @@ Parameter\fB[5]\fR: Length in the Vstr string (Parameter[3])
 Type\fB[5]\fR: size_t
 
 .br
-Parameter\fB[6]\fR: Flags for Vstr add (VSTR_TYPE_ADD_*)
+Parameter\fB[6]\fR: Type for Vstr add (VSTR_TYPE_ADD_*)
 .br
 Type\fB[6]\fR: unsigned int
 
@@ -3740,7 +3755,7 @@ Parameter\fB[6]\fR: Length in the Vstr string (Parameter[4])
 Type\fB[6]\fR: size_t
 
 .br
-Parameter\fB[6]\fR: Flags for Vstr sub (VSTR_TYPE_SUB_*)
+Parameter\fB[6]\fR: Type for Vstr sub (VSTR_TYPE_SUB_*)
 .br
 Type\fB[6]\fR: unsigned int
 
@@ -10423,6 +10438,133 @@ Type\fB[5]\fR: size_t *
 
 .ti -2
 .br
+\fBFunction: \fR vstr_sc_add_grpbasenum_buf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const void *
+
+.br
+Parameter\fB[5]\fR: Length of data (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to output a number with the Vstr strings locale grouping characters, for a specific base.
+.br
+  If copies both user data and locale data.
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_grpbasenum_ptr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const void *
+
+.br
+Parameter\fB[5]\fR: Length of data (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to output a number with the Vstr strings locale grouping characters, for a specific base.
+.br
+  If uses pointers for the user data and memory references for the locale data.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_grpbasenum_ref()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: Vstr_ref *
+
+.br
+Parameter\fB[5]\fR: Offset of Vstr memory reference (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Length of Vstr memory reference (Parameter[4])
+.br
+Type\fB[6]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to output a number with the Vstr strings locale grouping characters, for a specific base.
+.br
+  If uses memory references for the user data and the locale data.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_sc_add_grpnum_buf()
 .br
 Returns: TRUE on success and FALSE on failure
@@ -10454,6 +10596,227 @@ Type\fB[4]\fR: size_t
 
 .br
   This function is a helper function to output a number with the Vstr strings locale grouping characters.
+.br
+  If copies both user data and locale data.
+.sp
+\fBNote:\fR
+
+.br
+  This function always uses the default locale information, if you have setup specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_* etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_cstr_grpbasenum_buf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function calls vstr_sc_add_grpbasenum_buf() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_cstr_grpbasenum_ptr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function calls vstr_sc_add_grpbasenum_ptr() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_cstr_grpbasenum_ref()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: Vstr_ref *
+
+.br
+Parameter\fB[5]\fR: Offset of Vstr memory reference (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function calls vstr_sc_add_grpbasenum_ref() with the length being the value of strlen() on memory from the Vstr memory reference (Parameter[4]) starting at offset (Parameter[5]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SC_ADD_CSTR_GRPBASENUM_BUF()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_sc_add_grpbasenum_buf() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SC_ADD_CSTR_GRPBASENUM_PTR()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_sc_add_grpbasenum_ptr() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SC_ADD_CSTR_GRPBASENUM_REF()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Base of the number in the data
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: Vstr_ref *
+
+.br
+Parameter\fB[5]\fR: Offset of Vstr memory reference (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_sc_add_grpbasenum_ref() with the length being the value of strlen() on memory from the Vstr memory reference (Parameter[4]) starting at offset (Parameter[5]).
 
 .ti -2
 .br
@@ -10483,6 +10846,11 @@ Type\fB[3]\fR: const char *
 
 .br
   This function calls vstr_sc_add_grpnum_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
+.sp
+\fBNote:\fR
+
+.br
+  This function always uses the default locale information, if you have setup specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_* etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
 
 .ti -2
 .br
@@ -10512,6 +10880,11 @@ Type\fB[3]\fR: const char *
 
 .br
   This macro function calls vstr_sc_add_grpnum_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
+.sp
+\fBNote:\fR
+
+.br
+  This macro always uses the default locale information, if you have setup specific number base locale information using VSTR_CNTL_CONF_GET_LOC_REF_* etc. then you'll want to use the vstr_sc_add_grpbasenum_* functions.
 
 .ti -2
 .br
@@ -11463,6 +11836,286 @@ Type\fB[2]\fR: const char *
   If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
   It is recommended that you use the name "{ipv6.v+C}", with the gcc warning compatible alternates using "{ipv6.v+C:%p%u%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_upper_base2_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print an unsigned int number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{B.u}", with the gcc warning compatible alternates using "{B.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_upper_base2_ulong()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print an unsigned long number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{B.lu}", with the gcc warning compatible alternates using "{B.lu:%lu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_upper_base2_size()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a size_t number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{B.zu}", with the gcc warning compatible alternates using "{B.zu:%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_upper_base2_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a uintmax_t number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{B.ju}", with the gcc warning compatible alternates using "{B.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_lower_base2_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print an unsigned int number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{b.u}", with the gcc warning compatible alternates using "{b.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_lower_base2_ulong()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print an unsigned long number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{b.lu}", with the gcc warning compatible alternates using "{b.lu:%lu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_lower_base2_size()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a size_t number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{b.zu}", with the gcc warning compatible alternates using "{b.zu:%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_lower_base2_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a uintmax_t number in a base 2 form.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision, field width, #, + and - attributes all act as they would on hex or octal numbers (Ie. %x or %o). The # flag prints a "0b" in the same way hex prints "0x".
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{b.ju}", with the gcc warning compatible alternates using "{b.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br

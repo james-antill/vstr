@@ -40,7 +40,7 @@ TST_MAKE_TST_FUNC(uintmax, uintmax_t)
   vstr_del(s2, 1, s2->len)
 
 #define DO_TEST_END() \
-  if (!VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len)) return (1)
+  if (!VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len)) do { PRNT_VSTR(s1); PRNT_VSTR(s2); return (1); } while (0)
 
 #define DO_TEST_NUMSTR(x, y, z, T) do { \
   DO_TEST_BEG(); \
@@ -59,6 +59,10 @@ TST_MAKE_TST_FUNC(uintmax, uintmax_t)
 
 int tst(void)
 {
+  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
+  vstr_sc_fmt_add_all(s1->conf);
+  vstr_sc_fmt_add_all(s2->conf);
+
   DO_TEST_NUMSTR("1234", "1234", "%hd", short);
   DO_TEST_NUMSTR("-1234", "-1234", "%hd", short);
   DO_TEST_NUMSTR("+1234", "1234", "%hd", short);
@@ -69,6 +73,10 @@ int tst(void)
   DO_TEST_NUMSTR("   0x00001__23__4", "0x1234", "%#hx", ushort);
   DO_TEST_NUMSTR("012_34", "01234", "%#ho", ushort);
   DO_TEST_NUMSTR("000012_34", "01234", "%#ho", ushort);
+
+  DO_TEST_NUMSTR("0b10000", "+0b10000", "$#+{b.u:%u}", uint);
+  DO_TEST_NUMSTR("+0b10111", "23", "%u", uint);
+  DO_TEST_NUMSTR(" 0b10_111", "17", "%x", uint);
 
   DO_TEST_NUMSTR("1234", "1234", "%d", int);
   DO_TEST_NUMSTR("-1234", "-1234", "%d", int);
@@ -257,6 +265,12 @@ int tst(void)
     if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 1) || num)
       return (ret); ++ret;
     
+    vstr_sub_cstr_buf(s1, 1, s1->len, "0xx");
+    num = vstr_parse_ushort(s1, 1, s1->len, 0 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 1) || num)
+      return (ret); ++ret;
+    
     vstr_sub_cstr_buf(s1, 1, s1->len, "100x");
     num = vstr_parse_ushort(s1, 1, s1->len, 10 | VSTR_FLAG_PARSE_NUM_DEF,
                             &num_len, &err);
@@ -271,6 +285,17 @@ int tst(void)
     num = vstr_parse_ushort(s1, 1, s1->len, 1 | VSTR_FLAG_PARSE_NUM_DEF,
                             &num_len, &err);
     if ((err != VSTR_TYPE_PARSE_NUM_ERR_NONE) || (num_len != 3) || (num != 4))
+      return (ret); ++ret;
+    
+    vstr_sub_cstr_buf(s1, 1, s1->len, "0bb");
+    num = vstr_parse_ushort(s1, 1, s1->len, 0 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 1) || num)
+      return (ret); ++ret;
+    
+    VSTR_SUB_CSTR_BUF(s2, 1, s2->len, "0b");
+    num = vstr_parse_int(s2, 1, s2->len, 2, &num_len, &err);
+    if (err != VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX)
       return (ret); ++ret;
   }
 

@@ -67,7 +67,12 @@ int tst(void)
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
     vstr_free_spare_nodes(NULL,     VSTR_TYPE_NODE_BUF, 1000);
+    vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_SPARE_BASE, 0);
+    vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_NUM_SPARE_BASE, 0);
 
+    ASSERT(!s1->conf->spare_base_num);
+    ASSERT(!s3->conf->spare_base_num);
+    
     TST_B_TST(ret, 13, !tst_mfail_num(1));
     TST_B_TST(ret, 14, vstr_dup_rep_chr(s3->conf, '!', 32));
     TST_B_TST(ret, 15, !tst_mfail_num(2));
@@ -76,11 +81,13 @@ int tst(void)
     TST_B_TST(ret, 18, vstr_dup_rep_chr(NULL, '!', 32));
     TST_B_TST(ret, 19, !tst_mfail_num(2));
     TST_B_TST(ret, 20, vstr_dup_rep_chr(NULL, '!', 32));
+    TST_B_TST(ret, 21, !tst_mfail_num(3));
+    TST_B_TST(ret, 22, vstr_dup_rep_chr(NULL, '!', 32));
   }
 
   t1 = vstr_dup_rep_chr(s1->conf, 'a', 0);
-  TST_B_TST(ret, 21, !t1);
-  TST_B_TST(ret, 22,  t1->len);
+  TST_B_TST(ret, 23, !t1);
+  TST_B_TST(ret, 24,  t1->len);
   vstr_free_base(t1);
 
   return (TST_B_RET(ret));

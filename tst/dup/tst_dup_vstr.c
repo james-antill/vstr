@@ -34,7 +34,10 @@ static void tst_vstr_ci(unsigned int num, Vstr_conf *conf,
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, 1000);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, 1000);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, 1000);
+    vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_SPARE_BASE, 0);
 
+    ASSERT(!conf->spare_base_num);
+    
     TST_B_TST(ret, num, !tst_mfail_num(1));
     TST_B_TST(ret, num, vstr_dup_vstr(conf, t_from, pos, len, flags));
     TST_B_TST(ret, num, !tst_mfail_num(2));

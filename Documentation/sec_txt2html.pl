@@ -58,16 +58,9 @@ EOF
 my $html_footer = "\n</body></html>";
 
 
-if (!open (OUT, "> security_problems.html"))
-  {
-    die "Open (write): $@";
-  }
+open(OUT, "> security_problems.html") || die "open(security_problems.html): $!";
 
-if (!open (CSV, "> security_problems.csv"))
-  {
-    die "Open (write): $@";
-  }
-
+open(CSV, "> security_problems.csv")  || die "open(security_problems.csv): $!";
 
 print OUT $html_header;
 print OUT "<title>", $title, "</title>", "\n";
@@ -113,10 +106,8 @@ print CSV <<EOL;
 "Advisory count","Red Hat Package","Red Hat Advisory","Type of Vulnerability","Range of Vulnerability"
 EOL
 
-if (!open (IN, "< $docs/security_problems.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/security_problems.txt") ||
+  die "open(security_problems.txt): $!";
 
 my $name = '';
 my $ref = {rh => ''};

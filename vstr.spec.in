@@ -138,6 +138,7 @@ cp   \
  examples/ex_cat.c \
  examples/ex_csv.c \
  examples/ex_gmp_factorials.c \
+ examples/ex_gmp_nums.c \
  examples/ex_hello_world.c \
  examples/ex_hello_world.h \
  examples/ex_hello_world_s.c \
@@ -154,6 +155,7 @@ cp   \
  examples/ex_perf_sgopenssl.c \
  examples/ex_rot13.c \
  examples/ex_slowcat.c \
+ examples/ex_ssi.c \
  examples/ex_utils.h \
  examples/ex_yes.c \
  examples/ex_zcat.c \
@@ -223,6 +225,7 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/examples/ex_cat.c
 %{devdoco}/examples/ex_csv.c
 %{devdoco}/examples/ex_gmp_factorials.c
+%{devdoco}/examples/ex_gmp_nums.c
 %{devdoco}/examples/ex_hello_world.c
 %{devdoco}/examples/ex_hello_world.h
 %{devdoco}/examples/ex_hello_world_s.c
@@ -239,6 +242,7 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/examples/ex_perf_sgopenssl.c
 %{devdoco}/examples/ex_rot13.c
 %{devdoco}/examples/ex_slowcat.c
+%{devdoco}/examples/ex_ssi.c
 %{devdoco}/examples/ex_utils.h
 %{devdoco}/examples/ex_yes.c
 %{devdoco}/examples/ex_zcat.c

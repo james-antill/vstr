@@ -34,9 +34,18 @@ static void tst_chrs(Vstr_base *t1, unsigned int off)
                                    "abcd")  != 4);
 
   TST_B_TST(ret, off + 9,
-            vstr_spn_chrs_fwd(t1, 1, t1->len, NULL, 1)  != 0);
+            VSTR_SPN_CSTR_CHRS_FWD(t1, 1, t1->len, buf)  != t1->len);
   TST_B_TST(ret, off + 9,
+            VSTR_SPN_CSTR_CHRS_REV(t1, 1, t1->len, buf)  != t1->len);
+  
+  TST_B_TST(ret, off + 10,
+            vstr_spn_chrs_fwd(t1, 1, t1->len, NULL, 1)  != 0);
+  TST_B_TST(ret, off + 11,
             vstr_spn_chrs_rev(t1, 1, t1->len, NULL, 1)  != 0);
+  TST_B_TST(ret, off + 12,
+            vstr_spn_chrs_fwd(t1, 1, 0, "a", 1)  != 0);
+  TST_B_TST(ret, off + 13,
+            vstr_spn_chrs_rev(t1, 1, 0, "a", 1)  != 0);
 }
 
 static void tst_non_chrs(Vstr_base *t1, unsigned int off)

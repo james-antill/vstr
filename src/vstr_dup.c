@@ -18,7 +18,8 @@
  *
  *  email: james@and.org
  */
-/* These are just shortcut helper functions */
+/* These are similar to strdup(), for Vstr ... with 1.0.10 it might be
+ * useful to create temp. strings with them. */
 #include "main.h"
 
 Vstr_base *vstr_dup_buf(Vstr_conf *conf, const void *data, size_t len)
@@ -40,14 +41,14 @@ Vstr_base *vstr_dup_buf(Vstr_conf *conf, const void *data, size_t len)
   return (NULL);
 }
 
-Vstr_base *vstr_dup_ptr(Vstr_conf *conf, const void *data, size_t len)
+Vstr_base *vstr_dup_non(Vstr_conf *conf, size_t len)
 {
   Vstr_base *ret = vstr_make_base(conf);
 
   if (!ret)
     goto make_base_fail;
 
-  if (len && !vstr_add_ptr(ret, 0, data, len))
+  if (len && !vstr_add_non(ret, 0, len))
     goto add_vstr_fail;
 
   return (ret);
@@ -59,14 +60,14 @@ Vstr_base *vstr_dup_ptr(Vstr_conf *conf, const void *data, size_t len)
   return (NULL);
 }
 
-Vstr_base *vstr_dup_non(Vstr_conf *conf, size_t len)
+Vstr_base *vstr_dup_ptr(Vstr_conf *conf, const void *data, size_t len)
 {
   Vstr_base *ret = vstr_make_base(conf);
 
   if (!ret)
     goto make_base_fail;
 
-  if (len && !vstr_add_non(ret, 0, len))
+  if (len && !vstr_add_ptr(ret, 0, data, len))
     goto add_vstr_fail;
 
   return (ret);

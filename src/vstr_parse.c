@@ -34,6 +34,8 @@ static int vstr__parse_num(const Vstr_base *base,
   char num_0 = '0';
   char let_x_low = 'x';
   char let_X_high = 'X';
+  char let_b_low = 'b';
+  char let_B_high = 'B';
   char sym_minus = '-';
   char sym_plus = '+';
   char sym_space = ' ';
@@ -53,6 +55,8 @@ static int vstr__parse_num(const Vstr_base *base,
     num_0 = 0x30;
     let_x_low = 0x78;
     let_X_high = 0x58;
+    let_b_low = 0x62;
+    let_B_high = 0x42;
     sym_minus = 0x2D;
     sym_plus = 0x2B;
     sym_space = 0x20;
@@ -102,7 +106,7 @@ static int vstr__parse_num(const Vstr_base *base,
   }
 
   tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
-  if ((tmp == 1) && (auto_base || (num_base == 16)))
+  if ((tmp == 1) && (auto_base || (num_base == 16) || (num_base ==  2)))
   {
     char xX[2];
 
@@ -143,11 +147,42 @@ static int vstr__parse_num(const Vstr_base *base,
 
       tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
     }
-    else if (auto_base)
-      num_base = 8;
+    else
+    {
+      xX[0] = let_b_low;
+      xX[1] = let_B_high;
+      tmp = vstr_spn_chrs_fwd(base, pos, len, xX, 2);
+
+      if (tmp > 1)
+      { /* It's a 0 */
+        *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
+        *passed_len = len;
+        return (1);
+      }
+      if (tmp == 1)
+      {
+        if (auto_base)
+          num_base =  2;
+
+        pos += tmp;
+        len -= tmp;
+
+        if (!len)
+        {
+          *passed_pos = pos + len;
+          *passed_len = 0;
+          *err = VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX;
+          return (0);
+        }
+
+        tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
+      }
+      else if (auto_base)
+        num_base =  8;
+    }
   }
   else if (tmp && auto_base)
-    num_base = 8;
+    num_base =  8;
   else if (auto_base)
     num_base = 10;
   else if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))

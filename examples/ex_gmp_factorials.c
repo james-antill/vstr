@@ -1,11 +1,18 @@
-/* Simple usage of the gmp library, see...
+/* Simple libgmp command, see...
 
-http://www.gnu.org/manual/gmp/html_mono/gmp.html#Formatted%20Output%20Strings
+http://www.gnu.org/manual/gmp/html_node/Converting-Integers.html
+http://www.gnu.org/manual/gmp/html_node/Integer-Comparisons.html
+http://www.gnu.org/manual/gmp/html_node/Miscellaneous-Integer-Functions.html
+http://www.gnu.org/manual/gmp/html_node/Integer-Arithmetic.html
+
+http://www.gnu.org/manual/gmp/html_node/Formatted-Output-Strings.html
+
 
 ...it prints the factorial of the first argument, you can check the output
 against...
 
 http://www.newdream.net/~sage/old/numbers/fact.htm
+
 */
 
 /* we only need output here, so turn off other IO functions */
@@ -22,48 +29,51 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
  * though */
 #define EX_GMP_FACT_USE_FIELDWIDTH 1
 
-/* if this is enabled we add the return from gmp_asprintf() as a reference,
- * saves doing an extra copy. */
+/* if this is enabled we add the malloc()d string as a reference,
+ * which saves doing an extra copy. */
 #define EX_GMP_FACT_USE_REFS 1
 
 /* This is the custom formatter.
- * Note that this deals with fmt_quote unlike the gmp_*printf() calls */
+ * Note that this deals with grouping unlike the gmp_*printf() calls */
 static int ex__usr_mpz_cb(Vstr_base *base, size_t pos, Vstr_fmt_spec *spec,
                           /* gmp args, need to be in paramter list */
                           const mpz_t val)
 {
-  char *buf = NULL;
-  char *out_buf = NULL;
   int flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; /* it's a number */
   size_t len = 0;
   int ret = FALSE;
+  char ui_buf[sizeof(unsigned long) * CHAR_BIT];
+  char *buf = NULL;
+  char *out_buf = ui_buf;
 
-  /* This is the simplist way of converting the bignum to a string,
-   * we could do extra work to avoid allocations for smaller values */
-  
-  len = gmp_asprintf(&buf, "%Zd", val); /* dies on error */
-
-  out_buf = buf; /* need pointer to the begining */
-  
-  if (mpz_cmp_ui(val, 0) < 0)
-  { /* if it's a negative number, "remove" the '-' as
-     * vstr_sc_fmt_cb_beg will add it in the correct place */
+  if (mpz_sgn(val) == -1) /* it's a negative number */
     flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
-    ++out_buf;
-    --len;
+  
+  if (mpz_fits_ulong_p(val)) /* it's a simple number */
+    len = vstr_sc_conv_num10_ulong(ui_buf, sizeof(ui_buf), mpz_get_ui(val));
+  else /* bignum, so get libgmp to export it as a string */
+  {
+    len = mpz_sizeinbase(val, 10); /* doesn't include minus sign */
+    out_buf = buf = mpz_get_str(NULL, 10, val); /* dies on malloc error */
+
+    if (mpz_sgn(val) == -1) ++out_buf; /* skip the minus sign */
+    if (!out_buf[len - 1])  --len; /* see documentation for mpz_sizeinbase() */
   }
+
+  ASSERT(strlen(out_buf) == len);
   
   /* this deals with things like having the the zero flag (Ie. %0d), or the
    * plus flag (Ie. %+d) or right shifted field widths */
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len, flags))
     goto mem_fail;
  
-  if (spec->fmt_quote) /* add number including thousands seperators */
+  if (spec->fmt_quote) /* add number including grouping */
     ret = vstr_sc_add_grpnum_buf(base, pos, out_buf, len);
-  else if (!EX_GMP_FACT_USE_REFS) /* just add the number */
+  else if (!EX_GMP_FACT_USE_REFS || !buf) /* just add the number */
     ret = vstr_add_buf(base, pos, out_buf, len);
   else
-  { /* create a reference to avoid copying data */
+  { /* create a reference to avoid copying data,
+     * assumes mp_set_memory_functions() hasn't been called */
     Vstr_ref *ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ptr_ref);
 
     if (!ref)
@@ -71,7 +81,7 @@ static int ex__usr_mpz_cb(Vstr_base *base, size_t pos, Vstr_fmt_spec *spec,
 
     ret = vstr_add_ref(base, pos, ref, out_buf - buf, len);
     
-    buf = NULL; /* used in the reference/Vstr, free'd when finished */
+    buf = NULL; /* memory is free'd when the reference is used up */
 
     /* remove our reference, if !ret then this will free buf */
     vstr_ref_del(ref);
@@ -154,14 +164,14 @@ int main(int argc, char *argv[])
   setlocale(LC_ALL, "");
   loc_num_name = setlocale(LC_NUMERIC, NULL);
   
-  /* change thousands grouping to make numbers more readable, got from locale */
+  /* change grouping, from locale, to make numbers more readable */
   if (!vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
                       loc_num_name))
     errx(EXIT_FAILURE, "Couldn't change numeric locale info");
   
-  mpz_init_set_str (bignum_for, argv[1], 0);
-  mpz_init_set_str (bignum_ret,     "1", 0);
-  mpz_init_set_str (bignum_cnt,     "1", 0);
+  mpz_init_set_str(bignum_for, argv[1], 0);
+  mpz_init_set_str(bignum_ret,     "1", 0);
+  mpz_init_set_str(bignum_cnt,     "1", 0);
 
   if (EX_GMP_FACT_USE_FIELDWIDTH)
   { /* find out the max length of the for values... */
@@ -183,12 +193,12 @@ int main(int argc, char *argv[])
     ret_max_sz = s1->len; vstr_del(s1, 1, s1->len);
 
     /* reinit, so we can print everything...  */
-    mpz_init_set_str (bignum_ret,     "1", 0);
-    mpz_init_set_str (bignum_cnt,     "1", 0);
+    mpz_init_set_str(bignum_ret,     "1", 0);
+    mpz_init_set_str(bignum_cnt,     "1", 0);
   }
   
-  /* do the calculations... */
-  if (mpz_cmp_ui(bignum_for, 0) >= 0) /* special case 0! */
+  /* do the output... */
+  if (mpz_sgn(bignum_for) >= 0) /* special case 0! */
     if (!vstr_add_fmt(s1, s1->len, "%*u%s %c %*u\n\n",
                       cnt_max_sz, 0, "!", '=', ret_max_sz, 1))
       errno = ENOMEM, err(EXIT_FAILURE, "Add string data");

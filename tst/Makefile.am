@@ -111,6 +111,7 @@ tst_fmt = \
     fmt/tst_fmt_bkmg \
     fmt/tst_fmt_ip \
     fmt/tst_fmt_i18n \
+    fmt/tst_fmt_b \
     fmt/tst_fmt_usr
 
 xfail_tst_fmt = \
@@ -185,6 +186,7 @@ tst_sub = \
 
 tst_x = \
     x/tst_x_typedef \
+    x/tst_x_init \
     x/tst_x_inline \
     x/tst_x_include \
     x/tst_x_macros \
@@ -196,6 +198,9 @@ tst_x = \
     x/tst_x_version
 
 xfail_tst_x = \
+    x/xfail_tst_x_exit \
+    x/xfail_tst_x_free2_base \
+    x/xfail_tst_x_free2_sects \
     x/xfail_tst_x_make_bad_node \
     x/xfail_tst_x_free_bad_node
 

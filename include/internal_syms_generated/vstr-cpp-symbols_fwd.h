@@ -161,6 +161,8 @@
 #define vstr_ref_make_vstr_sects vstr_nx_ref_make_vstr_sects
 #define vstr_sc_add_cstr_grpnum_buf vstr_nx_sc_add_cstr_grpnum_buf
 #define vstr_sc_add_grpnum_buf vstr_nx_sc_add_grpnum_buf
+#define vstr_sc_add_cstr_grpbasenum_buf vstr_nx_sc_add_cstr_grpbasenum_buf
+#define vstr_sc_add_grpbasenum_buf vstr_nx_sc_add_grpbasenum_buf
 #define vstr_sc_basename vstr_nx_sc_basename
 #define vstr_sc_conv_num_uint vstr_nx_sc_conv_num_uint
 #define vstr_sc_conv_num10_uint vstr_nx_sc_conv_num10_uint

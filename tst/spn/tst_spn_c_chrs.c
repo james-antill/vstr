@@ -34,13 +34,31 @@ static void tst_c_chrs(Vstr_base *t1, unsigned int off)
             VSTR_CSPN_CSTR_CHRS_FWD(t1, lens_fwd[1] + 1, t1->len - lens_fwd[1],
                                     "0123456789") != 4);
   TST_B_TST(ret, off + 10,
-            VSTR_CSPN_CSTR_CHRS_FWD(t1, lens_fwd[1] + 1, t1->len - lens_fwd[1],
+            VSTR_CSPN_CSTR_CHRS_REV(t1, lens_fwd[1] + 1, t1->len - lens_fwd[1],
                                     "0123456789") != 4);
 
   TST_B_TST(ret, off + 11,
+            VSTR_CSPN_CSTR_CHRS_FWD(t1, 1, t1->len, "Z") != t1->len);
+  TST_B_TST(ret, off + 12,
+            VSTR_CSPN_CSTR_CHRS_REV(t1, 1, t1->len, "Z") != t1->len);
+
+  TST_B_TST(ret, off + 13,
+            VSTR_CSPN_CSTR_CHRS_FWD(t1, 1, t1->len, "ZZ") != t1->len);
+  TST_B_TST(ret, off + 14,
+            VSTR_CSPN_CSTR_CHRS_REV(t1, 1, t1->len, "ZZ") != t1->len);
+
+  TST_B_TST(ret, off + 15,
             vstr_cspn_chrs_fwd(t1, 1, t1->len, NULL, 1)  != t1->len);
-  TST_B_TST(ret, off + 11,
+  TST_B_TST(ret, off + 16,
             vstr_cspn_chrs_rev(t1, 1, t1->len, NULL, 1)  != t1->len);
+  TST_B_TST(ret, off + 17,
+            vstr_cspn_chrs_fwd(t1, 1, 0, "a", 1)  != 0);
+  TST_B_TST(ret, off + 18,
+            vstr_cspn_chrs_rev(t1, 1, 0, "a", 1)  != 0);
+  TST_B_TST(ret, off + 19,
+            vstr_cspn_chrs_fwd(t1, 1, 0, "aa", 1)  != 0);
+  TST_B_TST(ret, off + 20,
+            vstr_cspn_chrs_rev(t1, 1, 0, "aa", 1)  != 0);
 }
 
 static void tst_c_non_chrs(Vstr_base *t1)

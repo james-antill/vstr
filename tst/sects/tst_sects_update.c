@@ -26,15 +26,30 @@ int tst(void)
   vstr_sects_add(sects3,  1, 10);
   vstr_sects_add(sects3, 11, 10);
 
+  mfail_count = 2;
   do
   {
-    tst_mfail_num(++mfail_count);
+    tst_mfail_num(++mfail_count / 3);
   } while (!vstr_sects_update_add(s1, sects1));
   tst_mfail_num(0);
 
-  TST_B_TST(ret,  2, !vstr_sects_update_add(s1, sects3));
-  TST_B_TST(ret,  3, !vstr_sects_update_add(s2, sects2));
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_sects_update_add(s1, sects2));
+  tst_mfail_num(0);
 
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_sects_update_add(s1, sects3));
+  tst_mfail_num(0);
+
+  TST_B_TST(ret,  2, !vstr_sects_update_add(s2, sects2));
+
+  TST_B_TST(ret,  3, !vstr_sects_update_del(s1, sects2)); /* out of order */
   TST_B_TST(ret,  4, !vstr_sects_update_del(s1, sects3));
 
   TST_B_TST(ret,  5, ((sects1->ptr[0].pos !=  1) ||
@@ -90,10 +105,28 @@ int tst(void)
                       (sects1->ptr[0].len !=  6)));
   TST_B_TST(ret, 17, ((sects1->ptr[1].pos != 11) ||
                       (sects1->ptr[1].len !=  1)));
+  
+  vstr_sub_rep_chr(s1, 1, 1, 'X', 1);
 
-  TST_B_TST(ret, 18, !vstr_sects_update_del(s1, sects1));
-  TST_B_TST(ret, 19,  vstr_sects_update_del(s1, sects1));
-  TST_B_TST(ret, 20,  vstr_cache_get(s1, s1->conf->cache_pos_cb_sects));
+  TST_B_TST(ret, 18, ((sects1->ptr[0].pos !=  5) ||
+                      (sects1->ptr[0].len !=  6)));
+  TST_B_TST(ret, 18, ((sects1->ptr[1].pos != 11) ||
+                      (sects1->ptr[1].len !=  1)));
+
+  vstr_del(s1, 7, 5);
+
+  TST_B_TST(ret, 19, ((sects1->ptr[0].pos !=  5) ||
+                      (sects1->ptr[0].len !=  2)));
+  TST_B_TST(ret, 19, (sects1->ptr[1].pos != 0));
+
+  vstr_del(s1, 6, 1);
+
+  TST_B_TST(ret, 20, ((sects1->ptr[0].pos !=  5) ||
+                      (sects1->ptr[0].len !=  1)));
+  
+  TST_B_TST(ret, 21, !vstr_sects_update_del(s1, sects1));
+  TST_B_TST(ret, 22,  vstr_sects_update_del(s1, NULL));
+  TST_B_TST(ret, 23,  vstr_cache_get(s1, s1->conf->cache_pos_cb_sects));
 
   vstr_sects_free(sects1);
   vstr_sects_free(sects2);

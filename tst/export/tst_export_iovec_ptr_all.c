@@ -10,11 +10,17 @@ static void tst_iovec(Vstr_base *t1)
   struct iovec *iov = NULL;
   unsigned int num = 0;
   unsigned int count = 0;
-
+  unsigned int mfail_count = 0;
+  
   vstr_export_cstr_buf(t1, 1, t1->len, buf, sizeof(buf));
 
-  len = vstr_export_iovec_ptr_all(t1, &iov, &num);
-
+  mfail_count = 3;
+  do
+  {
+    tst_mfail_num(++mfail_count / 4);
+  } while (!(len = vstr_export_iovec_ptr_all(t1, &iov, &num)) && !iov);
+  tst_mfail_num(0);
+  
   TST_B_TST(ret, 1, (len != t1->len));
   TST_B_TST(ret, 2, (num != t1->num));
 
@@ -26,15 +32,17 @@ static void tst_iovec(Vstr_base *t1)
     len += iov[count].iov_len;
     ++count;
   }
-  TST_B_TST(ret, 4, (len != t1->len));
-  TST_B_TST(ret, 5, (count != t1->num));
+  TST_B_TST(ret, 4, (len   != t1->len));
+  TST_B_TST(ret, 5, (count != vstr_num(t1, 1, t1->len)));
 }
 
 int tst(void)
 {
   const char *tmp_s = NULL;
   
-  ASSERT(!vstr_export_iovec_ptr_all(s1, NULL, NULL));
+  ASSERT(!vstr_export_iovec_ptr_all(s2, NULL, NULL));
+  
+  sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   {
     int tmp = 0;
@@ -49,8 +57,6 @@ int tst(void)
            tmp == 4);
   }
 
-  sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
-
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
   VSTR_ADD_CSTR_PTR(s1, 0, buf);
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
@@ -61,6 +67,14 @@ int tst(void)
 
   tst_iovec(s1);
   tst_iovec(s3);
+
+  vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
+  vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
+  tst_iovec(s1);
+
+  vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
+  vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
+  tst_iovec(s1);
 
   vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
   vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
@@ -108,5 +122,13 @@ int tst(void)
 
   tst_iovec(s3);
 
+  vstr_add_non(s3, 0, 4);
+  vstr_add_non(s3, 0, 4);
+  vstr_add_non(s3, 0, 4);
+  vstr_add_non(s3, 0, 4);
+  vstr_add_non(s3, 0, 4);
+
+  ASSERT(vstr_export_iovec_ptr_all(s3, NULL, NULL));
+ 
   return (TST_B_RET(ret));
 }

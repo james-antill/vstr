@@ -262,10 +262,7 @@ EOL
       }
   }
 
-if (!open (OUT, "> functions.html"))
-  {
-    die "Open (write): $@";
-  }
+open (OUT, "> functions.html")    || die "open(functions.html): $!";
 
 print OUT $html_header;
 print OUT "<title>", "$name -- functions", "</title>", "\n";
@@ -273,23 +270,17 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
   "<h1>", "$name -- functions", "</h1>", "\n";
 
-if (!open (IN, "< $docs/functions.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
+
 convert_index();
-if (!open (IN, "< $docs/functions.txt"))
-  {
-    die "Open (read): $@";
-  }
+
+open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
+
 convert();
 
 print OUT $html_footer;
 
-if (!open (OUT, "> constants.html"))
-  {
-    die "Open (write): $@";
-  }
+open (OUT, "> constants.html")     || die "open(constants.html): $!";
 
 print OUT $html_header;
 print OUT "<title>", "$name -- constants", "</title>", "\n";
@@ -297,25 +288,19 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
   "<h1>", "$name -- constants", "</h1>", "\n";
 
-if (!open (IN, "< $docs/constants.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
+
 convert_index();
-if (!open (IN, "< $docs/constants.txt"))
-  {
-    die "Open (read): $@";
-  }
+
+open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
+
 convert();
 
 print OUT $html_footer;
 
 if (-r "structs.txt")
   {
-    if (!open (OUT, "> $docs/structs.html"))
-      {
-	die "Open (write): $@";
-      }
+    open (OUT, "> structs.html")     || die "open(struts.html): $!";
 
     print OUT $html_header;
     print OUT "<title>", "$name -- structs", "</title>", "\n";
@@ -323,15 +308,12 @@ if (-r "structs.txt")
     print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
       "<h1>", "$name -- structs", "</h1>", "\n";
 
-    if (!open (IN, "< structs.txt"))
-      {
-	die "Open (read): $@";
-      }
+    open (IN, "< $docs/structs.txt") || die "open(structs.txt): $!";
+
     convert_index();
-    if (!open (IN, "< $docs/structs.txt"))
-      {
-	die "Open (read): $@";
-      }
+
+    open (IN, "< $docs/structs.txt") || die "open(structs.txt): $!";
+
     convert();
 
     print OUT $html_footer;

@@ -30,6 +30,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   size_t space_len = 0;
   size_t zero_len = 0;
   size_t xobj_len = 0;
+  size_t quote_len = 0;
   
   if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR)
   {
@@ -44,18 +45,32 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   if (!(flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
   {
     spec->fmt_zero = FALSE;
-    flags &= ~VSTR_FLAG03(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H, OCTNUM);
+    flags &= ~VSTR_FLAG05(SC_FMT_CB_BEG_OBJ,
+                          HEXNUM_L, HEXNUM_H, OCTNUM, BINNUM_L, BINNUM_H);
   }
   else
   {
+    unsigned int num_base = 10;
+
+    if (0) { }
+    else if (VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
+      num_base = 16;
+    else if (VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
+      num_base =  8;
+    else if (VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
+      num_base =  2;
+      
     if (!spec->fmt_hash)
-      flags &= ~VSTR_FLAG03(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H, OCTNUM);
+      flags &= ~VSTR_FLAG05(SC_FMT_CB_BEG_OBJ,
+                            HEXNUM_L, HEXNUM_H, OCTNUM, BINNUM_L, BINNUM_H);
       
     if (spec->fmt_quote) /* setup length with ',' additions properly */
     {
-      xobj_len = vstr__add_fmt_grouping_num_sz(base, *obj_len) - *obj_len;
-      if (!xobj_len) /* speed */
+      quote_len  = vstr__add_fmt_grouping_num_sz(base, num_base, *obj_len);
+      quote_len -= *obj_len;
+      if (!quote_len) /* speed */
         spec->fmt_quote = FALSE;
+      xobj_len += quote_len;
     }
     
     if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG)
@@ -74,15 +89,18 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
       ++xobj_len;
     }
 
-    if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
+    if (0) { }
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
       xobj_len += 2;
-    if (flags & VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
+    else if (flags & VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
       xobj_len += 1;
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
+      xobj_len += 2;
 
     /* xtra object length's don't count with the precision */
-    if (spec->fmt_precision && (*obj_len < spec->obj_precision))
+    if (spec->fmt_precision && ((*obj_len + quote_len) < spec->obj_precision))
     {
-      spec->obj_precision -= *obj_len;
+      spec->obj_precision -= (*obj_len + quote_len);
       zero_len = spec->obj_precision;
       spec->fmt_zero = FALSE;
     }
@@ -114,8 +132,9 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
       return (FALSE);
     ++*pos;
   }
-  
-  if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
+
+  if (0) { }
+  else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
   {
     char hexout = 'x';
 
@@ -135,6 +154,20 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
       return (FALSE);
     ++*pos;
   }
+  else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
+  {
+    char binout = 'b';
+
+    if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H)
+      binout = 'B';
+    
+    if (!vstr_add_rep_chr(base, *pos, '0', 1))
+      return (FALSE);
+    ++*pos;
+    if (!vstr_add_rep_chr(base, *pos, binout, 1))
+      return (FALSE);
+    ++*pos;
+  }
   
   if (zero_len)
   {
@@ -144,6 +177,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
     zero_len = 0;
   }
   
+  spec->obj_precision    = quote_len;
   spec->obj_field_width  = space_len;
 
   return (TRUE);
@@ -155,8 +189,11 @@ int vstr_sc_fmt_cb_end(Vstr_base *base, size_t pos,
   size_t space_len = 0;
 
   if (spec->fmt_field_width)
-    space_len = spec->obj_field_width;
+    space_len += spec->obj_field_width;
 
+  if (spec->fmt_quote) /* number grows */
+    obj_len   += spec->obj_precision;
+  
   if (spec->fmt_minus)
     if (!vstr_add_rep_chr(base, pos + obj_len, ' ', space_len))
       return (FALSE);
@@ -905,6 +942,133 @@ int vstr_sc_fmt_add_ipv6_vec_cidr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
+#define VSTR__SC_FMT_MAKE_CB_BASE2(T, Tn, up) \
+  T val = VSTR_FMT_CB_ARG_VAL(spec, T, 0); \
+  int flags = (VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM | \
+               ((up) ? \
+                VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H : \
+                VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L)); \
+  char buf[(sizeof(T) * CHAR_BIT) + 1]; \
+  size_t obj_len = 0; \
+  size_t len = 0; \
+  \
+  len = obj_len = vstr_sc_conv_num_ ## Tn (buf, sizeof(buf), val, "01", 2); \
+  \
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len, flags)) \
+    return (FALSE); \
+  \
+  if (!vstr_sc_add_grpbasenum_buf(base, pos, 2, buf, obj_len)) \
+    return (FALSE); \
+  \
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, len)) \
+    return (FALSE); \
+  \
+  return (TRUE)
+
+static int vstr__sc_fmt_add_cb_upper_base2_uint(Vstr_base *base, size_t pos,
+                                                Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(unsigned int, uint, TRUE);
+}
+
+int vstr_sc_fmt_add_upper_base2_uint(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_upper_base2_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_upper_base2_ulong(Vstr_base *base, size_t pos,
+                                                 Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(unsigned long, ulong, TRUE);
+}
+
+int vstr_sc_fmt_add_upper_base2_ulong(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_upper_base2_ulong,
+                       VSTR_TYPE_FMT_ULONG,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_upper_base2_size(Vstr_base *base, size_t pos,
+                                                Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(size_t, size, TRUE);
+}
+
+int vstr_sc_fmt_add_upper_base2_size(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_upper_base2_size,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_upper_base2_uintmax(Vstr_base *base, size_t pos,
+                                                   Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(uintmax_t, uintmax, TRUE);
+}
+
+int vstr_sc_fmt_add_upper_base2_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_upper_base2_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_lower_base2_uint(Vstr_base *base, size_t pos,
+                                                Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(unsigned int, uint, FALSE);
+}
+
+int vstr_sc_fmt_add_lower_base2_uint(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_lower_base2_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_lower_base2_ulong(Vstr_base *base, size_t pos,
+                                                 Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(unsigned long, ulong, FALSE);
+}
+
+int vstr_sc_fmt_add_lower_base2_ulong(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_lower_base2_ulong,
+                       VSTR_TYPE_FMT_ULONG,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_lower_base2_size(Vstr_base *base, size_t pos,
+                                                Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(size_t, size, FALSE);
+}
+
+int vstr_sc_fmt_add_lower_base2_size(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_lower_base2_size,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_lower_base2_uintmax(Vstr_base *base, size_t pos,
+                                                   Vstr_fmt_spec *spec)
+{
+  VSTR__SC_FMT_MAKE_CB_BASE2(uintmax_t, uintmax, FALSE);
+}
+
+int vstr_sc_fmt_add_lower_base2_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_lower_base2_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
+                       VSTR_TYPE_FMT_END));
+}
+
 #define VSTR__SC_FMT_ADD(x, nb, ne) \
  if (!( \
  vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" ne "}") && \
@@ -924,7 +1088,7 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(ref, "ref", "p%zu%zu");
 
   /* FIXME: tmp because I screwed up the definition for 1.0.0 --
-   * has wrong types */
+   * had wrong types */
   if (!(vstr_sc_fmt_add_ref (conf, "{ref" ":%"       "p%u%zu}") &&
         vstr_sc_fmt_add_ref (conf, "{ref" ":%" "*"   "p%u%zu}") &&
         vstr_sc_fmt_add_ref (conf, "{ref" ":%"  ".*" "p%u%zu}") &&
@@ -932,10 +1096,12 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
     ret = FALSE;
 
   VSTR__SC_FMT_ADD(rep_chr, "rep_chr", "c%zu");
+
   VSTR__SC_FMT_ADD(bkmg_Byte_uint, "BKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
   VSTR__SC_FMT_ADD(bkmg_bit_uint, "bKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_bits_uint, "bKMG/s.u", "u");
+  
 #ifdef HAVE_POSIX_HOST
   VSTR__SC_FMT_ADD(ipv4_ptr, "ipv4.p", "p");
   VSTR__SC_FMT_ADD(ipv6_ptr, "ipv6.p", "p");
@@ -945,6 +1111,16 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(ipv4_vec_cidr, "ipv4.v+C", "p%u");
   VSTR__SC_FMT_ADD(ipv6_vec_cidr, "ipv6.v+C", "p%u%u");
 
+  VSTR__SC_FMT_ADD(upper_base2_uint,    "B.u",   "u");
+  VSTR__SC_FMT_ADD(upper_base2_ulong,   "B.lu", "lu");
+  VSTR__SC_FMT_ADD(upper_base2_size,    "B.zu", "zu");
+  VSTR__SC_FMT_ADD(upper_base2_uintmax, "B.ju", "ju");
+  
+  VSTR__SC_FMT_ADD(lower_base2_uint,    "b.u",   "u");
+  VSTR__SC_FMT_ADD(lower_base2_ulong,   "b.lu", "lu");
+  VSTR__SC_FMT_ADD(lower_base2_size,    "b.zu", "zu");
+  VSTR__SC_FMT_ADD(lower_base2_uintmax, "b.ju", "ju");
+  
   assert(ret);
 
   return (ret);
@@ -1008,28 +1184,29 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
   }
 }
 
-int vstr_sc_add_grpnum_buf(Vstr_base *base, size_t pos,
-                           const void *passed_buf, size_t len)
+int vstr_sc_add_grpbasenum_buf(Vstr_base *base, size_t pos,
+                               unsigned int num_base,
+                               const void *passed_buf, size_t len)
 {
   size_t orig_pos      = pos;
   const char *buf      = passed_buf; /* so we can move it */
-  const char *grouping = base->conf->loc->grouping;
-  const char *sep_str  = base->conf->loc->thousands_sep_str;
-  size_t sep_len       = base->conf->loc->thousands_sep_len;
+  Vstr_locale_num_base *srch = NULL;
   int done = FALSE;
 
   ASSERT(base && buf);
   
+  srch = vstr__loc_num_srch(base->conf->loc, num_base, FALSE);
   while (len)
   {
-    unsigned int num = vstr__add_fmt_grouping_mod(grouping,len);
+    unsigned int num = vstr__add_fmt_grouping_mod(srch->grouping->ptr, len);
 
     if (done)
     {
-      if (!vstr_add_buf(base, pos, sep_str, sep_len))
+      if (!vstr_add_buf(base, pos,
+                        srch->thousands_sep_ref->ptr, srch->thousands_sep_len))
         goto malloc_failed;
       
-      pos += sep_len;
+      pos += srch->thousands_sep_len;
     }
     
     if (!vstr_add_buf(base, pos, buf, num))
@@ -1048,7 +1225,94 @@ int vstr_sc_add_grpnum_buf(Vstr_base *base, size_t pos,
  malloc_failed:
   vstr_del(base, orig_pos + 1, pos - orig_pos);
   
-  return (FALSE);
+  return (FALSE);  
+}
+
+int vstr_sc_add_grpbasenum_ptr(Vstr_base *base, size_t pos,
+                               unsigned int num_base,
+                               const void *passed_ptr, size_t len)
+{
+  size_t orig_pos = pos;
+  const char *ptr = passed_ptr; /* so we can move it */
+  Vstr_locale_num_base *srch = NULL;
+  int done = FALSE;
+
+  ASSERT(base && ptr);
+
+  srch = vstr__loc_num_srch(base->conf->loc, num_base, FALSE);
+  while (len)
+  {
+    unsigned int num = vstr__add_fmt_grouping_mod(srch->grouping->ptr, len);
+
+    if (done)
+    {
+      if (!vstr_add_ref(base, pos,
+                        srch->thousands_sep_ref, 0, srch->thousands_sep_len))
+        goto malloc_failed;
+      
+      pos += srch->thousands_sep_len;
+    }
+    
+    if (!vstr_add_ptr(base, pos, ptr, num))
+      goto malloc_failed;
+    
+    pos += num;
+    ptr += num;
+    ASSERT(num <= len);
+    len -= num;
+
+    done = TRUE;
+  }
+
+  return (TRUE);
+  
+ malloc_failed:
+  vstr_del(base, orig_pos + 1, pos - orig_pos);
+  
+  return (FALSE);  
+}
+
+int vstr_sc_add_grpbasenum_ref(Vstr_base *base, size_t pos,
+                               unsigned int num_base,
+                               Vstr_ref *ref, size_t off, size_t len)
+{
+  size_t orig_pos = pos;
+  Vstr_locale_num_base *srch = NULL;
+  int done = FALSE;
+
+  ASSERT(base && ref);
+  
+  srch = vstr__loc_num_srch(base->conf->loc, num_base, FALSE);
+  while (len)
+  {
+    unsigned int num = vstr__add_fmt_grouping_mod(srch->grouping->ptr, len);
+
+    if (done)
+    {
+      if (!vstr_add_ref(base, pos,
+                        srch->thousands_sep_ref, 0, srch->thousands_sep_len))
+        goto malloc_failed;
+      
+      pos += srch->thousands_sep_len;
+    }
+    
+    if (!vstr_add_ref(base, pos, ref, off, num))
+      goto malloc_failed;
+    
+    pos += num;
+    off += num;
+    ASSERT(num <= len);
+    len -= num;
+
+    done = TRUE;
+  }
+
+  return (TRUE);
+  
+ malloc_failed:
+  vstr_del(base, orig_pos + 1, pos - orig_pos);
+  
+  return (FALSE);  
 }
 
 #define VSTR__SC_CONV_NUM(T) \

@@ -469,12 +469,12 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
 #define internal_function /* do nothing */
 #define INTUSE(x) x
 
-#define VSTR__FMT_DBL_GLIBC_LOC_DECIMAL_POINT(x) ((x)->base->conf->loc->decimal_point_str)
-#define VSTR__FMT_DBL_GLIBC_LOC_MON_DECIMAL_POINT(x) ((x)->base->conf->loc->decimal_point_str)
-#define VSTR__FMT_DBL_GLIBC_LOC_GROUPING(x) ((x)->base->conf->loc->grouping)
-#define VSTR__FMT_DBL_GLIBC_LOC_MON_GROUPING(x) ((x)->base->conf->loc->grouping)
-#define VSTR__FMT_DBL_GLIBC_LOC_THOUSANDS_SEP(x) ((x)->base->conf->loc->thousands_sep_str)
-#define VSTR__FMT_DBL_GLIBC_LOC_MON_THOUSANDS_SEP(x) ((x)->base->conf->loc->thousands_sep_str)
+#define VSTR__FMT_DBL_GLIBC_LOC_DECIMAL_POINT(x) vstr__loc_num_pnt_ptr((x)->base->conf->loc, 10)
+#define VSTR__FMT_DBL_GLIBC_LOC_MON_DECIMAL_POINT(x) vstr__loc_num_pnt_ptr((x)->base->conf->loc, 10)
+#define VSTR__FMT_DBL_GLIBC_LOC_GROUPING(x) vstr__loc_num_grouping((x)->base->conf->loc, 10)
+#define VSTR__FMT_DBL_GLIBC_LOC_MON_GROUPING(x) vstr__loc_num_grouping((x)->base->conf->loc, 10)
+#define VSTR__FMT_DBL_GLIBC_LOC_THOUSANDS_SEP(x) vstr__loc_num_sep_ptr((x)->base->conf->loc, 10)
+#define VSTR__FMT_DBL_GLIBC_LOC_MON_THOUSANDS_SEP(x) vstr__loc_num_sep_ptr((x)->base->conf->loc, 10)
 
 #define _NL_CURRENT(ignore, db_loc) VSTR__FMT_DBL_GLIBC_LOC_ ## db_loc (fp)
 
@@ -508,6 +508,11 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
 #ifndef PRINT_FPHEX_LONG_DOUBLE
 # error "No long double support for printf_fphex"
 #endif
+
+#undef  VSTR__FMT_DBL_GLIBC_LOC_DECIMAL_POINT
+#define VSTR__FMT_DBL_GLIBC_LOC_DECIMAL_POINT(x) vstr__loc_num_pnt_ptr((x)->base->conf->loc, 16)
+#undef  VSTR__FMT_DBL_GLIBC_LOC_MON_DECIMAL_POINT
+#define VSTR__FMT_DBL_GLIBC_LOC_MON_DECIMAL_POINT(x) vstr__loc_num_pnt_ptr((x)->base->conf->loc, 16)
 
 #undef  __printf_fphex
 #define __printf_fphex vstr__fmt_printf_fphex

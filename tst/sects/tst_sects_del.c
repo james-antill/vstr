@@ -27,23 +27,23 @@ int tst(void)
 
   vstr_sects_del(sects, 1);
 
-  TST_B_TST(ret, 1, (sects->sz != 8));
-  TST_B_TST(ret, 2, (sects->num != 5));
+  TST_B_TST(ret, 9, (sects->sz != 8));
+  TST_B_TST(ret, 10, (sects->num != 5));
 
   vstr_sects_del(sects, 1);
   vstr_sects_del(sects, 5);
   vstr_sects_del(sects, 4);
 
-  TST_B_TST(ret, 1, (sects->sz != 8));
-  TST_B_TST(ret, 2, (sects->num != 3));
+  TST_B_TST(ret, 11, (sects->sz != 8));
+  TST_B_TST(ret, 12, (sects->num != 3));
 
   sects->can_del_sz = TRUE;
 
   vstr_sects_del(sects, 3);
 
-  TST_B_TST(ret, 1, (sects->sz != 4));
-  TST_B_TST(ret, 2, (sects->num != 2));
-
+  TST_B_TST(ret, 13, (sects->sz != 4));
+  TST_B_TST(ret, 14, (sects->num != 2));
+  
   vstr_sects_free(sects);
 
   return (TST_B_RET(ret));

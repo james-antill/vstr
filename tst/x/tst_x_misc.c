@@ -59,6 +59,14 @@ int tst(void)
   vstr_sc_fmt_add_ipv6_vec(NULL, "e");
   vstr_sc_fmt_add_ipv4_vec_cidr(NULL, "f");
   vstr_sc_fmt_add_ipv6_vec_cidr(NULL, "g");
+  vstr_sc_fmt_add_lower_base2_size(NULL, "h");
+  vstr_sc_fmt_add_lower_base2_uint(NULL, "i");
+  vstr_sc_fmt_add_lower_base2_uintmax(NULL, "j");
+  vstr_sc_fmt_add_lower_base2_ulong(NULL, "k");
+  vstr_sc_fmt_add_upper_base2_size(NULL, "l");
+  vstr_sc_fmt_add_upper_base2_uint(NULL, "m");
+  vstr_sc_fmt_add_upper_base2_uintmax(NULL, "n");
+  vstr_sc_fmt_add_upper_base2_ulong(NULL, "o");
 
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1);
 

@@ -51,6 +51,13 @@ int tst(void)
   TST_B_TST(ret, 7, (sects->sz != 4));
   TST_B_TST(ret, 8, (sects->num != 3));
 
+  /* test overflow ... probably hard to trigger */
+  sects->malloc_bad = FALSE;
+  sects->num        = UINT_MAX;
+  sects->sz         = UINT_MAX;
+  TST_B_TST(ret, 30, vstr_sects_add(sects, 1, 1));
+  TST_B_TST(ret, 31, !sects->malloc_bad);
+  
   vstr_sects_free(sects);
 
   return (TST_B_RET(ret));

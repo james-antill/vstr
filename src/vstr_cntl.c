@@ -60,6 +60,8 @@ int vstr_cntl_opt(int option, ...)
     {
       Vstr_conf *val = va_arg(ap, Vstr_conf *);
 
+      ASSERT(val);
+      
       if (vstr__options.def != val)
       {
         vstr_free_conf(vstr__options.def);
@@ -68,9 +70,10 @@ int vstr_cntl_opt(int option, ...)
 
       ret = TRUE;
     }
-    break;
     
 #ifndef NDEBUG
+    break;
+    
     case 666:
     {
       unsigned long val = va_arg(ap, unsigned long);
@@ -79,11 +82,9 @@ int vstr_cntl_opt(int option, ...)
 
       ret = TRUE;
     }
-    break;
 #endif
 
-    default:
-      break;
+    ASSERT_NO_SWITCH_DEF();
   }
 
   va_end(ap);
@@ -141,8 +142,16 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
     }
     break;
 
-    default:
-      break;
+    case VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE:
+    {
+      unsigned int *val = va_arg(ap, unsigned int *);
+
+      *val = base->grpalloc_cache;
+
+      ret = TRUE;
+    }
+
+    ASSERT_NO_SWITCH_DEF();
   }
 
   va_end(ap);
@@ -170,8 +179,6 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       ret = TRUE;
     }
     break;
-
-    /* case VSTR_CNTL_BASE_SET_REF: */
 
     case VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC:
     {
@@ -253,7 +260,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     {
       const char **val = va_arg(ap, const char **);
 
-      *val = conf->loc->name_lc_numeric_str;
+      *val = conf->loc->name_lc_numeric_ref->ptr;
 
       ret = TRUE;
     }
@@ -262,16 +269,14 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC:
     {
       const char *val = va_arg(ap, const char *);
-      char *tmp = NULL;
-      size_t len = strlen(val);
-
-      if (!(tmp = VSTR__MK(len + 1)))
+      Vstr_ref *tmp = NULL;
+      
+      if (!(tmp = vstr_ref_make_strdup(val)))
         break;
 
-      VSTR__F(conf->loc->name_lc_numeric_str);
-      vstr_wrap_memcpy(tmp, val, len + 1);
-      conf->loc->name_lc_numeric_str = tmp;
-      conf->loc->name_lc_numeric_len = len;
+      vstr_ref_del(conf->loc->name_lc_numeric_ref);
+      conf->loc->name_lc_numeric_ref = tmp;
+      conf->loc->name_lc_numeric_len = strlen(tmp->ptr);
 
       ret = TRUE;
     }
@@ -280,8 +285,9 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT:
     {
       const char **val = va_arg(ap, const char **);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
 
-      *val = conf->loc->decimal_point_str;
+      *val = srch->decimal_point_ref->ptr;
 
       ret = TRUE;
     }
@@ -290,16 +296,15 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT:
     {
       const char *val = va_arg(ap, const char *);
-      char *tmp = NULL;
-      size_t len = strlen(val);
-
-      if (!(tmp = VSTR__MK(len + 1)))
+      Vstr_ref *tmp = NULL;
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
+      
+      if (!(tmp = vstr_ref_make_strdup(val)))
         break;
 
-      VSTR__F(conf->loc->decimal_point_str);
-      vstr_wrap_memcpy(tmp, val, len + 1);
-      conf->loc->decimal_point_str = tmp;
-      conf->loc->decimal_point_len = len;
+      vstr_ref_del(srch->decimal_point_ref);
+      srch->decimal_point_ref = tmp;
+      srch->decimal_point_len = strlen(tmp->ptr);
 
       ret = TRUE;
     }
@@ -308,8 +313,9 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP:
     {
       const char **val = va_arg(ap, const char **);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
 
-      *val = conf->loc->thousands_sep_str;
+      *val = srch->thousands_sep_ref->ptr;
 
       ret = TRUE;
     }
@@ -318,16 +324,15 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP:
     {
       const char *val = va_arg(ap, const char *);
-      char *tmp = NULL;
-      size_t len = strlen(val);
+      Vstr_ref *tmp = NULL;
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
 
-      if (!(tmp = VSTR__MK(len + 1)))
+      if (!(tmp = vstr_ref_make_strdup(val)))
         break;
 
-      VSTR__F(conf->loc->thousands_sep_str);
-      vstr_wrap_memcpy(tmp, val, len + 1);
-      conf->loc->thousands_sep_str = tmp;
-      conf->loc->thousands_sep_len = len;
+      vstr_ref_del(srch->thousands_sep_ref);
+      srch->thousands_sep_ref = tmp;
+      srch->thousands_sep_len = strlen(tmp->ptr);
 
       ret = TRUE;
     }
@@ -336,8 +341,9 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP:
     {
       const char **val = va_arg(ap, const char **);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
 
-      *val = conf->loc->grouping;
+      *val = srch->grouping->ptr;
 
       ret = TRUE;
     }
@@ -346,15 +352,18 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP:
     {
       const char *val = va_arg(ap, const char *);
-      char *tmp = NULL;
+      Vstr_ref *tmp = NULL;
       size_t len = vstr__loc_thou_grp_strlen(val);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, 0, FALSE);
 
-      if (!(tmp = VSTR__MK(len + 1)))
+      if (!(tmp = vstr_ref_make_malloc(len + 1)))
         break;
 
-      VSTR__F(conf->loc->grouping);
-      vstr_wrap_memcpy(tmp, val, len); tmp[len] = 0;
-      conf->loc->grouping = tmp;
+      vstr_ref_del(srch->grouping);
+      if (len)
+        vstr_wrap_memcpy(tmp->ptr, val, len);
+      ((char *)tmp->ptr)[len] = 0;
+      srch->grouping = tmp;
 
       ret = TRUE;
     }
@@ -420,9 +429,18 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
 
       assert(val == !!val);
 
-      conf->no_cache = !val;
-
       ret = TRUE;
+
+      if (conf->no_cache == !val)
+        break;
+
+      vstr__del_grpalloc(conf, conf->spare_base_num);
+      
+      conf->no_cache = !val;
+      if (conf->no_cache)
+        conf->grpalloc_cache = VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE;
+      else
+        conf->grpalloc_cache = VSTR_TYPE_CNTL_CONF_GRPALLOC_POS;
     }
     break;
 
@@ -477,19 +495,19 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       switch (option)
       {
         case VSTR_CNTL_CONF_SET_NUM_SPARE_BUF:
-          type = VSTR_TYPE_NODE_BUF;
+          type      = VSTR_TYPE_NODE_BUF;
           spare_num = conf->spare_buf_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_SPARE_NON:
-          type = VSTR_TYPE_NODE_NON;
+          type      = VSTR_TYPE_NODE_NON;
           spare_num = conf->spare_non_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_SPARE_PTR:
-          type = VSTR_TYPE_NODE_PTR;
+          type      = VSTR_TYPE_NODE_PTR;
           spare_num = conf->spare_ptr_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_SPARE_REF:
-          type = VSTR_TYPE_NODE_REF;
+          type      = VSTR_TYPE_NODE_REF;
           spare_num = conf->spare_ref_num;
           break;
       }
@@ -529,46 +547,35 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       unsigned int type = 0;
       unsigned int spare_num = 0;
 
+      ASSERT(val_min <= val_max);
+      
       switch (option)
       {
         case VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF:
-          type = VSTR_TYPE_NODE_BUF;
+          type      = VSTR_CNTL_CONF_SET_NUM_SPARE_BUF;
           spare_num = conf->spare_buf_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON:
-          type = VSTR_TYPE_NODE_NON;
+          type      = VSTR_CNTL_CONF_SET_NUM_SPARE_NON;
           spare_num = conf->spare_non_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR:
-          type = VSTR_TYPE_NODE_PTR;
+          type      = VSTR_CNTL_CONF_SET_NUM_SPARE_PTR;
           spare_num = conf->spare_ptr_num;
           break;
         case VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF:
-          type = VSTR_TYPE_NODE_REF;
+          type      = VSTR_CNTL_CONF_SET_NUM_SPARE_REF;
           spare_num = conf->spare_ref_num;
-          break;
+          
+          ASSERT_NO_SWITCH_DEF();
       }
 
       if (0)
       { ASSERT(FALSE); }
       else if (val_min > spare_num)
-      {
-        unsigned int num = 0;
-
-        num = vstr_make_spare_nodes(conf, type, val_min - spare_num);
-        if (num != (val_min - spare_num))
-        {
-          assert(ret == FALSE);
-          break;
-        }
-      }
+        return (vstr_cntl_conf(conf, type, val_min));
       else if (val_max < spare_num)
-      {
-        unsigned int num = 0;
-
-        num = vstr_free_spare_nodes(conf, type, spare_num - val_max);
-        assert(num == (spare_num - val_max));
-      }
+        return (vstr_cntl_conf(conf, type, val_max));
 
       ret = TRUE;
     }
@@ -596,8 +603,256 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     }
     break;
 
-    default:
-      break;
+    case VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE:
+    {
+      unsigned int *val = va_arg(ap, unsigned int *);
+
+      *val = conf->grpalloc_cache;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE:
+    {
+      unsigned int val = va_arg(ap, unsigned int);
+
+      ASSERT_RET(((val == VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE) ||
+                  (val == VSTR_TYPE_CNTL_CONF_GRPALLOC_POS) ||
+                  (val == VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC) ||
+                  (val == VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR) ||
+                  FALSE), FALSE);
+
+      ret = TRUE;
+      
+      if (conf->grpalloc_cache == val)
+        break;
+      
+      vstr__del_grpalloc(conf, conf->spare_base_num);
+
+      conf->grpalloc_cache = val;
+      if (val == VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE)
+        conf->no_cache = TRUE;
+      else
+        conf->no_cache = FALSE;        
+    }
+    break;
+    
+    case VSTR_CNTL_CONF_GET_NUM_SPARE_BASE:
+    {
+      unsigned int *val = va_arg(ap, unsigned int *);
+
+      *val = conf->spare_base_num;
+      
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_NUM_SPARE_BASE:
+    {
+      unsigned int val = va_arg(ap, unsigned int);
+      unsigned int spare_num = conf->spare_base_num;
+      
+      if (val == spare_num)
+      { /* do nothing */ }
+      else if (val > spare_num)
+      {
+        Vstr_base *tmp = NULL;
+        Vstr_base *old_beg = NULL;
+        unsigned int old_num = 0;
+
+        while (conf->spare_base_num < val)
+        {
+          old_beg = conf->spare_base_beg;
+          old_num = conf->spare_base_num;
+          
+          conf->spare_base_beg = NULL;
+          conf->spare_base_num = 0;
+          
+          tmp = vstr_make_base(conf);
+          
+          conf->spare_base_beg = old_beg;
+          conf->spare_base_num = old_num;
+          
+          if (!tmp)
+            return (FALSE);
+
+          vstr_free_base(tmp);
+        }
+      }
+      else if (val < spare_num)
+        vstr__del_grpalloc(conf, spare_num - val);
+      
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE:
+    {
+      unsigned int val_min = va_arg(ap, unsigned int);
+      unsigned int val_max = va_arg(ap, unsigned int);
+      unsigned int spare_num = conf->spare_base_num;
+      
+      ASSERT(val_min <= val_max);
+      
+      if (0)
+      { ASSERT(FALSE); }
+      else if (val_min > spare_num)
+        return (vstr_cntl_conf(conf,
+                               VSTR_CNTL_CONF_SET_NUM_SPARE_BASE, val_min));
+      else if (val_max < spare_num)
+        return (vstr_cntl_conf(conf,
+                               VSTR_CNTL_CONF_SET_NUM_SPARE_BASE, val_max));
+      
+      ret = TRUE;
+    }
+    break;
+    
+    case VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC:
+    {
+      Vstr_ref **val_ref = va_arg(ap, Vstr_ref **);
+      size_t *val_len = va_arg(ap, size_t *);
+      
+      *val_ref = vstr_ref_add(conf->loc->name_lc_numeric_ref);
+      *val_len =              conf->loc->name_lc_numeric_len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC:
+    {
+      Vstr_ref *tmp = va_arg(ap, Vstr_ref *);
+      size_t len = va_arg(ap, size_t);
+
+      vstr_ref_del(conf->loc->name_lc_numeric_ref);
+      
+      conf->loc->name_lc_numeric_ref = vstr_ref_add(tmp);
+      conf->loc->name_lc_numeric_len = len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref **val_ref = va_arg(ap, Vstr_ref **);
+      size_t *val_len = va_arg(ap, size_t *);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, FALSE);
+      
+      *val_ref = vstr_ref_add(srch->decimal_point_ref);
+      *val_len =              srch->decimal_point_len;
+      
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref *tmp = va_arg(ap, Vstr_ref *);
+      size_t len = va_arg(ap, size_t);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, TRUE);
+
+      if (!srch) break;
+      
+      vstr_ref_del(srch->decimal_point_ref);
+
+      srch->decimal_point_ref = vstr_ref_add(tmp);
+      srch->decimal_point_len = len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref **val_ref = va_arg(ap, Vstr_ref **);
+      size_t *val_len = va_arg(ap, size_t *);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, FALSE);
+
+      *val_ref = vstr_ref_add(srch->thousands_sep_ref);
+      *val_len =              srch->thousands_sep_len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref *tmp = va_arg(ap, Vstr_ref *);
+      size_t len = va_arg(ap, size_t);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, TRUE);
+
+      if (!srch) break;
+      
+      vstr_ref_del(srch->thousands_sep_ref);
+
+      srch->thousands_sep_ref = vstr_ref_add(tmp);
+      srch->thousands_sep_len = len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref **val_ref = va_arg(ap, Vstr_ref **);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, FALSE);
+
+      *val_ref = vstr_ref_add(srch->grouping);
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP:
+    {
+      unsigned int nb = va_arg(ap, unsigned int);
+      Vstr_ref *tmp = va_arg(ap, Vstr_ref *);
+      Vstr_locale_num_base *srch = vstr__loc_num_srch(conf->loc, nb, TRUE);
+
+      if (!srch) break;
+      
+      vstr_ref_del(srch->grouping);
+
+      srch->grouping = vstr_ref_add(tmp);
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR:
+    {
+      Vstr_ref **val_ref = va_arg(ap, Vstr_ref **);
+      size_t *val_len = va_arg(ap, size_t *);
+      
+      *val_ref = vstr_ref_add(conf->loc->null_ref);
+      *val_len =              conf->loc->null_len;
+
+      ret = TRUE;
+    }
+    break;
+
+    case VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR:
+    {
+      Vstr_ref *tmp = va_arg(ap, Vstr_ref *);
+      size_t len = va_arg(ap, size_t);
+
+      vstr_ref_del(conf->loc->null_ref);
+      
+      conf->loc->null_ref = vstr_ref_add(tmp);
+      conf->loc->null_len = len;
+
+      ret = TRUE;
+    }
+    /* break in assert */
+
+   ASSERT_NO_SWITCH_DEF();
   }
 
   va_end(ap);

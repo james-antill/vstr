@@ -1,4 +1,4 @@
-%define ver      1.0.9
+%define ver      1.0.10
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -154,6 +154,7 @@ cp   \
  examples/ex_perf_sgopenssl.c \
  examples/ex_rot13.c \
  examples/ex_slowcat.c \
+ examples/ex_ssi.c \
  examples/ex_utils.h \
  examples/ex_yes.c \
  examples/ex_zcat.c \
@@ -239,6 +240,7 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/examples/ex_perf_sgopenssl.c
 %{devdoco}/examples/ex_rot13.c
 %{devdoco}/examples/ex_slowcat.c
+%{devdoco}/examples/ex_ssi.c
 %{devdoco}/examples/ex_utils.h
 %{devdoco}/examples/ex_yes.c
 %{devdoco}/examples/ex_zcat.c

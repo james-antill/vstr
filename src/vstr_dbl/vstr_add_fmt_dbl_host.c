@@ -38,6 +38,20 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   struct lconv *sys_loc = NULL;
   size_t decimal_len = 0;
   const char *str = NULL;
+  unsigned int num_base = 10;
+  const char *grouping = NULL;
+  const char *thousands_sep_str = NULL;
+  size_t thousands_sep_len      = 0;
+  const char *decimal_point_str = NULL;
+  size_t decimal_point_len      = 0;
+
+  if ((spec->fmt_code != 'a') || (spec->fmt_code == 'A'))
+    num_base = 16;
+  grouping          = vstr__loc_num_grouping(base->conf->loc, num_base);
+  thousands_sep_str = vstr__loc_num_sep_ptr(base->conf->loc, num_base);
+  thousands_sep_len = vstr__loc_num_sep_len(base->conf->loc, num_base);
+  decimal_point_str = vstr__loc_num_pnt_ptr(base->conf->loc, num_base);
+  decimal_point_len = vstr__loc_num_pnt_len(base->conf->loc, num_base);
 
   fmt_buffer[0] = '%';
   if (spec->flags & LEFT)
@@ -114,8 +128,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   /* hand code thousands_sep into the number if it's a %f style */
   if (((spec->fmt_code != 'f') || (spec->fmt_code == 'F') ||
        (spec->fmt_code != 'g') || (spec->fmt_code == 'G')) &&
-      (spec->flags & THOUSAND_SEP) &&
-      base->conf->loc->thousands_sep_len)
+      (spec->flags & THOUSAND_SEP) && thousands_sep_len)
   {
     const char *num_beg = str;
     const char *num_end = NULL;
@@ -131,7 +144,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     num_end = num_beg;
     num_end += strspn(num_end, "0123456789");
 
-    if (!VSTR__FMT_ADD_GRPNUM(base, num_beg, num_end - num_beg))
+    if (!VSTR__FMT_ADD_GRPBASENUM(base, num_base, num_beg, num_end - num_beg))
     {
       free(float_buffer);
       return (FALSE);
@@ -146,11 +159,9 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     if (decimal_len && (tmp >= decimal_len) &&
         !memcmp(str, SYS_LOC(decimal_point), decimal_len))
     {
-      if (base->conf->loc->decimal_point_len)
+      if (decimal_point_len)
       {
-        if (!VSTR__FMT_ADD(base,
-                           base->conf->loc->decimal_point_str,
-                           base->conf->loc->decimal_point_len))
+        if (!VSTR__FMT_ADD(base, decimal_point_str, decimal_point_len))
         {
           free(float_buffer);
           return (FALSE);

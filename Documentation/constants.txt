@@ -382,8 +382,8 @@ Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H
  Explanation:
 
   This flag indicates that the number object you are printing should be
- treated as an uppercase hexadecimal number. This flag has no meaning if
- VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+ treated as an uppercase hexadecimal (base 16) number. This flag has no meaning
+ if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
 Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L
@@ -391,8 +391,8 @@ Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L
  Explanation:
 
   This flag indicates that the number object you are printing should be
- treated as a lowercase hexadecimal number. This flag has no meaning if
- VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+ treated as a lowercase hexadecimal (base 16) number. This flag has no meaning
+ if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
 Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM
@@ -400,7 +400,25 @@ Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM
  Explanation:
 
   This flag indicates that the number object you are printing should be
- treated as octal number. This flag has no meaning if
+ treated as octal (base 8) number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as an uppercase base 2 number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as a lowercase base 2 number. This flag has no meaning if
  VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
@@ -1445,7 +1463,9 @@ Constant: VSTR_CNTL_BASE_SET_CONF
  Note:
 
   This will only return successfully if either the Vstr string is empty, or
- the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
+ the Vstr configurations have the same value for the NUM_BUF_SZ attribute and
+ the new configuration has the same caches registered. See vstr_swap_cache()
+ for a function that tries to do what you want.
   If the Vstr configuration (Parameter[1]) is NULL, then the default
  Vstr configuration will be used.
 
@@ -1458,7 +1478,20 @@ Constant: VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE
  Explanation:
 
   This option lets you know if the Vstr string can cache data, this can only
- be controlled using the VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE flag.
+ be controlled using the VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE flag before
+ allocation.
+
+
+Constant: VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE
+
+ Parameter[1]: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)
+ Type[1]: unsigned int *
+
+ Explanation:
+
+  This option will get the type of the group allocation for the Vstr base,
+ this can only be controlled using the VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE
+ type before allocation.
 
 
 Section: Constants passed to vstr_cntl_conf()
@@ -1577,7 +1610,7 @@ Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC
 
 Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT
 
- Parameter[1]: Returns decimal point C string
+ Parameter[1]: Returns decimal point C string, for default base
  Type[1]: const char **
 
  Explanation:
@@ -1588,7 +1621,7 @@ Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT
 
 Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT
 
- Parameter[1]: Decimal point C string
+ Parameter[1]: Decimal point C string, for default base
  Type[1]: const char *
 
  Explanation:
@@ -1599,7 +1632,7 @@ Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT
 
 Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP
 
- Parameter[1]: Returns thousands separator C string
+ Parameter[1]: Returns thousands separator C string, for default base
  Type[1]: const char **
 
  Explanation:
@@ -1610,7 +1643,7 @@ Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP
 
 Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP
 
- Parameter[1]: Thousands separator C string
+ Parameter[1]: Thousands separator C string, for default base
  Type[1]: const char *
 
  Explanation:
@@ -1621,7 +1654,7 @@ Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP
 
 Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 
- Parameter[1]: Returns
+ Parameter[1]: Returns value locale thousands grouping, for the default base
  Type[1]: const char **
 
  Explanation:
@@ -1632,7 +1665,7 @@ Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 
 Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 
- Parameter[1]:
+ Parameter[1]: Value locale thousands grouping, for the default base
  Type[1]: const char *
 
  Explanation:
@@ -1770,7 +1803,7 @@ Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_REF
 
   When the value specified is higher and it calls vstr_make_spare_nodes() then
  a return value of FALSE means that there was a malloc error, just as if you
- called vstr_make_nodes directly.
+ called vstr_make_spare_nodes() directly.
 
 
 Constant: VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS
@@ -1830,9 +1863,260 @@ Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
 
  Note:
 
-  When the value specified is higher and it calls vstr_make_spare_nodes() then
- a return value of FALSE means that there was a malloc error, just as if you
- called vstr_make_nodes directly.
+  When the value specified is higher it calls vstr_make_spare_nodes() at which
+ point a return value of FALSE means that there was a malloc error, just as if
+ you called vstr_make_spare_nodes() directly.
+
+
+Constant: VSTR_CNTL_CONF_GET_NUM_SPARE_BASE
+
+ Parameter[1]: Returns number of spare Vstr_base objects
+ Type[1]: unsigned int *
+
+ Explanation:
+
+  This option gets the current number of spare Vstr_base objects.
+
+
+Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_BASE
+
+ Parameter[1]: Number of spare base objects to have
+ Type[1]: unsigned int
+
+ Explanation:
+
+  This option is will set the number of spare nodes of the specified type.
+
+ Note:
+
+  When the value specified is higher it has to create spare base objects
+ at which point a return value of FALSE means that there was a malloc error,
+ just as if you called vstr_make_base() directly and that had to create them.
+
+
+Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE
+
+ Parameter[1]: Minimum number of spare base objects to have
+ Type[1]: unsigned int
+
+ Parameter[2]: Maximum number of spare base objects to have
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This option will make the number of spare base objects fit into the range
+ given, by calling either creating spare base objects or destroying them.
+
+ Note:
+
+  When the value specified is higher it has to creates spare base objects
+ at which point a return value of FALSE means that there was a malloc error,
+ just as if you called vstr_make_base() directly and that had to create them.
+
+
+Constant: VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE
+
+ Parameter[1]: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)
+ Type[1]: unsigned int *
+
+ Explanation:
+
+  This option will get the type of the group allocation that a vstr_make_base()
+ will create with this configuration.
+
+
+Constant: VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE
+
+ Parameter[1]: Type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)
+ Type[1]: unsigned int
+
+ Explanation:
+
+  This option will set the type of the group allocation that a vstr_make_base()
+ will create with this configuration.
+
+ Note:
+
+  If this call changes the type of group malloc to perform, then all current
+ spare base objects will have to be deleted. And future base objects of the old
+ type will be directly free'd.
+
+
+Constant: VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC
+
+ Parameter[1]: Returns Vstr memory reference to numeric locale name C string
+ Type[1]: struct Vstr_ref **
+
+ Parameter[2]: Returns length of Vstr memory reference
+ Type[2]: size_t *
+
+ Explanation:
+
+  This option will get the value of the name of the LC_NUMERIC locale
+ configuration.
+
+
+Constant: VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC
+
+ Parameter[1]: Vstr memory reference to numeric locale name C string
+ Type[1]: struct Vstr_ref *
+
+ Parameter[2]: Length of Vstr memory reference
+ Type[2]: size_t
+
+ Explanation:
+
+  This option will set the value of the name of the LC_NUMERIC locale
+ configuration.
+
+ Note:
+
+  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+Constant: VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Returns Vstr memory reference to decimal point C string
+ Type[2]: struct Vstr_ref **
+
+ Parameter[3]: Returns length of Vstr memory reference
+ Type[3]: size_t *
+
+ Explanation:
+
+  This option will get the value of the decimal point LC_NUMERIC locale
+ variable.
+
+
+Constant: VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Vstr memory reference to decimal point C string
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Length of Vstr memory reference
+ Type[3]: size_t
+
+ Explanation:
+
+  This option will set the value of the decimal point LC_NUMERIC locale
+ variable.
+
+ Note:
+
+  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+Constant: VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Returns Vstr memory reference to thousands separator C string
+ Type[2]: struct Vstr_ref **
+
+ Parameter[3]: Returns length of Vstr memory reference
+ Type[3]: size_t *
+
+ Explanation:
+
+  This option will get the value of the thousands seperator LC_NUMERIC locale
+ variable.
+
+
+Constant: VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Vstr memory reference to thousands separator C string
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Length of Vstr memory reference
+ Type[3]: size_t
+
+ Explanation:
+
+  This option will set the value of the thousands seperator LC_NUMERIC locale
+ variable.
+
+ Note:
+
+  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+Constant: VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Returns Vstr memory reference to thousands grouping C string
+ Type[2]: struct Vstr_ref **
+
+ Explanation:
+
+  This option will get the value of the thousands grouping LC_NUMERIC locale
+ variable.
+
+
+Constant: VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP
+
+ Parameter[1]: Number base of locale information
+ Type[1]: unsigned int
+
+ Parameter[2]: Vstr memory reference to thousands grouping C string
+ Type[2]: struct Vstr_ref *
+
+ Explanation:
+
+  This option will set the value of the thousands grouping LC_NUMERIC locale
+ variable.
+
+ Note:
+
+  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+Constant: VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR
+
+ Parameter[1]: Returns Vstr memory reference to locale NULL pointer C string
+ Type[1]: struct Vstr_ref **
+
+ Parameter[2]: Returns length of Vstr memory reference
+ Type[2]: size_t *
+
+ Explanation:
+
+  This option will get the value of the locale NULL pointer
+ variable. This is what is printed when you pass NULL to "%s".
+
+
+Constant: VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR
+
+ Parameter[1]: Vstr memory reference to numeric locale NULL pointer C string
+ Type[1]: struct Vstr_ref *
+
+ Parameter[2]: Length of Vstr memory reference
+ Type[2]: size_t
+
+ Explanation:
+
+  This option will set the value of the locale NULL pointer
+ variable. This is what is printed when you pass NULL to "%s".
+
+ Note:
+
+  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
 
 
 Section: Constants passed to vstr_cntl_opt()
@@ -1846,6 +2130,11 @@ Constant: VSTR_CNTL_OPT_GET_CONF
 
   This option will get the default Vstr configuration.
 
+ Note:
+
+  This adds a reference to the configuration, so when you are finished with it
+ you'll have to call vstr_freee_conf() on it.
+
 
 Constant: VSTR_CNTL_OPT_SET_CONF
 
@@ -1855,4 +2144,54 @@ Constant: VSTR_CNTL_OPT_SET_CONF
  Explanation:
 
   This option will set the default Vstr configuration.
+
+ Note:
+
+  This is one of the few functions that take a configuration, but cannot take a
+ NULL pointer instead.
+
+
+Section: Constants passed to vstr_cntl_conf(..., VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE
+
+Constant: VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE
+
+ Explanation:
+
+  This type means that there is a group allocation configuration to not
+ allocating a cache.
+
+ Note:
+
+  This is type will mean that VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE is FALSE.
+
+
+Constant: VSTR_TYPE_CNTL_CONF_GRPALLOC_POS
+
+ Explanation:
+
+  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache.
+
+
+Constant: VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC
+
+ Explanation:
+
+  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache and an iovec cache.
+
+ Note:
+
+  The only way to guarantee that you have an iovec available immediately after
+ calling vstr_make_base() is to have at least this group allocation
+ configuration.
+
+
+Constant: VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR
+
+ Explanation:
+
+  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache, an iovec cache and a
+ cstr cache holder.
 

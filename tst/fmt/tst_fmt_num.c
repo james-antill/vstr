@@ -26,7 +26,8 @@ static void tst_vstr(const char *fmt, ...)
 int tst(void)
 {
   int ret = 0;
-
+  int num = 0;
+  
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.0d", 0);
   TST_B_TST(ret, 1, s1->len);
@@ -102,7 +103,78 @@ int tst(void)
   sprintf(buf, "%#.o", 0);
   if (!buf[0])
     return (EXIT_FAILED_OK); /* Solaris (2.8) gets this wrong at least... */
+  
+  num = 5;
+  while (num--)
+  {
+    unsigned int mfail_count = 0;
+    int spaces = 2;
+    
+    while (spaces < 10)
+    {
+      const char *fmt = NULL;
+      
+#define FMT(x) (fmt = ((num == 0xff) ? "<%" x "x>" : (num == 0xfe) ? "<%" x "X>" : (num == 0777) ? "<%" x "o>" : "<%" x "d>"))
+      
+      FMT("+#*");
+      vstr_del(s3, 1, s3->len);
+      
+      mfail_count = 0;
+      do
+      {
+        ASSERT(!s3->len);
+        vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+        tst_mfail_num(++mfail_count);
+      } while (!vstr_add_fmt(s3, s3->len, fmt, spaces, num));
+      tst_mfail_num(0);
+      sprintf(buf, fmt, spaces, num);
 
+      TST_B_TST(ret, 19, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+
+      FMT("*");
+      vstr_del(s3, 1, s3->len);
+      
+      mfail_count = 0;
+      do
+      {
+        ASSERT(!s3->len);
+        vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+        tst_mfail_num(++mfail_count);
+      } while (!vstr_add_fmt(s3, s3->len, fmt, -spaces, num));
+      tst_mfail_num(0);
+      sprintf(buf, fmt, -spaces, num);
+
+      TST_B_TST(ret, 19, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+
+      FMT(" #.*");
+      vstr_del(s3, 1, s3->len);
+      
+      mfail_count = 0;
+      do
+      {
+        ASSERT(!s3->len);
+        vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+        tst_mfail_num(++mfail_count);
+      } while (!vstr_add_fmt(s3, s3->len, fmt, spaces, num));
+      tst_mfail_num(0);
+      sprintf(buf, fmt, spaces, num);
+
+      TST_B_TST(ret, 19, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+
+      ++spaces;
+    }
+
+    switch (num)
+    {
+      case    4: num =    -3; break;
+      case   -4: num = 0x100; break;
+      case 0xff:              break;
+      case 0xfe: num = 01000; break;
+      case 0777: num =     1; break;
+      case    0:              break;
+    }
+  }
+  
   {
     static const char fmts[][80] = {
      "<%o|%#o|%d|%x|%#x|%#d>",

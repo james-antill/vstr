@@ -65,9 +65,9 @@ static int vstr__netstr_end_start(Vstr_base *base,
 {
   size_t len = 0;
 
-  assert(base);
-  assert(beg_pos);
-  assert(end_pos);
+  ASSERT(base);
+  ASSERT(beg_pos);
+  ASSERT(end_pos);
   
   if (!VSTR__ULONG_MAX_LEN)
     return (FALSE);

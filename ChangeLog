@@ -1,3 +1,121 @@
+2003-10-30  James Antill  <james@and.org>
+
+	* NEWS (2003-09-29): Release 1.0.10
+
+2003-10-29  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_SC_ADD_CSTR_GRPBASENUM_BUF): New helper
+	macro funcion for printing numbers.
+	(VSTR_SC_ADD_CSTR_GRPBASENUM_PTR): New helper macro funcion for printing
+	numbers.
+	(VSTR_SC_ADD_CSTR_GRPBASENUM_REF): New helper macro funcion for printing
+	numbers.
+
+	* include/vstr-inline.h (vstr_sc_add_cstr_grpbasenum_buf): New helper
+	funcion for printing numbers.
+	(vstr_sc_add_cstr_grpbasenum_ptr): New helper funcion for printing
+	numbers.
+	(vstr_sc_add_cstr_grpbasenum_ref): New helper funcion for printing
+	numbers.
+
+	* include/vstr-const.h (VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L): New
+	macro for specifying base 2.
+	(VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H): New macro for specifying base 2.
+	(VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC): Reference interface for
+	altering locale data, also allows overrides for specific number bases.
+	(VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC): Dito.
+	(VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT): Dito.
+	(VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT): Dito.
+	(VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP): Dito.
+	(VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP): Dito.
+	(VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP): Dito.
+	(VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP): Dito.
+	(VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR): Allows different values when
+	printing a NULL string. Allows compat. with win32 system *printf().
+	(VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR): Allows different values when
+	printing a NULL string. Allows compat. with win32 system *printf().
+
+	* src/vstr_sc.c (vstr_sc_add_grpbasenum_buf): Allows locale overrides
+	for specific number bases. So hex and oct can be grouped differently.
+	(vstr_sc_add_grpbasenum_ptr): Same as vstr_sc_add_grpbasenum_buf, but
+	data isn't copied.
+	(vstr_sc_add_grpbasenum_ref): Same as vstr_sc_add_grpbasenum_buf, but
+	data is referenced.
+	(vstr_sc_fmt_add_upper_base2_uint): Base 2 custom formatter.
+	(vstr_sc_fmt_add_upper_base2_ulong): Base 2 custom formatter.
+	(vstr_sc_fmt_add_upper_base2_size): Base 2 custom formatter.
+	(vstr_sc_fmt_add_upper_base2_uintmax): Base 2 custom formatter.
+	(vstr_sc_fmt_add_lower_base2_uint): Base 2 custom formatter.
+	(vstr_sc_fmt_add_lower_base2_ulong): Base 2 custom formatter.
+	(vstr_sc_fmt_add_lower_base2_size): Base 2 custom formatter.
+	(vstr_sc_fmt_add_lower_base2_uintmax): Base 2 custom formatter.
+
+2003-10-27  James Antill  <james@and.org>
+
+	* include/vstr-const.h (VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE):
+	Interface to cache Vstr base strings, thus. not needing to allocate
+	memory for temporary strings.
+	(VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE): Dito.
+	(VSTR_CNTL_CONF_GET_NUM_SPARE_BASE): Dito.
+	(VSTR_CNTL_CONF_SET_NUM_SPARE_BASE): Dito.
+	(VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE): Dito.
+	(VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE): Dito.
+	(VSTR_TYPE_CNTL_CONF_GRPALLOC_POS): Dito.
+	(VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC): Dito.
+	(VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR): Dito.
+
+2003-10-24  James Antill  <james@and.org>
+
+	* src/vstr_conv.c (vstr_conv_encode_uri): Fixes for
+	pre-memory allocation when splitting nodes.
+	(vstr_conv_decode_uri): Fixes for pre-memory allocation when splitting
+	nodes.
+
+	* src/vstr_sub.c (vstr__sub_buf_slow): Fix corner case memory
+	allocation bug.
+
+	* src/vstr.c (vstr_make_base): Do changes so that we call malloc() less,
+	also allow zero malloc() calls via. reusing Vstr_base objects.
+
+2003-10-15  James Antill  <james@and.org>
+
+	* include/main_system.h: Added build portability fix, always explicitly
+	include stdin/inttype.
+
+2003-10-08  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (VSTR__TRUE): Cleanup the inline code, only
+	compiles as C again.
+
+2003-10-02  James Antill  <james@and.org>
+
+	* src/vstr_sect.c (vstr__sects_add): Extra protection from sz overflow.
+	(vstr__sects_update_cb): Fix cache updating on some cases of delete.
+
+2003-10-01  James Antill  <james@and.org>
+
+	* include/vstr-nx-inline.h (vstr__base_scan_rev_beg): Fix bug in
+	ASSERT_RET, doesn't affect non-debug code.
+
+	* src/vstr.c (vstr__swap_node_X_X): Fix bug when substituting the last
+	node.
+
+	* src/vstr_cache.c (vstr__cache_iovec_alloc): Fix delayed allocation
+	even when NUM_IOV_MIN_ALLOC was set.
+	(vstr__cache_iovec_alloc): Bad pointer was left if initial malloc
+	failed.
+
+	* src/vstr_del.c (vstr_extern_inline_del): Fix bug with deleting
+	data in the middle of a string and the type of the node not updating
+	int the cache.
+
+	* src/vstr_add.c (vstr_add_iovec_buf_beg): Allow extra node.
+
+	* src/vstr_sc.c (vstr_sc_fmt_cb_beg): Fix problem with using grouping,
+	precision and left shifting at once.
+	(vstr_sc_fmt_cb_end): Fix problem with using grouping,
+	precision and left shifting at once.
+
 2003-09-29  James Antill  <james@and.org>
 
 	* NEWS (2003-09-29): Relase-1.0.9

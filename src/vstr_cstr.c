@@ -45,15 +45,19 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
 {
   Vstr_ref *ref = NULL;
   Vstr__cache_data_cstr *data = NULL;
-  unsigned int off = base->conf->cache_pos_cb_cstr;
+  unsigned int off = 3;
 
   ASSERT(base && pos && ((pos + len - 1) <= base->len) && ret_off);
   ASSERT(len || (!base->len && (pos == 1)));
 
-  ASSERT(off == 3);
+  ASSERT(off == base->conf->cache_pos_cb_cstr);
 
   if (!(data = vstr_cache_get(base, off)))
   {
+    int ret = FALSE;
+
+    ASSERT(base->grpalloc_cache < VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR);
+    
     if (!vstr_cache_set(base, off, NULL))
       return (NULL);
 
@@ -64,7 +68,8 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     }
     data->ref = NULL;
 
-    vstr_cache_set(base, off, data);
+    ret = vstr_cache_set(base, off, data);
+    ASSERT(ret);
   }
 
   if (data->ref && data->len)

@@ -33,5 +33,8 @@ int tst(void)
   if (vstr_cache_srch(s1->conf, "/tst_srch/tst") != 4)
     return (5);
 
+  if (vstr_cache_srch(s1->conf, "/foo") != 0)
+    return (6);
+
   return (EXIT_SUCCESS);
 }

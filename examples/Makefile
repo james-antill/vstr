@@ -6,6 +6,7 @@ CC=gcc
 
 VSTR_LOCAL_DIR=../
 # VSTR_LOCAL_DIR=../j
+VSTR_LOCAL_DIR=../cov
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3 # -ansi -pedantic
@@ -16,11 +17,11 @@ HAVE_LIBZ=1
 HAVE_LIBBZ2=1
 HAVE_GMP=1
 
-LOCAL=1
+LOCAL=0
 PROFILE=0
 # 1 == Static with libvstr, 2 == really static
-STATIC=1
-FAST=0
+STATIC=0
+FAST=1
 
 ifeq ($(PROFILE),1)
 PROF=-pg
@@ -58,7 +59,7 @@ GLIB_CFLAGS=`pkg-config --cflags glib-2.0` $(EX_CFLAGS)
 GLIB_LDFLAGS=`pkg-config --libs glib-2.0` $(EX_LDFLAGS)
 
 SSL_CFLAGS=$(EX_CFLAGS)
-SSL_LDFLAGS=-lssl $(EX_LDFLAGS)
+SSL_LDFLAGS=-lcrypto $(EX_LDFLAGS)
 
 ZCAT_CFLAGS=$(EX_CFLAGS)
 ZCAT_LDFLAGS=-lz -lbz2 $(EX_LDFLAGS)
@@ -81,12 +82,13 @@ endif
 endif
 
 ifeq ($(HAVE_GMP),1)
-GMP_APPS= ex_gmp_factorials
+GMP_APPS= ex_gmp_factorials ex_gmp_nums
 endif
 
 FILES= ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
-  ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip ex_csv ex_highlight \
+  ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
+  ex_csv ex_highlight ex_ssi \
   ex_perf_nodesize \
   ex_perf_nodesize_foreach \
   $(GMP_APPS) \
@@ -135,6 +137,15 @@ ex_gmp_factorials.o: ex_gmp_factorials.c
 		@$(CC) $(GMP_CFLAGS) -o $@ -c $<
 
 ex_gmp_factorials: ex_gmp_factorials.o
+		@echo "Linking $@"
+		@$(CC) -o $@ $< $(GMP_LDFLAGS)
+		@echo ""
+
+ex_gmp_nums.o: ex_gmp_nums.c
+		@echo "Compiling $<"
+		@$(CC) $(GMP_CFLAGS) -o $@ -c $<
+
+ex_gmp_nums: ex_gmp_nums.o
 		@echo "Linking $@"
 		@$(CC) -o $@ $< $(GMP_LDFLAGS)
 		@echo ""

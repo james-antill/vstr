@@ -29,10 +29,19 @@ int tst(void)
   } while (!VSTR_SUB_CSTR_REF(s1, 1, s1->len, &ref, 0));
   tst_mfail_num(0);
 
-
   TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
 
-  VSTR_SUB_CSTR_REF(s1, 1, s1->len, &ref, 0);
+  vstr_del(s1, 1, 1);
+  do
+  {
+    ASSERT(vstr_cmp_cstr_eq(s1, 1, s1->len, buf + 1));
+
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_PTR, 1000);
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_NON, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!VSTR_SUB_CSTR_REF(s1, 1, s1->len, &ref, 0));
+  tst_mfail_num(0);
+  
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
 
   VSTR_SUB_CSTR_REF(s1, 1, s1->len, &ref, 1);
@@ -59,20 +68,20 @@ int tst(void)
     X.ptr = (void *)"X"; X.func = vstr_ref_cb_free_nothing; X.ref = 0;
 
     strcat(buf, "abcd");
-    vstr_add_cstr_ref(s1, s1->len, &a, 0);
-    vstr_add_cstr_ref(s1, s1->len, &X, 0);
-    vstr_add_cstr_ref(s1, s1->len, &c, 0);
-    vstr_add_cstr_ref(s1, s1->len, &d, 0);
+    ASSERT(vstr_add_cstr_ref(s1, s1->len, &a, 0));
+    ASSERT(vstr_add_cstr_ref(s1, s1->len, &X, 0));
+    ASSERT(vstr_add_cstr_ref(s1, s1->len, &c, 0));
+    ASSERT(vstr_add_cstr_ref(s1, s1->len, &d, 0));
     /* sets up the pos cache */
     tmp = vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY");
     ASSERT(!tmp);
-    vstr_sub_cstr_ref(s1, s1->len - 2, 1, &b, 0);
-    TST_B_TST(ret, 5, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
+    TST_B_TST(ret, 5, !vstr_sub_cstr_ref(s1, s1->len - 2, 1, &b, 0));
+    TST_B_TST(ret, 6, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
   }
 
-  TST_B_TST(ret, 6, !vstr_sub_ref(s1, 1, s1->len, &ref, 0, 0));
-  TST_B_TST(ret, 7, (s1->len != 0));
-  TST_B_TST(ret, 8, (s1->num != 0));
+  TST_B_TST(ret, 7, !vstr_sub_ref(s1, 1, s1->len, &ref, 0, 0));
+  TST_B_TST(ret, 8, (s1->len != 0));
+  TST_B_TST(ret, 9, (s1->num != 0));
   
   return (TST_B_RET(ret));
 }

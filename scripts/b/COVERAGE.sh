@@ -11,9 +11,10 @@ else
   exit 1;
 fi
 
-glibc=--with-fmt-float=glibc
+# float=--with-fmt-float=glibc
+float=--with-fmt-float=host
 
-export CFLAGS="-g -O1 -fprofile-arcs -ftest-coverage -DUSE_SYSCALL_MAIN"
+export CFLAGS="-g -fprofile-arcs -ftest-coverage -DUSE_SYSCALL_MAIN"
 $c \
   --enable-tst-noinline \
   --enable-tst-nosyscall-asm \
@@ -27,5 +28,5 @@ $c \
   --enable-wrap-memrchr \
   --enable-wrap-memset \
   --enable-wrap-memmove \
-  $glibc \
+  $float \
     $@ && make clean && make check

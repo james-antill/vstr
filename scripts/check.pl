@@ -157,8 +157,8 @@ sub conf
 {
   my $p_args = join " ", @_;
 
-  $p_args =~ s/--enable-//g;
-  $p_args =~ s/--with-//g;
+  $p_args =~ s/--enable-/-e-/g;
+  $p_args =~ s/--with-/-w-/g;
 
   FOUT->print("\n");
   FOUT->print("\n");

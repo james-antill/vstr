@@ -96,27 +96,35 @@ VSTR__DECL_TYPEDEF1(struct Vstr_fmt_spec)
   void *VSTR__STRUCT_HACK_ARRAY(data_ptr); /* public/read|write */
 } VSTR__DECL_TYPEDEF2(Vstr_fmt_spec);
 
+VSTR__DECL_TYPEDEF1(struct Vstr_locale_num_base)
+{
+  unsigned int num_base; /* private */
+  struct Vstr_locale_num_base *next; /* private */
+  struct Vstr_ref *decimal_point_ref; /* private */
+  struct Vstr_ref *thousands_sep_ref; /* private */
+  struct Vstr_ref *grouping; /* private */
+  size_t decimal_point_len; /* private */
+  size_t thousands_sep_len; /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_locale_num_base);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_locale)
 {
-  char *name_lc_numeric_str; /* private */
-  char *decimal_point_str; /* private */
-  char *thousands_sep_str; /* private */
-  char *grouping; /* private */
+  struct Vstr_ref *name_lc_numeric_ref; /* private */
   size_t name_lc_numeric_len; /* private */
-  size_t decimal_point_len; /* private */
-  size_t thousands_sep_len; /* private */
+  struct Vstr_locale_num_base *num_beg; /* private */
+  
+  struct Vstr_ref *null_ref; /* private */
+  size_t null_len; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_locale);
 
 struct Vstr_base; /* fwd declaration for callbacks */
+
 VSTR__DECL_TYPEDEF1(struct Vstr_cache_cb)
 {
   const char *name;
   void *(*cb_func)(const struct Vstr_base *, size_t, size_t,
                    unsigned int, void *);
 } VSTR__DECL_TYPEDEF2(Vstr_cache_cb);
-
-struct Vstr__fmt_usr_name_node; /* opaque */
 
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
@@ -169,15 +177,16 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
   unsigned int fmt_usr_curly_braces : 1; /* private */
   unsigned int atomic_ops : 1; /* private */
 
-  unsigned int unused3_1 : 1; /* private */
-  unsigned int unused3_2 : 1; /* private */
-  unsigned int unused3_3 : 1; /* private */
+  unsigned int grpalloc_cache : 3; /* private */
 
   VSTR__DEF_BITFLAG_1_4(4); /* private */
   VSTR__DEF_BITFLAG_1_4(5); /* private */
   VSTR__DEF_BITFLAG_1_4(6); /* private */
   VSTR__DEF_BITFLAG_1_4(7); /* private */
   VSTR__DEF_BITFLAG_1_4(8); /* private */
+  
+  unsigned int spare_base_num; /* private */
+  struct Vstr_base *spare_base_beg; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)
@@ -203,7 +212,10 @@ VSTR__DECL_TYPEDEF1(struct Vstr_base)
   unsigned int node_ptr_used : 1; /* private */
   unsigned int node_ref_used : 1; /* private */
 
-  VSTR__DEF_BITFLAG_1_4(7); /* private */
+  unsigned int grpalloc_cache : 3; /* private */
+
+  unsigned int unused7_4 : 1; /* private */
+  
   VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_base);
 
@@ -250,13 +262,11 @@ VSTR__DECL_TYPEDEF1(struct Vstr_iter)
 
 /* internal defines ... */
 
-struct Vstr__cache_data_cstr
+struct Vstr__cache_data_pos
 {
  size_t pos;
- size_t len;
- struct Vstr_ref *ref;
- size_t sz; /* ABI: order must be this, for ABI */
- size_t off;
+ unsigned int num;
+ struct Vstr_node *node;
 };
 
 struct Vstr__cache_data_iovec
@@ -268,11 +278,13 @@ struct Vstr__cache_data_iovec
  unsigned int sz;
 };
 
-struct Vstr__cache_data_pos
+struct Vstr__cache_data_cstr
 {
  size_t pos;
- unsigned int num;
- struct Vstr_node *node;
+ size_t len;
+ struct Vstr_ref *ref;
+ size_t sz; /* FIXME: ABI: order must be this, for 1.0.x ABI */
+ size_t off;
 };
 
 struct Vstr__cache
@@ -288,5 +300,21 @@ struct Vstr__base_cache
 {
  struct Vstr_base base;
  struct Vstr__cache *cache;
+};
+
+struct Vstr__base_p_cache
+{
+ struct Vstr__base_cache s;
+ struct Vstr__cache_data_pos   real_pos;
+};
+struct Vstr__base_pi_cache
+{
+ struct Vstr__base_p_cache s;
+ struct Vstr__cache_data_iovec real_iov;
+};
+struct Vstr__base_pic_cache
+{
+ struct Vstr__base_pi_cache s;
+ struct Vstr__cache_data_cstr  real_cstr;
 };
 

@@ -105,7 +105,25 @@ int tst(void)
     ASSERT(mfail_count > 1);
     vstr_free_conf(succeeded);
   }
+  
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_base *succeeded = NULL;
+    unsigned long mfail_count = 0;
 
+    while (!succeeded)
+    {
+      tst_mfail_num(++mfail_count);
+      succeeded = vstr_make_base(NULL);
+    }
+    tst_mfail_num(0);
+    ASSERT(mfail_count > 1);
+    vstr_free_base(succeeded);
+  }
+
+  /* pre-init all data */
+  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE,
+                 VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR);
   if (MFAIL_NUM_OK)
   {
     Vstr_base *succeeded = NULL;

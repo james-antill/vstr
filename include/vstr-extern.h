@@ -176,6 +176,9 @@
 
 #define VSTR_REF_MAKE_STRDUP(x) vstr_ref_make_memdup((x), strlen(x) + 1)
 
+#define VSTR_SC_ADD_CSTR_GRPBASENUM_BUF(x, y, z, buf) vstr_sc_add_grpbasenum_buf(x, y, z, buf, strlen(buf))
+#define VSTR_SC_ADD_CSTR_GRPBASENUM_PTR(x, y, z, ptr) vstr_sc_add_grpbasenum_ptr(x, y, z, ptr, strlen(ptr))
+#define VSTR_SC_ADD_CSTR_GRPBASENUM_REF(x, y, z, ref, off) vstr_sc_add_grpbasenum_ref(x, y, z, ref, off, strlen(((char *)(ref)->ptr) + (off)))
 #define VSTR_SC_ADD_CSTR_GRPNUM_BUF(x, y, buf) vstr_sc_add_grpnum_buf(x, y, buf, strlen(buf))
 
 #endif
@@ -875,6 +878,24 @@ extern int vstr_sc_fmt_add_ipv4_vec_cidr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
 extern int vstr_sc_fmt_add_ipv6_vec_cidr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
+
+extern int vstr_sc_fmt_add_upper_base2_uint(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_upper_base2_ulong(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_upper_base2_size(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_upper_base2_uintmax(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_lower_base2_uint(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_lower_base2_ulong(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_lower_base2_size(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_lower_base2_uintmax(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+
 extern int vstr_sc_fmt_add_all(struct Vstr_conf *);
 
 extern int vstr_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)
@@ -920,6 +941,25 @@ extern void vstr_sc_dirname(const struct Vstr_base *, size_t, size_t,
                             size_t *)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
+extern int vstr_sc_add_grpbasenum_buf(struct Vstr_base *, size_t, unsigned int,
+                                      const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_cstr_grpbasenum_buf(struct Vstr_base *, size_t,
+                                           unsigned int, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_grpbasenum_ptr(struct Vstr_base *, size_t, unsigned int,
+                                      const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_cstr_grpbasenum_ptr(struct Vstr_base *, size_t,
+                                           unsigned int, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_grpbasenum_ref(struct Vstr_base *, size_t, unsigned int,
+                                      struct Vstr_ref *, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_cstr_grpbasenum_ref(struct Vstr_base *, size_t,
+                                           unsigned int,
+                                           struct Vstr_ref *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_sc_add_grpnum_buf(struct Vstr_base *, size_t,
                                   const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
@@ -952,7 +992,6 @@ extern size_t vstr_sc_conv_num10_uintmax(char *, size_t,
                                          VSTR_AUTOCONF_uintmax_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
-
 /* == inline helper functions == */
 /* indented because they aren't documented */
  extern int vstr_extern_inline_add_buf(struct Vstr_base *, size_t,
@@ -965,9 +1004,6 @@ extern size_t vstr_sc_conv_num10_uintmax(char *, size_t,
  extern int vstr_extern_inline_add_rep_chr(struct Vstr_base *, size_t,
                                            char, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
- extern struct Vstr__cache_data_pos *
-                     vstr_extern_inline_make_cache_pos(const struct Vstr_base *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
  extern void *vstr_wrap_memcpy(void *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();

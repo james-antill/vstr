@@ -138,8 +138,7 @@ static void vstr__mov_iovec_kill(Vstr_base *base)
   if (!base->cache_available)
     return;
 
-  if (!VSTR__CACHE(base))
-    return;
+  assert(VSTR__CACHE(base));
 
   base->iovec_upto_date = FALSE;
 }

@@ -1,4 +1,12 @@
- Latest stable release is 1.0.9
+ Latest stable release is 1.0.10
+
+2003-09-30: Version 1.0.10 ... More testing, now at over 98% code coverage.
+A bunch of new features so that the printf like function can easily emulate
+some more common extension, including configurable grouping per base and the
+ability to print numbers in base 2. Added code so that temporary strings can
+be created used and destroyed without entering malloc(). Changes to
+documentation and examples. Removed C++ inline code, now C++ just calls the
+out of line versions.
 
 2003-09-29: Version 1.0.9 ... Slightly more testing, now at over 96% code
 coverage. Another set of corner cases got fixed. More documentation, including

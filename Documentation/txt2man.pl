@@ -26,7 +26,7 @@ chomp($hdr_date);
 
 my $hdr_ver = undef;
 if (!open(VER, "< ./VERSION") && !open(VER, "< ../VERSION"))
-  { die "No version file in parent directory."; }
+  { die "open(VERSION: $!"; }
 $_ = <VER>; chomp; $hdr_ver = $_;
 close(VER);
 
@@ -254,24 +254,15 @@ sub convert()
 # MAIN
 
 # functions man page...
-if (!open (IN, "< $docs/functions.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
 
-if (!open (OUT, "> functions.3"))
-  {
-    die "Open (write): $@";
-  }
+open (OUT, "> functions.3")        || die "open(functions.3): $!";
 
 OUT->print($man_funcs_header);
 
 synopsis(1);
 
-if (!open (IN, "< $docs/functions.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
 
 OUT->print($man_funcs_desc);
 
@@ -280,24 +271,15 @@ convert();
 OUT->print($man_funcs_seealso);
 
 # constants man page...
-if (!open (IN, "< $docs/constants.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
 
-if (!open (OUT, "> constants.3"))
-  {
-    die "Open (write): $@";
-  }
+open (OUT, "> constants.3")        || die "open(constants.3): $!";
 
 OUT->print($man_consts_header);
 
 synopsis(0);
 
-if (!open (IN, "< $docs/constants.txt"))
-  {
-    die "Open (read): $@";
-  }
+open (OUT, "> constants.3")        || die "open(constants.3): $!";
 
 OUT->print($man_consts_desc);
 

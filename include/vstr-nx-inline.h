@@ -34,6 +34,7 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
     case 3:  tmp = s1[2] == c; if (tmp) { ret = s1 + 2; break; }
     case 2:  tmp = s1[1] == c; if (tmp) { ret = s1 + 1; break; }
     case 1:  tmp = s1[0] == c; if (tmp) { ret = s1 + 0; break; }
+    case 0:
       break;
     default: ret = memrchr(s1, c, n);
       break;
@@ -48,26 +49,29 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
 #ifndef NDEBUG /* this is all non threadsafe ... */
 static inline void vstr__debug_alloc(void)
 {
+  size_t sz = vstr__options.mem_sz;
+  
   ++vstr__options.mem_num;
 
   if (!vstr__options.mem_sz)
   {
-    vstr__options.mem_sz = 8;
-    vstr__options.mem_vals = malloc(sizeof(void *) * vstr__options.mem_sz);
-    ASSERT(vstr__options.mem_vals);
+    sz = 8;
+    vstr__options.mem_vals = malloc(sizeof(Vstr__debug_malloc) * sz);
   }
-
-  if (vstr__options.mem_num > vstr__options.mem_sz)
+  else if (vstr__options.mem_num > vstr__options.mem_sz)
   {
-    vstr__options.mem_sz *= 2;
+    sz *= 2;
     vstr__options.mem_vals = realloc(vstr__options.mem_vals,
-                                     sizeof(void *) * vstr__options.mem_sz);
-    ASSERT(vstr__options.mem_vals);
+                                     sizeof(Vstr__debug_malloc) * sz);
   }
-  ASSERT(vstr__options.mem_num <= vstr__options.mem_sz);
+  ASSERT(vstr__options.mem_num <= sz);
+  ASSERT(vstr__options.mem_vals);
+
+  vstr__options.mem_sz = sz;
 }
 
-extern inline void *vstr__debug_malloc(size_t sz)
+extern inline void *vstr__debug_malloc(size_t sz,
+                                       const char *file, unsigned int line)
 {
   void *ret = NULL;
 
@@ -81,83 +85,92 @@ extern inline void *vstr__debug_malloc(size_t sz)
   ret = malloc(sz);
   ASSERT_RET (ret, NULL);
 
-  vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
+  vstr__options.mem_vals[vstr__options.mem_num - 1].ptr  = ret;
+  vstr__options.mem_vals[vstr__options.mem_num - 1].file = file;
+  vstr__options.mem_vals[vstr__options.mem_num - 1].line = line;
 
   return (ret);
 }
 
-extern inline void *vstr__debug_calloc(size_t num, size_t sz)
+extern inline int vstr__debug_malloc_check_mem(const void *ptr)
 {
-  void *ret = NULL;
+  unsigned int scan = 0;
 
-  if (VSTR__DEBUG_MALLOC_DEC())
-    return (NULL);
+  ASSERT(vstr__options.mem_num);
+    
+  while (vstr__options.mem_vals[scan].ptr &&
+         (vstr__options.mem_vals[scan].ptr != ptr))
+    ++scan;
+  
+  ASSERT(vstr__options.mem_vals[scan].ptr);
 
-  vstr__debug_alloc();
-
-  ASSERT(num && sz);
-
-  ret = calloc(num, sz);
-  ASSERT_RET (ret, NULL);
-
-  vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
-
-  return (ret);
+  return (scan);
 }
 
 extern inline void vstr__debug_free(void *ptr)
 {
   if (ptr)
   {
-    unsigned int scan = 0;
+    unsigned int scan = vstr__debug_malloc_check_mem(ptr);
 
-    ASSERT(vstr__options.mem_num);
     --vstr__options.mem_num;
 
-    while (vstr__options.mem_vals[scan] &&
-           (vstr__options.mem_vals[scan] != ptr))
-      ++scan;
-
-    ASSERT(vstr__options.mem_vals[scan]);
     if (scan != vstr__options.mem_num)
     {
-      SWAP_TYPE(vstr__options.mem_vals[scan],
-                vstr__options.mem_vals[vstr__options.mem_num],
+      SWAP_TYPE(vstr__options.mem_vals[scan].ptr,
+                vstr__options.mem_vals[vstr__options.mem_num].ptr,
                 void *);
-      vstr__options.mem_vals[vstr__options.mem_num] = NULL;
+      SWAP_TYPE(vstr__options.mem_vals[scan].file,
+                vstr__options.mem_vals[vstr__options.mem_num].file,
+                const char *);
+      SWAP_TYPE(vstr__options.mem_vals[scan].line,
+                vstr__options.mem_vals[vstr__options.mem_num].line,
+                unsigned int);
     }
+    vstr__options.mem_vals[vstr__options.mem_num].ptr = NULL;
+    free(ptr);
   }
-
-  free(ptr);
 }
 
-extern inline void *vstr__debug_realloc(void *ptr, size_t sz)
+extern inline void *vstr__debug_realloc(void *ptr, size_t sz,
+                                        const char *file, unsigned int line)
 {
-  void *tmp = NULL;
+  void *ret = NULL;
 
   ASSERT(ptr && sz);
 
   if (VSTR__DEBUG_MALLOC_DEC())
     return (NULL);
 
-  tmp = realloc(ptr, sz);
-  ASSERT_RET (tmp, NULL);
+  ret = realloc(ptr, sz);
+  ASSERT_RET (ret, NULL);
 
-  if (ptr != tmp)
+  if (ptr != ret)
+  {
+    unsigned int scan = vstr__debug_malloc_check_mem(ptr);
+
+    vstr__options.mem_vals[scan].ptr  = ret;
+    vstr__options.mem_vals[scan].file = file;
+    vstr__options.mem_vals[scan].line = line;
+  }
+
+  return (ret);
+}
+extern inline void vstr__debug_malloc_check_empty(void)
+{
+  if (0 && vstr__options.mem_num)
   {
     unsigned int scan = 0;
 
-    ASSERT(vstr__options.mem_num);
-
-    while (vstr__options.mem_vals[scan] &&
-           (vstr__options.mem_vals[scan] != ptr))
+    while (vstr__options.mem_vals[scan].ptr)
+    {
+      fprintf(stderr, " MEM DEBUG: ptr from %u:%s\n",
+              vstr__options.mem_vals[scan].line,
+              vstr__options.mem_vals[scan].file);
       ++scan;
-
-    ASSERT(vstr__options.mem_vals[scan]);
-    vstr__options.mem_vals[scan] = tmp;
+    }
   }
-
-  return (tmp);
+  ASSERT(!vstr__options.mem_num);
 }
 #endif
 
@@ -263,7 +276,10 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
 
   ASSERT(base && num && len && type && scan_str && scan_len);
 
-  ASSERT_RET(*len && ((pos + *len - 1) <= base->len), FALSE);
+  if (!*len)
+    return (FALSE);
+  
+  ASSERT_RET(((pos + *len - 1) <= base->len), FALSE);
 
   assert(base->iovec_upto_date);
 
@@ -358,3 +374,44 @@ extern inline Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct 
   return (ref);
 }
 #endif
+
+extern inline const char *
+vstr__loc_num_grouping(Vstr_locale *loc, unsigned int num_base)
+{
+  Vstr_locale_num_base *srch = vstr__loc_num_srch(loc, num_base, FALSE);
+
+  return (srch->grouping->ptr);
+}
+
+extern inline const char *
+vstr__loc_num_sep_ptr(Vstr_locale *loc, unsigned int num_base)
+{
+  Vstr_locale_num_base *srch = vstr__loc_num_srch(loc, num_base, FALSE);
+
+  return (srch->thousands_sep_ref->ptr);
+}
+
+extern inline size_t
+vstr__loc_num_sep_len(Vstr_locale *loc, unsigned int num_base)
+{
+  Vstr_locale_num_base *srch = vstr__loc_num_srch(loc, num_base, FALSE);
+
+  return (srch->thousands_sep_len);
+}
+
+extern inline const char *
+vstr__loc_num_pnt_ptr(Vstr_locale *loc, unsigned int num_base)
+{
+  Vstr_locale_num_base *srch = vstr__loc_num_srch(loc, num_base, FALSE);
+
+  return (srch->decimal_point_ref->ptr);
+}
+
+extern inline size_t
+vstr__loc_num_pnt_len(Vstr_locale *loc, unsigned int num_base)
+{
+  Vstr_locale_num_base *srch = vstr__loc_num_srch(loc, num_base, FALSE);
+
+  return (srch->decimal_point_len);
+}
+

@@ -29,6 +29,8 @@ static struct
 #define EX_HL_SEQ_T(x, y) \
    x, " "  y " ", 1, 1, 0 }, \
  { x, "("  y " ", 1, 1, 0 }, \
+ { x, " "  y ")", 1, 1, 0 }, \
+ { x, "("  y ")", 1, 1, 0 }, \
  { x, "*"  y " ", 1, 1, 0 }, \
  { x, "\n" y " ", 1, 1, 0
 #define EX_HL_SEQ_WS(x, y) \
@@ -69,6 +71,7 @@ static struct
  { EX_HL_SEQ_T("vstrsects", "Vstr_sects") },
  { EX_HL_SEQ_T("vstrfmt", "Vstr_fmt_spec") },
  { EX_HL_SEQ_T("pollfd", "struct pollfd") },
+ { EX_HL_SEQ_T("mpzt", "mpz_t") },
  
  { EX_HL_SEQ_CPP("cppif", "if") },
  { EX_HL_SEQ_CPP("cppifndef", "ifndef") },
@@ -98,10 +101,17 @@ static struct
  { EX_HL_SEQ_T("inline", "inline") },
  { EX_HL_SEQ_T("void", "void") },
  { EX_HL_SEQ_T("unsigned", "unsigned") },
- { EX_HL_SEQ_T("int", "int") },
  { EX_HL_SEQ_T("char", "char") },
- { EX_HL_SEQ_T("double", "double") },
+ { EX_HL_SEQ_T("short", "short") },
+ { EX_HL_SEQ_T("int", "int") },
+ { EX_HL_SEQ_T("long", "long") },
  { EX_HL_SEQ_T("float", "float") },
+ { EX_HL_SEQ_T("double", "double") },
+ { EX_HL_SEQ_T("sizet", "size_t") },
+ { EX_HL_SEQ_T("offt", "off_t") },
+ { EX_HL_SEQ_T("off64t", "off64_t") },
+ { EX_HL_SEQ_T("intmaxt", "intmax_t") },
+ { EX_HL_SEQ_T("uintmaxt", "uintmax_t") },
  
  { EX_HL_SEQ_SB("exit", "exit") },
  { EX_HL_SEQ_B("err", "err") },
@@ -115,6 +125,11 @@ static struct
  { EX_HL_SEQ_VAL("compversion", "__VERSION__") },
  { EX_HL_SEQ_VAL("compfile", "__FILE__") },
  { EX_HL_SEQ_VAL("compline", "__LINE__") },
+ { EX_HL_SEQ_VAL("charbit", "CHAR_BIT") },
+ { EX_HL_SEQ_VAL("intmax", "INT_MAX") },
+ { EX_HL_SEQ_VAL("intmin", "INT_MIN") },
+ { EX_HL_SEQ_VAL("intjmax", "INTMAX_MAX") },
+ { EX_HL_SEQ_VAL("intjmin", "INTMAX_MIN") },
  { EX_HL_SEQ_VAL("stdin", "stdin") },
  { EX_HL_SEQ_VAL("stdout", "stdout") },
  { EX_HL_SEQ_VAL("stderr", "stderr") },
@@ -432,13 +447,14 @@ int main(int argc, char *argv[])
     io_fd_set_o_nonblock(STDIN_FILENO);
     
     vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
+    vstr_add_rep_chr(s2, s2->len, '\n', 2);
     ex_hl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
     vstr_add_fmt(s1, s1->len,
                  "</pre>\n"
                  "<!-- C to html convertion of %s -->\n"
                  "<!--   done on %s -->\n"
-                 "<!--   done by ex_highlight -->\n",
-                 argv[count], ctime(&now));
+                 "<!--   done by jhighlight -->\n",
+                 "stdin", ctime(&now));
   }
 
   /* loop through all arguments, open the file specified
@@ -447,6 +463,9 @@ int main(int argc, char *argv[])
   {
     unsigned int ern = 0;
 
+    ASSERT(!s2->len);
+    vstr_add_cstr_ptr(s2, 0, "\n"); /* add to begining */
+    
     if (s2->len <= EX_MAX_R_DATA_INCORE)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
@@ -458,13 +477,14 @@ int main(int argc, char *argv[])
     {
       int fd = io_open(argv[count]);
 
+      
       ex_hl_read_fd_write_stdout(s1, s2, fd);
 
       if (close(fd) == -1)
         warn("close(%s)", argv[count]);
     }
     else if (ern && (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
-      err(EXIT_FAILURE, "add");
+      err(EXIT_FAILURE, "mmap");
     else
       ex_hl_process_limit(s1, s2, 0);
     

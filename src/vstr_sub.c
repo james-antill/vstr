@@ -64,7 +64,8 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   size_t add_len = 0;
   size_t del_len = 0;
   size_t real_pos = 0;
-
+  int ret = FALSE;
+  
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
 
@@ -76,8 +77,8 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   else
     add_len = buf_len - len;
 
-  if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    return (FALSE);
+  ret = vstr_iter_fwd_beg(base, pos, len, iter);
+  ASSERT_RET(ret, FALSE);
 
   do
   {
@@ -94,9 +95,9 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
 
   buf_len = orig_buf_len;
 
-  if (sub_add_len == buf_len)
+  if ((sub_add_len == buf_len) || (sub_add_len == len))
   { /* no _BUF nodes, so we can't optimise it anyway ... */
-    int ret = vstr_add_buf(base, pos - 1, buf, buf_len);
+    ret = vstr_add_buf(base, pos - 1, buf, buf_len);
 
     if (!ret)
       return (FALSE);
@@ -124,8 +125,8 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   { /* loop again removing any non _BUF nodes */
     int nxt_iter = FALSE;
 
-    if (!vstr_iter_fwd_beg(base, pos, len, iter))
-      return (FALSE);
+    ret = vstr_iter_fwd_beg(base, pos, len, iter);
+    ASSERT_RET(ret, FALSE);
 
     do
     {
@@ -203,8 +204,8 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
   if (!len || !ptr_len)
     goto simple_sub;
 
-  if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    return (FALSE);
+  ret = vstr_iter_fwd_beg(base, pos, len, iter);
+  ASSERT_RET(ret, FALSE);
 
   if ((ptr_len <= VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
   {
@@ -280,8 +281,8 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
   if (!len || !ref_len)
     goto simple_sub;
 
-  if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    return (FALSE);
+  ret = vstr_iter_fwd_beg(base, pos, len, iter);
+  ASSERT_RET(ret, FALSE);
 
   if ((ref_len <= VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
   {
@@ -390,8 +391,8 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
   {
     Vstr_iter iter[1];
 
-    if (!vstr_iter_fwd_beg(base, pos, len, iter))
-      return (FALSE);
+    ret = vstr_iter_fwd_beg(base, pos, len, iter);
+    ASSERT_RET(ret, FALSE);
 
     do
     {

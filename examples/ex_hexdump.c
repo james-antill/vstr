@@ -29,11 +29,14 @@ util-linux-2.11r-10
             " " 2/1 "%02X"'
         -e '"  " 16 "%_p" "\n"'
 
+       
  * ...except that it prints the address in big hex digits, and it doesn't take
  * you 30 minutes to remember how to type it out.
  *  It also acts differently in that seperate files aren't merged
  * into one output line (Ie. in this version each file starts on a new line,
  * however the addresses are continuious).
+
+ * It's also similar to "xxd" in vim. 
  */
 
 #define PRNT_NONE 0

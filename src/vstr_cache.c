@@ -23,12 +23,35 @@
 /* NOTE: some assert stuff is in vstr.c also vstr_add.c and vstr_del.c
  * know a bit about the internals of this file as well */
 
+
+/* we don't call the cb is it's grpallocated, we do that by always having a
+ * NULL data */
+#define ASSERT_VALID_IOVEC_POS(base) \
+ assert((base->conf->cache_pos_cb_iovec == 2) && \
+        ((VSTR__CACHE(base)->vec == vstr_cache_get(base, 2)) || \
+         ((base->grpalloc_cache >= VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC) && \
+          VSTR__CACHE(base)->vec && !vstr_cache_get(base, 2))))
+
+
+
 static void vstr__cache_cbs(const Vstr_base *base, size_t pos, size_t len,
-                            unsigned int type)
+                            unsigned int type, unsigned int skip_internal)
 {
   unsigned int scan = 0;
   unsigned int last = 0;
 
+  ASSERT(!skip_internal ||
+         (type == VSTR_TYPE_CACHE_FREE) || (type == VSTR_TYPE_CACHE_NOTHING));
+  
+  if (skip_internal)
+    switch (base->grpalloc_cache)
+    {
+      case VSTR_TYPE_CNTL_CONF_GRPALLOC_POS:   scan = 1; break;
+      case VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC: scan = 2; break;
+      case VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR:  scan = 3;
+      ASSERT_NO_SWITCH_DEF();
+    }
+  
   while (scan < VSTR__CACHE(base)->sz)
   {
     void *data = VSTR__CACHE(base)->data[scan];
@@ -58,35 +81,51 @@ static void vstr__cache_cbs(const Vstr_base *base, size_t pos, size_t len,
 
 void vstr__cache_del(const Vstr_base *base, size_t pos, size_t len)
 {
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
-  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_DEL);
+  assert(VSTR__CACHE(base));
+  
+  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_DEL, FALSE);
 }
 
 void vstr__cache_add(const Vstr_base *base, size_t pos, size_t len)
 {
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
-  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_ADD);
+  assert(VSTR__CACHE(base));
+  
+  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_ADD, FALSE);
 }
 
 void vstr_cache_cb_sub(const Vstr_base *base, size_t pos, size_t len)
 {
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
-  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_SUB);
+  assert(VSTR__CACHE(base));
+  
+  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_SUB, FALSE);
 }
 
 void vstr_cache_cb_free(const Vstr_base *base, unsigned int num)
 {
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
-  if (num && (--num < VSTR__CACHE(base)->sz))
+  assert(VSTR__CACHE(base));
+
+  switch (base->grpalloc_cache)
   {
+    case VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR:  if (num == 3) return;
+    case VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC: if (num == 2) return;
+    case VSTR_TYPE_CNTL_CONF_GRPALLOC_POS:   if (num == 1) return;
+      ASSERT_NO_SWITCH_DEF();
+  }
+  
+  if (num && (--num < VSTR__CACHE(base)->sz))
+  { /* free'ing a single callbacks data ... */
     void *data = VSTR__CACHE(base)->data[num];
 
     if (data)
@@ -97,13 +136,15 @@ void vstr_cache_cb_free(const Vstr_base *base, unsigned int num)
       cb_func = base->conf->cache_cbs_ents[num].cb_func;
       VSTR__CACHE(base)->data[num] = (*cb_func)(base, 0, 0,
                                                 VSTR_TYPE_CACHE_FREE, data);
-      vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_NOTHING);
+      
+      vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_NOTHING, TRUE);
     }
 
     return;
   }
 
-  vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE);
+  /* free all */
+  vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE, TRUE);
 }
 
 void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
@@ -111,15 +152,17 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr__cache_data_cstr *data = NULL;
   Vstr__cache_data_cstr *from_data = NULL;
-  unsigned int off = base->conf->cache_pos_cb_cstr;
-  unsigned int from_off = from_base->conf->cache_pos_cb_cstr;
+  unsigned int off      = 3;
+  unsigned int from_off = 3;
 
-  ASSERT(off      == 3);
-  ASSERT(from_off == 3);
+  ASSERT(off      == base->conf->cache_pos_cb_cstr);
+  ASSERT(from_off == from_base->conf->cache_pos_cb_cstr);
 
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
+  assert(VSTR__CACHE(base));
+  
   if (!(data = vstr_cache_get(base, off)))
     return;
 
@@ -163,17 +206,10 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
   size_t alloc_sz = sz + base->conf->iov_min_alloc + base->conf->iov_min_offset;
   Vstr_conf *conf = base->conf;
 
-  if (!sz)
-    return (TRUE);
-
   if (!base->cache_available)
     return (FALSE);
 
-  if (!VSTR__CACHE(base))
-  {
-    if (!vstr__make_cache(base))
-      return (FALSE);
-  }
+  assert(VSTR__CACHE(base));
 
   vec = VSTR__CACHE(base)->vec;
   if (!vec)
@@ -185,30 +221,17 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
 
     VSTR__CACHE(base)->vec = vec;
 
-    vec->v = NULL;
-    vec->t = NULL;
-    vec->off = 0;
-    vec->sz = 0;
-  }
-  assert(VSTR__CACHE(base)->vec ==
-         vstr_cache_get(base, conf->cache_pos_cb_iovec));
-
-  if (!vec->v)
-  {
-    vec->v = VSTR__MK(sizeof(struct iovec) * alloc_sz);
-
-    if (!vec->v)
+    if (!(vec->v = VSTR__MK(sizeof(struct iovec) * alloc_sz)))
       goto vec_v_malloc_bad;
 
-    assert(!vec->t);
-    vec->t = VSTR__MK(alloc_sz);
-
-    if (!vec->t)
+    if (!(vec->t = VSTR__MK(alloc_sz)))
       goto vec_t_malloc_bad;
 
-    vec->sz = alloc_sz;
-    assert(!vec->off);
+    vec->sz  = alloc_sz;
+    vec->off = 0;
   }
+  ASSERT_VALID_IOVEC_POS(base);
+  ASSERT(vec->v);
 
   if (!base->iovec_upto_date)
     vec->off = base->conf->iov_min_offset;
@@ -223,14 +246,23 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
 
     alloc_sz = sz + base->conf->iov_min_offset;
 
-    if (!VSTR__MV(vec->v, vec_v, sizeof(struct iovec) * alloc_sz) ||
-        !VSTR__MV(vec->t, vec_t, alloc_sz))
-      goto malloc_bad;
+    if (!VSTR__MV(vec->v, vec_v, sizeof(struct iovec) * alloc_sz))
+    {
+      ASSERT(!vec_v);
+      ASSERT(vec->v);
+      conf->malloc_bad = TRUE;
+      return (FALSE);
+    }
+    
+    if (!VSTR__MV(vec->t, vec_t, alloc_sz))
+    {
+      ASSERT(!vec_t);
+      ASSERT(vec->t);
+      conf->malloc_bad = TRUE;
+      return (FALSE);
+    }
 
-    vec->sz = alloc_sz;
-
-    if (vec->off < base->conf->iov_min_offset)
-      vstr__cache_iovec_memmove(base);
+    vec->sz  = alloc_sz;
   }
 
   return (TRUE);
@@ -239,6 +271,9 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
   VSTR__F(vec->v);
  vec_v_malloc_bad:
   VSTR__CACHE(base)->vec = NULL;
+  conf->malloc_bad = FALSE;
+  vstr_cache_set(base, conf->cache_pos_cb_iovec, NULL); /* must work */
+  ASSERT(!conf->malloc_bad);
  cache_vec_malloc_bad:
   VSTR__F(vec);
  malloc_bad:
@@ -246,40 +281,18 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
   return (FALSE);
 }
 
-int vstr__make_cache(const Vstr_base *base)
-{
-  Vstr__cache *cache = VSTR__MK(sizeof(Vstr__cache));
-
-  if (!cache)
-  {
-    base->conf->malloc_bad = TRUE;
-    return (FALSE);
-  }
-
-  cache->vec = NULL;
-
-  cache->sz = 0;
-
-  VSTR__CACHE(base) = cache;
-
-  return (TRUE);
-}
-
 void vstr__free_cache(const Vstr_base *base)
 {
-  if (!base->cache_available || !VSTR__CACHE(base))
+  if (!base->cache_available)
     return;
 
-  assert(VSTR__CACHE(base)->vec ==
-         vstr_cache_get(base, base->conf->cache_pos_cb_iovec));
+  assert(VSTR__CACHE(base));
+  
+  ASSERT_VALID_IOVEC_POS(base);
 
-  vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE);
-
-  VSTR__F(VSTR__CACHE(base));
+  vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE, FALSE);
 
   ((Vstr_base *)base)->iovec_upto_date = FALSE;
-
-  VSTR__CACHE(base) = NULL;
 }
 
 static int vstr__resize_cache(const Vstr_base *base, unsigned int sz)
@@ -304,36 +317,16 @@ static int vstr__resize_cache(const Vstr_base *base, unsigned int sz)
   return (TRUE);
 }
 
-struct Vstr__cache_data_pos *
-vstr_extern_inline_make_cache_pos(const Vstr_base *base)
-{
-  struct Vstr__cache_data_pos *data = NULL;
-
-  if (!(data = VSTR__MK(sizeof(struct Vstr__cache_data_pos))))
-    goto fail_alloc_data_pos;
-
-  if (!vstr_cache_set(base, 1, data))
-    goto fail_cache_set;
-
-  return (data);
-
- fail_cache_set:
-  VSTR__F(data);
- fail_alloc_data_pos:
-  return (NULL);
-}
-
 static void *vstr__cache_pos_cb(const Vstr_base *base __attribute__((unused)),
                                 size_t pos, size_t len __attribute__((unused)),
                                 unsigned int type, void *passed_data)
 {
   Vstr__cache_data_pos *data = passed_data;
 
+  ASSERT(base->grpalloc_cache >= VSTR_TYPE_CNTL_CONF_GRPALLOC_POS);
+  
   if (type == VSTR_TYPE_CACHE_FREE)
-  {
-    VSTR__F(data);
     return (NULL);
-  }
 
   if (!data->node)
     return (data);
@@ -361,18 +354,20 @@ static void *vstr__cache_iovec_cb(const Vstr_base *base
   Vstr__cache_data_iovec *data = passed_data;
 
   assert(VSTR__CACHE(base)->vec == data);
-
+  ASSERT(base->grpalloc_cache < VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC);
+  
   if (type == VSTR_TYPE_CACHE_FREE)
   {
     VSTR__F(data->v);
     VSTR__F(data->t);
     VSTR__F(data);
     VSTR__CACHE(base)->vec = NULL;
-
+    
     return (NULL);
   }
 
-  /* **** handled by hand in the code... :O */
+  /* NOTE: add/del/sub/etc. handled by hand in the code, as we can do a lot more
+   * optimizations there ... :O */
 
   return (data);
 }
@@ -390,7 +385,9 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
   if (type == VSTR_TYPE_CACHE_FREE)
   {
     vstr_ref_del(data->ref);
-    VSTR__F(data);
+    data->ref = NULL;
+    if (base->grpalloc_cache < VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR)
+      VSTR__F(data);
     return (NULL);
   }
 
@@ -462,12 +459,11 @@ int vstr__cache_conf_init(Vstr_conf *conf)
 
 /* initial stuff done in vstr.c */
 unsigned int vstr_cache_add(Vstr_conf *passed_conf, const char *name,
-                            void *(*func)(const Vstr_base *,
-                                          size_t, size_t,
+                            void *(*func)(const Vstr_base *, size_t, size_t,
                                           unsigned int, void *))
 {
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
-  unsigned int sz = conf->cache_cbs_sz + 1;
+  unsigned int sz  = conf->cache_cbs_sz + 1;
   struct Vstr_cache_cb *ents = NULL;
 
   if (!VSTR__MV(conf->cache_cbs_ents, ents, sizeof(Vstr_cache_cb) * sz))
@@ -477,7 +473,7 @@ unsigned int vstr_cache_add(Vstr_conf *passed_conf, const char *name,
   }
   conf->cache_cbs_sz = sz;
 
-  conf->cache_cbs_ents[sz - 1].name = name;
+  conf->cache_cbs_ents[sz - 1].name    = name;
   conf->cache_cbs_ents[sz - 1].cb_func = func;
 
   return (sz);
@@ -499,22 +495,14 @@ unsigned int vstr_cache_srch(Vstr_conf *passed_conf, const char *name)
 
 int vstr_cache_set(const Vstr_base *base, unsigned int pos, void *data)
 {
-  assert(pos);
-
-  if (!pos)
-    return (FALSE);
+  ASSERT_RET(pos, FALSE);
 
   if (!base->cache_available)
     return (FALSE);
 
-  if (!VSTR__CACHE(base))
-  {
-    if (!vstr__make_cache(base))
-      return (FALSE);
-  }
+  assert(VSTR__CACHE(base));
 
-  --pos;
-  if (pos >= VSTR__CACHE(base)->sz)
+  if (pos-- > VSTR__CACHE(base)->sz)
   {
     if (!vstr__resize_cache(base, pos + 1))
       return (FALSE);
@@ -532,16 +520,21 @@ int vstr_cache_set(const Vstr_base *base, unsigned int pos, void *data)
 int vstr__cache_subset_cbs(Vstr_conf *ful_conf, Vstr_conf *sub_conf)
 {
   unsigned int scan = 0;
+  struct Vstr_cache_cb *sub_cbs_ents = sub_conf->cache_cbs_ents;
+  struct Vstr_cache_cb *ful_cbs_ents = ful_conf->cache_cbs_ents;
 
   if (sub_conf->cache_cbs_sz < ful_conf->cache_cbs_sz)
     return (FALSE);
 
   while (scan < ful_conf->cache_cbs_sz)
   {
-    if (strcmp(ful_conf->cache_cbs_ents[scan].name,
-               sub_conf->cache_cbs_ents[scan].name))
+    if (strcmp(ful_cbs_ents[scan].name, sub_cbs_ents[scan].name))
       return (FALSE); /* different ... so bad */
 
+    /* NOTE: While "possible" this is crack if this isn't valid and is
+     * bound to cause untracable bugs  */
+    ASSERT(ful_cbs_ents[scan].cb_func == sub_cbs_ents[scan].cb_func);
+    
     ++scan;
   }
 
@@ -571,4 +564,16 @@ int vstr__cache_dup_cbs(Vstr_conf *conf, Vstr_conf *dupconf)
   }
 
   return (TRUE);
+}
+
+/* FIXME: changed in 1.0.10 --
+ * always allocated now ... needed for ABI compat. however it can't be called */
+extern struct Vstr__cache_data_pos *
+vstr_extern_inline_make_cache_pos(const Vstr_base *);
+struct Vstr__cache_data_pos *
+vstr_extern_inline_make_cache_pos(const Vstr_base *base)
+{
+  (void)base;
+  ASSERT(FALSE);
+  return (NULL);
 }

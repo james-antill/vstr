@@ -7,10 +7,19 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
+. Some way to say use a _BUF if we are subbing in a _BUF and use a _PTR/_REF
+  otherwise. Or a way to say how much data can I add into this node
+ (Ie. currently, is it a _BUF and does it have free space).
+
+. Std. binary number output?
+
+. malloc_bad might be able to be set when all of the functions have worked
+  (Ie. position cache allocation used to fail) (testing).
+
 . No vstr_sc_add_grpnum_ref / vstr_sc_add_grpnum_ptr ... need ref locale,
   could then share it, which would be nice. (feature/speed)
 
-. Allow people to store data that doesn't change as the data changes,
+. Allow people to store data that doesn't need to change as the data changes,
   Ie. vstr_cache_* but just a callback on free. Could be used for some cute
   custom formatters with different data in different strings (think strftime
   outside the library). (feature)
@@ -18,20 +27,11 @@ was needed for vstr-1.0.0
 . Allow people to store data in the configuration, same as above but you can
   share it over many strings. (feature)
 
-. Another page for showing how to do IO over internet ...
-  everyone fucks it up, Ie. gtetrinet/bomberman (docs)
-
-. %s, NULL - win32 aparently prints "" not "(null)" ... should probably allow
-  that to be configured. (feature)
-
 . security ... more info. on testing. (docs)
 . security ... formal verification methods? (docs)
 
 . comparison ... portability plus ...
   can you copy and paste the code ... or need a shared lib. (docs)
-
-. Have a way to make thousands sep. group/output differently for hex numbers?
-  (functionality)
 
 . autodetect linker-script options (build)
 

@@ -2,7 +2,7 @@
 #define VSTR__HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,8 @@
 #ifdef __cplusplus
 extern "C"
 {
+# undef  VSTR_COMPILE_INLINE /* can't inline in C++ ... it doesn't like it */
+# define VSTR_COMPILE_INLINE 0
 #endif
 
 #include <vstr-conf.h>

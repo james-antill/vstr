@@ -109,7 +109,7 @@
 	</td></tr></table>
 
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.9</h2>
+	  <h2>Current version is 1.0.10</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -122,9 +122,9 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 </pre>
 	      ...at which point you can just "apt-get install vstr".
 	    </li>
-            <li> RPMs can are available via.
+            <li> I build RPMs for i386, they are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/rpms/">ftp</a> and
-              <a href="rpms/"><b>http</b></a>
+              <a href="rpms/"><b>http</b></a>. <a href="http://rpm.pbone.net/index.php3/stat/15/pakman/1206/com/James%20Antill%20%3Cjames_and_org%3E.html">Pbone.net</a> seem to generate rpms for other architectures (although they are often older versions).
 	    </li>
             <li> ChangeLog file can be found
               <a href="ChangeLog">here</a>
@@ -241,8 +241,8 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 <table width="80%"><tr><td>
 	  <p>
 	    The Vstr string
-	    library comes with a "make check" test suite with over
-	  <emp>nine thousand lines</emp> of code in it.
+	    library comes with a "make check" test suite with almost
+	  <emp>ten thousand lines</emp> of code in it.
 	  This is over a third of the size of the library itself, and more
 	  lines of code than some string library implementations.
 	</p><p>
@@ -637,6 +637,11 @@ should show how much simpler you can make your code using those features.
 this is used to turn the tutorial examples into html.
 </li>
 <li>
+<a href="vstr-latest/vstr/examples/ex_ssi.c.html">Simple Server Side Includes processor</a> - This program implements something similar to Apache httpd SSI,
+but it only does the include statement. I use this to generate some
+documentation.
+</li>
+<li>
 <a href="vstr-latest/vstr/examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
 <a href="http://www.openssl.org/">OpenSSL</a> library) - This program times
 the usage of the MD5 or SHA1 functions from OpenSSL, with a all of: A single chunk of data, an iovec list of the data at the default buffer size, and
@@ -670,7 +675,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 29 19:35:29 EDT 2003
+Last modified: Thu Oct 30 14:08:12 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

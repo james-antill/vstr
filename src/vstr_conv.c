@@ -330,9 +330,9 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
    0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9,
    0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF /* high ascii */
   };
-  unsigned int extra_nodes = 0;
   unsigned int scan = 0;
-
+  unsigned int multi = 3;
+  
   if (!sects)
     goto malloc_bad;
 
@@ -353,17 +353,27 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
     --len;
   }
 
-  extra_nodes = sects->num * 3;
+  if (base->conf->buf_sz >= 3)
+    multi = 1;
+  
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes, UINT_MAX))
-    goto sects_malloc_bad;
+                      (sects->num * multi) + 2, UINT_MAX))
+    goto nodes_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON,
+                      sects->num, UINT_MAX))
+    goto nodes_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR,
+                      sects->num, UINT_MAX))
+    goto nodes_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
+                      sects->num, UINT_MAX))
+    goto nodes_malloc_bad;
 
   while (scan < sects->num)
   {
     unsigned int bad = 0;
     char sub[3];
     const char *const digits = "0123456789abcdef";
-    /* TODO: tpos is instead of vstr_sub_alter_sects_buf */
     size_t tpos = sects->ptr[scan].pos + (scan * 2);
 
     assert(sects->ptr[scan].len == 1);
@@ -384,6 +394,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 
   return (TRUE);
 
+ nodes_malloc_bad:
  sects_malloc_bad:
   vstr_sects_free(sects);
  malloc_bad:
@@ -397,13 +408,13 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
   size_t srch_pos = 0;
   unsigned int err = 0;
   size_t hex_len = 0;
-  unsigned int extra_nodes = 0;
   unsigned int scan = 0;
-
+  int percent = 0x25;
+  
   if (!sects)
     goto malloc_bad;
 
-  while ((srch_pos = vstr_srch_chr_fwd(base, pos, len, 0x25)))
+  while ((srch_pos = vstr_srch_chr_fwd(base, pos, len, percent)))
   {
     size_t left = len - (srch_pos - pos);
     unsigned char sub = 0;
@@ -426,9 +437,17 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     len -= 2;
   }
 
-  extra_nodes = sects->num + 2;
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes, UINT_MAX))
+                      sects->num + 2, UINT_MAX))
+    goto sects_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON,
+                      sects->num, UINT_MAX))
+    goto sects_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR,
+                      sects->num, UINT_MAX))
+    goto sects_malloc_bad;
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
+                      sects->num, UINT_MAX))
     goto sects_malloc_bad;
 
   while (scan < sects->num)

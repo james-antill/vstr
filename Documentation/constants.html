@@ -83,6 +83,8 @@
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H</a>
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L</a>
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM</a>
+<li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H</a>
+<li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_del%28%29%20and%20vstr_conv_unprintable_chr%28%29">Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()</a>
 <ul>
 <li class="obj"><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE</a>
@@ -231,6 +233,7 @@
 <li class="obj"><a href="#VSTR_CNTL_BASE_GET_CONF">VSTR_CNTL_BASE_GET_CONF</a>
 <li class="obj"><a href="#VSTR_CNTL_BASE_SET_CONF">VSTR_CNTL_BASE_SET_CONF</a>
 <li class="obj"><a href="#VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE">VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE</a>
+<li class="obj"><a href="#VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_cntl_conf%28%29">Constants passed to vstr_cntl_conf()</a>
 <ul>
 <li class="obj"><a href="#VSTR_CNTL_CONF_GET_NUM_BUF_SZ">VSTR_CNTL_CONF_GET_NUM_BUF_SZ</a>
@@ -271,10 +274,31 @@
 <li class="obj"><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON</a>
 <li class="obj"><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR</a>
 <li class="obj"><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_NUM_SPARE_BASE">VSTR_CNTL_CONF_GET_NUM_SPARE_BASE</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_BASE">VSTR_CNTL_CONF_SET_NUM_SPARE_BASE</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC">VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC">VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT">VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT">VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP">VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP">VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP">VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP">VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR">VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR</a>
+<li class="obj"><a href="#VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR">VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_cntl_opt%28%29">Constants passed to vstr_cntl_opt()</a>
 <ul>
 <li class="obj"><a href="#VSTR_CNTL_OPT_GET_CONF">VSTR_CNTL_OPT_GET_CONF</a>
 <li class="obj"><a href="#VSTR_CNTL_OPT_SET_CONF">VSTR_CNTL_OPT_SET_CONF</a>
+</ul><li><a href="#Constants%20passed%20to%20vstr_cntl_conf%28%2e%2e%2e%2c%20VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">Constants passed to vstr_cntl_conf(..., VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a>
+<ul>
+<li class="obj"><a href="#VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE">VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE</a>
+<li class="obj"><a href="#VSTR_TYPE_CNTL_CONF_GRPALLOC_POS">VSTR_TYPE_CNTL_CONF_GRPALLOC_POS</a>
+<li class="obj"><a href="#VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC">VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC</a>
+<li class="obj"><a href="#VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR">VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR</a>
 </ul></ul>
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Compile%20switch%20constants"><h2>Compile switch constants</h2>
 </a>
@@ -673,8 +697,8 @@
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
- treated as an uppercase hexadecimal number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ treated as an uppercase hexadecimal (base 16) number. This flag has no meaning
+ if <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 <a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -682,8 +706,8 @@
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
- treated as a lowercase hexadecimal number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ treated as a lowercase hexadecimal (base 16) number. This flag has no meaning
+ if <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 <a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -691,7 +715,25 @@
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
- treated as octal number. This flag has no meaning if
+ treated as octal (base 8) number. This flag has no meaning if
+ <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as an uppercase base 2 number. This flag has no meaning if
+ <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as a lowercase base 2 number. This flag has no meaning if
  <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
@@ -1765,7 +1807,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This will only return successfully if either the Vstr string is empty, or
- the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
+ the Vstr configurations have the same value for the NUM_BUF_SZ attribute and
+ the new configuration has the same caches registered. See <a href="functions.html#vstr_swap_cache()">vstr_swap_cache()</a>
+ for a function that tries to do what you want.
 </p><p>  If the Vstr configuration (Parameter[1]) is NULL, then the default
  Vstr configuration will be used.
 
@@ -1776,7 +1820,18 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of flag<br>Type<strong>[1]</strong>: int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option lets you know if the Vstr string can cache data, this can only
- be controlled using the <a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> flag.
+ be controlled using the <a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> flag before
+ allocation.
+
+
+<a name="VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_BASE_GET_TYPE_GRPALLOC_CACHE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the type of the group allocation for the Vstr base,
+ this can only be controlled using the <a href="constants.html#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a>
+ type before allocation.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_cntl_conf%28%29"><h2>Constants passed to
@@ -1877,7 +1932,7 @@
 <a name="VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns decimal point C string<br>Type<strong>[1]</strong>: const char **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns decimal point C string, for default base<br>Type<strong>[1]</strong>: const char **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the value of the decimal point LC_NUMERIC locale
  variable.
@@ -1886,7 +1941,7 @@
 <a name="VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Decimal point C string<br>Type<strong>[1]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Decimal point C string, for default base<br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the value of the decimal point LC_NUMERIC locale
  variable.
@@ -1895,7 +1950,7 @@
 <a name="VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns thousands separator C string<br>Type<strong>[1]</strong>: const char **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns thousands separator C string, for default base<br>Type<strong>[1]</strong>: const char **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the value of the thousands separator LC_NUMERIC locale
  variable.
@@ -1904,7 +1959,7 @@
 <a name="VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Thousands separator C string<br>Type<strong>[1]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Thousands separator C string, for default base<br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the value of the thousands separator LC_NUMERIC locale
  variable.
@@ -1913,7 +1968,7 @@
 <a name="VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns<br>Type<strong>[1]</strong>: const char **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value locale thousands grouping, for the default base<br>Type<strong>[1]</strong>: const char **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the value of the thousands grouping LC_NUMERIC locale
  variable.
@@ -1922,8 +1977,7 @@
 <a name="VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 </a>
- Parameter[1]:
-<br>Type<strong>[1]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Value locale thousands grouping, for the default base<br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the value of the thousands grouping LC_NUMERIC locale
  variable.
@@ -2035,7 +2089,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  When the value specified is higher and it calls <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> then
  a return value of FALSE means that there was a malloc error, just as if you
- called vstr_make_nodes directly.
+ called <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> directly.
 
 
 <a name="VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2084,9 +2138,192 @@
  <a href="functions.html#vstr_free_spare_nodes()">vstr_free_spare_nodes()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  When the value specified is higher and it calls <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> then
- a return value of FALSE means that there was a malloc error, just as if you
- called vstr_make_nodes directly.
+</p><p>  When the value specified is higher it calls <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> at which
+ point a return value of FALSE means that there was a malloc error, just as if
+ you called <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> directly.
+
+
+<a name="VSTR_CNTL_CONF_GET_NUM_SPARE_BASE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_SPARE_BASE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns number of spare Vstr_base objects<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option gets the current number of spare Vstr_base objects.
+
+
+<a name="VSTR_CNTL_CONF_SET_NUM_SPARE_BASE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_SPARE_BASE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number of spare base objects to have<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option is will set the number of spare nodes of the specified type.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  When the value specified is higher it has to create spare base objects
+ at which point a return value of FALSE means that there was a malloc error,
+ just as if you called <a href="functions.html#vstr_make_base()">vstr_make_base()</a> directly and that had to create them.
+
+
+<a name="VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Minimum number of spare base objects to have<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum number of spare base objects to have<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will make the number of spare base objects fit into the range
+ given, by calling either creating spare base objects or destroying them.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  When the value specified is higher it has to creates spare base objects
+ at which point a return value of FALSE means that there was a malloc error,
+ just as if you called <a href="functions.html#vstr_make_base()">vstr_make_base()</a> directly and that had to create them.
+
+
+<a name="VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_TYPE_GRPALLOC_CACHE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the type of the group allocation that a <a href="functions.html#vstr_make_base()">vstr_make_base()</a>
+ will create with this configuration.
+
+
+<a name="VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the type of the group allocation that a <a href="functions.html#vstr_make_base()">vstr_make_base()</a>
+ will create with this configuration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If this call changes the type of group malloc to perform, then all current
+ spare base objects will have to be deleted. And future base objects of the old
+ type will be directly free'd.
+
+
+<a name="VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_REF_NAME_NUMERIC
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns Vstr memory reference to numeric locale name C string<br>Type<strong>[1]</strong>: struct Vstr_ref **
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Returns length of Vstr memory reference<br>Type<strong>[2]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the value of the name of the LC_NUMERIC locale
+ configuration.
+
+
+<a name="VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_REF_NAME_NUMERIC
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference to numeric locale name C string<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of Vstr memory reference<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the name of the LC_NUMERIC locale
+ configuration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+<a name="VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_REF_DEC_POINT
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Returns Vstr memory reference to decimal point C string<br>Type<strong>[2]</strong>: struct Vstr_ref **
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Returns length of Vstr memory reference<br>Type<strong>[3]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the value of the decimal point LC_NUMERIC locale
+ variable.
+
+
+<a name="VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_REF_DEC_POINT
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference to decimal point C string<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of Vstr memory reference<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the decimal point LC_NUMERIC locale
+ variable.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+<a name="VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_REF_THOU_SEP
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Returns Vstr memory reference to thousands separator C string<br>Type<strong>[2]</strong>: struct Vstr_ref **
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Returns length of Vstr memory reference<br>Type<strong>[3]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the value of the thousands seperator LC_NUMERIC locale
+ variable.
+
+
+<a name="VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference to thousands separator C string<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of Vstr memory reference<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the thousands seperator LC_NUMERIC locale
+ variable.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+<a name="VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_REF_THOU_GRP
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Returns Vstr memory reference to thousands grouping C string<br>Type<strong>[2]</strong>: struct Vstr_ref **
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the value of the thousands grouping LC_NUMERIC locale
+ variable.
+
+
+<a name="VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number base of locale information<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference to thousands grouping C string<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the thousands grouping LC_NUMERIC locale
+ variable.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
+
+
+<a name="VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_REF_NULL_PTR
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns Vstr memory reference to locale NULL pointer C string<br>Type<strong>[1]</strong>: struct Vstr_ref **
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Returns length of Vstr memory reference<br>Type<strong>[2]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the value of the locale NULL pointer
+ variable. This is what is printed when you pass NULL to "%s".
+
+
+<a name="VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference to numeric locale NULL pointer C string<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of Vstr memory reference<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the locale NULL pointer
+ variable. This is what is printed when you pass NULL to "%s".
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The library takes a reference to the memory reference provided, so if you
+ are finished with it you need to remove your reference.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_cntl_opt%28%29"><h2>Constants passed to
@@ -2101,6 +2338,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the default Vstr configuration.
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This adds a reference to the configuration, so when you are finished with it
+ you'll have to call <a href="functions.html#vstr_freee_conf()">vstr_freee_conf()</a> on it.
+
 
 <a name="VSTR_CNTL_OPT_SET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_OPT_SET_CONF
@@ -2108,6 +2349,53 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the default Vstr configuration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This is one of the few functions that take a configuration, but cannot take a
+ NULL pointer instead.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_cntl_conf%28%2e%2e%2e%2c%20VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE"><h2>Constants passed to vstr_cntl_conf(..., <a href="constants.html#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a></h2>
+</a>
+<a name="VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type means that there is a group allocation configuration to not
+ allocating a cache.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This is type will mean that <a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> is FALSE.
+
+
+<a name="VSTR_TYPE_CNTL_CONF_GRPALLOC_POS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CNTL_CONF_GRPALLOC_POS
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache.
+
+
+<a name="VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache and an iovec cache.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The only way to guarantee that you have an iovec available immediately after
+ calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> is to have at least this group allocation
+ configuration.
+
+
+<a name="VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type means that there is a group allocation configuration to allocating
+ a cache and allocating room to store a position cache, an iovec cache and a
+ cstr cache holder.
 
 
 </td></tr></table>

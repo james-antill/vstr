@@ -112,7 +112,7 @@ static void die(void)
 # define MFAIL_NUM_OK 1
 #endif
 
-static int __attribute__((unused)) tst_mfail_num(unsigned long val)
+static int __attribute__((used)) tst_mfail_num(unsigned long val)
 {
   return (vstr_cntl_opt(666, val));
 }

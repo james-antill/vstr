@@ -161,6 +161,8 @@
 #undef vstr_ref_make_vstr_sects
 #undef vstr_sc_add_cstr_grpnum_buf
 #undef vstr_sc_add_grpnum_buf
+#undef vstr_sc_add_cstr_grpbasenum_buf
+#undef vstr_sc_add_grpbasenum_buf
 #undef vstr_sc_basename
 #undef vstr_sc_conv_num_uint
 #undef vstr_sc_conv_num10_uint

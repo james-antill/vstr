@@ -75,11 +75,13 @@
 
 #define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
-#define VSTR__MK(sz)                     vstr__debug_malloc(sz)
-#define VSTR__M0(sz)                     vstr__debug_calloc(1, sz)
-#define VSTR__MV(ptr, tmp, sz) (((tmp) = vstr__debug_realloc(ptr, sz)) && \
-                                ((ptr) = (tmp)))
-#define VSTR__F(ptr)                     vstr__debug_free(ptr)
+#define VSTR__MK(sz) \
+   vstr__debug_malloc(sz, __FILE__, __LINE__)
+#define VSTR__MV(ptr, tmp, sz) \
+   (((tmp) = vstr__debug_realloc(ptr, sz, __FILE__, __LINE__)) && \
+    ((ptr) = (tmp)))
+#define VSTR__F(ptr) \
+   vstr__debug_free(ptr)
 
 /* iteration is this node all of the rest of the iteration,
  * Ie. vstr_iter_fwd_nxt() will return FALSE ... called at the start of an
@@ -113,6 +115,13 @@
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
+typedef struct Vstr__debug_malloc
+{
+ void *ptr;
+ const char *file;
+ unsigned int line;
+} Vstr__debug_malloc;
+
 typedef struct Vstr__options
 {
  Vstr_conf *def;
@@ -120,7 +129,7 @@ typedef struct Vstr__options
  unsigned long  mem_sz;
  unsigned long  mem_num;
  unsigned long  mem_fail_num;
- void **mem_vals;
+ Vstr__debug_malloc *mem_vals;
 } Vstr__options;
 
 typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;
@@ -269,43 +278,82 @@ extern int  vstr__cache_dup_cbs(Vstr_conf *, Vstr_conf *)
 extern unsigned int vstr__add_fmt_grouping_mod(const char *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
     VSTR__ATTR_I();
-extern size_t vstr__add_fmt_grouping_num_sz(Vstr_base *, size_t)
+extern size_t vstr__add_fmt_grouping_num_sz(Vstr_base *, unsigned int, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
     VSTR__ATTR_I();
+
+extern Vstr_locale_num_base *vstr__loc_num_srch(Vstr_locale *,
+                                                unsigned int, int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+extern const char *
+vstr__loc_num_grouping(Vstr_locale *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+extern const char *
+vstr__loc_num_sep_ptr(Vstr_locale *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+extern size_t
+vstr__loc_num_sep_len(Vstr_locale *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+extern const char *
+vstr__loc_num_pnt_ptr(Vstr_locale *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+extern size_t
+vstr__loc_num_pnt_len(Vstr_locale *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__COMPILE_ATTR_PURE() VSTR__ATTR_I();
+
+extern void vstr__del_grpalloc(Vstr_conf *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+
 
 extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
 #ifdef NDEBUG
+#define VSTR__DEBUG_MALLOC_CHECK_MEM(x) /* nothing */
+#define VSTR__DEBUG_MALLOC_CHECK_EMPTY() /* nothing */
 #define VSTR__DEBUG_MALLOC_TST() (0)
 #define VSTR__DEBUG_MALLOC_DEC() (0)
 
-# define vstr__debug_malloc  malloc
-# define vstr__debug_calloc  calloc
-# define vstr__debug_realloc realloc
-# define vstr__debug_free    free
+# define vstr__debug_malloc(x, F, L)     malloc(x)
+# define vstr__debug_calloc(x, y, F, L)  calloc(x, y)
+# define vstr__debug_realloc(x, y, F, L) realloc(x, y)
+# define vstr__debug_free(x)             free(x)
 # define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)
 # define VSTR__SECTS_SZ 8
 # define VSTR__STACK_BUF_SZ 64
+# define VSTR__FMT_USR_SZ 8
 # define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
 # define vstr__ref_make_ptr vstr_ref_make_ptr
 #else
+#define VSTR__DEBUG_MALLOC_CHECK_MEM(x) vstr__debug_malloc_check_mem(x)
+#define VSTR__DEBUG_MALLOC_CHECK_EMPTY() vstr__debug_malloc_check_empty()
 #define VSTR__DEBUG_MALLOC_TST() \
   (!vstr__options.mem_fail_num)
 #define VSTR__DEBUG_MALLOC_DEC() \
   (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
 
-extern void *vstr__debug_malloc(size_t)
+extern int vstr__debug_malloc_check_mem(const void *)
+    VSTR__ATTR_I();
+extern void vstr__debug_malloc_check_empty(void)
+    VSTR__ATTR_I();
+extern void *vstr__debug_malloc(size_t, const char *, unsigned int)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void *vstr__debug_calloc(size_t, size_t)
+extern void *vstr__debug_calloc(size_t, size_t, const char *, unsigned int)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void *vstr__debug_realloc(void *, size_t)
+extern void *vstr__debug_realloc(void *, size_t, const char *, unsigned int)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
 extern void vstr__debug_free(void *)
     VSTR__ATTR_I();
 # define VSTR__CONF_REF_LINKED_SZ 2
 # define VSTR__SECTS_SZ 2
 # define VSTR__STACK_BUF_SZ 2
+# define VSTR__FMT_USR_SZ 2
 extern void vstr__ref_cb_free_ref(Vstr_ref *);
 extern Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *));
 #endif

@@ -24,12 +24,14 @@
     <p>
       The <A href="overview.html">Vstr string library</a>
       is designed to be as fast as possible for
-      doing IO, specifically non-blocking IO over network connections -- and
+      doing IO, specifically <a href="http://www.and.org/texts/network_io.html">scalable Network IO</a>  -- and
       even more specifically when you are doing that non-blocking IO for
       <a href="http://www.kegel.com/c10k.html">large numbers of network connections</a>.
     </p>
     <p>
       This meant that I wanted an API that would:
+    </p>
+
     <ul>
       <li> append data to the string (Eg. via. a read() from a socket) in as
 	close to constant time as possible.
@@ -38,9 +40,10 @@
       <li> delete data from the begining of the string (Eg. a write() to a
 	socket) in as close to constant time as possible. </li>
 
-      <li> not waste large amounts of memory on each connection.</li>
+      <li> call malloc() rarely when network IO is occuring, even if it's
+	occuring over multiple connections.</li>
 
-      <li> call malloc() rarely on active connections.</li>
+      <li> not to waste large amounts of memory on each connection.</li>
 
       <li> support for mmap() data and out of
       bound data (Ie. calling sendfile() but with the head and tail of the
@@ -52,11 +55,21 @@
       </li>
 
       <li>
+	Easy to use support for <a href="http://cr.yp.to/proto/netstrings.txt">netstrings</a>.
+      </li>
+
+      <li>
 	Have all the other "string like API" abilities, (ie. comparison,
 	searching, parsing and formated output).
       </li>
 
     </ul>
+
+
+    <p> I'm not the only person who thinks these things, for instance in
+<a href="http://pl.atyp.us/content/tech/servers.html">Jeff Darcy's notes on high
+performance network server IO design</a> his first and third points are
+basically the same as my first three requirements.
     </p>
 
     <h2> Implementation </h2>
@@ -111,7 +124,7 @@
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Wed Feb 26 03:20:15 EST 2003 -->
 <!-- hhmts start -->
-Last modified: Fri Aug  1 19:17:48 EDT 2003
+Last modified: Wed Oct  8 21:22:37 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

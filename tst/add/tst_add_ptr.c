@@ -27,5 +27,26 @@ int tst(void)
 
   TST_B_TST(ret, 3, !vstr_cmp_cstr_eq(s3, 1, s3->len, buf));
 
+  vstr_export_iovec_ptr_all(s3, NULL, NULL);
+
+  TST_B_TST(ret, 4, vstr_num(s3, 1, s3->len) != 1); /* merged ptrs */
+
+  vstr_add_ptr     (s3, s3->len, buf,  4);
+  
+  vstr_export_iovec_ptr_all(s3, NULL, NULL);
+
+  TST_B_TST(ret, 4, vstr_num(s3, 1, s3->len) != 2);
+
+  vstr_del(s3, 1, s3->len);
+  TST_B_TST(ret, 17, !s3->iovec_upto_date);
+  VSTR_ADD_CSTR_PTR(s3, s3->len, "abcdX");
+  VSTR_ADD_CSTR_PTR(s3, s3->len, "abcdX");
+  TST_B_TST(ret, 18, !s3->iovec_upto_date);
+  vstr_del(s3, 1, s3->len);
+  TST_B_TST(ret, 19, !s3->iovec_upto_date);
+  vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE, FALSE);
+  VSTR_ADD_CSTR_PTR(s3, s3->len, "abcdX");
+  TST_B_TST(ret, 20,  s3->iovec_upto_date);
+  
   return (TST_B_RET(ret));
 }

@@ -432,10 +432,13 @@ int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
   {
     size_t rebeg_num = saved_num + del_nodes;
     Vstr__cache_data_iovec *vec = VSTR__CACHE(base)->vec;
-    struct iovec *vec_v = (vec->v + vec->off);
-
+    struct iovec  *vec_v = (vec->v + vec->off);
+    unsigned char *vec_t = (vec->t + vec->off);
+    
     vstr_wrap_memmove(vec_v + saved_num, vec_v + rebeg_num,
                       (base->num - rebeg_num) * sizeof(struct iovec));
+    vstr_wrap_memmove(vec_t + saved_num, vec_t + rebeg_num,
+                      (base->num - rebeg_num));
   }
   base->num -= del_nodes;
 
