@@ -176,12 +176,6 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
   
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
-  
-  if (!len)
-    return;
-
-  if (!base->beg)
-    return;
 
   scan = &base->beg;
   type = (*scan)->type;
@@ -214,9 +208,8 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
     scan = &(*scan)->next;
   
     base->used = 0;
-  
-    if (!*scan)
-      assert(len == 0);
+
+    ASSERT(*scan || !len);
   }
  
   while (len > 0)

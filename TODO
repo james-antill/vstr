@@ -10,14 +10,14 @@ was needed for vstr-1.0.0
 . http://www.mibsoftware.com/libmib/astring/0001.htm (docs)
   http://www.derkeiler.com/Mailing-Lists/securityfocus/secprog/2003-02/0007.html
   security implications of vstr. (docs)
+. http://www.oreillynet.com/pub/a/network/2003/05/20/secureprogckbk.html
+  http://www.zork.org/safestr/
 
-. speed  implpications of vstr. (docs)
-. memory implpications of vstr. (docs)
+. speed  implications of vstr. (docs)
+. memory implications of vstr. (docs)
 
 . Have a way to make thousands sep. group/output differently for hex numbers?
   (functionality)
-
-. doco internal datastructures (docs)
 
 . autodetect linker-script options (build)
 
@@ -35,6 +35,8 @@ was needed for vstr-1.0.0
 
 . del() inline kills cache too easily ... make cb's extern inline and call
    directly. (speed)
+
+. No cache adding types? (maybe/feature)
 
  1.2.x
  -----

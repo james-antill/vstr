@@ -23,14 +23,17 @@
 
 #include "main.h"
 
+
+#ifndef  USE_SYSCALL_MAIN
+# define USE_SYSCALL_MAIN 0 /* use for coverage, does "normal" syscalls */
+#endif
+
 /* syscall on Linux x86 doesn't work in a shared library as the PIC code 
  * uses %bx. If you are compiling for static only, the this should work.
  * However then you can't run the library anyway.
  * 
  * Code does inline asm for i386 Linux */
-#define TST_SYSCALL 0
-
-#if TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
+#if (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
 #include <syscall.h>
 
 # define write(x, y, z) vstr__sys_write(x, y, z)
@@ -129,7 +132,7 @@ void vstr_version_func(void)
   const char *scan = NULL;
   int len = 0;
 
-#if ((!TST_SYSCALL) && defined(USE_SYSCALL_ASM) && \
+#if ((!USE_SYSCALL_MAIN) && defined(USE_SYSCALL_ASM) && \
      (defined(__linux__) && defined(__i386__)))
  /* this is sick, but works. */
 
@@ -158,7 +161,7 @@ mov     $1, %%ebx\n\t\
 int     $0x80\n\t\
 " : : ); } while (FALSE)
 
-#elif TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
+#elif (!USE_SYSCALL_MAIN) && (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
  /* syscall code for write/exit */
  /* See above for actual syscall implimentations */
 
@@ -167,11 +170,13 @@ int     $0x80\n\t\
 #  define VSTR__SYS_EXIT_F() vstr__sys_exit(EXIT_FAILURE)
 
 #else
+#  include "main.h"
+
   /* this is obvious, well apart from the fact that it doesn't work unless
    * run via. ld.so */
 #  define VSTR__SYS_WRITE(ret, fd, msg, len) ret = write(fd, msg, len)
-#  define VSTR__SYS_EXIT_S() _exit(EXIT_SUCCESS)
-#  define VSTR__SYS_EXIT_F() _exit(EXIT_FAILURE)
+#  define VSTR__SYS_EXIT_S() exit(EXIT_SUCCESS)
+#  define VSTR__SYS_EXIT_F() exit(EXIT_FAILURE)
 #endif
 
   scan = msg;

@@ -36,6 +36,23 @@ static void tst_c_chrs(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 10,
             VSTR_CSPN_CSTR_CHRS_FWD(t1, lens_fwd[1] + 1, t1->len - lens_fwd[1],
                                     "0123456789") != 4);
+
+  TST_B_TST(ret, off + 11,
+            vstr_cspn_chrs_fwd(t1, 1, t1->len, NULL, 1)  != t1->len);
+  TST_B_TST(ret, off + 11,
+            vstr_cspn_chrs_rev(t1, 1, t1->len, NULL, 1)  != t1->len);
+}
+
+static void tst_c_non_chrs(Vstr_base *t1)
+{
+  TST_B_TST(ret, 1,
+            VSTR_CSPN_CSTR_CHRS_FWD(t1, 5, t1->len - 4, "0123456789") != 4);
+  TST_B_TST(ret, 2,
+            VSTR_CSPN_CSTR_CHRS_REV(t1, 1, 8,           "0123456789") != 4);
+  TST_B_TST(ret, 3,
+            vstr_cspn_chrs_fwd(t1, 1, t1->len, NULL, 1) != 4);
+  TST_B_TST(ret, 4,
+            vstr_cspn_chrs_rev(t1, 1, 12,      NULL, 1) != 4);
 }
 
 int tst(void)
@@ -58,16 +75,35 @@ int tst(void)
   lens_rev[2] = s3->len - lens_fwd[2];
   lens_rev[3] = s3->len - lens_fwd[3];
   
-  tst_c_chrs(s1, 0);
+  tst_c_chrs(s1, 0); /* overlap */
   tst_c_chrs(s3, 10);
 
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
   
-  tst_c_chrs(s1, 0);
+  tst_c_chrs(s1, 0); /* overlap */
   tst_c_chrs(s3, 10);
   tst_c_chrs(s4, 20);
+
+  vstr_add_non(s1, 4, 4);
+  vstr_add_non(s3, 4, 4);
+  vstr_add_non(s4, 4, 4);
+
+  /* won't have a cache again... */
+  ASSERT(!s1->iovec_upto_date);
+  ASSERT(!s3->iovec_upto_date);
   
+  tst_c_non_chrs(s1);
+  tst_c_non_chrs(s3);
+
+  /* make sure it's got a iovec cache */
+  vstr_export_iovec_ptr_all(s1, NULL, NULL);
+  vstr_export_iovec_ptr_all(s3, NULL, NULL);
+  
+  tst_c_non_chrs(s1);
+  tst_c_non_chrs(s3);
+  tst_c_non_chrs(s4);  
+
   return (TST_B_RET(ret));
 }

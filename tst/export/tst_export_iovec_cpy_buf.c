@@ -52,7 +52,26 @@ int tst(void)
   TST_B_TST(ret, 18, memcmp(iov[3].iov_base, ptr + 6, len - 6));
   TST_B_TST(ret, 19, memcmp(ptr, buf, len));
 
-  free(ptr);
+  iov[2].iov_len  = 2;
+
+  memset(buf, 'X', sizeof(buf));
+  len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, iov, 3, &num);
+
+  TST_B_TST(ret, 20, (len != 5));
+  TST_B_TST(ret, 21, (num != 3));
+  TST_B_TST(ret, 22, iov[0].iov_len != 1);
+  TST_B_TST(ret, 23, memcmp(iov[0].iov_base, ptr,     1));
+  TST_B_TST(ret, 24, iov[1].iov_len != 2);
+  TST_B_TST(ret, 25, memcmp(iov[1].iov_base, ptr + 1, 2));
+  TST_B_TST(ret, 26, iov[2].iov_len != 2);
+  TST_B_TST(ret, 27, memcmp(iov[2].iov_base, ptr + 3, 2));
   
+  free(ptr);
+
+  len = vstr_export_iovec_cpy_buf(s1, 1, 0, iov, 4, NULL);
+  TST_B_TST(ret, 28, len);
+  len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, NULL, 0, NULL);
+  TST_B_TST(ret, 29, len);
+
   return (TST_B_RET(ret));
 }

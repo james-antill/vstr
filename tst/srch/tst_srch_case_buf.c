@@ -16,9 +16,9 @@ static void tst_srch_buf(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 4,
             vstr_srch_case_cstr_buf_rev(t1, 1, t1->len, "xyZ ") != lens_fwd[1]);
   TST_B_TST(ret, off + 5,
-            VSTR_SRCH_CASE_CSTR_BUF_FWD(t1, 1, t1->len, "!& ")  != lens_fwd[2]);
+            VSTR_SRCH_CASE_CSTR_BUF_FWD(t1, 1, t1->len, "!")  != lens_fwd[2]);
   TST_B_TST(ret, off + 6,
-            VSTR_SRCH_CASE_CSTR_BUF_REV(t1, 1, t1->len, "!& ")  != lens_fwd[2]);
+            VSTR_SRCH_CASE_CSTR_BUF_REV(t1, 1, t1->len, "!")  != lens_fwd[2]);
   TST_B_TST(ret, off + 7,
             VSTR_SRCH_CASE_CSTR_BUF_FWD(t1, lens_fwd[0],
                                         t1->len - (lens_fwd[0] - 1),
@@ -27,6 +27,12 @@ static void tst_srch_buf(Vstr_base *t1, unsigned int off)
             VSTR_SRCH_CASE_CSTR_BUF_REV(t1, lens_fwd[0],
                                         t1->len - (lens_fwd[0] - 1),
                                         "abCD ") != lens_fwd[0]);
+
+  ASSERT(!vstr_srch_case_buf_fwd(t1, 1, 1, "ab", 2));
+  ASSERT(!vstr_srch_case_buf_rev(t1, 1, 1, "ab", 2));
+
+  ASSERT(!vstr_srch_case_buf_fwd(t1, 1, 0, "a", 1));
+  ASSERT(!vstr_srch_case_buf_rev(t1, 1, 0, "a", 1));
 }
 
 int tst(void)

@@ -126,7 +126,6 @@ include_HEADERS = \
 noinst_HEADERS = \
 		  main.h \
 		  main_system.h \
-		  assert_loop-def.h \
 		  assert_loop-extern.h \
 		  tools-extern.h \
 		  fix.h

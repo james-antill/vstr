@@ -1,4 +1,7 @@
- Latest stable release is 1.0.4
+ Latest stable release is 1.0.6
+
+ Version 1.0.6 ... Added a pile of more tests, now at 89% code coverage. A
+large amount of corner cases got fixed.
 
  Version 1.0.5 ... Added speedups for vstr_fmt_add(). Added some documentation.
 added vstr_sc_fmt_add_rep_chr function.

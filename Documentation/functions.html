@@ -12,8 +12,10 @@
 
       td.heading { background: #DDDDDD; }
 
-      li       ul li.obj { display: none; }
-      li:hover ul li.obj { display: list-item; list-style-type: square; }
+      li                       { list-style-type: lower-roman; }
+      li       ul li.obj       { display: none; }
+      li:hover ul li.obj       { display: list-item; list-style-type: decimal; }
+      li:hover ul li.obj:hover { display: list-item; list-style-type: square; }
     </style>
 
   </head>
@@ -4232,8 +4234,8 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
- arguments of <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>,
- <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>.
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>,
+ <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>.
  These correspond to the last 3 arguments to <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4244,7 +4246,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ref}&quot;, with the gcc warning
- compatible alternates using "{ref:%p%u%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ compatible alternates using "{ref:%p%zu%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 

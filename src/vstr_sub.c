@@ -30,14 +30,6 @@
   buf = ((char *)buf) + tmp; \
 } while (FALSE)
 
-
-static int vstr__sub_simple_fail(Vstr_base *base, size_t pos, size_t len)
-{
-  int ret = vstr_del(base, pos, len);
-  assert(ret); /* this must work as a split can't happen */
-  return (FALSE);
-}
-
 static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
                               const void *buf)
 {
@@ -111,10 +103,10 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
       return (FALSE);
     
     ret = vstr_del(base, pos + buf_len, len + del_len);
-    if (!ret)
-      return (vstr__sub_simple_fail(base, pos, buf_len));
+    ASSERT(ret || !buf_len); /* if stuff added, then split happened ... so
+                              * can't fail */
     
-    return (TRUE);
+    return (ret);
   }
 
   add_len += sub_add_len;
@@ -174,6 +166,9 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   if (!len)
     return (vstr_add_buf(base, pos - 1, buf, buf_len));
   
+  if (!buf_len)
+    return (vstr_del(base, pos, len));
+  
   if ((len == buf_len) &&
       !base->node_non_used &&
       !base->node_ptr_used &&
@@ -194,8 +189,8 @@ int vstr_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
     return (FALSE);
 
   ret = vstr_del(base, pos + non_len, len);
-  if (!ret)
-    return (vstr__sub_simple_fail(base, pos, non_len));
+  ASSERT(ret || !non_len); /* if stuff added, then split happened ... so
+                            * can't fail */
 
   return (ret);
 }
@@ -205,6 +200,9 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
 {
   int ret = FALSE;
   Vstr_iter iter[1];
+
+  if (!len || !ptr_len)
+    goto simple_sub;
   
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
@@ -260,7 +258,8 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
     assert(vstr__check_real_nodes(base));
     return (TRUE);
   }
-  
+
+ simple_sub:
   ret = vstr_add_ptr(base, pos - 1, ptr, ptr_len);
 
   if (!len)
@@ -270,8 +269,8 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
     return (FALSE);
   
   ret = vstr_del(base, pos + ptr_len, len);
-  if (!ret)
-    return (vstr__sub_simple_fail(base, pos, ptr_len));
+  ASSERT(ret || !ptr_len); /* if stuff added, then split happened ... so
+                            * can't fail */
   
   return (ret);
 }
@@ -281,6 +280,9 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
 {
   int ret = FALSE;
   Vstr_iter iter[1];
+  
+  if (!len || !ref_len)
+    goto simple_sub;
   
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
@@ -342,17 +344,18 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
     return (TRUE);
   }
 
+ simple_sub:
   ret = vstr_add_ref(base, pos - 1, ref, off, ref_len);
-   
-   if (!len)
-     return (ret);
-   
-   if (!ret)
-     return (FALSE);
-   
-   ret = vstr_del(base, pos + ref_len, len);
-   if (!ret)
-     return (vstr__sub_simple_fail(base, pos, ref_len));
+  
+  if (!len)
+    return (ret);
+  
+  if (!ret)
+    return (FALSE);
+  
+  ret = vstr_del(base, pos + ref_len, len);
+  ASSERT(ret || !ref_len); /* if stuff added, then split happened ... so
+                            * can't fail */
 
   return (ret);
 }
@@ -366,9 +369,7 @@ int vstr_sub_vstr(Vstr_base *base, size_t pos, size_t len,
 
   assert(pos && from_pos);
   
-  if (from_len)
-    ret = vstr_add_vstr(base, pos - 1, from_base, from_pos, from_len,
-                        type);
+  ret = vstr_add_vstr(base, pos - 1, from_base, from_pos, from_len, type);
 
   if (!len)
     return (ret);
@@ -377,8 +378,8 @@ int vstr_sub_vstr(Vstr_base *base, size_t pos, size_t len,
     return (FALSE);
 
   ret = vstr_del(base, pos + from_len, len);
-  if (!ret)
-    return (vstr__sub_simple_fail(base, pos, from_len));
+  ASSERT(ret || !from_len); /* if stuff added, then split happened ... so
+                             * can't fail */
   
   return (ret);
 }
@@ -388,6 +389,9 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
 {
   int ret = TRUE;
 
+  if (!len && !rep_len)
+    return (TRUE);
+  
   /* TODO: this is a simple opt. */
   if ((len == rep_len) &&
       !base->node_non_used &&
@@ -422,8 +426,8 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
     return (FALSE);
 
   ret = vstr_del(base, pos + rep_len, len);
-  if (!ret)
-    return (vstr__sub_simple_fail(base, pos, rep_len));
+  ASSERT(ret || !rep_len); /* if stuff added, then split happened ... so
+                            * can't fail */
 
   return (ret);  
 }

@@ -37,9 +37,10 @@ int tst(void)
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s2, 1, s2->len, buf));
 
   vstr_add_cstr_ref(s3, s3->len, &ref1, 0);
-  vstr_add_cstr_ref(s3, s3->len, &ref2, 0);
+  vstr_add_ref     (s3, s3->len, &ref2, 0, 4);
+  vstr_add_cstr_ref(s3, s3->len, &ref2, 4);
   vstr_add_cstr_ref(s3, s3->len, &ref3, 0);
-
+  
   TST_B_TST(ret, 3, !vstr_cmp_cstr_eq(s3, 1, s3->len, buf));
 
   return (TST_B_RET(ret));

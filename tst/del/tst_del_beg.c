@@ -46,7 +46,8 @@ int tst(void)
 
   len = strlen(buf);
   
-  vstr_cache_add(s2->conf, "blah", tst_null_cache_del);
+  vstr_cache_set(s2, vstr_cache_add(s2->conf, "blah", tst_null_cache_del),
+                 &len);
   
   ADD(s1);
   ADD(s2);

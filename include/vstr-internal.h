@@ -195,7 +195,7 @@ extern void vstr__cache_iovec_reset_node(const Vstr_base *base, Vstr_node *node,
                                         unsigned int num)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern int vstr__cache_iovec_valid(Vstr_base *) /* makes it valid */
-    VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
 extern void vstr__cache_free_cstr(const Vstr_base *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();

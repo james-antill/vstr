@@ -6522,8 +6522,8 @@ Function: vstr_sc_fmt_add_ref()
 
   This function is used to add a custom specifier function to print
  a memory block. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T,
- VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END.
+ arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_SIZE_T,
+ VSTR_TYPE_FMT_SIZE_T and VSTR_TYPE_FMT_END.
  These correspond to the last 3 arguments to vstr_add_ref().
 
  Note:
@@ -6535,7 +6535,7 @@ Function: vstr_sc_fmt_add_ref()
  length passed and the precision.
   The function will return 0 if it needs to allocate memory and cannot do so.
   It is recommended that you use the name "{ref}", with the gcc warning
- compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ref:%p%zu%zu}" etc. vstr_sc_fmt_add_all()
  will add this formatter using those names.
 
 

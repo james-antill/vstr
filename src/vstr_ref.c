@@ -40,11 +40,11 @@ void vstr_ref_cb_free_ptr(Vstr_ref *ref)
 void vstr_ref_cb_free_ptr_ref(Vstr_ref *ref)
 {
   vstr_ref_cb_free_ptr(ref);
-  free(ref);
+  vstr_ref_cb_free_ref(ref);
 }
 
 #ifdef NDEBUG
-#define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
+# define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
 #else
 static void vstr__ref_cb_free_ref(Vstr_ref *ref)
 {
@@ -56,12 +56,14 @@ Vstr_ref *vstr_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
 {
   Vstr_ref *ref = NULL;
 
+#ifndef NDEBUG
   if (func == vstr_ref_cb_free_ref)
   {
     ref = VSTR__MK(sizeof(Vstr_ref));
     func = vstr__ref_cb_free_ref;
   }
   else
+#endif
     ref = malloc(sizeof(Vstr_ref));
   
   if (!ref)

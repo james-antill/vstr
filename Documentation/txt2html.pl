@@ -35,8 +35,10 @@ my $html_body = <<EOF;
 
       td.heading { background: #DDDDDD; }
 
-      li       ul li.obj { display: none; }
-      li:hover ul li.obj { display: list-item; list-style-type: square; }
+      li                       { list-style-type: lower-roman; }
+      li       ul li.obj       { display: none; }
+      li:hover ul li.obj       { display: list-item; list-style-type: decimal; }
+      li:hover ul li.obj:hover { display: list-item; list-style-type: square; }
     </style>
 
   </head>

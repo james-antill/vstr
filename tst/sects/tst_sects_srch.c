@@ -33,6 +33,11 @@ int tst(void)
   
   TST_B_TST(ret, 11, vstr_sects_srch(sects, 4, 2) != 6);
 
+  TST_B_TST(ret, 12, vstr_sects_srch(sects, 32, 2) != 0);
+
+  sects->sz = 0;
+  TST_B_TST(ret, 13, vstr_sects_srch(sects, 4, 2) != 0);
+  
   vstr_sects_free(sects);
   
   return (TST_B_RET(ret));

@@ -130,6 +130,9 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
   unsigned int scan_type = 0;
   Vstr__fmt_usr_name_node *node = NULL;
 
+  if (vstr__fmt_usr_srch(conf, name))
+    return (FALSE);
+  
   node = VSTR__MK(sizeof(Vstr__fmt_usr_name_node) +
                   (sizeof(unsigned int) * count));
 
@@ -138,9 +141,6 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
     conf->malloc_bad = TRUE;
     return (FALSE);
   }
-  
-  if (vstr__fmt_usr_srch(conf, name))
-    return (FALSE);
   
   node->name_str = name;
   node->name_len = strlen(name);

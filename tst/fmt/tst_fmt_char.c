@@ -23,5 +23,24 @@ int tst(void)
 
   TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a  bc  d"));
 
+
+  {
+    int mfail_count = 0;
+    /* test for memory failures... */
+    
+    do
+    {
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, 0, "%c%3c%-3c%c" "%lc%3lc%-3lc%C",
+                           'a', 'b', 'c', 'd',
+                           (wint_t) L'a', (wint_t) L'b',
+                           (wint_t) L'c', (wint_t) L'd'));
+    
+    TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len,
+                                        "a  bc  d" "a  bc  d"));
+    
+    tst_mfail_num(0);
+  }
+
   return (TST_B_RET(ret));
 }

@@ -23,7 +23,7 @@ int tst(void)
   TEST_CMP_GT_0("a",          "");
   TEST_CMP_GT_0("abcd1234",   "abcd123");
   TEST_CMP_GT_0("abcd1234",   "abcd999");
-  TEST_CMP_GT_0("abcd9234",   "abcd1234");
+  TEST_CMP_GT_0("abcd994",    "abcd992");
   TEST_CMP_GT_0("abcd01234",  "abcd0123");/* 8 */
   TEST_CMP_GT_0("abcd0999",   "abcd01234");
   TEST_CMP_GT_0("abcd0",      "abcd00");
@@ -33,7 +33,10 @@ int tst(void)
   TEST_CMP_GT_0("abcd09z",    "abcd09a");
   TEST_CMP_GT_0("abcd0",      "abcd");
   TEST_CMP_GT_0("abcd1",      "abcd"); /* 16 */
-
+  TEST_CMP_GT_0("abcd9z",     "abcd9a");
+  TEST_CMP_GT_0("abcd99z",    "abcd9a");
+  TEST_CMP_GT_0("abcd99a",    "abcd9z");
+  
   VSTR_ADD_CSTR_BUF(s1, 0, "abcd");
   VSTR_ADD_CSTR_BUF(s2, 0, "abcd");
   

@@ -33,9 +33,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>vstr</Program_Name>
-    <Program_Version>1.0.5</Program_Version>
+    <Program_Version>1.0.6</Program_Version>
     <Program_Release_Month>05</Program_Release_Month>
-    <Program_Release_Day>17</Program_Release_Day>
+    <Program_Release_Day>31</Program_Release_Day>
     <Program_Release_Year>2003</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Cost_Other_Code>USD</Program_Cost_Other_Code>
@@ -43,9 +43,9 @@
     <Program_Type>Freeware</Program_Type>
     <Program_Release_Status>Minor Update</Program_Release_Status>
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
-    <Program_OS_Support>Linux,Unix,WinXP,WinNT 4.x,Windows2000</Program_OS_Support>
+    <Program_OS_Support>Linux,Unix,WinXP,WinNT 4.x,Windows2000,Windows CE,Mac PPC,MS-DOS</Program_OS_Support>
     <Program_Language>English</Program_Language>
-    <Program_Change_Info/>
+    <Program_Change_Info>Bug fixes, mainly weird corner cases.</Program_Change_Info>
     <Program_System_Requirements/>
     <Program_Specific_Category>Development Tools</Program_Specific_Category>
     <Program_Categories/>
@@ -54,12 +54,12 @@
     <Includes_DirectX>N</Includes_DirectX>
     <File_Info>
       <Filename_Generic>vstr</Filename_Generic>
-      <Filename_Versioned>vstr-1.0.5</Filename_Versioned>
-      <Filename_Previous>vstr-1.0.4</Filename_Previous>
-      <Filename_Long>vstr-1.0.5.tar.gz</Filename_Long>
-      <File_Size_Bytes>664830</File_Size_Bytes>
-      <File_Size_K>649.25</File_Size_K>
-      <File_Size_MB>0.63</File_Size_MB>
+      <Filename_Versioned>vstr-1.0.6</Filename_Versioned>
+      <Filename_Previous>vstr-1.0.5</Filename_Previous>
+      <Filename_Long>vstr-1.0.6.tar.gz</Filename_Long>
+      <File_Size_Bytes>678551</File_Size_Bytes>
+      <File_Size_K>662.65</File_Size_K>
+      <File_Size_MB>0.65</File_Size_MB>
     </File_Info>
     <Expire_Info>
       <Has_Expire_Info>N</Has_Expire_Info>
@@ -84,8 +84,8 @@
       <Application_XML_File_URL>http://www.and.org/vstr/vstr_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://www.and.org/vstr/1.0.5/vstr-1.0.5.tar.gz</Primary_Download_URL>
-      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/1.0.5/vstr-1.0.5.tar.gz</Secondary_Download_URL>
+      <Primary_Download_URL>http://www.and.org/vstr/1.0.6/vstr-1.0.6.tar.gz</Primary_Download_URL>
+      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/1.0.6/vstr-1.0.6.tar.gz</Secondary_Download_URL>
       <Additional_Download_URL_1>http://www.and.org/vstr/rpms/</Additional_Download_URL_1>
       <Additional_Download_URL_2>ftp://ftp.and.org/pub/james/vstr/rpms/</Additional_Download_URL_2>
     </Download_URLs>

@@ -73,7 +73,7 @@ ZCAT=ex_zcat
 endif
 endif
 
-FILES= ex_cat ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
+FILES= ex_cat ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip ex_csv \
   $(ZCAT)
   $(TIMER_Q_PROGS) \
   $(SSL_PROGS)

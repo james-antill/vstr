@@ -86,8 +86,6 @@
 
 #undef HAVE_STRNLEN
 
-#undef HAVE_STRNCHR
-
 #undef HAVE_ASPRINTF
 
 

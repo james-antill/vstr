@@ -16,15 +16,45 @@ static void tst_srch_buf(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 4,
             vstr_srch_cstr_buf_rev(t1, 1, t1->len, "xyz ") != lens_fwd[1]);
   TST_B_TST(ret, off + 5,
-            VSTR_SRCH_CSTR_BUF_FWD(t1, 1, t1->len, "!& ")  != lens_fwd[2]);
+            VSTR_SRCH_CSTR_BUF_FWD(t1, 1, t1->len, "!")  != lens_fwd[2]);
   TST_B_TST(ret, off + 6,
-            VSTR_SRCH_CSTR_BUF_REV(t1, 1, t1->len, "!& ")  != lens_fwd[2]);
+            VSTR_SRCH_CSTR_BUF_REV(t1, 1, t1->len, "!")  != lens_fwd[2]);
   TST_B_TST(ret, off + 7,
             VSTR_SRCH_CSTR_BUF_FWD(t1, lens_fwd[0], t1->len - (lens_fwd[0] - 1),
                                    "abcd ") != lens_fwd[0]);
   TST_B_TST(ret, off + 8,
             VSTR_SRCH_CSTR_BUF_REV(t1, lens_fwd[0], t1->len - (lens_fwd[0] - 1),
                                    "abcd ") != lens_fwd[0]);
+
+  ASSERT(!vstr_srch_buf_fwd(t1, 1, 1, "ab", 2));
+  ASSERT(!vstr_srch_buf_rev(t1, 1, 1, "ab", 2));
+
+  ASSERT(!vstr_srch_buf_fwd(t1, 1, 0, "a", 1));
+  ASSERT(!vstr_srch_buf_rev(t1, 1, 0, "a", 1));
+}
+
+static void tst_srch_non_buf(Vstr_base *t1)
+{
+  TST_B_TST(ret, 25,
+            vstr_srch_buf_fwd(t1, 1, t1->len, NULL, 4) != 8);
+
+  TST_B_TST(ret, 26,
+            vstr_srch_buf_rev(t1, 1, t1->len, NULL, 4) != 16);
+
+  TST_B_TST(ret, 27,
+            vstr_srch_buf_fwd(t1, 1, t1->len, NULL, 12) != 8);
+
+  TST_B_TST(ret, 28,
+            vstr_srch_buf_rev(t1, 1, t1->len, NULL, 12) != 8);
+
+  TST_B_TST(ret, 29,
+            vstr_srch_buf_fwd(t1, 1, t1->len, NULL, 13) != 0);
+
+  TST_B_TST(ret, 29,
+            vstr_srch_buf_rev(t1, 1, t1->len, NULL, 13) != 0);
+
+  TST_B_TST(ret, 29,
+            vstr_srch_buf_rev(t1, 4, 8, "", 0) != 11);
 }
 
 int tst(void)
@@ -62,40 +92,34 @@ int tst(void)
             vstr_srch_buf_rev(s1, 4, 8, NULL, 1) != 0);
 
   vstr_add_non(s1, 7, 12);
-  vstr_add_non(s3, 7, 12);
+  {
+    unsigned int pre_num = s3->num;
+    
+    vstr_add_non(s3, 7,     3); /* merges on append, not prepend */
+    vstr_add_non(s3, 7 + 3, 3);
+    vstr_add_non(s3, 7, 6);
+    ASSERT(pre_num == (s3->num - 3)); /* split + 2 _NON */
+    vstr_add_ptr(s3, 7 + 3, "a", 1);
+    vstr_del(s3, 7 + 4, 1);
+    ASSERT(pre_num == (s3->num - 4)); /* split + 3 _NON */
+  }
+  
   vstr_add_non(s4, 7, 12);
   
-  TST_B_TST(ret, 25,
-            vstr_srch_buf_fwd(s1, 1, s1->len, NULL, 4) != 8);
-  TST_B_TST(ret, 25,
-            vstr_srch_buf_fwd(s3, 1, s3->len, NULL, 4) != 8);
-  TST_B_TST(ret, 25,
-            vstr_srch_buf_fwd(s4, 1, s4->len, NULL, 4) != 8);
+  /* won't have a cache again... */
+  ASSERT(!s1->iovec_upto_date);
+  ASSERT(!s3->iovec_upto_date);
 
-  TST_B_TST(ret, 26,
-            vstr_srch_buf_rev(s1, 1, s1->len, NULL, 4) != 16);
-  TST_B_TST(ret, 26,
-            vstr_srch_buf_rev(s3, 1, s3->len, NULL, 4) != 16);
-  TST_B_TST(ret, 26,
-            vstr_srch_buf_rev(s4, 1, s4->len, NULL, 4) != 16);
+  tst_srch_non_buf(s1);
+  tst_srch_non_buf(s3);
 
-  TST_B_TST(ret, 27,
-            vstr_srch_buf_fwd(s1, 1, s1->len, NULL, 12) != 8);
-  TST_B_TST(ret, 27,
-            vstr_srch_buf_fwd(s3, 1, s3->len, NULL, 12) != 8);
-  TST_B_TST(ret, 27,
-            vstr_srch_buf_fwd(s4, 1, s4->len, NULL, 12) != 8);
-
-  TST_B_TST(ret, 28,
-            vstr_srch_buf_rev(s1, 1, s1->len, NULL, 12) != 8);
-  TST_B_TST(ret, 28,
-            vstr_srch_buf_rev(s3, 1, s3->len, NULL, 12) != 8);
-  TST_B_TST(ret, 28,
-            vstr_srch_buf_rev(s4, 1, s4->len, NULL, 12) != 8);
-
-  TST_B_TST(ret, 29,
-            vstr_srch_buf_rev(s1, 4, 8, "", 0) != 11);
+  /* make sure it's got a iovec cache */
+  vstr_export_iovec_ptr_all(s1, NULL, NULL);
+  vstr_export_iovec_ptr_all(s3, NULL, NULL);
   
+  tst_srch_non_buf(s1);
+  tst_srch_non_buf(s3);
+  tst_srch_non_buf(s4);
   
   return (TST_B_RET(ret));
 }

@@ -21,6 +21,7 @@
 /* functions which are shortcuts */
 #include "main.h"
 
+
 #ifndef HAVE_MMAP
 # define VSTR__SC_ENOSYS(x) \
   if (err) \
@@ -43,6 +44,46 @@ static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
 }
 #endif
 
+static int vstr__sc_get_size(size_t base_len,
+                             int fd, size_t *len, VSTR_AUTOCONF_off64_t off,
+                             unsigned int *err,
+                             unsigned int err_fstat, unsigned int err_size)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+static int vstr__sc_get_size(size_t base_len,
+                             int fd, size_t *len, VSTR_AUTOCONF_off64_t off,
+                             unsigned int *err,
+                             unsigned int err_fstat, unsigned int err_size)
+{
+  struct stat64 stat_buf;
+
+  ASSERT(len && err);
+  
+  if (*len)
+    return (TRUE);
+  
+  if (fstat64(fd, &stat_buf) == -1)
+  {
+    *err = err_fstat;
+    return (FALSE);
+  }
+
+  if (stat_buf.st_size <= off)
+  {
+    *err = err_fstat;
+    errno = ENOSPC;
+    return (FALSE);
+  }
+
+  *len = (stat_buf.st_size - off);
+  if (*len > (SIZE_MAX - base_len))
+  {
+    *err = err_size;
+    errno = EFBIG;
+    return (FALSE);
+  }
+
+  return (TRUE);
+}
 
 
 #ifndef HAVE_MMAP
@@ -68,31 +109,10 @@ int vstr_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
     err = &dummy_err;
   *err = 0;
 
-  if (!len)
-  {
-    struct stat64 stat_buf;
-    
-    if (fstat64(fd, &stat_buf) == -1)
-    {
-      *err = VSTR_TYPE_SC_MMAP_FD_ERR_FSTAT_ERRNO;
-      return (FALSE);
-    }
-
-    if (stat_buf.st_size <= off)
-    {
-      *err = VSTR_TYPE_SC_MMAP_FD_ERR_FSTAT_ERRNO;
-      errno = ENOSPC;
-      return (FALSE);
-    }
-
-    len = (stat_buf.st_size - off);
-    if (len > (SIZE_MAX - base->len))
-    {
-      *err = VSTR_TYPE_SC_MMAP_FD_ERR_TOO_LARGE;
-      errno = EFBIG;
-      return (FALSE);
-    }
-  }
+  if (!vstr__sc_get_size(base->len, fd, &len, off, err,
+                         VSTR_TYPE_SC_MMAP_FD_ERR_FSTAT_ERRNO,
+                         VSTR_TYPE_SC_MMAP_FD_ERR_TOO_LARGE))
+    return (FALSE);
 
   addr = mmap64(NULL, len, PROT_READ, MAP_PRIVATE, fd, off);
   if (addr == MAP_FAILED)
@@ -196,13 +216,13 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
   if (bytes == -1)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
-    return (FALSE);
+    goto mem_ref_fail;
   }
   if (!bytes)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_EOF;
     errno = ENOSPC;
-    return (FALSE);
+    goto mem_ref_fail;
   }
     
   vstr_add_ref(base, pos, ref, 0, bytes); /* must work */
@@ -215,8 +235,11 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
   assert(ref);
   vstr_ref_del(ref);
  mem_fail:
-  *err = VSTR_TYPE_SC_READ_FD_ERR_MEM;
-  errno = ENOMEM;
+  if (!*err)
+  {
+    *err = VSTR_TYPE_SC_READ_FD_ERR_MEM;
+    errno = ENOMEM;
+  }
   return (FALSE);
 }
 
@@ -344,31 +367,10 @@ int vstr_sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
     err = &dummy_err;
   *err = 0;
 
-  if (!len)
-  {
-    struct stat64 stat_buf;
-    
-    if (fstat64(fd, &stat_buf) == -1)
-    {
-      *err = VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO;
-      return (FALSE);
-    }
-    
-    if (stat_buf.st_size <= off)
-    {
-      *err = VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO;
-      errno = ENOSPC;
-      return (FALSE);
-    }
-
-    len = (stat_buf.st_size - off);
-    if (len > (SIZE_MAX - base->len))
-    {
-      *err = VSTR_TYPE_SC_READ_FD_ERR_TOO_LARGE;
-      errno = EFBIG;
-      return (FALSE);
-    }
-  }  
+  if (!vstr__sc_get_size(base->len, fd, &len, off, err,
+                         VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO,
+                         VSTR_TYPE_SC_READ_FD_ERR_TOO_LARGE))
+    return (FALSE);
 
   return (vstr__sc_read_len_fd(base, pos, fd, len, err));
 }
@@ -435,31 +437,10 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
     return (FALSE);
   }
 
-  if (!len)
-  {
-    struct stat64 stat_buf;
-    
-    if (fstat64(fd, &stat_buf) == -1)
-    {
-      *err = VSTR_TYPE_SC_READ_FILE_ERR_FSTAT_ERRNO;
-      return (FALSE);
-    }
-
-    if (stat_buf.st_size <= off)
-    {
-      *err = VSTR_TYPE_SC_READ_FILE_ERR_FSTAT_ERRNO;
-      errno = ENOSPC;
-      return (FALSE);
-    }
-
-    len = (stat_buf.st_size - off);
-    if (len > (SIZE_MAX - base->len))
-    {
-      *err = VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE;
-      errno = EFBIG;
-      return (FALSE);
-    }
-  }
+  if (!vstr__sc_get_size(base->len, fd, &len, off, err,
+                         VSTR_TYPE_SC_READ_FILE_ERR_FSTAT_ERRNO,
+                         VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE))
+    return (FALSE);
   
   if (off)
   {

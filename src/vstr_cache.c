@@ -126,12 +126,15 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   if (!(from_data = vstr_cache_get(from_base, from_off)))
     return;
 
-  if (data->ref || !(from_data->ref && from_data->len))
+  if (data->len || !from_data->len)
     return;
 
   if ((from_pos >= from_data->pos) &&
       (len == (from_data->len - (from_data->pos - from_pos))))
   {
+    if (data->ref)
+      vstr_ref_del(data->ref);
+    
     data->ref = vstr_ref_add(from_data->ref);
     data->pos = pos + 1;
     data->len = len;
@@ -143,12 +146,15 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
 static void vstr__cache_iovec_memmove(const Vstr_base *base)
 {
   Vstr__cache_data_iovec *vec = VSTR__CACHE(base)->vec;
+  size_t sz = sizeof(struct iovec) * base->num;
+  unsigned int off = base->conf->iov_min_offset;
 
-  vstr_wrap_memmove(vec->v + base->conf->iov_min_offset, vec->v + vec->off,
-                    sizeof(struct iovec) * base->num);
-  vstr_wrap_memmove(vec->t + base->conf->iov_min_offset, vec->t + vec->off,
-                    base->num);
-  vec->off = base->conf->iov_min_offset;
+  ASSERT((off + base->num) <= vec->sz);
+
+  vstr_wrap_memmove(vec->v + off, vec->v + vec->off, sz);
+  vstr_wrap_memmove(vec->t + off, vec->t + vec->off, base->num);
+  
+  vec->off = off;
 }
 
 int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
@@ -300,15 +306,17 @@ vstr_extern_inline_make_cache_pos(const Vstr_base *base)
   struct Vstr__cache_data_pos *data = NULL;
   
   if (!(data = VSTR__MK(sizeof(struct Vstr__cache_data_pos))))
-    return (NULL);
+    goto fail_alloc_data_pos;
   
   if (!vstr_cache_set(base, 1, data))
-  {
-    VSTR__F(data);
-    return (NULL);
-  }
+    goto fail_cache_set;
 
   return (data);
+  
+ fail_cache_set:
+  VSTR__F(data);
+ fail_alloc_data_pos:
+  return (NULL);
 }
 
 static void *vstr__cache_pos_cb(const Vstr_base *base __attribute__((unused)),

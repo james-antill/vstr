@@ -25,6 +25,12 @@ static void tst_srch_vstr(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 8,
             vstr_srch_vstr_rev(t1, lens_fwd[0], t1->len - (lens_fwd[0] - 1),
                                s2, 1, 5) != lens_fwd[0]);
+
+  ASSERT(!vstr_srch_case_vstr_fwd(t1, 1, 1, s2, 1, 2));
+  ASSERT(!vstr_srch_case_vstr_rev(t1, 1, 1, s2, 1, 2));
+
+  ASSERT(!vstr_srch_case_vstr_fwd(t1, 1, 0, s2, 1, 1));
+  ASSERT(!vstr_srch_case_vstr_rev(t1, 1, 0, s2, 1, 1));
 }
 
 int tst(void)

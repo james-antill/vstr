@@ -1,4 +1,4 @@
-.TH vstr 3 "17-May-2003" "Vstr 1.0.5" "Vstr String Library"
+.TH vstr 3 "31-May-2003" "Vstr 1.0.6" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -10616,7 +10616,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print a memory block. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. These correspond to the last 3 arguments to vstr_add_ref().
+  This function is used to add a custom specifier function to print a memory block. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T and VSTR_TYPE_FMT_END. These correspond to the last 3 arguments to vstr_add_ref().
 .sp
 \fBNote:\fR
 
@@ -10627,7 +10627,7 @@ Type\fB[2]\fR: const char *
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
 .br
-  It is recommended that you use the name "{ref}", with the gcc warning compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+  It is recommended that you use the name "{ref}", with the gcc warning compatible alternates using "{ref:%p%zu%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br

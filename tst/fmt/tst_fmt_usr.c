@@ -184,10 +184,15 @@ static void tst_fmt(int ret, Vstr_base *t1)
                                       correct, strlen(correct) + 1));
 }
 
+#define IPV4(n1, n2) (((n1) << 8) | (n2))
+
 int tst(void)
 {
   int ret = 0;
   Vstr_ref *ref = NULL;
+  int mfail_count = 0;
+  unsigned int ipv4[4];
+  unsigned int ipv6[8];
   
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   vstr_add_fmt(s2, s2->len, "$ %s -- %lu $", buf, (unsigned long)getpid());
@@ -201,10 +206,21 @@ int tst(void)
   vstr_cntl_conf(s4->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '%');
 
   /* setup custom formatters */
-  vstr_fmt_add(s1->conf, "{VSTR:%p%u}", tst_usr_vstr_cb,
-               VSTR_TYPE_FMT_PTR_VOID,
-               VSTR_TYPE_FMT_UINT,
-               VSTR_TYPE_FMT_END);
+  /* test for memory failures... */
+  do
+  {
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_fmt_add(s1->conf, "{VSTR:%p%u}", tst_usr_vstr_cb,
+                         VSTR_TYPE_FMT_PTR_VOID,
+                         VSTR_TYPE_FMT_UINT,
+                         VSTR_TYPE_FMT_END));
+  tst_mfail_num(0);
+
+  ASSERT(!vstr_fmt_add(s1->conf, "{VSTR:%p%u}", tst_usr_vstr_cb,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+  
   ASSERT(vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
   ASSERT(s1->conf->fmt_usr_curly_braces);
 
@@ -291,7 +307,7 @@ int tst(void)
 
   vstr_del(s3, 1, s3->len);
   ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ref);
-  vstr_add_fmt(s3, 0, "$$ $*{ref:%*p%u%zu} -- $PID $$",
+  vstr_add_fmt(s3, 0, "$$ $*{ref:%*p%zu%zu} -- $PID $$",
                0, ref, 0, strlen(buf));
   vstr_ref_del(ref);
   
@@ -351,8 +367,63 @@ int tst(void)
   
   tst_fmt(ret, s1);
   tst_fmt(ret, s3);
+
+  TST_B_TST(ret, 28, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
+
+  vstr_del(s1, 1, s1->len);
+  vstr_del(s3, 1, s3->len);
   
+  mfail_count = 0;
+
+  ipv4[0] = ipv4[1] = ipv4[2] = ipv4[3] = 111;
+  ipv6[0] = ipv6[1] = ipv6[2] = ipv6[3] = ipv6[4] = ipv6[5] = 0x2222;
+  ipv6[6] = ipv6[7] = IPV4(111U, 111);
+  
+  ref = vstr_ref_make_ptr((char *)"ref", vstr_ref_cb_free_ref);
+  do
+  {
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_PTR, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_NON, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_fmt(s3, 0,
+                         "$8.4{buf:%s%zu}|"
+                         "$4.8{ptr:%s%zu}|"
+                         "${non:%zu}|"
+                         "${ref:%p%zu%zu}|"
+                         "$.5{rep_chr:%c%zu}|"
+                         "${ipv4.v+C:%p%u}|"
+                         "${ipv6.v+C:%p%u%u}"
+                         "",
+                         "buf", 3,
+                         "ptr", 3,
+                         3,
+                         ref, 0, 3,
+                         'x', 8,
+                         ipv4, 24,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD, 96));
+  vstr_ref_del(ref);
+  tst_mfail_num(0);
+
+  vstr_add_fmt(s1, s1->len, "%s|%s|", " buf", " ptr");
+  vstr_add_non(s1, s1->len, 3);
+  vstr_add_fmt(s1, s1->len, "|%s|%s|%s|%s", "ref", "xxxxx",
+               "111.111.111.111/24",
+               "2222:2222:2222:2222:2222:2222:111.111.111.111/96");
+
   TST_B_TST(ret, 29, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
+  
+  {
+    const char *ptr = NULL;
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_add_fmt(s3, 0, "${buf:%s%zu}", ptr, (size_t)1000);
+    TST_B_TST(ret, 16, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "(null)"));
+    vstr_del(s3, 1, s3->len);
+    vstr_add_fmt(s3, 0, "${ptr:%s%zu}", ptr, (size_t)1000);
+    TST_B_TST(ret, 17, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "(null)"));
+  }
   
   return (TST_B_RET(ret));
 }

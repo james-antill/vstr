@@ -14,7 +14,6 @@ else
 fi
 
 $s/b/COVERAGE.sh
-# ./src/.libs/libvstr-*.so.*
 
 cd src
 

@@ -869,6 +869,8 @@ int vstr__check_real_nodes(const Vstr_base *base)
  
   while (scan)
   {
+    ASSERT(scan->len);
+    
     switch (scan->type)
     {
       case VSTR_TYPE_NODE_BUF: node_buf_used = TRUE; break;

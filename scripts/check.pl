@@ -370,6 +370,8 @@ if ($conf_print_stdout_info)
   STDOUT->print(sprintf("%-16s = %s\n", "RANDOMISE",tf($conf_rand)));
 
   STDOUT->print("-" x 79 . "\n");
+  STDOUT->print(" NOTE: That ASSERT()'s are there for the xfail's in the autocheck2.log" . "\n");
+  STDOUT->print("_" x 79 . "\n");
 }
 
 

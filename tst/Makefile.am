@@ -17,7 +17,18 @@ tst_add = \
 
 xfail_tst_add = \
     add/xfail_tst_add_buf_pos \
-    add/xfail_tst_add_buf_NULL
+    add/xfail_tst_add_buf_NULL \
+    add/xfail_tst_add_ptr_pos \
+    add/xfail_tst_add_ptr_NULL \
+    add/xfail_tst_add_non_pos \
+    add/xfail_tst_add_non_NULL \
+    add/xfail_tst_add_ref_pos \
+    add/xfail_tst_add_ref_NULL_ref \
+    add/xfail_tst_add_ref_NULL_vstr \
+    add/xfail_tst_add_vstr_pos_f \
+    add/xfail_tst_add_vstr_pos_t \
+    add/xfail_tst_add_vstr_NULL_f \
+    add/xfail_tst_add_vstr_NULL_t
 
 tst_cache = \
     cache/tst_cache_usr \

@@ -858,16 +858,25 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(buf, "buf", "s%zu");
   VSTR__SC_FMT_ADD(ptr, "ptr", "s%zu");
   VSTR__SC_FMT_ADD(non, "non", "zu");
-  VSTR__SC_FMT_ADD(ref, "ref", "p%u%zu");
+  VSTR__SC_FMT_ADD(ref, "ref", "p%zu%zu");
+
+  /* FIXME: tmp because I screwed up the definition for 1.0.0 --
+   * has wrong types */
+  if (!(vstr_sc_fmt_add_ref (conf, "{ref" ":%"       "p%u%zu}") &&
+        vstr_sc_fmt_add_ref (conf, "{ref" ":%" "*"   "p%u%zu}") &&
+        vstr_sc_fmt_add_ref (conf, "{ref" ":%"  ".*" "p%u%zu}") &&
+        vstr_sc_fmt_add_ref (conf, "{ref" ":%" "*.*" "p%u%zu}")))
+    ret = FALSE;
+  
   VSTR__SC_FMT_ADD(rep_chr, "rep_chr", "c%zu");
   VSTR__SC_FMT_ADD(bkmg_Byte_uint, "BKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
   VSTR__SC_FMT_ADD(bkmg_bit_uint, "bKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_bits_uint, "bKMG/s.u", "u");
-  #ifdef HAVE_POSIX_HOST
+#ifdef HAVE_POSIX_HOST
   VSTR__SC_FMT_ADD(ipv4_ptr, "ipv4.p", "p");
   VSTR__SC_FMT_ADD(ipv6_ptr, "ipv6.p", "p");
-  #endif
+#endif
   VSTR__SC_FMT_ADD(ipv4_vec, "ipv4.v", "p");
   VSTR__SC_FMT_ADD(ipv6_vec, "ipv6.v", "p%u");
   VSTR__SC_FMT_ADD(ipv4_vec_cidr, "ipv4.v+C", "p%u");

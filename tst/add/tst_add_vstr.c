@@ -44,8 +44,10 @@ static void tst_vstr_b(unsigned int num, Vstr_base *t1, unsigned int flags)
   vstr_del(t1, 8, len * 2);
   vstr_add_vstr(t1, len, t1, 1, len, flags);
   vstr_del(t1, 8, len);
-  vstr_add_vstr(t1, len, t1, 1, len, flags);
-  vstr_del(t1, 8, len * 2);
+  vstr_add_vstr(t1, 7, t1, len + 1, len, flags);
+  vstr_del(t1, 8, len);
+  vstr_add_vstr(t1, 7, t1, 2, len, flags);
+  vstr_del(t1, 2, len * 2);
   
   TST_B_TST(ret, num, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, buf));
 }
@@ -104,6 +106,23 @@ int tst(void)
   tst_vstr_b(24, s4, VSTR_TYPE_ADD_ALL_REF);
   tst_vstr_b(24, s4, VSTR_TYPE_ADD_ALL_BUF);
   tst_vstr_b(24, s4, VSTR_TYPE_ADD_BUF_REF);
+  
+  {
+    const char *p1 = vstr_export_cstr_ptr(s1, 1, s1->len);
+    const char *p2 = vstr_export_cstr_ptr(s2, 1, s2->len);
+    const char *p1_save = p1;
+
+    ASSERT(p1 != p2);
+    
+    vstr_del(s2, 1, s2->len);
+    vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
+
+    p1 = vstr_export_cstr_ptr(s1, 1, s1->len);
+    p2 = vstr_export_cstr_ptr(s2, 1, s2->len);
+    
+    TST_B_TST(ret, 31, p1 != p1_save);
+    TST_B_TST(ret, 31, p1 != p2);
+  }
   
   return (TST_B_RET(ret));
 }

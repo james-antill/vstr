@@ -69,10 +69,11 @@ int tst(void)
     vstr_del(s2, 1, s2->len);
     
     vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
-    ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);
+    ptr = vstr_export_cstr_ptr(s2, 1, s2->len);
     
-    TST_B_TST(ret, 14, !!strcmp(buf + 5, ptr));
-    TST_B_TST(ret, 15, (ptr != optr)); /* uses same space */
+    TST_B_TST(ret, 14, !!strcmp(buf, ptr));
+    TST_B_TST(ret, 15, (ptr == optr));
+    TST_B_TST(ret, 15, (ptr != optr2)); /* uses same space */
     
     optr = optr2;
   }

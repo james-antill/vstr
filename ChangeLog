@@ -1,3 +1,65 @@
+2003-05-31  James Antill  <james@and.org>
+
+	* NEWS: Release-1.0.6
+
+	* examples/ex_csv.c: Added simple example from c.l.c discussion.
+
+	* src/vstr_add.c (vstr_add_iovec_buf_end): Fix iovec cache when adding
+	at 0 in a Vstr that has data, but then adding 0 bytes.
+	(vstr_add_iovec_buf_beg): Fix bugs when adding at the begining.
+
+	* src/vstr_srch.c (vstr__cmp_eq_rev_non): Fix fast reverse searching
+	for _NON data.
+
+	* src/vstr_add.c (vstr_add_non): Fixed bugs in merged append of
+	non data.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_all): Fix {ref} custom formatter add
+	for gcc work around case (kept old types for backwards compat.).
+
+	* src/vstr_sub.c (vstr_sub_buf): Fix the case when you are really just
+	calling vstr_del() indirectly.
+	(vstr_sub_ptr): Fix the case when you are really just calling
+	vstr_del() or vstr_add_ptr() indirectly.
+	(vstr_sub_ref): Fix the case when you are really just calling
+	vstr_del() or vstr_add_ref() indirectly.
+	(vstr_sub_rep_chr): Fix the case when you are doing nothing.
+
+	* src/vstr_add.c (vstr_add_vstr): Fix off by one error when coying
+	a vstr into itself.
+
+2003-05-30  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_add_cstr_ref): Fixed length bug when
+	using an offset.
+	(vstr_dup_cstr_ref): Fixed length bug when using an offset.
+	(vstr_sub_cstr_ref): Fixed length bug when using an offset.
+
+	* src/vstr_sc_posix.c (vstr__sc_read_slow_len_fd): Fix memory leak
+	on slow read path (no iovec cache).
+
+2003-05-26  James Antill  <james@and.org>
+
+	* include/assert_loop-extern.h (ASSERT_RET): Add macros.
+
+	* src/vstr_add.c (vstr__cache_iovec_maybe_add): Fix return type to
+	void, as it always returned TRUE.
+
+	* src/vstr_spn.c (vstr_cspn_chrs_fwd): Fix for NULL dereference on
+	search for NON nodes with a length of 1.
+	(vstr_cspn_chrs_rev): Fix for NULL dereference on search for NON
+	nodes with a length of 1.
+	(vstr__cspn_chrs_rev_fast): Fix fast reverse searching involving NON
+	spans/data.
+
+	* src/vstr_add_fmt.c (vstr__fmt_fillin_spec): Remove NULL check on
+	pointer from generic code for %s/%S.
+
+	* src/vstr_add_fmt.c (vstr__add_vfmt): Fix SEGV on malloc failure of
+	first spec node.
+
+	* src/vstr_fmt.c (vstr_fmt_add): Fixed memory leak on memory failure.
+
 2003-05-17  James Antill  <james@and.org>
 
 	* NEWS: Release-1.0.5

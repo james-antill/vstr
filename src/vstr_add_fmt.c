@@ -606,6 +606,9 @@ static int vstr__add_fmt_cstr(Vstr_base *base, size_t pos_diff,
 {
   size_t len = 0;
   const char *str = spec->u.data_ptr;
+
+  if (!str)
+    str = "(null)";
   
   if (spec->flags & PREC_USR)
     len = strnlen(str, spec->precision);
@@ -645,7 +648,12 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   mbstate_t state;
   size_t len_mbs = 0;
   char *buf_mbs = NULL;
-  const wchar_t *tmp = spec->u.data_ptr;
+  const wchar_t *wstr = spec->u.data_ptr;
+  const wchar_t *tmp  = NULL;
+
+  if (!wstr)
+    wstr = L"(null)";
+  tmp = wstr;
   
   vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
 
@@ -669,7 +677,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
     base->conf->malloc_bad = TRUE;
     goto failed_alloc;
   }
-  tmp = spec->u.data_ptr;
+  tmp = wstr;
   vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcsnrtombs(buf_mbs, &tmp, spec->precision, len_mbs, &state);
   if (tmp) /* wcslen() > spec->precision */
@@ -1042,16 +1050,10 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
           
         case 's':
           u.data_ptr = va_arg(ap, char *);
-          
-          if (!u.data_ptr)
-            u.data_ptr = (char *)"(null)";
           break;
           
         case 'S':
           u.data_ptr = va_arg(ap, wchar_t *);
-          
-          if (!u.data_ptr)
-            u.data_ptr = (wchar_t *)(L"(null)");
           break;
        
         case 'd':
@@ -1678,7 +1680,8 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
   if (0) /* already done in write_spec */
   {
    failed_alloc:
-    base->conf->vstr__fmt_spec_list_end->next = base->conf->vstr__fmt_spec_make;
+    if (base->conf->vstr__fmt_spec_list_end)
+      base->conf->vstr__fmt_spec_list_end->next = base->conf->vstr__fmt_spec_make;
     base->conf->vstr__fmt_spec_make = base->conf->vstr__fmt_spec_list_beg;
     base->conf->vstr__fmt_spec_list_beg = NULL;
     base->conf->vstr__fmt_spec_list_end = NULL; 

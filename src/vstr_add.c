@@ -68,24 +68,22 @@ void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
   VSTR__CACHE(base)->vec->v[num - 1].iov_len += len;
 }
 
-static int vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
-                                       int at_end, unsigned int len)
+static void vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
+                                        int at_end, unsigned int len)
 {
   if (!base->conf->iovec_auto_update)
     base->iovec_upto_date = FALSE;
   
   if (!base->iovec_upto_date)
-    return (TRUE);
+    return;
   
   if (at_end &&
       (base->num <= (VSTR__CACHE(base)->vec->sz - VSTR__CACHE(base)->vec->off)))
-    return (vstr__cache_iovec_add_end(base, node, len));
+    vstr__cache_iovec_add_end(base, node, len);
   else if (!at_end && VSTR__CACHE(base)->vec->off)
-    return (vstr__cache_iovec_add_beg(base, node, len));
+    vstr__cache_iovec_add_beg(base, node, len);
   else
     base->iovec_upto_date = FALSE;
-  
-  return (TRUE);
 }
 
 Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
@@ -104,33 +102,6 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
     return (NULL);
 
   return (scan);
-}
-
-static void vstr__add_fail_cleanup(Vstr_base *base,
-                                   Vstr_node *pos_scan,
-                                   Vstr_node *pos_scan_next,
-                                   unsigned int num, size_t len,
-                                   size_t orig_pos_scan_len)
-{
-  base->conf->malloc_bad = TRUE;
-  base->num -= num;
-  if (base->iovec_upto_date)
-    VSTR__CACHE(base)->vec->off += (num - 1);
-  base->len -= len;
- 
-  if (pos_scan)
-  {
-    pos_scan->len = orig_pos_scan_len;
-    pos_scan->next = pos_scan_next;
-  }
-  else
-  {
-    assert(!base->num);
-    base->beg = pos_scan_next;
-  }
- 
-  assert(vstr__check_spare_nodes(base->conf));
-  assert(vstr__check_real_nodes(base));
 }
 
 /* add 2: one for setup_pos -> split_node ; one for rouding error in divide */
@@ -199,12 +170,7 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
 #define VSTR__ADD_END(node_type, int_type, o_p_s_l) \
   scan->len = tmp; \
   \
-  if (!vstr__cache_iovec_maybe_add(base, scan, pos, tmp)) \
-  { \
-    vstr__add_fail_cleanup(base, pos_scan, pos_scan_next, \
-                           num, len, o_p_s_l); \
-   return (FALSE); \
-  } \
+  vstr__cache_iovec_maybe_add(base, scan, pos, tmp); \
   \
   len -= tmp; \
   \
@@ -240,9 +206,7 @@ int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
   Vstr_node *pos_scan_next = NULL;
   size_t orig_pos_scan_len = 0;
   
-  assert(!(!base || !buffer || !len || (pos > base->len)));
-  if (!base || !buffer || !len || (pos > base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || !buffer || !len || (pos > base->len)), FALSE);
   
   VSTR__ADD_BEG(base->conf->buf_sz, BUF, &orig_pos_scan_len);
   
@@ -263,7 +227,7 @@ int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
     vstr__cache_iovec_add_node_end(base, num, tmp);
     
     base->len += tmp;
-    len -= tmp;
+    len       -= tmp;
     
     if (!len)
     {
@@ -295,9 +259,7 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
   Vstr_node *pos_scan = NULL;
   Vstr_node *pos_scan_next = NULL;
  
-  assert(!(!base || (pos > base->len)));
-  if (!base || (pos > base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || (pos > base->len)), FALSE);
 
   if (!len)
     return (TRUE);
@@ -320,7 +282,7 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
     vstr__cache_iovec_add_node_end(base, num, tmp);
    
     base->len += tmp;
-    len -= tmp;
+    len       -= tmp;
    
     if (!len)
     {
@@ -352,9 +314,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
   Vstr_node *pos_scan_next = NULL;
   size_t orig_pos_scan_len = 0;
 
-  assert(!(!base || (pos > base->len)));
-  if (!base || (pos > base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || (pos > base->len)), FALSE);
 
   if (!len)
     return (TRUE);
@@ -370,12 +330,12 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
     if (tmp > len)
       tmp = len;
 
-    scan->len += len;
+    scan->len += tmp;
    
-    vstr__cache_iovec_add_node_end(base, num, len);
+    vstr__cache_iovec_add_node_end(base, num, tmp);
 
-    base->len += len;
-    len -= tmp;
+    base->len += tmp;
+    len       -= tmp;
    
     if (!len)
     {
@@ -402,9 +362,7 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
   Vstr_node *pos_scan = NULL;
   Vstr_node *pos_scan_next = NULL;
 
-  assert(!(!base || !ref || (pos > base->len)));
-  if (!base || !ref || (pos > base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || !ref || (pos > base->len)), FALSE);
 
   if (!len)
     return (TRUE);
@@ -428,7 +386,7 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
     vstr__cache_iovec_add_node_end(base, num, tmp);
    
     base->len += tmp;
-    len -= tmp;
+    len       -= tmp;
    
     if (!len)
     {
@@ -637,10 +595,8 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   Vstr_node *scan = NULL;
   unsigned int dummy_num = 0;
   
-  assert(!(!base || (pos > base->len) ||
-           !from_base || (from_pos > from_base->len)));
-  if (!base || (pos > base->len) || !from_base || (from_pos > from_base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || (pos > base->len) ||
+               !from_base || ((from_pos > from_base->len) && len)), FALSE);
 
   if (!len)
     return (TRUE);
@@ -652,11 +608,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   if (add_type == VSTR_TYPE_ADD_ALL_REF)
   {
     if (!vstr__add_all_ref(base, pos, (Vstr_base *)from_base, from_pos, len))
-    {
-      DO_VALID_CHK();
-      
-      return (FALSE);
-    }
+      goto fail_beg;
 
     DO_VALID_CHK();
     
@@ -667,33 +619,21 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   if (add_type == VSTR_TYPE_ADD_BUF_REF)
   {
     if (!vstr__convert_buf_ref((Vstr_base *)from_base, from_pos, len))
-    {
-      base->conf->malloc_bad = TRUE;
-
-      DO_VALID_CHK();
-      
-      return (FALSE);
-    }
+      goto fail_beg;
 
     DO_VALID_CHK();
   }
   
   /* do the real copying */
   if (!(scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
-  {
-    DO_VALID_CHK();
-    
-    return (FALSE);
-  }
+    goto fail_beg;
 
+  /* do an initial split where it's going to be added, so that we don't
+   * corrupt the data */
   if ((from_base == base) && (scan->type == VSTR_TYPE_NODE_BUF) &&
       !vstr_base__pos(base, &pos, &dummy_num, TRUE))
-  { /* do an initial split where it's going to be added, so that we don't
-     * corrupt the data */
-    DO_VALID_CHK();
-    
-    return (FALSE);
-  }
+    goto fail_beg;
+
   pos = orig_pos;
     
   if ((from_base == base) && (orig_from_pos <= orig_pos) &&
@@ -705,22 +645,22 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
      * Where a is the From vstr data, and X is the To vstr data,
      * so we have to copy the first part, skip the middle and copy the
      * second part */
-    size_t before = VSTR_SC_POSDIFF(orig_from_pos, orig_pos);
+    size_t before = orig_pos - orig_from_pos;
 
     assert(before < len);
 
     if (!(pos = vstr__add_vstr_nodes(base, pos,
                                      scan, from_pos, before, add_type)))
-      goto fail;
+      goto fail_end;
     
     len -= before;
     from_pos = orig_from_pos + (before * 2);
     if (!(scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
-      goto fail;
+      goto fail_end;
   }
   
   if (!vstr__add_vstr_nodes(base, pos, scan, from_pos, len, add_type))
-    goto fail;
+    goto fail_end;
 
   vstr__cache_cstr_cpy(base, orig_pos, orig_len,
                        (Vstr_base *)from_base, orig_from_pos);
@@ -729,12 +669,14 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
 
   return (TRUE);
   
- fail:
+ fail_end:
   /* must work as orig_pos must now be at the begining of a node */
-  from_base->conf->malloc_bad = TRUE;
   vstr_del(base, orig_pos + 1, base->len - orig_base_len);
   assert(base->len == orig_base_len);
 
+ fail_beg:
+  from_base->conf->malloc_bad = TRUE;
+  base->conf->malloc_bad = TRUE;
   DO_VALID_CHK();
 
   return (FALSE);
@@ -824,14 +766,16 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
       types += scan_num;
       
       if (scan != base->end)
-      {
         /* if we are adding into the middle of the Vstr then we don't keep
          * the vec valid for after the point where we are adding.
          * This is then updated again in the _end() func */
         base->iovec_upto_date = FALSE;
-      }
     }
   }
+  else if (base->len)
+    /* TODO: maybe work with offset to not damage iovec cache
+     * non trivial though */
+    base->iovec_upto_date = FALSE;
   
   scan = (Vstr_node *)base->conf->spare_buf_beg;
   assert(scan);
@@ -931,13 +875,18 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
     }
 
     if (!base->iovec_upto_date && base->len)
-    {      
+    {
       count = 0;
       scan = *adder;
       while (scan)
       {
         iovs[count].iov_len = scan->len;
-        iovs[count].iov_base = vstr_export__node_ptr(scan);
+
+        if (scan == base->beg)
+          iovs[count].iov_base = vstr_export__node_ptr(scan) + base->used;
+        else
+          iovs[count].iov_base = vstr_export__node_ptr(scan);
+        
         types[count] = scan->type;
         
         ++count;

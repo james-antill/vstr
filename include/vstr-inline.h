@@ -561,6 +561,11 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
         pdata = (struct Vstr__cache_data_cstr *)data;
         
         pdata->len = 0;
+        if (pdata->ref->ref > 1)
+        {
+          vstr_ref_del(pdata->ref);
+          pdata->ref = 0; /* NULL */
+        }
       }
       if (base->iovec_upto_date)
       {
@@ -681,7 +686,7 @@ extern inline int vstr_add_cstr_ptr(struct Vstr_base *s1, size_t pa1,
 extern inline int vstr_add_cstr_ref(struct Vstr_base *s1, size_t pa1,
                                     struct Vstr_ref *ref, size_t off)
 { return (vstr_add_ref(s1, pa1, ref, off,
-                       strlen((const char *)ref->ptr) + off)); }
+                       strlen(((const char *)ref->ptr) + off))); }
 
 /* dup */
 extern inline struct Vstr_base *vstr_dup_cstr_buf(struct Vstr_conf *conf,
@@ -693,7 +698,7 @@ extern inline struct Vstr_base *vstr_dup_cstr_ptr(struct Vstr_conf *conf,
 extern inline struct Vstr_base *vstr_dup_cstr_ref(struct Vstr_conf *conf,
                                     struct Vstr_ref *ref, size_t off)
 { return (vstr_dup_ref(conf, ref, off,
-                       strlen((const char *)ref->ptr) + off)); }
+                       strlen(((const char *)ref->ptr) + off))); }
 
 /* sub */
 extern inline int vstr_sub_cstr_buf(struct Vstr_base *s1, size_t p1, size_t l1,
@@ -705,7 +710,7 @@ extern inline int vstr_sub_cstr_ptr(struct Vstr_base *s1, size_t p1, size_t l1,
 extern inline int vstr_sub_cstr_ref(struct Vstr_base *s1, size_t p1, size_t l1,
                                     struct Vstr_ref *ref, size_t off)
 { return (vstr_sub_ref(s1, p1, l1, ref, off,
-                       strlen((const char *)ref->ptr) + off)); }
+                       strlen(((const char *)ref->ptr) + off))); }
 
 /* srch */
 extern inline size_t vstr_srch_cstr_buf_fwd(struct Vstr_base *s1,

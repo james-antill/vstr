@@ -11,7 +11,7 @@ else
   exit 1;
 fi
 
-export CFLAGS="-g -fprofile-arcs -ftest-coverage"
+export CFLAGS="-g -O1 -fprofile-arcs -ftest-coverage -DUSE_SYSCALL_MAIN"
 $c \
   --enable-tst-noinline \
   --enable-tst-nosyscall-asm \

@@ -53,7 +53,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
   unsigned int ret_num = 0;
   size_t used = 0;
 
-  assert(iovs && num_max);
+  assert(iovs || !num_max);
 
   if (!num_max)
     return (0);
@@ -117,7 +117,7 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base,
   unsigned int dummy_ret_num = 0;
   unsigned int ret_num = 0;
 
-  assert(iovs && num_max);
+  assert(iovs || !num_max);
 
   if (!num_max)
     return (0);

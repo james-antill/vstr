@@ -196,21 +196,6 @@ size_t FIX_SYMBOL(strncasecmp)(const char *str1, const char *str2, size_t count)
 }
 #endif
 
-#ifndef HAVE_STRNCHR
-char *FIX_SYMBOL(strnchr)(const char *str, char the_char, size_t count)
-{
- const char *tmp = str;
- 
- while (count-- && *tmp && (*tmp != the_char))
-   ++tmp;
-
- if (*tmp == the_char)
-   return ((char *) tmp); /* warning */
- else
-   return (NULL);
-}
-#endif
-
 #ifndef HAVE_STRCASECMP
 # warning "Assumes ASCI"
 int FIX_SYMBOL(strcasecmp)(const char *s1, const char *s2)

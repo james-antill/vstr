@@ -46,13 +46,8 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
 #endif
 
 #ifndef NDEBUG /* this is all non threadsafe ... */
-extern inline void *vstr__debug_malloc(size_t sz)
+static inline void vstr__debug_alloc(void)
 {
-  void *ret = NULL;
-  
-  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
-    return (NULL);
-  
   ++vstr__options.mem_num;
   
   if (!vstr__options.mem_sz)
@@ -70,7 +65,17 @@ extern inline void *vstr__debug_malloc(size_t sz)
     ASSERT(vstr__options.mem_vals);
   }
   ASSERT(vstr__options.mem_num <= vstr__options.mem_sz);
-  
+}
+
+extern inline void *vstr__debug_malloc(size_t sz)
+{
+  void *ret = NULL;
+
+  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+    return (NULL);
+
+  vstr__debug_alloc();
+
   ASSERT(sz);
 
   ret = malloc(sz);
@@ -87,24 +92,8 @@ extern inline void *vstr__debug_calloc(size_t num, size_t sz)
   
   if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
     return (NULL);
-  
-  ++vstr__options.mem_num;
-  
-  if (!vstr__options.mem_sz)
-  {
-    vstr__options.mem_sz = 8;
-    vstr__options.mem_vals = malloc(sizeof(void *) * vstr__options.mem_sz);
-    ASSERT(vstr__options.mem_vals);
-  }
-  
-  if (vstr__options.mem_num > vstr__options.mem_sz)
-  {
-    vstr__options.mem_sz *= 2;
-    vstr__options.mem_vals = realloc(vstr__options.mem_vals,
-                                     sizeof(void *) * vstr__options.mem_sz);
-    ASSERT(vstr__options.mem_vals);
-  }
-  ASSERT(vstr__options.mem_num <= vstr__options.mem_sz);
+
+  vstr__debug_alloc();
   
   ASSERT(num && sz);
 

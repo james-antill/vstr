@@ -310,9 +310,11 @@ static int vstr__cmp_eq_rev_non(const Vstr_base *base, size_t len,
     if (str_len <= scan_len)
       return (TRUE);
     
+    str_len -= scan_len;
+    
     if (!vstr__base_scan_rev_nxt(base, &len, &num, &type,
                                  &scan_str, &scan_len))
-      break;
+      return (FALSE);
   }
 
   return (FALSE);  

@@ -14,7 +14,6 @@
 
 #include "fix.h"
 
-#include "assert_loop-def.h"
 #include "assert_loop-extern.h"
 
 #include "tools-def.h"
