@@ -4,13 +4,13 @@ CC=gcc
 # CC=diet gcc
 #CC=diet gcc3
 
-VSTR_LOCAL_DIR=../j
-# VSTR_LOCAL_DIR=../
+# VSTR_LOCAL_DIR=../j
+VSTR_LOCAL_DIR=../
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-HAVE_TIMER_Q=0
+HAVE_TIMER_Q=1
 HAVE_SSL=1
 
 LOCAL=1
@@ -48,9 +48,8 @@ EX_CFLAGS=`pkg-config --cflags vstr` $(OPTWARNS) $(PROF)
 EX_LDFLAGS=$(ST) `pkg-config --libs vstr` $(PROF)
 endif
 
-# Isn't converted to pkg-config yet...
-TQ_CFLAGS=`gnome-config --cflags timer_q`
-TQ_LDFLAGS=`gnome-config --libs timer_q`
+TQ_CFLAGS=`pkg-config --cflags timer_q`
+TQ_LDFLAGS=`pkg-config --libs timer_q`
 
 SSL_CFLAGS=
 SSL_LDFLAGS=-lssl
@@ -88,5 +87,5 @@ ex_slowcat: ex_slowcat.c ex_utils.o
 $(LDFLAGS)
 
 clean:
-		rm -f *.o $(FILES)
+		rm -f *.o $(FILES) gmon.out
 

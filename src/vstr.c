@@ -249,6 +249,7 @@ Vstr_conf *vstr_nx_make_conf(void)
 
   conf->no_cache = FALSE;
   conf->fmt_usr_curly_braces = TRUE;
+  conf->atomic_ops = TRUE;
   
   return (conf);
 
@@ -437,7 +438,8 @@ int vstr__cache_iovec_valid(Vstr_base *base)
  if (!vstr__cache_iovec_alloc(base, base->num))
    return (FALSE);
 
- assert(VSTR__CACHE(base)->vec->off == base->conf->iov_min_offset);
+ assert(!VSTR__CACHE(base)->vec->sz ||
+        (VSTR__CACHE(base)->vec->off == base->conf->iov_min_offset));
 
  count = base->conf->iov_min_offset;
  scan = base->beg;

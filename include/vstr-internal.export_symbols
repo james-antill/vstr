@@ -131,8 +131,8 @@ sc_fmt_add_ipv4_ptr
 sc_fmt_add_ipv6_ptr
 sc_fmt_add_ipv4_vec
 sc_fmt_add_ipv6_vec
-sc_fmt_add_ipv4_vec_cipe
-sc_fmt_add_ipv6_vec_cipe
+sc_fmt_add_ipv4_vec_cidr
+sc_fmt_add_ipv6_vec_cidr
 sc_fmt_add_all
 sc_fmt_cb_beg
 sc_fmt_cb_end

@@ -1,2 +1,5 @@
  Now has a real application that uses the library, and-vsftpd.
- The API is pretty much frozen, just some more testing and it'll be 1.0.
+
+ Version 1.0.0 ... the first truley stable release has now been made. ABI is
+frozen for 1.0.x lifetime ... API will only have things added to it etc.
+ Feel free to start using.

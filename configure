@@ -1398,7 +1398,7 @@ if test ".`echo dummy $@ | grep help`" = .; then
     T_MD="`$ac_shtool echo -n -e %B 2>/dev/null`"
     T_ME="`$ac_shtool echo -n -e %b 2>/dev/null`"
     echo "Configuring ${T_MD}vstr${T_ME}, (Library)${T_ME}"
-    echo "Copyright (c) 1999, 2000, 2001, 2002 James Antill <james@and.org>"
+    echo "Copyright (c) 1999, 2000, 2001, 2002, 2003 James Antill <james@and.org>"
     echo "                   See ${T_MD}AUTHORS${T_ME} file for more info."
 
 # Could just del this, but it looks cool and like I know what I'm doing :)
@@ -1418,9 +1418,9 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 # Seriously butchered from glib...
 
-VSTR_MAJOR_VERSION=0
-VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=21
+VSTR_MAJOR_VERSION=1
+VSTR_MINOR_VERSION=0
+VSTR_MICRO_VERSION=0
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -16901,10 +16901,7 @@ echo "$as_me:$LINENO: result: ${T_MD}Output Substitution:${T_ME}" >&5
 echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 
 
-VSTR_LIBS="$LIBS"
-
-
-ac_config_files="$ac_config_files Makefile vstr.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/dup/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/sects/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
+ac_config_files="$ac_config_files Makefile vstr.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/cntl/Makefile tst/conv/Makefile tst/del/Makefile tst/dup/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/sects/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -17529,6 +17526,7 @@ do
   "tst/add_fmt/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/add_fmt/Makefile" ;;
   "tst/cache/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cache/Makefile" ;;
   "tst/cmp/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cmp/Makefile" ;;
+  "tst/cntl/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cntl/Makefile" ;;
   "tst/conv/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/conv/Makefile" ;;
   "tst/del/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/del/Makefile" ;;
   "tst/dup/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/dup/Makefile" ;;
@@ -17719,7 +17717,6 @@ s,@FMT_DBL_glibc_FALSE@,$FMT_DBL_glibc_FALSE,;t t
 s,@ALLOCA@,$ALLOCA,;t t
 s,@HAVE_LINKER_MAIN_RELOCATE_TRUE@,$HAVE_LINKER_MAIN_RELOCATE_TRUE,;t t
 s,@HAVE_LINKER_MAIN_RELOCATE_FALSE@,$HAVE_LINKER_MAIN_RELOCATE_FALSE,;t t
-s,@VSTR_LIBS@,$VSTR_LIBS,;t t
 CEOF
 
 _ACEOF

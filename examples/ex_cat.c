@@ -20,6 +20,7 @@
 #include <errno.h>
 
 
+/* how much in core memory to use for read and write operations */
 #define MAX_R_DATA_INCORE (1024 * 1024)
 /* #define MAX_W_DATA_INCORE (1024 * 8) */
 

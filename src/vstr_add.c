@@ -49,7 +49,7 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
   
   tmp = vstr_nx_export__node_ptr(node);
   
-  num = VSTR__CACHE(base)->vec->off--;
+  num = --VSTR__CACHE(base)->vec->off;
   
   VSTR__CACHE(base)->vec->v[num].iov_len = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;

@@ -6,6 +6,7 @@
 
 #include <vstr.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <sys/fcntl.h>
 #include <sys/time.h>

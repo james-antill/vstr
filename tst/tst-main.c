@@ -164,10 +164,24 @@ int main(void)
   if (!vstr_cntl_conf(conf1,
                       VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC, "en_US"))
     die();
-
-  vstr_cntl_conf(conf2, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
   
-  vstr_cntl_conf(conf3, VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE, 1);
+  {
+    int tmp = 0;
+    
+    vstr_cntl_conf(conf2, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
+    ASSERT(!!vstr_cntl_conf(conf2, VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &tmp) &&
+           tmp == 4);
+    
+    vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC, 4);
+    ASSERT(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC, &tmp) &&
+           tmp == 4);
+    
+    ASSERT(!!vstr_cntl_conf(conf3, VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE, &tmp) &&
+           tmp == TRUE);
+    vstr_cntl_conf(conf3, VSTR_CNTL_CONF_SET_FLAG_ALLOC_CACHE, FALSE);
+    ASSERT(!!vstr_cntl_conf(conf3, VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE, &tmp) &&
+           tmp == FALSE);
+  }
   
   if (!(s1 = vstr_make_base(NULL)))
     die();

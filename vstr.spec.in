@@ -1,6 +1,6 @@
 %define ver      @VERSION@
 %define libver  @LT_RELEASE@
-%define real_release_num 4
+%define real_release_num 1
 %define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   /usr
@@ -21,7 +21,7 @@
 %define fmtfloatopt --with-fmt-float=%{?float}%{!?float:host}
 %endif
 
-%define devdoco %{_datadir}/doc/vstr-devel-%{ver}
+%define devdoco %{_datadir}/doc/%{name}-devel-%{ver}
 
 Summary: String library, safe, quick and easy to use.
 Name: %{name}
@@ -44,7 +44,7 @@ information, and the length/ptr model and not the termination model of
 portable version of a printf-like function (which is ISO 9899:1999 compliant,
 and includes support for i18n parameter position modifiers).
 
- Development libs and headers are in vstr-devel.
+ Development libs and headers are in %{name}-devel.
 
 %package devel
 Summary: String library, safe, quick and easy to use. Specilizes in IO.
@@ -54,11 +54,11 @@ Requires: %{name} = %{version}
 
 %description devel
  Static libraries and header files for the Vstr string library
-Also includes a vstr.pc file for pkg-config.
+ Also includes a %{name}.pc file for pkg-config.
 
 %changelog
 * Mon Jan 13 2003 James Antill <james@and.org> @VERSION@-%{real_release_num}
-- Moved the includedir to /usr/include/vstr-*
+- Moved the includedir to /usr/include/%{name}-*
 
 * Sat Nov 16 2002 James Antill <james@and.org>
 - Added wrap memcpy/memset to the default configure options.
@@ -100,7 +100,7 @@ fi
 
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
-  --libdir=%{_libdir} --includedir=%{_includedir}/vstr-%{libver} \
+  --libdir=%{_libdir} --includedir=%{_includedir}/%{name}-%{libver} \
   --enable-linker-script \
   --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt} %{debugopt}
@@ -113,9 +113,28 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install 
 
 cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
-rm -f $RPM_BUILD_ROOT/usr/lib/libvstr.la
-rm -f $RPM_BUILD_ROOT/usr/share/doc/vstr-devel-%{ver}/functions.3
-rm -f $RPM_BUILD_ROOT/usr/share/doc/vstr-devel-%{ver}/constants.3
+
+# Copy the examples somewhere...
+mkdir $RPM_BUILD_ROOT/%{devdoco}/examples
+cp   \
+ examples/Makefile \
+ examples/ex_cat.c \
+ examples/ex_hexdump.c \
+ examples/ex_lookup_ip.c \
+ examples/ex_mon_cp.c \
+ examples/ex_nl.c \
+ examples/ex_rot13.c \
+ examples/ex_sg_compare.c \
+ examples/ex_slowcat.c \
+ examples/ex_utils.c \
+ examples/ex_utils.h \
+ examples/ex_yes.c \
+ examples/hexdump_data \
+   $RPM_BUILD_ROOT/%{devdoco}/examples/
+
+rm -f $RPM_BUILD_ROOT/usr/lib/lib%{name}.la
+rm -f $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/functions.3
+rm -f $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
 
 
 %clean
@@ -128,7 +147,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-, root, root)
 
-%doc AUTHORS COPYING.LIB ChangeLog NEWS README TODO
+%doc AUTHORS COPYING ChangeLog NEWS README TODO
 
 %{_libdir}/lib%{name}-%{libver}.so.*
 
@@ -138,7 +157,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/lib%{name}.so
 %{_libdir}/lib%{name}.a
 %{_libdir}/pkgconfig/%{name}.pc
-%{_includedir}/vstr-%{libver}/*.h
+%{_includedir}/%{name}-%{libver}/*.h
 
 %doc
 %{devdoco}/BUGS
@@ -156,3 +175,16 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/structs.txt
 %{devdoco}/structs.html
 %{devdoco}/size_cmp.gnumeric
+%{devdoco}/examples/Makefile
+%{devdoco}/examples/ex_cat.c
+%{devdoco}/examples/ex_hexdump.c
+%{devdoco}/examples/ex_lookup_ip.c
+%{devdoco}/examples/ex_mon_cp.c
+%{devdoco}/examples/ex_nl.c
+%{devdoco}/examples/ex_rot13.c
+%{devdoco}/examples/ex_sg_compare.c
+%{devdoco}/examples/ex_slowcat.c
+%{devdoco}/examples/ex_utils.c
+%{devdoco}/examples/ex_utils.h
+%{devdoco}/examples/ex_yes.c
+%{devdoco}/examples/hexdump_data

@@ -375,23 +375,23 @@ int vstr_nx_cntl_conf(Vstr_conf *passed_conf, int option, ...)
    }
    break;
 
-   case VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE:
+   case VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE:
    {
      int *val = va_arg(ap, int *);
      
-     *val = conf->no_cache;
+     *val = !conf->no_cache;
      
      ret = TRUE;
    }
    break;
   
-   case VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE:
+   case VSTR_CNTL_CONF_SET_FLAG_ALLOC_CACHE:
    {
      int val = va_arg(ap, int);
 
      assert(val == !!val);
 
-     conf->no_cache = val;
+     conf->no_cache = !val;
      
      ret = TRUE;
    }
@@ -478,7 +478,7 @@ int vstr_nx_cntl_conf(Vstr_conf *passed_conf, int option, ...)
    }
    break;
 
-   case VSTR_CNTL_CONF_GET_ATOMIC_OPS:
+   case VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS:
    {
      char *val = va_arg(ap, char *);
      
@@ -488,10 +488,12 @@ int vstr_nx_cntl_conf(Vstr_conf *passed_conf, int option, ...)
    }
    break;
   
-   case VSTR_CNTL_CONF_SET_ATOMIC_OPS:
+   case VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS:
    {
      int val = va_arg(ap, int);
 
+     assert(val == !!val);
+     
      conf->atomic_ops = val;
      
      ret = TRUE;

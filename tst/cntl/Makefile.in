@@ -76,7 +76,7 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 
-CFLAGS = -I../../../include -I- @CFLAGS@ @WARNS@
+CFLAGS = -I../../../include @CFLAGS@ @WARNS@
 CHMOD_PATH = @CHMOD_PATH@
 CPPFLAGS = @CPPFLAGS@
 DEPDIR = @DEPDIR@
@@ -113,29 +113,35 @@ install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_usr \
-      tst_srch
+tst = tst_conf \
+      tst_base \
+      tst_opt
 
 
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 LDADD = -L../../src/ -lvstr
-subdir = tst/cache
+subdir = tst/cntl
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = tst_usr$(EXEEXT) tst_srch$(EXEEXT)
-tst_srch_SOURCES = tst_srch.c
-tst_srch_OBJECTS = tst_srch.$(OBJEXT)
-tst_srch_LDADD = $(LDADD)
-tst_srch_DEPENDENCIES =
-tst_srch_LDFLAGS =
-tst_usr_SOURCES = tst_usr.c
-tst_usr_OBJECTS = tst_usr.$(OBJEXT)
-tst_usr_LDADD = $(LDADD)
-tst_usr_DEPENDENCIES =
-tst_usr_LDFLAGS =
+check_PROGRAMS = tst_conf$(EXEEXT) tst_base$(EXEEXT) tst_opt$(EXEEXT)
+tst_base_SOURCES = tst_base.c
+tst_base_OBJECTS = tst_base.$(OBJEXT)
+tst_base_LDADD = $(LDADD)
+tst_base_DEPENDENCIES =
+tst_base_LDFLAGS =
+tst_conf_SOURCES = tst_conf.c
+tst_conf_OBJECTS = tst_conf.$(OBJEXT)
+tst_conf_LDADD = $(LDADD)
+tst_conf_DEPENDENCIES =
+tst_conf_LDFLAGS =
+tst_opt_SOURCES = tst_opt.c
+tst_opt_OBJECTS = tst_opt.$(OBJEXT)
+tst_opt_LDADD = $(LDADD)
+tst_opt_DEPENDENCIES =
+tst_opt_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -148,9 +154,9 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_srch.c tst_usr.c
+DIST_SOURCES = tst_base.c tst_conf.c tst_opt.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_srch.c tst_usr.c
+SOURCES = tst_base.c tst_conf.c tst_opt.c
 
 all: all-am
 
@@ -158,7 +164,7 @@ all: all-am
 .SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tst/cache/Makefile
+	  $(AUTOMAKE) --gnu  tst/cntl/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
@@ -168,12 +174,15 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-tst_srch$(EXEEXT): $(tst_srch_OBJECTS) $(tst_srch_DEPENDENCIES) 
-	@rm -f tst_srch$(EXEEXT)
-	$(LINK) $(tst_srch_LDFLAGS) $(tst_srch_OBJECTS) $(tst_srch_LDADD) $(LIBS)
-tst_usr$(EXEEXT): $(tst_usr_OBJECTS) $(tst_usr_DEPENDENCIES) 
-	@rm -f tst_usr$(EXEEXT)
-	$(LINK) $(tst_usr_LDFLAGS) $(tst_usr_OBJECTS) $(tst_usr_LDADD) $(LIBS)
+tst_base$(EXEEXT): $(tst_base_OBJECTS) $(tst_base_DEPENDENCIES) 
+	@rm -f tst_base$(EXEEXT)
+	$(LINK) $(tst_base_LDFLAGS) $(tst_base_OBJECTS) $(tst_base_LDADD) $(LIBS)
+tst_conf$(EXEEXT): $(tst_conf_OBJECTS) $(tst_conf_DEPENDENCIES) 
+	@rm -f tst_conf$(EXEEXT)
+	$(LINK) $(tst_conf_LDFLAGS) $(tst_conf_OBJECTS) $(tst_conf_LDADD) $(LIBS)
+tst_opt$(EXEEXT): $(tst_opt_OBJECTS) $(tst_opt_DEPENDENCIES) 
+	@rm -f tst_opt$(EXEEXT)
+	$(LINK) $(tst_opt_LDFLAGS) $(tst_opt_OBJECTS) $(tst_opt_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

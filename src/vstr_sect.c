@@ -152,17 +152,17 @@ int vstr_nx_sects_foreach(const Vstr_base *base,
   if (!sects->sz)
     return (0);
 
-  if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS)
+  if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD)
     scan = sects->num;
   
-  while ((!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS) &&
+  while ((!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD) &&
           (scan < sects->num)) ||
-         ((flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS) && scan))
+         ((flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD) && scan))
   {
     size_t pos = 0;
     size_t len = 0;
 
-    if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS)
+    if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD)
       --scan;
 
     pos = sects->ptr[scan].pos;
@@ -187,7 +187,7 @@ int vstr_nx_sects_foreach(const Vstr_base *base,
       }
     }
 
-    if (!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS))
+    if (!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD))
       ++scan;
   }
 

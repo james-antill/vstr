@@ -739,26 +739,26 @@ int vstr_nx_sc_fmt_add_ipv6_vec(Vstr_conf *conf, const char *name)
                           VSTR_TYPE_FMT_END));
 }
 
-static int vstr__sc_fmt_add_cb_ipv4_vec_cipe(Vstr_base *base, size_t pos,
+static int vstr__sc_fmt_add_cb_ipv4_vec_cidr(Vstr_base *base, size_t pos,
                                              Vstr_fmt_spec *spec)
 {
   unsigned int *ips = VSTR_FMT_CB_ARG_PTR(spec, 0);
-  unsigned int cipe = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
+  unsigned int cidr = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
   size_t len = 0;
   
   assert((ips[0] <= 255) && (ips[1] <= 255) &&
-         (ips[2] <= 255) && (ips[3] <= 255) && (cipe <= 32));
+         (ips[2] <= 255) && (ips[3] <= 255) && (cidr <= 32));
 
   len = (vstr__sc_fmt_num10_len(ips[0]) + vstr__sc_fmt_num10_len(ips[1]) +
          vstr__sc_fmt_num10_len(ips[2]) + vstr__sc_fmt_num10_len(ips[3]) +
-         vstr__sc_fmt_num10_len(cipe) + 4);
+         vstr__sc_fmt_num10_len(cidr) + 4);
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
                              VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
   if (!vstr_nx_add_fmt(base, pos, "%u.%u.%u.%u/%u",
-                       ips[0], ips[1], ips[2], ips[3], cipe))
+                       ips[0], ips[1], ips[2], ips[3], cidr))
     return (FALSE);
   
   if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
@@ -767,28 +767,28 @@ static int vstr__sc_fmt_add_cb_ipv4_vec_cipe(Vstr_base *base, size_t pos,
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv4_vec_cipe(Vstr_conf *conf, const char *name)
+int vstr_nx_sc_fmt_add_ipv4_vec_cidr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec_cipe,
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec_cidr,
                           VSTR_TYPE_FMT_PTR_VOID,
                           VSTR_TYPE_FMT_UINT,
                           VSTR_TYPE_FMT_END));
 }
 
-static int vstr__sc_fmt_add_cb_ipv6_vec_cipe(Vstr_base *base, size_t pos,
+static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
                                              Vstr_fmt_spec *spec)
 {
   unsigned int *ips = VSTR_FMT_CB_ARG_PTR(spec, 0);
   unsigned int type = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
-  unsigned int cipe = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 2);
+  unsigned int cidr = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 2);
   size_t len = 0;
   size_t pos_compact = 9;
   size_t orig_len = 0;
   
-  assert(cipe <= 128);
+  assert(cidr <= 128);
   
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
-  len += 1 + vstr__sc_fmt_num10_len(cipe);
+  len += 1 + vstr__sc_fmt_num10_len(cidr);
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
                              VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
@@ -797,7 +797,7 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cipe(Vstr_base *base, size_t pos,
   orig_len = base->len;
   if (!vstr__sc_fmt_prnt_ipv6(base, pos, type, ips, pos_compact))
     return (FALSE);
-  if (!vstr_nx_add_fmt(base, pos + (base->len - orig_len), "/%u", cipe))
+  if (!vstr_nx_add_fmt(base, pos + (base->len - orig_len), "/%u", cidr))
     return (FALSE);
   
   if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
@@ -806,9 +806,9 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cipe(Vstr_base *base, size_t pos,
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv6_vec_cipe(Vstr_conf *conf, const char *name)
+int vstr_nx_sc_fmt_add_ipv6_vec_cidr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec_cipe,
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec_cidr,
                           VSTR_TYPE_FMT_PTR_VOID,
                           VSTR_TYPE_FMT_UINT,
                           VSTR_TYPE_FMT_UINT,
@@ -842,8 +842,8 @@ int vstr_nx_sc_fmt_add_all(Vstr_conf *conf)
 #endif
   VSTR__SC_FMT_ADD(ipv4_vec, "ipv4.v", "p");
   VSTR__SC_FMT_ADD(ipv6_vec, "ipv6.v", "p%u");
-  VSTR__SC_FMT_ADD(ipv4_vec_cipe, "ipv4.v+C", "p%u");
-  VSTR__SC_FMT_ADD(ipv6_vec_cipe, "ipv6.v+C", "p%u%u");
+  VSTR__SC_FMT_ADD(ipv4_vec_cidr, "ipv4.v+C", "p%u");
+  VSTR__SC_FMT_ADD(ipv6_vec_cidr, "ipv6.v+C", "p%u%u");
 
   assert(ret);
   

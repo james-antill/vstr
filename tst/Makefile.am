@@ -9,6 +9,7 @@ SUBDIRS = \
   add_fmt \
   cache \
   cmp \
+  cntl \
   conv \
   del \
   dup \

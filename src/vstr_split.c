@@ -165,9 +165,12 @@ static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
 
  no_end_null:
   if (((len &&  (flags & VSTR_FLAG_SPLIT_REMAIN)) ||
-       (!len && (flags & VSTR_FLAG_SPLIT_POST_NULL))) &&
-      !vstr_nx_sects_add(sects, pos, len))
-    VSTR__SPLIT_HDL_ERR();
+       (!len && (flags & VSTR_FLAG_SPLIT_POST_NULL))))
+  {
+    if (!vstr_nx_sects_add(sects, pos, len))
+      VSTR__SPLIT_HDL_ERR();
+    ++added;
+  }
   
   return (added);
 }

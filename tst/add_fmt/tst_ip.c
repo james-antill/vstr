@@ -141,10 +141,10 @@ int tst(void)
   TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
   if (ret) { PRNT_VSTR(sv); PRNT_CSTR(buf); } \
  } while (FALSE)
-#define TST_IPV6C(num, sv, cstr, type, cipe) do { \
+#define TST_IPV6C(num, sv, cstr, type, cidr) do { \
   vstr_del((sv), 1, (sv)->len); \
   strcpy(buf, cstr); \
-  vstr_add_fmt((sv), 0, "${ipv6.v+C:%p%u%u}", ips, type, cipe); \
+  vstr_add_fmt((sv), 0, "${ipv6.v+C:%p%u%u}", ips, type, cidr); \
   TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
  } while (FALSE)
 
@@ -197,6 +197,10 @@ int tst(void)
             VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED);
   TST_IPV6C(16, s3, "0000:0001:0002:0003:0004:0005:0006:0007/4",
              VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, 4);
+  TST_IPV6N(16, s3, "0000:0001:0002:0003:0004:0005:0.6.0.7",
+            VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED);
+  TST_IPV6C(16, s3, "0000:0001:0002:0003:0004:0005:0.6.0.7/4",
+             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED, 4);
 
   TST_IPV6N(17, s3, "::1:2:3:4:5:0.6.0.7",
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT);
@@ -321,10 +325,10 @@ int tst(void)
   vstr_add_fmt((sv), 0, "${ipv4.v:%p}", ips); \
   TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
  } while (FALSE)
-#define TST_IPV4C(num, sv, cstr, cipe) do { \
+#define TST_IPV4C(num, sv, cstr, cidr) do { \
   vstr_del((sv), 1, (sv)->len); \
   strcpy(buf, cstr); \
-  vstr_add_fmt((sv), 0, "${ipv4.v+C:%p%u}", ips, cipe); \
+  vstr_add_fmt((sv), 0, "${ipv4.v+C:%p%u}", ips, cidr); \
   TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
  } while (FALSE)
 

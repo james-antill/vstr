@@ -5,8 +5,6 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 SUBDIRS = src include Documentation tst
 
-INST_GNOME_CONFIG_HACK=@INST_GNOME_CONFIG_HACK@
-
 pkgconfigdir := $(libdir)/pkgconfig
 pkgconfig_DATA = vstr.pc
 

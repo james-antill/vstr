@@ -627,9 +627,9 @@ extern int vstr_nx_sc_fmt_add_ipv4_vec(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_ipv6_vec(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
-extern int vstr_nx_sc_fmt_add_ipv4_vec_cipe(struct Vstr_conf *, const char *)
+extern int vstr_nx_sc_fmt_add_ipv4_vec_cidr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
-extern int vstr_nx_sc_fmt_add_ipv6_vec_cipe(struct Vstr_conf *, const char *)
+extern int vstr_nx_sc_fmt_add_ipv6_vec_cidr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_all(struct Vstr_conf *) VSTR__ATTR_H() ;
 

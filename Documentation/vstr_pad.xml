@@ -33,7 +33,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>vstr</Program_Name>
-    <Program_Version>0.9.21</Program_Version>
+    <Program_Version>1.0.0</Program_Version>
     <Program_Release_Month>11</Program_Release_Month>
     <Program_Release_Day>20</Program_Release_Day>
     <Program_Release_Year>2002</Program_Release_Year>
@@ -43,7 +43,7 @@
     <Program_Type>Freeware</Program_Type>
     <Program_Release_Status>Minor Update</Program_Release_Status>
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
-    <Program_OS_Support>Linux,Unix,WinXP,Windows2000,WinNT 4.x</Program_OS_Support>
+    <Program_OS_Support>Linux,Unix,WinXP,WinNT 4.x,Windows2000</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info/>
     <Program_System_Requirements/>
@@ -54,12 +54,12 @@
     <Includes_DirectX>N</Includes_DirectX>
     <File_Info>
       <Filename_Generic>vstr</Filename_Generic>
-      <Filename_Versioned>vstr-0.9.21</Filename_Versioned>
+      <Filename_Versioned>vstr-1.0.0</Filename_Versioned>
       <Filename_Previous>vstr-0.9.21</Filename_Previous>
-      <Filename_Long>vstr-0.9.21.tar.gz</Filename_Long>
-      <File_Size_Bytes>629891</File_Size_Bytes>
-      <File_Size_K>615.13</File_Size_K>
-      <File_Size_MB>0.60</File_Size_MB>
+      <Filename_Long>vstr-1.0.0.tar.gz</Filename_Long>
+      <File_Size_Bytes>640166</File_Size_Bytes>
+      <File_Size_K>625.16</File_Size_K>
+      <File_Size_MB>0.61</File_Size_MB>
     </File_Info>
     <Expire_Info>
       <Has_Expire_Info>N</Has_Expire_Info>
@@ -84,8 +84,8 @@
       <Application_XML_File_URL>http://www.and.org/vstr/vstr_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://www.and.org/vstr/0.9.21/vstr-0.9.21.tar.gz</Primary_Download_URL>
-      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/0.9.21/vstr-0.9.21.tar.gz</Secondary_Download_URL>
+      <Primary_Download_URL>http://www.and.org/vstr/1.0.0/vstr-1.0.0.tar.gz</Primary_Download_URL>
+      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/1.0.0/vstr-1.0.0.tar.gz</Secondary_Download_URL>
       <Additional_Download_URL_1>http://www.and.org/vstr/rpms/</Additional_Download_URL_1>
       <Additional_Download_URL_2>ftp://ftp.and.org/pub/james/vstr/rpms/</Additional_Download_URL_2>
     </Download_URLs>

@@ -11,4 +11,4 @@ Description: String Library
 Version: @VERSION@
 
 Cflags: -I${includedir}
-Libs: @VSTR_LIBS@ -L${libdir} -lvstr
+Libs: @LIBS@ -L${libdir} -lvstr

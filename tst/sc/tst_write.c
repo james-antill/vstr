@@ -116,6 +116,8 @@ int tst(void)
     TST_B_TST(ret, 5, 
               !vstr_sc_write_file(s4, 1, s4->len, fn,
                                   O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
+    TST_B_TST(ret, 5, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_NONE));
+    TST_B_TST(ret, 5, (err != VSTR_TYPE_SC_WRITE_FD_ERR_NONE));
   }
 
   read_file_s2(s2->len);
@@ -153,3 +155,10 @@ int tst(void)
 
   return (TST_B_RET(ret));
 }
+/* Crap for tst_coverage constants... None trivial to test.
+ *
+ * VSTR_TYPE_SC_WRITE_FD_ERR_MEM
+ * VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO
+ * VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
+ *
+ */

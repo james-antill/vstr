@@ -249,8 +249,8 @@
 <li><a href="#vstr_sc_fmt_add_ipv6_ptr%28%29">vstr_sc_fmt_add_ipv6_ptr()</a>
 <li><a href="#vstr_sc_fmt_add_ipv4_vec%28%29">vstr_sc_fmt_add_ipv4_vec()</a>
 <li><a href="#vstr_sc_fmt_add_ipv6_vec%28%29">vstr_sc_fmt_add_ipv6_vec()</a>
-<li><a href="#vstr_sc_fmt_add_ipv4_vec_cipe%28%29">vstr_sc_fmt_add_ipv4_vec_cipe()</a>
-<li><a href="#vstr_sc_fmt_add_ipv6_vec_cipe%28%29">vstr_sc_fmt_add_ipv6_vec_cipe()</a>
+<li><a href="#vstr_sc_fmt_add_ipv4_vec_cidr%28%29">vstr_sc_fmt_add_ipv4_vec_cidr()</a>
+<li><a href="#vstr_sc_fmt_add_ipv6_vec_cidr%28%29">vstr_sc_fmt_add_ipv6_vec_cidr()</a>
 <li><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
 <li><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
 <li><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
@@ -286,7 +286,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Nothing<br>Type<strong>[1]</strong>: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function can be called before exit, after all vstr objects have been
- freed, to cleanup data allocated internally in the vstr library.
+ freed, to cleanup data allocated internally in the Vstr library.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The function isn't needed but helps make sure there are no memory leaks, when
@@ -319,7 +319,7 @@
 
 </pre> ...which is a lot more readable as the number of flags increases.
 </p><p>  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
- number at the end refering to how many flags are passed to it (not the number
+ number at the end referring to how many flags are passed to it (not the number
  of parameters, which is one more than that).
 
 
@@ -343,7 +343,7 @@
 
 <a name="vstr_export_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_ptr()
-</a><br>Returns: A pointer to an array of characters, terminated by NUL<br>Type: char *
+</a><br>Returns: A pointer to an array of characters, terminated by NIL<br>Type: char *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
@@ -361,14 +361,14 @@
  instead.
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
  cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
+</p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
 
 <a name="vstr_export_cstr_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_malloc()
-</a><br>Returns: A malloc'd pointer to an array of characters, terminated by NUL<br>Type: char *
+</a><br>Returns: A malloc'd pointer to an array of characters, terminated by NIL<br>Type: char *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
@@ -383,7 +383,7 @@
 </p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
+</p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
@@ -398,7 +398,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a copy of the data in the Vstr string to a
- data array, the maximum ammount of data stored in the array will be of length
+ data array, the maximum amount of data stored in the array will be of length
  (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string".
  However the data before the terminator of the "C string" is limited to
  (Parameter[5] - 1).
@@ -417,13 +417,13 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory refernce (Return)<br>Type<strong>[4]</strong>: size_t *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Return)<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to return a pointer to a Vstr memory reference of at 
  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the
  "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be
  used to find the beginning of the block of memory to use.
-</p><p>  When you are finnished with the reference you need to use vstr_ref_del() or
+</p><p>  When you are finished with the reference you need to use vstr_ref_del() or
  the memory will stay allocated forever.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -432,7 +432,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
  cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
+</p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
@@ -552,19 +552,19 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory refernce (Return)<br>Type<strong>[4]</strong>: size_t *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Return)<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to return a pointer to a Vstr memory reference of at 
  least length (Parameter[3]). The offset (Parameter[4]) should be used to find
  the beginning of the block of memory to use.
-</p><p>  When you are finnished with the reference you need to use vstr_ref_del() or
+</p><p>  When you are finished with the reference you need to use vstr_ref_del() or
  the memory will stay allocated forever.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the memory pointed
+</p><p>  Any _NON data in the Vstr will be uninitialized data in the memory pointed
  to by the memory reference.
 
 
@@ -692,7 +692,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_buf().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -707,7 +707,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_ptr().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -721,7 +721,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Length of non data<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_non().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -734,10 +734,10 @@
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[2])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of Vstr memory refernce (Parameter[2])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of Vstr memory reference (Parameter[2])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_ref().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -754,7 +754,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length in the Vstr string (Parameter[2])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (VSTR_TYPE_ADD_*)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_vstr().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -767,9 +767,9 @@
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Character to repeat<br>Type<strong>[2]</strong>: char
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Number of times to repeat characnter (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number of times to repeat character (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
+</p><p>  This function is equivalent to calling vstr_make_base() and then
  vstr_add_rep_chr().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -810,7 +810,7 @@
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[3])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[3]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls vstr_dup_ref() with the length being the value of
@@ -855,7 +855,7 @@
 <a name="vstr_ref_make_vstr_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_make_vstr_base()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create a Vstr memory reference. The Vstr memory reference
  will have a reference count of 1, a pointer value of the
@@ -866,7 +866,7 @@
 <a name="vstr_ref_make_vstr_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_make_vstr_conf()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create a Vstr memory reference. The Vstr memory reference
  will have a reference count of 1, a pointer value of the
@@ -877,7 +877,7 @@
 <a name="vstr_ref_make_vstr_sects%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_make_vstr_sects()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: Vstr_sects *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create a Vstr memory reference. The Vstr memory reference
  will have a reference count of 1, a pointer value of the
@@ -984,8 +984,8 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr memory reference<br>Type<strong>[3]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory refernce (Parameter[3])<br>Type<strong>[4]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of Vstr memory refernce (Parameter[3])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of Vstr memory reference (Parameter[3])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a memory reference to a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1028,7 +1028,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Character to repeat<br>Type<strong>[3]</strong>: char
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Number of times to repeat characnter (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Number of times to repeat character (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add 1 or more copies of the character (Parameter[3])
  to the Vstr string.
@@ -1068,7 +1068,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr memory reference<br>Type<strong>[3]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory refernce (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls vstr_add_ref() with the length being the value of
@@ -1085,7 +1085,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Standard argument object from va_start()<br>Type<strong>[4]</strong>: va_list
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function works like calling vsprintf() directly into a Vstr string,
- however this is a portable implimentation which is feature complete with
+ however this is a portable implementation which is feature complete with
  glibc-2.2.x sprintf(); implements custom specifiers, if you use the
  vstr_fmt_add() function, and doesn't require a double copy.
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1098,7 +1098,7 @@
 </p><p>  Depending on how the library was compiled double support is implemented by
  either calling the underlying host implementation of sprintf(), by internal
  code or simply by assuming all double's are zero. When using the host
- implemention system bugs of inacuracy will show through, however the
+ implementation system bugs of inaccuracy will show through, however the
  feature set remains the same (Ie. the ' flag works the same).
 </p><p>  Because specifiers can be overridden using vstr_fmt_add() if you are adding
  data to a Vstr string that you didn't create you should use either
@@ -1113,8 +1113,8 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This just calls vstr_add_vfmt() after convtering the argument list
- (Paramter[4]) a va_list object.
+</p><p>  This just calls vstr_add_vfmt() after converting the argument list
+ (Parameter[4]) a va_list object.
 
 
 <a name="vstr_add_vsysfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1137,8 +1137,8 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This just calls vstr_add_vsysfmt() after convtering the argument list
- (Paramter[4]) a va_list object.
+</p><p>  This just calls vstr_add_vsysfmt() after converting the argument list
+ (Parameter[4]) a va_list object.
 
 
 <a name="vstr_add_iovec_buf_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1146,13 +1146,13 @@
 </a><br>Returns: Number of bytes in the iovec array<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Minimum ammount of iovecs to add<br>Type<strong>[3]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Maximum ammount of iovecs to add<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Minimum amount of iovecs to add<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Maximum amount of iovecs to add<br>Type<strong>[4]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns the start of the iovec array<br>Type<strong>[5]</strong>: struct iovec **
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures in the array<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a copy of data directly into the Vstr string,
- the ammount of data available will be between the minimum (Parameter[4]) and
+ the amount of data available will be between the minimum (Parameter[4]) and
  maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of
  data in _BUF type nodes. The obvious use for the data if to call readv() on it.
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1165,7 +1165,7 @@
 </p><p>  You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg()
  and vstr_add_iovec_buf_end(), unless you know that they are operating on a
  different Vstr string which is using a different Vstr configuration.
-</p><p>  The reason there is a +1 on the maximum value is that data may be appened to
+</p><p>  The reason there is a +1 on the maximum value is that data may be appended to
  a _BUF node just before the start of where the data is to go, this is almost
  guaranteed to happen when adding to the end of a Vstr string and saves a lot
  of wasted space.
@@ -1213,7 +1213,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as
  that signifies that there is no data in the netstring.
-</p><p>  It is almost guaranteed that data will need to be removed from the begining of
+</p><p>  It is almost guaranteed that data will need to be removed from the beginning of
  the netstring due to the length being shorter than the maximum, this is
  inefficient and could cause problems if you know how big the Vstr string is
  you can use the vstr_add_netstr2_* functions to solve both problems.
@@ -1246,10 +1246,10 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as
  that signifies that there is no data in the netstring.
-</p><p>  No data is ever removed from the begining of a netstring2, this is
- imcompatible with the netstring spec. but is more efficient and doesn't
+</p><p>  No data is ever removed from the beginning of a netstring2, this is
+ incompatible with the netstring spec. but is more efficient and doesn't
  cause problems if you know how big the Vstr string is and can't have it lose
- data from the begining/middle.
+ data from the beginning/middle.
 
 
 <a name="vstr_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1269,7 +1269,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Deleted nodes do not get returned to the system, they get put into a pool in
  the Vstr configuration for reuse on the next call to a vstr_add_*() function.
-</p><p>  Deleteing the entire Vstr string and deleteing from the begining onwards are
+</p><p>  Deleting the entire Vstr string and deleting from the beginning onward are
  faster operations than a generic delete. They also never require allocating
  memory and so the return value can be ignored.
 
@@ -1357,8 +1357,8 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr memory reference<br>Type<strong>[4]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory refernce (Parameter[4])<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Length of Vstr memory refernce (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length of Vstr memory reference (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to substitute the data in the Vstr string with a
  memory reference.
@@ -1410,7 +1410,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character to repeat<br>Type<strong>[4]</strong>: char
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Number of times to repeat characnter (Parameter[3])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Number of times to repeat character (Parameter[3])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to substitute the data in the Vstr string with one or
  more copies of the character (Parameter[3]).
@@ -1463,7 +1463,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr memory reference<br>Type<strong>[4]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory refernce (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls vstr_sub_ref() with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
@@ -1481,7 +1481,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Start position in the Vstr string (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length in the Vstr string (Parameter[3])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to move data, deleteing it from one Vstr string
+</p><p>  This function is used to move data, deleting it from one Vstr string
  (Parameter[3]) and adding it to another Vstr string (Parameter[1]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1607,7 +1607,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to compare the data in one Vstr string (Parameter[1])
  with data in another Vstr string (Parameter[4]), however for ASCII digits the
- algorithum tests on the numbers themselves (so "10" is greater than "9" but
+ algorithm tests on the numbers themselves (so "10" is greater than "9" but
  "01" is greater than "012", as the later are fractions).
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
  and then a call to strverscmp() (although it doesn't allocate anything,
@@ -1799,7 +1799,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character to search for<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for a character in a Vstr string.
+</p><p>  This function is used to search forward for a character in a Vstr string.
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to memchr() (although it's much faster than doing that and
  doesn't allocate anything).
@@ -1816,7 +1816,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backwards for a character in a Vstr string.
+</p><p>  This function is used to search backward for a character in a Vstr string.
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to memrchr() (although it doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1833,7 +1833,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for any of the characters in the
+</p><p>  This function is used to search forward for any of the characters in the
  data array (Parameter[4]) in a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1849,7 +1849,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backwards for any of the characters in the
+</p><p>  This function is used to search backward for any of the characters in the
  data array (Parameter[4]) in a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1865,7 +1865,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for any of the characters not in the
+</p><p>  This function is used to search forward for any of the characters not in the
  data array (Parameter[4]) in a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1881,7 +1881,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backwards for any of the characters not in the
+</p><p>  This function is used to search backward for any of the characters not in the
  data array (Parameter[4]) in a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1897,7 +1897,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for the data in the data array
+</p><p>  This function is used to search forward for the data in the data array
  (Parameter[4]) in a Vstr string.
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to memmem() (although it's much faster than doing that and
@@ -1907,8 +1907,8 @@
 </p><p>  If the data cannot be found 0 is returned.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
- size (Paramter[5]) will be searched for.
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified
+ size (Parameter[5]) will be searched for.
 
 
 <a name="vstr_srch_buf_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1920,15 +1920,15 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backwards for the data in the data array
+</p><p>  This function is used to search backward for the data in the data array
  (Parameter[4]) in a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  If the data cannot be found 0 is returned.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
- size (Paramter[5]) will be searched for.
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified
+ size (Parameter[5]) will be searched for.
 
 
 <a name="vstr_srch_vstr_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1941,7 +1941,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for the data in the Vstr string
+</p><p>  This function is used to search forward for the data in the Vstr string
  (Parameter[4]) in the Vstr string (Parameter[1]).
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
  and then a call to memmem() (although it's much faster than doing that and
@@ -1961,7 +1961,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backwards for the data in the Vstr string
+</p><p>  This function is used to search backward for the data in the Vstr string
  (Parameter[4]) in the Vstr string (Parameter[1]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2005,8 +2005,8 @@
  ASCII values are treated equivalently.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
- size (Paramter[5]) will be searched for.
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified
+ size (Parameter[5]) will be searched for.
 
 
 <a name="vstr_srch_case_buf_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2022,8 +2022,8 @@
  ASCII values are treated equivalently.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
- size (Paramter[5]) will be searched for.
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified
+ size (Parameter[5]) will be searched for.
 
 
 <a name="vstr_srch_case_vstr_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2161,7 +2161,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to caculate the forward span of characters in the
+</p><p>  This function is used to calculate the forward span of characters in the
  Vstr string that are in the data array.
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to strspn() (although it's much faster than doing that and
@@ -2179,7 +2179,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to caculate the forward span of characters in the
+</p><p>  This function is used to calculate the forward span of characters in the
  Vstr string that are in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2194,7 +2194,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to caculate the forward span of characters in the
+</p><p>  This function is used to calculate the forward span of characters in the
  Vstr string that are in the compliment of those in the data array.
 </p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to strcspn() (although it's much faster than doing that and
@@ -2212,7 +2212,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to caculate the backward span of characters in the
+</p><p>  This function is used to calculate the backward span of characters in the
  Vstr string that are in the compliment of those in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2300,7 +2300,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Character to substitute in place of the unprintable character<br>Type<strong>[5]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function substitutes all unprintable characters with the substitution
- character (Paramter[5]).
+ character (Parameter[5]).
 
 
 <a name="vstr_conv_unprintable_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2371,7 +2371,7 @@
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function finishes initilising a Vstr sections that has been
+</p><p>  This macro function finishes initializing a Vstr sections that has been
  allocated using VSTR_SECTS_DECL().
 </p><p>  This macro function can be called multiple times without causing any problems.
 
@@ -2384,11 +2384,11 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Array of Vstr section nodes<br>Type<strong>[3]</strong>: struct Vstr_sect_node *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Non-zero if the nodes (Parameter[3]) can be passed to free()<br>Type<strong>[4]</strong>: int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  The macro function initialises a self declared Vstr sections.
+</p><p>  The macro function initializes a self declared Vstr sections.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Unlike VSTR_SECTS_DECL_INIT() this should only be called once per
- initialisation.
+ initialization.
 
 
 <a name="VSTR_SECTS_NUM%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2424,8 +2424,8 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in a Vstr string<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will add the position and length to a Vstr section node at the
- end of the Vstr sections (Paramter[1]). If space is not available and
- (Paramter[1])->can_add_sz is TRUE, then space try to be allocated.
+ end of the Vstr sections (Parameter[1]). If space is not available and
+ (Parameter[1])->can_add_sz is TRUE, then space try to be allocated.
 
 
 <a name="vstr_sects_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2435,7 +2435,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Number of the section in the Vstr sections (Parameter[1])<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will delete a specified Vstr section node. If
- (Paramter[1])->can_del_sz is TRUE then space may be compated.
+ (Parameter[1])->can_del_sz is TRUE then space may be compacted.
 
 
 <a name="vstr_sects_foreach%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2468,7 +2468,7 @@
 </p><p>  You need to call vstr_sects_update_del(), before you free the
  section (Parameter[2]). However if the next thing you are going to do is call
  vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them
- backwards.
+ backward.
 </p><p>  This uses the vstr_cache_add() function.
 
 
@@ -2510,9 +2510,9 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add section nodes to the Vstr sections (Parameter[6])
  about the Vstr string (Parameter[1]). The function will add one section before
- each occurance of the data (Parameter[4]), and one final section for the
+ each occurrence of the data (Parameter[4]), and one final section for the
  rest of the Vstr string.
-</p><p>  If the limit (Parameter[7]) is non-zero then ((Parameter[7]) - 1) occurances
+</p><p>  If the limit (Parameter[7]) is non-zero then ((Parameter[7]) - 1) occurrences
  of the data will be searched for and one final section will be added for the
  rest of the Vstr string. This means that "a:b:c" if split on ":" with a limit
  of 2 will split into "a" and "b:c", and that "a::" if split on ":" with a limit
@@ -2750,7 +2750,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns the position of the start of the netstring data<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns the length of the data in the netstring<br>Type<strong>[5]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for the begining of a netstring in
+</p><p>  This function is used to search forward for the beginning of a netstring in
  the Vstr string (Parameter[4]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2772,7 +2772,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns the position of the start of the netstring data<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns the length of the netstring<br>Type<strong>[5]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search forwards for the begining of a netstring in
+</p><p>  This function is used to search forward for the beginning of a netstring in
  the Vstr string (Parameter[4]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2793,14 +2793,14 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array ellements 0 to 3<br>Type<strong>[4]</strong>: unsigned char *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns cidr mask, if reqested<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array elements 0 to 3<br>Type<strong>[4]</strong>: unsigned char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns CIDR mask, if requested<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV4_<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV4_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will parse an ipv4 address, or optionaly an ipv4 address and a
- cidr mask / netmask, from the Vstr string.
+</p><p>  This function will parse an ipv4 address, or optionally an ipv4 address and a
+ CIDR mask / netmask, from the Vstr string.
 
 
 <a name="vstr_parse_ipv6%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2809,14 +2809,14 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array ellements 0 to 7<br>Type<strong>[4]</strong>: unsigned int *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns cidr mask<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array elements 0 to 7<br>Type<strong>[4]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns CIDR mask<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV6_<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV6_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will parse an ipv6 address, or optionaly an ipv6 address and a
- cidr mask, from the Vstr string.
+</p><p>  This function will parse an ipv6 address, or optionally an ipv6 address and a
+ CIDR mask, from the Vstr string.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string"><h2>Functions for hooking into the fmt function for the Vstr string</h2>
@@ -2837,7 +2837,7 @@
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
 </p><p>  If the user escape character is '%', then you can override system specifiers
- by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but
+ by using a specifier name (Parameter[2]) of "i" etc. This isn't recommended, but
  is done so that you can have specifier names like "igloo" and it not be taken
  as a system specifier, however if you then did "%igoo" that would be
  interpreted as a "%i" (int) specification followed by the string "goo".
@@ -2856,7 +2856,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function allows you to deregister a format specifier added
+</p><p>  This function allows you to unregister a format specifier added
  using vstr_fmt_add().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2890,7 +2890,7 @@
 
 <a name="VSTR_FMT_CB_ARG_VAL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FMT_CB_ARG_VAL()
-</a><br>Returns: Data of specified type<br>Type: Paramter[2]
+</a><br>Returns: Data of specified type<br>Type: Parameter[2]
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Type of the specified value<br>Type<strong>[2]</strong>: &lt;symbol&gt;
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of the parameter for the callback<br>Type<strong>[3]</strong>: size_t
@@ -3032,7 +3032,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This function, with vstr_sc_basename(), always returns values that can be
  combined to generate the original path. This means that this function will
- return an empty length for a relative filename in the current cirectory.
+ return an empty length for a relative filename in the current directory.
 
 
 <a name="vstr_sc_fmt_cb_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3368,14 +3368,14 @@
  will add this formatter using those names.
 
 
-<a name="vstr_sc_fmt_add_ipv4_vec_cipe%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec_cipe()
+<a name="vstr_sc_fmt_add_ipv4_vec_cidr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec_cidr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- ipv4 IP addresses with a cipe mask from a vector of 4 unsigned char and an
+ ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an
  unsigned int.
  It is equivalent to calling 
  vstr_add_fmt() with the type
@@ -3391,14 +3391,14 @@
  will add this formatter using those names.
 
 
-<a name="vstr_sc_fmt_add_ipv6_vec_cipe%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec_cipe()
+<a name="vstr_sc_fmt_add_ipv6_vec_cidr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec_cidr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- ipv6 IP addresses with a cipe mask from a vector of 8 unsigned int and an
+ ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an
  unsigned int.
  It is equivalent to calling 
  vstr_add_fmt() with the type
@@ -3421,7 +3421,7 @@
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is a shotcut to adding a custom formatter for each of the
+</p><p>  This function is a shortcut to adding a custom formatter for each of the
  specific custom formatters. The names used are as those given in the notes
  section of each custom formatter. Also 4 alternate names are given so that
  the formatter can be used in a gcc warning compatible way. For instance
@@ -3447,8 +3447,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Size of map in file descriptor<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_MMAP_FD_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to add a mmap()d mapping of data from a filedescriptor
- (Parameter[3]) at offset (Paramter[4]) and of size (Parameter[5]) to a
+</p><p>  This function is used to add a mmap()d mapping of data from a file descriptor
+ (Parameter[3]) at offset (Parameter[4]) and of size (Parameter[5]) to a
  Vstr string.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -3477,12 +3477,12 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: File descriptor<br>Type<strong>[3]</strong>: int
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Minimum ammount of nodes to read into<br>Type<strong>[4]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Maximum ammount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Minimum amount of nodes to read into<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Maximum amount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
  before returning.
 
 
@@ -3496,10 +3496,10 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the filedescriptor got by opening the filename (Parameter[3]) and finally
+ the file descriptor got by opening the filename (Parameter[3]) and finally
  vstr_add_iovec_buf_end() before returning.
 </p><p>  However the arguments to the vstr_add_iovec_buf_* calls
- are limited so that only upto size (Parameter[4]) data will be read.
+ are limited so that only up to size (Parameter[4]) data will be read.
 </p><p>  If size (Parameter[4]) is zero then the entire file will try to be read.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -3514,12 +3514,12 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Filename to read from<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start reading at<br>Type<strong>[4]</strong>: off64_t
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Minimum ammount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Maximum ammount of nodes to read into<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Minimum amount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Maximum amount of nodes to read into<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[7]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
  before returning.
 
 
@@ -3534,10 +3534,10 @@
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the filedescriptor got by opening the filename (Parameter[3]) and finally
+ the file descriptor got by opening the filename (Parameter[3]) and finally
  vstr_add_iovec_buf_end() before returning.
 </p><p>  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
- only upto exactly size (Parameter[4]) data will be read. If size
+ only up to exactly size (Parameter[4]) data will be read. If size
  (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
  will try and be read.
 
@@ -3556,7 +3556,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns error code starting VSTR_TYPE_SC_WRITE_FD_ERR_<br>Type<strong>[4]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to take data from a Vstr string and write it to a
- filedescriptor.
+ file descriptor.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the start position is 1, the length is (Parameter[1])-&gt;len and caching is
@@ -3589,9 +3589,9 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr iteration<br>Type<strong>[4]</strong>: Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr iteration<br>Type<strong>[4]</strong>: struct Vstr_iter *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to initialised an iteration.
+</p><p>  This function is used to initialized an iteration.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you alter the Vstr string (Parameter[1]) while using a iteration, then
@@ -3601,7 +3601,7 @@
 <a name="vstr_iter_fwd_nxt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_iter_fwd_nxt()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr iteration<br>Type<strong>[1]</strong>: Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr iteration<br>Type<strong>[1]</strong>: struct Vstr_iter *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to step to the next iteration.
 

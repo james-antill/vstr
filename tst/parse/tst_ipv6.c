@@ -128,10 +128,22 @@ int tst(void)
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,"12AB::CD30:0:0:0:0/60");
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0x12AB, 0, 0, 0xCD30, 0, 0, 0, 0, 60, s1->len, 0);
-  VSTR_SUB_CSTR_BUF(s1, 1,s1->len,"12AB:0:0:CD30::/60");
-  TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
-         0x12AB, 0, 0, 0xCD30, 0, 0, 0, 0, 60, s1->len, 0);
+  TST_IP(VSTR_FLAG_PARSE_IPV6_ONLY,
+         0x12AB, 0, 0, 0xCD30, 0, 0, 0, 0, 128, s1->len - 3,
+         VSTR_TYPE_PARSE_IPV6_ERR_ONLY);
+
+  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "1::1::3");
+  TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_IPV6_NULL);
+
+  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "1/8");
+  TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL);
   
+  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "1:2:3:4:5:6:7:8/");
+  TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR | VSTR_FLAG_PARSE_IPV6_CIDR_FULL,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_CIDR_FULL);
+
   return (0);
 }
 

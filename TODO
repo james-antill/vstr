@@ -1,10 +1,8 @@
 
- For 1.0
- -------
-
-. tst_coverage_diff.sh and diff_symbols.sh must print nothing.
-
-. include directory
+ Note that some of these are almost certainly better off in seperate libraries.
+Some are pretty high priority for the next stable version.
+ I need a better priority ... but so far I've mainly been concerned with what
+was needed for vstr-1.0.0
 
  Not needed for 1.0
  ------------------
@@ -67,6 +65,8 @@
 . vstr_add_fmt() internal cleanup to use struct blah {Vstr_fmt ... }
 
 . ASN.1 (International Standard 8824)
+
+. XDR ... rpc
 
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 

@@ -102,15 +102,6 @@ static int vstr__parse_num(const Vstr_base *base,
   }
   
   tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &num_0, 1);
-  if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
-  {
-    *passed_len = len - 1;
-    if ((tmp != 1) || (len != 1))
-      *err = VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO;
-    
-    return (1);
-  }
-
   if ((tmp == 1) && (auto_base || (num_base == 16)))
   {
     char xX[2];
@@ -159,6 +150,14 @@ static int vstr__parse_num(const Vstr_base *base,
     num_base = 8;
   else if (auto_base)
     num_base = 10;
+  else if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
+  {
+    *passed_len = len - 1;
+    if ((tmp != 1) || (len != 1))
+      *err = VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO;
+    
+    return (1);
+  }
 
   if (tmp == len)
   { /* It's a 0 */

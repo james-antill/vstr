@@ -106,7 +106,6 @@ STRIP = @STRIP@
 TAR_PATH = @TAR_PATH@
 TRUE_PATH = @TRUE_PATH@
 VERSION = @VERSION@
-VSTR_LIBS = @VSTR_LIBS@
 WARNS = @WARNS@
 am__include = @am__include@
 am__quote = @am__quote@
@@ -118,9 +117,8 @@ tst = tst_typedef \
       tst_inline \
       tst_include \
       tst_misc \
-      tst_swap_conf \
-      tst_cntl_base \
-      tst_cntl_opt
+      tst_ref \
+      tst_swap_conf
 
 
 check_PROGRAMS = $(tst)
@@ -132,18 +130,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
 check_PROGRAMS = tst_typedef$(EXEEXT) tst_inline$(EXEEXT) \
-	tst_include$(EXEEXT) tst_misc$(EXEEXT) tst_swap_conf$(EXEEXT) \
-	tst_cntl_base$(EXEEXT) tst_cntl_opt$(EXEEXT)
-tst_cntl_base_SOURCES = tst_cntl_base.c
-tst_cntl_base_OBJECTS = tst_cntl_base.$(OBJEXT)
-tst_cntl_base_LDADD = $(LDADD)
-tst_cntl_base_DEPENDENCIES =
-tst_cntl_base_LDFLAGS =
-tst_cntl_opt_SOURCES = tst_cntl_opt.c
-tst_cntl_opt_OBJECTS = tst_cntl_opt.$(OBJEXT)
-tst_cntl_opt_LDADD = $(LDADD)
-tst_cntl_opt_DEPENDENCIES =
-tst_cntl_opt_LDFLAGS =
+	tst_include$(EXEEXT) tst_misc$(EXEEXT) tst_ref$(EXEEXT) \
+	tst_swap_conf$(EXEEXT)
 tst_include_SOURCES = tst_include.c
 tst_include_OBJECTS = tst_include.$(OBJEXT)
 tst_include_LDADD = $(LDADD)
@@ -159,6 +147,11 @@ tst_misc_OBJECTS = tst_misc.$(OBJEXT)
 tst_misc_LDADD = $(LDADD)
 tst_misc_DEPENDENCIES =
 tst_misc_LDFLAGS =
+tst_ref_SOURCES = tst_ref.c
+tst_ref_OBJECTS = tst_ref.$(OBJEXT)
+tst_ref_LDADD = $(LDADD)
+tst_ref_DEPENDENCIES =
+tst_ref_LDFLAGS =
 tst_swap_conf_SOURCES = tst_swap_conf.c
 tst_swap_conf_OBJECTS = tst_swap_conf.$(OBJEXT)
 tst_swap_conf_LDADD = $(LDADD)
@@ -181,10 +174,10 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_cntl_base.c tst_cntl_opt.c tst_include.c tst_inline.c \
-	tst_misc.c tst_swap_conf.c tst_typedef.c
+DIST_SOURCES = tst_include.c tst_inline.c tst_misc.c tst_ref.c \
+	tst_swap_conf.c tst_typedef.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_cntl_base.c tst_cntl_opt.c tst_include.c tst_inline.c tst_misc.c tst_swap_conf.c tst_typedef.c
+SOURCES = tst_include.c tst_inline.c tst_misc.c tst_ref.c tst_swap_conf.c tst_typedef.c
 
 all: all-am
 
@@ -202,12 +195,6 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-tst_cntl_base$(EXEEXT): $(tst_cntl_base_OBJECTS) $(tst_cntl_base_DEPENDENCIES) 
-	@rm -f tst_cntl_base$(EXEEXT)
-	$(LINK) $(tst_cntl_base_LDFLAGS) $(tst_cntl_base_OBJECTS) $(tst_cntl_base_LDADD) $(LIBS)
-tst_cntl_opt$(EXEEXT): $(tst_cntl_opt_OBJECTS) $(tst_cntl_opt_DEPENDENCIES) 
-	@rm -f tst_cntl_opt$(EXEEXT)
-	$(LINK) $(tst_cntl_opt_LDFLAGS) $(tst_cntl_opt_OBJECTS) $(tst_cntl_opt_LDADD) $(LIBS)
 tst_include$(EXEEXT): $(tst_include_OBJECTS) $(tst_include_DEPENDENCIES) 
 	@rm -f tst_include$(EXEEXT)
 	$(LINK) $(tst_include_LDFLAGS) $(tst_include_OBJECTS) $(tst_include_LDADD) $(LIBS)
@@ -217,6 +204,9 @@ tst_inline$(EXEEXT): $(tst_inline_OBJECTS) $(tst_inline_DEPENDENCIES)
 tst_misc$(EXEEXT): $(tst_misc_OBJECTS) $(tst_misc_DEPENDENCIES) 
 	@rm -f tst_misc$(EXEEXT)
 	$(LINK) $(tst_misc_LDFLAGS) $(tst_misc_OBJECTS) $(tst_misc_LDADD) $(LIBS)
+tst_ref$(EXEEXT): $(tst_ref_OBJECTS) $(tst_ref_DEPENDENCIES) 
+	@rm -f tst_ref$(EXEEXT)
+	$(LINK) $(tst_ref_LDFLAGS) $(tst_ref_OBJECTS) $(tst_ref_LDADD) $(LIBS)
 tst_swap_conf$(EXEEXT): $(tst_swap_conf_OBJECTS) $(tst_swap_conf_DEPENDENCIES) 
 	@rm -f tst_swap_conf$(EXEEXT)
 	$(LINK) $(tst_swap_conf_LDFLAGS) $(tst_swap_conf_OBJECTS) $(tst_swap_conf_LDADD) $(LIBS)

@@ -175,5 +175,94 @@ int tst(void)
                       (VSTR_SECTS_NUM(sects2, 2)->pos != a_pos) ||
                       (VSTR_SECTS_NUM(sects2, 2)->len != 2)));
   
+  {
+    Vstr_sects *s_tmp = vstr_sects_make(32);
+    unsigned int num = 0;
+
+    VSTR_ADD_CSTR_BUF(s1, s1->len, ":");
+    
+    num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, ":",
+                              s_tmp, 0,
+                              VSTR_FLAG_SPLIT_BEG_NULL |
+                              VSTR_FLAG_SPLIT_MID_NULL |
+                              VSTR_FLAG_SPLIT_END_NULL |
+                              VSTR_FLAG_SPLIT_POST_NULL);
+
+    printf("%d %d %d\n", s_tmp->sz, s_tmp->num, num);
+    
+    TST_B_TST(ret, 11, (FALSE ||
+                        (s_tmp->sz  != 32) ||
+                        (s_tmp->num != 13) ||
+                        (num != 13) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 12, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 1)->pos != 1) ||
+                        (VSTR_SECTS_NUM(s_tmp, 1)->len != 0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 13, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 2)->pos != 2) ||
+                        (VSTR_SECTS_NUM(s_tmp, 2)->len != 0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 14, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 3)->pos != 3) ||
+                        (VSTR_SECTS_NUM(s_tmp, 3)->len != 0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 15, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 4)->pos != 4) ||
+                        (VSTR_SECTS_NUM(s_tmp, 4)->len != 1) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 16, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 5)->pos != 6) ||
+                        (VSTR_SECTS_NUM(s_tmp, 5)->len != 0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 17, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 6)->pos != 7) ||
+                        (VSTR_SECTS_NUM(s_tmp, 6)->len != 1) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 18, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 7)->pos != 9) ||
+                        (VSTR_SECTS_NUM(s_tmp, 7)->len != 1) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 19, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 8)->pos != 11) ||
+                        (VSTR_SECTS_NUM(s_tmp, 8)->len !=  0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 20, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 9)->pos != 12) ||
+                        (VSTR_SECTS_NUM(s_tmp, 9)->len !=  1) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 21, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 10)->pos != 14) ||
+                        (VSTR_SECTS_NUM(s_tmp, 10)->len !=  0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 22, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 11)->pos != 15) ||
+                        (VSTR_SECTS_NUM(s_tmp, 11)->len !=  1) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 23, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 12)->pos != 17) ||
+                        (VSTR_SECTS_NUM(s_tmp, 12)->len !=  0) ||
+                        FALSE));
+    
+    TST_B_TST(ret, 24, (FALSE ||
+                        (VSTR_SECTS_NUM(s_tmp, 13)->pos != 18) ||
+                        (VSTR_SECTS_NUM(s_tmp, 13)->len !=  0) ||
+                        FALSE));
+    
+    vstr_sects_free(s_tmp);
+  }
+  
   return (TST_B_RET(ret));
 }

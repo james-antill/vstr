@@ -1,4 +1,4 @@
-.TH vstr 3 "12-Jan-2003" "Vstr 0.9.21" "Vstr String Library"
+.TH vstr 3 "20-Jan-2003" "Vstr 1.0.0" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -162,15 +162,15 @@ struct Vstr_ref *\fBvstr_ref_make_memdup\fR(void *, size_t);
 .br
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR('u
 .ti \w'  'u
-struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR(Vstr_base *);
+struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR(struct Vstr_base *);
 .br
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_conf\fR('u
 .ti \w'  'u
-struct Vstr_ref *\fBvstr_ref_make_vstr_conf\fR(Vstr_conf *);
+struct Vstr_ref *\fBvstr_ref_make_vstr_conf\fR(struct Vstr_conf *);
 .br
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_sects\fR('u
 .ti \w'  'u
-struct Vstr_ref *\fBvstr_ref_make_vstr_sects\fR(Vstr_sects *);
+struct Vstr_ref *\fBvstr_ref_make_vstr_sects\fR(struct Vstr_sects *);
 .br
 .in \w'  unsigned int \fBvstr_make_spare_nodes\fR('u
 .ti \w'  'u
@@ -680,9 +680,9 @@ int \fBvstr_fmt_srch\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 void *\fBVSTR_FMT_CB_ARG_PTR\fR(struct Vstr_fmt_spec *, size_t);
 .br
-.in \w'  Paramter[2] \fBVSTR_FMT_CB_ARG_VAL\fR('u
+.in \w'  Parameter[2] \fBVSTR_FMT_CB_ARG_VAL\fR('u
 .ti \w'  'u
-Paramter[2] \fBVSTR_FMT_CB_ARG_VAL\fR(struct Vstr_fmt_spec *, <symbol>, size_t);
+Parameter[2] \fBVSTR_FMT_CB_ARG_VAL\fR(struct Vstr_fmt_spec *, <symbol>, size_t);
 .sp
 .br
 .in \w'  unsigned int \fBvstr_cache_add\fR('u
@@ -778,13 +778,13 @@ int \fBvstr_sc_fmt_add_ipv4_vec\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_ipv6_vec\fR(struct Vstr_conf *, const char *);
 .br
-.in \w'  int \fBvstr_sc_fmt_add_ipv4_vec_cipe\fR('u
+.in \w'  int \fBvstr_sc_fmt_add_ipv4_vec_cidr\fR('u
 .ti \w'  'u
-int \fBvstr_sc_fmt_add_ipv4_vec_cipe\fR(struct Vstr_conf *, const char *);
+int \fBvstr_sc_fmt_add_ipv4_vec_cidr\fR(struct Vstr_conf *, const char *);
 .br
-.in \w'  int \fBvstr_sc_fmt_add_ipv6_vec_cipe\fR('u
+.in \w'  int \fBvstr_sc_fmt_add_ipv6_vec_cidr\fR('u
 .ti \w'  'u
-int \fBvstr_sc_fmt_add_ipv6_vec_cipe\fR(struct Vstr_conf *, const char *);
+int \fBvstr_sc_fmt_add_ipv6_vec_cidr\fR(struct Vstr_conf *, const char *);
 .br
 .in \w'  int \fBvstr_sc_fmt_add_all\fR('u
 .ti \w'  'u
@@ -825,11 +825,11 @@ int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, i
 .br
 .in \w'  int \fBvstr_iter_fwd_beg\fR('u
 .ti \w'  'u
-int \fBvstr_iter_fwd_beg\fR(struct Vstr_base *, size_t, size_t, Vstr_iter *);
+int \fBvstr_iter_fwd_beg\fR(struct Vstr_base *, size_t, size_t, struct Vstr_iter *);
 .br
 .in \w'  int \fBvstr_iter_fwd_nxt\fR('u
 .ti \w'  'u
-int \fBvstr_iter_fwd_nxt\fR(Vstr_iter *);
+int \fBvstr_iter_fwd_nxt\fR(struct Vstr_iter *);
 
 .ti
 .HY
@@ -886,7 +886,7 @@ Type\fB[1]\fR: void
 \fBExplanation:\fR
 
 .br
-  This function can be called before exit, after all vstr objects have been freed, to cleanup data allocated internally in the vstr library.
+  This function can be called before exit, after all vstr objects have been freed, to cleanup data allocated internally in the Vstr library.
 .sp
 \fBNote:\fR
 
@@ -937,7 +937,7 @@ Type\fB[ ... ]\fR: <symbol>
  ...which is a lot more readable as the number of flags increases.
 
 .br
-  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the number at the end refering to how many flags are passed to it (not the number of parameters, which is one more than that).
+  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the number at the end referring to how many flags are passed to it (not the number of parameters, which is one more than that).
 
 .SH Functions to get specific data about the vstr
 
@@ -979,7 +979,7 @@ Type\fB[3]\fR: size_t
 .br
 \fBFunction: \fR vstr_export_cstr_ptr()
 .br
-Returns: A pointer to an array of characters, terminated by NUL
+Returns: A pointer to an array of characters, terminated by NIL
 .br
 Type: char *
 
@@ -1017,7 +1017,7 @@ Type\fB[3]\fR: size_t
 .br
   If you want to make sure that the cached data is gone from the Vstr string, cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
 .br
-  Any _NON data in the Vstr will be uninitialised data in the "C string".
+  Any _NON data in the Vstr will be uninitialized data in the "C string".
 .br
   If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
 
@@ -1025,7 +1025,7 @@ Type\fB[3]\fR: size_t
 .br
 \fBFunction: \fR vstr_export_cstr_malloc()
 .br
-Returns: A malloc'd pointer to an array of characters, terminated by NUL
+Returns: A malloc'd pointer to an array of characters, terminated by NIL
 .br
 Type: char *
 
@@ -1059,7 +1059,7 @@ Type\fB[3]\fR: size_t
 \fBNote:\fR
 
 .br
-  Any _NON data in the Vstr will be uninitialised data in the "C string".
+  Any _NON data in the Vstr will be uninitialized data in the "C string".
 .br
   If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
 
@@ -1100,7 +1100,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to export a copy of the data in the Vstr string to a data array, the maximum ammount of data stored in the array will be of length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string". However the data before the terminator of the "C string" is limited to (Parameter[5] - 1).
+  This function is used to export a copy of the data in the Vstr string to a data array, the maximum amount of data stored in the array will be of length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string". However the data before the terminator of the "C string" is limited to (Parameter[5] - 1).
 .sp
 \fBNote:\fR
 
@@ -1133,7 +1133,7 @@ Parameter\fB[3]\fR: Length from position in the Vstr
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Return)
+Parameter\fB[4]\fR: Offset of Vstr memory reference (Return)
 .br
 Type\fB[4]\fR: size_t *
 
@@ -1143,7 +1143,7 @@ Type\fB[4]\fR: size_t *
 .br
   This function is used to return a pointer to a Vstr memory reference of at  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
 .br
-  When you are finnished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
+  When you are finished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -1154,7 +1154,7 @@ Type\fB[4]\fR: size_t *
 .br
   If you want to make sure that the cached data is gone from the Vstr string, cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
 .br
-  Any _NON data in the Vstr will be uninitialised data in the "C string".
+  Any _NON data in the Vstr will be uninitialized data in the "C string".
 .br
   If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
 
@@ -1409,7 +1409,7 @@ Parameter\fB[3]\fR: Length from position in the Vstr
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Return)
+Parameter\fB[4]\fR: Offset of Vstr memory reference (Return)
 .br
 Type\fB[4]\fR: size_t *
 
@@ -1419,7 +1419,7 @@ Type\fB[4]\fR: size_t *
 .br
   This function is used to return a pointer to a Vstr memory reference of at  least length (Parameter[3]). The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
 .br
-  When you are finnished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
+  When you are finished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -1428,7 +1428,7 @@ Type\fB[4]\fR: size_t *
 \fBNote:\fR
 
 .br
-  Any _NON data in the Vstr will be uninitialised data in the memory pointed to by the memory reference.
+  Any _NON data in the Vstr will be uninitialized data in the memory pointed to by the memory reference.
 
 .SH Functions to use as callbacks in a Vstr memory reference
 
@@ -1698,7 +1698,7 @@ Type\fB[3]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_buf().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_buf().
 .sp
 \fBNote:\fR
 
@@ -1732,7 +1732,7 @@ Type\fB[3]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_ptr().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_ptr().
 .sp
 \fBNote:\fR
 
@@ -1761,7 +1761,7 @@ Type\fB[2]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_non().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_non().
 .sp
 \fBNote:\fR
 
@@ -1787,12 +1787,12 @@ Parameter\fB[2]\fR: Vstr memory reference
 Type\fB[2]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[3]\fR: Offset of Vstr memory refernce (Parameter[2])
+Parameter\fB[3]\fR: Offset of Vstr memory reference (Parameter[2])
 .br
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Length of Vstr memory refernce (Parameter[2])
+Parameter\fB[4]\fR: Length of Vstr memory reference (Parameter[2])
 .br
 Type\fB[4]\fR: size_t
 
@@ -1800,7 +1800,7 @@ Type\fB[4]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_ref().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_ref().
 .sp
 \fBNote:\fR
 
@@ -1844,7 +1844,7 @@ Type\fB[6]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_vstr().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_vstr().
 .sp
 \fBNote:\fR
 
@@ -1870,7 +1870,7 @@ Parameter\fB[2]\fR: Character to repeat
 Type\fB[2]\fR: char
 
 .br
-Parameter\fB[3]\fR: Number of times to repeat characnter (Parameter[2])
+Parameter\fB[3]\fR: Number of times to repeat character (Parameter[2])
 .br
 Type\fB[3]\fR: size_t
 
@@ -1878,7 +1878,7 @@ Type\fB[3]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is equivilent to calling vstr_make_base() and then vstr_add_rep_chr().
+  This function is equivalent to calling vstr_make_base() and then vstr_add_rep_chr().
 .sp
 \fBNote:\fR
 
@@ -1962,7 +1962,7 @@ Parameter\fB[2]\fR: Vstr memory reference
 Type\fB[2]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[3]\fR: Offset of Vstr memory refernce (Parameter[3])
+Parameter\fB[3]\fR: Offset of Vstr memory reference (Parameter[3])
 .br
 Type\fB[3]\fR: size_t
 
@@ -2051,7 +2051,7 @@ Type: struct Vstr_ref *
 .br
 Parameter\fB[1]\fR: Vstr string
 .br
-Type\fB[1]\fR: Vstr_base *
+Type\fB[1]\fR: struct Vstr_base *
 
 .br
 \fBExplanation:\fR
@@ -2070,7 +2070,7 @@ Type: struct Vstr_ref *
 .br
 Parameter\fB[1]\fR: Vstr configuration
 .br
-Type\fB[1]\fR: Vstr_conf *
+Type\fB[1]\fR: struct Vstr_conf *
 
 .br
 \fBExplanation:\fR
@@ -2089,7 +2089,7 @@ Type: struct Vstr_ref *
 .br
 Parameter\fB[1]\fR: Vstr sections
 .br
-Type\fB[1]\fR: Vstr_sects *
+Type\fB[1]\fR: struct Vstr_sects *
 
 .br
 \fBExplanation:\fR
@@ -2312,12 +2312,12 @@ Parameter\fB[3]\fR: Vstr memory reference
 Type\fB[3]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
+Parameter\fB[4]\fR: Offset of Vstr memory reference (Parameter[3])
 .br
 Type\fB[4]\fR: size_t
 
 .br
-Parameter\fB[5]\fR: Length of Vstr memory refernce (Parameter[3])
+Parameter\fB[5]\fR: Length of Vstr memory reference (Parameter[3])
 .br
 Type\fB[5]\fR: size_t
 
@@ -2410,7 +2410,7 @@ Parameter\fB[3]\fR: Character to repeat
 Type\fB[3]\fR: char
 
 .br
-Parameter\fB[4]\fR: Number of times to repeat characnter (Parameter[3])
+Parameter\fB[4]\fR: Number of times to repeat character (Parameter[3])
 .br
 Type\fB[4]\fR: size_t
 
@@ -2508,7 +2508,7 @@ Parameter\fB[3]\fR: Vstr memory reference
 Type\fB[3]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
+Parameter\fB[4]\fR: Offset of Vstr memory reference (Parameter[3])
 .br
 Type\fB[4]\fR: size_t
 
@@ -2551,7 +2551,7 @@ Type\fB[4]\fR: va_list
 \fBExplanation:\fR
 
 .br
-  This function works like calling vsprintf() directly into a Vstr string, however this is a portable implimentation which is feature complete with glibc-2.2.x sprintf(); implements custom specifiers, if you use the vstr_fmt_add() function, and doesn't require a double copy.
+  This function works like calling vsprintf() directly into a Vstr string, however this is a portable implementation which is feature complete with glibc-2.2.x sprintf(); implements custom specifiers, if you use the vstr_fmt_add() function, and doesn't require a double copy.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -2560,7 +2560,7 @@ Type\fB[4]\fR: va_list
 \fBNote:\fR
 
 .br
-  Depending on how the library was compiled double support is implemented by either calling the underlying host implementation of sprintf(), by internal code or simply by assuming all double's are zero. When using the host implemention system bugs of inacuracy will show through, however the feature set remains the same (Ie. the ' flag works the same).
+  Depending on how the library was compiled double support is implemented by either calling the underlying host implementation of sprintf(), by internal code or simply by assuming all double's are zero. When using the host implementation system bugs of inaccuracy will show through, however the feature set remains the same (Ie. the ' flag works the same).
 .br
   Because specifiers can be overridden using vstr_fmt_add() if you are adding data to a Vstr string that you didn't create you should use either vstr_add_vsysfmt() or vstr_swap_conf().
 
@@ -2596,7 +2596,7 @@ Type\fB[4]\fR: ...
 \fBExplanation:\fR
 
 .br
-  This just calls vstr_add_vfmt() after convtering the argument list (Paramter[4]) a va_list object.
+  This just calls vstr_add_vfmt() after converting the argument list (Parameter[4]) a va_list object.
 
 .ti -2
 .br
@@ -2664,7 +2664,7 @@ Type\fB[4]\fR: ...
 \fBExplanation:\fR
 
 .br
-  This just calls vstr_add_vsysfmt() after convtering the argument list (Paramter[4]) a va_list object.
+  This just calls vstr_add_vsysfmt() after converting the argument list (Parameter[4]) a va_list object.
 
 .ti -2
 .br
@@ -2685,12 +2685,12 @@ Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
 Type\fB[2]\fR: size_t
 
 .br
-Parameter\fB[3]\fR: Minimum ammount of iovecs to add
+Parameter\fB[3]\fR: Minimum amount of iovecs to add
 .br
 Type\fB[3]\fR: unsigned int
 
 .br
-Parameter\fB[4]\fR: Maximum ammount of iovecs to add
+Parameter\fB[4]\fR: Maximum amount of iovecs to add
 .br
 Type\fB[4]\fR: unsigned int
 
@@ -2708,7 +2708,7 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a copy of data directly into the Vstr string, the ammount of data available will be between the minimum (Parameter[4]) and maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of data in _BUF type nodes. The obvious use for the data if to call readv() on it.
+  This function is used to add a copy of data directly into the Vstr string, the amount of data available will be between the minimum (Parameter[4]) and maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of data in _BUF type nodes. The obvious use for the data if to call readv() on it.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -2719,7 +2719,7 @@ Type\fB[6]\fR: unsigned int *
 .br
   You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg() and vstr_add_iovec_buf_end(), unless you know that they are operating on a different Vstr string which is using a different Vstr configuration.
 .br
-  The reason there is a +1 on the maximum value is that data may be appened to a _BUF node just before the start of where the data is to go, this is almost guaranteed to happen when adding to the end of a Vstr string and saves a lot of wasted space.
+  The reason there is a +1 on the maximum value is that data may be appended to a _BUF node just before the start of where the data is to go, this is almost guaranteed to happen when adding to the end of a Vstr string and saves a lot of wasted space.
 
 .ti -2
 .br
@@ -2814,7 +2814,7 @@ Type\fB[3]\fR: size_t
 .br
   It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as that signifies that there is no data in the netstring.
 .br
-  It is almost guaranteed that data will need to be removed from the begining of the netstring due to the length being shorter than the maximum, this is inefficient and could cause problems if you know how big the Vstr string is you can use the vstr_add_netstr2_* functions to solve both problems.
+  It is almost guaranteed that data will need to be removed from the beginning of the netstring due to the length being shorter than the maximum, this is inefficient and could cause problems if you know how big the Vstr string is you can use the vstr_add_netstr2_* functions to solve both problems.
 
 .ti -2
 .br
@@ -2876,7 +2876,7 @@ Type\fB[3]\fR: size_t
 .br
   It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as that signifies that there is no data in the netstring.
 .br
-  No data is ever removed from the begining of a netstring2, this is imcompatible with the netstring spec. but is more efficient and doesn't cause problems if you know how big the Vstr string is and can't have it lose data from the begining/middle.
+  No data is ever removed from the beginning of a netstring2, this is incompatible with the netstring spec. but is more efficient and doesn't cause problems if you know how big the Vstr string is and can't have it lose data from the beginning/middle.
 
 .ti -2
 .br
@@ -2916,7 +2916,7 @@ Type\fB[3]\fR: size_t
 .br
   Deleted nodes do not get returned to the system, they get put into a pool in the Vstr configuration for reuse on the next call to a vstr_add_*() function.
 .br
-  Deleteing the entire Vstr string and deleteing from the begining onwards are faster operations than a generic delete. They also never require allocating memory and so the return value can be ignored.
+  Deleting the entire Vstr string and deleting from the beginning onward are faster operations than a generic delete. They also never require allocating memory and so the return value can be ignored.
 
 .SH Functions to substitute data in a Vstr string with other data
 
@@ -3093,12 +3093,12 @@ Parameter\fB[4]\fR: Vstr memory reference
 Type\fB[4]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[5]\fR: Offset of Vstr memory refernce (Parameter[4])
+Parameter\fB[5]\fR: Offset of Vstr memory reference (Parameter[4])
 .br
 Type\fB[5]\fR: size_t
 
 .br
-Parameter\fB[6]\fR: Length of Vstr memory refernce (Parameter[4])
+Parameter\fB[6]\fR: Length of Vstr memory reference (Parameter[4])
 .br
 Type\fB[6]\fR: size_t
 
@@ -3206,7 +3206,7 @@ Parameter\fB[4]\fR: Character to repeat
 Type\fB[4]\fR: char
 
 .br
-Parameter\fB[5]\fR: Number of times to repeat characnter (Parameter[3])
+Parameter\fB[5]\fR: Number of times to repeat character (Parameter[3])
 .br
 Type\fB[5]\fR: size_t
 
@@ -3328,7 +3328,7 @@ Parameter\fB[4]\fR: Vstr memory reference
 Type\fB[4]\fR: struct Vstr_ref *
 
 .br
-Parameter\fB[5]\fR: Offset of Vstr memory refernce (Parameter[4])
+Parameter\fB[5]\fR: Offset of Vstr memory reference (Parameter[4])
 .br
 Type\fB[5]\fR: size_t
 
@@ -3377,7 +3377,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to move data, deleteing it from one Vstr string (Parameter[3]) and adding it to another Vstr string (Parameter[1]).
+  This function is used to move data, deleting it from one Vstr string (Parameter[3]) and adding it to another Vstr string (Parameter[1]).
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -3696,7 +3696,7 @@ Type\fB[6]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to compare the data in one Vstr string (Parameter[1]) with data in another Vstr string (Parameter[4]), however for ASCII digits the algorithum tests on the numbers themselves (so "10" is greater than "9" but "01" is greater than "012", as the later are fractions).
+  This function is used to compare the data in one Vstr string (Parameter[1]) with data in another Vstr string (Parameter[4]), however for ASCII digits the algorithm tests on the numbers themselves (so "10" is greater than "9" but "01" is greater than "012", as the later are fractions).
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string, and then a call to strverscmp() (although it doesn't allocate anything, _and_ it deals with 0 bytes in the data).
 .br
@@ -4233,7 +4233,7 @@ Type\fB[4]\fR: char
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for a character in a Vstr string.
+  This function is used to search forward for a character in a Vstr string.
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string, and then a call to memchr() (although it's much faster than doing that and doesn't allocate anything).
 .br
@@ -4273,7 +4273,7 @@ Type\fB[4]\fR: char
 \fBExplanation:\fR
 
 .br
-  This function is used to search backwards for a character in a Vstr string.
+  This function is used to search backward for a character in a Vstr string.
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string, and then a call to memrchr() (although it doesn't allocate anything).
 .br
@@ -4318,7 +4318,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for any of the characters in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search forward for any of the characters in the data array (Parameter[4]) in a Vstr string.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4361,7 +4361,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search backwards for any of the characters in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search backward for any of the characters in the data array (Parameter[4]) in a Vstr string.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4404,7 +4404,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for any of the characters not in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search forward for any of the characters not in the data array (Parameter[4]) in a Vstr string.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4447,7 +4447,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search backwards for any of the characters not in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search backward for any of the characters not in the data array (Parameter[4]) in a Vstr string.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4490,7 +4490,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for the data in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search forward for the data in the data array (Parameter[4]) in a Vstr string.
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string, and then a call to memmem() (although it's much faster than doing that and doesn't allocate anything).
 .br
@@ -4501,7 +4501,7 @@ Type\fB[5]\fR: size_t
 \fBNote:\fR
 
 .br
-  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified size (Parameter[5]) will be searched for.
 
 .ti -2
 .br
@@ -4540,7 +4540,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search backwards for the data in the data array (Parameter[4]) in a Vstr string.
+  This function is used to search backward for the data in the data array (Parameter[4]) in a Vstr string.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4549,7 +4549,7 @@ Type\fB[5]\fR: size_t
 \fBNote:\fR
 
 .br
-  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified size (Parameter[5]) will be searched for.
 
 .ti -2
 .br
@@ -4593,7 +4593,7 @@ Type\fB[6]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for the data in the Vstr string (Parameter[4]) in the Vstr string (Parameter[1]).
+  This function is used to search forward for the data in the Vstr string (Parameter[4]) in the Vstr string (Parameter[1]).
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string, and then a call to memmem() (although it's much faster than doing that and doesn't allocate anything).
 .br
@@ -4643,7 +4643,7 @@ Type\fB[6]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to search backwards for the data in the Vstr string (Parameter[4]) in the Vstr string (Parameter[1]).
+  This function is used to search backward for the data in the Vstr string (Parameter[4]) in the Vstr string (Parameter[1]).
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -4759,7 +4759,7 @@ Type\fB[5]\fR: size_t
 \fBNote:\fR
 
 .br
-  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified size (Parameter[5]) will be searched for.
 
 .ti -2
 .br
@@ -4803,7 +4803,7 @@ Type\fB[5]\fR: size_t
 \fBNote:\fR
 
 .br
-  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the specified size (Parameter[5]) will be searched for.
 
 .ti -2
 .br
@@ -5204,7 +5204,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to caculate the forward span of characters in the Vstr string that are in the data array.
+  This function is used to calculate the forward span of characters in the Vstr string that are in the data array.
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string, and then a call to strspn() (although it's much faster than doing that and doesn't allocate anything, _and_ it deals with 0 bytes in the data).
 .br
@@ -5247,7 +5247,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to caculate the forward span of characters in the Vstr string that are in the data array.
+  This function is used to calculate the forward span of characters in the Vstr string that are in the data array.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 
@@ -5288,7 +5288,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to caculate the forward span of characters in the Vstr string that are in the compliment of those in the data array.
+  This function is used to calculate the forward span of characters in the Vstr string that are in the compliment of those in the data array.
 .br
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string, and then a call to strcspn() (although it's much faster than doing that and doesn't allocate anything, _and_ it deals with 0 bytes in the data).
 .br
@@ -5331,7 +5331,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to caculate the backward span of characters in the Vstr string that are in the compliment of those in the data array.
+  This function is used to calculate the backward span of characters in the Vstr string that are in the compliment of those in the data array.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 
@@ -5568,7 +5568,7 @@ Type\fB[5]\fR: char
 \fBExplanation:\fR
 
 .br
-  This function substitutes all unprintable characters with the substitution character (Paramter[5]).
+  This function substitutes all unprintable characters with the substitution character (Parameter[5]).
 
 .ti -2
 .br
@@ -5739,7 +5739,7 @@ Type\fB[1]\fR: struct Vstr_sects *
 \fBExplanation:\fR
 
 .br
-  This macro function finishes initilising a Vstr sections that has been allocated using VSTR_SECTS_DECL().
+  This macro function finishes initializing a Vstr sections that has been allocated using VSTR_SECTS_DECL().
 .br
   This macro function can be called multiple times without causing any problems.
 
@@ -5775,12 +5775,12 @@ Type\fB[4]\fR: int
 \fBExplanation:\fR
 
 .br
-  The macro function initialises a self declared Vstr sections.
+  The macro function initializes a self declared Vstr sections.
 .sp
 \fBNote:\fR
 
 .br
-  Unlike VSTR_SECTS_DECL_INIT() this should only be called once per initialisation.
+  Unlike VSTR_SECTS_DECL_INIT() this should only be called once per initialization.
 
 .ti -2
 .br
@@ -5871,7 +5871,7 @@ Type\fB[3]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function will add the position and length to a Vstr section node at the end of the Vstr sections (Paramter[1]). If space is not available and (Paramter[1])->can_add_sz is TRUE, then space try to be allocated.
+  This function will add the position and length to a Vstr section node at the end of the Vstr sections (Parameter[1]). If space is not available and (Parameter[1])->can_add_sz is TRUE, then space try to be allocated.
 
 .ti -2
 .br
@@ -5895,7 +5895,7 @@ Type\fB[2]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  This function will delete a specified Vstr section node. If (Paramter[1])->can_del_sz is TRUE then space may be compated.
+  This function will delete a specified Vstr section node. If (Parameter[1])->can_del_sz is TRUE then space may be compacted.
 
 .ti -2
 .br
@@ -5968,7 +5968,7 @@ Type\fB[2]\fR: struct Vstr_sects *
 \fBNote:\fR
 
 .br
-  You need to call vstr_sects_update_del(), before you free the section (Parameter[2]). However if the next thing you are going to do is call vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them backwards.
+  You need to call vstr_sects_update_del(), before you free the section (Parameter[2]). However if the next thing you are going to do is call vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them backward.
 .br
   This uses the vstr_cache_add() function.
 
@@ -6079,9 +6079,9 @@ Type\fB[8]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  This function is used to add section nodes to the Vstr sections (Parameter[6]) about the Vstr string (Parameter[1]). The function will add one section before each occurance of the data (Parameter[4]), and one final section for the rest of the Vstr string.
+  This function is used to add section nodes to the Vstr sections (Parameter[6]) about the Vstr string (Parameter[1]). The function will add one section before each occurrence of the data (Parameter[4]), and one final section for the rest of the Vstr string.
 .br
-  If the limit (Parameter[7]) is non-zero then ((Parameter[7]) - 1) occurances of the data will be searched for and one final section will be added for the rest of the Vstr string. This means that "a:b:c" if split on ":" with a limit of 2 will split into "a" and "b:c", and that "a::" if split on ":" with a limit of 2 will split into "a" and ":".
+  If the limit (Parameter[7]) is non-zero then ((Parameter[7]) - 1) occurrences of the data will be searched for and one final section will be added for the rest of the Vstr string. This means that "a:b:c" if split on ":" with a limit of 2 will split into "a" and "b:c", and that "a::" if split on ":" with a limit of 2 will split into "a" and ":".
 
 .ti -2
 .br
@@ -6691,7 +6691,7 @@ Type\fB[5]\fR: size_t *
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for the begining of a netstring in the Vstr string (Parameter[4]).
+  This function is used to search forward for the beginning of a netstring in the Vstr string (Parameter[4]).
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -6739,7 +6739,7 @@ Type\fB[5]\fR: size_t *
 \fBExplanation:\fR
 
 .br
-  This function is used to search forwards for the begining of a netstring in the Vstr string (Parameter[4]).
+  This function is used to search forward for the beginning of a netstring in the Vstr string (Parameter[4]).
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -6776,12 +6776,12 @@ Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Returns ip in array ellements 0 to 3
+Parameter\fB[4]\fR: Returns ip in array elements 0 to 3
 .br
 Type\fB[4]\fR: unsigned char *
 
 .br
-Parameter\fB[5]\fR: Returns cidr mask, if reqested
+Parameter\fB[5]\fR: Returns CIDR mask, if requested
 .br
 Type\fB[5]\fR: unsigned int *
 
@@ -6804,7 +6804,7 @@ Type\fB[8]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function will parse an ipv4 address, or optionaly an ipv4 address and a cidr mask / netmask, from the Vstr string.
+  This function will parse an ipv4 address, or optionally an ipv4 address and a CIDR mask / netmask, from the Vstr string.
 
 .ti -2
 .br
@@ -6830,12 +6830,12 @@ Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Returns ip in array ellements 0 to 7
+Parameter\fB[4]\fR: Returns ip in array elements 0 to 7
 .br
 Type\fB[4]\fR: unsigned int *
 
 .br
-Parameter\fB[5]\fR: Returns cidr mask
+Parameter\fB[5]\fR: Returns CIDR mask
 .br
 Type\fB[5]\fR: unsigned int *
 
@@ -6858,7 +6858,7 @@ Type\fB[8]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function will parse an ipv6 address, or optionaly an ipv6 address and a cidr mask, from the Vstr string.
+  This function will parse an ipv6 address, or optionally an ipv6 address and a CIDR mask, from the Vstr string.
 
 .SH Functions for hooking into the fmt function for the Vstr string
 
@@ -6901,7 +6901,7 @@ Type\fB[4]\fR: ...
 .br
   If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
-  If the user escape character is '%', then you can override system specifiers by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but is done so that you can have specifier names like "igloo" and it not be taken as a system specifier, however if you then did "%igoo" that would be interpreted as a "%i" (int) specification followed by the string "goo".
+  If the user escape character is '%', then you can override system specifiers by using a specifier name (Parameter[2]) of "i" etc. This isn't recommended, but is done so that you can have specifier names like "igloo" and it not be taken as a system specifier, however if you then did "%igoo" that would be interpreted as a "%i" (int) specification followed by the string "goo".
 .br
   You can register multiple names with one callback, so you can register say "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%', will do the right thing with current printf warning checks in gcc. We can all hope that the former will be as usable eventually.
 .br
@@ -6929,7 +6929,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function allows you to deregister a format specifier added using vstr_fmt_add().
+  This function allows you to unregister a format specifier added using vstr_fmt_add().
 .sp
 \fBNote:\fR
 
@@ -6995,7 +6995,7 @@ Type\fB[2]\fR: size_t
 .br
 Returns: Data of specified type
 .br
-Type: Paramter[2]
+Type: Parameter[2]
 
 .br
 Parameter\fB[1]\fR: Format specifier passed to a callback of vstr_add_vfmt()
@@ -7295,7 +7295,7 @@ Type\fB[4]\fR: size_t *
 \fBNote:\fR
 
 .br
-  This function, with vstr_sc_basename(), always returns values that can be combined to generate the original path. This means that this function will return an empty length for a relative filename in the current cirectory.
+  This function, with vstr_sc_basename(), always returns values that can be combined to generate the original path. This means that this function will return an empty length for a relative filename in the current directory.
 
 .ti -2
 .br
@@ -7837,7 +7837,7 @@ Type\fB[2]\fR: const char *
 
 .ti -2
 .br
-\fBFunction: \fR vstr_sc_fmt_add_ipv4_vec_cipe()
+\fBFunction: \fR vstr_sc_fmt_add_ipv4_vec_cidr()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -7857,7 +7857,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv4 IP addresses with a cipe mask from a vector of 4 unsigned char and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
+  This function is used to add a custom specifier function to print ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
 .sp
 \fBNote:\fR
 
@@ -7870,7 +7870,7 @@ Type\fB[2]\fR: const char *
 
 .ti -2
 .br
-\fBFunction: \fR vstr_sc_fmt_add_ipv6_vec_cipe()
+\fBFunction: \fR vstr_sc_fmt_add_ipv6_vec_cidr()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -7890,7 +7890,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv6 IP addresses with a cipe mask from a vector of 8 unsigned int and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
+  This function is used to add a custom specifier function to print ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
 .sp
 \fBNote:\fR
 
@@ -7918,7 +7918,7 @@ Type\fB[1]\fR: struct Vstr_conf *
 \fBExplanation:\fR
 
 .br
-  This function is a shotcut to adding a custom formatter for each of the specific custom formatters. The names used are as those given in the notes section of each custom formatter. Also 4 alternate names are given so that the formatter can be used in a gcc warning compatible way. For instance the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}", "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
+  This function is a shortcut to adding a custom formatter for each of the specific custom formatters. The names used are as those given in the notes section of each custom formatter. Also 4 alternate names are given so that the formatter can be used in a gcc warning compatible way. For instance the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}", "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
 .sp
 \fBNote:\fR
 
@@ -7971,7 +7971,7 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a mmap()d mapping of data from a filedescriptor (Parameter[3]) at offset (Paramter[4]) and of size (Parameter[5]) to a Vstr string.
+  This function is used to add a mmap()d mapping of data from a file descriptor (Parameter[3]) at offset (Parameter[4]) and of size (Parameter[5]) to a Vstr string.
 .sp
 \fBNote:\fR
 
@@ -8046,12 +8046,12 @@ Parameter\fB[3]\fR: File descriptor
 Type\fB[3]\fR: int
 
 .br
-Parameter\fB[4]\fR: Minimum ammount of nodes to read into
+Parameter\fB[4]\fR: Minimum amount of nodes to read into
 .br
 Type\fB[4]\fR: unsigned int
 
 .br
-Parameter\fB[5]\fR: Maximum ammount of nodes to read into
+Parameter\fB[5]\fR: Maximum amount of nodes to read into
 .br
 Type\fB[5]\fR: unsigned int
 
@@ -8064,7 +8064,7 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
 
 .ti -2
 .br
@@ -8103,9 +8103,9 @@ Type\fB[5]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
 .br
-  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only upto size (Parameter[4]) data will be read.
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only up to size (Parameter[4]) data will be read.
 .br
   If size (Parameter[4]) is zero then the entire file will try to be read.
 .sp
@@ -8143,12 +8143,12 @@ Parameter\fB[4]\fR: Offset to start reading at
 Type\fB[4]\fR: off64_t
 
 .br
-Parameter\fB[5]\fR: Minimum ammount of nodes to read into
+Parameter\fB[5]\fR: Minimum amount of nodes to read into
 .br
 Type\fB[5]\fR: unsigned int
 
 .br
-Parameter\fB[6]\fR: Maximum ammount of nodes to read into
+Parameter\fB[6]\fR: Maximum amount of nodes to read into
 .br
 Type\fB[6]\fR: unsigned int
 
@@ -8161,7 +8161,7 @@ Type\fB[7]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
 
 .ti -2
 .br
@@ -8205,9 +8205,9 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
 .br
-  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only upto exactly size (Parameter[4]) data will be read. If size (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4]) will try and be read.
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only up to exactly size (Parameter[4]) data will be read. If size (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4]) will try and be read.
 .sp
 \fBNote:\fR
 
@@ -8251,7 +8251,7 @@ Type\fB[4]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to take data from a Vstr string and write it to a filedescriptor.
+  This function is used to take data from a Vstr string and write it to a file descriptor.
 .sp
 \fBNote:\fR
 
@@ -8340,13 +8340,13 @@ Type\fB[3]\fR: size_t
 .br
 Parameter\fB[4]\fR: Vstr iteration
 .br
-Type\fB[4]\fR: Vstr_iter *
+Type\fB[4]\fR: struct Vstr_iter *
 
 .br
 \fBExplanation:\fR
 
 .br
-  This function is used to initialised an iteration.
+  This function is used to initialized an iteration.
 .sp
 \fBNote:\fR
 
@@ -8364,7 +8364,7 @@ Type: int
 .br
 Parameter\fB[1]\fR: Vstr iteration
 .br
-Type\fB[1]\fR: Vstr_iter *
+Type\fB[1]\fR: struct Vstr_iter *
 
 .br
 \fBExplanation:\fR

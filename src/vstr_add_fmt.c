@@ -736,7 +736,8 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
     usr_spec = &dummy.usr_spec;
   else
   {
-    if (!(usr_spec = VSTR__MK(sizeof(Vstr_fmt_spec) + spec->usr_spec->sz)))
+    if (!(usr_spec = VSTR__MK(sizeof(Vstr_fmt_spec) +
+                              (spec->usr_spec->sz * sizeof(void *)))))
       return (NULL);
   }
 
@@ -814,6 +815,9 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
     return (NULL);
   }
   
+  if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
+    VSTR__F(usr_spec);
+    
   return (last);
 }
 

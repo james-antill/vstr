@@ -1,5 +1,5 @@
 dnl #
-dnl #  Copyright (C) 1999, 2000, 2001, 2002 James Antill
+dnl #  Copyright (C) 1999, 2000, 2001, 2002, 2003 James Antill
 dnl #
 dnl #  This program is free software; you can redistribute it and/or modify
 dnl #  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ if test ".`echo dummy $@ | grep help`" = .; then
     T_MD="`$ac_shtool echo -n -e %B 2>/dev/null`"
     T_ME="`$ac_shtool echo -n -e %b 2>/dev/null`"
     echo "Configuring ${T_MD}vstr${T_ME}, (Library)${T_ME}"
-    echo "Copyright (c) 1999, 2000, 2001, 2002 James Antill <james@and.org>"
+    echo "Copyright (c) 1999, 2000, 2001, 2002, 2003 James Antill <james@and.org>"
     echo "                   See ${T_MD}AUTHORS${T_ME} file for more info."
 
 # Could just del this, but it looks cool and like I know what I'm doing :)
@@ -63,9 +63,9 @@ AC_SUBST(LDFLAGS)
 
 # Seriously butchered from glib...
 
-VSTR_MAJOR_VERSION=0
-VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=21
+VSTR_MAJOR_VERSION=1
+VSTR_MINOR_VERSION=0
+VSTR_MICRO_VERSION=0
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -1426,9 +1426,6 @@ esac
 
 TWOCAN_CONF_MSG(Output Substitution)
 
-VSTR_LIBS="$LIBS"
-AC_SUBST(VSTR_LIBS)
-
 AC_OUTPUT([Makefile 
            vstr.pc
            src/Makefile
@@ -1439,6 +1436,7 @@ AC_OUTPUT([Makefile
            tst/add_fmt/Makefile
            tst/cache/Makefile
            tst/cmp/Makefile
+           tst/cntl/Makefile
            tst/conv/Makefile
            tst/del/Makefile
            tst/dup/Makefile

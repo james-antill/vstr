@@ -11,11 +11,11 @@
 #endif
 
 #ifndef TSTSG_SZ /* chunk size for custom Vstr */
-# define TSTSG_SZ 128
+# define TSTSG_SZ ((1024 * 4) - sizeof(Vstr_node)) /* one page each */
 #endif
 
 #ifndef TSTSG_NUM /* number of times to perform each test */
-# define TSTSG_NUM (100)
+# define TSTSG_NUM (256)
 #endif
 
 #if TSTSG_USE_MD5
@@ -53,12 +53,12 @@
 		while (tst_count < test_for) \
 		{ \
 			TSTSG_CTX ctx; \
-			unsigned char out[TSTSG_OUT_LEN]; \
+			unsigned char buf_out[TSTSG_OUT_LEN]; \
                   \
         		TSTSG_INIT(&ctx)
              
 #define TST_END(name) \
-        		TSTSG_FINI(out, &ctx); \
+        		TSTSG_FINI(buf_out, &ctx); \
                         ++tst_count; \
 		} \
                  \
@@ -211,6 +211,8 @@ int main(int argc, char *argv[])
           assert(off == 0);
           
           TSTSG_UPDATE(&ctx, ref->ptr, s1->len);
+
+          vstr_ref_del(ref);
         }
 	TST_END("s2:       mmap");
 
@@ -238,6 +240,7 @@ int main(int argc, char *argv[])
         while (out->len && !err)
           vstr_sc_write_fd(out, 1, out->len, 1 /* stdout */, &err);
         
+        vstr_free_base(out);
         vstr_free_base(s1);
         vstr_free_base(s2);
         vstr_free_base(s3);
@@ -250,6 +253,7 @@ int main(int argc, char *argv[])
         while (out->len && !err)
           vstr_sc_write_fd(out, 1, out->len, 2 /* stderr */, &err);
         
+        vstr_free_base(out);
         vstr_free_base(s1);
         vstr_free_base(s2);
         vstr_free_base(s3);

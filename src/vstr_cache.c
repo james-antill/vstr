@@ -222,9 +222,7 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
  }
  
  if (!base->iovec_upto_date)
- {
-   vec->off = 0;
- }
+   vec->off = base->conf->iov_min_offset;
  else if ((vec->off > base->conf->iov_min_offset) &&
           (sz > (vec->sz - vec->off)))
    vstr__cache_iovec_memmove(base);

@@ -79,6 +79,31 @@ static int tst_usr_strerror_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   return (TRUE);
 }
 
+static int tst_usr_all_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
+{
+  double             arg1 = VSTR_FMT_CB_ARG_VAL(spec, double, 0);
+  long double        arg2 = VSTR_FMT_CB_ARG_VAL(spec, long double, 1);
+  int                arg3 = VSTR_FMT_CB_ARG_VAL(spec, int, 2);
+  intmax_t           arg4 = VSTR_FMT_CB_ARG_VAL(spec, intmax_t, 3);
+  long               arg5 = VSTR_FMT_CB_ARG_VAL(spec, long, 4);
+  long long          arg6 = VSTR_FMT_CB_ARG_VAL(spec, long long, 5);
+  ptrdiff_t          arg7 = VSTR_FMT_CB_ARG_VAL(spec, ptrdiff_t, 6);
+  wchar_t           *arg8 = VSTR_FMT_CB_ARG_PTR(spec, 7);
+  ssize_t            arg9 = VSTR_FMT_CB_ARG_VAL(spec, ssize_t, 8);
+  uintmax_t          arg10 = VSTR_FMT_CB_ARG_VAL(spec, uintmax_t, 9);
+  unsigned long      arg11 = VSTR_FMT_CB_ARG_VAL(spec, unsigned long, 10);
+  unsigned long long arg12 = VSTR_FMT_CB_ARG_VAL(spec, unsigned long long, 11);
+  char              *arg13 = VSTR_FMT_CB_ARG_PTR(spec, 12);
+
+  if (vstr_add_fmt(st, pos,
+                   "%f|%Lf|%d|%jd|%ld|%lld|%td|%ls|%zd|%ju|%lu|%llu|%s",
+                   arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10,
+                   arg11, arg12, arg13))
+    return (TRUE);
+
+  return (FALSE);
+}
+
 int tst(void)
 {
   int ret = 0;
@@ -102,6 +127,22 @@ int tst(void)
                VSTR_TYPE_FMT_END);
   ASSERT(vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
   ASSERT(s1->conf->fmt_usr_curly_braces);
+
+  vstr_fmt_add(s1->conf, "{TST_ALL}", tst_usr_all_cb,
+               VSTR_TYPE_FMT_DOUBLE,
+               VSTR_TYPE_FMT_DOUBLE_LONG,
+               VSTR_TYPE_FMT_INT,
+               VSTR_TYPE_FMT_INTMAX_T,
+               VSTR_TYPE_FMT_LONG,
+               VSTR_TYPE_FMT_LONG_LONG,
+               VSTR_TYPE_FMT_PTRDIFF_T,
+               VSTR_TYPE_FMT_PTR_WCHAR_T,
+               VSTR_TYPE_FMT_SSIZE_T,
+               VSTR_TYPE_FMT_UINTMAX_T,
+               VSTR_TYPE_FMT_ULONG,
+               VSTR_TYPE_FMT_ULONG_LONG,
+               VSTR_TYPE_FMT_PTR_CHAR,
+               VSTR_TYPE_FMT_END);
 
   vstr_sc_fmt_add_all(s3->conf);
   ASSERT(s3->conf->fmt_usr_curly_braces);
@@ -151,8 +192,8 @@ int tst(void)
 
   vstr_del(s3, 1, s3->len);
   ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ref);
-  vstr_add_fmt(s3, 0, "$$ ${ref:%p%u%zu} -- $PID $$",
-               ref, 0, strlen(buf));
+  vstr_add_fmt(s3, 0, "$$ $*{ref:%*p%u%zu} -- $PID $$",
+               0, ref, 0, strlen(buf));
   vstr_ref_del(ref);
   
   TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
@@ -195,6 +236,27 @@ int tst(void)
   assert(!vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
   vstr_fmt_del(s3->conf, "{vstr:%p%zu%zu%u}");
   assert(!vstr_fmt_srch(s3->conf, "{Vstr:%p%zu%zu%u}"));
+  
+  {
+    const char *t_fmt = "${TST_ALL}";
+
+    vstr_del(s1, 1, s1->len);
+    vstr_add_fmt(s1, s1->len, t_fmt,
+                 1.0, (long double)2.0,
+                 3, (intmax_t)4,
+                 5L, 6LL,
+                 (ptrdiff_t)7,
+                 L"eight",
+                 (ssize_t)9, (uintmax_t)10,
+                 11UL, 12ULL, "thirteen");
+    
+    TST_B_TST(ret, 30, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len,
+                                         "1.000000|2.000000|"
+                                         "3|4|5|6|7|"
+                                         "eight|"
+                                         "9|10|11|12|"
+                                         "thirteen"));
+  }
   
   return (TST_B_RET(ret));
 }

@@ -51,8 +51,8 @@ int tst(void)
   vstr_sc_fmt_add_ipv6_ptr(NULL, "b");
   vstr_sc_fmt_add_ipv4_vec(NULL, "c");
   vstr_sc_fmt_add_ipv6_vec(NULL, "d");
-  vstr_sc_fmt_add_ipv4_vec_cipe(NULL, "e");
-  vstr_sc_fmt_add_ipv6_vec_cipe(NULL, "f");
+  vstr_sc_fmt_add_ipv4_vec_cidr(NULL, "e");
+  vstr_sc_fmt_add_ipv6_vec_cidr(NULL, "f");
   
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1);
 
@@ -65,16 +65,18 @@ int tst(void)
 
 /* Crap for tst_coverage constants....
  *
- * VSTR_COMPILE_INCLUDE
- *
  * VSTR_MAX_NODE_ALL
  *
  * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
  * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM
  * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
+ * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM
  *
  * VSTR_TYPE_FMT_PTR_CHAR
  * VSTR_TYPE_FMT_SIZE_T
  *
  * VSTR_SECTS_INIT()
+ *
+ * VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC -- not done.
+ *
  */

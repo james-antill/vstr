@@ -1,3 +1,36 @@
+2003-01-20  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.0
+
+	* include/vstr-const.h (VSTR_FLAG_SECTS_FOREACH_BACKWARD): Renamed
+	variable, to match english usage (ispell is your friend).
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_ipv6_vec_cidr): Massive rename
+	cipe -> cidr, *sigh*.
+	(vstr_sc_fmt_add_ipv4_vec_cidr): Massive rename cipe -> cidr, *sigh*.
+
+	* src/vstr_add.c (vstr__cache_iovec_add_beg): Fixed bug for iovec cache,
+	when adding data to the begining of the string.
+
+2003-01-19  James Antill  <james@and.org>
+
+	* src/vstr_split.c (vstr__split_hdl_null_end): Fixed return count on 
+	POST_NULL split, fixes both split_buf and split_chrs.
+
+2003-01-18  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_usr_write_spec): Fixed bug, where
+	not enough memory was allocated for specifications with entries over 8
+	items ... also fixed memory leak for same if the code didn't crash.
+
+2003-01-14  James Antill  <james@and.org>
+
+	* include/vstr-const.h (VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS): Renamed
+	constant.
+	(VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS): Renamed constant.
+	(VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE): Renamed constant.
+	(VSTR_CNTL_CONF_SET_FLAG_ALLOC_CACHE): Renamed constant.
+
 2003-01-12  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.21
