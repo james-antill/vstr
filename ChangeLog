@@ -1,0 +1,114 @@
+2001-05-02  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr__convert_buf_ref): Add code for 
+	VSTR_ADD_TYPE_BUF_REF.
+
+	* src/vstr_del.c (vstr_del): Add code so that we split buf's instead
+	of moving memory about in the node itself.
+
+2001-03-29  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr_add_vfmt): Add support for explicitly specified
+	arguments (needed for l12n), _fmt is now almost a complete C99 printf
+	like function.
+
+	* TODO: Added TODO file.
+
+2001-03-27  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr_add_vfmt): Add support for: size_t, long long, 
+	intmax_t, ptrdiff_t, char int's ... also fixed some bugs by accident.
+
+	* src/vstr_fmt.c (vstr_add_vfmt): Make NULL string look like 
+	glibc/dietlibc.
+
+2001-03-25  James Antill  <james@and.org>
+
+	* src/vstr_srch_netstr.c (vstr__srch_netstr): Don't skip a netstr that
+	starts valid but the end would be out of bounds.
+
+2001-03-24  James Antill  <james@and.org>
+
+	* src/vstr_del.c (vstr__base_iovec_del_beg): Another bug in bug 
+	checking code.
+
+	* src/vstr.c (vstr__base_iovec_check): Bug in bug checking code :).
+
+	* src/vstr_add.c (vstr_add_iovec_buf_beg): s/||/&&/; in if.
+	(vstr_add_iovec_buf_end): Fixed bug in iovs[] start.
+	(vstr_add_iovec_buf_beg): Fixed bug in iovs[] start.
+	(vstr_add_iovec_buf_end): Reset iovs.len to correct length when it
+	isn't full.
+
+2001-03-23  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr_add_vfmt): Fix bug when passing NULL as %s.
+
+	* src/vstr_ref.c (vstr_ref_del_ref): Stupid bug assuming you can free
+	the reference, that's done in the function call.
+
+2001-03-22  James Antill  <james@and.org>
+
+	* src/vstr_cstr.c (vstr_export_cstr_ptr): Added ability to export a 
+	"C string" to try and minimise integration pain.
+
+	* src/vstr_add.c (vstr_add_ref): Added offset parameter to add_ref().
+
+	* include/vstr-def.h (VSTR__DECL_TYPEDEF1): Added cache struct to cache
+	searches for a position and cstr exports.
+
+	* src/vstr_add.c (vstr_add_vstr): Add ability to add the vstr as a 
+	reference to one chunk of memory.
+
+	* src/vstr.c (vstr_del_beg): Fixed bug, when deleting inside the first 
+	node.
+
+	* src/vstr_cntl.c (vstr__del_conf): Get rid of vstr__destory_conf, and
+	use this.
+
+2001-03-20  James Antill  <james@and.org>
+
+	* src/vstr_ref.c (vstr_ref_cb_free_nothing): Changed name, and moved
+	all the vstr_ref_* subsystem into a seperate file.
+
+	* src/vstr.c (vstr_add_ref): Added offset paramter to add_ref.
+
+2001-03-19  James Antill  <james@and.org>
+
+	* src/vstr_spn.c (vstr_spn_buf_rev): Added function.
+	(vstr_cspn_buf_rev): Added function.
+
+	* src/vstr_cmp.c (vstr__cmp_memcasecmp): Use local memcasecmp(), as
+	we don't want locale specific one.
+	(vstr_cmp_case): Move the scan streings along in the non _non node case.
+	(vstr_cmp): Move the scan streings along in the non _non node case.
+
+	* src/vstr_spn.c (vstr_spn_buf_fwd): Changed from _str_ to _buf_.
+	(vstr_cspn_buf_fwd):  Changed from _str_ to _buf_.
+
+2001-03-16  James Antill  <james@and.org>
+
+	* examples/ex4.c (main): Added example of vstr_srch_netstr().
+
+	* src/vstr_cmp.c (vstr_cmp_buf): Allow cmp's against non, by passing
+	NULL as the buf.
+
+	* src/vstr_add_netstr.c (vstr__netstr_end_start): Make the add_buff 
+	parameter autodetecting (do it the last node is a _buf).
+
+	* src/vstr_srch_netstr.c (vstr__srch_netstr): Added code to search out 
+	netstr/netstr2 data from a vstr.
+
+	* src/vstr_srch.c (vstr_srch_spn_fwd): Allow span counts for "non"
+	nodes, by passing NULL as the span string.
+	(vstr_srch_cspn_fwd): Allow compliment span counts for "non" nodes, 
+	by passing NULL as the compliment span string.
+	(vstr_srch_buf_fwd):  Allow searches for a length of "non" nodes, by
+	passing NULL as the buf.
+	(vstr_srch_buf_fwd): the len param. now applies to the first character 
+	in the buffer.
+
+2001-03-15  James Antill  <james@and.org>
+
+	* src/vstr.c (VSTR_C): Initial non me release.
+

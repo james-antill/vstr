@@ -1,0 +1,19 @@
+#! /bin/sh
+
+# pretend to work for `gnome-config --libdir`
+
+if [ "x$2" != "x" ]; then
+  exit 1
+fi
+
+if [ "$1" = "--libdir" ]; then
+# putting it in _our_ /lib/ not gnome-config's ... so this will work when
+# someone installs gnome-config _after_ the library in the same prefix.
+ echo "@prefix@/lib/"
+ exit 0
+fi
+
+# Smeg knows.
+
+exit 1
+

@@ -1,0 +1,39 @@
+Section Constants for initialisation in debuging mode
+
+Constant: VSTR_DEBUG_INIT_BASE
+
+ Explanation:
+
+  This is the value that static (Vstr_base) structs need to be initialised
+ to when in debugging mode.
+
+ Note:
+
+  In non-debugging mode this value is all 0's, so this won't do anything
+ different from just declaring your structs as static.
+  The library will also re-initialise the base back to it's correct form before
+ returning from timer_q_del_base, so you just need to set it up correctly the
+ first time.
+
+
+Section: Constants passed to vstr_add_vstr()
+
+Constant: VSTR_
+
+ Explanation:
+
+  This is.
+
+
+Section: Constants you pass to the vstr_cntl_base() function
+
+Constant: VSTR_CNTL_BASE_SET_FLAG_
+
+ Parameter[1]: value
+ Type[1]: int
+
+ Explanation:
+
+  This option will set the value of the flag _BLAH on the base.
+
+

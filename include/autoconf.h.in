@@ -1,0 +1,161 @@
+/* auto maticaly */
+#undef STDC_HEADERS
+
+#undef TIME_WITH_SYS_TIME
+
+#undef HAVE_SYS_TIME_H
+
+
+#undef HAVE_MALLOC_H
+
+#undef HAVE_SYS_POLL_H
+
+#undef HAVE_SYS_MMAN_H
+
+#undef HAVE_DLFCN_H
+
+#undef HAVE_TERMCAP_H
+
+#undef USE_NCURSES_DB
+
+#undef HAVE_SYS_FILIO_H
+
+#undef HAVE_SYS_UIO_H
+
+#undef HAVE_SYS_UN_H
+
+#undef HAVE_ZLIB_H
+
+#undef HAVE_SYS_PRCTL_H
+
+
+#undef const
+
+
+#undef mode_t
+#undef off_t
+#undef pid_t
+#undef size_t
+#undef ssize_t
+#undef uid_t
+#undef gid_t
+#undef ptrdiff_t
+#undef intmax_t
+#undef uintmax_t
+
+/* auto macors... */
+#undef HAVE_UNISTD_H
+#undef HAVE_MMAP
+#undef HAVE_ALLOCA_H
+#undef HAVE_ALLOCA
+#undef HAVE_MMAP
+#undef HAVE_STRFTIME
+#undef HAVE_VFORK_H
+#undef vfork
+#undef HAVE_VPRINTF
+
+
+#undef HAVE_MEMCHR
+
+#undef HAVE_MEMCPY
+
+#undef HAVE_MEMCMP
+
+#undef HAVE_STRSPN
+
+#undef HAVE_STRCSPN
+
+#undef HAVE_STPCPY
+
+#undef HAVE_STRNCMP
+
+#undef HAVE_STRCASECMP
+
+#undef HAVE_STRNCASECMP
+
+#undef HAVE_STRNLEN
+
+#undef HAVE_STRNCHR
+
+#undef HAVE_ASPRINTF
+
+
+#undef HAVE_GETOPT_LONG
+
+#undef HAVE_SIGEMPTYSET
+
+#undef HAVE_DIFFTIME
+
+#undef HAVE_SIGACTION
+
+#undef HAVE_STRERROR
+
+
+#undef HAVE_INET_NTOP
+
+#undef HAVE_INET_NTOA
+
+#undef HAVE_INET_PTON
+
+#undef HAVE_INET_ATON
+
+#undef HAVE_INET_ADDR
+
+#undef HAVE_PREAD
+
+
+#undef HAVE_OFFSETOF
+
+#undef HAVE_VA_COPY
+
+#undef HAVE___VA_COPY
+
+#undef HAVE_POLL
+
+#undef HAVE_POSIX_SPRINTF
+
+#undef HAVE_POSIX_VSPRINTF
+
+#undef HAVE_WRITEV
+
+#undef HAVE_DL_RTLD_GLOBAL
+
+#undef HAVE_C9X_SNPRINTF
+
+#undef HAVE_SETRLIMIT
+
+#undef HAVE_PRCTL
+
+#undef HAVE_SIGCONTEXT
+
+#undef HAVE_OLD_SIGCONTEXT
+
+#undef HAVE_MALLINFO
+
+#undef HAVE_DECL_TERMCAP_VARS
+
+#undef USE_QUICK_ADD_TIME
+
+#undef HAVE_SIGALTSTACK
+
+#undef HAVE_C9x_STRUCT_HACK
+
+#undef HAVE_CMSGHDR_STRUCT
+
+#define HAVE_CMSGHDR_RIGHTS 0
+
+#define HAVE_CMSGHDR_CREDENTIALS 0
+
+#define HAVE_SO_PEERCREDS 0
+
+#define HAVE_TCP_CORK 0
+
+#undef HAVE_CMSG_DATA
+
+#undef HAVE_SENDFILE
+
+#undef HAVE_SENDFILE_FREEBSD
+
+#undef HAVE_SOCKADDR_IN6
+
+#undef NDEBUG

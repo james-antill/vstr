@@ -1,0 +1,9 @@
+ This is a shared library that does string related stuff. It's designed
+for use with vectors (readv()/writev()) but is a generic string handling
+library.
+
+ It aims to be fast and small, if used properly, but also easy to use.
+
+ It is Licensed under the LGPL, see the COPYING file for details.
+
+ See the AUTHORS file for authors.

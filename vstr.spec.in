@@ -1,0 +1,81 @@
+# This is hacked from glib
+# Note that this is NOT a relocatable package
+%define ver      @VERSION@
+%define libver  @LT_RELEASE@
+%define  RELEASE 1
+%define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
+%define prefix   /usr
+%define name vstr
+
+Summary: Handy library for strings, specilizes in those for IO
+Name: %{name}
+Version: %ver
+Release: %rel
+Copyright: LGPL
+Group: Development/Libraries
+Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
+BuildRoot: /var/tmp/{name}-%{PACKAGE_VERSION}-root
+URL: http://www.and.org/vstr/
+Docdir: %{prefix}/doc
+Packager: James Antill <james@and.org>
+
+%description
+ Handy library of functions for timed events (doesn't use signals/alarm()).
+
+ Development libs and headers are in timer_q-devel.
+
+%package devel
+Summary: Support library for various applications/libraries.
+Group: Development/Libraries
+
+%description devel
+ Static libraries and header files for the support library of various
+applications and libraries, which are available as public libraries.
+Also includes a *Conf.sh file for gnome-config.
+
+%changelog
+
+* Tue Dec 29 2000 James Antill <james@and.org>
+- Hack a spec file.
+
+%prep
+%setup
+
+%build
+# For devel releases
+if [ ! -f configure ]; then
+  ./autogen.sh
+fi
+
+%configure --prefix=%{prefix}
+
+make
+
+%install
+if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
+make DESTDIR=$RPM_BUILD_ROOT install
+
+%clean
+if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%defattr(-, root, root)
+
+%doc AUTHORS COPYING ChangeLog NEWS README 
+
+%{prefix}/lib/lib%{name}-%{libver}.so.*
+%{prefix}/lib/lib%{name}.so
+
+%files devel
+%defattr(-, root, root)
+
+%doc Documentation/compatability.txt Documentation/compatability.html Documentation/functions.txt Documentation/functions.html Documentation/constants.txt Documentation/constants.html Documentation/namespace.txt Documentation/namespace.html Documentation/overview.txt Documentation/overview.html
+
+%{prefix}/lib/lib%{name}.la
+%{prefix}/lib/lib%{name}.a
+%{prefix}/lib/%{name}Conf.sh
+%{prefix}/include/*.h

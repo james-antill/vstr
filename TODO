@@ -1,0 +1,4 @@
+
+ vstr_add_fmt()
+  floating point relies on the underlying implimentation -- this is very bad.
+
