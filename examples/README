@@ -15,8 +15,6 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
-        soft shutdown (via. cntl)
-        status (via. cntl)
 	conf
 	configurable 404 pages (and maybe others)
         limiting IO
@@ -29,12 +27,11 @@ http://www.sans.org/top20/#u2
 	native syslog
 	edge triggered events
 	multi proc speed up
-	built in ssi?
 	stat cache
 	http/1.0 only mode?
 	FreeBSD sendfile
 	FreeBSD kqueue
-	gzip transfer encoding
+	gzip transfer encoding (with pregen files)
 
     BUGS?
 	GMT time convertion isn't done ... fuck the broken apps.

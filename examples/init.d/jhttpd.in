@@ -100,6 +100,52 @@ function softrestart()
         softstop; start;
 }
 
+function mystatus()
+{
+        # First try "pidof"
+        pids=`pidof -o $$ -o $PPID -o %PPID -x $1`
+        if [ -n "$pids" ]; then
+                if [ -f /var/run/$1$2.pid ] ; then
+                        read pid < /var/run/$1$2.pid
+			for j in $pids; do
+			    if [ "$pid" = "$j" ]; then
+                                echo $"$1$2 (pid $pid) is running..."
+                                return 0
+			    fi
+			done
+                fi
+        fi
+ 
+        # Next try "/var/run/*.pid" files
+        if [ -f /var/run/$1$2.pid ] ; then
+                read pid < /var/run/$1$2.pid
+                if [ -n "$pid" ]; then
+                        echo $"$1$2 dead but pid file exists [$pid]"
+			return 1
+                fi
+        fi
+        # See if /var/lock/subsys/${base} exists
+        if [ -f /var/lock/subsys/$1 ]; then
+                echo $"$1$2 dead but subsys locked"
+                return 2
+        fi
+        echo $"$1 is stopped"
+        return 3
+}
+
+function statuses()
+{
+        i=1
+	while [ $i -le $JHTTPD_NUM ];
+        do
+          CNTL_FILE="${FILE_BASE}$i.cntl"
+          mystatus $prog_name $i
+          RETVAL=$?
+          [ $RETVAL -eq 0 ] && $cntl_exe $CNTL_FILE -e status
+          i=$(($i + 1))
+        done
+}
+
 case "$1" in
   start)
         start
@@ -123,7 +169,7 @@ case "$1" in
         softrestart
         ;;
   status)
-        status $prog_name
+        statuses
         ;;
   condrestart)
         [ -f /var/lock/subsys/${prog_name}1 ] && softrestart || :
