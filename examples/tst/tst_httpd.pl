@@ -260,6 +260,8 @@ if (@ARGV)
 
 rmtree($root);
 mkpath([$root . "/default",
+	$root . "/default.example.com",
+	$root . "/blah",
 	$root . "/foo.example.com/nxt",
 	$root . "/foo.example.com/corner/index.html",
 	$root . "/foo.example.com:1234"]);

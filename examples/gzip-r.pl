@@ -30,10 +30,12 @@ my $man = 0;
 my $help = 0;
 
 my $force_compress = 0;
+my $chown_compress = 0;
 my $verbose_compress = 0;
 
 pod2usage(0) if !
 GetOptions ("force!"   => \$force_compress,
+	    "chown!"   => \$chown_compress,
 	    "verbose+" => \$verbose_compress,
 	    "help|?"   => \$help,
 	    "man"      => \$man);
@@ -74,14 +76,15 @@ sub gzip_file
 	return;
       }
 
+    my @st_name   = stat _;
     if (!$force_compress)
       {
-	my @st_name   = stat _;
 	if (-f $namegz)
 	  { # If .gz file is already newer, skip it...
 	    my @st_namegz = stat _;
-	if ($st_name[9] < $st_namegz[9])
-	  { return; }
+
+	    if ($st_name[9] < $st_namegz[9])
+	      { return; }
 	  }
       }
 
@@ -106,8 +109,10 @@ sub gzip_file
     File::Temp::cmpstat($out, $namegz)  || die "File moved $namegz: $!";
     }
     close($out)                         || die "Failed closing output: $!";
-    # No stupid fchmod, Grr....
-    chmod(0644, $namegz);
+    # No stupid fchmod/fchown in perl, Grr....
+    chmod($st_name[2] & 0777, $namegz);
+    if ($chown_compress)
+      { chown($st_name[4], $st_name[5], $namegz); }
   }
 
 find({ preprocess => \&filter_no_gzip, wanted => \&gzip_file }, @ARGV);
@@ -136,6 +141,7 @@ gzip-r.pl [options] [dirs|files ...]
   --man             full documentation
   --force           force recompression
   --verbose         print filenames
+  --chown           chown gzip files
 
 =head1 OPTIONS
 
@@ -152,6 +158,10 @@ Prints the manual page and exits.
 =item B<--force>
 
 Recompresses .gz files even when they are newer than their source.
+
+=item B<--chown>
+
+Make the gzip output files have the same owner as the input files.
 
 =item B<--verbose>
 

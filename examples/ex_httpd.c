@@ -179,7 +179,6 @@ struct Http_hdrs
  Vstr_sect_node hdr_ua[1];
  Vstr_sect_node hdr_referer[1]; /* NOTE: referrer */
 
- Vstr_sect_node hdr_connection[1];
  Vstr_sect_node hdr_expect[1];
  Vstr_sect_node hdr_host[1];
  Vstr_sect_node hdr_if_match[1];
@@ -194,6 +193,7 @@ struct Http_hdrs
   Vstr_sect_node hdr_accept[1];
   Vstr_sect_node hdr_accept_encoding[1];
   Vstr_sect_node hdr_accept_language[1];
+  Vstr_sect_node hdr_connection[1];
   Vstr_sect_node hdr_range[1];
  } multi[1];
 };
@@ -249,13 +249,13 @@ struct Con
 #define HTTP_1_0_KEEP_ALIVE 1
 #define HTTP_1_1_KEEP_ALIVE 2
 
-#define HTTP__REQ_HDR_SET(con, h, p, l) do {               \
-      (con)-> http_hdrs -> hdr_ ## h ->pos = (p);          \
-      (con)-> http_hdrs -> hdr_ ## h ->len = (l);          \
+#define HTTP__HDR_SET(req, h, p, l) do {               \
+      (req)-> http_hdrs -> hdr_ ## h ->pos = (p);          \
+      (req)-> http_hdrs -> hdr_ ## h ->len = (l);          \
     } while (FALSE)
-#define HTTP__REQ_HDR_MULTI_SET(con, h, p, l) do {         \
-      (con)-> http_hdrs -> multi -> hdr_ ## h ->pos = (p); \
-      (con)-> http_hdrs -> multi -> hdr_ ## h ->len = (l); \
+#define HTTP__HDR_MULTI_SET(req, h, p, l) do {         \
+      (req)-> http_hdrs -> multi -> hdr_ ## h ->pos = (p); \
+      (req)-> http_hdrs -> multi -> hdr_ ## h ->len = (l); \
     } while (FALSE)
 
 static Timer_q_base *cl_timeout_base = NULL;
@@ -1115,6 +1115,7 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
   ASSERT((hdr == hdrs->multi->hdr_accept) ||
          (hdr == hdrs->multi->hdr_accept_encoding) ||
          (hdr == hdrs->multi->hdr_accept_language) ||
+         (hdr == hdrs->multi->hdr_connection) ||
          (hdr == hdrs->multi->hdr_range));
   
   if (!hdr->pos)
@@ -1214,7 +1215,6 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
     else if (HDR__EQ("User-Agent"))          HDR__SET(ua);
     else if (HDR__EQ("Referer"))             HDR__SET(referer);
 
-    else if (HDR__EQ("Connection"))          HDR__SET(connection);
     else if (HDR__EQ("Expect"))              HDR__SET(expect);
     else if (HDR__EQ("Host"))                HDR__SET(host);
     else if (HDR__EQ("If-Match"))            HDR__SET(if_match);
@@ -1227,6 +1227,7 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
     else if (HDR__EQ("Accept"))              HDR__MULTI_SET(accept);
     else if (HDR__EQ("Accept-Encoding"))     HDR__MULTI_SET(accept_encoding);
     else if (HDR__EQ("Accept-Language"))     HDR__MULTI_SET(accept_language);
+    else if (HDR__EQ("Connection"))          HDR__MULTI_SET(connection);
     else if (HDR__EQ("Range"))               HDR__MULTI_SET(range);
 
     /* in theory 0 bytes is ok ... who cares */
@@ -1248,23 +1249,23 @@ static void http__clear_hdrs(struct Http_req_data *req)
 
   ASSERT(tmp);
   
-  HTTP__REQ_HDR_SET(req, ua, 0, 0);
-  HTTP__REQ_HDR_SET(req, referer, 0, 0);
+  HTTP__HDR_SET(req, ua,                  0, 0);
+  HTTP__HDR_SET(req, referer,             0, 0);
 
-  HTTP__REQ_HDR_SET(req, connection, 0, 0);
-  HTTP__REQ_HDR_SET(req, expect, 0, 0);
-  HTTP__REQ_HDR_SET(req, host, 0, 0);
-  HTTP__REQ_HDR_SET(req, if_match, 0, 0);
-  HTTP__REQ_HDR_SET(req, if_modified_since, 0, 0);
-  HTTP__REQ_HDR_SET(req, if_none_match, 0, 0);
-  HTTP__REQ_HDR_SET(req, if_range, 0, 0);
-  HTTP__REQ_HDR_SET(req, if_unmodified_since, 0, 0);
+  HTTP__HDR_SET(req, expect,              0, 0);
+  HTTP__HDR_SET(req, host,                0, 0);
+  HTTP__HDR_SET(req, if_match,            0, 0);
+  HTTP__HDR_SET(req, if_modified_since,   0, 0);
+  HTTP__HDR_SET(req, if_none_match,       0, 0);
+  HTTP__HDR_SET(req, if_range,            0, 0);
+  HTTP__HDR_SET(req, if_unmodified_since, 0, 0);
 
   vstr_del(tmp, 1, tmp->len);
-  HTTP__REQ_HDR_MULTI_SET(req, accept, 0, 0);
-  HTTP__REQ_HDR_MULTI_SET(req, accept_encoding, 0, 0);
-  HTTP__REQ_HDR_MULTI_SET(req, accept_language, 0, 0);
-  HTTP__REQ_HDR_MULTI_SET(req, range, 0, 0);
+  HTTP__HDR_MULTI_SET(req, accept,          0, 0);
+  HTTP__HDR_MULTI_SET(req, accept_encoding, 0, 0);
+  HTTP__HDR_MULTI_SET(req, accept_language, 0, 0);
+  HTTP__HDR_MULTI_SET(req, connection,      0, 0);
+  HTTP__HDR_MULTI_SET(req, range,           0, 0);
 }
 
 /* might have been able to do it with string matches, but getting...
@@ -1274,10 +1275,11 @@ static void http__clear_hdrs(struct Http_req_data *req)
  * ...seemed not as easy. It also seems like you have to accept...
  * "HTTP / 01 . 01" as "HTTP/1.1"
  */
-static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
-                                  size_t op_pos, size_t op_len)
+static int http_req_parse_version(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
+  size_t op_pos = VSTR_SECTS_NUM(req->sects, 3)->pos;
+  size_t op_len = VSTR_SECTS_NUM(req->sects, 3)->len;
   unsigned int major = 0;
   unsigned int minor = 0;
   size_t num_len = 0;
@@ -1323,17 +1325,84 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
-/* parse >= 1.0 things like, version and headers */
-static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
+#define HDR__CON_1_0_FIXUP(name, h)                                     \
+    else if (vstr_cmp_case_cstr_eq(data, pos, tmp, name))               \
+      do {                                                              \
+        req -> http_hdrs -> hdr_ ## h ->pos = 0;                        \
+        req -> http_hdrs -> hdr_ ## h ->len = 0;                        \
+      } while (FALSE)
+#define HDR__CON_1_0_MULTI_FIXUP(name, h)                               \
+    else if (vstr_cmp_case_cstr_eq(data, pos, tmp, name))               \
+      do {                                                              \
+        req -> http_hdrs -> multi -> hdr_ ## h ->pos = 0;               \
+        req -> http_hdrs -> multi -> hdr_ ## h ->len = 0;               \
+      } while (FALSE)
+static void http__parse_connection(struct Con *con, struct Http_req_data *req)
 {
-  Vstr_base *data = con->ev->io_r;
-  Vstr_sect_node *h_c = req->http_hdrs->hdr_connection;
-  size_t op_pos = VSTR_SECTS_NUM(req->sects, 3)->pos;
-  size_t op_len = VSTR_SECTS_NUM(req->sects, 3)->len;
+  Vstr_base *data = req->http_hdrs->multi->combiner;
+  size_t pos = 0;
+  size_t len = 0;
 
+  pos = req->http_hdrs->multi->hdr_connection->pos;
+  len = req->http_hdrs->multi->hdr_connection->len;
+
+  if (req->ver_1_1)
+    con->keep_alive = HTTP_1_1_KEEP_ALIVE;
+
+  if (!len)
+    return;
+
+  while (len)
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
+                                         HTTP_EOL HTTP_LWS ",");
+
+    if (req->ver_1_1)
+    { /* this is all we have to do for HTTP/1.1 ... proxies understnad it */
+      if (vstr_cmp_case_cstr_eq(data, pos, tmp, "close"))
+        con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+    }
+    else if (vstr_cmp_case_cstr_eq(data, pos, tmp, "keep-alive"))
+    {
+      if (serv->use_keep_alive_1_0)
+        con->keep_alive = HTTP_1_0_KEEP_ALIVE;
+    }
+    /* now fixup connection headers for HTTP/1.0 proxies */
+    HDR__CON_1_0_FIXUP("User-Agent",          ua);
+    HDR__CON_1_0_FIXUP("Referer",             referer);
+    HDR__CON_1_0_FIXUP("Expect",              expect);
+    HDR__CON_1_0_FIXUP("Host",                host);
+    HDR__CON_1_0_FIXUP("If-Match",            if_match);
+    HDR__CON_1_0_FIXUP("If-Modified-Since",   if_modified_since);
+    HDR__CON_1_0_FIXUP("If-None-Match",       if_none_match);
+    HDR__CON_1_0_FIXUP("If-Range",            if_range);
+    HDR__CON_1_0_FIXUP("If-Unmodified-Since", if_unmodified_since);
+    
+    HDR__CON_1_0_MULTI_FIXUP("Accept",          accept);
+    HDR__CON_1_0_MULTI_FIXUP("Accept-Encoding", accept_encoding);
+    HDR__CON_1_0_MULTI_FIXUP("Accept-Language", accept_language);
+    HDR__CON_1_0_MULTI_FIXUP("Range",           range);
+
+    /* skip to end, or after next ',' */
+    tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, ",");    
+    len -= tmp; pos += tmp;
+    if (!len)
+      break;
+    
+    assert(VPREFIX(data, pos, len, ","));
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+  }
+}
+#undef HDR__CON_1_0_FIXUP
+#undef HDR__CON_1_0_MULTI_FIXUP
+                                  
+/* parse >= 1.0 things like, version and headers */
+static int http__parse_1_x(struct Con *con, struct Http_req_data *req)
+{
   ASSERT(!req->ver_0_9);
   
-  if (!http_req_parse_version(con, req, op_pos, op_len))
+  if (!http_req_parse_version(con, req))
     return (FALSE);
   
   if (!http__parse_hdrs(con, req))
@@ -1341,13 +1410,8 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
 
   if (!serv->use_keep_alive)
     return (TRUE);
-  
-  if (req->ver_1_1 &&
-      (!h_c->pos || !vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "close")))
-    con->keep_alive = HTTP_1_1_KEEP_ALIVE;
-  else if (serv->use_keep_alive_1_0 && h_c->pos &&
-           vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "keep-alive"))
-    con->keep_alive = HTTP_1_0_KEEP_ALIVE;
+
+  http__parse_connection(con, req);
   
   return (TRUE);
 }
@@ -1367,7 +1431,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     tmp = vstr_srch_chr_fwd(data, op_pos, op_len, '/');
     if (!tmp)
     {
-      HTTP__REQ_HDR_SET(req, host, op_pos, op_len);
+      HTTP__HDR_SET(req, host, op_pos, op_len);
       op_len = 1;
       --op_pos;
     }
@@ -1375,7 +1439,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     { /* found end of host ... */
       size_t host_len = tmp - op_pos;
       
-      HTTP__REQ_HDR_SET(req, host, op_pos, host_len);
+      HTTP__HDR_SET(req, host, op_pos, host_len);
       op_len -= host_len; op_pos += host_len;
     }
     assert(VPREFIX(data, op_pos, op_len, "/"));
@@ -2105,6 +2169,23 @@ static int serv_add_default_hostname(Vstr_base *lfn, size_t pos)
   return (TRUE);
 }
 
+static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
+{
+  const char *vhost = vstr_export_cstr_ptr(lfn, pos, len);
+  struct stat64 v_stat[1];
+
+  if (!vhost)
+    return (TRUE); /* this should use errmem_req() */
+  
+  if (stat64(vhost, v_stat) == -1)
+    return (FALSE);
+
+  if (!S_ISDIR(v_stat->st_mode))
+    return (FALSE);
+
+  return (TRUE);
+}
+
 static int http_req_make_path(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
@@ -2129,15 +2210,21 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
    * maybe when have stat() cache */
 
   
-  if (serv->use_vhosts && req->http_hdrs->hdr_host->len)
-  { /* add as buf's, for lowercase op */
+  if (serv->use_vhosts)
+  {
     Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
     
-    if (vstr_add_vstr(fname, 0, data, h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
+    if (!h_h->len)
+      serv_add_default_hostname(fname, 0);
+    else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
+                           h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
+    {
       vstr_conv_lowercase(fname, 1, h_h->len);
+      
+      if (!serv_check_vhost(fname, 1, h_h->len)) /* 5.2 */
+        HTTPD_ERR_RET(req, 400, FALSE);
+    }
   }
-  else if (serv->use_vhosts)
-    serv_add_default_hostname(fname, 0);
 
   vstr_add_cstr_ptr(fname, 0, "/");
   
@@ -2150,7 +2237,10 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
 
   ASSERT(fname->len);
   assert(VPREFIX(fname, 1, fname->len, "/") || fname->conf->malloc_bad);
-      
+
+  if (fname->conf->malloc_bad)
+    return (TRUE);
+  
   if (vstr_export_chr(fname, fname->len) == '/')
     vstr_add_cstr_ptr(fname, fname->len, serv->dir_filename);
 
@@ -2663,7 +2753,7 @@ static int http_parse_req(struct Con *con)
     req->path_pos = VSTR_SECTS_NUM(req->sects, 2)->pos;
     req->path_len = VSTR_SECTS_NUM(req->sects, 2)->len;
 
-    if (!req->ver_0_9 && !http_req_parse_1_x(con, req))
+    if (!req->ver_0_9 && !http__parse_1_x(con, req))
     {
       if (req->error_code == 500)
         return (http_fin_errmem_req(con, req));
