@@ -4,10 +4,10 @@ use strict;
 use File::Basename;
 use File::Compare;
 
-my $tst_DBG = 0;
+my $tst_DBG    = $ENV{VSTR_TST_DBG}    || 0;
 
-my $tst_mp     = 1;
-my $tst_num_mp = 2;
+my $tst_mp     = $ENV{VSTR_TST_MP}     || 1;
+my $tst_num_mp = $ENV{VSTR_TST_NUM_MP} || 2;
 
 my $xit_success = 0;
 my $xit_failure = 1;

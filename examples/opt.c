@@ -21,7 +21,8 @@ const char *opt_program_name(const char *argv0, const char *def)
       ++def;
     else
       def = argv0;
-    
+
+    /* hack for libtool */
     if ((strlen(def) > strlen("lt-")) && !memcmp("lt-", def, strlen("lt-")))
       def += 3;
   }
@@ -36,3 +37,4 @@ const char *opt_def_toggle(int val)
   else
     return (" (default: off)");
 }
+

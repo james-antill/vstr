@@ -86,13 +86,15 @@
 
 
 #ifndef VSTR_AUTOCONF_NDEBUG
-#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-#define ASSERT_NOT_REACHED() assert(FALSE)
+# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+# define ASSERT_NOT_REACHED() assert(FALSE)
+# define ASSERT_NO_SWITCH_DEF() break
 #else
-#define assert(x) do { } while (FALSE)
-#define ASSERT(x) do { } while (FALSE)
-#define ASSERT_NOT_REACHED() assert(FALSE)
+# define assert(x) do { } while (FALSE)
+# define ASSERT(x) do { } while (FALSE)
+# define ASSERT_NOT_REACHED() assert(FALSE)
+# define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(!"default label")
 #endif
 
 

@@ -51,6 +51,8 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
 {
   Vstr_base *dlg = vlg->out_vstr;
 
+  ASSERT(vstr_export_chr(dlg, dlg->len) == '\n');
+
   if (!vlg->daemon_mode)
   {
     int fd = out_err ? STDERR_FILENO : STDOUT_FILENO;
@@ -74,11 +76,11 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
   }
   else
   {
-    const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len);
+    const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len - 1);
 
     if (!tmp)
       errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
-    
+
     /* ignoring borken syslog()'s that overflow ... eventually implement
      * syslog protocol, until then use a real OS */
     syslog(type, "%s", tmp);

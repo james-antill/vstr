@@ -7,8 +7,9 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 EX_B_DIR=$(top_builddir)/examples
 EX_INST_DIR=$(libdir)/vstr-$(VERSION)/examples
 
-GEN_CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
+GEN_CFLAGS = -I- -I../include -I../../include
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
+CFLAGS = @CFLAGS@ @WARNS@
 
 
 CMDLINE_FILES_SRCS = opt.c date.c evnt.c vlg.c
@@ -42,9 +43,9 @@ ex_hexdump_DEPENDENCIES = ex_utils.h
 ex_hexdump_CFLAGS = $(GEN_CFLAGS)
 ex_hexdump_LDADD  = $(GEN_LDLIBS)
 
-ex_html_dir_list_DEPENDENCIES = ex_utils.h
-ex_html_dir_list_CFLAGS = $(GEN_CFLAGS)
-ex_html_dir_list_LDADD  = $(GEN_LDLIBS)
+ex_dir_list2html_DEPENDENCIES = ex_utils.h
+ex_dir_list2html_CFLAGS = $(GEN_CFLAGS)
+ex_dir_list2html_LDADD  = $(GEN_LDLIBS)
 
 ex_dir_filter_SOURCES = opt.c ex_dir_filter.c bag.c
 ex_dir_filter_DEPENDENCIES = opt.h ex_utils.h bag.h
@@ -199,14 +200,14 @@ if HAVE_POSIX_HOST
 
 hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
-ls_DEP =   ex_dir_list ex_dir_filter ex_dir_sort ex_html_dir_list
+ls_DEP =   ex_dir_list ex_dir_filter ex_dir_sort ex_dir_list2html
 ls1_APP = ./ex_dir_list --size --follow -- 
 ls2_APP = | ./ex_dir_filter \
  -A .. --deny-name-beg . \
  -D index.html -D dir_list.css \
- --deny-name-end ~ --deny-name-end \\\# | \
+ --deny-name-end .gz --deny-name-end ~ --deny-name-end \\\# | \
  ./ex_dir_sort --without-locale | \
- ./ex_html_dir_list --name
+ ./ex_dir_list2html --name
 
 
 # Don't build by default, requires threads...
@@ -215,7 +216,7 @@ ls2_APP = | ./ex_dir_filter \
 examples_PROGRAMS += \
   ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
-  ex_hexdump ex_html_dir_list ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
+  ex_hexdump ex_dir_list2html ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
   ex_phone_names ex_rot13 \
   ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
   ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter
@@ -310,7 +311,7 @@ example_code_html = \
   html/ex_hello_world_x.c.html \
   html/ex_hexdump.c.html \
   html/ex_highlight.c.html \
-  html/ex_html_dir_list.c.html \
+  html/ex_dir_list2html.c.html \
   html/ex_httpd.c.html \
   html/ex_httpd_err_codes.h.html \
   html/ex_lookup_ip.c.html \
@@ -363,6 +364,7 @@ html/dir_list.css: ../examples/dir_list.css
 
 html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
+		gzip-r.pl html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --cssfile=f_c.css $< > $@

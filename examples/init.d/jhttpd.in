@@ -28,6 +28,7 @@ JHTTPD1_DIR=${localstatedir}/www/html
 function jhttpd_dirs()
 {
           CNTL_FILE="${FILE_BASE}$i.cntl"
+          PID_FILE="${FILE_BASE}$i.pid"
           U__CALL_CHROOT="JHTTPD${i}_CHROOT"
           U__CALL_DIR="JHTTPD${i}_DIR"
 	  if [ "x${!U__CALL_CHROOT}" = "x" ]; then
@@ -44,7 +45,6 @@ function start()
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
           jhttpd_dirs
-          PID_FILE="${FILE_BASE}$i.pid"
           U__CALL_ARGS="JHTTPD${i}_ARGS"
           I_ARGS="--daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
           U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
@@ -87,6 +87,7 @@ function softstop()
           RETVAL=$?
           [ $RETVAL -eq 0 ] && success $"$prog_name$i soft shutdown" || \
 	     failure $"$prog_name$i soft shutdown"
+          [ $RETVAL -eq 0 ] && rm -- "${PID_FILE}"
 	  echo
           i=$(($i + 1))
         done

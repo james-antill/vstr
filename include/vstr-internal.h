@@ -459,7 +459,7 @@ extern void vstr_version_func(void);
   abort(); } } \
  while (FALSE)
 # endif
-# define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(FALSE)
+# define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(!"default label")
 #endif
 
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE

@@ -192,6 +192,8 @@ rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
 
 mkdir -p $RPM_BUILD_ROOT/var/empty/jechod
 mkdir -p $RPM_BUILD_ROOT/var/empty/jhttpd
+mkdir -p $RPM_BUILD_ROOT/var/www/html
+
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_echod $RPM_BUILD_ROOT/%{_sbindir}/jechod
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_httpd $RPM_BUILD_ROOT/%{_sbindir}/jhttpd
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_cntl  $RPM_BUILD_ROOT/%{_sbindir}/jcntl
@@ -262,3 +264,4 @@ fi
 %defattr(-, root, root)
 %{_sysconfdir}/init.d/
 %{_sbindir}/
+/var/www/html

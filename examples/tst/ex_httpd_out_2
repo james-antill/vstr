@@ -35,7 +35,7 @@ Content-Length: 159
     <h1>Foo norm</h1>
   </body>
 </html>
-HTTP/1.1 304 NOT MODIFIED
+HTTP/1.1 304 Not Modified
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
@@ -145,7 +145,7 @@ Content-Length: 8
 Content-Range: bytes 151-158/159
 
 </html>
-HTTP/1.1 304 NOT MODIFIED
+HTTP/1.1 304 Not Modified
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT

@@ -17,6 +17,8 @@ static const char *css_fname = "dir_list.css";
     } while (FALSE)
 static int html_conv_encode_data(Vstr_base *s1, size_t pos, size_t len)
 {
+  if (vstr_cmp_cstr_eq(s1, pos, len, ".."))
+    return (vstr_sub_cstr_buf(s1, pos, len, "Parent directory"));
 
   while (len)
   {
@@ -40,7 +42,7 @@ static int html_conv_encode_data(Vstr_base *s1, size_t pos, size_t len)
   return (TRUE);
 }
 
-static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
+static int ex_dir_list2html_process(Vstr_base *s1, Vstr_base *s2,
                                     int *parsed_header, int *row_num)
 {
   size_t pos = 0;
@@ -176,19 +178,19 @@ static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
   return (TRUE);
 }
 
-static void ex_html_dir_list_process_limit(Vstr_base *s1, Vstr_base *s2,
+static void ex_dir_list2html_process_limit(Vstr_base *s1, Vstr_base *s2,
                                            int *parsed_header, int *row_num)
 {
   while (s2->len)
   { /* Finish processing read data (try writing if we need memory) */
-    int proc_data = ex_html_dir_list_process(s1, s2, parsed_header, row_num);
+    int proc_data = ex_dir_list2html_process(s1, s2, parsed_header, row_num);
 
     if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
       io_block(-1, STDOUT_FILENO);
   }
 }
 
-static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
+static void ex_dir_list2html_beg(Vstr_base *s1, const char *fname)
 {
   /* DTD from: http://www.w3.org/QA/2002/04/valid-dtd-list.html */
   vstr_add_fmt(s1, s1->len, "\
@@ -213,7 +215,7 @@ static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
 ", fname, css_fname, fname);
 }
 
-static void ex_html_dir_list_end(Vstr_base *s1)
+static void ex_dir_list2html_end(Vstr_base *s1)
 {
   vstr_add_cstr_buf(s1, s1->len, "\n\
   </tbody>\n\
@@ -223,7 +225,7 @@ static void ex_html_dir_list_end(Vstr_base *s1)
 ");
 }
 
-static void ex_html_dir_list_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
+static void ex_dir_list2html_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
                                                   int fd)
 {
   int parsed_header[1] = {FALSE};
@@ -237,14 +239,14 @@ static void ex_html_dir_list_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     if (io_r_state == IO_EOF)
       break;
 
-    ex_html_dir_list_process(s1, s2, parsed_header, row_num);
+    ex_dir_list2html_process(s1, s2, parsed_header, row_num);
     
     io_w_state = io_put(s1, STDOUT_FILENO);
 
     io_limit(io_r_state, fd, io_w_state, STDOUT_FILENO, s1);    
   }
   
-  ex_html_dir_list_process_limit(s1, s2, parsed_header, row_num);
+  ex_dir_list2html_process_limit(s1, s2, parsed_header, row_num);
 }
 
 int main(int argc, char *argv[])
@@ -272,7 +274,7 @@ int main(int argc, char *argv[])
     else if (!strcmp("--version", argv[count]))
     { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
-jhtml_dir_list 1.0.0\n\
+jdir_list2html 1.0.0\n\
 Written by James Antill\n\
 \n\
 Uses Vstr string library.\n\
@@ -282,8 +284,8 @@ Uses Vstr string library.\n\
     else if (!strcmp("--help", argv[count]))
     { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
-Usage: jhtml_dir_list [FILENAME]...\n\
-   or: jhtml_dir_list OPTION\n\
+Usage: jdir_list2html [FILENAME]...\n\
+   or: jdir_list2html OPTION\n\
 Output filenames.\n\
 \n\
       --help        - Display this help and exit\n\
@@ -305,9 +307,9 @@ Report bugs to James Antill <james@and.org>.\n\
   if (count >= argc)
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
-    ex_html_dir_list_beg(s1, def_name);
-    ex_html_dir_list_read_fd_write_stdout(s1, s2, STDIN_FILENO);
-    ex_html_dir_list_end(s1);
+    ex_dir_list2html_beg(s1, def_name);
+    ex_dir_list2html_read_fd_write_stdout(s1, s2, STDIN_FILENO);
+    ex_dir_list2html_end(s1);
   }
   
   /* loop through all arguments, open the dir specified
@@ -316,9 +318,9 @@ Report bugs to James Antill <james@and.org>.\n\
   {
     int fd = io_open(argv[count]);
 
-    ex_html_dir_list_beg(s1, argv[count]);
-    ex_html_dir_list_read_fd_write_stdout(s1, s2, fd);
-    ex_html_dir_list_end(s1);
+    ex_dir_list2html_beg(s1, argv[count]);
+    ex_dir_list2html_read_fd_write_stdout(s1, s2, fd);
+    ex_dir_list2html_end(s1);
 
     if (close(fd) == -1)
       warn("close(%s)", argv[count]);

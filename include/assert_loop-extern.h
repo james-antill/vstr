@@ -103,8 +103,8 @@ extern void vstr__assert_loop(const char *,
   abort(); goto     y; } \
  } while (FALSE)
 # endif
-# define assert_no_switch_def() break; default: ASSERT(FALSE)
-# define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(FALSE)
+# define assert_no_switch_def() break; default: ASSERT(!"default label")
+# define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(!"default label")
 #endif
 
 #endif

@@ -6,6 +6,8 @@ happily work on win32 etc.
 
  All code in this dir. is also under the LGPL, not the GPL.
 
+ ex_dir_list2webdav
+
  ex_sock_filter
 
 
@@ -19,15 +21,19 @@ http://www.sans.org/top20/#u2
         mmap cache?
 	fd cache
 	stat cache
+	max timeout for keep-alive
+	max requests for keep-alive?
+	408 - request timeout?
 	configurable 404 pages (and maybe others)
         limiting IO
+	Support accept-language?
         fixing nagle off/on for cork
 	ipv6
-	extension finder(/index and get index.html)
 	apache style perl converter?
 	native syslog
 	edge triggered events
 	multi proc speed up
+	extension finder(/index and get index.html)
 	http/1.0 only mode?
 	auth (rfc2617)
 	FreeBSD sendfile

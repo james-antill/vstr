@@ -63,6 +63,9 @@ static Vlg *vlg = NULL;
 
 static unsigned int evnt__num = 0;
 
+/* this should be more configurable... */
+static unsigned int evnt__accept_limit = 4;
+
 void evnt_logger(Vlg *passed_vlg)
 {
   vlg = passed_vlg;
@@ -973,23 +976,30 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       socklen_t len = sizeof(struct sockaddr_in);
       int fd = 0;
       struct Evnt *tmp = NULL;
+      unsigned int acpt_num = 0;
       
       done = TRUE;
 
       vlg_dbg3(vlg, "accept(%p)\n", scan);
-      fd = accept(evnt_fd(scan), (struct sockaddr *) &sa, &len);
-      if (fd == -1)
-        goto next_accept; /* ignore */
 
-      if (!(tmp = scan->cbs->cb_func_accept(fd, (struct sockaddr *) &sa, len)))
+      /* ignore all accept() errors -- bad_poll_flags fixes here */
+      while ((fd = accept(evnt_fd(scan), (struct sockaddr *) &sa, &len)) != -1)
       {
-        close(fd);
-        goto next_accept;
+        if (!(tmp = scan->cbs->cb_func_accept(fd,
+                                              (struct sockaddr *) &sa, len)))
+        {
+          close(fd);
+          goto next_accept;
+        }
+      
+        ++ready; /* give a read event to this new event */
+        assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
+        assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
+
+        if (++acpt_num >= evnt__accept_limit)
+          break;
       }
       
-      done = FALSE; /* swap the accept() for a read */
-      assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
-      assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
       goto next_accept;
     }
     ASSERT(!done);

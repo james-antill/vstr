@@ -115,8 +115,9 @@ static void serv_cb_func_free(struct Evnt *evnt)
   struct con *con = (struct con *)evnt;
 
   vlg_info(vlg, "FREE from[$<sa:%p>]"
-           " recv[${BKMG.ju:%ju}] send[${BKMG.ju:%ju}]\n", con->ev->sa,
-           con->ev->acct.bytes_r, con->ev->acct.bytes_w);
+           " recv[${BKMG.ju:%ju}:%ju] send[${BKMG.ju:%ju}:%ju]\n", con->ev->sa,
+           con->ev->acct.bytes_r, con->ev->acct.bytes_r,
+           con->ev->acct.bytes_w, con->ev->acct.bytes_w);
 
   free(con);
 }
@@ -230,13 +231,7 @@ static void serv_cmd_line(int argc, char *argv[])
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
-  int become_daemon      = FALSE;
-  const char *pid_file   = NULL;
-  const char *cntl_file  = NULL;
-  const char *chroot_dir = NULL;
-  int drop_privs         = FALSE;
-  uid_t priv_gid         = 60001;
-  uid_t priv_uid         = 60001; /* NFS nobody */
+  OPT_SC_SERV_DECL_OPTS();
   
   program_name = opt_program_name(argv[0], "jechod");
 
@@ -263,13 +258,7 @@ static void serv_cmd_line(int argc, char *argv[])
         
       case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle); break;
         
-      case 1: OPT_TOGGLE_ARG(become_daemon);          break;
-      case 2: chroot_dir = optarg;                    break;
-      case 3: OPT_TOGGLE_ARG(drop_privs);             break;
-      case 4: priv_uid = atoi(optarg);                break;
-      case 5: priv_gid = atoi(optarg);                break;
-      case 6: pid_file = optarg;                      break;
-      case 7: cntl_file  = optarg;                    break;
+        OPT_SC_SERV_OPTS();
         
       default:
         abort();

@@ -202,11 +202,15 @@ make_html(3, "norm",    "$root/foo.example.com/index.html");
 make_html(4, "port",    "$root/foo.example.com:1234/index.html");
 make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
+
+system("$ENV{SRCDIR}/gzip-r.pl $root");
+munge_mtime(0, "$root/index.html.gz");
+munge_mtime(0, "$root/default/index.html.gz");
+munge_mtime(0, "$root/foo.example.com/index.html.gz");
+munge_mtime(0, "$root/foo.example.com:1234/index.html.gz");
+
 chmod(0000, "$root/default/noprivs.html");
 chmod(0600, "$root/default/noallprivs.html");
-
-system("gzip -c -9 $root/default/index.html > $root/default/index.html.gz");
-munge_mtime(0, "$root/default/index.html.gz");
 
 system("mkfifo $root/default/fifo");
 
@@ -219,22 +223,22 @@ utime $atime, $mtime, "$root/default/bin";
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-daemon_init("ex_httpd", $root, "--mmap=false --sendfile=false");
+daemon_init("ex_httpd", $root, "--virtual-hosts=true  --mmap=false --sendfile=false");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=false");
+daemon_init("ex_httpd", $root, "--virtual-hosts=true  --mmap=true  --sendfile=false");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
+daemon_init("ex_httpd", $root, "--virtual-hosts=true --mmap=true  --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--public-only");
+daemon_init("ex_httpd", $root, "--virtual-hosts=true  --public-only");
 all_public_only_tsts();
 daemon_exit("ex_httpd");
 

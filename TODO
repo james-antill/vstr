@@ -7,6 +7,8 @@ was needed for vstr-1.0.0
  Maybe During 1.0.x
  ------------------
 
+. ____ make vstr_fmt.c faster ____
+
 . vstr_spn_cstr_buf_fwd etc.
 
 . test len=0 on _sc_*()

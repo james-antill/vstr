@@ -29,4 +29,6 @@ fi
 prefix=$1
 num=$2
 
+# Break the symlink, if one exists...
+rm -f ${sex}/tst/ex_${prefix}_out_$num
 cp ${bex}/ex_${prefix}_tmp_$num ${sex}/tst/ex_${prefix}_out_$num
