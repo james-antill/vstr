@@ -34,6 +34,8 @@ Range:      bytes = 2-9
 GET http://X/foo.example.com/index.html HTTP/1.1
 Range: bytes = ,,  ,-8,   ,,
 
+GET http://X/foo.example.com/nxt HTTP/1.1
+
 HEAD http://X/foo.example.com/index.html HTTP/1.1
 Range:      bytes = 2-9
 Connection: close

@@ -88,8 +88,11 @@ extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
 extern int evnt_shutdown_r(struct Evnt *);
-extern int evnt_recv(struct Evnt *, unsigned int *ern);
+extern int evnt_recv(struct Evnt *, unsigned int *);
 extern int evnt_send(struct Evnt *);
+extern int evnt_sendfile(struct Evnt *, int,
+                         VSTR_AUTOCONF_uintmax_t *, VSTR_AUTOCONF_uintmax_t *,
+                         unsigned int *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);
 extern int evnt_poll(void);

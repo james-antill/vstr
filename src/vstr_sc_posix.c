@@ -632,6 +632,22 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
         clen -= vec[scan].iov_len;
       num = UIO_MAXIOV;
     }
+
+    /* Linux just gives EINVAL on size > SSIZE_MAX */
+    if (clen > SSIZE_MAX)
+    {
+      unsigned int scan = num;
+
+      ASSERT(VSTR_MAX_NODE_ALL <= SSIZE_MAX);
+      
+      while (clen > SSIZE_MAX)
+      {
+        ASSERT(scan >= 1);
+        clen -= vec[--scan].iov_len;
+      }
+      
+      num = scan;
+    }
     
     do
     {

@@ -186,9 +186,9 @@
         req->http_error_msg = CONF_MSG_RET_ ## code ;                \
     } while (0)
 
-#define HTTPD_ERR_RET_VAL(req, code, val) do {          \
+#define HTTPD_ERR_RET(req, code, val) do {              \
       HTTPD_ERR(req, code);                             \
-      return (val);                                     \
+      return val ;                                      \
     } while (0)
 
 #define HTTPD_ERR_GOTO(req, code, label) do {           \
@@ -197,30 +197,33 @@
     } while (0)
 
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
-   because all relative links will be relative to foo, not bar
+   because all relative links will be relative to foo, not bar.
+   Also note that location must be "bar/" or "/foo/bar/", as it's relative
+   to the dirname of the request.
 */
-#define HTTP_REQ_CHK_DIR(req, goto_label) do {                          \
-      if (VSUFFIX((req)->fname, 1, (req)->fname->len, "/.."))           \
-      {                                                                 \
-        HTTPD_ERR(req, 403);                                            \
-        goto goto_label ;                                               \
-      }                                                                 \
-      else if (!VSUFFIX((req)->fname, 1, (req)->fname->len, "/"))       \
-      {                                                                 \
-        vstr_del((req)->fname, 1, req->vhost_prefix_len);               \
-        req->vhost_prefix_len = 0;                                      \
+#define HTTP_REQ_CHK_DIR(req, val) do {                                 \
+      Vstr_base *lfn = (req)->fname;                                    \
                                                                         \
-        vstr_conv_encode_uri((req)->fname, 1, (req)->fname->len);       \
-        vstr_add_cstr_buf((req)->fname, (req)->fname->len, "/");        \
+      if (VSUFFIX(lfn, 1, lfn->len, "/.."))                             \
+        HTTPD_ERR_RET(req, 403, val);                                   \
+      else if (!VSUFFIX(lfn, 1, lfn->len, "/"))                         \
+      {                                                                 \
+        size_t last_slash = 0;                                          \
+                                                                        \
+        last_slash = vstr_srch_chr_rev(lfn, 1, lfn->len, '/');          \
+        vstr_del(lfn, 1, last_slash);                                   \
+                                                                        \
+        vstr_conv_encode_uri(lfn, 1, lfn->len);                         \
+        vstr_add_cstr_buf(lfn, lfn->len, "/");                          \
         req->http_error_code = 301;                                     \
         req->http_error_line = CONF_LINE_RET_301;                       \
-        req->http_error_len  = CONF_MSG_LEN_301((req)->fname);          \
+        req->http_error_len  = CONF_MSG_LEN_301(lfn);                   \
         if (!req->head_op)                                              \
           req->redirect_http_error_msg = TRUE;                          \
-        goto goto_label ;                                               \
+        return (val);                                                   \
       }                                                                 \
       else                                                              \
-        vstr_add_cstr_ptr((req)->fname, (req)->fname->len, "index.html"); \
+        vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);           \
     } while (0)
       
 #endif

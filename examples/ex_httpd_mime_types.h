@@ -16,13 +16,14 @@
 /* should be in a file -- so it's configurable, also allow overloads */
 #define HTTP_REQ_MIME_TYPE(s1, var) do {                                \
       if (0) { }                                                        \
- HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar");      \
- HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar.gz");   \
- HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar.bz2");  \
  HTTP__REQ_MT_END(s1, var, "application/x-gzip",          ".gz");       \
+ HTTP__REQ_MT_END(s1, var, "application/x-ns-proxy-autoconfig", ".pac"); \
  HTTP__REQ_MT_END(s1, var, "application/pdf",             ".pdf");      \
  HTTP__REQ_MT_END(s1, var, "application/postscript",      ".ps");       \
  HTTP__REQ_MT_END(s1, var, "application/x-redhat-package-manager", ".rpm"); \
+ HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar");      \
+ HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar.gz");   \
+ HTTP__REQ_MT_END(s1, var, "application/x-tar",           ".tar.bz2");  \
  HTTP__REQ_MT_END(s1, var, "audio/mpeg3",                 ".mp3");      \
  HTTP__REQ_MT_END(s1, var, "audio/ogg",                   ".ogg");      \
  HTTP__REQ_MT_END(s1, var, "audio/wav",                   ".wav");      \

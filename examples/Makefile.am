@@ -148,6 +148,10 @@ ex_zcat_DEPENDENCIES = ex_utils.h
 ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
 ex_zcat_LDADD  = $(GEN_LDLIBS) $(ZLIB_LDLIBS) $(BZ2_LDLIBS)
 
+ex_sock_filter_DEPENDENCIES = ex_utils.h
+ex_sock_filter_CFLAGS = $(GEN_CFLAGS)
+ex_sock_filter_LDADD  = $(GEN_LDLIBS)
+
 ex_perf_sgopenssl_DEPENDENCIES = ex_perf.h
 ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
 ex_perf_sgopenssl_LDADD  = $(GEN_LDLIBS) $(OPENSSL_LDLIBS)
@@ -172,9 +176,11 @@ ex_perf_nodesize_foreach_LDADD  = $(GEN_LDLIBS) $(GLIB20_LDLIBS)
 ex_netstr_DEPENDENCIES = ex_perf.h
 ex_netstr_CFLAGS = $(GEN_CFLAGS)
 ex_netstr_LDADD  = $(GEN_LDLIBS)
+
 ex_perf_nodesize_DEPENDENCIES = ex_perf.h
 ex_perf_nodesize_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_nodesize_LDADD  = $(GEN_LDLIBS)
+
 ex_perf_add_DEPENDENCIES = ex_perf.h
 ex_perf_add_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_add_LDADD  = $(GEN_LDLIBS)
@@ -204,7 +210,7 @@ examples_PROGRAMS += \
   ex_hexdump ex_html_dir_list ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
   ex_phone_names ex_rot13 \
   ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
-  ex_ssi ex_rainbow ex_changelog_diff ex_ccount
+  ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter
 
 if TIMER_Q_AVAIL
 examples_PROGRAMS += ex_slowcat

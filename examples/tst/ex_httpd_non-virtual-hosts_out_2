@@ -117,6 +117,25 @@ Content-Length: 8
 Content-Range: bytes 151-158/159
 
 </html>
+HTTP/1.1 301 Moved Permanently
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 254
+Location: nxt/
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>301 Moved Permanently</title>
+  </head>
+  <body>
+    <h1>301 Moved Permanently</h1>
+    <p>The document has moved <a href="nxt/">here</a>.</p>
+  </body>
+</html>
 HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.7.1 (Vstr)

@@ -1,4 +1,4 @@
-/* This is a _simple_ cat program, no command line options.
+/* This is a _simple_ cat program.
  * Reads from stdin if no args are given.
  *
  * This shows how to use the Vstr library at it's simpelest,
@@ -39,7 +39,7 @@ static void ex_cat_limit(Vstr_base *s1)
   }
 }
 
-/* This is "cat", without any command line options */
+/* This is "cat", using non-blocking IO and Vstr for buffer space */
 int main(int argc, char *argv[])
 {
   Vstr_base *s1 = ex_init(NULL); /* init the library etc. */

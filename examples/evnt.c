@@ -23,6 +23,8 @@
 #include <socket_poll.h>
 #include <timer_q.h>
 
+#include <sys/sendfile.h>
+
 #include "vlg.h"
 #include "vlg_assert.h"
 
@@ -822,6 +824,45 @@ int evnt_send(struct Evnt *evnt)
   
   ASSERT(evnt__valid(evnt));
   
+  return (TRUE);
+}
+
+#ifdef VSTR_AUTOCONF_lseek64
+# define sendfile64 sendfile
+#endif
+
+int evnt_sendfile(struct Evnt *evnt, int ffd,
+                  VSTR_AUTOCONF_uintmax_t *off, VSTR_AUTOCONF_uintmax_t *len,
+                  unsigned int *ern)
+{
+  int fd = -1;
+  ssize_t ret = 0;
+  off64_t tmp_off = *off;
+  size_t tmp_len  = *len;
+  
+  *ern = 0;
+  
+  if (evnt->io_w->len)
+    return (evnt_send(evnt));
+  
+  ASSERT(evnt__valid(evnt));
+
+  if (*len >  SSIZE_MAX)
+    tmp_len = SSIZE_MAX;
+  
+  fd = SOCKET_POLL_INDICATOR(evnt->ind)->fd;
+  if ((ret = sendfile64(fd, ffd, &tmp_off, tmp_len)) == -1)
+  { /* FIXME: */
+    vlg_err(vlg, EXIT_FAILURE, "sendfile: %m\n");
+  }
+
+  *off = tmp_off;
+  
+  evnt->acct.bytes_w += ret;
+  gettimeofday(&evnt->mtime, NULL);
+  
+  *len -= ret;
+
   return (TRUE);
 }
 

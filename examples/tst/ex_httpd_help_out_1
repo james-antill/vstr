@@ -13,6 +13,8 @@
     --virtual-hosts   - Toggle use of Host header.
     --range           - Toggle use of partial responces.
     --range-1.0       - Toggle use of partial responces for 1.0.
+    --public-only     - Toggle use of public only privilages.
+    --dir-filename    - Filename to use when requesting directories.
     --debug -d        - Enable debug info.
     --host -H         - IPv4 address to bind (def: "all").
     --help -h         - Print this message.

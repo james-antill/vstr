@@ -92,7 +92,7 @@ my $args = $root;
 
 rmtree($root);
 mkpath([$root . "/default",
-	$root . "/foo.example.com",
+	$root . "/foo.example.com/nxt",
 	$root . "/foo.example.com:1234"]);
 
 sub make_html
