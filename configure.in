@@ -65,9 +65,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=6
-VSTR_INTERFACE_AGE=6
-VSTR_BINARY_AGE=6
+VSTR_MICRO_VERSION=7
+VSTR_INTERFACE_AGE=7
+VSTR_BINARY_AGE=7
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -267,7 +267,7 @@ AC_CHECK_HEADER(zlib.h, AC_DEFINE(HAVE_ZLIB_H))
 AC_CHECK_HEADER(sys/prctl.h, AC_DEFINE(HAVE_SYS_PRCTL_H))
 
 #  This needs to be improved. -- as we probably want to support the
-# crappy FreeBSD version too (don't argue the interface is sick -- 
+# crappy FreeBSD version too (don't argue the interface is sick --
 # hello TCP_CORK).
 AC_CHECK_HEADER(sys/sendfile.h, AC_DEFINE(HAVE_SENDFILE))
 
@@ -369,35 +369,37 @@ AC_CHECK_FUNCS(asprintf, AC_DEFINE(HAVE_ASPRINTF),)
 
 # Other functions...
 AC_CHECK_FUNCS(mmap64, AC_DEFINE(HAVE_MMAP64),)
+AC_CHECK_FUNCS(open64, AC_DEFINE(HAVE_OPEN64),)
 AC_CHECK_FUNCS(wcsnrtombs, AC_DEFINE(HAVE_WCSNRTOMBS),)
 AC_CHECK_FUNCS(wcrtomb, AC_DEFINE(USE_WIDE_CHAR_T),)
 AC_CHECK_FUNCS(getopt_long, AC_DEFINE(HAVE_GETOPT_LONG),)
 AC_CHECK_FUNCS(sigemptyset, AC_DEFINE(HAVE_SIGEMPTYSET),)
 AC_CHECK_FUNCS(difftime, AC_DEFINE(HAVE_DIFFTIME),)
-AC_CHECK_FUNCS(sigaction, AC_DEFINE(HAVE_SIGACTION), 
+AC_CHECK_FUNCS(sigaction, AC_DEFINE(HAVE_SIGACTION),
                           AC_MSG_ERROR(Need sigaction))
 
 AC_CHECK_FUNCS(inet_ntop, AC_DEFINE(HAVE_INET_NTOP),
-AC_CHECK_LIB(nsl, inet_ntop, 
+AC_CHECK_LIB(nsl, inet_ntop,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_NTOP) ]),
 AC_CHECK_FUNCS(inet_ntoa, AC_DEFINE(HAVE_INET_NTOA),
 AC_CHECK_LIB(nsl, inet_ntoa,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_NTOA) ])))
 
 AC_CHECK_FUNCS(inet_pton, AC_DEFINE(HAVE_INET_PTON),
-AC_CHECK_LIB(nsl, inet_pton, 
+AC_CHECK_LIB(nsl, inet_pton,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_PTON) ]),
 AC_CHECK_FUNCS(inet_aton, AC_DEFINE(HAVE_INET_ATON),
-AC_CHECK_LIB(nsl, inet_aton, 
+AC_CHECK_LIB(nsl, inet_aton,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_ATON) ]),
 AC_CHECK_FUNCS(inet_addr, AC_DEFINE(HAVE_INET_ADDR),
-AC_CHECK_LIB(nsl, inet_addr, 
+AC_CHECK_LIB(nsl, inet_addr,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_ADDR) ]))))
 
 AC_CHECK_FUNCS(pread, AC_DEFINE(HAVE_PREAD),)
 
 # mmap repeated above for autoconf...
 AC_CHECK_FUNCS(mmap64,, AC_DEFINE(mmap64, mmap))
+AC_CHECK_FUNCS(open64,, AC_DEFINE(mmap64, open))
 AC_CHECK_FUNCS(lseek64,,AC_DEFINE(lseek64, lseek))
 AC_CHECK_FUNCS(fstat64,,AC_DEFINE(fstat64, fstat))
 # NOTE: this does the struct ... sick but works.
@@ -925,7 +927,7 @@ int main() {
  time_t abcd = time(NULL);
  time_t abcd2 = abcd + 234;
  struct tm *tm = localtime(&abcd);
- 
+
  tm->tm_sec += 234;
  if (abcd2 != mktime(tm)) exit (1);
 
@@ -1022,7 +1024,7 @@ local_cv_have_struct_cmsghdr=no,
 )])
 AC_MSG_RESULT($local_cv_have_struct_cmsghdr)
 case x$local_cv_have_struct_cmsghdr in
-xyes) AC_DEFINE(HAVE_CMSGHDR_STRUCT) 
+xyes) AC_DEFINE(HAVE_CMSGHDR_STRUCT)
 esac
 
 AC_MSG_CHECKING(for fd passing in cmsghdr)
@@ -1082,7 +1084,7 @@ local_cv_have_cmsghdr_credentials=no,
 )])
 AC_MSG_RESULT($local_cv_have_cmsghdr_credentials)
 case x$local_cv_have_cmsghdr_credentials in
-xyes) AC_DEFINE(HAVE_CMSGHDR_CREDENTIALS) 
+xyes) AC_DEFINE(HAVE_CMSGHDR_CREDENTIALS)
 esac
 
 AC_MSG_CHECKING(for credentials passing in setsockopt)
@@ -1258,7 +1260,7 @@ CFLAGS="-Werror $CFLAGS"
 
 
 case x$local_cv_have_tst_noattr_alias in
- xfalse) 
+ xfalse)
 AC_MSG_CHECKING(if alias is a valid attribute)
 AC_CACHE_VAL(local_cv_has_attrib_alias,[
 AC_TRY_RUN([
@@ -1266,7 +1268,7 @@ AC_TRY_RUN([
 #include <stdio.h>
 
 int abcd(void) { return (0); }
-extern int func(void) __attribute__((alias("abcd"))) ; 
+extern int func(void) __attribute__((alias("abcd"))) ;
 
 int main() {
  return func();
@@ -1288,7 +1290,7 @@ AC_TRY_RUN([
 #include <stdio.h>
 
 int abcd(void) { return (0); }
-extern int func(void) __attribute__((deprecated)) ; 
+extern int func(void) __attribute__((deprecated)) ;
 
 int main() {
  return abcd();
@@ -1308,7 +1310,7 @@ AC_TRY_RUN([
 #include <stdio.h>
 
 int abcd(void *p) { return (!p); }
-void *func(void) __attribute__((malloc)) ; 
+void *func(void) __attribute__((malloc)) ;
 void *func(void) { return (malloc(4)); }
 
 int main() {
@@ -1328,7 +1330,7 @@ AC_TRY_RUN([
 #include <stdlib.h>
 #include <stdio.h>
 
-int func(char *) __attribute__((nonnull)) ; 
+int func(char *) __attribute__((nonnull)) ;
 int func(char *abcd) { return (!abcd); }
 
 int main() {
@@ -1392,7 +1394,7 @@ AC_TRY_RUN([
 #include <stdlib.h>
 #include <stdio.h>
 
-int func(void) __attribute__((visibility("hidden"))) ; 
+int func(void) __attribute__((visibility("hidden"))) ;
 int func(void) { return (0); }
 
 int main() {
@@ -1435,7 +1437,7 @@ esac
 
 TWOCAN_CONF_MSG(Output Substitution)
 
-AC_OUTPUT([Makefile 
+AC_OUTPUT([Makefile
            vstr.pc
            src/Makefile
            include/Makefile

@@ -9,7 +9,7 @@ int tst(void)
 #ifdef  USE_RESTRICTED_HEADERS
   return (EXIT_FAILED_OK);
 #endif
-  
+
   errno = ERANGE;
   sprintf(buf, "%s", strerror(errno));
   errno = ERANGE;

@@ -1,20 +1,20 @@
 /*
  *  Copyright (C) 2002  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
 */
 /* This code does the %F, %f, %G, %g, %A, %a, %E, %e from *printf by always
@@ -30,7 +30,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   unsigned int precision = 0;
   unsigned int have_g_or_G = FALSE;
   unsigned int have_dot = FALSE;
-  
+
   switch (spec->fmt_code)
   {
     case 'a':
@@ -38,7 +38,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       if (!(spec->flags & PREC_USR))
         precision = 0;
       break;
-      
+
     case 'g':
     case 'G':
       have_g_or_G = TRUE;
@@ -53,16 +53,16 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     default:
       assert(FALSE);
   }
-  
+
   if (spec->flags & PREC_USR)
     precision = spec->precision;
- 
+
  if (spec->field_width_usr)
    field_width = spec->field_width;
- 
+
   if (spec->flags & LEFT)
     spec->flags &= ~ZEROPAD;
-  
+
   if (spec->flags & SIGN)
   {
     if (spec->flags & NUM_IS_NEGATIVE)
@@ -77,10 +77,10 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
         else
           ++field_width;
     }
-    
+
     if (field_width) --field_width;
   }
-  
+
   if (field_width) --field_width; /* size of number */
 
   if (field_width > precision)
@@ -118,7 +118,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       ( have_g_or_G && (spec->flags & SPECIAL)))
       /* ( have_g_or_G && (spec->flags & SPECIAL) && precision)) */
     have_dot = TRUE;
-  
+
   if (have_dot)
     if (field_width) --field_width; /* "." */
 
@@ -134,7 +134,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       if (field_width) --field_width;
       if (field_width) --field_width;
       break;
-      
+
     case 'f':
     case 'F':
     case 'g':
@@ -144,7 +144,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     default:
       assert(FALSE);
   }
-  
+
   if (!(spec->flags & (ZEROPAD | LEFT)))
     if (field_width > 0)
     { /* right justify number, with spaces -- zeros done after sign/spacials */
@@ -152,18 +152,18 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
         goto failed_alloc;
       field_width = 0;
     }
-  
+
   if (sign)
     if (!VSTR__FMT_ADD(base, &sign, 1))
       goto failed_alloc;
-  
+
   if (spec->fmt_code == 'a')
     if (!VSTR__FMT_ADD(base, "0x", 2))
       goto failed_alloc;
   if (spec->fmt_code == 'A')
     if (!VSTR__FMT_ADD(base, "0X", 2))
       goto failed_alloc;
-  
+
   if (!(spec->flags & LEFT))
     if (field_width > 0)
     {
@@ -172,7 +172,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
         goto failed_alloc;
       field_width = 0;
     }
-  
+
   if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1)) /* number */
     goto failed_alloc;
 
@@ -191,10 +191,10 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     default:
       break;
   }
-    
+
   if (precision && !VSTR__FMT_ADD_REP_CHR(base, '0', precision))
     goto failed_alloc;
-      
+
   switch (spec->fmt_code)
   {
     case 'e':
@@ -208,13 +208,13 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       if (!VSTR__FMT_ADD_REP_CHR(base, '0', 2))
         goto failed_alloc;
       break;
-      
+
     case 'G':
     case 'g': /* always using 0.0, so %f is always smaller for %g */
     case 'F':
     case 'f':
         break;
-        
+
     case 'A':
       big = TRUE;
     case 'a':
@@ -227,7 +227,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1))
         goto failed_alloc;
       break;
-      
+
     default:
       assert(FALSE);
   }
@@ -238,7 +238,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     if (!VSTR__FMT_ADD_REP_CHR(base, ' ', field_width))
       goto failed_alloc;
     field_width = 0;
-  }  
+  }
 
   return (TRUE);
 

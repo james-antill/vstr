@@ -15,7 +15,7 @@ int tst(void)
   unsigned int err = 0;
   int mfail_count = 0;
   int pfds[2];
-  
+
 #ifndef HAVE_POSIX_HOST
   return (EXIT_FAILED_OK);
 #endif
@@ -23,7 +23,7 @@ int tst(void)
   while (s1->len < tlen)
   {
     size_t left = tlen - s1->len;
-    TST_B_TST(ret, 1, 
+    TST_B_TST(ret, 1,
               !vstr_sc_read_len_file(s1, s1->len, __FILE__,
                                      s1->len, left, NULL));
     if (ret) break;
@@ -32,10 +32,10 @@ int tst(void)
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "/* TEST: abcd */\n"));
 
   vstr_del(s1, 1, s1->len);
-  
+
   while (s1->len < tlen)
   {
-    TST_B_TST(ret, 3, 
+    TST_B_TST(ret, 3,
               !vstr_sc_read_iov_file(s1, s1->len, __FILE__,
                                      s1->len, 2, 4, NULL));
     if (ret) break;
@@ -43,7 +43,7 @@ int tst(void)
 
   if (s1->len > tlen)
     vstr_del(s1, tlen + 1, s1->len - tlen);
-  
+
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "/* TEST: abcd */\n"));
 
   /* again with s3 ... Ie. small _buf nodes */
@@ -59,10 +59,10 @@ int tst(void)
   TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "/* TEST: abcd */\n"));
 
   vstr_del(s3, 1, s3->len);
-  
+
   while (s3->len < tlen)
   {
-    TST_B_TST(ret, 7, 
+    TST_B_TST(ret, 7,
               !vstr_sc_read_iov_file(s3, s3->len, __FILE__,
                                      s3->len, 2, 4, NULL));
     if (ret) break;
@@ -70,13 +70,13 @@ int tst(void)
 
   if (s3->len > tlen)
     vstr_del(s3, tlen + 1, s3->len - tlen);
-  
+
   TST_B_TST(ret, 8, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "/* TEST: abcd */\n"));
-  
+
   /* again with s4 ... Ie. no iovs */
   while (s4->len < tlen)
   {
-    TST_B_TST(ret, 9, 
+    TST_B_TST(ret, 9,
               !vstr_sc_read_len_file(s4, s4->len, __FILE__,
                                      s4->len, 0, NULL));
     if (ret) break;
@@ -85,15 +85,15 @@ int tst(void)
   TST_B_TST(ret, 10, !VSTR_CMP_CSTR_EQ(s4, 1, tlen, "/* TEST: abcd */\n"));
 
   vstr_del(s4, 1, s4->len);
-  
+
   while (s4->len < tlen)
   {
-    TST_B_TST(ret, 11, 
+    TST_B_TST(ret, 11,
               !vstr_sc_read_iov_file(s4, s4->len, __FILE__,
                                      s4->len, 2, 4, &err));
     TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FD_ERR_NONE));
     TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FILE_ERR_NONE));
-    
+
     if (ret) break;
   }
 
@@ -181,8 +181,8 @@ int tst(void)
   tst_mfail_num(0);
 
   ASSERT(VSTR_TYPE_SC_READ_FILE_ERR_MEM == VSTR_TYPE_SC_READ_FD_ERR_MEM);
-  
-  
+
+
   if (pipe(pfds) == -1)
     return (EXIT_FAILURE);
 
@@ -191,17 +191,17 @@ int tst(void)
   TST_B_TST(ret, 25, !vstr_sc_read_len_fd(s1, s1->len, pfds[0], 1, NULL));
 
   TST_B_TST(ret, 27, !VSTR_CMP_CSTR_EQ(s1, s1->len, 1, "a"));
-  
+
   TST_B_TST(ret, 25, !vstr_sc_read_len_fd(s1, s1->len, pfds[0], 32, NULL));
 
   TST_B_TST(ret, 27, !VSTR_CMP_CSTR_EQ(s1, s1->len - 1, 2, "ab"));
-  
+
   if (write(pfds[1], "Z", 1) != 1)
     return (EXIT_FAILURE);
   TST_B_TST(ret, 26, !vstr_sc_read_iov_fd(s1, s1->len, pfds[0], 1, 2, NULL));
 
   TST_B_TST(ret, 27, !VSTR_CMP_CSTR_EQ(s1, s1->len - 2, 3, "abZ"));
-  
+
 #ifdef __linux__
   /* hangs on FreeBSD ... */
   TST_B_TST(ret, 28, vstr_sc_read_len_file(s1, s1->len, "/dev/stdin",

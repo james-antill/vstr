@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 SUBDIRS = src include Documentation tst
 
-pkgconfigdir := $(libdir)/pkgconfig
+pkgconfigdir   = $(libdir)/pkgconfig
 pkgconfig_DATA = vstr.pc
 
 $(pkgconfig_DATA): config.status

@@ -13,7 +13,7 @@ else
   exit 1;
 fi
 
-# BEG: 
+# BEG:
 
 if [ "x$CC" = "x" ]; then
  CC=gcc

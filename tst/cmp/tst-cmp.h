@@ -29,7 +29,7 @@
      (TEST_CMP_CSTR_FUNC (x_str, 41, x_str->len - 40, y)              != 0) || \
      FALSE)); \
  TEST_CMP_END()
-                                
+
 #define TEST_CMP_GT_0(x, y) \
  TEST_CMP_BEG(x, y); \
  ++count; \

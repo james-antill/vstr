@@ -1,0 +1,388 @@
+Name: GDM
+RH-ref: RHSA-2003:258-01
+Type: Privilage escalation (read files)
+
+Name: KDE
+RH-ref: RHSA-2003:235-01
+Type: IL
+
+Name: ddskk
+RH-ref: RHSA-2003:241-01
+Type: TF
+
+Name: up2date
+RH-ref: RHSA-2003:255-01
+Type: IV
+
+Name: postfix
+RH-ref: RHSA-2003:251-01
+Type: IV
+
+Name: unzip
+RH-ref: RHSA-2003:199-01
+Type: IV
+
+Name: Xterm
+RH-ref: RHSA-2003:067-02
+Type: IV
+
+Name: php
+RH-ref: RHSA-2003:204-01
+Type: XSS
+
+Name: ethereal
+RH-ref: RHSA-2003:203-01
+Type: BO
+Type: IO
+Type: OBO
+
+Name: nfs-utils
+RH-ref: RHSA-2003:206-01
+Type: BO
+
+Name: mozilla
+RH-ref: RHSA-2003:162-01
+Type: BO
+
+Name: Xpdf
+RH-ref: RHSA-2003:196-02
+Type: IV
+Type: XSS
+
+Name: kernel
+RH-ref: RHSA-2003:238-01
+Type: IL
+Type: Privilage escalation (read files)
+Type: Privilage escalation (UDP port binding)
+Type: IV
+
+Name: semi
+RH-ref: RHSA-2003:234-01
+Type: IV
+
+Name: stunnel
+RH-ref: RHSA-2003:221-01
+Type: Signal handling code DOS
+
+Name: OpenSSH
+RH-ref: RHSA-2003:222-01
+Type: IL
+
+Name: wu-ftpd
+RH-ref: RHSA-2003:245-01
+Type: OBO
+
+Name: kernel
+RH-ref: RHSA-2003:187-01
+Type: Crash
+
+Name: kon2
+RH-ref: RHSA-2003:047-01
+Type: BO
+
+Name: KDE
+RH-ref: RHSA-2003:192-01
+Type: Man in the middle
+
+Name: hanterm
+RH-ref: RHSA-2003:070-01
+Type: IV
+
+Name: ypserv
+RH-ref: RHSA-2003:173-01
+Type: Blocking write DOS
+
+Name: man
+RH-ref: RHSA-2003:133-01
+Type: IV
+
+Name: mod_auth_any
+RH-ref: RHSA-2003:113-01
+Type: IE
+
+Name: KDE
+RH-ref: RHSA-2003:002-01
+Type: IE
+Type: IV
+
+Name: xinetd
+RH-ref: RHSA-2003:160-01
+Type: Memory leak DOS
+
+Name: kernel
+RH-ref: RHSA-2003:172-00
+Type: CPU DOS
+Type: Privilage escalation (I/O ports)
+
+Name: tcpdump
+RH-ref: RHSA-2003:174-01
+Type: Privilage escalation (failure to drop privilages)
+
+Name: lv
+RH-ref: RHSA-2003:169-01
+Type: Privilage escalation (Run commands as other users)
+
+Name: gnupg
+RH-ref: RHSA-2003:175-01
+Type: IV
+
+Name: CUPS
+RH-ref: RHSA-2003:171-01
+Type: Blocking read DOS
+
+Name: apache httpd
+RH-ref: RHSA-2003:186-01
+Type: VSTRFU
+
+Name: ghostscript
+RH-ref: RHSA-2003:181-01
+Type: IV
+
+Name: OpenSSL
+RH-ref: RHSA-2003:101-01
+Type: IL
+
+Name: vsftpd
+RH-ref: RHSA-2003:084-01
+Type: Broken Red Hat packaging disabled hosts.allow/hosts.deny
+
+Name: kerberos
+RH-ref: RHSA-2003:091-01
+Type: Privilage escalation (leverage auth. in one relm to gain auth. in another)
+Type: IO
+
+Name: eog
+RH-ref: RHSA-2003:128-01
+Type: BO
+
+Name: NetPBM
+RH-ref: RHSA-2003:060-01
+Type: BO
+Type: IO
+
+Name: mutt
+RH-ref: RHSA-2003:109-03
+Type: BO
+
+Name: balsa
+RH-ref: RHSA-2003:109-03
+Type: BO
+
+Name: samba
+RH-ref: RHSA-2003:137-01
+Type: BO
+
+Name: mgetty
+RH-ref: RHSA-2003:036-01
+Type: BO
+
+Name: kernel
+RH-ref: RHSA-2003:135-00
+Type: Privilage escalation
+
+Name: apache httpd
+RH-ref: RHSA-2003:139-01
+Type: Memory leak DOS
+Type: IV
+Type: IE
+
+Name: tcpdump
+RH-ref: RHSA-2003:032-01
+Type: BO
+Type: IV
+
+Name: ethereal
+RH-ref: RHSA-2003:076-01
+Type: BO
+
+Name: squirrelmail
+RH-ref: RHSA-2003:112-01
+Type: XSS
+
+Name: LPRng
+RH-ref: RHSA-2003:142-01
+Type: TF
+
+Name: mICQ
+RH-ref: RHSA-2003:118-01
+Type: VSTRIV
+
+Name: zlib
+RH-ref: RHSA-2003:079-01
+Type: BO
+
+Name: MySQL
+RH-ref: RHSA-2003:093-01
+Type: DF
+Type: IV
+
+Name: sendmail
+RH-ref: RHSA-2003:073-06
+Type: BO
+
+Name: squirrelmail
+RH-ref: RHSA-2003:042-07
+Type: XSS
+
+Name: im
+RH-ref: RHSA-2003:039-06
+Type: TF
+
+Name: OpenSSL
+RH-ref: RHSA-2003:062-11
+Type: IL
+
+Name: file
+RH-ref: RHSA-2003:086-07
+Type: BO
+
+Name: Gnome-lokkit
+RH-ref: RHSA-2003:072-00
+Type: Doesn't do anything for FORWARD rule packets
+
+Name: rxvt
+RH-ref: RHSA-2003:054-00
+Type: IV
+
+Name: kernel
+RH-ref: RHSA-2003:098-00
+Type: Privilage escalation
+
+Name: samba
+RH-ref: RHSA-2003:095-01
+Type: BO
+
+Name: glibc (sun rpc code)
+RH-ref: RHSA-2003:089-00
+Type: IO
+
+Name: kernel
+RH-ref: RHSA-2003:088-01
+Type: IL
+
+Name: evolution
+RH-ref: RHSA-2003:108-01
+Type: VSTRIV
+
+Name: kerberos
+RH-ref: RHSA-2003:051-01
+Type: IO
+Type: VSTRIV
+Type: IV
+Type: Vulnerabilities in the support for triple-DES keys
+Type: Privilage escalation (leverage auth. in one relm to gain auth. in another)
+Type: IO
+
+Name: sendmail
+RH-ref: RHSA-2003:120-01
+Type: BO
+
+Name: dhcp
+RH-ref: RHSA-2003:034-01
+Type: IV
+
+Name: php
+RH-ref: RHSA-2003:017-06
+Type: BO
+
+Name: openldap
+RH-ref: RHSA-2003:040-07
+Type: BO
+Type: BO
+
+Name: WindowMaker
+RH-ref: RHSA-2003:251-01
+Type: BO
+
+Name: Xpdf
+RH-ref: RHSA-2003:037-09
+Type: IO
+
+Name: w3m
+RH-ref: RHSA-2003:044-20
+Type: XSS
+
+Name: kernel-utils
+RH-ref: RHSA-2003:056-08
+Type: Broken Red Hat packaging unsafe program was setuid
+
+Name: lynx
+RH-ref: RHSA-2003:029-06
+Type: IV
+
+Name: pam_xauth
+RH-ref: RHSA-2003:035-10
+Type: IL
+
+Name: fileutils
+RH-ref: RHSA-2003:015-05
+Type: Privilage escalation (delete other users files)
+
+Name: shadow-utils
+RH-ref: RHSA-2003:057-06
+Type: Privilage escalation (read/write other users incomming mailbox)
+
+Name: VNC
+RH-ref: RHSA-2003:041-12
+Type: Replay authorization
+
+Name: vte
+RH-ref: RHSA-2003:053-10
+Type: IV
+
+Name: pine
+RH-ref: RHSA-2002:270-16
+Type: BO
+
+Name: cyrus-sasl
+RH-ref: RHSA-2002:283-09
+Type: BO
+
+Name: libpng
+RH-ref: RHSA-2003:006-06
+Type: BO
+
+Name: CUPS
+RH-ref: RHSA-2002:295-07
+Type: BO
+Type: IO
+Type: TF
+Type: IV
+Type: XSS
+Type: DOS attack recovery
+
+Name: postgresql
+RH-ref: RHSA-2003:010-10
+Type: BO
+
+Name: postgresql
+RH-ref: RHSA-2003:001-16
+Type: Privilage Escalation (delete transaction log files)
+Type: BO
+
+Name: MySQL
+RH-ref: RHSA-2002:288-22
+Type: IO
+Type: IV
+Type: BO
+
+Name: dhcp
+RH-ref: RHSA-2003:011-07
+Type: BO
+
+Name: vim
+RH-ref: RHSA-2002:297-17
+Type: IV
+
+Name: cvs
+RH-ref: RHSA-2003:012-07
+Type: Privilage Escalation (write to any files)
+
+Name: python
+RH-ref: RHSA-2002:202-25
+Type: TF
+
+Name: kerberos
+RH-ref: RHSA-2003:020-10
+Type: IV
+

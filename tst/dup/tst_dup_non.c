@@ -10,7 +10,7 @@ int tst(void)
   TST_B_TST(ret, 1, !VSTR_CMP_BUF_EQ(t1, 1, t1->len, NULL, 128));
 
   vstr_free_base(t1);
-  
+
   if (MFAIL_NUM_OK)
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_NON, 1000);
@@ -25,6 +25,6 @@ int tst(void)
     TST_B_TST(ret, 11, !tst_mfail_num(2));
     TST_B_TST(ret, 12, vstr_dup_non(NULL, 4));
   }
-  
+
   return (TST_B_RET(ret));
 }

@@ -20,7 +20,7 @@ int tst(void)
   TST_B_TST(ret,  3, !VSTR_CMP_CSTR_EQ(t1,  1, t1->len, cb2));
 
   vstr_free_base(t1);
-  
+
 
 
   t1 = vstr_dup_rep_chr(s2->conf, 'a', 8);
@@ -34,7 +34,7 @@ int tst(void)
   TST_B_TST(ret,  6, !VSTR_CMP_CSTR_EQ(t1,  1, t1->len, cb2));
 
   vstr_free_base(t1);
-  
+
 
 
   t1 = vstr_dup_rep_chr(s3->conf, 'a', 8);
@@ -48,7 +48,7 @@ int tst(void)
   TST_B_TST(ret,  9, !VSTR_CMP_CSTR_EQ(t1,  1, t1->len, cb2));
 
   vstr_free_base(t1);
-  
+
 
 
   t1 = vstr_dup_rep_chr(s4->conf, 'a', 8);
@@ -61,13 +61,13 @@ int tst(void)
 
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(t1,  1, t1->len, cb2));
 
-  vstr_free_base(t1);  
-  
+  vstr_free_base(t1);
+
   if (MFAIL_NUM_OK)
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
     vstr_free_spare_nodes(NULL,     VSTR_TYPE_NODE_BUF, 1000);
-    
+
     TST_B_TST(ret, 13, !tst_mfail_num(1));
     TST_B_TST(ret, 14, vstr_dup_rep_chr(s3->conf, '!', 32));
     TST_B_TST(ret, 15, !tst_mfail_num(2));
@@ -82,6 +82,6 @@ int tst(void)
   TST_B_TST(ret, 21, !t1);
   TST_B_TST(ret, 22,  t1->len);
   vstr_free_base(t1);
-  
+
   return (TST_B_RET(ret));
 }

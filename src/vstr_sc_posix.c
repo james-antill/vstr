@@ -1,21 +1,21 @@
 #define VSTR_SC_POSIX_C
 /*
  *  Copyright (C) 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions which are shortcuts */
@@ -35,9 +35,9 @@
 static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
 {
   Vstr__sc_mmap_ref *mmap_ref = (Vstr__sc_mmap_ref *)passed_ref;
-  
+
   munmap(mmap_ref->ref.ptr, mmap_ref->mmap_len); /* this _can't_ be -1 */
-  
+
   VSTR__F(mmap_ref);
 
   ASSERT(vstr__options.mmap_count-- > 0);
@@ -57,10 +57,10 @@ static int vstr__sc_get_size(size_t base_len,
   struct stat64 stat_buf;
 
   ASSERT(len && err);
-  
+
   if (*len)
     return (TRUE);
-  
+
   if (fstat64(fd, &stat_buf) == -1)
   {
     *err = err_fstat;
@@ -104,7 +104,7 @@ int vstr_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
 
   assert(off >= 0); /* off is offset from the start of the file,
                      * not as in seek */
-  
+
   if (!err)
     err = &dummy_err;
   *err = 0;
@@ -132,7 +132,7 @@ int vstr_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
     goto add_ref_failed;
 
   assert(++vstr__options.mmap_count);
-  
+
   return (TRUE);
 
  add_ref_failed:
@@ -142,7 +142,7 @@ int vstr_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
   *err = VSTR_TYPE_SC_MMAP_FILE_ERR_MEM;
   errno = ENOMEM;
   base->conf->malloc_bad = TRUE;
-  
+
   return (FALSE);
 }
 #endif
@@ -157,17 +157,17 @@ int vstr_sc_mmap_file(Vstr_base *base __attribute__((unused)),
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
 #else
 int vstr_sc_mmap_file(Vstr_base *base, size_t pos, const char *filename,
-                      VSTR_AUTOCONF_off64_t off, size_t len, 
+                      VSTR_AUTOCONF_off64_t off, size_t len,
                       unsigned int *err)
 {
-  int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
+  int fd = open64(filename, O_RDONLY | O_NOCTTY);
   unsigned int dummy_err;
   int ret = 0;
   int saved_errno = 0;
-  
+
   if (!err)
     err = &dummy_err;
-  
+
   if (fd == -1)
   {
     *err = VSTR_TYPE_SC_MMAP_FILE_ERR_OPEN_ERRNO;
@@ -178,13 +178,13 @@ int vstr_sc_mmap_file(Vstr_base *base, size_t pos, const char *filename,
 
   if (*err)
     saved_errno = errno;
-  
+
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO;
 
   if (saved_errno)
     errno = saved_errno;
-  
+
   return (ret);
 }
 #endif
@@ -196,23 +196,23 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
   ssize_t bytes = -1;
   unsigned int num = 0;
   Vstr_ref *ref = NULL;
-  
+
   if (pos && !vstr__add_setup_pos(base, &pos, &num, NULL))
     goto mem_fail;
   pos = orig_pos;
-  
+
   if (!(ref = vstr_ref_make_malloc(len)))
     goto mem_fail;
-  
+
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
                       1, UINT_MAX))
     goto mem_ref_fail;
-    
+
   do
   {
     bytes = read(fd, ref->ptr, len);
   } while ((bytes == -1) && (errno == EINTR));
-  
+
   if (bytes == -1)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
@@ -224,11 +224,11 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
     errno = ENOSPC;
     goto mem_ref_fail;
   }
-    
+
   vstr_add_ref(base, pos, ref, 0, bytes); /* must work */
 
   vstr_ref_del(ref);
-  
+
   return (TRUE);
 
  mem_ref_fail:
@@ -248,15 +248,15 @@ static int vstr__sc_read_fast_iov_fd(Vstr_base *base, size_t pos, int fd,
                                      unsigned int *err)
 {
   ssize_t bytes = -1;
-  
+
   if (num > UIO_MAXIOV)
     num = UIO_MAXIOV;
-  
+
   do
   {
     bytes = readv(fd, iovs, num);
   } while ((bytes == -1) && (errno == EINTR));
-  
+
   if (bytes == -1)
   {
     vstr_add_iovec_buf_end(base, pos, 0);
@@ -265,7 +265,7 @@ static int vstr__sc_read_fast_iov_fd(Vstr_base *base, size_t pos, int fd,
   }
 
   vstr_add_iovec_buf_end(base, pos, (size_t)bytes);
-  
+
   if (!bytes)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_EOF;
@@ -292,11 +292,11 @@ int vstr_sc_read_iov_fd(Vstr_base *base, size_t pos, int fd,
 
   if (!min)
     return (TRUE);
-  
+
   if (!base->cache_available)
     return (vstr__sc_read_slow_len_fd(base, pos, fd,
                                       min * base->conf->buf_sz, err));
-  
+
   /* use iovec internal add -- much quicker, one syscall no double copy  */
   if (!vstr_add_iovec_buf_beg(base, pos, min, max, &iovs, &num))
   {
@@ -332,10 +332,10 @@ static int vstr__sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
     errno = ENOMEM;
     return (FALSE);
   }
-  
+
   /* fixup iovs for exact size of len, if bigger */
   assert(num && ((num == 1) || (iovs[num - 1].iov_len == base->conf->buf_sz)));
-  
+
   assert(IOV_SZ(iovs, num) >= len);
   while (IOV_SZ(iovs, num) >  len)
   {
@@ -347,7 +347,7 @@ static int vstr__sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
       --num;
       continue;
     }
-    
+
     iovs[num - 1].iov_len  -= tmp;
     assert(IOV_SZ(iovs, num) == len);
   }
@@ -362,7 +362,7 @@ int vstr_sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
 {
   unsigned int dummy_err;
   const size_t off = 0;
-  
+
   if (!err)
     err = &dummy_err;
   *err = 0;
@@ -380,11 +380,11 @@ int vstr_sc_read_iov_file(Vstr_base *base, size_t pos,
                           unsigned int min, unsigned int max,
                           unsigned int *err)
 {
-  int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
+  int fd = open64(filename, O_RDONLY | O_NOCTTY);
   unsigned int dummy_err;
   int ret = 0;
   int saved_errno = 0;
-  
+
   if (!err)
     err = &dummy_err;
 
@@ -393,22 +393,22 @@ int vstr_sc_read_iov_file(Vstr_base *base, size_t pos,
     *err = VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO;
     return (FALSE);
   }
-  
+
   if (off)
   {
     if (lseek64(fd, off, SEEK_SET) == -1)
     {
-      *err = VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO;      
+      *err = VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO;
       goto failed;
     }
   }
 
   ret = vstr_sc_read_iov_fd(base, pos, fd, min, max, err);
-    
+
  failed:
   if (*err)
     saved_errno = errno;
-  
+
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_READ_FILE_ERR_CLOSE_ERRNO;
 
@@ -423,11 +423,11 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
                           VSTR_AUTOCONF_off64_t off, size_t len,
                           unsigned int *err)
 {
-  int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
+  int fd = open64(filename, O_RDONLY | O_NOCTTY);
   unsigned int dummy_err;
   int ret = 0;
   int saved_errno = 0;
-  
+
   if (!err)
     err = &dummy_err;
 
@@ -441,22 +441,22 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
                          VSTR_TYPE_SC_READ_FILE_ERR_FSTAT_ERRNO,
                          VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE))
     return (FALSE);
-  
+
   if (off)
   {
     if (lseek64(fd, off, SEEK_SET) == -1)
     {
-      *err = VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO;      
+      *err = VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO;
       goto failed;
     }
   }
 
   ret = vstr__sc_read_len_fd(base, pos, fd, len, err);
-    
+
  failed:
   if (*err)
     saved_errno = errno;
-  
+
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_READ_FILE_ERR_CLOSE_ERRNO;
 
@@ -478,7 +478,7 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
   assert(len || (pos == 1));
   if (!len)
     return (TRUE);
-  
+
   while (len)
   {
     struct iovec cpy_vec[32];
@@ -494,7 +494,7 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
       bytes = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
       assert(bytes);
     }
-    
+
     if (!len)
     {
       *err = VSTR_TYPE_SC_WRITE_FD_ERR_MEM;
@@ -505,20 +505,20 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
 
     if (num > UIO_MAXIOV)
       num = UIO_MAXIOV;
-    
+
     do
     {
       bytes = writev(fd, vec, num);
     } while ((bytes == -1) && (errno == EINTR));
-    
+
     if (bytes == -1)
     {
       *err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO;
       return (FALSE);
     }
-    
+
     assert((size_t)bytes <= len);
-    
+
     vstr_del(base, pos, (size_t)bytes);
     len -= (size_t)bytes;
   }
@@ -535,14 +535,14 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
   unsigned int dummy_err;
   int ret = 0;
   int saved_errno = 0;
-  
+
   if (!err)
     err = &dummy_err;
 
   if (!open_flags) /* O_RDONLY isn't valid, for obvious reasons */
     open_flags = (O_CREAT | O_EXCL);
-  
-  fd = open(filename, open_flags, mode);
+
+  fd = open64(filename, open_flags, mode);
   if (fd == -1)
   {
     *err = VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO;
@@ -553,17 +553,17 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
   {
     if (lseek64(fd, off, SEEK_SET) == -1)
     {
-      *err = VSTR_TYPE_SC_WRITE_FILE_ERR_SEEK_ERRNO;      
+      *err = VSTR_TYPE_SC_WRITE_FILE_ERR_SEEK_ERRNO;
       goto failed;
     }
   }
-  
+
   ret = vstr_sc_write_fd(base, pos, len, fd, err);
 
  failed:
   if (*err)
     saved_errno = errno;
-  
+
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO;
 
@@ -583,19 +583,19 @@ static int vstr__sc_fmt_add_cb_ipv4_ptr(Vstr_base *base, size_t pos,
 
   assert(ipv4);
   assert(sizeof(buf) >= INET_ADDRSTRLEN);
-  
+
   ptr = inet_ntop(AF_INET, ipv4, buf, sizeof(buf));
   if (!ptr) ptr = "0.0.0.0";
 
   obj_len = strlen(ptr);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
 
   if (!vstr_add_buf(base, pos, ptr, obj_len))
-    return (FALSE);  
-  
+    return (FALSE);
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, obj_len))
     return (FALSE);
 
@@ -612,19 +612,19 @@ static int vstr__sc_fmt_add_cb_ipv6_ptr(Vstr_base *base, size_t pos,
 
   assert(ipv6);
   assert(sizeof(buf) >= INET6_ADDRSTRLEN);
-  
+
   ptr = inet_ntop(AF_INET6, ipv6, buf, sizeof(buf));
   if (!ptr) ptr = "::";
 
   obj_len = strlen(ptr);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
 
   if (!vstr_add_buf(base, pos, ptr, obj_len))
-    return (FALSE);  
-  
+    return (FALSE);
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, obj_len))
     return (FALSE);
 

@@ -16,7 +16,7 @@ static const char *rf = __FILE__;
 static void tst_del(Vstr_base *t1, size_t len)
 {
   assert(len);
-  
+
   while (--len)
     vstr_del(t1, 2, 1);
   vstr_del(t1, 1, 1);
@@ -25,11 +25,11 @@ static void tst_del(Vstr_base *t1, size_t len)
 int tst(void)
 {
   size_t len = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   len = strlen(buf);
-  
+
   ADD(s1);
   ADD(s2);
   ADD(s3);

@@ -45,7 +45,7 @@ static int ex_zcat_open(Vstr_base *s2)
 {
   int not_enough = FALSE;
   int f_type = EX_ZCAT_TYPE_NONE;
-  
+
   if (ex_zcat_data_open) /* allow open to be called many times */
     return (TRUE);
 
@@ -55,7 +55,7 @@ static int ex_zcat_open(Vstr_base *s2)
     if (vstr_cmp_buf_eq(s2, 1, sizeof(buf), buf, sizeof(buf)))
       f_type = EX_ZCAT_TYPE_GZIP;
   }
-  
+
   if (s2->len < 4) not_enough = TRUE; else
   {
     unsigned char buf[4] = {0x42, 0x5A, 0x68, 0x39};
@@ -64,7 +64,7 @@ static int ex_zcat_open(Vstr_base *s2)
   }
 
   memset(&ex_zcat_lib_decomp_data, 0, sizeof(ex_zcat_lib_decomp_data));
-  
+
   switch (f_type)
   {
     case EX_ZCAT_TYPE_NONE:
@@ -72,21 +72,21 @@ static int ex_zcat_open(Vstr_base *s2)
         return (FALSE);
       f_type = EX_ZCAT_TYPE_NONE;
       break;
-      
+
     case EX_ZCAT_TYPE_GZIP:
     {
       union ex_zcat_lib_decomp_u *u = &ex_zcat_lib_decomp_data;
       unsigned int method = vstr_export_chr(s2, 3);
       unsigned int flags  = vstr_export_chr(s2, 4);
       size_t pos = 1;
-      
+
       /* magic  | magic | method | flags |
          stamp  | stamp | stamp  | stamp |
-         Xflags | OS    | */         
+         Xflags | OS    | */
       pos += 10;
 
       ASSERT(method == 0x08);
-      
+
       if (flags & 0x04)
       { /* extra field */
         char buf[2];
@@ -94,7 +94,7 @@ static int ex_zcat_open(Vstr_base *s2)
 
         if ((pos <= s2->len) && (vstr_sc_posdiff(pos, s2->len) < 2))
           return (FALSE); /* not all of gzip header */
-        
+
         vstr_export_buf(s2, pos, 2, buf, sizeof(buf));
         xfield_len |= buf[1]; xfield_len <<= 8;
         xfield_len |= buf[0];
@@ -124,12 +124,12 @@ static int ex_zcat_open(Vstr_base *s2)
                          * gzip and zlib do it differently */
         pos += 2;
       vstr_del(s2, 1, pos - 1);
-      
+
       if (inflateInit2(&u->gzip, -MAX_WBITS) != Z_OK)
         DIE("gzip beg: failed");
     }
     break;
-    
+
     case EX_ZCAT_TYPE_BZIP2:
     {
       union ex_zcat_lib_decomp_u *u = &ex_zcat_lib_decomp_data;
@@ -138,43 +138,43 @@ static int ex_zcat_open(Vstr_base *s2)
         DIE("bzip2 beg: failed");
     }
     break;
-      
+
     case EX_ZCAT_TYPE_COMPRESS:
-      
+
     default:
       assert(FALSE);
   }
 
   ex_zcat_f_type    = f_type;
   ex_zcat_data_open = TRUE;
-  
+
   return (TRUE);
 }
 
 static void ex_zcat_close(void)
 {
   union ex_zcat_lib_decomp_u *u = &ex_zcat_lib_decomp_data;
-  
+
   if (!ex_zcat_data_open)
     return;
-  
+
   switch (ex_zcat_f_type)
   {
     case EX_ZCAT_TYPE_NONE:
       break;
-      
+
     case EX_ZCAT_TYPE_GZIP:
       if (inflateEnd(&u->gzip) != Z_OK)
         DIE("gzip end: failed");
       break;
-      
+
     case EX_ZCAT_TYPE_BZIP2:
       if (BZ2_bzDecompressEnd(&u->bzip2) != BZ_OK)
         DIE("bzip2 end: failed");
       break;
-      
+
     case EX_ZCAT_TYPE_COMPRESS:
-      
+
     default:
       assert(FALSE);
   }
@@ -194,15 +194,15 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
   size_t bytes_io_r = 0;
   size_t bytes_io_w = 0;
   int at_end = FALSE;
-  
+
   if (!ex_zcat_open(s2))
     return (FALSE);
-  
+
   if (ex_zcat_f_type == EX_ZCAT_TYPE_NONE)
   { /* special quick case ... */
     if (!s2->len)
       return (FALSE);
-    
+
     vstr_mov(s1, s1->len, s2, 1, s2->len);
     return (TRUE);
   }
@@ -212,7 +212,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
     if (!last && (s2->len < (4 * 1024)))
       return (TRUE);
   }
-  
+
   /* setup decompressor input... */
   if (vstr_export_iovec_ptr_all(s2, &io_s2, NULL))
   {
@@ -225,14 +225,14 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
   /* setup decompressor output... */
   {
     unsigned int dummy_num;
-    
+
     if (!vstr_add_iovec_buf_beg(s1, s1->len, 1, 2, &io_s1, &dummy_num))
       errno = ENOMEM, DIE("decompress:");
 
     io_w_ptr = io_s1[0].iov_base;
     io_w_len = io_s1[0].iov_len;
   }
-  
+
   switch (ex_zcat_f_type)
   {
     case EX_ZCAT_TYPE_GZIP:
@@ -244,7 +244,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
         ex_zcat_close();
         break;
       }
-      
+
       u->gzip.next_in   = io_r_ptr;
       u->gzip.avail_in  = io_r_len;
       u->gzip.next_out  = io_w_ptr;
@@ -262,11 +262,11 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
         DIE("gzip: failed %d = %s", (int)ret, u->gzip.msg);
     }
     break;
-      
+
     case EX_ZCAT_TYPE_BZIP2:
     {
       int ret = BZ_SEQUENCE_ERROR;
-      
+
       u->bzip2.next_in   = io_r_ptr;
       u->bzip2.avail_in  = io_r_len;
       u->bzip2.next_out  = io_w_ptr;
@@ -274,7 +274,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
       ret = BZ2_bzDecompress(&u->bzip2);
       bytes_io_r = io_r_len - u->bzip2.avail_in;
       bytes_io_w = io_w_len - u->bzip2.avail_out;
-      
+
       if (ret == BZ_STREAM_END)
       {
         at_end = TRUE;
@@ -284,12 +284,12 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
         DIE("bzip2: failed %d", (int)ret);
     }
     break;
-      
+
     case EX_ZCAT_TYPE_NONE:
       assert(FALSE); /* dealt with above ... as we don't do anything */
-      
+
     case EX_ZCAT_TYPE_COMPRESS:
-      
+
     default:
       assert(FALSE);
       return (FALSE);
@@ -297,7 +297,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
 
   vstr_add_iovec_buf_end(s1, s1->len, bytes_io_w);
   vstr_del(s2, 1, bytes_io_r);
- 
+
   return (!at_end);
 }
 
@@ -311,11 +311,11 @@ static void ex_zcat_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
   while (keep_going)
   {
     int proc_data = FALSE;
-    
+
     EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
 
     proc_data = ex_zcat_process(s1, s2, !keep_going);
-    
+
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
     EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, keep_going, proc_data);
   }
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
   int count = 1; /* skip the program name */
   struct stat stat_buf;
   int ex_zcat_direction = EX_ZCAT_USAGE_ENCOMPRESS;
-  
+
   if (argc == 1)
     ex_zcat_direction = EX_ZCAT_USAGE_ENCOMPRESS;
   else if ((argc >= 2) && !strcmp(argv[1], "-d"))
@@ -338,28 +338,28 @@ int main(int argc, char *argv[])
     --argc;
     ex_zcat_direction = EX_ZCAT_USAGE_DECOMPRESS;
   }
-  
+
   if (ex_zcat_direction == EX_ZCAT_USAGE_ENCOMPRESS)
   {
     execvp("gzip", argv);
     exit (EXIT_FAILURE);
   }
-  
+
   /* init the Vstr string library, note that if this fails we can't call DIE
    * or the program will crash */
   if (!vstr_init())
     exit (EXIT_FAILURE);
-  
+
   /*  Change the default Vstr configuration, so we can have a node buffer size
    * that is whatever the stdout block size is */
   if (fstat(1, &stat_buf) == -1)
     stat_buf.st_blksize = 4 * 1024;
   if (!stat_buf.st_blksize)
     stat_buf.st_blksize = 4 * 1024; /* defualt 4k -- proc etc. */
-  
+
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
   vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
-  
+
   /* create two Vstr strings for doing the IO with */
   if (FALSE ||
       !(s1 = vstr_make_base(NULL)) ||
@@ -369,13 +369,13 @@ int main(int argc, char *argv[])
 
   /* set output to non-blocking mode */
   ex_utils_set_o_nonblock(STDOUT_FILENO);
-  
+
   if (count >= argc)  /* if no arguments -- use stdin */
   {
     /* set input to non-blocking mode */
     ex_utils_set_o_nonblock(STDIN_FILENO);
     ex_zcat_read_fd_write_stdout(s1, s2, STDIN_FILENO);
-    
+
     while (ex_zcat_process(s1, s2, TRUE))
     { /* No more data to read ...
        * finish processing read data and writing some of it */
@@ -383,13 +383,13 @@ int main(int argc, char *argv[])
       EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, TRUE);
     }
   }
-  
+
   /* loop through all arguments, open the file specified
    * and do the read/write loop */
   while (count < argc)
   {
     unsigned int err = 0;
-    
+
     /* try to mmap the file, as that is faster ... */
     if (s2->len < MAX_R_DATA_INCORE)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-      
+
       if (fd == -1)
         WARN("open(%s):", argv[count]);
 
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
        * read/alter/write loop */
       ex_utils_set_o_nonblock(fd);
       ex_zcat_read_fd_write_stdout(s1, s2, fd);
-      
+
       close(fd);
     }
     else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
@@ -419,7 +419,7 @@ int main(int argc, char *argv[])
       EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
       EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, TRUE);
     }
-    
+
     ++count;
   }
 
@@ -433,10 +433,10 @@ int main(int argc, char *argv[])
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
     EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 1, FALSE, FALSE);
   }
-  
+
   vstr_free_base(s1);
-  
+
   vstr_exit();
-  
+
   exit (EXIT_SUCCESS);
 }

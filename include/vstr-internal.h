@@ -3,28 +3,28 @@
 
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 
 #if defined(HAVE_ATTRIB_DEPRECATED)
 # define VSTR__ATTR_D() __attribute__((deprecated))
 #else
-# define VSTR__ATTR_D() 
+# define VSTR__ATTR_D()
 #endif
 
 #define VSTR__USE_INTERNAL_SYMBOLS ( \
@@ -75,22 +75,25 @@
 
 #define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
-#define VSTR__MK(sz)      vstr__debug_malloc(sz)
-#define VSTR__M0(sz)      vstr__debug_calloc(1, sz)
-#define VSTR__MV(ptr, sz) vstr__safe_realloc((void **)&(ptr), sz)
-#define VSTR__F(ptr)      vstr__debug_free(ptr)
+#define VSTR__MK(sz)                     vstr__debug_malloc(sz)
+#define VSTR__M0(sz)                     vstr__debug_calloc(1, sz)
+#define VSTR__MV(ptr, tmp, sz) (((tmp) = vstr__debug_realloc(ptr, sz)) && \
+                                ((ptr) = (tmp)))
+#define VSTR__F(ptr)                     vstr__debug_free(ptr)
 
-/* given a length, and an iteration of that length is this node _it_
- * another way to look at it is will vstr_iter_fwd_nxt() return FALSE */
+/* iteration is this node all of the rest of the iteration,
+ * Ie. vstr_iter_fwd_nxt() will return FALSE ... called at the start of an
+ * iteration to see if the iteration consists of one node. */
+/* NOTE: see tst_sub_ptr for a copy of this... so it gets tested */
 #define VSTR__ITER_EQ_ALL_NODE(base, iter) \
-  (((base)->beg == (iter)->node) ? \
-   (((iter)->len == (iter)->node->len) && \
-    (!(iter)->remaining) && \
-    ((iter)->ptr == (vstr_export__node_ptr((iter)->node)))) : \
-   (((iter)->len == (size_t)((iter)->node->len - (base)->used)) && \
-    (!(iter)->remaining) && \
-    ((iter)->ptr == (vstr_export__node_ptr((iter)->node) + (base)->used))))
-
+  (!(iter)->remaining && \
+   (((base)->beg != (iter)->node) ? \
+    \
+    (((iter)->len == (iter)->node->len) && \
+     ((iter)->ptr == (vstr_export__node_ptr((iter)->node)))) : \
+    \
+    (((iter)->len == (size_t)((iter)->node->len - (base)->used)) && \
+     ((iter)->ptr == (vstr_export__node_ptr((iter)->node) + (base)->used)))))
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
@@ -218,21 +221,34 @@ extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
 #ifdef NDEBUG
-# define vstr__debug_malloc malloc
-# define vstr__debug_calloc calloc
-# define vstr__debug_free free
+#define VSTR__DEBUG_MALLOC_TST() (0)
+#define VSTR__DEBUG_MALLOC_DEC() (0)
+
+# define vstr__debug_malloc  malloc
+# define vstr__debug_calloc  calloc
+# define vstr__debug_realloc realloc
+# define vstr__debug_free    free
+# define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)
+# define VSTR__SECTS_SZ 8
+# define VSTR__STACK_BUF_SZ 64
 #else
-extern void *vstr__debug_malloc(size_t sz)
+#define VSTR__DEBUG_MALLOC_TST() \
+  (!vstr__options.mem_fail_num)
+#define VSTR__DEBUG_MALLOC_DEC() \
+  (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+
+extern void *vstr__debug_malloc(size_t)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void *vstr__debug_calloc(size_t num, size_t sz)
+extern void *vstr__debug_calloc(size_t, size_t)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void vstr__debug_free(void *ptr)
+extern void *vstr__debug_realloc(void *, size_t)
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
+extern void vstr__debug_free(void *)
     VSTR__ATTR_I();
+# define VSTR__CONF_REF_LINKED_SZ 2
+# define VSTR__SECTS_SZ 2
+# define VSTR__STACK_BUF_SZ 2
 #endif
-
-extern int vstr__safe_realloc(void **, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
-
 
 extern size_t vstr__loc_thou_grp_strlen(const char *)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();

@@ -10,9 +10,9 @@ int tst(void)
   unsigned int count = 0;
   unsigned int ret_num = 0;
   size_t len = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
 
   num = vstr_num(s1, 1, s1->len);
@@ -40,9 +40,9 @@ int tst(void)
 
   len = vstr_export_iovec_cpy_ptr(s1, 1, 0, iov, num, NULL);
   TST_B_TST(ret, 8, len);
-  
+
   free(iov);
-  
+
   len = vstr_export_iovec_cpy_ptr(s1, 1, s1->len, NULL, 0, NULL);
   TST_B_TST(ret, 9, len);
 

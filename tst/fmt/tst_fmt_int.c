@@ -10,14 +10,14 @@ int tst(void)
   vstr_add_fmt(s1, 0, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
-  
+
 #ifdef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */
   return (EXIT_FAILED_OK);
 #endif
 
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%'d", 1000);
-  
+
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "1000"));
 
   sprintf(buf, "%jd%ju", (intmax_t)1, (intmax_t)1);

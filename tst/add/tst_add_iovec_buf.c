@@ -12,30 +12,30 @@ int tst(void)
   const char *bscan = buf;
   int done = FALSE;
   int mfail_count = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   blen = strlen(buf);
-  
+
   do
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
   } while (!(len = vstr_add_iovec_buf_beg(s3, 0, 32, 32, &iovs, &num)));
   tst_mfail_num(0);
-  
+
   if (len < blen)
     return (2);
   len = blen;
-  
+
   while (blen && (scan < num))
   {
     size_t tmp = iovs[scan].iov_len;
 
     if (tmp > blen)
       tmp = blen;
-    
+
     memcpy(iovs[scan].iov_base, bscan, tmp);
-    
+
     bscan += tmp;
     blen -= tmp;
 
@@ -48,7 +48,7 @@ int tst(void)
       done = TRUE;
       continue;
     }
-        
+
     ++scan;
   }
   vstr_add_iovec_buf_end(s3, 0, len - 4);
@@ -58,14 +58,14 @@ int tst(void)
     return (3);
   if (len < 4)
     return (4);
-  
+
   ASSERT(iovs[0].iov_len == 4);
-  memcpy(iovs[0].iov_base, buf + 8, 4);  
+  memcpy(iovs[0].iov_base, buf + 8, 4);
   vstr_add_iovec_buf_end(s3, 8, 4);
-  
+
   vstr_add_iovec_buf_beg(s3, 0, 2, 2, &iovs, &num);
   vstr_add_iovec_buf_end(s3, 0, 0);
-  
+
   vstr_add_iovec_buf_beg(s3, 0, 2, 2, &iovs, &num);
   vstr_add_iovec_buf_end(s3, 0, 0);
 

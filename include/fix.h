@@ -156,7 +156,7 @@ extern short ospeed;
  * #define SCANDIR_STRUCT_DIRNET struct dirent
  * -- glibc-2.1.x (and presumably above) works with what's below
  */
-# define SCANDIR_STRUCT_DIRNET const struct dirent 
+# define SCANDIR_STRUCT_DIRNET const struct dirent
 #endif
 
 #if !defined(__GNUC__) && !defined(__PRETTY_FUNCTION__)
@@ -209,7 +209,7 @@ struct cmsghdr
 # warning "This offsetof isn't guaranteed to work"
 # define offsetof(type, field) ((size_t) (&((type *)0)->field))
 #endif
-                                
+
 #ifndef HAVE_DIFFTIME
 # warning "This difftime isn't guaranteed to work"
 # define difftime(x, y) ((x) - (y))

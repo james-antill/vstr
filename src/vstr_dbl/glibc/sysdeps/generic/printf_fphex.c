@@ -152,7 +152,7 @@ __printf_fphex (FILE *fp,
   const size_t strlen_decimal = fp->base->conf->loc->decimal_point_len;
 
   /* Figure out the decimal point character.  */
-  if (info->extra == 0)
+  if (extra == 0)
     {
       decimal = _NL_CURRENT (LC_NUMERIC, DECIMAL_POINT);
       decimalwc = _NL_CURRENT_WORD (LC_NUMERIC, _NL_NUMERIC_DECIMAL_POINT_WC);

@@ -38,7 +38,7 @@ typedef struct ex_slowcat_vars
  unsigned int opt_write_bytes;
  unsigned int opt_write_wait_sec;
  unsigned int opt_write_wait_usec;
- 
+
  int argc;
  char **argv;
  Vstr_base *str1;
@@ -57,7 +57,7 @@ static void ex_slowcat_timer_func(int type, void *data)
  ex_slowcat_vars *v = data;
  struct timeval s_tv;
  int fin_data = v->finished_reading_data;
- 
+
  if (type == TIMER_Q_TYPE_CALL_DEL)
    return;
 
@@ -73,18 +73,18 @@ static void ex_slowcat_timer_func(int type, void *data)
    if (v->finished_reading_file)
    {
     assert(v->arg_count < v->argc);
-    
+
     v->finished_reading_file = FALSE;
-    
+
     v->fd = open(v->argv[v->arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-    
+
     if (v->fd == -1)
       DIE("open(%s):", v->argv[v->arg_count]);
-    
+
     ++v->arg_count;
-    
+
     if (vstr_sc_mmap_fd(v->str1, v->str1->len, v->fd, 0, 0, NULL))
-    {      
+    {
       if (v->arg_count >= v->argc)
         v->finished_reading_data = TRUE;
       v->finished_reading_file = TRUE;
@@ -92,7 +92,7 @@ static void ex_slowcat_timer_func(int type, void *data)
     else
     {
      int tmp_fcntl_flags = 0;
-     
+
      if ((tmp_fcntl_flags = fcntl(v->fd, F_GETFL)) == -1)
        DIE("fcntl(GET NONBLOCK):");
      if (!(tmp_fcntl_flags & O_NONBLOCK) &&
@@ -101,33 +101,33 @@ static void ex_slowcat_timer_func(int type, void *data)
     }
    }
   }
-  
+
   if (!v->finished_reading_file)
   {
     unsigned int err = 0;
     int keep_going = TRUE;
-    
+
     EX_UTILS_LIMBLOCK_READ_ALL(v->str1, v->fd, keep_going);
 
     if (!keep_going)
     {
       if (close(v->fd) == -1)
         DIE("close:");
-      
+
       if (v->arg_count >= v->argc)
         v->finished_reading_data = TRUE;
       v->finished_reading_file = TRUE;
     }
   }
  }
- 
+
  if (!fin_data && v->finished_reading_data)
  { /* we've just finished */
   if (v->str1->len) /* set it back to blocking, to be nice */
     if (fcntl(1, F_SETFL, v->fcntl_flags & ~O_NONBLOCK) == -1)
       DIE("fcntl(SET BLOCK):");
  }
- 
+
  /* do a write of the right ammount */
  if (!vstr_sc_write_fd(v->str1, 1, v->opt_write_bytes, v->fd, NULL))
  {
@@ -161,13 +161,13 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
     {"help", no_argument, NULL, 'h'},
     {"seconds", required_argument, NULL, 's'},
     {"useconds", required_argument, NULL, 'u'},
-    {"version", no_argument, NULL, 'V'},   
+    {"version", no_argument, NULL, 'V'},
     {NULL, 0, NULL, 0}
    };
  FILE *help_stdout = NULL;
- 
+
  help_stdout = stdout;
- 
+
  if (argv[0])
  {
   if ((program_name = strrchr(argv[0], '/')))
@@ -183,7 +183,7 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
     case 'b':
       v->opt_write_bytes = atoi(optarg);
       break;
- 
+
     case '?':
       fprintf(stderr, " The option -- %c -- is not valid.\n", optchar);
       help_stdout = stderr;
@@ -200,7 +200,7 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
         exit (EXIT_FAILURE);
       else
         exit (EXIT_SUCCESS);
-      
+
     case 's':
       v->opt_write_wait_sec = atoi(optarg);
       break;
@@ -215,7 +215,7 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
              __DATE__ " -- at -- " __TIME__" --.\n",
              program_name);
       exit (EXIT_SUCCESS);
-      
+
    }
 
  return (optind);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
  v.opt_write_bytes = EX_SLOWCAT_WRITE_BYTES;
  v.opt_write_wait_sec = EX_SLOWCAT_WRITE_WAIT_SEC;
  v.opt_write_wait_usec = EX_SLOWCAT_WRITE_WAIT_USEC;
- 
+
  v.argc = argc;
  v.argv = argv;
  v.str1 = NULL;
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
  v.node = NULL;
  v.finished_reading_data = FALSE;
  v.finished_reading_file = TRUE;
- 
+
  if (!vstr_init())
    errno = ENOMEM, DIE("vstr_init:");
 
@@ -251,21 +251,21 @@ int main(int argc, char *argv[])
 
  v.argc -= optind;
  v.argv += optind;
- 
+
  v.base = timer_q_add_base(ex_slowcat_timer_func, TIMER_Q_FLAG_BASE_DEFAULT);
  if (!v.base)
    errno = ENOMEM, DIE("timer_q_add_base:");
- 
+
  gettimeofday(&s_tv, NULL);
  TIMER_Q_TIMEVAL_ADD_SECS(&s_tv, 1, 500000); /* 1.5 seconds */
 
  v.node = timer_q_add_node(v.base, &v, &s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
  if (!v.node)
-   errno = ENOMEM, DIE("timer_q_add_node:"); 
- 
+   errno = ENOMEM, DIE("timer_q_add_node:");
+
  v.str1 = vstr_make_base(NULL);
  if (!v.str1)
-   errno = ENOMEM, DIE("vstr_make_base:"); 
+   errno = ENOMEM, DIE("vstr_make_base:");
 
  if ((v.fcntl_flags = fcntl(1, F_GETFL)) == -1)
    DIE("fcntl(GET NONBLOCK):");
@@ -276,23 +276,23 @@ int main(int argc, char *argv[])
  while ((tv = timer_q_first_timeval()))
  {
   long wait_period = 0;
-  
+
   gettimeofday(&s_tv, NULL);
-  
+
   wait_period = timer_q_timeval_diff_usecs(tv, &s_tv);
   if (wait_period > 0)
     usleep(wait_period);
 
   gettimeofday(&s_tv, NULL);
-  
+
   timer_q_run_norm(&s_tv);
  }
 
  timer_q_del_base(v.base);
- 
+
  vstr_free_base(v.str1);
 
  vstr_exit();
- 
+
  exit (EXIT_SUCCESS);
 }

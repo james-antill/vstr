@@ -8,9 +8,9 @@ int tst(void)
   size_t off = 0;
   Vstr_ref *ref = NULL;
   const char *ptr = NULL;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
 
   TST_B_TST(ret, 1, !(ref = vstr_export_ref(s1, 1, s1->len, &off)));
@@ -28,17 +28,17 @@ int tst(void)
 
   {
     Vstr_ref *ref2 = NULL;
-    
+
     TST_B_TST(ret, 8, !(ref2 = vstr_export_ref(s2, 1, s2->len, &off)));
     TST_B_TST(ret, 9,  (ref2->ptr != ref->ptr));
-    
+
     vstr_ref_del(ref2);
   }
 
   if (MFAIL_NUM_OK)
   {
     Vstr_ref *ref2 = NULL;
-    
+
     vstr_add_ptr(s3, 0, ref->ptr, s2->len);
     TST_B_TST(ret, 10, !tst_mfail_num(1));
     TST_B_TST(ret, 11, (ref2 = vstr_export_ref(s3, 1, s3->len, &off)));

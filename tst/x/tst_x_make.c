@@ -7,19 +7,19 @@ static void tst_nums(int *ret,
                      unsigned int num_ptr, unsigned int num_ref)
 {
   unsigned int val = 0;
-  
+
   TST_B_TST(*ret, 1,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_GET_NUM_SPARE_BUF, &val));
   TST_B_TST(*ret, 2, (val != num_buf));
-  
+
   TST_B_TST(*ret, 3,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_GET_NUM_SPARE_NON, &val));
   TST_B_TST(*ret, 4, (val != num_non));
-  
+
   TST_B_TST(*ret, 5,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_GET_NUM_SPARE_PTR, &val));
   TST_B_TST(*ret, 6, (val != num_ptr));
-  
+
   TST_B_TST(*ret, 7,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_GET_NUM_SPARE_REF, &val));
   TST_B_TST(*ret, 8, (val != num_ref));
@@ -28,7 +28,7 @@ static void tst_nums(int *ret,
 int tst(void)
 {
   int ret = 0;
-  
+
   tst_nums(&ret, 0, 0, 0, 0);
 
   TST_B_TST(ret, 10,
@@ -52,7 +52,7 @@ int tst(void)
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_PTR, 512);
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_REF, 256);
   tst_nums(&ret, 0, 0, 0, 0);
-  
+
   TST_B_TST(ret, 14,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_NUM_SPARE_BUF, 11));
   TST_B_TST(ret, 15,
@@ -62,7 +62,7 @@ int tst(void)
   TST_B_TST(ret, 17,
             !vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_NUM_SPARE_REF, 14));
   tst_nums(&ret, 11, 12, 13, 14);
-  
+
   TST_B_TST(ret, 14,
             !vstr_cntl_conf(s1->conf,
                             VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, 110, 120));
@@ -76,7 +76,7 @@ int tst(void)
             !vstr_cntl_conf(s1->conf,
                             VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, 140, 150));
   tst_nums(&ret, 110, 120, 130, 140);
-  
+
   TST_B_TST(ret, 21,
             !vstr_cntl_conf(s1->conf,
                             VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, 10, 20));
@@ -95,7 +95,7 @@ int tst(void)
   {
     Vstr_conf *succeeded = NULL;
     unsigned long mfail_count = 0;
-    
+
     while (!succeeded)
     {
       tst_mfail_num(++mfail_count);
@@ -110,7 +110,7 @@ int tst(void)
   {
     Vstr_base *succeeded = NULL;
     unsigned long mfail_count = 0;
-    
+
     while (!succeeded)
     {
       tst_mfail_num(++mfail_count);
@@ -122,6 +122,6 @@ int tst(void)
   }
 
   vstr_free_conf(NULL);
-  
+
   return (TST_B_RET(ret));
 }

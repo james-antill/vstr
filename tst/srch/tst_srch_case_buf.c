@@ -40,7 +40,7 @@ int tst(void)
 #ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
   return (EXIT_FAILED_OK);
 #endif
-  
+
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,
@@ -61,11 +61,11 @@ int tst(void)
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_srch_buf(s1, 0);
   tst_srch_buf(s3, 8);
   tst_srch_buf(s4, 16);
-  
+
   TST_B_TST(ret, 29,
             vstr_srch_case_buf_rev(s1, 4, 8, NULL, 1) != 0);
 
@@ -103,7 +103,7 @@ int tst(void)
 
   TST_B_TST(ret, 29,
             vstr_srch_case_buf_rev(s1, 4, 8, "", 0) != 11);
-  
-  
+
+
   return (TST_B_RET(ret));
 }

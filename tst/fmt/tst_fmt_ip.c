@@ -8,33 +8,33 @@ static int tst_setup_inet_buf(const struct in_addr  *ipv4,
 {
   size_t len = 0;
   const char *ptr = NULL;
-    
+
   assert(256 >= (INET_ADDRSTRLEN + INET6_ADDRSTRLEN));
   assert(sizeof(buf) > 256);
 
   memset(buf, ' ', 256);
   buf[256] = 0;
   buf[257] = (char)0xFF;
-  
+
   if (!(ptr = inet_ntop(AF_INET,  ipv4, buf, 128)))
     return (FALSE);
   len = strlen(ptr);
   assert(len < 16);
-  
+
   assert(ptr == buf);
-  
+
   /* turn '\0' into a space */
   assert(!buf[len]);
   buf[len] = ' ';
-  
+
   if (!(ptr = inet_ntop(AF_INET6, ipv6, buf + 128, 128)))
     return (FALSE);
   len = strlen(ptr);
   assert(len < 40);
-  
+
   memmove(buf + (256 - len), buf + 128, len); /* move ipv6 "object" to end */
   memset(buf + 128, ' ', 128 - len);
-  
+
   assert(!buf[256]);
   assert( buf[257] == (char)0xFF);
 
@@ -48,36 +48,36 @@ int tst(void)
   int ret = 0;
   unsigned int ips[8];
   unsigned int scan = 0;
-  
+
   vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
-  
+
   vstr_sc_fmt_add_all(s3->conf);
 
   ASSERT(s3->conf->fmt_usr_curly_braces);
-  
+
   /* output */
-  
+
 #ifdef HAVE_POSIX_HOST
   do
   {
     struct in_addr  ipv4;
     struct in6_addr ipv6;
     unsigned int count = 0;
-    
+
     srand(time(NULL) ^ getpid());
-    
+
     ipv4.s_addr = rand();
-    
+
     ipv6.s6_addr[0] = rand();
     ipv6.s6_addr[1] = rand();
     ipv6.s6_addr[2] = rand();
     ipv6.s6_addr[3] = rand();
 
     if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
-    
+
     vstr_del(s3, 1, s3->len);
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
-    
+
     TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
     ipv4.s_addr = 0xF00F;
@@ -93,14 +93,14 @@ int tst(void)
     }
 
     if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
-    
+
     vstr_del(s3, 1, s3->len);
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
-    
+
     TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
     ipv4.s_addr = 0xFFFF;
-    
+
     count = 0;
     while (count < 16)
     {
@@ -109,31 +109,31 @@ int tst(void)
     }
 
     if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
-    
+
     vstr_del(s3, 1, s3->len);
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
-    
+
     TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
     ipv4.s_addr = 0;
-    
+
     {
       struct in6_addr tmp = IN6ADDR_ANY_INIT;
       ipv6 = tmp;
     }
 
     if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
-    
+
     vstr_del(s3, 1, s3->len);
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
-    
+
     TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
-    
+
   } while (FALSE);
 #endif
 
   memset(ips, 0, sizeof(ips));
-  
+
 #define TST_IPV6N(num, sv, cstr, type) do { \
   vstr_del((sv), 1, (sv)->len); \
   strcpy(buf, cstr); \
@@ -188,7 +188,7 @@ int tst(void)
 
   scan = 0;
   while (scan++ < 7) ips[scan] = scan;
-  
+
   TST_IPV6N(14, s3, "::1:2:3:4:5:6:7", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6C(14, s3, "::1:2:3:4:5:6:7/64", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 64);
   TST_IPV6N(15, s3, "0:1:2:3:4:5:6:7", VSTR_TYPE_SC_FMT_CB_IPV6_STD);
@@ -216,7 +216,7 @@ int tst(void)
 
   ips[6] = 0xFFFF;
   ips[7] = 0xFFFF;
-  
+
   TST_IPV6N(18, s3, "::2:3:4:5:FFFF:FFFF",
             VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6C(18, s3, "::2:3:4:5:FFFF:FFFF/64",
@@ -225,7 +225,7 @@ int tst(void)
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT);
   TST_IPV6C(18, s3, "::2:3:4:5:255.255.255.255/32",
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 32);
-  
+
   scan = 0;
   while (scan++ < 7) ips[scan - 1] = scan;
 
@@ -277,14 +277,14 @@ int tst(void)
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 64);
 
   ips[3] = 4;
-  
+
   TST_IPV6N(28, s3, "::3:4:0:6:0:0", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6C(28, s3, "::3:4:0:6:0:0/64", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 64);
   TST_IPV6N(28, s3, "::3:4:0:6:0.0.0.0",
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT);
   TST_IPV6C(28, s3, "::3:4:0:6:0.0.0.0/64",
             VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 64);
-  
+
   scan = 0;
   while (scan++ < 8) ips[scan - 1] = scan;
 
@@ -301,24 +301,24 @@ int tst(void)
   ips[4] = 0x0008; ips[5] = 0x0800; ips[6] = 0x200C; ips[7] = 0x417A;
   TST_IPV6N(29, s3, "1080::8:800:200C:417A", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6N(29, s3, "1080:0:0:0:8:800:200C:417A", VSTR_TYPE_SC_FMT_CB_IPV6_STD);
-  
+
   ips[0] = 0xFF01; ips[1] = 0x0000; ips[2] = 0x0000; ips[3] = 0x0000;
   ips[4] = 0x0000; ips[5] = 0x0000; ips[6] = 0x0000; ips[7] = 0x0101;
   TST_IPV6N(29, s3, "FF01::101", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6N(29, s3, "FF01:0:0:0:0:0:0:101", VSTR_TYPE_SC_FMT_CB_IPV6_STD);
-  
+
   ips[0] = 0x0000; ips[1] = 0x0000; ips[2] = 0x0000; ips[3] = 0x0000;
   ips[4] = 0x0000; ips[5] = 0x0000; ips[6] = IPV4(13U, 1); ips[7] = IPV4(68U,3);
   TST_IPV6N(29, s3, "::13.1.68.3", VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT);
   TST_IPV6N(29, s3, "0:0:0:0:0:0:13.1.68.3", VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD);
-  
+
   ips[0] = 0x12AB; ips[1] = 0x0000; ips[2] = 0x0000; ips[3] = 0xCD30;
   ips[4] = 0x0000; ips[5] = 0x0000; ips[6] = 0x0000; ips[7] = 0x0000;
   TST_IPV6N(29, s3, "12AB:0:0:CD30::", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6N(29, s3, "12AB:0000:0000:CD30:0000:0000:0000:0000",
             VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED);
   TST_IPV6N(29, s3, "12AB:0:0:CD30:0:0:0:0", VSTR_TYPE_SC_FMT_CB_IPV6_STD);
-  
+
 #define TST_IPV4N(num, sv, cstr) do { \
   vstr_del((sv), 1, (sv)->len); \
   strcpy(buf, cstr); \

@@ -1,21 +1,21 @@
 #define VSTR_CMP_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions for comparing vstrs */
@@ -27,25 +27,25 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 {
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
-  
+
   vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
   vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-  
+
   if (!iter1->node && !iter2->node)
     return (0);
   if (!iter1->node)
     return (-1);
   if (!iter2->node)
     return (1);
-  
+
   do
   {
     size_t tmp = iter1->len;
     if (tmp > iter2->len)
       tmp = iter2->len;
-    
+
     assert(iter1->node && iter2->node);
-    
+
     if ((iter1->node->type != VSTR_TYPE_NODE_NON) &&
         (iter2->node->type != VSTR_TYPE_NODE_NON))
     {
@@ -59,62 +59,62 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
       return (1);
     else if (iter2->node->type != VSTR_TYPE_NODE_NON)
       return (-1);
-    
+
     iter1->len -= tmp;
     iter2->len -= tmp;
-    
+
     assert(!iter1->len || !iter2->len);
-    
+
   } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
            (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
-  
+
   if (iter1->node)
     return (1);
   if (iter2->len || vstr_iter_fwd_nxt(iter2))
     return (-1);
-  
+
   return (0);
 }
 
 /* compare with a "normal" C string */
 int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
                  const void *buf, size_t buf_len)
-{ 
+{
   Vstr_iter iter[1];
-  
+
   vstr_iter_fwd_beg(base, pos, len, iter);
-  
+
   if (!iter->node && !buf_len)
     return (0);
   if (!iter->node)
     return (-1);
   if (!buf_len)
     return (1);
-  
+
   do
   {
     int ret = 0;
-    
+
     if (iter->len > buf_len)
     {
       iter->len = buf_len;
       /* just need enough for test at end, Ie. 1 when len == 0 */
       iter->remaining += !iter->remaining;
     }
-    
+
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)
       return (-1);
     if ((iter->node->type != VSTR_TYPE_NODE_NON) && !buf)
       return (1);
-    
+
     if (buf)
     {
       if ((ret = vstr_wrap_memcmp(iter->ptr, buf, iter->len)))
         return (ret);
       buf = ((char *)buf) + iter->len;
     }
-    
+
     buf_len -= iter->len;
   } while (buf_len && vstr_iter_fwd_nxt(iter));
 
@@ -122,7 +122,7 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
     return (1);
   if (buf_len)
     return (-1);
-  
+
   return (0);
 }
 
@@ -139,15 +139,15 @@ static int vstr__cmp_memcasecmp(const char *str1, const char *str2, size_t len)
       a = VSTR__TO_ASCII_LOWER(a);
     if (VSTR__IS_ASCII_UPPER(b))
       b = VSTR__TO_ASCII_LOWER(b);
-    
+
     if (a - b)
       return (a - b);
-    
+
     ++str1;
     ++str2;
     --len;
   }
-  
+
   return (0);
 }
 
@@ -157,25 +157,25 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 {
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
-  
+
   vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
   vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-  
+
   if (!iter1->node && !iter2->node)
     return (0);
   if (!iter1->node)
     return (-1);
   if (!iter2->node)
     return (1);
-  
+
   do
   {
     size_t tmp = iter1->len;
     if (tmp > iter2->len)
       tmp = iter2->len;
-    
+
     assert(iter1->node && iter2->node);
-    
+
     if ((iter1->node->type != VSTR_TYPE_NODE_NON) &&
         (iter2->node->type != VSTR_TYPE_NODE_NON))
     {
@@ -189,21 +189,21 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
       return (1);
     else if (iter2->node->type != VSTR_TYPE_NODE_NON)
       return (-1);
-    
+
     iter1->len -= tmp;
     iter2->len -= tmp;
-    
+
     assert(!iter1->len || !iter2->len);
-    
+
   } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
            (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
-  
+
   if (iter1->node)
     return (1);
   if (iter2->len || vstr_iter_fwd_nxt(iter2))
     return (-1);
-  
+
   return (0);
 }
 
@@ -211,39 +211,39 @@ int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
                       const char *buf, size_t buf_len)
 {
   Vstr_iter iter[1];
-  
+
   vstr_iter_fwd_beg(base, pos, len, iter);
-  
+
   if (!iter->node && !buf_len)
     return (0);
   if (!iter->node)
     return (-1);
   if (!buf_len)
     return (1);
-  
+
   do
   {
     int ret = 0;
-    
+
     if (iter->len > buf_len)
     {
       iter->len = buf_len;
       /* just need enough for test at end, Ie. 1 when len == 0 */
       iter->remaining += !iter->remaining;
     }
-    
+
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)
       return (-1);
     if ((iter->node->type != VSTR_TYPE_NODE_NON) && !buf)
       return (1);
-    
+
     if (buf)
     {
       if ((ret = vstr__cmp_memcasecmp(iter->ptr, buf, iter->len)))
         return (ret);
       buf += iter->len;
     }
-    
+
     buf_len -= iter->len;
   } while (buf_len && vstr_iter_fwd_nxt(iter));
 
@@ -251,7 +251,7 @@ int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
     return (1);
   if (buf_len)
     return (-1);
-  
+
   return (0);
 }
 
@@ -296,23 +296,23 @@ static int vstr__cmp_vers(const char *scan_str_1,
         if (!VSTR__IS_ASCII_DIGIT(*scan_str_1))
           state = VSTR__CMP_NORM;
         break;
-     
+
       default:
         state = VSTR__CMP_NORM;
         assert(FALSE);
         break;
     }
-  
+
     ++scan_str_1;
     ++scan_str_2;
-  
+
     --len;
   }
 
   if (diff)
   {
     int new_state = VSTR__CMP_BAD;
-  
+
     assert(len);
 
     *difference = diff;
@@ -331,26 +331,26 @@ static int vstr__cmp_vers(const char *scan_str_1,
         if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) && !VSTR__IS_ASCII_DIGIT(*scan_str_2))
           state = VSTR__CMP_NORM;
         break;
-     
+
       default:
         state = VSTR__CMP_NORM;
         assert(FALSE);
         break;
     }
-  
+
     if (state == VSTR__CMP_NORM)
       return (VSTR__CMP_DONE);
-  
+
     assert((state == VSTR__CMP_NUMB) ||
            (state == VSTR__CMP_FRAC));
-  
+
     /* if a string is longer return positive or negative ignoring difference */
     new_state = state << 2;
-  
+
     assert(((state == VSTR__CMP_NUMB) && (new_state == VSTR__CMP_LEN_POS)) ||
            ((state == VSTR__CMP_FRAC) && (new_state == VSTR__CMP_LEN_NEG)) ||
            FALSE);
-  
+
     state = new_state;
   }
 
@@ -365,24 +365,24 @@ static int vstr__cmp_vers(const char *scan_str_1,
     {
       ++scan_str_1;
       ++scan_str_2;
-   
+
       --len;
     }
-  
+
     if (len)
     {
       assert((VSTR__CMP_LEN_POS + 1) < VSTR__CMP_LEN_NEG);
-   
+
       if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
         *difference = ((-state) + VSTR__CMP_LEN_POS + 1);
       if (VSTR__IS_ASCII_DIGIT(*scan_str_2))
         *difference = (state - VSTR__CMP_LEN_POS - 1);
       /* if both are the same length then use the initial stored difference */
-   
+
       return (VSTR__CMP_DONE);
     }
   }
- 
+
   return (state);
 }
 
@@ -396,10 +396,10 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   Vstr_iter iter2[1];
   int state = VSTR__CMP_NORM;
   int ret = 0;
-  
+
   vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
   vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-  
+
   if (!iter1->node && !iter2->node)
     return (0);
   if (!iter1->node)
@@ -412,9 +412,9 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
     size_t tmp = iter1->len;
     if (tmp > iter2->len)
       tmp = iter2->len;
-    
+
     assert(iter1->node && iter2->node);
-    
+
     if ((iter1->node->type != VSTR_TYPE_NODE_NON) &&
         (iter2->node->type != VSTR_TYPE_NODE_NON))
     {
@@ -428,34 +428,34 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
       goto scan_1_longer;
     else if (iter2->node->type != VSTR_TYPE_NODE_NON)
       goto scan_2_longer;
-   
+
     iter1->len -= tmp;
     iter2->len -= tmp;
-    
+
     assert(!iter1->len || !iter2->len);
   } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
            (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
- 
+
   if (iter1->node)
     goto scan_1_longer;
   if (iter2->len || vstr_iter_fwd_nxt(iter2))
     goto scan_2_longer;
- 
+
   return (ret); /* same length, might have been different at a previous point */
 
- scan_1_longer:  
+ scan_1_longer:
   if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
     return (-1);
- 
+
   assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
          (state == VSTR__CMP_LEN_POS));
   return (1);
- 
- scan_2_longer:  
+
+ scan_2_longer:
   if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
     return (1);
- 
+
   assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
          (state == VSTR__CMP_LEN_POS));
   return (-1);
@@ -467,9 +467,9 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
   Vstr_iter iter[1];
   int state = VSTR__CMP_NORM;
   int ret = 0;
-  
+
   vstr_iter_fwd_beg(base, pos, len, iter);
-  
+
   if (!iter->node && !buf_len)
     return (0);
   if (!iter->node)
@@ -485,12 +485,12 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
       /* just need enough for test at end, Ie. 1 when len == 0 */
       iter->remaining += !iter->remaining;
     }
-    
+
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)
       goto scan_2_longer;
     if ((iter->node->type != VSTR_TYPE_NODE_NON) && !buf)
       goto scan_1_longer;
-    
+
     if (buf)
     {
       state = vstr__cmp_vers(iter->ptr, buf, iter->len, state, &ret);
@@ -498,7 +498,7 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
         return (ret);
       buf += iter->len;
     }
-    
+
     buf_len -= iter->len;
   } while (buf_len && vstr_iter_fwd_nxt(iter));
 
@@ -506,21 +506,21 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
     goto scan_1_longer;
   if (buf_len)
     goto scan_2_longer;
-  
+
   return (ret);
 
- scan_1_longer:  
+ scan_1_longer:
   if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
     return (-1);
-  
+
   assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
          (state == VSTR__CMP_LEN_POS));
   return (1);
-  
- scan_2_longer:  
+
+ scan_2_longer:
   if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
     return (1);
-  
+
   assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
          (state == VSTR__CMP_LEN_POS));
   return (-1);

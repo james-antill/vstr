@@ -20,9 +20,16 @@ static unsigned int cmp(size_t boff, size_t blen,
                         unsigned int flags)
 {
   int ret = 0;
+  int mfail_count = 0;
 
   A_BUF(s1);
-  vstr_conv_unprintable_del(s1, 1, s1->len, flags);
+  do
+  {
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_conv_unprintable_del(s1, 1, s1->len, flags));
+  tst_mfail_num(0);
+    
   TST_B_TST(ret, 1,
             !((vtotlen == s1->len) &&
               VSTR_CMP_BUF_EQ(s1, voff, vlen, g + boff, blen)));
@@ -34,7 +41,14 @@ static unsigned int cmp(size_t boff, size_t blen,
               VSTR_CMP_BUF_EQ(s1, voff, vlen, g + boff, blen)));
 
   A_BUF(s1);
-  vstr_conv_unprintable_chr(s1, 1, s1->len, flags, 'X');
+  mfail_count = 0;
+  do
+  {
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_conv_unprintable_chr(s1, 1, s1->len, flags, 'X'));
+  tst_mfail_num(0);
+
   TST_B_TST(ret, 3,
             !VSTR_CMP_BUF_EQ(s1, 1, s1->len, g, UCHAR_MAX + 1));
 
@@ -51,7 +65,7 @@ int tst(void)
   unsigned int scan = 0;
   unsigned int flags = 0;
   int ret = 0;
-  
+
   while (scan <= UCHAR_MAX)
   {
     t[scan] = scan;
@@ -102,7 +116,7 @@ int tst(void)
   ret |= (cmp(0x20, 0x80 - 0x20,  9, 0x80 - 0x20, 0x60 + 8, flags) << 12);
   ret |= (cmp(0x00, 1,            1,           1, 0x60 + 8, flags) << 12);
   ret |= (cmp(0x07, 7,            2,           7, 0x60 + 8, flags) << 12);
-  
+
   /* allow ESC */
   g[0x1B] = 0x1B;
   flags = (VSTR_FLAG05(CONV_UNPRINTABLE_ALLOW, SP, COMMA, DOT, _, NUL) |
@@ -148,7 +162,7 @@ int tst(void)
                             VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__,  'A');
   vstr_conv_unprintable_del(s1, 1, s1->len, VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__);
   TST_B_TST(ret, 29, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  
+
   return (TST_B_RET(ret));
 }
 

@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Classification of Red Hat security alerts 2003</title>
+    <style type="text/css">
+      A:visited { color: #ff4040; }
+      A:hover { color: #20b2aa; }
+
+      P { text-indent: 1cm; }
+
+      body { background: #FFF; }
+
+  tr.rh { font-weight: bold; font-size: 150%;
+          background: #DDD; }
+
+  tr.r10                   { background: #fff; }
+  tr.r10:hover             { background: #bbb; }
+  tr.r20                   { background: #eee; }
+  tr.r20:hover             { background: #bbb; }
+  tr.r11                   { background: #fff; text-decoration: underline; }
+  tr.r11:hover             { background: #bbb; text-decoration: underline; }
+  tr.r21                   { background: #eee; text-decoration: underline; }
+  tr.r21:hover             { background: #bbb; text-decoration: underline; }
+
+
+      strong.sapi  { color: #F00; background: white; }
+      strong.msapi { color: #00F; background: white; }
+
+    </style>
+
+  </head>
+  <body>
+<h1>Classification of Red Hat security alerts 2003</h1>
+ <p> A <strong class="sapi">RED</strong> error indicates an error
+that <b>could not have occured</b> if the program had been using a
+<a href="comparison.html">real
+dynamic string API</a>. </p>
+ <p> A <strong class="msapi">BLUE</strong> error indicates an error
+that <b>could not have occured</b> it the program had been using
+<a href"overview.html">Vstr</a>. </p>
+<table width="100%"><tr class="rh"><td>Package name</td><td>Red Hat Advisory ID</td><td>Types of error</td></tr>
+<tr class="r10"><td>GDM</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-258.html">RHSA-2003:258-01</a></td><td>Privilage escalation (read files)<BR></td></tr>
+<tr class="r20"><td>KDE</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-235.html">RHSA-2003:235-01</a></td><td>Information Leak<br></td></tr>
+<tr class="r10"><td>ddskk</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-241.html">RHSA-2003:241-01</a></td><td>Temporary File Creation<br></td></tr>
+<tr class="r20"><td>up2date</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-255.html">RHSA-2003:255-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r10"><td>postfix</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-251.html">RHSA-2003:251-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>unzip</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-199.html">RHSA-2003:199-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r10"><td>Xterm</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-067.html">RHSA-2003:067-02</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>php</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-204.html">RHSA-2003:204-01</a></td><td>Cross Site Scripting<br></td></tr>
+<tr class="r11"><td><strong class="sapi">ethereal</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-203.html">RHSA-2003:203-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br><strong class="sapi">Integer Overflow</strong><br><strong class="sapi">Off By One</strong><br></td></tr>
+<tr class="r21"><td><strong class="sapi">nfs-utils</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-206.html">RHSA-2003:206-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r11"><td><strong class="sapi">mozilla</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-162.html">RHSA-2003:162-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r20"><td>Xpdf</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-196.html">RHSA-2003:196-02</a></td><td>Input Validation<br>Cross Site Scripting<br></td></tr>
+<tr class="r10"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-238.html">RHSA-2003:238-01</a></td><td>Information Leak<br>Privilage escalation (read files)<BR>Privilage escalation (UDP port binding)<BR>Input Validation<br></td></tr>
+<tr class="r20"><td>semi</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-234.html">RHSA-2003:234-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r10"><td>stunnel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-221.html">RHSA-2003:221-01</a></td><td>Signal handling code DOS<BR></td></tr>
+<tr class="r20"><td>OpenSSH</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-222.html">RHSA-2003:222-01</a></td><td>Information Leak<br></td></tr>
+<tr class="r11"><td><strong class="sapi">wu-ftpd</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-245.html">RHSA-2003:245-01</a></td><td><strong class="sapi">Off By One</strong><br></td></tr>
+<tr class="r20"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-187.html">RHSA-2003:187-01</a></td><td>Crash<BR></td></tr>
+<tr class="r11"><td><strong class="sapi">kon2</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-047.html">RHSA-2003:047-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r20"><td>KDE</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-192.html">RHSA-2003:192-01</a></td><td>Man in the middle<BR></td></tr>
+<tr class="r10"><td>hanterm</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-070.html">RHSA-2003:070-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>ypserv</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-173.html">RHSA-2003:173-01</a></td><td>Blocking write DOS<BR></td></tr>
+<tr class="r10"><td>man</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-133.html">RHSA-2003:133-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>mod_auth_any</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-113.html">RHSA-2003:113-01</a></td><td>Improper Encoding<br></td></tr>
+<tr class="r10"><td>KDE</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-002.html">RHSA-2003:002-01</a></td><td>Improper Encoding<br>Input Validation<br></td></tr>
+<tr class="r20"><td>xinetd</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-160.html">RHSA-2003:160-01</a></td><td>Memory leak DOS<BR></td></tr>
+<tr class="r10"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-172.html">RHSA-2003:172-00</a></td><td>CPU DOS<BR>Privilage escalation (I/O ports)<BR></td></tr>
+<tr class="r20"><td>tcpdump</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-174.html">RHSA-2003:174-01</a></td><td>Privilage escalation (failure to drop privilages)<BR></td></tr>
+<tr class="r10"><td>lv</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-169.html">RHSA-2003:169-01</a></td><td>Privilage escalation (Run commands as other users)<BR></td></tr>
+<tr class="r20"><td>gnupg</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-175.html">RHSA-2003:175-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r10"><td>CUPS</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-171.html">RHSA-2003:171-01</a></td><td>Blocking read DOS<BR></td></tr>
+<tr class="r2-1"><td><strong class="msapi">apache httpd</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-186.html">RHSA-2003:186-01</a></td><td><strong class="msapi">Free memory that is in use</strong><br></td></tr>
+<tr class="r10"><td>ghostscript</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-181.html">RHSA-2003:181-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>OpenSSL</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-101.html">RHSA-2003:101-01</a></td><td>Information Leak<br></td></tr>
+<tr class="r10"><td>vsftpd</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-084.html">RHSA-2003:084-01</a></td><td>Broken Red Hat packaging disabled hosts.allow/hosts.deny<BR></td></tr>
+<tr class="r20"><td>kerberos</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-091.html">RHSA-2003:091-01</a></td><td>Privilage escalation (leverage auth. in one relm to gain auth. in another)<BR><strong class="sapi">Integer Overflow</strong><br></td></tr>
+<tr class="r11"><td><strong class="sapi">eog</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-128.html">RHSA-2003:128-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">NetPBM</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-060.html">RHSA-2003:060-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br><strong class="sapi">Integer Overflow</strong><br></td></tr>
+<tr class="r11"><td><strong class="sapi">mutt</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-109.html">RHSA-2003:109-03</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">balsa</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-109.html">RHSA-2003:109-03</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r11"><td><strong class="sapi">samba</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-137.html">RHSA-2003:137-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">mgetty</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-036.html">RHSA-2003:036-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-135.html">RHSA-2003:135-00</a></td><td>Privilage escalation<BR></td></tr>
+<tr class="r20"><td>apache httpd</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-139.html">RHSA-2003:139-01</a></td><td>Memory leak DOS<BR>Input Validation<br>Improper Encoding<br></td></tr>
+<tr class="r10"><td>tcpdump</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-032.html">RHSA-2003:032-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br>Input Validation<br></td></tr>
+<tr class="r21"><td><strong class="sapi">ethereal</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-076.html">RHSA-2003:076-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>squirrelmail</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-112.html">RHSA-2003:112-01</a></td><td>Cross Site Scripting<br></td></tr>
+<tr class="r20"><td>LPRng</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-142.html">RHSA-2003:142-01</a></td><td>Temporary File Creation<br></td></tr>
+<tr class="r1-1"><td><strong class="msapi">mICQ</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-118.html">RHSA-2003:118-01</a></td><td><strong class="msapi">Input Validation</strong><br></td></tr>
+<tr class="r21"><td><strong class="sapi">zlib</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-079.html">RHSA-2003:079-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>MySQL</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-093.html">RHSA-2003:093-01</a></td><td>Double Free<br>Input Validation<br></td></tr>
+<tr class="r21"><td><strong class="sapi">sendmail</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-073.html">RHSA-2003:073-06</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>squirrelmail</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-042.html">RHSA-2003:042-07</a></td><td>Cross Site Scripting<br></td></tr>
+<tr class="r20"><td>im</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-039.html">RHSA-2003:039-06</a></td><td>Temporary File Creation<br></td></tr>
+<tr class="r10"><td>OpenSSL</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-062.html">RHSA-2003:062-11</a></td><td>Information Leak<br></td></tr>
+<tr class="r21"><td><strong class="sapi">file</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-086.html">RHSA-2003:086-07</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>Gnome-lokkit</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-072.html">RHSA-2003:072-00</a></td><td>Doesn't do anything for FORWARD rule packets<BR></td></tr>
+<tr class="r20"><td>rxvt</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-054.html">RHSA-2003:054-00</a></td><td>Input Validation<br></td></tr>
+<tr class="r10"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-098.html">RHSA-2003:098-00</a></td><td>Privilage escalation<BR></td></tr>
+<tr class="r21"><td><strong class="sapi">samba</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-095.html">RHSA-2003:095-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r11"><td><strong class="sapi">glibc (sun rpc code)</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-089.html">RHSA-2003:089-00</a></td><td><strong class="sapi">Integer Overflow</strong><br></td></tr>
+<tr class="r20"><td>kernel</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-088.html">RHSA-2003:088-01</a></td><td>Information Leak<br></td></tr>
+<tr class="r1-1"><td><strong class="msapi">evolution</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-108.html">RHSA-2003:108-01</a></td><td><strong class="msapi">Input Validation</strong><br></td></tr>
+<tr class="r20"><td>kerberos</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-051.html">RHSA-2003:051-01</a></td><td><strong class="sapi">Integer Overflow</strong><br><strong class="msapi">Input Validation</strong><br>Input Validation<br>Vulnerabilities in the support for triple-DES keys<BR>Privilage escalation (leverage auth. in one relm to gain auth. in another)<BR><strong class="sapi">Integer Overflow</strong><br></td></tr>
+<tr class="r11"><td><strong class="sapi">sendmail</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-120.html">RHSA-2003:120-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r20"><td>dhcp</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-034.html">RHSA-2003:034-01</a></td><td>Input Validation<br></td></tr>
+<tr class="r11"><td><strong class="sapi">php</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-017.html">RHSA-2003:017-06</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">openldap</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-040.html">RHSA-2003:040-07</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r11"><td><strong class="sapi">WindowMaker</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-251.html">RHSA-2003:251-01</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">Xpdf</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-037.html">RHSA-2003:037-09</a></td><td><strong class="sapi">Integer Overflow</strong><br></td></tr>
+<tr class="r10"><td>w3m</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-044.html">RHSA-2003:044-20</a></td><td>Cross Site Scripting<br></td></tr>
+<tr class="r20"><td>kernel-utils</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-056.html">RHSA-2003:056-08</a></td><td>Broken Red Hat packaging unsafe program was setuid<BR></td></tr>
+<tr class="r10"><td>lynx</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-029.html">RHSA-2003:029-06</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>pam_xauth</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-035.html">RHSA-2003:035-10</a></td><td>Information Leak<br></td></tr>
+<tr class="r10"><td>fileutils</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-015.html">RHSA-2003:015-05</a></td><td>Privilage escalation (delete other users files)<BR></td></tr>
+<tr class="r20"><td>shadow-utils</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-057.html">RHSA-2003:057-06</a></td><td>Privilage escalation (read/write other users incomming mailbox)<BR></td></tr>
+<tr class="r10"><td>VNC</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-041.html">RHSA-2003:041-12</a></td><td>Replay authorization<BR></td></tr>
+<tr class="r20"><td>vte</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-053.html">RHSA-2003:053-10</a></td><td>Input Validation<br></td></tr>
+<tr class="r11"><td><strong class="sapi">pine</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-270.html">RHSA-2002:270-16</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">cyrus-sasl</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-283.html">RHSA-2002:283-09</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r11"><td><strong class="sapi">libpng</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-006.html">RHSA-2003:006-06</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r20"><td>CUPS</td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-295.html">RHSA-2002:295-07</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br><strong class="sapi">Integer Overflow</strong><br>Temporary File Creation<br>Input Validation<br>Cross Site Scripting<br>DOS attack recovery<BR></td></tr>
+<tr class="r11"><td><strong class="sapi">postgresql</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-010.html">RHSA-2003:010-10</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r20"><td>postgresql</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-001.html">RHSA-2003:001-16</a></td><td>Privilage Escalation (delete transaction log files)<BR><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>MySQL</td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-288.html">RHSA-2002:288-22</a></td><td><strong class="sapi">Integer Overflow</strong><br>Input Validation<br><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r21"><td><strong class="sapi">dhcp</strong></td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-011.html">RHSA-2003:011-07</a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td></tr>
+<tr class="r10"><td>vim</td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-297.html">RHSA-2002:297-17</a></td><td>Input Validation<br></td></tr>
+<tr class="r20"><td>cvs</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-012.html">RHSA-2003:012-07</a></td><td>Privilage Escalation (write to any files)<BR></td></tr>
+<tr class="r10"><td>python</td><td><a href="http://rhn.redhat.com/errata/RHSA-2002-202.html">RHSA-2002:202-25</a></td><td>Temporary File Creation<br></td></tr>
+<tr class="r20"><td>kerberos</td><td><a href="http://rhn.redhat.com/errata/RHSA-2003-020.html">RHSA-2003:020-10</a></td><td>Input Validation<br></td></tr>
+</table>
+<p> Note that this means that of the <b>90</b> security flaws,
+ only <strong class="msapi">60 (66%)</strong> would have happened if all
+the packages had used <a href="overview.html">Vstr</a> and only
+ <strong class="sapi">63 (70%)</strong> if they'd at least
+used ay real dynamic string API.</p>
+
+</body></html>

@@ -31,7 +31,7 @@ static void tst_chrs(Vstr_base *t1, unsigned int off)
                                    "abcd ") != 5);
   TST_B_TST(ret, off + 8,
             VSTR_SPN_CSTR_CHRS_REV(t1, lens_fwd[0] + 1, t1->len - lens_fwd[0],
-                                   "abcd")  != 4);  
+                                   "abcd")  != 4);
 
   TST_B_TST(ret, off + 9,
             vstr_spn_chrs_fwd(t1, 1, t1->len, NULL, 1)  != 0);
@@ -56,7 +56,7 @@ int tst(void)
 #ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
   return (EXIT_FAILED_OK);
 #endif
-  
+
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,
@@ -69,7 +69,7 @@ int tst(void)
   lens_rev[0] = s3->len - lens_fwd[0];
   lens_rev[1] = s3->len - lens_fwd[1];
   lens_rev[2] = s3->len - lens_fwd[2];
-  lens_rev[3] = s3->len - lens_fwd[3];  
+  lens_rev[3] = s3->len - lens_fwd[3];
 
   tst_chrs(s1, 0);
   tst_chrs(s3, 9);
@@ -77,7 +77,7 @@ int tst(void)
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_chrs(s1, 0);
   tst_chrs(s3, 9);
   tst_chrs(s4, 18);
@@ -89,17 +89,17 @@ int tst(void)
   /* won't have a cache again... */
   ASSERT(!s1->iovec_upto_date);
   ASSERT(!s3->iovec_upto_date);
-  
+
   tst_non_chrs(s1, 24);
   tst_non_chrs(s3, 24);
-  
+
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_non_chrs(s1, 24);
   tst_non_chrs(s3, 24);
-  tst_non_chrs(s4, 24);  
-  
+  tst_non_chrs(s4, 24);
+
   return (TST_B_RET(ret));
 }

@@ -187,7 +187,7 @@ Constant: VSTR_TYPE_FMT_END
 
  Note:
 
-  Because you can have multiple arguments associated with one custom "fmt" 
+  Because you can have multiple arguments associated with one custom "fmt"
  specification this has to be the last argument to every call to
  vstr_fmt_add().
   Just specifying this type means that there are no arguments used, by the
@@ -1594,7 +1594,7 @@ Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP
 
 Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 
- Parameter[1]: Returns 
+ Parameter[1]: Returns
  Type[1]: const char **
 
  Explanation:
@@ -1605,13 +1605,13 @@ Constant: VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 
 Constant: VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 
- Parameter[1]: 
+ Parameter[1]:
  Type[1]: const char *
 
  Explanation:
 
   This option will set the value of the thousands grouping LC_NUMERIC locale
- variable. 
+ variable.
 
 
 Constant: VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE
@@ -1798,7 +1798,7 @@ Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
  Explanation:
 
   This option will make the number of spare nodes of the specified type fit
- into the range given, by calling either vstr_make_spare_nodes() or 
+ into the range given, by calling either vstr_make_spare_nodes() or
  vstr_free_spare_nodes().
 
  Note:

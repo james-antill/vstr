@@ -15,17 +15,17 @@ int tst(void)
 
   TST_I18N("%d %.*s %ju <%*ls>");
   TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "1 two 3 <    four>"));
-  
+
   TST_I18N("%1$d %3$.*2$s <%4$4ju> <%6$*5$ls>");
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len,
                                       "1 two <   3> <    four>"));
-  
+
   TST_I18N("<%6$*5$ls> <%-4$4ju> %3$.*2$s %1$d");
   TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len,
                                       "<    four> <3   > two 1"));
-  
+
   TST_I18N("<%6$*5$ls> %3$.*2$s %4$ju %1$d");
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "<    four> two 3 1"));
-  
+
   return (TST_B_RET(ret));
 }

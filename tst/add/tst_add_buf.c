@@ -6,7 +6,7 @@ int tst(void)
 {
   int ret = 0;
   size_t app_len = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   VSTR_ADD_CSTR_BUF(s1, s1->len, "");
@@ -42,10 +42,10 @@ int tst(void)
 
   VSTR_ADD_CSTR_BUF(s3, 1, buf);
 
-  TST_B_TST(ret,  9, !VSTR_CMP_CSTR_EQ(s3, 2, s3->len / 2, buf));  
+  TST_B_TST(ret,  9, !VSTR_CMP_CSTR_EQ(s3, 2, s3->len / 2, buf));
   TST_B_TST(ret, 10, !VSTR_CMP_CSTR_EQ(s3, 2 + (s3->len / 2), (s3->len / 2) - 1,
                                        buf + 1));
-  
+
   app_len = s1->len;
   ASSERT(s1->len == s2->len);
   ASSERT(s1->len == s3->len);
@@ -66,7 +66,7 @@ int tst(void)
   TST_B_TST(ret, 13,
             !VSTR_CMP_CSTR_EQ(s2, app_len + 1, 5, "abcdX"));
   TST_B_TST(ret, 14, !s2->iovec_upto_date);
-  
+
   vstr_add_cstr_buf(s3, app_len, "abcdX");
   TST_B_TST(ret, 15,
             !VSTR_CMP_CSTR_EQ(s3, app_len + 1, 5, "abcdX"));
@@ -77,9 +77,9 @@ int tst(void)
   vstr_add_cstr_buf(s1, 1, "abcdX");
   vstr_del(s1, 1, 1);
   vstr_sc_reduce(s1, 1, s1->len, 1);
-  
+
   TST_B_TST(ret, 17,
             !VSTR_CMP_CSTR_EQ(s1, 1, 5, "abcdX"));
-  
+
   return (TST_B_RET(ret));
 }

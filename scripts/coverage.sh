@@ -13,7 +13,7 @@ else
   exit 1;
 fi
 
-$s/b/COVERAGE.sh
+$s/b/COVERAGE.sh $@
 
 cd src
 
@@ -21,6 +21,6 @@ if $doln; then
  lndir ../$s/../src
 fi
 
-cd ..
-$s/ggcov.sh
+# $s/lcov.sh
+# $s/ggcov.sh
 

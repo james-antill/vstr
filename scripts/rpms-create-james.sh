@@ -12,7 +12,10 @@ cd ../build/vstr
 rm -rf vstr-$v
 cp -a $s ./vstr-$v
 cd ./vstr-$v
+
 ./scripts/clean.sh
+
+rm -rf ./examples/perf*
 
 find . \
  \( -name "*.o" -o -name ".*[%~]" -o -name "*[%~]" -o -name "#*#" \) \

@@ -12,11 +12,11 @@ int tst(void)
   unsigned int split2_num = 0;
   unsigned int split4_num = 0;
   unsigned int split8_num = 0;
-  
+
   VSTR_SECTS_DECL_INIT(sects8);
   VSTR_SECTS_DECL_INIT(sects4);
   VSTR_SECTS_DECL_INIT(sects2);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, ":a::b:!:c::d:");
   a_pos = 2;
   b_pos = 5;
@@ -29,7 +29,7 @@ int tst(void)
                                     sects4, sects4->sz, VSTR_FLAG_SPLIT_DEF);
   split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, "!:",
                                     sects8, sects8->sz, VSTR_FLAG_SPLIT_DEF);
-  
+
   VSTR_SECTS_DECL_INIT(sects8); /* can do many times without harm */
   VSTR_SECTS_DECL_INIT(sects4);
   VSTR_SECTS_DECL_INIT(sects2);
@@ -56,7 +56,7 @@ int tst(void)
                      (VSTR_SECTS_NUM(sects4, 3)->len != 1) ||
                      (VSTR_SECTS_NUM(sects4, 4)->pos != d_pos) ||
                      (VSTR_SECTS_NUM(sects4, 4)->len != 1)));
-  
+
   TST_B_TST(ret, 3, ((sects2->num != 2) ||
                      (split2_num  != 2) ||
                      (VSTR_SECTS_NUM(sects2, 1)->pos != a_pos) ||
@@ -68,7 +68,7 @@ int tst(void)
   sects2->num = 0;
   split2_num = VSTR_SPLIT_CSTR_CHRS(s1, 1, s1->len, "!:",
                                     sects2, 0, VSTR_FLAG_SPLIT_DEF);
-  
+
   TST_B_TST(ret, 4, ((sects2->num != 2) ||
                      (split2_num  != 4) ||
                      (VSTR_SECTS_NUM(sects2, 1)->pos != a_pos) ||
@@ -85,7 +85,7 @@ int tst(void)
                                     sects4, sects4->sz, VSTR_FLAG_SPLIT_REMAIN);
   split8_num = VSTR_SPLIT_CSTR_CHRS(s1, 1, s1->len, "!:",
                                     sects8, sects8->sz, VSTR_FLAG_SPLIT_REMAIN);
-  
+
   TST_B_TST(ret, 5, ((sects8->num != 8) ||
                      (split8_num  != 4) ||
                      (VSTR_SECTS_NUM(sects8, 5)->pos != a_pos) ||
@@ -107,7 +107,7 @@ int tst(void)
                      (VSTR_SECTS_NUM(sects4, 3)->len != 1) ||
                      (VSTR_SECTS_NUM(sects4, 4)->pos != (d_pos - 1)) ||
                      (VSTR_SECTS_NUM(sects4, 4)->len != 3)));
-  
+
   TST_B_TST(ret, 7, ((sects2->num != 2) ||
                      (split2_num  != 2) ||
                      (VSTR_SECTS_NUM(sects2, 1)->pos != a_pos) ||
@@ -121,13 +121,13 @@ int tst(void)
                                     sects2, sects2->sz,
                                     VSTR_FLAG_SPLIT_BEG_NULL |
                                     VSTR_FLAG_SPLIT_REMAIN);
-  
+
   sects8->num = 0;
   split8_num = VSTR_SPLIT_CSTR_CHRS(s1, 1, s1->len, "!:",
                                     sects8, sects8->sz,
                                     VSTR_FLAG_SPLIT_BEG_NULL |
                                     VSTR_FLAG_SPLIT_REMAIN);
-  
+
   TST_B_TST(ret, 8, ((sects8->num != 5) ||
                      (split8_num  != 5) ||
                      (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
@@ -153,7 +153,7 @@ int tst(void)
   split2_num = VSTR_SPLIT_CSTR_CHRS(s1, 1, s1->len, "!:",
                                     sects2, 0,
                                     VSTR_FLAG_SPLIT_BEG_NULL);
-  
+
   TST_B_TST(ret, 10, ((sects2->num != 2) ||
                       (split2_num  != 5) ||
                       (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
@@ -167,17 +167,17 @@ int tst(void)
                                     sects2, 0,
                                     VSTR_FLAG_SPLIT_BEG_NULL |
                                     VSTR_FLAG_SPLIT_NO_RET);
-  
+
   TST_B_TST(ret, 11, ((sects2->num != 2) ||
                       !split2_num ||
                       (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
                       (VSTR_SECTS_NUM(sects2, 1)->len != 0) ||
                       (VSTR_SECTS_NUM(sects2, 2)->pos != a_pos) ||
                       (VSTR_SECTS_NUM(sects2, 2)->len != 1)));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_cstr_buf(s1, s1->len, ":!:a");
-  
+
   sects8->num = 0;
   split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, ":!",
                                     sects8, sects8->sz,
@@ -191,6 +191,6 @@ int tst(void)
   split8_num = vstr_split_cstr_chrs(s1, 1, s1->len - 1, "!:",
                                     sects8, 3,
                                     VSTR_FLAG_SPLIT_BEG_NULL);
-  
+
   return (TST_B_RET(ret));
 }

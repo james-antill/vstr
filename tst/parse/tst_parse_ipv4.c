@@ -28,9 +28,9 @@ int tst(void)
   unsigned int err = -1;
   int ret = 0;
 
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, "127.0.0.1/8");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV4_DEF, 127, 0, 0, 1, 32, strlen("127.0.0.1"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV4_FULL, 127, 0, 0, 1, 32, strlen("127.0.0.1"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV4_CIDR, 127, 0, 0, 1, 8, strlen("127.0.0.1/8"), 0);
@@ -48,27 +48,27 @@ int tst(void)
          0, 0, 0, 0, 0, strlen("127.0.0.1/"),
          VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL);
 
-  
-  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.000.000.001/08");
-  
-  TST_IP(VSTR_FLAG03(PARSE_IPV4, ZEROS, CIDR, CIDR_FULL),
-         127, 0, 0, 1, 8, strlen("127.000.000.001/08"), 0);  
 
-  
+  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.000.000.001/08");
+
+  TST_IP(VSTR_FLAG03(PARSE_IPV4, ZEROS, CIDR, CIDR_FULL),
+         127, 0, 0, 1, 8, strlen("127.000.000.001/08"), 0);
+
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.0.0.1/33");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV4_CIDR,
          0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV4_ERR_CIDR_OOB);
 
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,  "256.0.0.1");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV4_DEF,
          0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV4_ERR_IPV4_OOB);
 
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.0.0.1/255.255.128.0");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV4_NETMASK,
          127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128.0"), 0);
   TST_IP(VSTR_FLAG02(PARSE_IPV4, NETMASK, NETMASK_FULL),
@@ -78,7 +78,7 @@ int tst(void)
   TST_IP(VSTR_FLAG_PARSE_IPV4_ONLY,
          127, 0, 0, 1, 32, strlen("127.0.0.1"), VSTR_TYPE_PARSE_IPV4_ERR_ONLY);
 
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.0.0.1/255.255.255.255");
 
   TST_IP(VSTR_FLAG_PARSE_IPV4_NETMASK,
@@ -97,7 +97,7 @@ int tst(void)
          0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL);
   TST_IP(VSTR_FLAG_PARSE_IPV4_ONLY,
          127, 0, 0, 0, 32, strlen("127.0."), VSTR_TYPE_PARSE_IPV4_ERR_ONLY);
-  
+
   return (0);
 }
 

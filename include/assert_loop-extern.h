@@ -11,6 +11,8 @@
 #  define ASSERT_RET(x, y)   do { if (x) {} else return (y); } while (FALSE)
 #  define assert_ret_void(x) do { if (x) {} else return; } while (FALSE)
 #  define ASSERT_RET_VOID(x) do { if (x) {} else return; } while (FALSE)
+#  define assert_no_switch_def() break
+#  define ASSERT_NO_SWITCH_DEF() break
 #else
 # ifdef USE_ASSERT_LOOP
 extern void vstr__assert_loop(const char *,
@@ -79,6 +81,8 @@ extern void vstr__assert_loop(const char *,
   abort(); } \
  } while (FALSE)
 # endif
+# define assert_no_switch_def() default: ASSERT(FALSE)
+# define ASSERT_NO_SWITCH_DEF() default: ASSERT(FALSE)
 #endif
 
 #endif

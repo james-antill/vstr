@@ -1,21 +1,21 @@
 #define VSTR_SECT_C
 /*
  *  Copyright (C) 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions to manage a Vstr section */
@@ -50,16 +50,11 @@ void vstr_sects_free(Vstr_sects *sects)
   VSTR__F(sects);
 }
 
-static int vstr__sects_add(Vstr_sects *sects)
+static int vstr__sects_mv(Vstr_sects *sects, unsigned int sz)
 {
-  unsigned int sz = sects->sz;
-  
-  if (sects->alloc_double)
-    sz <<= 1;
-  else
-    ++sz;
-  
-  if (!VSTR__MV(sects->ptr, sizeof(Vstr_sect_node) * sz))
+  struct Vstr_sect_node *tmp_ptr = NULL;
+
+  if (!VSTR__MV(sects->ptr, tmp_ptr, sizeof(Vstr_sect_node) * sz))
   {
     sects->malloc_bad = TRUE;
     return (FALSE);
@@ -69,21 +64,45 @@ static int vstr__sects_add(Vstr_sects *sects)
   return (TRUE);
 }
 
+static int vstr__sects_add(Vstr_sects *sects)
+{
+  unsigned int sz = sects->sz;
+
+  if (!sz)
+  {
+    if (!(sects->ptr = VSTR__MK(sizeof(Vstr_sect_node) * 1)))
+    {
+      sects->malloc_bad = TRUE;
+      return (FALSE);
+    }
+    else
+    {
+      sects->sz = 1;
+      return (TRUE);
+    }
+  }
+  
+  if (sects->alloc_double)
+  {
+    sz <<= 1;
+    
+    if (sz <= sects->sz)
+      sz = sects->sz + 1;
+  }
+  else
+    ++sz;
+
+  return (vstr__sects_mv(sects, sz));
+}
+
 static int vstr__sects_del(Vstr_sects *sects)
 {
   unsigned int sz = sects->sz;
-  
+
   sz >>= 1;
   assert(sz >= sects->num);
-  
-  if (!VSTR__MV(sects->ptr, sizeof(Vstr_sect_node) * sz))
-  {
-    sects->malloc_bad = TRUE;
-    return (FALSE);
-  }
-  sects->sz = sz;
 
-  return (TRUE);
+  return (vstr__sects_mv(sects, sz));
 }
 
 int vstr_extern_inline_sects_add(Vstr_sects *sects,
@@ -100,10 +119,10 @@ int vstr_sects_del(Vstr_sects *sects, unsigned int num)
 {
   assert(sects->sz && num);
   assert(sects->num >= num);
-  
+
   if (!sects->sz || !num)
     return (FALSE);
-  
+
   if (num > sects->num)
     return (FALSE);
 
@@ -116,8 +135,8 @@ int vstr_sects_del(Vstr_sects *sects, unsigned int num)
     --sects->num;
 
   if (sects->can_del_sz && (sects->num < (sects->sz / 2)))
-    vstr__sects_del(sects);
-  
+    vstr__sects_del(sects); /* can't return this error */
+
   return (TRUE);
 }
 
@@ -127,16 +146,16 @@ unsigned int vstr_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
 
   if (!sects->sz)
     return (0);
-  
+
   while (count++ < sects->num)
   {
     size_t scan_pos = VSTR_SECTS_NUM(sects, count)->pos;
     size_t scan_len = VSTR_SECTS_NUM(sects, count)->len;
-    
+
     if ((scan_pos == pos) && (scan_len == len))
       return (count);
   }
-  
+
   return (0);
 }
 
@@ -154,7 +173,7 @@ int vstr_sects_foreach(const Vstr_base *base,
 
   if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD)
     scan = sects->num;
-  
+
   while ((!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD) &&
           (scan < sects->num)) ||
          ((flags & VSTR_FLAG_SECTS_FOREACH_BACKWARD) && scan))
@@ -181,7 +200,7 @@ int vstr_sects_foreach(const Vstr_base *base,
         case VSTR_TYPE_SECTS_FOREACH_DEL:
           sects->ptr[scan].pos = 0;
           break;
-          
+
         case VSTR_TYPE_SECTS_FOREACH_RET:
           goto shorten_and_return;
       }
@@ -196,7 +215,7 @@ int vstr_sects_foreach(const Vstr_base *base,
     --sects->num;
 
   if (sects->can_del_sz && (sects->num < (sects->sz / 2)))
-    vstr__sects_del(sects);
+    vstr__sects_del(sects); /* can't return this error */
 
   return (count);
 }
@@ -213,10 +232,10 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
 {
   Vstr__sects_cache_data *data = passed_data;
   unsigned int count = 0;
-  
+
   ASSERT(base->conf->cache_pos_cb_sects);
   ASSERT(data == vstr_cache_get(base, base->conf->cache_pos_cb_sects));
-  
+
   if (type == VSTR_TYPE_CACHE_FREE)
   {
     VSTR__F(data);
@@ -225,7 +244,7 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
 
   if (type == VSTR_TYPE_CACHE_SUB) /* do nothing for substitutions ... */
     return (data);
-  
+
   while (count < data->len)
   {
     Vstr_sects *sects = data->updates[count];
@@ -245,12 +264,12 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
                 (pos < (sects->ptr[scan].pos + sects->ptr[scan].len - 1)))
               sects->ptr[scan].len += len;
           }
-          
+
           ++scan;
         }
       }
       break;
-      
+
       case VSTR_TYPE_CACHE_DEL:
       {
         unsigned int scan = 0;
@@ -290,16 +309,16 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
                 sects->ptr[scan].len -= len;
             }
           }
-          
+
           ++scan;
         }
       }
       break;
-        
+
       default:
         ASSERT(FALSE);
     }
-    
+
     ++count;
   }
 
@@ -315,7 +334,7 @@ static Vstr_sects **vstr__sects_update_srch(Vstr__sects_cache_data *data,
   {
     if (data->updates[count] == sects)
       return (&data->updates[count]);
-    
+
     ++count;
   }
 
@@ -326,9 +345,9 @@ static void vstr__sects_update_del(Vstr__sects_cache_data *data,
                                    Vstr_sects **sects)
 {
   Vstr_sects **end = (data->updates + (data->len - 1));
-  
+
   --data->len;
-  
+
   if (sects != end)
     vstr_wrap_memmove(sects, sects + 1,
                       (end - sects) * sizeof(Vstr_sects *));
@@ -339,17 +358,17 @@ int vstr_sects_update_add(const Vstr_base *base,
 {
   Vstr__sects_cache_data *data = NULL;
   unsigned int sz = 1;
-  
+
   if (!base->conf->cache_pos_cb_sects)
   {
     unsigned int tmp = 0;
-    
+
     tmp = vstr_cache_add(base->conf, "/vstr__/sects/update",
                          vstr__sects_update_cb);
 
     if (!tmp)
       goto malloc_bad;
-    
+
     base->conf->cache_pos_cb_sects = tmp;
   }
 
@@ -365,7 +384,7 @@ int vstr_sects_update_add(const Vstr_base *base,
 
     data->sz = 1;
     data->len = 0;
-    
+
     vstr_cache_set(base, base->conf->cache_pos_cb_sects, data);
   }
 
@@ -374,23 +393,25 @@ int vstr_sects_update_add(const Vstr_base *base,
   ASSERT(data->len <= data->sz);
   if (data->len >= data->sz)
   {
-    if (!(VSTR__MV(data, sizeof(Vstr__sects_cache_data) +
+    Vstr__sects_cache_data *tmp_data = NULL;
+
+    if (!(VSTR__MV(data, tmp_data, sizeof(Vstr__sects_cache_data) +
                    (sz * sizeof(Vstr_sects *)))))
       goto malloc_bad;
-    
+
     data->sz = data->len + 1;
-    
+
     vstr_cache_set(base, base->conf->cache_pos_cb_sects, data);
   }
 
   data->updates[data->len] = sects;
   ++data->len;
-  
+
   return (TRUE);
 
  malloc_bad:
   base->conf->malloc_bad = TRUE;
-  return (FALSE);  
+  return (FALSE);
 }
 
 int vstr_sects_update_del(const Vstr_base *base,
@@ -398,10 +419,10 @@ int vstr_sects_update_del(const Vstr_base *base,
 {
   Vstr__sects_cache_data *data = NULL;
   Vstr_sects **srch = NULL;
-  
+
   if (!sects || !base->conf->cache_pos_cb_sects)
     return (FALSE);
-  
+
   data = vstr_cache_get(base, base->conf->cache_pos_cb_sects);
   if (!data)
     return (FALSE);
@@ -412,7 +433,7 @@ int vstr_sects_update_del(const Vstr_base *base,
     ASSERT(FALSE);
     return (FALSE);
   }
-  
+
   vstr__sects_update_del(data, srch);
 
   if (!data->len)
@@ -420,6 +441,6 @@ int vstr_sects_update_del(const Vstr_base *base,
     VSTR__F(data);
     vstr_cache_set(base, base->conf->cache_pos_cb_sects, NULL);
   }
-  
+
   return (TRUE);
 }

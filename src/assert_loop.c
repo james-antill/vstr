@@ -28,10 +28,10 @@ void vstr__assert_loop(const char *expr,
                        const char *pretty_func)
 {
   int keep_going = 1;
-  
+
   fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n",
           expr, pretty_func, line_num, file_name);
-  
+
   while (keep_going) { /* just wait... can be set from gdb */ }
 }
 

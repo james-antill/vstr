@@ -35,7 +35,7 @@ static void DIE(const char *msg, ...)
   if (err)
   {
     va_list ap;
-    
+
     va_start(ap, msg);
     vstr_add_vsysfmt(err, 0, msg, ap);
     va_end(ap);
@@ -60,7 +60,7 @@ static void DIE(const char *msg, ...)
 static void ex_cat_read_fd_write_stdout(Vstr_base *s1, int fd)
 {
   unsigned int err = 0;
-  
+
   while (1)
   {
     if ((s1)->len < MAX_R_DATA_INCORE)
@@ -101,22 +101,22 @@ int main(int argc, char *argv[])
 
   if (fstat(1, &stat_buf) == -1)
     DIE("fstat(STDOUT): %m\n");
-  
+
   if (!(conf = vstr_make_conf()))
     errno = ENOMEM, DIE("vstr_make_conf: %m\n");
-  
+
   if (!stat_buf.st_blksize)
     stat_buf.st_blksize = 4096;
-  
+
   vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
 
-  
-  /* create a Vstr string for doing the IO with */  
+
+  /* create a Vstr string for doing the IO with */
   s1 = vstr_make_base(conf);
   if (!s1)
     errno = ENOMEM, DIE("vstr_make_base: %m\n");
 
-  
+
   /*  "free" the Vstr configuration ... it is still being used by the
    * Vstr string s1, this just removes our hold on it and it will automatically
    * get truely free'd when s1 is free'd later */
@@ -133,14 +133,14 @@ int main(int argc, char *argv[])
   while (count < argc)
   {
     int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-    
+
     if (fd == -1)
       DIE("open(%s): %m\n", argv[count]);
-    
+
     ex_cat_read_fd_write_stdout(s1, fd);
-    
+
     close(fd);
-    
+
     ++count;
   }
 
@@ -157,14 +157,14 @@ int main(int argc, char *argv[])
   /* These next two calls are only really needed to make valgrind happy,
    * but that does help in that any memory leaks are easier to see.
    */
-  
+
   /* free s1, this also free's out custom Vstr configuration */
   vstr_free_base(s1);
-  
+
   /* "exit" Vstr, this free's all internal data and no library calls apart from
    * vstr_init() should be called after this.
    */
   vstr_exit();
-  
+
   exit (EXIT_SUCCESS);
 }

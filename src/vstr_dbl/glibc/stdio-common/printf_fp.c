@@ -242,17 +242,19 @@ __printf_fp (FILE *fp,
 		}
 	    }
 
-{	  mp_limb_t _cy = __mpn_mul_1 (frac, frac, fracsize, 10);
+{
+          mp_limb_t _cy = __mpn_mul_1 (frac, frac, fracsize, 10);
 	  if (_cy != 0)
 	    frac[fracsize++] = _cy;
-}	}
+}
+	}
 
       return L'0' + hi;
     }
 
 
   /* Figure out the decimal point character.  */
-  if (info->extra == 0)
+  if (extra == 0)
     {
       decimal = _NL_CURRENT (LC_NUMERIC, DECIMAL_POINT);
       decimalwc = _NL_CURRENT_WORD (LC_NUMERIC, _NL_NUMERIC_DECIMAL_POINT_WC);
@@ -274,7 +276,7 @@ __printf_fp (FILE *fp,
 
   if (info->group)
     {
-      if (info->extra == 0)
+      if (extra == 0)
 	grouping = _NL_CURRENT (LC_NUMERIC, GROUPING);
       else
 	grouping = _NL_CURRENT (LC_MONETARY, MON_GROUPING);
@@ -286,7 +288,7 @@ __printf_fp (FILE *fp,
 	  /* Figure out the thousands separator character.  */
 	  if (wide)
 	    {
-	      if (info->extra == 0)
+	      if (extra == 0)
 		thousands_sepwc =
 		  _NL_CURRENT_WORD (LC_NUMERIC, _NL_NUMERIC_THOUSANDS_SEP_WC);
 	      else
@@ -296,7 +298,7 @@ __printf_fp (FILE *fp,
 	    }
 	  else
 	    {
-	      if (info->extra == 0)
+	      if (extra == 0)
 		thousands_sep = _NL_CURRENT (LC_NUMERIC, THOUSANDS_SEP);
 	      else
 		thousands_sep = _NL_CURRENT (LC_MONETARY, MON_THOUSANDS_SEP);

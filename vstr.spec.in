@@ -60,6 +60,9 @@ Requires: %{name} = %{ver}
  Also includes a %{name}.pc file for pkg-config.
 
 %changelog
+* Fri Aug  8 2003 James Antill <james@and.org>
+- Extra example programs to be installed
+
 * Sat Mar 15 2003 James Antill <james@and.org>
 - Add dia diagram of internal structure.
 - Added design and printf_comparison html doco.
@@ -124,7 +127,7 @@ make check
 %install
 rm -rf $RPM_BUILD_ROOT
 
-make DESTDIR=$RPM_BUILD_ROOT install 
+make DESTDIR=$RPM_BUILD_ROOT install
 
 cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 
@@ -133,16 +136,22 @@ mkdir $RPM_BUILD_ROOT/%{devdoco}/examples
 cp   \
  examples/Makefile \
  examples/ex_cat.c \
+ examples/ex_csv.c \
+ examples/ex_hello_world.c \
  examples/ex_hexdump.c \
  examples/ex_lookup_ip.c \
  examples/ex_mon_cp.c \
  examples/ex_nl.c \
+ examples/ex_perf.h \
+ examples/ex_perf_nodesize.c \
+ examples/ex_perf_nodesize_foreach.c \
+ examples/ex_perf_sgopenssl.c \
  examples/ex_rot13.c \
- examples/ex_sg_compare.c \
  examples/ex_slowcat.c \
  examples/ex_utils.c \
  examples/ex_utils.h \
  examples/ex_yes.c \
+ examples/ex_zcat.c \
  examples/hexdump_data \
    $RPM_BUILD_ROOT/%{devdoco}/examples/
 
@@ -185,7 +194,6 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/design.html
 %{devdoco}/functions.txt
 %{devdoco}/functions.html
-%{devdoco}/namespace.txt
 %{devdoco}/namespace.html
 %{devdoco}/overview.html
 %{devdoco}/structs.txt
@@ -194,14 +202,20 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/internal_structure.dia
 %{devdoco}/examples/Makefile
 %{devdoco}/examples/ex_cat.c
+%{devdoco}/examples/ex_csv.c
+%{devdoco}/examples/ex_hello_world.c
 %{devdoco}/examples/ex_hexdump.c
 %{devdoco}/examples/ex_lookup_ip.c
 %{devdoco}/examples/ex_mon_cp.c
 %{devdoco}/examples/ex_nl.c
+%{devdoco}/examples/ex_perf.h
+%{devdoco}/examples/ex_perf_nodesize.c
+%{devdoco}/examples/ex_perf_nodesize_foreach.c
+%{devdoco}/examples/ex_perf_sgopenssl.c
 %{devdoco}/examples/ex_rot13.c
-%{devdoco}/examples/ex_sg_compare.c
 %{devdoco}/examples/ex_slowcat.c
 %{devdoco}/examples/ex_utils.c
 %{devdoco}/examples/ex_utils.h
 %{devdoco}/examples/ex_yes.c
+%{devdoco}/examples/ex_zcat.c
 %{devdoco}/examples/hexdump_data

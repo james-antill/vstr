@@ -120,11 +120,11 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     case PRNT_SPAC: flags = flags_sp;  break;
     case PRNT_NONE:                    break;
   }
-  
+
   /* note that we don't want to create more data, if we are over our limit */
   if (s1->len > MAX_W_DATA_INCORE)
     return (FALSE);
-  
+
   /* while we have a hexdump line ... */
   while (s2->len >= 16)
   {
@@ -145,7 +145,7 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     EX_HEXDUMP_X2X2(s1, buf[10], buf[11]);
     EX_HEXDUMP_X2X2(s1, buf[12], buf[13]);
     EX_HEXDUMP_X2X2(s1, buf[14], buf[15]);
-    
+
     VSTR_ADD_CSTR_BUF(s1, s1->len, "  ");
 
     /* write out characters */
@@ -174,7 +174,7 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     vstr_export_buf(s2, 1, s2->len, buf, sizeof(buf));
 
     EX_HEXDUMP_X8(s1, addr);
-    
+
     while (got >= 2)
     {
       EX_HEXDUMP_X2X2(s1, ptr[0], ptr[1]);
@@ -189,7 +189,7 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 
     /* easy way to add X amount of ' ' characters */
     vstr_add_rep_chr(s1, s1->len, ' ', (missing * 2) + (missing / 2) + 2);
-    
+
     vstr_conv_unprintable_chr(s2, 1, s2->len, flags, '.');
     vstr_add_vstr(s1, s1->len, s2, 1, s2->len, VSTR_TYPE_ADD_ALL_BUF);
 
@@ -218,9 +218,9 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
   while (keep_going)
   {
     int proc_data = FALSE;
-    
+
     EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
-    
+
     proc_data = ex_hexdump_process(s1, s2, !keep_going);
 
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
@@ -237,23 +237,23 @@ int main(int argc, char *argv[])
   int count = 1; /* skip the program name */
   struct stat stat_buf;
   unsigned int use_mmap = FALSE;
-  
+
   /* init the Vstr string library, note that if this fails we can't call DIE
    * or the program will crash */
-  
+
   if (!vstr_init())
     exit (EXIT_FAILURE);
-  
+
   /*  Change the default Vstr configuration, so we can have a node buffer size
    * that is whatever the stdout block size is */
   if (fstat(1, &stat_buf) == -1)
     stat_buf.st_blksize = 4 * 1024;
   if (!stat_buf.st_blksize)
     stat_buf.st_blksize = 4 * 1024; /* defualt 4k -- proc etc. */
-  
+
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
   vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
-  
+
   /* create two Vstr strings for doing the IO with */
   if (FALSE ||
       !(s1 = vstr_make_base(NULL)) ||
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 
   /* set output to non-blocking mode */
   ex_utils_set_o_nonblock(STDOUT_FILENO);
-  
+
   while (count < argc)
   { /* quick hack getopt_long */
     if (!strcmp("--", argv[count]))
@@ -319,13 +319,13 @@ Report bugs to James Antill <james@and.org>.\n\
     ex_utils_set_o_nonblock(STDIN_FILENO);
     ex_hexdump_read_fd_write_stdout(s1, s2, STDIN_FILENO);
   }
-  
+
   /* loop through all arguments, open the file specified
    * and do the read/write loop */
   while (count < argc)
   {
     unsigned int err = 0;
-    
+
     /* try to mmap the file, as that is faster ... */
     if (use_mmap && (s2->len < MAX_R_DATA_INCORE))
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
@@ -336,7 +336,7 @@ Report bugs to James Antill <james@and.org>.\n\
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-      
+
       if (fd == -1)
         WARN("open(%s):", argv[count]);
 
@@ -344,7 +344,7 @@ Report bugs to James Antill <james@and.org>.\n\
        * read/alter/write loop */
       ex_utils_set_o_nonblock(fd);
       ex_hexdump_read_fd_write_stdout(s1, s2, fd);
-      
+
       close(fd);
     }
     else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
@@ -355,7 +355,7 @@ Report bugs to James Antill <james@and.org>.\n\
 
     /* write some of what we've created */
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-    
+
     ++count;
   }
 
@@ -367,11 +367,11 @@ Report bugs to James Antill <james@and.org>.\n\
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
     EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 16, s2->len, proc_data);
   }
-  
+
   /* The vstr_free_base() and vstr_exit() calls are only really needed to
    * make memory checkers happy.
    */
-  
+
  out:
   vstr_free_base(s2);
 
@@ -380,10 +380,10 @@ Report bugs to James Antill <james@and.org>.\n\
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
     EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 16, FALSE, FALSE);
   }
-  
+
   vstr_free_base(s1);
-  
+
   vstr_exit();
-  
+
   exit (EXIT_SUCCESS);
 }

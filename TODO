@@ -7,11 +7,21 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
-. http://www.mibsoftware.com/libmib/astring/0001.htm (docs)
-  http://www.derkeiler.com/Mailing-Lists/securityfocus/secprog/2003-02/0007.html
-  security implications of vstr. (docs)
-. http://www.oreillynet.com/pub/a/network/2003/05/20/secureprogckbk.html
-  http://www.zork.org/safestr/
+. vstr_ref_make_strdup() ?
+
+. %s, NULL - win32 aparently prints "" not "(null)" ... should probably allow
+  that to be configured (feature)
+
+. strspn() with one char ... needs speed up (speed)
+
+. inter-operation with POSIX APIs etc. (docs)
+
+. security ... more info. on testing. (docs)
+. security ... formal verification methods? (docs)
+
+. comparison ... licenses (docs)
+. comparison ... portability plus ...
+  can you copy and paste the code ... or need a shared lib. (docs)
 
 . speed  implications of vstr. (docs)
 . memory implications of vstr. (docs)

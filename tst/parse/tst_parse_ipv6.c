@@ -31,7 +31,7 @@ int tst(void)
   size_t num_len = -1;
   unsigned int err = -1;
   int ret = -1;
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "::/64");
 
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
@@ -47,36 +47,36 @@ int tst(void)
          0, 0, 0, 0, 0, 0, 0, 1,  64, strlen("::1/64"), 0);
   TST_IP(VSTR_FLAG02(PARSE_IPV6, CIDR, CIDR_FULL),
          0, 0, 0, 0, 0, 0, 0, 1,  64, strlen("::1/64"), 0);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "0:FFF::/24");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0, 0xFFF, 0, 0, 0, 0, 0, 0, 128, strlen("0:FFF::"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0, 0xFFF, 0, 0, 0, 0, 0, 0,  24, strlen("0:FFF::/24"), 0);
   TST_IP(VSTR_FLAG02(PARSE_IPV6, CIDR, CIDR_FULL),
          0, 0xFFF, 0, 0, 0, 0, 0, 0,  24, strlen("0:FFF::/24"), 0);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "FFF::1/8");
 
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0xFFF, 0, 0, 0, 0, 0, 0, 1, 128, strlen("FFF::1"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0xFFF, 0, 0, 0, 0, 0, 0, 1,   8, strlen("FFF::1/8"), 0);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "FFF::1/138");
 
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_CIDR_OOB);
 
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,  "FFFFF::1");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_IPV6_OOB);  
-  
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_IPV6_OOB);
+
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,  "F:1:E:2:D:3:c:4");
-  
+
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0xF, 1, 0xE, 2, 0xD, 3, 0xC, 4, 128, s1->len, 0);
 
@@ -105,7 +105,7 @@ int tst(void)
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,  "FF01::101");
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0xFF01, 0, 0, 0, 0, 0, 0, 0x101, 128, s1->len, 0);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,  "0:0:0:0:0:0:13.1.68.3");
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0, 0, 0, 0, 0, 0, IPV4(13U, 1), IPV4(68U, 3), 128, s1->len, 0);
@@ -121,7 +121,7 @@ int tst(void)
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0, 0, 0, 0, 0, 0xFFFF, IPV4(129U, 144), IPV4(52U, 38),
          128, s1->len, 0);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1,s1->len,"12AB:0000:0000:CD30:0000:0000:0000:0000/60");
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0x12AB, 0, 0, 0xCD30, 0, 0, 0, 0, 60, s1->len, 0);
@@ -139,7 +139,7 @@ int tst(void)
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "1/8");
   TST_IP(VSTR_FLAG_PARSE_IPV6_DEF,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL);
-  
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "1:2:3:4:5:6:7:8/");
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR | VSTR_FLAG_PARSE_IPV6_CIDR_FULL,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, VSTR_TYPE_PARSE_IPV6_ERR_CIDR_FULL);

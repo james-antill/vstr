@@ -34,7 +34,7 @@ int tst(void)
 #ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
   return (EXIT_FAILED_OK);
 #endif
-  
+
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,
@@ -46,7 +46,7 @@ int tst(void)
 
   ASSERT(s1->len == s3->len);
   ASSERT(s1->len == s4->len);
-  
+
   ++lens_fwd[0]; /* convert to position of char after %n */
   ++lens_fwd[1];
   ++lens_fwd[2];

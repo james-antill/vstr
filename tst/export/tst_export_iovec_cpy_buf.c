@@ -9,10 +9,10 @@ int tst(void)
   struct iovec iov[4];
   unsigned int num = 0;
   size_t len = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   ptr = strdup(buf);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
 
   iov[0].iov_base = buf;
@@ -34,9 +34,9 @@ int tst(void)
   TST_B_TST(ret, 5, memcmp(buf, ptr, s1->len));
   TST_B_TST(ret, 6, iov[2].iov_len != 3);
   TST_B_TST(ret, 7, iov[3].iov_len != (sizeof(buf) - 6));
-  
+
   iov[1].iov_len = 2;
-           
+
   memset(buf, 'X', sizeof(buf));
   len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, iov, 4, &num);
 
@@ -65,7 +65,7 @@ int tst(void)
   TST_B_TST(ret, 25, memcmp(iov[1].iov_base, ptr + 1, 2));
   TST_B_TST(ret, 26, iov[2].iov_len != 2);
   TST_B_TST(ret, 27, memcmp(iov[2].iov_base, ptr + 3, 2));
-  
+
   free(ptr);
 
   len = vstr_export_iovec_cpy_buf(s1, 1, 0, iov, 4, NULL);

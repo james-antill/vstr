@@ -3,21 +3,21 @@
 #endif
 /*
  *  Copyright (C) 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* exported functions which are inlined */
@@ -28,14 +28,22 @@
 #  define VSTR__ASSERT(x) /* do nothing */
 #endif
 
+#ifndef VSTR__ASSERT_RET
+#  define VSTR__ASSERT_RET(x, y) do { if (x) {} else return (y); } while (0)
+#endif
+
+#ifndef VSTR__ASSERT_NO_SWITCH_DEF
+#  define VSTR__ASSERT_NO_SWITCH_DEF() break
+#endif
+
 #ifdef VSTR_AUTOCONF_USE_WRAP_MEMCPY
 extern inline void *vstr_wrap_memcpy(void *passed_s1, const void *passed_s2,
                                      size_t n)
 {
   unsigned char *s1 = passed_s1;
   const unsigned char *s2 = passed_s2;
-  
-  if ((n > 7) || VSTR__BULTIN_CONST_P(n))
+
+  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
     memcpy(passed_s1, passed_s2, n);
   else switch (n)
   {
@@ -48,7 +56,7 @@ extern inline void *vstr_wrap_memcpy(void *passed_s1, const void *passed_s2,
     case 1:  s1[0] = s2[0];
       break;
   }
-  
+
   return (passed_s1);
 }
 #else
@@ -64,7 +72,7 @@ extern inline int vstr_wrap_memcmp(const void *passed_s1,
   int ret = 0;
   int tmp = 0;
 
-  if ((n > 7) || VSTR__BULTIN_CONST_P(n))
+  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
     ret = memcmp(passed_s1, passed_s2, n);
   else switch (n)
   {
@@ -77,7 +85,7 @@ extern inline int vstr_wrap_memcmp(const void *passed_s1,
     case 1:  tmp = s1[0] - s2[0]; if (tmp) ret = tmp;
       break;
   }
-  
+
   return (ret);
 }
 #else
@@ -104,7 +112,7 @@ extern inline void *vstr_wrap_memchr(const void *passed_s1, int c, size_t n)
     default: ret = memchr(s1, c, n);
       break;
   }
-  
+
   return ((void *)ret);
 }
 #else
@@ -115,8 +123,8 @@ extern inline void *vstr_wrap_memchr(const void *passed_s1, int c, size_t n)
 extern inline void *vstr_wrap_memset(void *passed_s1, int c, size_t n)
 {
   unsigned char *s1 = passed_s1;
-  
-  if ((n > 7) || VSTR__BULTIN_CONST_P(n))
+
+  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
     memset(passed_s1, c, n);
   switch (n)
   {
@@ -129,7 +137,7 @@ extern inline void *vstr_wrap_memset(void *passed_s1, int c, size_t n)
     case 1:  s1[0] = c;
       break;
   }
-  
+
   return (passed_s1);
 }
 #else
@@ -158,7 +166,7 @@ extern inline void vstr_ref_del(struct Vstr_ref *tmp)
 {
   if (!tmp)
     return; /* std. free semantics */
-  
+
   if (!--tmp->ref)
     (*tmp->func)(tmp);
 }
@@ -166,7 +174,7 @@ extern inline void vstr_ref_del(struct Vstr_ref *tmp)
 extern inline struct Vstr_ref *vstr_ref_add(struct Vstr_ref *tmp)
 {
   ++tmp->ref;
-  
+
   return (tmp);
 }
 
@@ -178,12 +186,12 @@ extern inline void *vstr_cache_get(const struct Vstr_base *base,
 
   if (!base->cache_available || !VSTR__CACHE(base))
     return ((void *)0);
-  
+
   --pos;
-  
+
   if (pos >= VSTR__CACHE(base)->sz)
     return ((void *)0);
-  
+
   return (VSTR__CACHE(base)->data[pos]);
 }
 
@@ -192,18 +200,18 @@ int vstr_cache__pos(const struct Vstr_base *base,
                     struct Vstr_node *node, size_t pos, unsigned int num)
 {
   struct Vstr__cache_data_pos *data = (struct Vstr__cache_data_pos *)0;
-  
+
   if (!base->cache_available)
     return (0 /* FALSE */);
 
   if (!(data = (struct Vstr__cache_data_pos *)vstr_cache_get(base, 1)) &&
       !(data = vstr_extern_inline_make_cache_pos(base)))
     return (0 /* FALSE */);
-  
+
   data->node = node;
   data->pos = pos;
   data->num = num;
-  
+
   return (1 /* TRUE */);
 }
 
@@ -217,22 +225,22 @@ struct Vstr_node *vstr_base__pos(const struct Vstr_base *base,
   unsigned int dummy_num = 0;
 
   if (!num) num = &dummy_num;
-  
+
   *pos += base->used;
   *num = 1;
-  
+
   if (*pos <= base->beg->len)
     return (base->beg);
-  
+
   /* must be more than one node */
-  
+
   if (orig_pos > (base->len - base->end->len))
   {
     *pos = orig_pos - (base->len - base->end->len);
     *num = base->num;
     return (base->end);
   }
-  
+
   if ((data = (struct Vstr__cache_data_pos *)vstr_cache_get(base, 1)) &&
       data->node && (data->pos <= orig_pos))
   {
@@ -240,18 +248,18 @@ struct Vstr_node *vstr_base__pos(const struct Vstr_base *base,
     *num = data->num;
     *pos = (orig_pos - data->pos) + 1;
   }
-  
+
   while (*pos > scan->len)
   {
     *pos -= scan->len;
-    
+
     scan = scan->next;
     ++*num;
   }
-  
+
   if (cache)
     vstr_cache__pos(base, scan, (orig_pos - *pos) + 1, *num);
- 
+
   return (scan);
 }
 
@@ -266,17 +274,19 @@ extern inline char *vstr_export__node_ptr(const struct Vstr_node *node)
     case VSTR_TYPE_NODE_REF:
       return (((char *)((const struct Vstr_node_ref *)node)->ref->ptr) +
               ((const struct Vstr_node_ref *)node)->off);
-    default: VSTR__ASSERT(0);
     case VSTR_TYPE_NODE_NON:
       break;
+      VSTR__ASSERT_NO_SWITCH_DEF();
   }
-  
+
   return ((char *)0);
 }
 
 extern inline char vstr_export_chr(const struct Vstr_base *base, size_t pos)
 {
-  struct Vstr_node *node = vstr_base__pos(base, &pos, (unsigned int *)0, 1);
+  struct Vstr_node *node = 0; /* NULL */
+  
+  node = vstr_base__pos(base, &pos, (unsigned int *)0, 1);
 
   /* errors, requests for data from NON nodes and real data are all == 0 */
   if (!node) return (0); /* FALSE */
@@ -289,30 +299,29 @@ extern inline int vstr_iter_fwd_beg(const struct Vstr_base *base,
                                     struct Vstr_iter *iter)
 {
   VSTR__ASSERT(base && iter);
-  VSTR__ASSERT(pos && (((pos <= base->len) &&
-                        ((pos + len - 1) <= base->len)) || !len));
 
   iter->node = (struct Vstr_node *)0;
-  if ((pos > base->len) || !len)
-    return (0); /* FALSE */
 
-  if ((pos + len - 1) > base->len)
-    len = base->len - (pos - 1);
+  VSTR__ASSERT_RET(pos && (((pos <= base->len) &&
+                            ((pos + len - 1) <= base->len)) || !len), 0);
+
+  if (!len)
+    return (0); /* FALSE */
   
   iter->node = vstr_base__pos(base, &pos, &iter->num, 1);
   --pos;
-  
+
   iter->len = iter->node->len - pos;
   if (iter->len > len)
     iter->len = len;
   len -= iter->len;
-  
+
   iter->remaining = len;
-    
+
   iter->ptr = (char *)0;
   if (iter->node->type != VSTR_TYPE_NODE_NON)
     iter->ptr = vstr_export__node_ptr(iter->node) + pos;
-  
+
   return (1); /* TRUE */
 }
 
@@ -327,19 +336,19 @@ extern inline int vstr_iter_fwd_nxt(struct Vstr_iter *iter)
 
   iter->node = iter->node->next;
   ++iter->num;
-  
+
   iter->len = iter->node->len;
-  
+
   VSTR__ASSERT(iter->len);
-  
+
   if (iter->len > iter->remaining)
-    iter->len = iter->remaining; 
+    iter->len = iter->remaining;
   iter->remaining -= iter->len;
-  
+
   iter->ptr = (char *)0;
   if (iter->node->type != VSTR_TYPE_NODE_NON)
     iter->ptr = vstr_export__node_ptr(iter->node);
-  
+
   return (1); /* TRUE */
 }
 
@@ -349,7 +358,7 @@ extern inline unsigned int vstr_num(const struct Vstr_base *base,
   struct Vstr_iter dummy_iter;
   struct Vstr_iter *iter = &dummy_iter;
   unsigned int beg_num = 0;
-  
+
   if (pos == 1 && len == base->len)
     return (base->num);
 
@@ -359,7 +368,7 @@ extern inline unsigned int vstr_num(const struct Vstr_base *base,
   beg_num = iter->num;
   while (vstr_iter_fwd_nxt(iter))
   { /* do nothing */; }
-  
+
   return ((iter->num - beg_num) + 1);
 }
 
@@ -367,9 +376,9 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
                                const void *buffer, size_t len)
 {
   VSTR__ASSERT(!(!base || !buffer || (pos > base->len)));
-  
+
   if (!len) return (1); /* TRUE */
-  
+
   if (base->len && (pos == base->len) &&
       (base->end->type == VSTR_TYPE_NODE_BUF) &&
       (len <= (base->conf->buf_sz - base->end->len)) &&
@@ -379,7 +388,7 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
 
     VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
     VSTR__ASSERT(vstr__check_real_nodes(base));
-  
+
     vstr_wrap_memcpy(((struct Vstr_node_buf *)scan)->buf + scan->len,
                      buffer, len);
     scan->len += len;
@@ -393,7 +402,7 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
 
     VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
     VSTR__ASSERT(vstr__check_real_nodes(base));
-    
+
     return (1); /* TRUE */
   }
 
@@ -404,7 +413,7 @@ extern inline int vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
                                    char chr, size_t len)
 { /* almost embarassingly similar to add_buf */
   VSTR__ASSERT(!(!base || (pos > base->len)));
-  
+
   if (!len) return (1); /* TRUE */
 
   if (base->len && (pos == base->len) &&
@@ -426,10 +435,10 @@ extern inline int vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
       unsigned int num = base->num + VSTR__CACHE(base)->vec->off - 1;
       VSTR__CACHE(base)->vec->v[num].iov_len += len;
     }
-    
+
     VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
     VSTR__ASSERT(vstr__check_real_nodes(base));
-  
+
     return (1); /* TRUE */
   }
 
@@ -444,23 +453,23 @@ extern inline size_t vstr_sc_posdiff(size_t beg_pos, size_t end_pos)
 extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 {
   VSTR__ASSERT(!(!base || ((pos > base->len) && len)));
-  
+
   if (!len) return (1); /* TRUE */
 
   if (!base->cache_available || base->cache_internal)
   {
     size_t end_len = 0;
-    
+
     if ((pos == 1) && ((len + base->used) < base->beg->len))
     { /* delete from beginning, in one node */
       struct Vstr_node *scan = base->beg;
       void *data = (void *)0;
-      
+
       VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
       VSTR__ASSERT(vstr__check_real_nodes(base));
-      
+
       base->len -= len;
-      
+
       switch (scan->type)
       {
         case VSTR_TYPE_NODE_BUF:
@@ -481,7 +490,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
           scan->len -= len;
           break;
       }
-      
+
       if ((data = vstr_cache_get(base, 3)))
       {
         struct Vstr__cache_data_cstr *pdata = (struct Vstr__cache_data_cstr *)0;
@@ -492,7 +501,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
         {
           size_t data_end_pos = pdata->pos + pdata->len - 1;
           size_t end_pos = len;
-          
+
           if (pdata->pos > end_pos)
             pdata->pos -= len;
           else if (data_end_pos <= end_pos)
@@ -504,7 +513,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
           {
             pdata->len -= vstr_sc_posdiff(pdata->pos, end_pos);
             pdata->off += vstr_sc_posdiff(pdata->pos, end_pos);
-            
+
             pdata->pos = pos;
           }
         }
@@ -512,7 +521,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
       if (base->iovec_upto_date)
       {
         unsigned int num = 1 + VSTR__CACHE(base)->vec->off - 1;
-        
+
         if (scan->type != VSTR_TYPE_NODE_NON)
         {
           char *tmp = (char *)VSTR__CACHE(base)->vec->v[num].iov_base;
@@ -524,14 +533,14 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
       if ((data = vstr_cache_get(base, 1)))
       {
         struct Vstr__cache_data_pos *pdata = (struct Vstr__cache_data_pos *)0;
-        
+
         pdata = (struct Vstr__cache_data_pos *)data;
         pdata->node = (struct Vstr_node *)0;
       }
-      
+
       VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
       VSTR__ASSERT(vstr__check_real_nodes(base));
-      
+
       return (1); /* TRUE */
     }
 
@@ -541,16 +550,16 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
       VSTR__ASSERT(base->num == 1);
       end_len += base->used;
     }
-    
+
     if ((pos > (base->len - (end_len - 1))) &&
         (len == vstr_sc_posdiff(pos, base->len)))
     { /* delete from end, in one node */
       struct Vstr_node *scan = base->end;
       void *data = (void *)0;
-      
+
       VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
       VSTR__ASSERT(vstr__check_real_nodes(base));
-      
+
       base->len -= len;
       scan->len -= len;
 
@@ -559,31 +568,37 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
         struct Vstr__cache_data_cstr *pdata = (struct Vstr__cache_data_cstr *)0;
 
         pdata = (struct Vstr__cache_data_cstr *)data;
-        
-        pdata->len = 0;
-        if (pdata->ref->ref > 1)
+
+        if (pdata->ref && pdata->len)
         {
-          vstr_ref_del(pdata->ref);
-          pdata->ref = 0; /* NULL */
+          size_t data_end_pos = pdata->pos + pdata->len - 1;
+
+          if (data_end_pos >= pos)
+          {
+            pdata->len = 0;
+
+            vstr_ref_del(pdata->ref);
+            pdata->ref = 0; /* NULL */
+          }
         }
       }
       if (base->iovec_upto_date)
       {
         unsigned int num = base->num + VSTR__CACHE(base)->vec->off - 1;
-        
+
         VSTR__CACHE(base)->vec->v[num].iov_len -= len;
       }
       if ((data = vstr_cache_get(base, 1)))
       {
         struct Vstr__cache_data_pos *pdata = (struct Vstr__cache_data_pos *)0;
-        
+
         pdata = (struct Vstr__cache_data_pos *)data;
         pdata->node = (struct Vstr_node *)0;
       }
-      
+
       VSTR__ASSERT(vstr__check_spare_nodes(base->conf));
       VSTR__ASSERT(vstr__check_real_nodes(base));
-    
+
       return (1); /* TRUE */
     }
   }
@@ -594,13 +609,10 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 extern inline int vstr_sc_reduce(struct Vstr_base *base,
                                  size_t pos, size_t len, size_t reduce)
 {
-  VSTR__ASSERT(len >= reduce);
+  VSTR__ASSERT_RET(len >= reduce, 0);
 
   if (!len) return (1); /* TRUE */
-  
-  if (reduce > len)
-    reduce = len;
-  
+
   return (vstr_del(base, pos + (len - reduce), reduce));
 }
 
@@ -611,15 +623,15 @@ extern inline int vstr_sects_add(struct Vstr_sects *sects,
   {
     if (!sects->can_add_sz)
       return (0);
-    
+
     if (!vstr_extern_inline_sects_add(sects, pos, len))
       return (0);
   }
-  
+
   sects->ptr[sects->num].pos = pos;
   sects->ptr[sects->num].len = len;
   ++sects->num;
-  
+
   return (1);
 }
 
@@ -1004,3 +1016,5 @@ extern inline int vstr_cmp_vers_eod_cstr_eq(const struct Vstr_base *s1,
 { return (vstr_cmp_vers_eod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
 
 #undef VSTR__ASSERT
+#undef VSTR__ASSERT_RET
+#undef VSTR__ASSERT_NO_SWITCH_DEF

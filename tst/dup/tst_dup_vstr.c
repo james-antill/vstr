@@ -29,12 +29,12 @@ static void tst_vstr_ci(unsigned int num, Vstr_conf *conf,
     unsigned int mfail_count = 2;
 
     num += 16;
-    
+
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_BUF, 1000);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, 1000);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, 1000);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, 1000);
-    
+
     TST_B_TST(ret, num, !tst_mfail_num(1));
     TST_B_TST(ret, num, vstr_dup_vstr(conf, t_from, pos, len, flags));
     TST_B_TST(ret, num, !tst_mfail_num(2));
@@ -47,7 +47,7 @@ static void tst_vstr_ci(unsigned int num, Vstr_conf *conf,
       vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, 1000);
       vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, 1000);
       vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, 1000);
-    
+
       tst_mfail_num(++mfail_count);
       t1 = vstr_dup_vstr(conf, t_from, pos, len, flags);
     }
@@ -82,7 +82,7 @@ static void tst_vstr_a(unsigned int num,
  } while (FALSE)
 
 int tst(void)
-{   
+{
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   ADD(s1);
@@ -95,13 +95,13 @@ int tst(void)
   tst_vstr_a( 3, 1, s1->len, VSTR_TYPE_ADD_ALL_REF);
   tst_vstr_a( 4, 1, s1->len, VSTR_TYPE_ADD_ALL_BUF);
   tst_vstr_a( 5, 1, s1->len, VSTR_TYPE_ADD_BUF_REF);
-  
+
   tst_vstr_a( 6, 4, 16, VSTR_TYPE_ADD_DEF);
   tst_vstr_a( 7, 4, 16, VSTR_TYPE_ADD_BUF_PTR);
   tst_vstr_a( 8, 4, 16, VSTR_TYPE_ADD_ALL_REF);
   tst_vstr_a( 9, 4, 16, VSTR_TYPE_ADD_ALL_BUF);
   tst_vstr_a(10, 4, 16, VSTR_TYPE_ADD_BUF_REF);
-  
+
   tst_vstr_a(11, 16, 32, VSTR_TYPE_ADD_DEF);
   tst_vstr_a(12, 16, 32, VSTR_TYPE_ADD_BUF_PTR);
   tst_vstr_a(13, 16, 32, VSTR_TYPE_ADD_ALL_REF);

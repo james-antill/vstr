@@ -30,16 +30,16 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
   const size_t data_end_pos = (data->pos + data->len - 1);
 
   --called_cache_cb;
-  
+
   if (type == VSTR_TYPE_CACHE_FREE)
   {
     free(data);
     return (NULL);
   }
-  
+
   if (!data->pos)
     return (data);
-  
+
   if (data_end_pos < pos)
     return (data);
 
@@ -82,7 +82,7 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
         data->found_at = 0;
       data->pos = pos;
       data->len = data_end_pos - end_pos;
-      
+
       return (data);
     }
   }
@@ -110,9 +110,9 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
       return (data);
     }
   }
-  
+
   data->pos = 0;
-  
+
   return (data);
 }
 
@@ -139,27 +139,27 @@ static size_t xvstr_srch_chr_fwd(Vstr_base *base, size_t pos, size_t len,
         assert(tst_in_cache == WHOLE);
         return (data->found_at);
       }
-      
+
       /* if it covers some of the start of our search... */
       if ((data->pos <= pos) && (data_end_pos >= pos))
       {
         size_t uc_len = 0;
 
         assert(tst_in_cache == START);
-        
+
         if (data->found_at)
           return (data->found_at);
-        
+
         uc_len = end_pos - data_end_pos;
         data->len += uc_len;
-        
+
         data->found_at = vstr_srch_chr_fwd(base, data_end_pos, uc_len, srch);
-        
+
         return (data->found_at);
       }
 
       assert(tst_in_cache == END);
-      
+
       /* it must cover some of the end of our search... */
       assert((data->pos <= end_pos) && (data_end_pos >= end_pos));
       found_at = vstr_srch_chr_fwd(base, pos, data->pos - pos, srch);
@@ -168,41 +168,41 @@ static size_t xvstr_srch_chr_fwd(Vstr_base *base, size_t pos, size_t len,
 
       data->len += data->pos - pos;
       data->pos = pos;
-      
+
       return (data->found_at);
     }
 
     assert(tst_in_cache == NONE);
-    
+
     data->pos = pos;
     data->len = len;
     data->srch = srch;
-    
+
     data->found_at = vstr_srch_chr_fwd(base, pos, len, srch);
 
     return (data->found_at);
   }
 
   assert(tst_in_cache == NONE);
-  
+
   if (!(data = malloc(sizeof(struct tst_cache_chr))))
     return (vstr_srch_chr_fwd(base, pos, len, srch));
-  
+
   data->pos = pos;
   data->len = len;
   data->srch = srch;
-  
+
   data->found_at = vstr_srch_chr_fwd(base, pos, len, srch);
-  
+
   if (!vstr_cache_set(base, tst_cache_srch_pos, data))
   {
     size_t found_at = data->found_at;
-    
+
     free(data);
-    
+
     return (found_at);
   }
-  
+
   return (data->found_at);
 }
 
@@ -225,23 +225,23 @@ int tst(void)
   /* make sure it's the same ... */
   if (vstr_cache_srch(s1->conf, "/tst_usr/srch_fwd") != tst_cache_srch_pos)
     return (99);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, "The tester!retset ehT");
 
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (1);
 
   tst_in_cache = WHOLE;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (2);
 
   ++called_cache_cb;
   VSTR_ADD_CSTR_BUF(s1, 0, "abcd-");
   CB_NORM_CHECK();
-  
+
   tst_in_cache = END;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("abcd-The tester!"))
     return (3);
 
@@ -257,7 +257,7 @@ int tst(void)
   CB_NORM_CHECK();
 
   tst_in_cache = WHOLE;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("yz-The tester!"))
     return (5);
 
@@ -267,13 +267,13 @@ int tst(void)
 
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (6);
-  
+
   ++called_cache_cb;
   VSTR_ADD_CSTR_BUF(s1, s1->len, "-abcd");
   CB_NORM_CHECK();
 
   tst_in_cache = START;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (7);
 
@@ -290,7 +290,7 @@ int tst(void)
   CB_NORM_CHECK();
 
   tst_in_cache = WHOLE;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (9);
 
@@ -306,12 +306,12 @@ int tst(void)
   CB_NORM_CHECK();
 
   tst_in_cache = NONE;
-  
+
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (11);
 
   if (vstr_cache_get(s1, 0))
     return (12);
-  
+
   return (0);
 }

@@ -220,7 +220,7 @@ Function: vstr_export_cstr_ref()
 
  Explanation:
 
-  This function is used to return a pointer to a Vstr memory reference of at 
+  This function is used to return a pointer to a Vstr memory reference of at
  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the
  "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be
  used to find the beginning of the block of memory to use.
@@ -301,7 +301,7 @@ Function: vstr_export_iovec_cpy_buf()
  Explanation:
 
   This function is used to export a copy of the data in the Vstr string to an
- array of iovec structures this can then be passed directly to writev() 
+ array of iovec structures this can then be passed directly to writev()
  (or even a readv() although that wouldn't often be useful) etc.
   Think of this function as doing a readv() from a Vstr string.
   If the function can detect that the values of parameters are in error the
@@ -429,7 +429,7 @@ Function: vstr_export_ref()
 
  Explanation:
 
-  This function is used to return a pointer to a Vstr memory reference of at 
+  This function is used to return a pointer to a Vstr memory reference of at
  least length (Parameter[3]). The offset (Parameter[4]) should be used to find
  the beginning of the block of memory to use.
   When you are finished with the reference you need to use vstr_ref_del() or
@@ -508,7 +508,7 @@ Function: vstr_ref_add()
 
 
 Function: vstr_ref_del()
- Returns: 
+ Returns:
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -906,7 +906,7 @@ Function: vstr_ref_make_malloc()
 
   This function will create an area of memory, using malloc, and create a Vstr
  memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
+ reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref().
 
 
 Function: vstr_ref_make_ptr()
@@ -1065,7 +1065,7 @@ Function: vstr_add_buf()
 
  Explanation:
 
-  This function is used to add a copy of the data in the data array to a 
+  This function is used to add a copy of the data in the data array to a
  Vstr string.
   Think of this function as doing a write() into a Vstr string.
   If the function can detect that the values of parameters are in error the
@@ -1687,7 +1687,7 @@ Function: vstr_sub_buf()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[5]).
@@ -1728,7 +1728,7 @@ Function: vstr_sub_ptr()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
@@ -1761,7 +1761,7 @@ Function: vstr_sub_non()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
@@ -1800,7 +1800,7 @@ Function: vstr_sub_ref()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
@@ -1842,7 +1842,7 @@ Function: vstr_sub_vstr()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
@@ -1883,7 +1883,7 @@ Function: vstr_sub_rep_chr()
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
 
- Note: 
+ Note:
 
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[5]).
@@ -2106,7 +2106,7 @@ Function: vstr_cntl_conf()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
- Parameter[1]: 
+ Parameter[1]:
  Type[1]: struct Vstr_conf *
 
  Parameter[2]: Option type starting VSTR_CNTL_CONF_*
@@ -5276,7 +5276,7 @@ Function: vstr_sects_update_del()
 
  Explanation:
 
-  This function will cause the section (Parameter[2]) that was previously 
+  This function will cause the section (Parameter[2]) that was previously
  updated when changes are made to the Vstr string (Parameter[1]) to not be
  updated anymore.
 
@@ -5965,7 +5965,7 @@ Function: vstr_fmt_add()
   This function allows you to register arbitrary format specifiers for printing
  from vstr_add_fmt(). Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
-  The call back you register should return 0 (zero) if memory couldn't be 
+  The call back you register should return 0 (zero) if memory couldn't be
  allocated and 1 (one) otherwise.
 
  Note:
@@ -6199,7 +6199,7 @@ Function: vstr_cache_cb_free()
 
  Explanation:
 
-  If you have generated cache data, this function will tell the cache function 
+  If you have generated cache data, this function will tell the cache function
  to free that data.
 
  Note:
@@ -6416,7 +6416,7 @@ Function: vstr_sc_fmt_add_vstr()
   It is recommended that you use the name "{vstr}", with the gcc warning
  compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all()
  will add this formatter using those names.
- 
+
 
 Function: vstr_sc_fmt_add_buf()
  Returns: TRUE on success and FALSE on failure
@@ -6703,7 +6703,7 @@ Function: vstr_sc_fmt_add_ipv4_ptr()
  Explanation:
 
   This function is used to add a custom specifier function to print
- ipv4 IP addresses from a struct in_addr *. It is equivalent to calling 
+ ipv4 IP addresses from a struct in_addr *. It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
  a struct in_addr *, to be passed to inet_ntop().
@@ -6731,7 +6731,7 @@ Function: vstr_sc_fmt_add_ipv6_ptr()
  Explanation:
 
   This function is used to add a custom specifier function to print
- ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling 
+ ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
  a struct in6_addr *, to be passed to inet_ntop().
@@ -6760,7 +6760,7 @@ Function: vstr_sc_fmt_add_ipv4_vec()
 
   This function is used to add a custom specifier function to print
  ipv4 IP addresses from a vector of 4 unsigned char.
- It is equivalent to calling 
+ It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one
  unsigned char for each part of the ipv4 address.
@@ -6789,7 +6789,7 @@ Function: vstr_sc_fmt_add_ipv6_vec()
 
   This function is used to add a custom specifier function to print
  ipv6 IP addresses from a vector of 8 unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
  the vector is one unsigned int for each part of the ipv6 address, the
@@ -6820,7 +6820,7 @@ Function: vstr_sc_fmt_add_ipv4_vec_cidr()
   This function is used to add a custom specifier function to print
  ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an
  unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
  the vector is one unsigned char for each part of the ipv4 address.
@@ -6850,7 +6850,7 @@ Function: vstr_sc_fmt_add_ipv6_vec_cidr()
   This function is used to add a custom specifier function to print
  ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an
  unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT
  and VSTR_TYPE_FMT_END,
@@ -6889,7 +6889,7 @@ Function: vstr_sc_fmt_add_all()
   If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
   If any of the custom formatter adds fails (for example, if the name is
- already in use) then all the rest of the names of that type will fail, 
+ already in use) then all the rest of the names of that type will fail,
  however the other remaining types of formatters will be tried.
 
 

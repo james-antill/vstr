@@ -1,21 +1,21 @@
 #define VSTR_VERSION_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 
@@ -28,10 +28,10 @@
 # define USE_SYSCALL_MAIN 0 /* use for coverage, does "normal" syscalls */
 #endif
 
-/* syscall on Linux x86 doesn't work in a shared library as the PIC code 
+/* syscall on Linux x86 doesn't work in a shared library as the PIC code
  * uses %bx. If you are compiling for static only, the this should work.
  * However then you can't run the library anyway.
- * 
+ *
  * Code does inline asm for i386 Linux */
 #if (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
 #include <syscall.h>
@@ -56,7 +56,7 @@ void vstr_version_func(void)
 #ifdef __VERSION__
        "  Compiled by CC version " __VERSION__ ".\n"
 #endif
-    
+
 #ifndef NDEBUG
  "  Debugging enabled (CFLAGS = @CFLAGS@).\n"
 #else
@@ -72,7 +72,7 @@ void vstr_version_func(void)
 #ifdef USE_RESTRICTED_HEADERS
  "  Compiled with restricted functionality in lib C.\n"
 #endif
-    
+
 #if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
  "  Formatting floats using -- glibc -- code.\n"
 #elif defined(VSTR_AUTOCONF_FMT_DBL_none)
@@ -83,7 +83,7 @@ void vstr_version_func(void)
 # error "Please configure properly..."
 #endif
 
-    
+
  "  Compiler supports attributes:\n    "
 #ifdef HAVE_ATTRIB_DEPRECATED
  " deprecated"
@@ -121,7 +121,7 @@ void vstr_version_func(void)
  "  Linker script enabled.\n"
 #endif
 
-    
+
  "\n"
 "Information can be found at:\t\t\t\thttp://www.and.org/vstr/"
        "\n"

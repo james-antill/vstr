@@ -1,21 +1,21 @@
 #define VSTR_SC_C
 /*
  *  Copyright (C) 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions which are shortcuts */
@@ -30,7 +30,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
 
   if (!(flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
     spec->fmt_zero = FALSE;
-  
+
   if (!(flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, NUM, ATOM)))
   { /* OBJ_STR */
     if (spec->fmt_precision && spec->fmt_field_width &&
@@ -48,7 +48,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   }
   else
     spec->fmt_field_width = FALSE;
-  
+
   if (!spec->fmt_minus &&
       (!(flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM) || !spec->fmt_zero) &&
       space_len)
@@ -79,7 +79,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
         return (FALSE);
       ++*pos;
     }
-    
+
     if (spec->fmt_zero && space_len)
     {
       if (!vstr_add_rep_chr(base, *pos, '0', space_len))
@@ -88,7 +88,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
       space_len = 0;
     }
   }
-  
+
   spec->obj_field_width  = space_len;
 
   return (TRUE);
@@ -98,10 +98,10 @@ int vstr_sc_fmt_cb_end(Vstr_base *base, size_t pos,
                        Vstr_fmt_spec *spec, size_t obj_len)
 {
   size_t space_len = 0;
-  
+
   if (spec->fmt_field_width)
     space_len = spec->obj_field_width;
-  
+
   if (spec->fmt_minus)
     if (!vstr_add_rep_chr(base, pos + obj_len, ' ', space_len))
       return (FALSE);
@@ -120,13 +120,13 @@ static int vstr__sc_fmt_add_cb_vstr(Vstr_base *base, size_t pos,
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-  
+
   if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -152,17 +152,17 @@ static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
     if (sf_len > strlen("(null)"))
       sf_len = strlen("(null)");
   }
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-  
+
   if (!vstr_add_buf(base, pos, buf, sf_len))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -186,17 +186,17 @@ static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
     if (sf_len > strlen("(null)"))
       sf_len = strlen("(null)");
   }
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_DEF))
     return (FALSE);
-  
+
   if (!vstr_add_ptr(base, pos, ptr, sf_len))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -216,13 +216,13 @@ static int vstr__sc_fmt_add_cb_non(Vstr_base *base, size_t pos,
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-  
+
   if (!vstr_add_non(base, pos, sf_len))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -241,17 +241,17 @@ static int vstr__sc_fmt_add_cb_ref(Vstr_base *base, size_t pos,
   size_t sf_len = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
 
   assert(ref);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-  
+
   if (!vstr_add_ref(base, pos, ref, sf_off, sf_len))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -273,13 +273,13 @@ static int vstr__sc_fmt_add_cb_rep_chr(Vstr_base *base, size_t pos,
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-  
+
   if (!vstr_add_rep_chr(base, pos, chr, sf_len))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -313,7 +313,7 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
   assert(strlen(buf_B) <= strlen(buf_M));
   assert(strlen(buf_K) == strlen(buf_M));
   assert(strlen(buf_K) == strlen(buf_G));
-  
+
   if (0)
   { /* do nothing */ }
   else if (bkmg >= val_G)
@@ -341,7 +341,7 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
     val_len = 2;
   else
     val_len = 1;
-  
+
   if (spec->fmt_precision)
     prec = spec->obj_precision;
   else
@@ -349,9 +349,9 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
 
   if (prec > mov_dot_back)
     prec = mov_dot_back;
-  
-  /* One of.... 
-   * NNN '.' N+ end_bkmg 
+
+  /* One of....
+   * NNN '.' N+ end_bkmg
    * NNN        end_bkmg */
   sf_len = val_len + !!prec + prec + strlen(end_bkmg);
 
@@ -363,34 +363,34 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
   {
     char buf_dot[2] = {0, 0};
     int num_iadded = 0;
-    
+
     if (prec)
       buf_dot[0] = '.';
-    
+
     if (!vstr_add_sysfmt(base, pos, "%u%n%s%s", bkmg, &num_iadded,
                          buf_dot, end_bkmg))
       return (FALSE);
     num_added = num_iadded;
   }
-  
+
   assert(val_len == (num_added - mov_dot_back));
   assert(num_added >= val_len);
   assert(num_added > mov_dot_back);
-  
+
   if (prec && !vstr_mov(base, pos + val_len,
                         base, pos + num_added + 1, 1))
     return (FALSE);
-  
+
   if (TRUE)
   {
     size_t num_keep = val_len + prec;
     if (num_added > num_keep)
       vstr_del(base, pos + 1 + num_keep + !!prec, (num_added - num_keep));
   }
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-  
+
   return (TRUE);
 }
 
@@ -501,7 +501,7 @@ static unsigned int vstr__sc_fmt_num_ipv6_compact(unsigned int *ips,
   unsigned int ret_max = 0;
   unsigned int ret_cur = 0;
   int atend = 0;
-  
+
   while (scan < max_num)
   {
     if (!ips[scan])
@@ -540,13 +540,13 @@ static int vstr__sc_fmt_add_cb_ipv4_vec(Vstr_base *base, size_t pos,
 {
   unsigned int *ips = VSTR_FMT_CB_ARG_PTR(spec, 0);
   size_t len = 0;
-  
+
   assert((ips[0] <= 255) && (ips[1] <= 255) &&
          (ips[2] <= 255) && (ips[3] <= 255));
 
   len = (vstr__sc_fmt_num10_len(ips[0]) + vstr__sc_fmt_num10_len(ips[1]) +
          vstr__sc_fmt_num10_len(ips[2]) + vstr__sc_fmt_num10_len(ips[3]) + 3);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
@@ -554,7 +554,7 @@ static int vstr__sc_fmt_add_cb_ipv4_vec(Vstr_base *base, size_t pos,
   if (!vstr_add_fmt(base, pos, "%u.%u.%u.%u",
                     ips[0], ips[1], ips[2], ips[3]))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
@@ -587,12 +587,12 @@ static void vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
                                   size_t *pos_compact, size_t *ret_len)
 {
   size_t len = 0;
-  
+
   assert((ips[0] <= 0xFFFF) && (ips[1] <= 0xFFFF) &&
          (ips[2] <= 0xFFFF) && (ips[3] <= 0xFFFF) &&
          (ips[4] <= 0xFFFF) && (ips[5] <= 0xFFFF) &&
          (ips[6] <= 0xFFFF) && (ips[7] <= 0xFFFF));
-  
+
   if (0) { }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED)
     len = 7 + 4*8;
@@ -616,7 +616,7 @@ static void vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
       size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 6, pos_compact);
       len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 7 - len_minus);
     }
-    
+
     /* add the ipv4 address on the end using the last 2 16bit entities */
     len += vstr__sc_fmt_num10_len((ips[6] >> 8) & 0xF);
     len += vstr__sc_fmt_num10_len((ips[6] >> 0) & 0xF);
@@ -640,29 +640,29 @@ static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
 {
   unsigned int scan = 0;
   int done = FALSE;
-  
+
   while (scan < max_num)
   {
     int len = 0;
-    
+
     if (scan == pos_compact)
     {
       assert(!ips[scan]);
       while ((scan < max_num) && !ips[scan])
         ++scan;
-      
+
       if (!vstr_add_rep_chr(base, pos, ':', 2))
         return (FALSE);
       pos += 2;
-      
+
       done = FALSE;
       continue;
     }
-    
+
     if (!vstr_add_fmt(base, pos, "%s%X%n", done ? ":" : "", ips[scan], &len))
       return (FALSE);
     pos += len;
-    
+
     done = TRUE;
     ++scan;
   }
@@ -671,7 +671,7 @@ static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
                                * in a ':' character for the ipv4 part */
     if (!vstr_add_rep_chr(base, pos, ':', 1))
       return (FALSE);
-    
+
   return (TRUE);
 }
 
@@ -681,7 +681,7 @@ static int vstr__sc_fmt_prnt_ipv6(Vstr_base *base, size_t pos,
                                   size_t pos_compact)
 {
   size_t orig_len = base->len;
-  
+
   if (0) { }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED)
   {
@@ -723,7 +723,7 @@ static int vstr__sc_fmt_prnt_ipv6(Vstr_base *base, size_t pos,
   }
 
   pos += base->len - orig_len;
-  
+
   if ((type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED) ||
       (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD) ||
       (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT))
@@ -744,14 +744,14 @@ static int vstr__sc_fmt_add_cb_ipv6_vec(Vstr_base *base, size_t pos,
   size_t pos_compact = 9;
 
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
   if (!vstr__sc_fmt_prnt_ipv6(base, pos, type, ips, pos_compact))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
@@ -772,14 +772,14 @@ static int vstr__sc_fmt_add_cb_ipv4_vec_cidr(Vstr_base *base, size_t pos,
   unsigned int *ips = VSTR_FMT_CB_ARG_PTR(spec, 0);
   unsigned int cidr = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
   size_t len = 0;
-  
+
   assert((ips[0] <= 255) && (ips[1] <= 255) &&
          (ips[2] <= 255) && (ips[3] <= 255) && (cidr <= 32));
 
   len = (vstr__sc_fmt_num10_len(ips[0]) + vstr__sc_fmt_num10_len(ips[1]) +
          vstr__sc_fmt_num10_len(ips[2]) + vstr__sc_fmt_num10_len(ips[3]) +
          vstr__sc_fmt_num10_len(cidr) + 4);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
@@ -787,7 +787,7 @@ static int vstr__sc_fmt_add_cb_ipv4_vec_cidr(Vstr_base *base, size_t pos,
   if (!vstr_add_fmt(base, pos, "%u.%u.%u.%u/%u",
                     ips[0], ips[1], ips[2], ips[3], cidr))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
@@ -811,12 +811,12 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
   size_t len = 0;
   size_t pos_compact = 9;
   size_t orig_len = 0;
-  
+
   assert(cidr <= 128);
-  
+
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
   len += 1 + vstr__sc_fmt_num10_len(cidr);
-  
+
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
@@ -826,7 +826,7 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
     return (FALSE);
   if (!vstr_add_fmt(base, pos + (base->len - orig_len), "/%u", cidr))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
@@ -867,7 +867,7 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
         vstr_sc_fmt_add_ref (conf, "{ref" ":%"  ".*" "p%u%zu}") &&
         vstr_sc_fmt_add_ref (conf, "{ref" ":%" "*.*" "p%u%zu}")))
     ret = FALSE;
-  
+
   VSTR__SC_FMT_ADD(rep_chr, "rep_chr", "c%zu");
   VSTR__SC_FMT_ADD(bkmg_Byte_uint, "BKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
@@ -883,7 +883,7 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(ipv6_vec_cidr, "ipv6.v+C", "p%u%u");
 
   assert(ret);
-  
+
   return (ret);
 }
 #undef VSTR__SC_FMT_ADD
@@ -893,7 +893,7 @@ void vstr_sc_basename(const Vstr_base *base, size_t pos, size_t len,
 {
   size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
   size_t end_pos = (pos + len) - 1;
-  
+
   if (!ls)
   {
     *ret_pos = pos;
@@ -926,7 +926,7 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
   size_t end_pos = (pos + len) - 1;
   const char buf[1] = {'/'};
 
- 
+
   if (!ls)
     *ret_len = 0;
   else if (ls == end_pos)

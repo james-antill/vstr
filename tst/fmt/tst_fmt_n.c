@@ -44,6 +44,6 @@ int tst(void)
   TST_PERCENT_N(14,  tn);
   TST_PERCENT_N(15,  zn);
   TST_PERCENT_N(16,  jn);
-  
+
   return (TST_B_RET(ret));
 }

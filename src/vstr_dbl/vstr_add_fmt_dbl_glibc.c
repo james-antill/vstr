@@ -1,20 +1,20 @@
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
 */
 /* Floating point output for `printf'.
@@ -71,9 +71,11 @@ struct vstr__fmt_printf_info
   unsigned int left:1;          /* - flag.  */
   unsigned int showsign:1;      /* + flag.  */
   unsigned int group:1;         /* ' flag.  */
-  unsigned int extra:1;         /* For special use.  */
+#if 0
+ unsigned int extra:1;         /* For special use.  */
  /* unsigned int is_char:1; */       /* hh flag.  */
  unsigned int wide:1;           /* Nonzero for wide character streams.  */
+#endif
  /* unsigned int i18n:1; */          /* I flag.  */
   wchar_t pad;                  /* Padding character.  */
 };
@@ -83,7 +85,7 @@ struct vstr__fmt_printf_info
 #endif
 
 #undef FILE
-#define FILE struct vstr__FILE_wrap  
+#define FILE struct vstr__FILE_wrap
 
 #undef putc
 #define putc(c, f) \
@@ -146,7 +148,7 @@ struct vstr__fmt_printf_info
 # error "No arch specific code for add_ssaaaa etc."
 #endif
 
-#include <float.h> /* from compiler ... LDBL_MIN_EXP FLT_MANT_DIG */ 
+#include <float.h> /* from compiler ... LDBL_MIN_EXP FLT_MANT_DIG */
 
 /* 128 bit long double */
 #ifdef VSTR__LDOUBLE_BITS_128
@@ -233,11 +235,11 @@ static char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
         *--buflim = digits[value % 10];
       while (value /= 10);
       break;
-      
+
     default:
       assert(FALSE);
   }
-  
+
   return (buflim);
 }
 
@@ -247,7 +249,7 @@ static wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
                                          int upper_case)
 {
   const wchar_t *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
-  
+
   if (upper_case)
     digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -263,11 +265,11 @@ static wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
         *--buflim = digits[value % 10];
       while (value /= 10);
       break;
-      
+
     default:
       assert(FALSE);
   }
-  
+
   return (buflim);
 }
 
@@ -296,11 +298,11 @@ static char *vstr__fmt_dbl_itoa(unsigned long long value, char *buflim,
         *--buflim = digits[value % 10];
       while (value /= 10);
       break;
-      
+
     default:
       assert(FALSE);
   }
-  
+
   return (buflim);
 }
 
@@ -310,7 +312,7 @@ static wchar_t *vstr__fmt_dbl_itowa(unsigned long long value,
                                     int upper_case)
 {
   const wchar_t *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
-  
+
   if (upper_case)
     digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -326,11 +328,11 @@ static wchar_t *vstr__fmt_dbl_itowa(unsigned long long value,
         *--buflim = digits[value % 10];
       while (value /= 10);
       break;
-      
+
     default:
       assert(FALSE);
   }
- 
+
   return (buflim);
 }
 
@@ -424,7 +426,7 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
 #undef _itowa
 #define _itowa(a, b, c, d) vstr__fmt_dbl_itowa(a, b, c, d)
 
-#undef inline                    
+#undef inline
 
 
 /* Macros for doing the actual output. in both printf functions */
@@ -490,6 +492,9 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
 #undef  wide
 #define wide 0 /* no wide output device, on either fp or fphex */
 
+#undef  extra
+#define extra 0 /* no extra output, on either fp or fphex */
+
 #undef  __printf_fp
 #define __printf_fp vstr__fmt_printf_fp
 #undef  printf_info
@@ -508,14 +513,13 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
 #define __printf_fphex vstr__fmt_printf_fphex
 #include "glibc/sysdeps/generic/printf_fphex.c"
 
-#undef wide /* part of printf_info struct */
 static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
                              struct Vstr__fmt_spec *spec)
 {
   FILE wrap_fp;
   struct vstr__fmt_printf_info info;
   const void *dbl_ptr = NULL;
-  
+
   wrap_fp.base = base;
   wrap_fp.pos_diff = pos_diff;
   wrap_fp.spec = spec;
@@ -529,12 +533,9 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     info.width = spec->field_width;
   else
     info.width = 0;
-  
+
   info.spec = spec->fmt_code;
 
-  info.extra = 0;
-  info.wide = 0;
-  
   info.is_long_double = (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG);
   info.alt =      !!(spec->flags & SPECIAL);
   info.space =    !!(spec->flags & SPACE);
@@ -546,12 +547,12 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     info.pad = '0';
   else
     info.pad = ' ';
-  
+
   if (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG)
     dbl_ptr = &spec->u.data_Ld;
   else
     dbl_ptr = &spec->u.data_d;
-  
+
   switch (spec->fmt_code)
   {
     case 'a':
@@ -568,11 +569,13 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     default:
       assert(FALSE);
   }
-  
+
   return (FALSE);
 }
 
  /* might use these in vstr_add_fmt.c */
+#undef wide
+#undef extra
 #undef  FILE
 #undef  isupper
 #undef  tolower

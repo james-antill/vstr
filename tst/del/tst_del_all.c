@@ -19,6 +19,6 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   vstr_del(s2, 1, s2->len);
   vstr_del(s3, 1, s3->len);
-  
+
   return (s1->len || s2->len || s3->len);
 }

@@ -7,7 +7,7 @@ int tst(void)
   Vstr_ref *ref = NULL;
 
   vstr_ref_del(NULL);
-  
+
   ref = vstr_ref_make_malloc(4);
   vstr_ref_add(ref);
   vstr_ref_del(ref);
@@ -32,7 +32,7 @@ int tst(void)
   vstr_ref_del(ref);
   vstr_ref_del(ref);
   free(ref);
-  
+
   {
     Vstr_base *b = vstr_make_base(NULL);
     Vstr_conf *c = vstr_make_conf();
@@ -51,6 +51,6 @@ int tst(void)
     vstr_ref_del(ref);
     vstr_ref_del(ref);
   }
-  
+
   return (0);
 }

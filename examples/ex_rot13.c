@@ -63,14 +63,14 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
 
   if (!s2->len)
     return (FALSE);
-  
+
 #if USE_ITER
   {
     Vstr_iter iter[1];
-    
+
     if (!vstr_iter_fwd_beg(s2, 1, s2->len, iter))
       abort();
-    
+
     do
     {
       unsigned int scan = 0;
@@ -81,7 +81,7 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
         ++scan;
       }
     } while (vstr_iter_fwd_nxt(iter));
-    
+
     vstr_del(s2, 1, s2->len);
   }
 #endif
@@ -100,7 +100,7 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
 #if USE_SUB_CHR
   {
     unsigned int scan = 0;
-    
+
     while (scan++ < s2->len)
     {
       char tmp = vstr_export_chr(s2, scan);
@@ -120,25 +120,25 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
       vstr_add_vstr(s1, s1->len, s2, 1, count,
                     VSTR_TYPE_ADD_BUF_REF);
       vstr_del(s2, 1, count);
-      
+
       if (s1->len > MAX_W_DATA_INCORE)
         return (TRUE);
     }
-    
+
     if ((count = VSTR_SPN_CSTR_CHRS_FWD(s2, 1, s2->len, chrs)))
     {
       char *ptr = vstr_export_cstr_malloc(s2, 1, count);
       Vstr_ref *ref = vstr_ref_make_ptr(ptr, vstr_ref_cb_free_ptr_ref);
-      
+
       if (!ref || !ref->ptr)
         errno = ENOMEM, DIE("vstr_make_conf:");
-      
+
       while (*ptr)
       {
         *ptr = ROT13_LETTER(*ptr);
         ++ptr;
       }
-      
+
       vstr_add_ref(s1, s1->len, ref, 0, count);
       vstr_del(s2, 1, count);
     }
@@ -152,13 +152,13 @@ static void ex_rot13_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 {
   unsigned int err = 0;
   int keep_going = TRUE;
-  
+
   while (keep_going)
   {
     int proc_data = FALSE;
-    
+
     EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
-    
+
     proc_data = ex_rot13_process(s1, s2);
 
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     stat_buf.st_blksize = 4 * 1024;
   if (!stat_buf.st_blksize)
     stat_buf.st_blksize = 4 * 1024;
-  
+
   vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
   vstr_make_spare_nodes(conf, VSTR_TYPE_NODE_BUF, 32);
 
@@ -196,34 +196,34 @@ int main(int argc, char *argv[])
     errno = ENOMEM, DIE("vstr_make_base:");
 
   vstr_free_conf(conf);
-  
+
   ex_utils_set_o_nonblock(1);
-  
+
   if (count >= argc)  /* use stdin */
   {
     ex_utils_set_o_nonblock(0);
     ex_rot13_read_fd_write_stdout(s1, s2, 0);
   }
-  
+
   while (count < argc)
   {
     unsigned int err = 0;
-    
+
     if (s2->len < MAX_R_DATA_INCORE)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
-    
+
     if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-      
+
       if (fd == -1)
         DIE("open:");
-      
+
       ex_utils_set_o_nonblock(fd);
       ex_rot13_read_fd_write_stdout(s1, s2, fd);
-      
+
       close(fd);
     }
     else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
       ex_rot13_process(s1, s2);
 
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-   
+
     ++count;
   }
 
@@ -240,11 +240,11 @@ int main(int argc, char *argv[])
   { /* No more data to read ...
      * finish processing read data and writing some of it */
     int proc_data = ex_rot13_process(s1, s2);
-    
+
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
     EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, proc_data);
   }
-  
+
   vstr_free_base(s2);
 
   while (s1->len)
@@ -252,9 +252,9 @@ int main(int argc, char *argv[])
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
     EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 1, FALSE, FALSE);
   }
-  
+
   vstr_free_base(s1);
- 
+
   vstr_exit();
 
   exit (EXIT_SUCCESS);

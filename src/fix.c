@@ -1,21 +1,21 @@
 #define FIX_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 #include "main.h"
@@ -39,10 +39,10 @@ void *FIX_SYMBOL(memchr)(const void *source, int chr, size_t num)
 void *FIX_SYMBOL(memrchr)(const void *source, int chr, size_t num)
 {
   const char *tmp = ((char *)source) + num;
-  
+
   while (((tmp - (char *)source) > 0) && (*--tmp != (char) chr))
   { /* do nothing */ }
-  
+
   if (*tmp == chr)
     return ((void *)tmp);
   else
@@ -55,13 +55,13 @@ void *FIX_SYMBOL(memcpy)(void *dest, const void *src, size_t n)
 {
  unsigned char *to = dest;
  unsigned const char *from = src;
- 
+
  if (!n)
    return (dest);
- 
+
  while (n--)
    *to++ = *from++;
- 
+
  return (dest);
 }
 #endif
@@ -70,7 +70,7 @@ void *FIX_SYMBOL(memcpy)(void *dest, const void *src, size_t n)
 void *FIX_SYMBOL(mempcpy)(void *dest, const void *src, size_t n)
 {
   memcpy(dest, src, n);
-  
+
   return (((char *)dest) + n);
 }
 #endif
@@ -80,19 +80,19 @@ int FIX_SYMBOL(memcmp)(const void *dest, const void *src, size_t n)
 {
  unsigned const char *to = dest;
  unsigned const char *from = src;
- 
+
  if (!n)
    return (0);
- 
+
  while (n--)
  {
   if (*to - *from)
     return (*to - *from);
-  
+
   ++to;
   ++from;
  }
- 
+
  return (0);
 }
 #endif
@@ -105,14 +105,14 @@ void *FIX_SYMBOL(memmem)(const void *src, size_t src_len,
 
  if (needle_len > src_len)
    return (NULL);
- 
+
  while (((size_t)(tmp - (const char *)src) <= (src_len - needle_len)) &&
         memcmp(src, needle, needle_len))
    ++tmp;
 
  if ((size_t)(tmp - (const char *)src) < (src_len - needle_len))
    return (NULL);
- 
+
  return ((void *)src);
 }
 #endif
@@ -152,7 +152,7 @@ size_t FIX_SYMBOL(strcspn)(const char *s, const char *str_reject)
 size_t FIX_SYMBOL(strnlen)(const char *str, size_t count)
 {
  const char *tmp = memchr(str, 0, count);
- 
+
  if (!tmp)
    return (count);
 
@@ -166,7 +166,7 @@ size_t FIX_SYMBOL(strncmp)(const char *str1, const char *str2, size_t count)
 {
  if (!count)
    return (0);
- 
+
  while (!(*str1 - *str2) && *str1 && --count)
  {
   ++str1;
@@ -204,7 +204,7 @@ int FIX_SYMBOL(strcasecmp)(const char *s1, const char *s2)
 
  if (ret)
    return (ret);
- 
+
  while (*s1)
  {
   ++s1;
@@ -224,11 +224,11 @@ char *FIX_SYMBOL(stpcpy)(char *copy, const char *from)
 {
   while (*from)
     *copy++ = *from++;
-  
+
   *copy = 0;
 
   /* returns the end of the copied string */
-  return (copy); 
+  return (copy);
 }
 #endif
 
@@ -249,22 +249,22 @@ int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
 {
  int sz = 0;
  va_list ap;
- 
+
  va_start(ap, fmt);
 
  sz = vsnprintf(NULL, 0, fmt, ap);
 
  va_end(ap);
- 
+
  if (!(*ret = malloc(sz + 1)))
    return (-1);
 
  va_start(ap, fmt);
- 
+
  vsprintf(*ret, fmt, ap);
 
  va_end(ap);
- 
+
  return (sz);
 }
 #endif
@@ -595,7 +595,7 @@ FIX_SYMBOL(_getopt_internal) (argc, argv, optstring, longopts, longind, long_onl
 
   if (argc < 1)
     return -1;
-  
+
   if (optind == 0 || !__getopt_initialized)
     {
       if (optind == 0)
@@ -1111,16 +1111,16 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
  struct pollfd *f;
  int ready;
  int maxfd = 0;
- 
+
  FD_ZERO (&rset);
  FD_ZERO (&wset);
  FD_ZERO (&xset);
- 
+
  for (f = fds; f < &fds[nfds]; ++f)
    if (f->fd != -1)
    {
     f->revents = 0;
-    
+
     if (f->events & POLLIN)
       FD_SET (f->fd, &rset);
     if (f->events & POLLOUT)
@@ -1130,38 +1130,38 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
     if (f->fd > maxfd && (f->events & (POLLIN|POLLOUT|POLLPRI)))
       maxfd = f->fd;
    }
- 
+
  tv.tv_sec = timeout / 1000;
  tv.tv_usec = (timeout % 1000) * 1000;
- 
+
  ready = select (maxfd + 1, &rset, &wset, &xset,
                  timeout == -1 ? NULL : &tv);
  if ((ready == -1) && (errno == EBADF))
  {
   ready = 0;
-  
+
   FD_ZERO (&rset);
   FD_ZERO (&wset);
   FD_ZERO (&xset);
 
   maxfd = -1;
-  
+
   for (f = fds; f < &fds[nfds]; ++f)
     if (f->fd != -1)
     {
      fd_set sngl_rset, sngl_wset, sngl_xset;
-     
+
      FD_ZERO (&sngl_rset);
      FD_ZERO (&sngl_wset);
      FD_ZERO (&sngl_xset);
-     
+
      if (f->events & POLLIN)
        FD_SET (f->fd, &sngl_rset);
      if (f->events & POLLOUT)
        FD_SET (f->fd, &sngl_wset);
      if (f->events & POLLPRI)
        FD_SET (f->fd, &sngl_xset);
-     
+
      if (f->events & (POLLIN|POLLOUT|POLLPRI))
      {
       struct timeval sngl_tv;
@@ -1198,7 +1198,7 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
                    timeout == -1 ? NULL : &tv);
   } /* what to do here ?? */
  }
- 
+
  if (ready > 0)
    for (f = fds; f < &fds[nfds]; ++f)
      if (f->fd != -1)
@@ -1210,7 +1210,7 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
       if (FD_ISSET (f->fd, &xset))
         f->revents |= POLLPRI;
      }
- 
+
  return ready;
 }
 #endif
@@ -1255,7 +1255,7 @@ int FIX_SYMBOL(inet_pton)(int af, const char *cp, void *buf)
 
     /* will people assume it's an int or a long ? */
     memcpy(buf, &addr, sizeof(long));
- 
+
     return (1);
   }
 # else
@@ -1294,7 +1294,7 @@ size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
   static mbstate_t loc_state;
   size_t ret = 0;
   int do_write = TRUE;
-  
+
   if (!ps)
     ps = &loc_state;
 
@@ -1312,7 +1312,7 @@ size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
 
     if (tmp_len == (size_t)-1)
       return (tmp_len);
-    
+
     if (tmp_len > len)
       do_write = FALSE;
 
@@ -1324,21 +1324,21 @@ size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
       len -= tmp;
       dest += tmp;
     }
-    
-    if (!**src) 
+
+    if (!**src)
     {
       *src = NULL;
       break;
     }
-    
+
     ret += tmp_len;
 
     if (!--nwc)
       break;
-    
+
     ++*src;
   }
-  
+
   return (ret);
 }
 #endif

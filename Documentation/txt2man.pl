@@ -222,7 +222,7 @@ sub convert()
 		$_ = ".Ve\n$_.Vb 4\n";
 		$in_pre_tag = "</pre>";
 	      }
-	    else 
+	    else
 	      {
 		$_ = ".Ve\n$_";
 		$in_pre_tag = "";
@@ -244,7 +244,7 @@ sub convert()
 		  }
 	      }
 	  }
-	
+
 	$in_const = $next_in_const;
 
 	OUT->print($_);

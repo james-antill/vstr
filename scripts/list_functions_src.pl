@@ -22,8 +22,8 @@ if (!defined ($inc))
   }
 
 if (!open(IN, "< $inc/vstr-extern.h"))
-  { 
-    die "open: $!\n"; 
+  {
+    die "open: $!\n";
   }
 
 $/ = undef;

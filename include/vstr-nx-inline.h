@@ -1,20 +1,20 @@
 /*
  *  Copyright (C) 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* not external inline functions */
@@ -38,7 +38,7 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
     default: ret = memrchr(s1, c, n);
       break;
   }
-  
+
   return ((void *)ret);
 }
 #else
@@ -49,14 +49,14 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
 static inline void vstr__debug_alloc(void)
 {
   ++vstr__options.mem_num;
-  
+
   if (!vstr__options.mem_sz)
   {
     vstr__options.mem_sz = 8;
     vstr__options.mem_vals = malloc(sizeof(void *) * vstr__options.mem_sz);
     ASSERT(vstr__options.mem_vals);
   }
-  
+
   if (vstr__options.mem_num > vstr__options.mem_sz)
   {
     vstr__options.mem_sz *= 2;
@@ -71,7 +71,7 @@ extern inline void *vstr__debug_malloc(size_t sz)
 {
   void *ret = NULL;
 
-  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+  if (VSTR__DEBUG_MALLOC_DEC())
     return (NULL);
 
   vstr__debug_alloc();
@@ -79,27 +79,27 @@ extern inline void *vstr__debug_malloc(size_t sz)
   ASSERT(sz);
 
   ret = malloc(sz);
-  ASSERT(ret);
-  
+  ASSERT_RET (ret, NULL);
+
   vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
-  
+
   return (ret);
 }
 
 extern inline void *vstr__debug_calloc(size_t num, size_t sz)
 {
   void *ret = NULL;
-  
-  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+
+  if (VSTR__DEBUG_MALLOC_DEC())
     return (NULL);
 
   vstr__debug_alloc();
-  
+
   ASSERT(num && sz);
 
   ret = calloc(num, sz);
-  ASSERT(ret);
-  
+  ASSERT_RET (ret, NULL);
+
   vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
 
   return (ret);
@@ -110,7 +110,7 @@ extern inline void vstr__debug_free(void *ptr)
   if (ptr)
   {
     unsigned int scan = 0;
-    
+
     ASSERT(vstr__options.mem_num);
     --vstr__options.mem_num;
 
@@ -124,58 +124,40 @@ extern inline void vstr__debug_free(void *ptr)
       SWAP_TYPE(vstr__options.mem_vals[scan],
                 vstr__options.mem_vals[vstr__options.mem_num],
                 void *);
-      vstr__options.mem_vals[vstr__options.mem_num] = NULL;      
+      vstr__options.mem_vals[vstr__options.mem_num] = NULL;
     }
   }
-  
+
   free(ptr);
 }
 
-extern inline int vstr__safe_realloc(void **ptr, size_t sz)
+extern inline void *vstr__debug_realloc(void *ptr, size_t sz)
 {
   void *tmp = NULL;
 
-  ASSERT(*ptr && sz);
-  
-  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
-    return (FALSE);
+  ASSERT(ptr && sz);
 
-  tmp = realloc(*ptr, sz);
-  if (!tmp)
-    return (FALSE);
+  if (VSTR__DEBUG_MALLOC_DEC())
+    return (NULL);
 
-  if (*ptr != tmp)
+  tmp = realloc(ptr, sz);
+  ASSERT_RET (tmp, NULL);
+
+  if (ptr != tmp)
   {
     unsigned int scan = 0;
-  
+
     ASSERT(vstr__options.mem_num);
 
     while (vstr__options.mem_vals[scan] &&
-           (vstr__options.mem_vals[scan] != *ptr))
+           (vstr__options.mem_vals[scan] != ptr))
       ++scan;
 
     ASSERT(vstr__options.mem_vals[scan]);
     vstr__options.mem_vals[scan] = tmp;
   }
-  
-  *ptr = tmp;
-  
-  return (TRUE);
-}
-#else
 
-extern inline int vstr__safe_realloc(void **ptr, size_t sz)
-{
-  void *tmp = realloc(*ptr, sz);
-
-  ASSERT(*ptr && sz);
-  
-  if (!tmp)
-    return (FALSE);
-
-  *ptr = tmp;
-  
-  return (TRUE);
+  return (tmp);
 }
 #endif
 
@@ -199,21 +181,21 @@ extern inline void vstr__cache_iovec_reset_node(const Vstr_base *base,
 {
   struct iovec *iovs = NULL;
   unsigned char *types = NULL;
-  
+
   if (!base->iovec_upto_date)
     return;
-  
+
   iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   iovs[num - 1].iov_len = node->len;
   iovs[num - 1].iov_base = vstr_export__node_ptr(node);
 
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
   types[num - 1] = node->type;
-  
+
   if (num == 1)
   {
     char *tmp = NULL;
-    
+
     iovs[num - 1].iov_len -= base->used;
     tmp = iovs[num - 1].iov_base;
     tmp += base->used;
@@ -226,45 +208,44 @@ extern inline void vstr__relink_nodes(Vstr_conf *conf,
                                       unsigned int num)
 {
   Vstr_node *tmp = NULL;
-  
+
   ASSERT(beg->type == VSTR__CONV_PTR_NEXT_PREV(end_next)->type);
 
   switch (beg->type)
   {
     case VSTR_TYPE_NODE_BUF:
       tmp = (Vstr_node *)conf->spare_buf_beg;
-      
+
       conf->spare_buf_num += num;
-      
+
       conf->spare_buf_beg = (Vstr_node_buf *)beg;
       break;
-      
+
     case VSTR_TYPE_NODE_NON:
       tmp = (Vstr_node *)conf->spare_non_beg;
-      
+
       conf->spare_non_num += num;
-      
+
       conf->spare_non_beg = (Vstr_node_non *)beg;
       break;
-      
+
     case VSTR_TYPE_NODE_PTR:
       tmp = (Vstr_node *)conf->spare_ptr_beg;
-      
+
       conf->spare_ptr_num += num;
-      
+
       conf->spare_ptr_beg = (Vstr_node_ptr *)beg;
       break;
-      
+
     case VSTR_TYPE_NODE_REF:
       tmp = (Vstr_node *)conf->spare_ref_beg;
-      
+
       conf->spare_ref_num += num;
-      
+
       conf->spare_ref_beg = (Vstr_node_ref *)beg;
       break;
-      
-    default:
-      ASSERT(FALSE);
+
+      ASSERT_NO_SWITCH_DEF();
   }
 
   *end_next = tmp;
@@ -280,36 +261,30 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
   Vstr_node *scan_end = NULL;
   unsigned int dummy_num = 0;
   size_t end_pos = 0;
-  
+
   assert(base && num && len && type);
-  
-  assert(*len && ((pos + *len - 1) <= base->len));
-  
+
+  ASSERT_RET(*len && ((pos + *len - 1) <= base->len), FALSE);
+
   assert(base->iovec_upto_date);
-  
-  if ((pos > base->len) || !*len)
-    return (FALSE);
-  
-  if ((pos + *len - 1) > base->len)
-    *len = base->len - (pos - 1);
 
   end_pos = pos;
   end_pos += *len - 1;
   scan_beg = vstr_base__pos(base, &pos, &dummy_num, TRUE);
   --pos;
-  
+
   scan_end = vstr_base__pos(base, &end_pos, num, FALSE);
 
   *type = scan_end->type;
-  
+
   if (scan_beg != scan_end)
   {
     assert(*num != dummy_num);
     assert(scan_end != base->beg);
-    
+
     pos = 0;
     *scan_len = end_pos;
-    
+
     assert(*scan_len < *len);
     *len -= *scan_len;
   }
@@ -319,11 +294,11 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
     *scan_len = *len;
     *len = 0;
   }
-  
+
   *scan_str = NULL;
   if (scan_end->type != VSTR_TYPE_NODE_NON)
     *scan_str = vstr_export__node_ptr(scan_end) + pos;
-  
+
   return (TRUE);
 }
 
@@ -334,13 +309,13 @@ extern inline int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   struct iovec *iovs = NULL;
   unsigned char *types = NULL;
   size_t pos = 0;
-  
+
   assert(base && num && len && type);
-  
+
   assert(base->iovec_upto_date);
-  
+
   assert(num);
-  
+
   if (!*len || !--*num)
     return (FALSE);
 
@@ -349,17 +324,17 @@ extern inline int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
 
   *type = types[*num - 1];
   *scan_len = iovs[*num - 1].iov_len;
-  
+
   if (*scan_len > *len)
   {
     pos = *scan_len - *len;
     *scan_len = *len;
   }
   *len -= *scan_len;
-  
+
   *scan_str = NULL;
   if (*type != VSTR_TYPE_NODE_NON)
     *scan_str = ((char *) (iovs[*num - 1].iov_base)) + pos;
-  
+
   return (TRUE);
 }

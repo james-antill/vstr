@@ -54,7 +54,6 @@
 #undef HAVE_MMAP
 #undef HAVE_ALLOCA_H
 #undef HAVE_ALLOCA
-#undef HAVE_MMAP
 #undef HAVE_STRFTIME
 #undef HAVE_VFORK_H
 #undef vfork
@@ -89,6 +88,8 @@
 #undef HAVE_ASPRINTF
 
 
+#undef HAVE_OPEN64
+
 #undef HAVE_MMAP64
 
 #undef HAVE_WCSNRTOMBS
@@ -118,6 +119,7 @@
 
 #undef HAVE_PREAD
 
+#undef open64
 #undef mmap64
 #undef lseek64
 #undef fstat64

@@ -22,8 +22,8 @@ if (!defined ($inc))
   }
 
 if (!open(IN, "< $inc/vstr-const.h"))
-  { 
-    die "open: $!\n"; 
+  {
+    die "open: $!\n";
   }
 
 $/ = undef;
@@ -38,8 +38,8 @@ while (/^#define\s+(VSTR_[0-9a-zA-Z][0-9a-zA-Z_]*)(\s|\()/gm)
   }
 
 if (!open(IN, "< $inc/vstr-switch.h"))
-  { 
-    die "open: $!\n"; 
+  {
+    die "open: $!\n";
   }
 
 $_ = <IN>;

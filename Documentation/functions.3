@@ -1833,7 +1833,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 .br
 \fBFunction: \fR vstr_ref_del()
 .br
-Returns: 
+Returns:
 .br
 Type: void
 
@@ -2390,7 +2390,7 @@ Type\fB[1]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
+  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref().
 
 .ti -2
 .br
@@ -4047,7 +4047,7 @@ Returns: TRUE on success and FALSE on failure
 Type: int
 
 .br
-Parameter\fB[1]\fR: 
+Parameter\fB[1]\fR:
 .br
 Type\fB[1]\fR: struct Vstr_conf *
 
@@ -10488,7 +10488,7 @@ Type\fB[2]\fR: const char *
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
 .br
-  It is recommended that you use the name "{vstr}", with the gcc warning compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names. 
+  It is recommended that you use the name "{vstr}", with the gcc warning compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 .ti -2
 .br
 \fBFunction: \fR vstr_sc_fmt_add_buf()

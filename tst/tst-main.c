@@ -112,7 +112,7 @@ int main(void)
   struct Vstr_conf *conf3 = NULL;
 
   buf[0] = 0; /* make sure the compiler thinks buf is used ... */
-  
+
   if (!vstr_init())
     die();
 
@@ -139,36 +139,36 @@ int main(void)
             );
   }
 #endif
-  
+
   if (!(conf1 = vstr_make_conf()))
     die();
   if (!(conf2 = vstr_make_conf()))
     die();
   if (!(conf3 = vstr_make_conf()))
     die();
-  
+
   if (!vstr_cntl_conf(conf1,
                       VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC, "en_US"))
     die();
-  
+
   {
     int tmp = 0;
-    
+
     vstr_cntl_conf(conf2, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
     ASSERT(!!vstr_cntl_conf(conf2, VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &tmp) &&
            tmp == 4);
-    
+
     vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC, 4);
     ASSERT(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC, &tmp) &&
            tmp == 4);
-    
+
     ASSERT(!!vstr_cntl_conf(conf3, VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE, &tmp) &&
            tmp == TRUE);
     vstr_cntl_conf(conf3, VSTR_CNTL_CONF_SET_FLAG_ALLOC_CACHE, FALSE);
     ASSERT(!!vstr_cntl_conf(conf3, VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE, &tmp) &&
            tmp == FALSE);
   }
-  
+
   if (!(s1 = vstr_make_base(NULL)))
     die();
   if (!(s2 = vstr_make_base(conf1)))
@@ -181,7 +181,7 @@ int main(void)
   vstr_free_conf(conf1);
   vstr_free_conf(conf2);
   vstr_free_conf(conf3);
-  
+
   {
     int tmp = 0;
     ASSERT(!!vstr_cntl_base(s1, VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE, &tmp) &&
@@ -194,7 +194,7 @@ int main(void)
            tmp == FALSE);
 
   }
-  
+
   if ((ret = tst()) && (ret != EXIT_FAILED_OK))
     fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
 
@@ -202,9 +202,9 @@ int main(void)
   vstr_free_base(s2);
   vstr_free_base(s3);
   vstr_free_base(s4);
-  
+
   vstr_exit();
-  
+
   switch (ret)
   {
     case EXIT_FAILED_OK: exit (EXIT_FAILED_OK);

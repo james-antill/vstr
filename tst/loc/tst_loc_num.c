@@ -30,7 +30,7 @@ int tst(void)
 
   TST_B_TST(ret, 6,
              !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "1000_.000_.0"));
-  
+
   TST_B_TST(ret, 7,
             !vstr_cntl_conf(s3->conf,
                             VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP, "\1\2\3\1"));

@@ -13,6 +13,6 @@ int tst(void)
   /* slow ... */
   TST_B_TST(ret, 3, !vstr_mov(s1, 0, s3, 1, 0)); /* empty */
   TST_B_TST(ret, 4, !vstr_mov(s1, 0, s3, 4, 0)); /* empty, offset */
-  
+
   return (0);
 }

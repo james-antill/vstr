@@ -60,7 +60,7 @@ int tst(void)
 #ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
   return (EXIT_FAILED_OK);
 #endif
-  
+
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,
@@ -74,14 +74,14 @@ int tst(void)
   lens_rev[1] = s3->len - lens_fwd[1];
   lens_rev[2] = s3->len - lens_fwd[2];
   lens_rev[3] = s3->len - lens_fwd[3];
-  
+
   tst_c_chrs(s1, 0); /* overlap */
   tst_c_chrs(s3, 10);
 
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_c_chrs(s1, 0); /* overlap */
   tst_c_chrs(s3, 10);
   tst_c_chrs(s4, 20);
@@ -93,17 +93,17 @@ int tst(void)
   /* won't have a cache again... */
   ASSERT(!s1->iovec_upto_date);
   ASSERT(!s3->iovec_upto_date);
-  
+
   tst_c_non_chrs(s1);
   tst_c_non_chrs(s3);
 
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_c_non_chrs(s1);
   tst_c_non_chrs(s3);
-  tst_c_non_chrs(s4);  
+  tst_c_non_chrs(s4);
 
   return (TST_B_RET(ret));
 }

@@ -34,49 +34,49 @@ int main(int argc, char *argv[])
    time_t timestamp;
    unsigned int sz;
   } cur[CUR_RATE_NUM_SECS];
-  
+
   if (!vstr_init())
     errno = ENOMEM, DIE("vstr_init:");
-  
+
   if (fstat(1, &stat_buf) == -1)
     DIE("fstat:");
-  
+
   if (!(conf = vstr_make_conf()))
     errno = ENOMEM, DIE("vstr_make_conf:");
-  
+
   if (!stat_buf.st_blksize)
     stat_buf.st_blksize = 4096;
-  
+
   vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
-  
+
   s2 = vstr_make_base(NULL);
   if (!s2)
     errno = ENOMEM, DIE("vstr_make_base:");
-  
+
   s1 = vstr_make_base(conf);
   if (!s1)
     errno = ENOMEM, DIE("vstr_make_base:");
-  
+
   vstr_free_conf(conf);
-  
+
   if (argc != 2)
   {
     size_t pos = 0;
-    
+
     VSTR_ADD_CSTR_PTR(s1, 0, argc ? argv[0] : "mon_cp");
-    
+
     if ((pos = vstr_srch_chr_rev(s1, 1, s1->len, '/')))
       vstr_del(s1, 1, pos);
-    
+
     VSTR_ADD_CSTR_PTR(s1, 0, " Format: ");
     VSTR_ADD_CSTR_PTR(s1, s1->len, " <filename>\n");
-    
+
     while (s1->len)
       EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 2);
-  
+
     exit (EXIT_FAILURE);
   }
-  
+
   if ((fd = open(argv[1], O_RDONLY | O_LARGEFILE | O_NOCTTY)) == -1)
     DIE("open:");
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   {
     size_t prev_len = s2->len;
     time_t now;
-    
+
     if (fstat(fd, &stat_buf) == -1)
       DIE("fstat:");
 
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     memmove(cur, cur + 1, sizeof(cur[0]) * (CUR_RATE_NUM_SECS - 1));
     cur[CUR_RATE_NUM_SECS - 1].timestamp = now;
     cur[CUR_RATE_NUM_SECS - 1].sz = last_sz;
-    
+
     vstr_del(s2, 1, s2->len);
     vstr_add_fmt(s2, 0,
                  "CP = $8{BKMG:%u} | "
@@ -140,25 +140,25 @@ int main(int argc, char *argv[])
       vstr_add_rep_chr(s1, s1->len, '\b', prev_len - s2->len);
       vstr_add_rep_chr(s1, s1->len, ' ',  prev_len - s2->len);
     }
-    
+
     vstr_add_rep_chr(s1, s1->len, '\b', prev_len);
     vstr_add_vstr(s1, s1->len, s2, 1, s2->len, 0);
-    
+
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
 
     sleep(1);
   }
-  
+
   close(fd);
-  
+
   vstr_add_rep_chr(s1, s1->len, '\n', 1);
   while (s1->len)
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-  
+
   vstr_free_base(s1);
   vstr_free_base(s2);
-  
+
   vstr_exit();
-  
+
   exit (EXIT_SUCCESS);
 }

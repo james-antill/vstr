@@ -26,47 +26,47 @@ static void tst_vstr(const char *fmt, ...)
 int tst(void)
 {
   int ret = 0;
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.0d", 0);
   TST_B_TST(ret, 1, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.d", 0);
   TST_B_TST(ret, 2, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%I.*d", 0, 0);
   TST_B_TST(ret, 3, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.0x", 0);
   TST_B_TST(ret, 4, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.x", 0);
   TST_B_TST(ret, 5, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.*x", 0, 0);
   TST_B_TST(ret, 6, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#.*x", 0, 0);
   TST_B_TST(ret, 7, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.0o", 0);
   TST_B_TST(ret, 8, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.o", 0);
   TST_B_TST(ret, 9, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%.*o", 0, 0);
   TST_B_TST(ret, 10, s1->len);
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#.o", 0);
   TST_B_TST(ret, 11, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0"));
@@ -74,11 +74,11 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#x", 1);
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0x1"));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#.x", 1);
   TST_B_TST(ret, 13, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0x1"));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#x", 0);
   TST_B_TST(ret, 14, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0"));
@@ -86,15 +86,15 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#8o", 1);
   TST_B_TST(ret, 15, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "      01"));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#08o", 0);
   TST_B_TST(ret, 16, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "00000000"));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#8x", 1);
   TST_B_TST(ret, 17, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "     0x1"));
-  
+
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#08x", 1);
   TST_B_TST(ret, 18, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0x000001"));
@@ -102,7 +102,7 @@ int tst(void)
   sprintf(buf, "%#.o", 0);
   if (!buf[0])
     return (EXIT_FAILED_OK); /* Solaris (2.8) gets this wrong at least... */
-  
+
   {
     static const char fmts[][80] = {
      "<%o|%#o|%d|%x|%#x|%#d>",
@@ -170,29 +170,29 @@ int tst(void)
      "<% 04.8o|% 0#4.8o|% 04.8d|% 04.8x|% 0#4.8x|% 0#4.8d>",
      "<% 08.4o|% 0#8.4o|% 08.4d|% 08.4x|% 0#8.4x|% 0#8.4d>"
     };
-    
+
 #define TST(sym, fmt, val) \
 	tst_ ## sym (fmt, \
 	             (val), (val), (val), (val), (val), (val))
 
     unsigned int count = 0;
-    
+
     while (count < 0x1002)
     {
       unsigned int scan = 0;
-      
+
       while (scan < sizeof(fmts)/sizeof(fmts[0]))
       {
         TST(host, fmts[scan], count);
         TST(vstr, fmts[scan], count);
 
         TST_B_TST(ret, 30, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
-        
+
         TST(host, fmts[scan], -(int)count);
         TST(vstr, fmts[scan], -(int)count);
 
         TST_B_TST(ret, 30, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
-        
+
         ++scan;
       }
 
@@ -211,6 +211,6 @@ int tst(void)
       }
     }
   }
-  
+
   return (TST_B_RET(ret));
 }

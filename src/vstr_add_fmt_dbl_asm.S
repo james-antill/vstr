@@ -52,7 +52,7 @@
 #endif
 
 /* #define HAVE_i686 1 */
-/* TODO: Maybe bother to set this up ... 
+/* TODO: Maybe bother to set this up ...
  * do 3 libraries and get the dynamic linker to do the cool stuff ?
  * ... it's correct for i386, so I don't really care
  */

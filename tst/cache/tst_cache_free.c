@@ -8,6 +8,6 @@ int tst(void)
   vstr_cache_cb_free(s2, 0);
   vstr_cache_cb_free(s3, 0);
   vstr_cache_cb_free(s4, 0);
-  
+
   return (EXIT_SUCCESS);
 }

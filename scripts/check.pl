@@ -98,7 +98,7 @@ while (scalar (@ARGV))
   { $conf_rand = 1; }
 
   elsif ("ALL" eq $arg)
-  { 
+  {
   	{ $conf_linker_check = 1; }
   	{ $conf_full_dbl_check = 1; }
   	{ $conf_full_test_check = 1; }
@@ -225,7 +225,7 @@ sub conf
       if ($conf_print_stdout_info)
         {
           OLD_STDOUT->print("*" x 35 . " BAD " . "*" x 35 . "\n");
-        } 
+        }
       FOUT->print("*" x 35 . " BAD " . "*" x 35 . "\n");
       FERR->print("*" x 35 . " BAD " . "*" x 35 . "\n");
       sleep(4);
@@ -328,7 +328,7 @@ sub tst_conf_X
         }
 
 	conf (map(@{$conf_args->[$_]}, @$val));
-      } 
+      }
   }
 
 # -------------------------------------------------------------

@@ -1,21 +1,21 @@
 #define VSTR_CNTL_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions for the "misc" control stuff. like reading struct values etc. */
@@ -33,29 +33,29 @@ Vstr__options vstr__options =
  0, /* fail on num */
  NULL /* values */
  /* END: mem */
- 
+
 };
 
 int vstr_cntl_opt(int option, ...)
 {
   int ret = 0;
- 
+
   va_list ap;
 
   va_start(ap, option);
- 
+
   switch (option)
   {
     case VSTR_CNTL_OPT_GET_CONF:
     {
       Vstr_conf **val = va_arg(ap, Vstr_conf **);
-   
+
       vstr__add_user_conf(*val = vstr__options.def);
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_OPT_SET_CONF:
     {
       Vstr_conf *val = va_arg(ap, Vstr_conf *);
@@ -65,7 +65,7 @@ int vstr_cntl_opt(int option, ...)
         vstr_free_conf(vstr__options.def);
         vstr__add_user_conf(vstr__options.def = val);
       }
-   
+
       ret = TRUE;
     }
 
@@ -75,48 +75,48 @@ int vstr_cntl_opt(int option, ...)
       unsigned long val = va_arg(ap, unsigned long);
 
       vstr__options.mem_fail_num = val;
-   
+
       ret = TRUE;
     }
     break;
 #endif
-  
+
     default:
       break;
   }
- 
+
   va_end(ap);
- 
+
   return (ret);
 }
 
 int vstr_cntl_base(Vstr_base *base, int option, ...)
 {
   int ret = 0;
- 
+
   va_list ap;
 
   va_start(ap, option);
- 
+
   switch (option)
   {
     case VSTR_CNTL_BASE_GET_CONF:
     {
       Vstr_conf **val = va_arg(ap, Vstr_conf **);
-    
+
       vstr__add_user_conf(*val = base->conf);
-    
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_BASE_SET_CONF:
     {
       Vstr_conf *val = va_arg(ap, Vstr_conf *);
-    
+
       if (!val)
         val = vstr__options.def;
-    
+
       if (base->conf == val)
         ret = TRUE;
       else if (((val->buf_sz == base->conf->buf_sz) || !base->len) &&
@@ -124,7 +124,7 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
       {
         vstr__del_conf(base->conf);
         vstr__add_base_conf(base, val);
-      
+
         ret = TRUE;
       }
     }
@@ -133,19 +133,19 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
     case VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE:
     {
       int *val = va_arg(ap, int *);
-     
+
       *val = !!base->cache_available;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     default:
       break;
   }
 
   va_end(ap);
- 
+
   return (ret);
 }
 
@@ -156,85 +156,85 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
   va_list ap;
 
   assert(conf->user_ref <= conf->ref);
-   
+
   va_start(ap, option);
- 
+
   switch (option)
   {
     case VSTR_CNTL_CONF_GET_NUM_REF:
     {
       int *val = va_arg(ap, int *);
-   
+
       *val = conf->ref;
       ret = TRUE;
     }
     break;
-  
+
     /* case VSTR_CNTL_BASE_SET_REF: */
 
     case VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC:
     {
       int *val = va_arg(ap, int *);
-   
+
       *val = conf->iov_min_alloc;
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC:
     {
       int val = va_arg(ap, int);
-   
+
       conf->iov_min_alloc = val;
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET:
     {
       int *val = va_arg(ap, int *);
-   
+
       *val = conf->iov_min_offset;
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET:
     {
       int val = va_arg(ap, int);
-   
+
       conf->iov_min_offset = val;
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_GET_NUM_BUF_SZ:
     {
       unsigned int *val = va_arg(ap, unsigned int *);
-   
+
       *val = conf->buf_sz;
-   
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_NUM_BUF_SZ:
     {
       unsigned int val = va_arg(ap, unsigned int);
 
       if (val > VSTR_MAX_NODE_BUF)
         val = VSTR_MAX_NODE_BUF;
-    
+
       /* this is too restrictive, but getting it "right" would require too much
        * bookkeeping. */
       if (!conf->spare_buf_num && (conf->user_ref == conf->ref))
       {
         conf->buf_sz = val;
-      
+
         ret = TRUE;
       }
     }
@@ -253,7 +253,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       const char **val = va_arg(ap, const char **);
 
       *val = conf->loc->name_lc_numeric_str;
-     
+
       ret = TRUE;
     }
     break;
@@ -271,7 +271,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       vstr_wrap_memcpy(tmp, val, len + 1);
       conf->loc->name_lc_numeric_str = tmp;
       conf->loc->name_lc_numeric_len = len;
-     
+
       ret = TRUE;
     }
     break;
@@ -281,7 +281,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       const char **val = va_arg(ap, const char **);
 
       *val = conf->loc->decimal_point_str;
-     
+
       ret = TRUE;
     }
     break;
@@ -298,8 +298,8 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       VSTR__F(conf->loc->decimal_point_str);
       vstr_wrap_memcpy(tmp, val, len + 1);
       conf->loc->decimal_point_str = tmp;
-      conf->loc->decimal_point_len = len;     
-     
+      conf->loc->decimal_point_len = len;
+
       ret = TRUE;
     }
     break;
@@ -309,7 +309,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       const char **val = va_arg(ap, const char **);
 
       *val = conf->loc->thousands_sep_str;
-     
+
       ret = TRUE;
     }
     break;
@@ -327,7 +327,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       vstr_wrap_memcpy(tmp, val, len + 1);
       conf->loc->thousands_sep_str = tmp;
       conf->loc->thousands_sep_len = len;
-     
+
       ret = TRUE;
     }
     break;
@@ -337,7 +337,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       const char **val = va_arg(ap, const char **);
 
       *val = conf->loc->grouping;
-     
+
       ret = TRUE;
     }
     break;
@@ -354,7 +354,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       VSTR__F(conf->loc->grouping);
       vstr_wrap_memcpy(tmp, val, len); tmp[len] = 0;
       conf->loc->grouping = tmp;
-     
+
       ret = TRUE;
     }
     break;
@@ -362,13 +362,13 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE:
     {
       int *val = va_arg(ap, int *);
-     
+
       *val = conf->iovec_auto_update;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE:
     {
       int val = va_arg(ap, int);
@@ -376,7 +376,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       assert(val == !!val);
 
       conf->iovec_auto_update = val;
-     
+
       ret = TRUE;
     }
     break;
@@ -384,13 +384,13 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT:
     {
       int *val = va_arg(ap, int *);
-     
+
       *val = conf->split_buf_del;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT:
     {
       int val = va_arg(ap, int);
@@ -398,7 +398,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       assert(val == !!val);
 
       conf->split_buf_del = val;
-     
+
       ret = TRUE;
     }
     break;
@@ -406,13 +406,13 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE:
     {
       int *val = va_arg(ap, int *);
-     
+
       *val = !conf->no_cache;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_FLAG_ALLOC_CACHE:
     {
       int val = va_arg(ap, int);
@@ -420,7 +420,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       assert(val == !!val);
 
       conf->no_cache = !val;
-     
+
       ret = TRUE;
     }
     break;
@@ -428,19 +428,19 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_FMT_CHAR_ESC:
     {
       char *val = va_arg(ap, char *);
-     
+
       *val = conf->fmt_usr_escape;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_FMT_CHAR_ESC:
     {
       int val = va_arg(ap, int);
 
       conf->fmt_usr_escape = val;
-     
+
       ret = TRUE;
     }
     break;
@@ -451,7 +451,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_NUM_SPARE_REF:
     {
       unsigned int *val = va_arg(ap, unsigned int *);
-     
+
       switch (option)
       {
         case VSTR_CNTL_CONF_GET_NUM_SPARE_BUF: *val= conf->spare_buf_num; break;
@@ -459,11 +459,11 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
         case VSTR_CNTL_CONF_GET_NUM_SPARE_PTR: *val= conf->spare_ptr_num; break;
         case VSTR_CNTL_CONF_GET_NUM_SPARE_REF: *val= conf->spare_ref_num; break;
       }
-     
+
       ret = TRUE;
     }
     break;
-   
+
     case VSTR_CNTL_CONF_SET_NUM_SPARE_BUF:
     case VSTR_CNTL_CONF_SET_NUM_SPARE_NON:
     case VSTR_CNTL_CONF_SET_NUM_SPARE_PTR:
@@ -472,7 +472,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       unsigned int val = va_arg(ap, unsigned int);
       unsigned int type = 0;
       unsigned int spare_num = 0;
-      
+
       switch (option)
       {
         case VSTR_CNTL_CONF_SET_NUM_SPARE_BUF:
@@ -492,13 +492,13 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
           spare_num = conf->spare_ref_num;
           break;
       }
-     
+
       if (val == spare_num)
       { /* do nothing */ }
       else if (val > spare_num)
       {
         unsigned int num = 0;
-       
+
         num = vstr_make_spare_nodes(conf, type, val - spare_num);
         if (num != (val - spare_num))
         {
@@ -509,11 +509,11 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       else if (val < spare_num)
       {
         unsigned int num = 0;
-       
+
         num = vstr_free_spare_nodes(conf, type, spare_num - val);
         ASSERT(num == (spare_num - val));
       }
-     
+
       ret = TRUE;
     }
     break;
@@ -547,13 +547,13 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
           spare_num = conf->spare_ref_num;
           break;
       }
-      
+
       if (0)
       { ASSERT(FALSE); }
       else if (val_min > spare_num)
       {
         unsigned int num = 0;
-       
+
         num = vstr_make_spare_nodes(conf, type, val_min - spare_num);
         if (num != (val_min - spare_num))
         {
@@ -564,11 +564,11 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
       else if (val_max < spare_num)
       {
         unsigned int num = 0;
-       
+
         num = vstr_free_spare_nodes(conf, type, spare_num - val_max);
         assert(num == (spare_num - val_max));
       }
-     
+
       ret = TRUE;
     }
     break;
@@ -576,21 +576,21 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
     case VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS:
     {
       char *val = va_arg(ap, char *);
-     
+
       *val = conf->atomic_ops;
-     
+
       ret = TRUE;
     }
     break;
-  
+
     case VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS:
     {
       int val = va_arg(ap, int);
 
       assert(val == !!val);
-     
+
       conf->atomic_ops = val;
-     
+
       ret = TRUE;
     }
     break;
@@ -600,6 +600,6 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
   }
 
   va_end(ap);
- 
+
   return (ret);
 }

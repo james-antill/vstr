@@ -472,7 +472,7 @@
 </p><p>  This flag means that there are no more arguments to be expected.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Because you can have multiple arguments associated with one custom &quot;fmt&quot; 
+</p><p>  Because you can have multiple arguments associated with one custom &quot;fmt&quot;
  specification this has to be the last argument to every call to
  <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>.
 </p><p>  Just specifying this type means that there are no arguments used, by the
@@ -1883,7 +1883,7 @@
 <a name="VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns <br>Type<strong>[1]</strong>: const char **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns<br>Type<strong>[1]</strong>: const char **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the value of the thousands grouping LC_NUMERIC locale
  variable.
@@ -1892,10 +1892,11 @@
 <a name="VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: const char *
+ Parameter[1]:
+<br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the value of the thousands grouping LC_NUMERIC locale
- variable. 
+ variable.
 
 
 <a name="VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2049,7 +2050,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum number of spare nodes to have for the specified type<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will make the number of spare nodes of the specified type fit
- into the range given, by calling either <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> or 
+ into the range given, by calling either <a href="functions.html#vstr_make_spare_nodes()">vstr_make_spare_nodes()</a> or
  <a href="functions.html#vstr_free_spare_nodes()">vstr_free_spare_nodes()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>

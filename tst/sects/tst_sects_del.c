@@ -9,7 +9,7 @@ int tst(void)
 
   TST_B_TST(ret, 1, (sects->sz != 4));
   TST_B_TST(ret, 2, (sects->num != 0));
-  
+
   vstr_sects_add(sects, 4, 2);
   vstr_sects_add(sects, 5, 3);
   vstr_sects_add(sects, 6, 4);
@@ -18,7 +18,7 @@ int tst(void)
 
   TST_B_TST(ret, 3, (sects->sz != 8));
   TST_B_TST(ret, 4, (sects->num != 5));
-  
+
   TST_B_TST(ret, 5, (sects->ptr[0].pos != 4));
   TST_B_TST(ret, 6, (sects->ptr[0].len != 2));
 
@@ -29,7 +29,7 @@ int tst(void)
 
   TST_B_TST(ret, 1, (sects->sz != 8));
   TST_B_TST(ret, 2, (sects->num != 5));
-  
+
   vstr_sects_del(sects, 1);
   vstr_sects_del(sects, 5);
   vstr_sects_del(sects, 4);
@@ -38,7 +38,7 @@ int tst(void)
   TST_B_TST(ret, 2, (sects->num != 3));
 
   sects->can_del_sz = TRUE;
-  
+
   vstr_sects_del(sects, 3);
 
   TST_B_TST(ret, 1, (sects->sz != 4));

@@ -7,7 +7,7 @@ int tst(void)
   static Vstr_ref ref2;
   int ret = 0;
   Vstr_base *t1 = NULL;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   ref2.func = vstr_ref_cb_free_nothing;
@@ -40,7 +40,7 @@ int tst(void)
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
     vstr_free_spare_nodes(NULL,     VSTR_TYPE_NODE_REF, 1000);
-    
+
     TST_B_TST(ret,  5, !tst_mfail_num(1));
     TST_B_TST(ret,  6, vstr_dup_cstr_ref(s3->conf, &ref2, 0));
     TST_B_TST(ret,  7, !tst_mfail_num(2));
@@ -50,6 +50,6 @@ int tst(void)
     TST_B_TST(ret, 11, !tst_mfail_num(2));
     TST_B_TST(ret, 12, vstr_dup_cstr_ref(NULL, &ref2, 0));
   }
-  
+
   return (TST_B_RET(ret));
 }

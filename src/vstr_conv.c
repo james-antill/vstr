@@ -1,21 +1,21 @@
 #define VSTR_CONV_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions for converting data in vstrs */
@@ -27,7 +27,7 @@
  * anything */
 #define VSTR__BUF_NEEDED(test, val_count) do { \
   if (!vstr_iter_fwd_beg(base, pos, len, iter)) \
-    goto malloc_buf_needed_fail; \
+    goto iter_fwd_beg_fail; \
   \
   if (base->node_ptr_used || base->node_ref_used) { do \
   { \
@@ -68,32 +68,32 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
   size_t len = passed_len;
   Vstr_iter iter[1];
   unsigned int extra_nodes = 0;
-  
+
   VSTR__BUF_NEEDED(VSTR__IS_ASCII_UPPER(*iter->ptr), extra_nodes);
-  
+
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       extra_nodes, UINT_MAX))
     return (FALSE);
-  
+
   while (len)
   {
     char tmp = vstr_export_chr(base, pos);
-    
+
     if (VSTR__IS_ASCII_UPPER(tmp))
     {
       tmp = VSTR__TO_ASCII_LOWER(tmp);
-      
+
       if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
         return (FALSE);
     }
-    
+
     ++pos;
     --len;
   }
-  
+
   return (TRUE);
-  
- malloc_buf_needed_fail:
+
+ iter_fwd_beg_fail:
   return (FALSE);
 }
 
@@ -104,33 +104,33 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
   unsigned int extra_nodes = 0;
 
   VSTR__BUF_NEEDED(VSTR__IS_ASCII_LOWER(*iter->ptr), extra_nodes);
-  
+
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       extra_nodes, UINT_MAX))
     return (FALSE);
-  
+
   while (len)
   {
     char tmp = vstr_export_chr(base, pos);
-    
+
     if (VSTR__IS_ASCII_LOWER(tmp))
     {
       tmp = VSTR__TO_ASCII_UPPER(tmp);
-      
+
       if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
       {
         assert(FALSE);
         return (FALSE);
       }
     }
-    
+
     ++pos;
     --len;
   }
-  
+
   return (TRUE);
-  
- malloc_buf_needed_fail:
+
+ iter_fwd_beg_fail:
   return (FALSE);
 }
 
@@ -160,13 +160,13 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
   size_t len = passed_len;
   Vstr_iter iter[1];
   unsigned int extra_nodes = 0;
-  
+
   VSTR__BUF_NEEDED(!VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags), extra_nodes);
 
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       extra_nodes, UINT_MAX))
     return (FALSE);
-  
+
   while (len)
   {
     size_t skip_non = vstr_spn_chrs_fwd(base, pos, len, NULL, 1);
@@ -179,14 +179,14 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
     else
     {
       char tmp = vstr_export_chr(base, pos);
-      
+
       if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags) &&
           !vstr_sub_buf(base, pos, 1, &swp, 1))
       {
         assert(FALSE);
         return (FALSE);
       }
-      
+
       ++pos;
       --len;
     }
@@ -194,7 +194,7 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
 
   return (TRUE);
 
- malloc_buf_needed_fail:
+ iter_fwd_beg_fail:
   return (FALSE);
 }
 
@@ -205,19 +205,19 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
   Vstr_iter iter[1];
   unsigned int extra_nodes[4] = {0};
   size_t del_pos = 0;
-  
+
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    goto malloc_buf_needed_fail;
-  
+    return (FALSE);
+
   do
   {
     int done = FALSE;
-    
+
     if ((iter->node->type == VSTR_TYPE_NODE_BUF) && !base->conf->split_buf_del)
       continue;
     if (iter->node->type == VSTR_TYPE_NODE_NON)
       continue;
-    
+
     while (iter->len > 0)
     {
       if (VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags))
@@ -225,18 +225,18 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
       else if (done) /* deleteing from the begining of a node is always ok */
       {
         assert((iter->node->type > 0) && (iter->node->type <= 4));
-        
+
         ++extra_nodes[iter->node->type - 1];
-        
+
         do
         {
           --iter->len;
           ++iter->ptr;
         } while ((iter->len > 0) && !VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags));
-        
+
         continue;
       }
-      
+
       --iter->len;
       ++iter->ptr;
     }
@@ -245,7 +245,7 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
 
   assert(!extra_nodes[VSTR_TYPE_NODE_NON - 1]);
   assert(!extra_nodes[VSTR_TYPE_NODE_BUF - 1] || base->conf->split_buf_del);
-  
+
   len = passed_len;
 
   if (FALSE ||
@@ -257,7 +257,7 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
                       extra_nodes[VSTR_TYPE_NODE_REF - 1], UINT_MAX) ||
       FALSE)
     return (FALSE);
-  
+
   while (len)
   {
     size_t skip_non = vstr_spn_chrs_fwd(base, pos, len, NULL, 1);
@@ -270,12 +270,12 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
     else
     {
       char tmp = vstr_export_chr(base, pos);
-      
+
       if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags))
       {
         if (!del_pos)
           del_pos = pos;
-        
+
         assert(pos >= del_pos);
       }
       else if (del_pos)
@@ -284,26 +284,23 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
         pos = del_pos;
         del_pos = 0;
       }
-      
+
       ++pos;
       --len;
     }
   }
-  
+
   if (del_pos)
     vstr_del(base, del_pos, pos - del_pos);
 
   return (TRUE);
-
- malloc_buf_needed_fail:
-  return (FALSE);
 }
 
 #if 0
 /* from section 6.7. of rfc2045 */
 int vstr_conv_encode_qp(Vstr_base *base, size_t pos, size_t passed_len)
 {
-  
+
 }
 
 int vstr_conv_decode_qp(Vstr_base *base, size_t pos, size_t passed_len)
@@ -313,10 +310,10 @@ int vstr_conv_decode_qp(Vstr_base *base, size_t pos, size_t passed_len)
 
 int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 {
-  Vstr_sects *sects = vstr_sects_make(8);
+  Vstr_sects *sects = vstr_sects_make(VSTR__SECTS_SZ);
   size_t count = 0;
   /* from section 2.4.3. of rfc2396 */
-  char chrs_disallowed[] = {
+  unsigned char chrs_disallowed[] = {
    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
    0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
@@ -344,20 +341,20 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   };
   unsigned int extra_nodes = 0;
   unsigned int scan = 0;
-  
+
   if (!sects)
     goto malloc_bad;
-  
+
   while (len)
   {
     count = vstr_cspn_chrs_fwd(base, pos, len,
-                               chrs_disallowed, sizeof(chrs_disallowed));
+                               (char *)chrs_disallowed,sizeof(chrs_disallowed));
     pos += count;
     len -= count;
 
     if (!len)
       break;
-    
+
     if (!vstr_sects_add(sects, pos, 1))
       goto sects_malloc_bad;
 
@@ -369,7 +366,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       extra_nodes, UINT_MAX))
     goto sects_malloc_bad;
-  
+
   while (scan < sects->num)
   {
     unsigned int bad = 0;
@@ -377,7 +374,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
     const char *const digits = "0123456789abcdef";
     /* TODO: tpos is instead of vstr_sub_alter_sects_buf */
     size_t tpos = sects->ptr[scan].pos + (scan * 2);
-    
+
     assert(sects->ptr[scan].len == 1);
 
     bad = vstr_export_chr(base, tpos);
@@ -391,9 +388,9 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 
     ++scan;
   }
-  
+
   vstr_sects_free(sects);
-  
+
   return (TRUE);
 
  sects_malloc_bad:
@@ -405,22 +402,22 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 
 int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
 {
-  Vstr_sects *sects = vstr_sects_make(8);
+  Vstr_sects *sects = vstr_sects_make(VSTR__SECTS_SZ);
   size_t srch_pos = 0;
   char buf_percent[1] = {0x25};
   unsigned int err = 0;
   size_t hex_len = 0;
   unsigned int extra_nodes = 0;
   unsigned int scan = 0;
-  
+
   if (!sects)
     goto malloc_bad;
-  
+
   while ((srch_pos = vstr_srch_buf_fwd(base, pos, len, buf_percent, 1)))
   {
     size_t left = len - (srch_pos - pos);
     unsigned char sub = 0;
-    
+
     if (left < 3)
       break;
     pos = srch_pos + 1;
@@ -449,7 +446,7 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     unsigned char sub = 0;
     /* TODO: tpos is instead of vstr_sub_alter_sects_buf */
     size_t tpos = sects->ptr[scan].pos - (scan * 2);
-    
+
     assert(sects->ptr[scan].len == 3);
     sub = vstr_parse_ushort(base, tpos + 1, 2,
                             16 | VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
@@ -460,12 +457,12 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     len = base->len;
     vstr_sub_buf(base, tpos, 3, &sub, 1);
     assert(len == (base->len + 2));
-               
+
     ++scan;
-  }  
-  
+  }
+
   vstr_sects_free(sects);
-  
+
   return (TRUE);
 
  sects_malloc_bad:

@@ -4,21 +4,21 @@
 #endif
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 
@@ -575,7 +575,7 @@ extern size_t vstr_srch_vstr_rev(const struct Vstr_base *, size_t, size_t,
                                  const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 
-extern size_t vstr_srch_case_chr_fwd(const struct Vstr_base *, size_t, size_t, 
+extern size_t vstr_srch_case_chr_fwd(const struct Vstr_base *, size_t, size_t,
                                      char)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 extern size_t vstr_srch_case_chr_rev(const struct Vstr_base *, size_t, size_t,
@@ -875,11 +875,11 @@ extern int vstr_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)
 extern int vstr_sc_fmt_add_ipv6_ptr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
 
-extern int vstr_sc_mmap_fd(struct Vstr_base *, size_t, int, 
+extern int vstr_sc_mmap_fd(struct Vstr_base *, size_t, int,
                            VSTR_AUTOCONF_off64_t, size_t, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_sc_mmap_file(struct Vstr_base *, size_t,
-                             const char *, VSTR_AUTOCONF_off64_t, size_t, 
+                             const char *, VSTR_AUTOCONF_off64_t, size_t,
                              unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 3));
 extern int vstr_sc_read_iov_fd(struct Vstr_base *, size_t, int,
@@ -890,7 +890,7 @@ extern int vstr_sc_read_len_fd(struct Vstr_base *, size_t, int,
                                size_t, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_sc_read_iov_file(struct Vstr_base *, size_t,
-           	                 const char *, VSTR_AUTOCONF_off64_t, 
+           	                 const char *, VSTR_AUTOCONF_off64_t,
                                  unsigned int, unsigned int,
                                  unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 3));
@@ -923,7 +923,7 @@ extern void vstr_sc_dirname(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern int vstr_extern_inline_sects_add(struct Vstr_sects *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
- extern int vstr_extern_inline_add_rep_chr(struct Vstr_base *, size_t, 
+ extern int vstr_extern_inline_add_rep_chr(struct Vstr_base *, size_t,
                                            char, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern struct Vstr__cache_data_pos *

@@ -13,23 +13,23 @@ int tst(void)
 
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   ptr = strdup(buf);
-  
+
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
 
   memset(buf, 'X', sizeof(buf));
   len = vstr_export_buf(s1, 1, s1->len, buf, sizeof(buf));
-  
+
   TST_B_TST(ret, 1, (len != s1->len));
   TST_B_TST(ret, 2, memcmp(buf, ptr, len));
 
   /* overflow */
   memset(sm_buf, 'X', sizeof(sm_buf));
   len = vstr_export_buf(s1, 1, s1->len, sm_buf, SM_BUF_LEN);
-  
+
   TST_B_TST(ret, 3, (len != SM_BUF_LEN));
   TST_B_TST(ret, 4, memcmp(sm_buf, ptr, SM_BUF_LEN));
   TST_B_TST(ret, 5, (sm_buf[SM_BUF_LEN] != 'X'));
-  
+
   free(ptr);
 
   memset(sm_buf, 'X', sizeof(sm_buf));

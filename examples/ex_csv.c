@@ -69,7 +69,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
   const char *ptr = NULL;
   size_t tmp = 0;
   Vstr_iter iter[1];
-  
+
   if (!len)
     return (0);
 
@@ -94,15 +94,15 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
         VCSV__INC(tmp);
         state = VCSV_ST_SKIP_COMMA;
         break;
-        
+
       case VCSV_ST_SKIP_COMMA:
         assert(*iter->ptr == ',');
-        
+
         VCSV__INC(1);
         state = VCSV_ST_PRE;
         beg_len = len;
         break;
-        
+
       case VCSV_ST_PRE:
         if ((*iter->ptr == '\n') || (*iter->ptr == '\r'))
         {
@@ -112,22 +112,22 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
         else
           state = VCSV_ST_BEG;
         break;
-        
+
       case VCSV_ST_SKIP_RET:
         if (flags & VCSV_FLAG_LINE)
           return (ret_len - len);
       case VCSV_ST_INIT:
-        
+
         while ((*iter->ptr == '\n') || (*iter->ptr == '\r'))
         { /* skip blanks to start... */
           VCSV__INC(1);
-          
+
           if (!iter->len && !vstr_iter_fwd_nxt(iter))
             return (ret_len);
         }
         beg_len = len;
         /* FALL THROUGH */
-  
+
       case VCSV_ST_BEG:
         if (*iter->ptr == '"')
         {
@@ -163,7 +163,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
           return (ret_len);
         }
         break;
-        
+
       case VCSV_ST_GET_END_DQUOT:
       {
         unsigned int found_ret = FALSE;
@@ -188,17 +188,17 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
             beg_len = 0;
             state = VCSV_ST_SKIP_TRASH;
             break;
-            
+
           case '"':
           {
             size_t tpos = pos + (data_len - beg_len) + (beg_len - len);
-            
+
             vstr_del(s1, tpos, 1);
-            
+
             --data_len; /* update lengths and re-init iter */
             --beg_len;
             len -= 2;   /* for above */
-            
+
             vstr_iter_fwd_beg(s1, tpos + 1, len, iter);
             state = VCSV_ST_GET_BEG_DQUOT;
             continue;
@@ -208,7 +208,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
         --len; /* reverse above */
       }
       break;
-        
+
       case VCSV_ST_GET_NORM:
         tmp = 0;
         while (tmp < iter->len)
@@ -217,7 +217,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
               (iter->ptr[tmp] == '\r') ||
               (iter->ptr[tmp] == '\n'))
             break;
-          
+
           ++tmp;
         }
         VCSV__INC(tmp);
@@ -230,7 +230,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
         else
           state = VCSV_ST_SKIP_RET;
         break;
-        
+
       default:
         abort();
     }
@@ -238,7 +238,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
 
   if ((state != VCSV_ST_SKIP_RET) && (state != VCSV_ST_SKIP_TRASH))
     vcsv_end(pos, data_len, beg_len, len, rows);
-  
+
   return (ret_len);
 }
 
@@ -251,7 +251,7 @@ static void vdump(unsigned int ret, Vstr_sects *rows)
   vstr_add_fmt(out, out->len,
                "${rep_chr:%c%zu}\n" "%d\n" "${rep_chr:%c%zu}\n",
                '=', 79, ret, '=', 79);
-  
+
   while (scan < rows->num)
   {
     size_t pos = 1;
@@ -262,13 +262,13 @@ static void vdump(unsigned int ret, Vstr_sects *rows)
     len = VSTR_SECTS_NUM(rows, scan)->len;
     if (len)
       pos = VSTR_SECTS_NUM(rows, scan)->pos;
-    
+
     vstr_add_fmt(out, out->len, "|${vstr:%p%zu%zu%u}|\n",
                  vcsv_data, pos, len, 0);
   }
 
   vstr_add_fmt(out, out->len, "${rep_chr:%c%zu}\n", '-', 79);
-  
+
   while (out->len)
     if (!vstr_sc_write_fd(out, 1, out->len, 1, NULL))
       abort();
@@ -310,7 +310,7 @@ timestamp(void)
         struct timeval tval;
 
         gettimeofday(&tval, NULL);
-        
+
         return tval.tv_sec * 1000LL + tval.tv_usec / 1000;
 }
 
@@ -321,12 +321,12 @@ int main(int argc, char *argv[])
   VSTR_SECTS_DECL(vrows, 256);
 
     int ret = 0;
-  
+
   if (argc != 2) abort();
 
   if (!vstr_init())
     abort();
-  
+
   VSTR_SECTS_DECL_INIT(vrows);
 
   vcsv_data = vstr_make_base(NULL);
@@ -334,21 +334,21 @@ int main(int argc, char *argv[])
   out       = vstr_make_base(NULL);
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_sc_fmt_add_all(NULL);
-    
+
   do
   {
     size_t pos = 1;
     size_t len = 0;
     unsigned int err = 0;
     uint64_t t0 = timestamp();
-    
+
     if (!vstr_sc_mmap_file(vcsv_data, 0, argv[1], 0, 0, &err))
       break;
-    
+
     len = vcsv_data->len;
     if (err)
       abort();
-    
+
     while ((ret = vcsv_row_parse(vcsv_data, pos, len, vrows, VCSV_OPT_FLAGS)))
     {
       VDUMP(ret, vrows);
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
     }
 
     vstr_add_fmt(out, out->len, "%'llu milliseconds\n", (timestamp() - t0));
-    
+
     while (out->len)
       if (!vstr_sc_write_fd(out, 1, out->len, 2, NULL))
         abort();

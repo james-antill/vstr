@@ -1,21 +1,21 @@
 #define VSTR_EXPORT_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* functions for exporting data out of the Vstr -- see also vstr_cstr.c */
@@ -26,7 +26,7 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
                                  struct iovec **iovs, unsigned int *ret_num)
 {
   ASSERT(base);
-  
+
   if (!base->num)
     return (0);
 
@@ -38,7 +38,7 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
 
   if (ret_num)
     *ret_num = base->num;
- 
+
   return (base->len);
 }
 
@@ -60,10 +60,10 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
 
   if (!real_ret_num)
     real_ret_num = &dummy_ret_num;
-  
+
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
-  
+
   do
   {
     size_t tmp = iter->len;
@@ -71,10 +71,10 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
     assert(tmp);
     assert(iovs[ret_num].iov_len);
     assert(iovs[ret_num].iov_len > used);
-    
+
     if (tmp > (iovs[ret_num].iov_len - used))
       tmp = (iovs[ret_num].iov_len - used);
-    
+
     if (iter->node->type != VSTR_TYPE_NODE_NON)
       vstr_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used,iter->ptr,tmp);
 
@@ -86,11 +86,11 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
     if (iovs[ret_num].iov_len == used)
     {
       used = 0;
-      
+
       if (++ret_num >= num_max)
         break;
     }
-    
+
     if (!iter->len)
       vstr_iter_fwd_nxt(iter);
   } while (iter->node);
@@ -102,7 +102,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
   }
 
   *real_ret_num = ret_num;
-  
+
   return (ret_len);
 }
 
@@ -121,22 +121,22 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base,
 
   if (!num_max)
     return (0);
-  
+
   if (!real_ret_num)
     real_ret_num = &dummy_ret_num;
-  
+
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
-  
+
   do
-  {    
+  {
     iovs[ret_num].iov_base = (void *)iter->ptr;
     iovs[ret_num].iov_len = iter->len;
     ret_len += iter->len;
-    
+
   } while ((++ret_num < num_max) && vstr_iter_fwd_nxt(iter));
   assert((ret_len == orig_len) || (ret_num == num_max));
-  
+
   *real_ret_num = ret_num;
 
   return (ret_len);
@@ -150,23 +150,23 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
 
   if (!buf_len)
     return (0);
-  
+
   if (len > buf_len)
     len = buf_len;
-  
+
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
-  
+
   ret = iter->remaining + iter->len;
-  
+
   do
   {
     if (iter->node->type != VSTR_TYPE_NODE_NON)
       vstr_wrap_memcpy(buf, iter->ptr, iter->len);
-   
+
     buf = ((char *)buf) + iter->len;
   } while (vstr_iter_fwd_nxt(iter));
- 
+
   return (ret);
 }
 
@@ -176,7 +176,7 @@ static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,
   Vstr_ref *ref = NULL;
 
   ASSERT(len);
-  
+
   if (!(ref = vstr_ref_make_malloc(len)))
   {
     base->conf->malloc_bad = TRUE;
@@ -184,9 +184,9 @@ static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,
   }
 
   assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
-  
+
   vstr_export_buf(base, pos, len, ref->ptr, len);
-  
+
   return (ref);
 }
 
@@ -197,7 +197,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
   unsigned int num = 0;
   Vstr_ref *ref = NULL;
   size_t orig_pos = pos;
-  
+
   assert(base && pos && len && ((pos + len - 1) <= base->len));
   assert(ret_off);
 
@@ -205,7 +205,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
   { /* use cstr cache if available */
     Vstr__cache_data_cstr *data = NULL;
     unsigned int off = base->conf->cache_pos_cb_cstr;
-    
+
     if ((data = vstr_cache_get(base, off)) && data->ref)
     {
       if (pos >= data->pos)
@@ -219,10 +219,10 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
       }
     }
   }
-  
+
   scan = vstr__base_ptr_pos(base, &pos, &num);
   --pos;
-  
+
   if (((*scan)->len - pos) >= len)
   {
     if (0)
@@ -235,15 +235,15 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     else if ((*scan)->type == VSTR_TYPE_NODE_PTR)
     {
       void *ptr = ((char *)((Vstr_node_ptr *)*scan)->ptr) + pos;
-      
+
       if (!(ref = vstr_ref_make_ptr(ptr, vstr_ref_cb_free_ref)))
       {
         base->conf->malloc_bad = TRUE;
         return (NULL);
       }
-      
+
       *ret_off = 0;
-      
+
       return (ref);
     }
     else if ((*scan)->type == VSTR_TYPE_NODE_BUF)

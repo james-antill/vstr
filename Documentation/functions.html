@@ -502,7 +502,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Return)<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to return a pointer to a Vstr memory reference of at 
+</p><p>  This function is used to return a pointer to a Vstr memory reference of at
  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the
  "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be
  used to find the beginning of the block of memory to use.
@@ -559,7 +559,7 @@
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures used in the array<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a copy of the data in the Vstr string to an
- array of iovec structures this can then be passed directly to writev() 
+ array of iovec structures this can then be passed directly to writev()
  (or even a readv() although that wouldn't often be useful) etc.
 </p><p>  Think of this function as doing a readv() from a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -641,7 +641,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Return)<br>Type<strong>[4]</strong>: size_t *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to return a pointer to a Vstr memory reference of at 
+</p><p>  This function is used to return a pointer to a Vstr memory reference of at
  least length (Parameter[3]). The offset (Parameter[4]) should be used to find
  the beginning of the block of memory to use.
 </p><p>  When you are finished with the reference you need to use <a href="functions.html#vstr_ref_del()">vstr_ref_del()</a> or
@@ -700,7 +700,8 @@
 
 <a name="vstr_ref_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_del()
-</a><br>Returns: <br>Type: void
+</a> Returns:
+<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will delete a reference count from the Vstr_ref (Parameter[1]),
@@ -961,7 +962,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create an area of memory, using malloc, and create a Vstr
  memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and a cleanup function of <a href="functions.html#vstr_ref_cb_free_ptr_ref()">vstr_ref_cb_free_ptr_ref()</a>. 
+ reference count of 1 and a cleanup function of <a href="functions.html#vstr_ref_cb_free_ptr_ref()">vstr_ref_cb_free_ptr_ref()</a>.
 
 
 <a name="vstr_ref_make_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1068,7 +1069,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to add a copy of the data in the data array to a 
+</p><p>  This function is used to add a copy of the data in the data array to a
  Vstr string.
 </p><p>  Think of this function as doing a write() into a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1724,7 +1725,8 @@
 <a name="vstr_cntl_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_conf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: struct Vstr_conf *
+ Parameter[1]:
+<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting <a href="constants.html#vstr_cntl_conf%28%29">VSTR_CNTL_CONF_*</a><br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -3472,7 +3474,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr sections<br>Type<strong>[2]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will cause the section (Parameter[2]) that was previously 
+</p><p>  This function will cause the section (Parameter[2]) that was previously
  updated when changes are made to the Vstr string (Parameter[1]) to not be
  updated anymore.
 
@@ -3857,7 +3859,7 @@
 </p><p>  This function allows you to register arbitrary format specifiers for printing
  from <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>. Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
-</p><p>  The call back you register should return 0 (zero) if memory couldn't be 
+</p><p>  The call back you register should return 0 (zero) if memory couldn't be
  allocated and 1 (one) otherwise.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4016,7 +4018,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for cache function<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  If you have generated cache data, this function will tell the cache function 
+</p><p>  If you have generated cache data, this function will tell the cache function
  to free that data.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4155,7 +4157,7 @@
 </p><p>  It is recommended that you use the name &quot;{vstr}&quot;, with the gcc warning
  compatible alternates using "{vstr:%p%zu%zu%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
- 
+
 
 <a name="vstr_sc_fmt_add_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_fmt_add_buf()
@@ -4373,7 +4375,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- ipv4 IP addresses from a struct in_addr *. It is equivalent to calling 
+ ipv4 IP addresses from a struct in_addr *. It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. This pointer is
  a struct in_addr *, to be passed to inet_ntop().
@@ -4394,7 +4396,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling 
+ ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. This pointer is
  a struct in6_addr *, to be passed to inet_ntop().
@@ -4416,7 +4418,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv4 IP addresses from a vector of 4 unsigned char.
- It is equivalent to calling 
+ It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>, the vector is one
  unsigned char for each part of the ipv4 address.
@@ -4438,7 +4440,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv6 IP addresses from a vector of 8 unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
  the vector is one unsigned int for each part of the ipv6 address, the
@@ -4462,7 +4464,7 @@
 </p><p>  This function is used to add a custom specifier function to print
  ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an
  unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
  the vector is one unsigned char for each part of the ipv4 address.
@@ -4485,7 +4487,7 @@
 </p><p>  This function is used to add a custom specifier function to print
  ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an
  unsigned int.
- It is equivalent to calling 
+ It is equivalent to calling
  <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
  arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a>
  and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
@@ -4518,7 +4520,7 @@
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
 </p><p>  If any of the custom formatter adds fails (for example, if the name is
- already in use) then all the rest of the names of that type will fail, 
+ already in use) then all the rest of the names of that type will fail,
  however the other remaining types of formatters will be tried.
 
 

@@ -14,7 +14,7 @@ static int tst_usr_vstr_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   unsigned int sf_flags  = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
 
   assert(!strcmp(spec->name, "{VSTR:%p%u}"));
-  
+
   if (!vstr_add_vstr(st, pos, sf, 1, sf->len, sf_flags))
     return (FALSE);
 
@@ -24,7 +24,7 @@ static int tst_usr_vstr_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 static int tst_usr_pid_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 {
   assert(!strcmp(spec->name, "PID"));
-  
+
   if (!vstr_add_fmt(st, pos, "%lu", (unsigned long)getpid()))
     return (FALSE);
 
@@ -35,7 +35,7 @@ static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
                                    Vstr_fmt_spec *spec)
 {
   size_t sf_len = 0;
-  
+
   assert(st && !pos);
   assert(!strcmp(spec->name, "{BLANK_ERRNO1}"));
 
@@ -47,11 +47,11 @@ static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
   if (!vstr_sc_fmt_cb_beg(st, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_DEF))
     return (FALSE);
-  
+
   if (!vstr_sc_fmt_cb_end(st, pos, spec, sf_len))
     return (FALSE);
 
-  
+
   return (TRUE);
 }
 
@@ -72,7 +72,7 @@ static int tst_usr_blank_errno2_cb(Vstr_base *st, size_t pos,
 static int tst_usr_strerror_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 {
   assert(!strcmp(spec->name, "m"));
-  
+
   if (!VSTR_ADD_CSTR_PTR(st, pos, strerror(tst_errno)))
     return (FALSE);
 
@@ -98,7 +98,7 @@ static int tst_usr_all_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   int                arg15 = VSTR_FMT_CB_ARG_VAL(spec, int, 14);
 
   ASSERT(spec->fmt_I);
-  
+
   if (vstr_add_fmt(st, pos,
                    "%f|%Lf|%8d|%8jd|%8ld|%8lld|%8td|%ls|%8zu|%8zd|%8ju|%8lu|%8llu|%s|%c",
                    arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10,
@@ -121,7 +121,7 @@ static void tst_fmt(int ret, Vstr_base *t1)
                          "      11|      12|"
                          "      13|"
                          "fourteen|");
-  
+
 #ifdef FMT_DBL_none
   correct = ("0.000000|0.000000|"
              "       3|       4|"
@@ -135,7 +135,7 @@ static void tst_fmt(int ret, Vstr_base *t1)
 #endif
 
   vstr_del(t1, 1, t1->len);
-  
+
   if (!MFAIL_NUM_OK)
   {
     succeeded = vstr_add_fmt(t1, t1->len, t_fmt,
@@ -151,9 +151,9 @@ static void tst_fmt(int ret, Vstr_base *t1)
   else
   {
     unsigned long mfail_count = 1;
-    
+
     vstr_free_spare_nodes(t1->conf,     VSTR_TYPE_NODE_BUF, 1000);
-    
+
     TST_B_TST(ret, 26, !tst_mfail_num(1));
     TST_B_TST(ret, 27,  vstr_add_fmt(t1, t1->len, t_fmt,
                                      1.0, (long double)2.0,
@@ -179,7 +179,7 @@ static void tst_fmt(int ret, Vstr_base *t1)
     }
     tst_mfail_num(0);
   }
-  
+
   TST_B_TST(ret, 28, !VSTR_CMP_BUF_EQ(t1, 1, t1->len,
                                       correct, strlen(correct) + 1));
 }
@@ -193,14 +193,14 @@ int tst(void)
   int mfail_count = 0;
   unsigned int ipv4[4];
   unsigned int ipv6[8];
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   vstr_add_fmt(s2, s2->len, "$ %s -- %lu $", buf, (unsigned long)getpid());
 
   ASSERT(s1->conf->fmt_usr_curly_braces);
   ASSERT(s2->conf->fmt_usr_curly_braces);
   ASSERT(s3->conf->fmt_usr_curly_braces);
-  
+
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s4->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '%');
@@ -220,7 +220,7 @@ int tst(void)
                        VSTR_TYPE_FMT_PTR_VOID,
                        VSTR_TYPE_FMT_UINT,
                        VSTR_TYPE_FMT_END));
-  
+
   ASSERT(vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
   ASSERT(s1->conf->fmt_usr_curly_braces);
 
@@ -270,30 +270,30 @@ int tst(void)
   vstr_fmt_add(s3->conf, "PID", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
   ASSERT(vstr_fmt_srch(s3->conf, "PID"));
   ASSERT(!s3->conf->fmt_usr_curly_braces);
-  
-  vstr_fmt_add(s4->conf, "m", tst_usr_strerror_cb, VSTR_TYPE_FMT_END);  
+
+  vstr_fmt_add(s4->conf, "m", tst_usr_strerror_cb, VSTR_TYPE_FMT_END);
 
   /* output */
-  
+
   vstr_add_fmt(s1, 0, "${VSTR:%p%u}", (void *)s2, 0);
-  
+
   TST_B_TST(ret, 1, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
 
   vstr_add_fmt(s3, 0, "$$ ${vstr:%p%zu%zu%u} -- $PID $$",
                (void *)s2, 3, strlen(buf), 0);
-  
+
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
-  
+
   vstr_del(s3, 1, s3->len);
   vstr_add_fmt(s3, 0, "$$ ${buf:%s%zu} -- $PID $$",
                buf, strlen(buf));
-  
+
   TST_B_TST(ret, 3, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
   vstr_del(s3, 1, s3->len);
   vstr_add_fmt(s3, 0, "$$ ${ptr:%s%zu} -- $PID $$",
                buf, strlen(buf));
-  
+
   TST_B_TST(ret, 4, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
   vstr_del(s3, 1, s3->len);
@@ -302,7 +302,7 @@ int tst(void)
   vstr_add_rep_chr(s1, s1->len, ' ', 1);
   vstr_add_non(s1, 1, strlen(buf));
   vstr_add_rep_chr(s1, s1->len, ' ', 1);
-  
+
   TST_B_TST(ret, 5, !VSTR_CMP_EQ(s3, 1, s3->len, s1, 1, s1->len));
 
   vstr_del(s3, 1, s3->len);
@@ -310,7 +310,7 @@ int tst(void)
   vstr_add_fmt(s3, 0, "$$ $*{ref:%*p%zu%zu} -- $PID $$",
                0, ref, 0, strlen(buf));
   vstr_ref_del(ref);
-  
+
   TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
   vstr_del(s1, 1, s1->len);
@@ -319,11 +319,11 @@ int tst(void)
   vstr_add_rep_chr(s1, s1->len, 'X', 1);
   vstr_add_rep_chr(s1, s1->len, '-', 43);
   vstr_add_rep_chr(s1, s1->len, 'X', 1);
-  
+
   TST_B_TST(ret, 7, !VSTR_CMP_EQ(s3, 1, s3->len, s1, 1, s1->len));
 
   tst_errno = ERANGE;
-  
+
   vstr_del(s4, 1, s4->len);
   vstr_add_fmt(s4, 0, "%d", 1);
   TST_B_TST(ret, 8, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, "1"));
@@ -333,15 +333,15 @@ int tst(void)
   vstr_add_fmt(s4, 0, "%m");
 
   assert(tst_errno == ERANGE);
-  
+
   TST_B_TST(ret, 9, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
 
   vstr_del(s3, 1, s3->len);
   errno = tst_errno;
   vstr_add_fmt(s3, 0, "%m");
-  
+
   TST_B_TST(ret, 10, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, strerror(ERANGE)));
-  
+
   vstr_del(s3, 1, s3->len);
   errno = tst_errno;
   vstr_add_fmt(s3, 0,
@@ -350,21 +350,21 @@ int tst(void)
                "${BLANK_ERRNO2}");
   assert(!tst_errno);
   assert(!errno && !tst_errno);
-  
+
   TST_B_TST(ret, 11, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, strerror(ERANGE)));
 
   vstr_del(s4, 1, s4->len);
   tst_errno = 0;
   errno = ERANGE;
   vstr_add_sysfmt(s4, 0, "%m");
-  
+
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
 
   vstr_fmt_del(s1->conf, "{VSTR:%p%u}");
   assert(!vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
   vstr_fmt_del(s3->conf, "{vstr:%p%zu%zu%u}");
   assert(!vstr_fmt_srch(s3->conf, "{Vstr:%p%zu%zu%u}"));
-  
+
   tst_fmt(ret, s1);
   tst_fmt(ret, s3);
 
@@ -372,13 +372,13 @@ int tst(void)
 
   vstr_del(s1, 1, s1->len);
   vstr_del(s3, 1, s3->len);
-  
+
   mfail_count = 0;
 
   ipv4[0] = ipv4[1] = ipv4[2] = ipv4[3] = 111;
   ipv6[0] = ipv6[1] = ipv6[2] = ipv6[3] = ipv6[4] = ipv6[5] = 0x2222;
   ipv6[6] = ipv6[7] = IPV4(111U, 111);
-  
+
   ref = vstr_ref_make_ptr((char *)"ref", vstr_ref_cb_free_ref);
   do
   {
@@ -413,10 +413,16 @@ int tst(void)
                "2222:2222:2222:2222:2222:2222:111.111.111.111/96");
 
   TST_B_TST(ret, 29, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
+
+  /* flush the max name length cache ... */
+  vstr_fmt_add(s3->conf,
+               "{ref-xxxxxxxxxxxxxxxxxxxxxxx}", NULL, VSTR_TYPE_FMT_END);
+  vstr_fmt_del(s3->conf,
+               "{ref-xxxxxxxxxxxxxxxxxxxxxxx}");
   
   {
     const char *ptr = NULL;
-    
+
     vstr_del(s3, 1, s3->len);
     vstr_add_fmt(s3, 0, "${buf:%s%zu}", ptr, (size_t)1000);
     TST_B_TST(ret, 16, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "(null)"));

@@ -118,7 +118,7 @@ Member: alloc_double
 
  Explanation:
 
-  This is a bitflag which is set to TRUE when the data in ->ptr should be 
+  This is a bitflag which is set to TRUE when the data in ->ptr should be
  realloc()'d at twice it's current size when it needs to be bigger.
 
 
@@ -181,8 +181,8 @@ Member: obj_field_width
 
   Even though the obj_field_width is an unsigned type, as an argument
  the type has to be treated as signed as ISO 9899:1999 specifies that
- a negative field width means that the fmt_minus flag should be set and 
- the field width should become it's positive counter part (in vstr this 
+ a negative field width means that the fmt_minus flag should be set and
+ the field width should become it's positive counter part (in vstr this
  work properly for INT_MIN). This doesn't apply to a field width typed
  directly into the format.
 

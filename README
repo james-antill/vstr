@@ -36,7 +36,7 @@ if it has an inline version).
 
  You'll then need to run the ./scripts/autogen.sh file, this then generate
 the real extern and inline files and do all the symbol stuff.
- 
+
  -------------- Compiling against dietlibc on Linux --------------
 
  Just use the scripts...

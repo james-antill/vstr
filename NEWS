@@ -1,12 +1,15 @@
  Latest stable release is 1.0.6
 
+ Version 1.0.7 ... Added more tests, now at over 95% code coverage. Another set
+of corner cases got fixed. More documentation. Some portability fixes.
+
  Version 1.0.6 ... Added a pile of more tests, now at 89% code coverage. A
 large amount of corner cases got fixed.
 
  Version 1.0.5 ... Added speedups for vstr_fmt_add(). Added some documentation.
 added vstr_sc_fmt_add_rep_chr function.
 
- Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up 
+ Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up
 export_cstr_ptr() in certain cases ... fixed problem with substituting data of
 _ptr and _ref types and having a bad position cache ... added documentation
 about the internal design.

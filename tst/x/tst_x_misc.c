@@ -14,10 +14,10 @@ static void tst_v(const char *msg, ...)
   va_start(ap, msg);
   vstr_add_vfmt(s1, 0, msg, ap);
   va_end(ap);
-  
+
   va_start(ap, msg);
   vstr_add_vsysfmt(s1, 0, msg, ap);
-  va_end(ap);  
+  va_end(ap);
 }
 
 
@@ -27,18 +27,21 @@ int tst(void)
   VSTR_SECTS_DECL(abcd, 4);
   typeof(blahfoo[0]) *tmp = abcd;
   Vstr_iter iter[1];
-  
+
   assert(sizeof(blahfoo) == sizeof(abcd));
   assert(tmp->sz == 4);
-  
+
   vstr_make_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 8);
-  
+
   tst_v("%s", "123456789 123456789 123456789 123456789 123456789 123456789 ");
   assert(s1->len == 120);
   /* FAIL: vstr_iter_fwd_beg(s1, 1, s1->len + 1, iter); */
   vstr_iter_fwd_beg(s1, 1, s1->len, iter);
   ASSERT((iter->len + iter->remaining) == 120);
   vstr_iter_fwd_nxt(iter);
+
+  ASSERT(!vstr_iter_fwd_beg(s1, 1, 0, iter));
+  ASSERT(!iter->node);
   
   vstr_sc_fmt_add_bkmg_bits_uint(NULL, "1");
   vstr_sc_fmt_add_bkmg_bit_uint(NULL, "2");
@@ -55,7 +58,7 @@ int tst(void)
   vstr_sc_fmt_add_ipv6_vec(NULL, "d");
   vstr_sc_fmt_add_ipv4_vec_cidr(NULL, "e");
   vstr_sc_fmt_add_ipv6_vec_cidr(NULL, "f");
-  
+
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1);
 
   return (!VSTR_FLAG31(CONV_UNPRINTABLE_ALLOW,

@@ -13,18 +13,18 @@ extern void vstr_version_func(void);
 int main(void)
 {
   int fd = -1;
-  
+
 #ifndef VSTR_AUTOCONF_HAVE_POSIX_HOST
   return (77); /* Failed .. ok */
 #endif
 
   if ((fd = open("/dev/null", O_WRONLY)) == -1)
     return (EXIT_FAILURE);
-  
+
   if (dup2(fd, 1) == -1)
     return (EXIT_FAILURE);
-  
+
   vstr_version_func();
-  
+
   return (EXIT_FAILURE);
 }

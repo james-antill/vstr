@@ -7,14 +7,14 @@ vstr_dup_ptr() upto the first function call.
  Before
  ------
 
-27584:	
+27584:
 27584:	runtime linker statistics:
 27584:	  total startup time in dynamic loader: 770848 clock cycles
 27584:	            time needed for relocation: 345263 clock cycles (44.7%)
 27584:	                 number of relocations: 136
 27584:	      number of relocations from cache: 5
 27584:	           time needed to load objects: 300629 clock cycles (38.9%)
-27584:	
+27584:
 27584:	runtime linker statistics:
 27584:	           final number of relocations: 203
 27584:	final number of relocations from cache: 5
@@ -22,14 +22,14 @@ vstr_dup_ptr() upto the first function call.
  Now enabled
  -----------
 
-27687:	
+27687:
 27687:	runtime linker statistics:
 27687:	  total startup time in dynamic loader: 1157547 clock cycles
 27687:	            time needed for relocation: 722024 clock cycles (62.3%)
 27687:	                 number of relocations: 173
 27687:	      number of relocations from cache: 156
 27687:	           time needed to load objects: 303069 clock cycles (26.1%)
-27687:	
+27687:
 27687:	runtime linker statistics:
 27687:	           final number of relocations: 232
 27687:	final number of relocations from cache: 156
@@ -37,14 +37,14 @@ vstr_dup_ptr() upto the first function call.
  Now disabled
  ------------
 
-01437:	
+01437:
 01437:	runtime linker statistics:
 01437:	  total startup time in dynamic loader: 760191 clock cycles
 01437:	            time needed for relocation: 346647 clock cycles (45.5%)
 01437:	                 number of relocations: 136
 01437:	      number of relocations from cache: 5
 01437:	           time needed to load objects: 292981 clock cycles (38.5%)
-01437:	
+01437:
 01437:	runtime linker statistics:
 01437:	           final number of relocations: 203
 01437:	final number of relocations from cache: 5

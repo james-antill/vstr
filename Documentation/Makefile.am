@@ -4,14 +4,17 @@ confexec_DATA =                         \
                 functions.html \
                 constants.txt \
                 constants.html \
-                namespace.txt \
+                structs.txt \
+                structs.html \
                 namespace.html \
                 design.html \
                 overview.html \
                 comparison.html \
                 printf_comparison.html \
-                structs.txt \
-                structs.html \
+                security.html \
+                speed.html \
+                req_trunc_io.html \
+                security_problems.html \
 		size_cmp.gnumeric \
 		internal_structure.dia
 
@@ -21,10 +24,16 @@ man_MANS = \
 
 EXTRA_DIST = $(man_MANS)
 
+security_problems.html: security_problems.txt
+		$(srcdir)/sec_txt2html.pl
+
 functions.html: functions.txt
 		$(srcdir)/txt2html.pl
 
 constants.html: constants.txt
+		$(srcdir)/txt2html.pl
+
+structs.html: structs.txt
 		$(srcdir)/txt2html.pl
 
 functions.3: functions.txt

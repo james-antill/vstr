@@ -20,6 +20,15 @@ xfail_tst_add = \
     add/xfail_tst_add_buf_NULL \
     add/xfail_tst_add_ptr_pos \
     add/xfail_tst_add_ptr_NULL \
+    add/xfail_tst_add_netstr_beg_NULL \
+    add/xfail_tst_add_netstr_beg_pos \
+    add/xfail_tst_add_netstr_end_NULL \
+    add/xfail_tst_add_netstr_end_pos \
+    add/xfail_tst_add_netstr_end_pos2 \
+    add/xfail_tst_add_netstr_end_pos3 \
+    add/xfail_tst_add_netstr_end_pos4 \
+    add/xfail_tst_add_netstr_end_pos5 \
+    add/xfail_tst_add_netstr_end_pos6 \
     add/xfail_tst_add_non_pos \
     add/xfail_tst_add_non_NULL \
     add/xfail_tst_add_ref_pos \
@@ -105,8 +114,10 @@ tst_fmt = \
     fmt/tst_fmt_usr
 
 xfail_tst_fmt = \
+    fmt/xfail_tst_fmt_buf_pos \
     fmt/xfail_tst_fmt_invalid_sysfmt \
-    fmt/xfail_tst_fmt_invalid_fmt
+    fmt/xfail_tst_fmt_invalid_fmt \
+    fmt/xfail_tst_fmt_invalid_fmt2
 
 tst_loc = \
     loc/tst_loc_num
@@ -136,6 +147,9 @@ tst_sects = \
     sects/tst_sects_foreach \
     sects/tst_sects_join \
     sects/tst_sects_update
+
+xfail_tst_sects = \
+    sects/xfail_tst_sects_update_del
 
 tst_spn = \
     spn/tst_spn_chrs \
@@ -170,6 +184,7 @@ tst_x = \
     x/tst_x_macros \
     x/tst_x_make \
     x/tst_x_misc \
+    x/tst_x_num \
     x/tst_x_ref \
     x/tst_x_swap_conf \
     x/tst_x_version
@@ -204,6 +219,7 @@ xfail_tst = \
   $(xfail_tst_add) \
   $(xfail_tst_del) \
   $(xfail_tst_fmt) \
+  $(xfail_tst_sects) \
   $(xfail_tst_x)
 
 check_PROGRAMS = $(tst) $(xfail_tst)

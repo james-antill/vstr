@@ -1,21 +1,21 @@
 #define VSTR_PARSE_NETSTR_C
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
- *  
+ *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
- *   
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *   
+ *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  *  email: james@and.org
  */
 /* netstr (http://cr.yp.to/proto/netstrings.txt). This is basically
@@ -38,7 +38,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   size_t ret_len = 0;
   size_t dummy_ret_pos = 0;
   size_t dummy_ret_data_len = 0;
-  
+
   if (!ret_pos)
     ret_pos = &dummy_ret_pos;
   if (!ret_data_len)
@@ -59,7 +59,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
 
   if (vstr_export_chr(base, pos + num_len) != VSTR__ASCII_COLON())
     return (0);
-  
+
   *ret_pos = pos + num_len + 1;
   *ret_data_len = ret_len;
 
@@ -69,7 +69,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
 
   if (vstr_export_chr(base, pos - 1 + ret_len) != VSTR__ASCII_COMMA())
     return (0);
-  
+
   return (ret_len);
 }
 

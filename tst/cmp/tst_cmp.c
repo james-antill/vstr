@@ -40,7 +40,7 @@ int tst(void)
   TST_B_TST(ret, 25,  !vstr_cmp_buf_eq(s1, 1, s1->len, "abcd", 4));
   TST_B_TST(ret, 25,  !vstr_cmp_cstr_eq(s1, 1, s1->len, "abcd"));
   TST_B_TST(ret, 25,  !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "abcd"));
-  
+
   TST_B_TST(ret, 26,  !vstr_cmp_bod_cstr_eq(s1, 1, s1->len, "abcd"));
   TST_B_TST(ret, 26,  !vstr_cmp_bod_cstr_eq(s1, 1, s1->len, "abcdXXXX"));
   TST_B_TST(ret, 26, !!vstr_cmp_bod_cstr(s1, 1, s1->len, "abcdXXXX"));
@@ -52,7 +52,7 @@ int tst(void)
   TST_B_TST(ret, 27, !!vstr_cmp_eod_cstr(s1, 1, s1->len, "XXXXabcd"));
   TST_B_TST(ret, 27, !!vstr_cmp_eod_buf(s1, 1, s1->len, "cd", 2));
   TST_B_TST(ret, 27,  !vstr_cmp_eod_buf_eq(s1, 1, s1->len, "cd", 2));
-  
+
   TST_B_TST(ret, 28,  !vstr_cmp_eq(s1, 1, s1->len, s2, 1, s2->len));
   TST_B_TST(ret, 28,  !vstr_cmp_bod_eq(s1, 1, s1->len, s2, 1, s2->len));
   TST_B_TST(ret, 28,  !vstr_cmp_bod_eq(s1, 1, 2, s2, 1, s2->len));
@@ -63,6 +63,18 @@ int tst(void)
   TST_B_TST(ret, 29,  !vstr_cmp_eod_eq(s1, 3, 2, s2, 1, s2->len));
   TST_B_TST(ret, 29, !!vstr_cmp_eod(s1, 3, 2, s2, 1, s2->len));
   TST_B_TST(ret, 29,  !vstr_cmp_eod_eq(s1, 1, s1->len, s2, 3, 2));
+
+  vstr_del(s1, 1, s1->len);
+  vstr_add_non(s1, 0, 4);
+  TST_B_TST(ret, 30,  !vstr_cmp_cstr(s1, 1, s1->len, "aBcD"));
+  TST_B_TST(ret, 30,  !VSTR_CMP_CSTR(s1, 1, s1->len, "aBcD"));
+  TST_B_TST(ret, 30, !!vstr_cmp_buf_eq(s1, 1, s1->len, "aBcD", 4));
+  TST_B_TST(ret, 30, !!vstr_cmp_cstr_eq(s1, 1, s1->len, "aBcD"));
+  TST_B_TST(ret, 30, !!VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "aBcD"));
+  TST_B_TST(ret, 30,  !vstr_cmp_buf_eq(s1, 1, s1->len, NULL, 4));
+  TST_B_TST(ret, 30, !!vstr_cmp_buf_eq(s2, 1, s2->len, NULL, 4));
+  TST_B_TST(ret, 30,  !vstr_cmp(s1, 1, s1->len, s2, 1, s2->len));
+  TST_B_TST(ret, 30, !!vstr_cmp_eq(s2, 1, s2->len, s1, 1, s1->len));
 
   return (TST_B_RET(ret));
 }

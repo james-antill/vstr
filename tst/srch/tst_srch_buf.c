@@ -62,7 +62,7 @@ int tst(void)
 #ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
   return (EXIT_FAILED_OK);
 #endif
-  
+
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,
@@ -83,7 +83,7 @@ int tst(void)
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_srch_buf(s1, 0);
   tst_srch_buf(s3, 8);
   tst_srch_buf(s4, 16);
@@ -94,7 +94,7 @@ int tst(void)
   vstr_add_non(s1, 7, 12);
   {
     unsigned int pre_num = s3->num;
-    
+
     vstr_add_non(s3, 7,     3); /* merges on append, not prepend */
     vstr_add_non(s3, 7 + 3, 3);
     vstr_add_non(s3, 7, 6);
@@ -103,9 +103,9 @@ int tst(void)
     vstr_del(s3, 7 + 4, 1);
     ASSERT(pre_num == (s3->num - 4)); /* split + 3 _NON */
   }
-  
+
   vstr_add_non(s4, 7, 12);
-  
+
   /* won't have a cache again... */
   ASSERT(!s1->iovec_upto_date);
   ASSERT(!s3->iovec_upto_date);
@@ -116,10 +116,10 @@ int tst(void)
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);
-  
+
   tst_srch_non_buf(s1);
   tst_srch_non_buf(s3);
   tst_srch_non_buf(s4);
-  
+
   return (TST_B_RET(ret));
 }

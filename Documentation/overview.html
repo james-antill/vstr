@@ -21,15 +21,15 @@
     <table width="100%"><tr><td bgcolor="#DDFFDD">
 	  <h1>Vstr documentation -- overview</h1>
 	</td></tr></table>
-    
+
     <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="contents"></a>Contents</h2>
 	</td></tr></table>
-    
+
     <table width="80%">
       <tr><td>
 	  <ul>
-	    <li> <a href="#download">Download</a> - A list of places and 
+	    <li> <a href="#download">Download</a> - A list of places and
 	      formats to download the library.
 	    </li>
 
@@ -39,21 +39,34 @@
 	    </li>
 
 	    <li> <a href="#testing">Testing</a> - A description of the
-	      testing of the library.
+	      testing done for the library.
 	    </li>
 
-	    <li> <a href="#debug">Debugging</a> - A description of the
-	      testing of the library.
+	    <li> <a href="#debug">Debugging</a> - A description of how to
+	      debug code when using the library.
 	    </li>
 
-	    <li> <a href="comparison.html">String library comparison</a> - 
+	    <li> <a href="comparison.html">String library comparison</a> -
 	      Other libraries, and how
 	      they compare in features, speed, usability etc.
 	    </li>
 
-	    <li> <a href="printf_comparison.html">printf() comparison</a> - 
-	      Other implementations of printf(), and how they compare in stds. 
+	    <li> <a href="printf_comparison.html">printf() comparison</a> -
+	      Other implementations of printf(), and how they compare in stds.
 	      compliance and ability to register custom formatters.
+	    </li>
+
+	    <li> <a href="security.html">security of string APIs</a> -
+	      The security argument for using a string library, also see
+	      <a href="security_problems.html">this page</a> which shows which
+	      security problems wouldn't have existed if the programers had
+	      used a real string API.
+	    </li>
+
+	    <li> <a href="speed.html">speed of string APIs</a> -
+	      An analysis of the assumption that a "real" string API has to be
+	      slower and use more memory than working directly with the
+	      strcpy()/memcpy() functions.
 	    </li>
 
 	    <li> <a href="#reference">API Reference</a> - The API reference
@@ -68,9 +81,9 @@
 	      API with threads and/or signals.
 	    </li>
 
-	    <li> <a href="#cust-fmt">Custom Formatters</a> - How to use the 
+	    <li> <a href="#cust-fmt">Custom Formatters</a> - How to use the
 	      custom formatters ability of the printf() like function, while
-	      keeping warnings enabled in gcc, or similar static printf() 
+	      keeping warnings enabled in gcc, or similar static printf()
 	      checkers.
 	    </li>
 
@@ -78,21 +91,21 @@
 	      some of which are heavily commented.
 	    </li>
 
-	    <li> <a href="COPYING.LIB">License</a> - The license that 
+	    <li> <a href="COPYING.LIB">License</a> - The license that
 	      comes with the Vstr string library is the LGPL.
 	    </li>
 	  </ul>
 	</td></tr>
     </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="download"></a>Download Information</h2>
 	</td></tr></table>
-    
+
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.6</h2>
+	  <h2>Current version is 1.0.7</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -128,11 +141,11 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
     <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="about"></a>About</h2>
 	</td></tr></table>
-    
+
     <table width="80%"><tr><td>
 	  <p>
 	    Vstr is a string library, it's designed so you can work optimally
-	    with readv()/writev() for input/output. This means that, for 
+	    with readv()/writev() for input/output. This means that, for
 	    instance, you can readv() data to the end of the string and
 	    writev() data from the beginning of the string without having to
 	    allocate or move memory. It also
@@ -141,26 +154,26 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	  </p>
 	  <p>
 	    This design constraint means that unlike
-	    most string libraries Vstr doesn't have an internal representation 
+	    most string libraries Vstr doesn't have an internal representation
 	    of the string where everything can be accessed from a single
 	    (char *) pointer in C, the internal representation is of multiple
 	    "blocks" or nodes each carrying some of the data for the string.
 	    This model of representing the data also means that as a string gets
-	    bigger the Vstr memory usage only goes up linearly and has no 
+	    bigger the Vstr memory usage only goes up linearly and has no
 	    inherent copying (due to other string libraries increasing space
 	    for the string via. realloc() the memory usage can be triple the
             required size and require a complete copy of the string).
 	  </p>
 	  <p>
 	    It also means that adding, substituting or moving data anywhere in
-	    the string can be optimized a lot, to require O(1) copying instead 
+	    the string can be optimized a lot, to require O(1) copying instead
 	    of O(n).
-	    Speaking of O(1), it's worth remembering that if you have a 
-	    Vstr string with caching enabled a writev() call will take 
-	    constant time as well (the cat example below shows an example of
+	    Speaking of O(1), it's worth remembering that if you have a
+	    Vstr string with caching it is O(1) to get all the data to the
+	    writev() system call (the cat example below shows an example of
 	    this, the write call is <emp>always constant time</emp>.
 	  </p>
-	  
+
 	  As well as having features directly related to doing IO well
 	  it contains functions for:
 	  <ul>
@@ -175,13 +188,13 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	      string).
 	    <li> comparing strings (without regard for case, or taking into
 	      account version information)
-	    <li> searching for data in strings (with or without regard for 
+	    <li> searching for data in strings (with or without regard for
 	      case).
 	    <li> counting spans of data in a string (the equivalent of
 	      strspn() in ISO C).
-	    <li> converting data in a Vstr (Ie. delete/substitute unprintable 
+	    <li> converting data in a Vstr (Ie. delete/substitute unprintable
 	      characters or making a Vstr string lowercase/uppercase).
-	    <li> parsing data from a Vstr string (Ie. numbers, or ipv4 
+	    <li> parsing data from a Vstr string (Ie. numbers, or ipv4
 	      addresses).
 	    <li> easily parsing and wrapping outgoing data in netstrings, for
 	      fast and simple (and hence less error prone) network communication
@@ -190,14 +203,14 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    <li> the ability to have empty data as part of the string, this
 	      is somewhat useful for representing file transfers as a string
 	      as you can represent the file data as empty data in the string.
-	      
+
 	  </ul>
 	  It also has a number of functions for exporting data from a
-	  Vstr string so you can easily use data generated with the Vstr 
+	  Vstr string so you can easily use data generated with the Vstr
 	  outside of the library.
-	  
+
 	  <p>
-	    The other unusual aspect of the Vstr string library is that it 
+	    The other unusual aspect of the Vstr string library is that it
 	    attaches a notion of a locale to the string configuration
 	    and not globally (as POSIX, and pretty much everything else does).
 	    This means that you can do Network I/O in the C locale and
@@ -206,14 +219,16 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 
 	  <p>
 	    For a look at the internal design of the Vstr string library, you
-	    can read <a href="design.html">this</a>.
+	    can read <a href="design.html">this</a>. For a look at the main
+	    security problems I wanted to solve you can read
+	    <a href="security.html">this</a>.
 	  </p>
-	    
+
 </td></tr>
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="testing"></a>Testing</h2>
@@ -221,31 +236,31 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 
 <table width="80%"><tr><td>
 	  <p>
-	    The Vstr string 
+	    The Vstr string
 	    library comes with a "make check" test suite with over
-	  <emp>eight and a half thousand lines</emp> of code in it.
-	  This is over a third of the size of the library itself, and more 
-	  lines of code than some string library implementations. 
+	  <emp>nine thousand lines</emp> of code in it.
+	  This is over a third of the size of the library itself, and more
+	  lines of code than some string library implementations.
 	</p><p>
 	    The test suite has at least one test for each function call, and
 	    at least one usage of each constant. This is automatically checked
 	    using the "scripts/tst_coverage_diff.sh" script included in the
-	    distribution (note that you need to compile without inline 
+	    distribution (note that you need to compile without inline
 	    support, or inline functions won't be seen to be part of the test
 	    suite).
 	  </p><p>
 	    Using the coverage analysis available with gcc the test suite has
-	  <emp>coverage of over 89% of the source</emp>.
+	  <emp>coverage of over 95% of the source</emp>.
 	</p><p>
 	    Note that even if the library had 100% coverage, that still
 	    doesn't mean that there are no bugs in the code (as you need a
-	    test for every code path). 
+	    test for every code path).
 	  </p>
 </td></tr>
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="debug"></a>Debugging Vstr APIs</h2>
@@ -253,16 +268,16 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 
 <table width="80%"><tr><td>
 	  <p>
-	    While I've tried to make the API simple enough that you don't have 
+	    While I've tried to make the API simple enough that you don't have
 	    to do anything complicated to get things done, there might still be
 	    times when you do a bunch of calls that you aren't sure are ok
 	    or maybe you get some memory management wrong, and pass invalid/NULL
 	    pointers to the Vstr API functions. The easiest way to find out
 	    what is going wrong is to compile without inline support and with
-	    debug support (Eg. --enable-tst-noinline --enable-debug options 
+	    debug support (Eg. --enable-tst-noinline --enable-debug options
 	    to ./configure). Then as you call the functions almost all calls
-	    check input values for validity, and all calls that modify a Vstr 
-	    will check the Vstr both 
+	    check input values for validity, and all calls that modify a Vstr
+	    will check the Vstr both
 	    before and after their operations. Finaly if you call vstr_exit()
 	    the number of memory allocations/deallocations and
 	    mmap()/munmap() operations will be counted and assert() calls will
@@ -281,15 +296,15 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    The nonnull attribute should catch errors if you obviously pass
 	    NULL pointers to function that don't take them, and the format
 	    attribute will catch errors in the calls to printf() like functions.
-	    However you may want to temporarily disable attributes due to the 
+	    However you may want to temporarily disable attributes due to the
 	    opomising problems (if so define VSTR_COMPILE_ATTRIBUTES to be 0
-	    before include the vstr.h header).	    
+	    before include the vstr.h header).
 	  </p>
 </td></tr>
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="reference"></a>Reference Documentation</h2>
@@ -328,7 +343,7 @@ there is any).
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="APItp"></a>Reference to the layout of the API</h2>
@@ -337,8 +352,8 @@ there is any).
 <table width="80%"><tr><td><p>
 
  At first glace the Vstr API <b>looks huge</b> as there are over
-<b>Two hundred and seventy</b> functions. However the API was designed so 
-that you can mentally build functions from an API template ... so 
+<b>Two hundred and seventy</b> functions. However the API was designed so
+that you can mentally build functions from an API template ... so
 instead of having to remember 140 functions you just need to remember
 10 to 20 pieces of the API template.
 
@@ -394,14 +409,14 @@ that can be broken up into... <br>
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="reentrant"></a>Threads and signals</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td><p>
-	    All operations are local to the object(s) they are manipulating, 
+	    All operations are local to the object(s) they are manipulating,
 	    and no locking is done inside the library. Synchronization
 	    belongs <i>above</i> simple data type primitives like strings.
 	    Saying that if you want to use the Vstr string library from
@@ -420,11 +435,11 @@ that can be broken up into... <br>
 	    have a Vstr_ref node inside a Vstr string, and then copy that
 	    to a string owned by another thread (or do a VSTR_TYPE_ADD_BUF_REF
 	    or VSTR_TYPE_ADD_ALL_REF copy of any data) there will be unlocked
-	    reference counting on the Vstr_ref ... so basically you can't do 
+	    reference counting on the Vstr_ref ... so basically you can't do
 	    that unless you <i>really</i> know what you are doing.
 	  </p><br><p>
 	    For Vstr string operations you wish to do from a signal handler,
-	    life is more complicated, unless you're using a malloc() 
+	    life is more complicated, unless you're using a malloc()
 	    implementation that is guaranteed to be reentrant safe
 	    (this is generally not the case, and not the same as a
 	    thread-safe malloc() ... as you can be inside malloc() when you get
@@ -447,7 +462,7 @@ that can be broken up into... <br>
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="cust-fmt"></a>Custom formatters</h2>
@@ -463,11 +478,11 @@ that can be broken up into... <br>
 	  <pre>
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, "%d", num);
 	  </pre>
-	  ...however if you want to write an IPv4 addres, a Vstr 
+	  ...however if you want to write an IPv4 addres, a Vstr
 	  string or anything else that isn't in ISO 9899:1999 to a string
 	  you have to resort to doing to by hand. And if you want to format that
 	  output you have to either convert it to a C style string and use the
-	  "%s" option to the printf() like function, or do the formatting 
+	  "%s" option to the printf() like function, or do the formatting
 	  yourself as well. This is all pretty ugly, often unreliable, slow
 	  and takes significant programer resources in the first place.
 	</p><p>
@@ -485,12 +500,12 @@ struct sockaddr_in sa;
 struct in_addr ipv4;
 
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%-20{ipv4.p}", (void *)&ipv4);
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*{ipv4.p}", 20, 
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*{ipv4.p}", 20,
              (void *)&sa.sin_addr.s_addr);
 	  </pre>
 	  ...and to add the Vstr string you do...
 	  <pre>
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*.*{vstr}", 50, 50, 
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*.*{vstr}", 50, 50,
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
 	  ...all normal printf() like formatting options work, as you would
@@ -499,7 +514,7 @@ struct in_addr ipv4;
 	  of the calls to <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>
 	  will produce warnings with gcc, because "%{" isn't the start of a
 	  valid formatting character under the system printf() rules.
-	  This makes most implementations of custom formatters useless, as you 
+	  This makes most implementations of custom formatters useless, as you
 	  have to either turn warnings off, see at least one warning for every
 	  usage of a custom formatter or just not use customer formatters.
 	  </p><p>
@@ -514,10 +529,10 @@ struct sockaddr_in sa;
 struct in_addr ipv4;
 
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$-20{ipv4.p:%p}", (void *)&ipv4);
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*{ipv4.p:%p}", 20, 
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*{ipv4.p:%p}", 20,
              (void *)&sa.sin_addr.s_addr);
 
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%*.*p%zu%zu%u}", 50, 50, 
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%*.*p%zu%zu%u}", 50, 50,
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
 	  ...which isn't as good as true support for customer formatters in gcc,
@@ -538,7 +553,7 @@ struct in_addr ipv4;
 
 </table>
 
-<!-- Section -->    
+<!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="examples"></a>Simple and heavily commented examples</h2>
@@ -549,6 +564,10 @@ struct in_addr ipv4;
  To get a rough overview of how to use the library you can see the following
 <b>heavily commented</b> examples:</p>
 <ul>
+<li>
+<a href="vstr-latest/vstr/examples/ex_hello_world.c.html">cat</a> - A program
+that just does a "Hello World".
+</li>
 <li>
 <a href="vstr-latest/vstr/examples/ex_cat.c.html">cat</a> - A program that just
 transfers information from stdin to stdout ... mmap() is never used.
@@ -561,7 +580,7 @@ depending on a configuration. This also
 uses mmap() on the input files, if possible.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_lookup_ip.c.html">lookup_ip</a> - 
+<a href="vstr-latest/vstr/examples/ex_lookup_ip.c.html">lookup_ip</a> -
 A program that will change a DNS domain name (Ie. www.and.org) into an IPv4
 address (or print an error).
 </li>
@@ -579,7 +598,7 @@ similar to the Unix "nl" program. Each input line is printed along with a
 number. This uses the split functions to get each line.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_rot13.c.html">rot13</a> - This does a 
+<a href="vstr-latest/vstr/examples/ex_rot13.c.html">rot13</a> - This does a
 rot13 transform (or Caesar cipher) on the input, and then outputs it. This shows
 the different methods you can use for iterating through a string. You can also
 use it to measure the differences between those methods.
@@ -592,6 +611,11 @@ measure those copying affects. One minor note is that it does allow you to use t
 fileutils-2.0.12).
 </li>
 <li>
+<a href="vstr-latest/vstr/examples/ex_csv.c.html">csv</a> - This is a csv parser
+I wrote for a thread on <a href="http://groups.google.com/groups?frame=right&rnum=31&thl=1073158423,1073070142,1072982584,1072441920,1072224867,1073014437,1072922046,1072792273,1072704301,1072628334,1072576581,1072221362&seekm=57b29eef.0305191804.518f8f67%40posting.google.com#link34">comp.lang.c</a>. I'll probably
+turn into a library function at some point, but for now it's useful on it's own.
+</li>
+<li>
 <a href="vstr-latest/vstr/examples/ex_mon_cp.c.html">monitor copy</a> - This
 program will monitor a file as it gets bigger, and report Bytes per second etc.
 statistics. This is done through Vstr string customer formatter API calls, and
@@ -602,7 +626,7 @@ should show how much simpler you can make your code using those features.
 <a href="http://www.and.org/timer_q/">Timer_q</a> library, and getopt_long) - This is like the cat program, except that you can specify a delay between blocks of output ... this is especially useful for ASCII art programs.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_sg_compare..c.html">scatter gather comparison</a> (this also requires the
+<a href="vstr-latest/vstr/examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
 <a href="http://www.openssl.org/">OpenSSL</a> library) - This program times
 the usage of the MD5 or SHA1 functions from OpenSSL, with a all of: A single chunk of data, an iovec list of the data at the default buffer size, and
 an iovec list of the data at a configured buffer size. This was written to
@@ -635,7 +659,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Sat May 31 12:48:54 EDT 2003
+Last modified: Sat Aug 23 02:02:52 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

@@ -151,7 +151,7 @@ EOL
 		my $orig_str = $_;
 
 		$next_in_const = 1;
-		
+
 		$uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 		$_ = "<a name=\"$uri\">" . $_ . "</a>";
 
@@ -232,7 +232,7 @@ EOL
 		$_ = "</pre>$_<br><pre>";
 		$in_pre_tag = "</pre>";
 	      }
-	    else 
+	    else
 	      {
 		$_ = "</pre>$_";
 		$in_pre_tag = "";
@@ -255,7 +255,7 @@ EOL
 	  {
 	    conv_A_refs(0);
 	  }
-	
+
 	$in_const = $next_in_const;
 
 	print OUT;
@@ -270,7 +270,7 @@ if (!open (OUT, "> functions.html"))
 print OUT $html_header;
 print OUT "<title>", "$name -- functions", "</title>", "\n";
 print OUT $html_body;
-print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
+print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
   "<h1>", "$name -- functions", "</h1>", "\n";
 
 if (!open (IN, "< $docs/functions.txt"))
@@ -294,7 +294,7 @@ if (!open (OUT, "> constants.html"))
 print OUT $html_header;
 print OUT "<title>", "$name -- constants", "</title>", "\n";
 print OUT $html_body;
-print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
+print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
   "<h1>", "$name -- constants", "</h1>", "\n";
 
 if (!open (IN, "< $docs/constants.txt"))
@@ -316,13 +316,13 @@ if (-r "structs.txt")
       {
 	die "Open (write): $@";
       }
-    
+
     print OUT $html_header;
     print OUT "<title>", "$name -- structs", "</title>", "\n";
     print OUT $html_body;
-    print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
+    print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
       "<h1>", "$name -- structs", "</h1>", "\n";
-    
+
     if (!open (IN, "< structs.txt"))
       {
 	die "Open (read): $@";
@@ -333,7 +333,7 @@ if (-r "structs.txt")
 	die "Open (read): $@";
       }
     convert();
-    
+
     print OUT $html_footer;
   }
 

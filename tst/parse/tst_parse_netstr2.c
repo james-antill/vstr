@@ -9,13 +9,13 @@ int tst(void)
   size_t len = 0;
   size_t dlen = 0;
   unsigned int buf_pos = 0;
-  
+
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   /* netstr */
   vstr_add_fmt(s1, s1->len, "%d:%n%s,", strlen(buf), &buf_pos, buf);
   ++buf_pos;
-  
+
   len = vstr_parse_netstr2(s1, 1, s1->len, &pos, &dlen);
   TST_B_TST(ret, 1,
             (len != s1->len));
@@ -38,7 +38,7 @@ int tst(void)
 
   VSTR_SUB_CSTR_PTR(s1, 1, s1->len, "4.");
   TST_B_TST(ret, 10, !!vstr_parse_netstr2(s1, 1, s1->len, NULL, NULL));
-  
+
   /* netstr2 */
   pos = 0;
   dlen = 0;
@@ -46,7 +46,7 @@ int tst(void)
   vstr_add_fmt(s1, s1->len, "%0*d:%n%s,",
                VSTR_AUTOCONF_ULONG_MAX_LEN, strlen(buf), &buf_pos, buf);
   ++buf_pos;
-  
+
   len = vstr_parse_netstr2(s1, 1, s1->len, &pos, &dlen);
   TST_B_TST(ret, 11,
             (len != s1->len));
@@ -54,6 +54,6 @@ int tst(void)
             (dlen != strlen(buf)));
   TST_B_TST(ret, 13,
             (pos != buf_pos));
-  
+
   return (TST_B_RET(ret));
 }
