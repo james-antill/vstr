@@ -1,4 +1,4 @@
-%define ver      0.9.19
+%define ver      0.9.20
 %define libver  0.9
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -55,7 +55,7 @@ Requires: %{name} = %{version}
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
-* Sat Nov 16 2002 James Antill <james@and.org> 0.9.19-%{real_release_num}
+* Sat Nov 16 2002 James Antill <james@and.org> 0.9.20-%{real_release_num}
 - Added wrap memcpy/memset to the default configure options.
 
 * Sat Nov  9 2002 James Antill <james@and.org>

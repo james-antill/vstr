@@ -27,6 +27,7 @@
 # define TSTSG_UPDATE  MD5_Update
 # define TSTSG_FINI    MD5_Final
 # define TSTSG_OUT_LEN MD5_DIGEST_LENGTH
+# define TSTSG_NAME    "MD5"
 #else
 /* do sha1 test .. */
 #include <openssl/sha.h>
@@ -36,6 +37,7 @@
 # define TSTSG_UPDATE  SHA_Update
 # define TSTSG_FINI    SHA_Final
 # define TSTSG_OUT_LEN SHA_DIGEST_LENGTH
+# define TSTSG_NAME    "SHA"
 #endif
 
 
@@ -173,8 +175,8 @@ int main(int argc, char *argv[])
         }
         vstr_add_rep_chr(out, out->len, '-', (19 * 4));
         VSTR_ADD_CSTR_BUF(out, out->len, "\n");
-        vstr_add_fmt(out, out->len, " Doing tests %'u times:\n",
-                     (unsigned int)TSTSG_NUM);
+        vstr_add_fmt(out, out->len, " Doing tests %'u times with %s:\n",
+                     (unsigned int)TSTSG_NUM, TSTSG_NAME);
 
         while (out->len && !err)
           vstr_sc_write_fd(out, 1, out->len, 1 /* stdout */, &err);

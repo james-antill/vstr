@@ -535,7 +535,7 @@ extern int vstr_sects_update_add(const struct Vstr_base *,
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 extern int vstr_sects_update_del(const struct Vstr_base *,
                                  struct Vstr_sects *)
-    VSTR__COMPILE_ATTR_NONNULL_A() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
 
 
 /* split functions */

@@ -294,7 +294,7 @@ void vstr__free_cache(const Vstr_base *base)
   
   free(VSTR__CACHE(base));
 
-  base->iovec_upto_date = FALSE;
+  ((Vstr_base *)base)->iovec_upto_date = FALSE;
   
   VSTR__CACHE(base) = NULL;
 }

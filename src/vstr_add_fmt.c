@@ -225,12 +225,11 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  size_t thou_len = 0;
  size_t max_p_i = 0;
  unsigned int field_width = 0;
- unsigned int precision = 0;
-
+ unsigned int precision = 1;
+ unsigned int wr_hex_0x = FALSE;
+ 
  if (spec->flags & PREC_USR)
    precision = spec->precision;
- else
-   precision = 1;
  
  if (spec->field_width_usr)
    field_width = spec->field_width;
@@ -275,18 +274,6 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
   if (field_width) --field_width;
  }
  
- if (spec->flags & SPECIAL)
- {
-  if (spec->num_base == 16)
-  {
-    if (field_width) --field_width;
-    if (field_width) --field_width;
-  }
-  else
-    if ((spec->num_base == 8) && field_width)
-      --field_width;
- }
-
  grouping = base->conf->loc->grouping;
  thou_len = base->conf->loc->thousands_sep_len;
  thou = base->conf->loc->thousands_sep_str;
@@ -322,6 +309,25 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  if (spec->flags & THOUSAND_SEP)
    real_i = vstr__grouping_num_sz(base, i);
 
+ if (spec->flags & SPECIAL)
+ {
+   if ((spec->num_base == 16) && !(spec->flags & NUM_IS_ZERO))
+   { /* only append 0x if it is a non-zero value, but not if precision == 0 */
+     wr_hex_0x = TRUE;
+     if (field_width) --field_width;
+     if (field_width) --field_width;
+   }
+   else
+   { /* hacky spec, if octal then we up the precision so that a 0 is printed as
+      * the first character, if there isn't a 0 there to start with
+      * -- even if num == 0 and precision == 0 */
+     if ((spec->num_base == 8) &&
+         (((spec->flags & NUM_IS_ZERO) && !precision) ||
+          (precision <= real_i)))
+       precision = real_i + 1;
+   }
+ }
+
  if (real_i > precision)
    max_p_i = real_i;
  else
@@ -346,24 +352,13 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  
  if (spec->flags & SPECIAL)
  {
-   if (spec->num_base == 16)
+   if (wr_hex_0x)
    {
-     /* only append 0x if it is a non-zero value, but not if precision == 0 */
-     if (!(spec->flags & NUM_IS_ZERO) && precision)
-     {
-       if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1))
-         goto failed_alloc;
-       if (!VSTR__FMT_ADD(base, (digits + 33), 1))
-         goto failed_alloc;
-     }
+     if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1))
+       goto failed_alloc;
+     if (!VSTR__FMT_ADD(base, (digits + 33), 1))
+       goto failed_alloc;
    }
-   /* hacky spec, if octal then we up the precision so that a 0 is printed as
-    * the first character -- even if num == 0 and precision == 0 */
-   if ((spec->num_base == 8) && !field_width &&
-       (((spec->flags & NUM_IS_ZERO) && !precision) ||
-        ((buf[sizeof(buf) - i] != '0') && (precision <= real_i))) &&
-       (spec->flags & SPECIAL))
-     precision = real_i + 1;
  }
 
  if (!(spec->flags & LEFT))
