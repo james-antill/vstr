@@ -124,8 +124,8 @@ ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 DAEMON_FILES_SRCS = opt.c date.c evnt.c vlg.c              cntl.c
 DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h cntl.h
 
-ex_httpd_SOURCES = ex_httpd.c $(DAEMON_FILES_SRCS)
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h $(DAEMON_FILES_HDRS)
+ex_httpd_SOURCES = ex_httpd.c mime_types.c $(DAEMON_FILES_SRCS)
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h mime_types.h $(DAEMON_FILES_HDRS)
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -274,10 +274,6 @@ ls2_APP = `date`
 
 endif
 
-otherdir   = $(EX_INST_DIR)
-other_DATA = \
-  hexdump_data highlight2style.pl
-
 example_code_html = \
   html/app.h.html \
   html/bag.c.html \
@@ -290,6 +286,8 @@ example_code_html = \
   html/dns.h.html \
   html/evnt.c.html \
   html/evnt.h.html \
+  html/mime_types.c.html \
+  html/mime_types.h.html \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
@@ -345,6 +343,25 @@ html_DATA = \
   html/f_c.css \
   \
   $(example_code_html)
+
+examplesscriptsdir = $(EX_INST_DIR)/scripts
+examplesscripts_DATA = \
+  gzip-r.pl \
+  highlight2style.pl \
+  jhttpd-syslog2apache-httpd-log.pl \
+  nodesize_plots.pl \
+  nodesize_split.pl
+
+extradatadir = $(EX_INST_DIR)/data
+extradata_DATA = \
+  hexdump_data \
+  mime_types_extra.txt \
+  README \
+  zcat_data_1.bz2 \
+  zcat_data_1.gz \
+  zcat_data_2.bz2 \
+  zcat_data_2.gz
+
 
 initddir = $(sysconfdir)/init.d
 initd_SCRIPTS = \

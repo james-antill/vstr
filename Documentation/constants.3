@@ -1,4 +1,4 @@
-.TH vstr_const 3 "23-Aug-2004" "Vstr 1.0.13" "Vstr String Library"
+.TH vstr_const 3 "09-Jan-2005" "Vstr 1.0.14" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -2343,6 +2343,8 @@
 .sp
 \fBNote:\fR
 
+.br
+  If you pass 0 as the length to the read_*_file functions, you can still get the _EOF error if the file is truncated while it is being read.
 .br
   To help the programer unify error paths errno is set to ENOSPC.
 

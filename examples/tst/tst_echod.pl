@@ -17,7 +17,7 @@ sub sub_http_tst
     my $data = daemon_get_io_r($io_r);
 
     my $output = daemon_io($sock, $data,
-			   $xtra->{shutdown_w}, $xtra->{slow_write});
+			   $xtra->{shutdown_w}, $xtra->{slow_write}, 0);
     daemon_put_io_w($io_w, $output);
   }
 

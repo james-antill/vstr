@@ -20,10 +20,14 @@ prog_exe="@sbindir@/${prog_name}"
 
 cntl_exe="@sbindir@/jcntl"
 
+MIME_EXTRAS_FILE="@libdir@/vstr-@VERSION@/examples/data/mime_types_extra.txt"
+
 FILE_BASE="${localstatedir}/run/${prog_name}"
 JHTTPD_NUM=1
 JHTTPD1_DIR=${localstatedir}/www/html
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
+
+GLOB_I_ARGS="--daemon --mime-types-xtra $MIME_EXTRAS_FILE"
 
 function jhttpd_dirs()
 {
@@ -46,7 +50,7 @@ function start()
         do
           jhttpd_dirs
           U__CALL_ARGS="JHTTPD${i}_ARGS"
-          I_ARGS="--daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
+          I_ARGS="$GLOB_I_ARGS --daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
           U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
           echo -n $"Starting $prog_name(${REAL_DIR}): "
           daemon --check $prog_name$i $prog_exe $I_ARGS $U_ARGS

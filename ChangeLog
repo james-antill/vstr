@@ -1,3 +1,7 @@
+2005-01-09  James Antill  <james@and.org>
+
+	* NEWS (2005-01-09): Release 1.0.14
+
 2004-12-15  James Antill  <james@and.org>
 
 	* include/vstr-inline.h (vstr_data_set): Fix gcc extension of allowing

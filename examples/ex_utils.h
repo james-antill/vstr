@@ -283,9 +283,9 @@ static int io_fd_set_o_nonblock(int fd)
 # ifndef VSTR_AUTOCONF_HAVE_OPEN64
 #  define open64 open
 # endif
-static int io_open(const char *filename)
+static int io__open(const char *filename, int xflags)
 { /* do we alway6s want to do this for fifo's ? */
-  int flags = O_RDONLY | O_NOCTTY | O_NONBLOCK;
+  int flags = O_RDONLY | O_NOCTTY | xflags;
   int fd = EX_UTILS_OPEN(filename, flags);
 
   if ((fd == -1) && EX_UTILS_RET_FAIL)
@@ -296,11 +296,23 @@ static int io_open(const char *filename)
 
   /* When doing IO, it should always be non-blocking -- doesn't work
    * for files, but fd object might be a FIFO etc. */
-  if (OS_INHERITS_NONBLOCK_FROM_OPEN && (flags & O_NONBLOCK))
+  if (!OS_INHERITS_NONBLOCK_FROM_OPEN || !(xflags & O_NONBLOCK))
     io_fd_set_o_nonblock(fd);
 
   return (fd);
 }
+#ifndef EX_UTILS_NO_USE_BLOCKING_OPEN
+static int io_open(const char *filename)
+{
+  return (io__open(filename, 0));
+}
+#endif
+#ifdef EX_UTILS_USE_NONBLOCKING_OPEN
+static int io_open_nonblock(const char *filename)
+{
+  return (io__open(filename, O_NONBLOCK));
+}
+#endif
 #endif
 
 /* ************************ */

@@ -80,6 +80,20 @@
 </html>\r\n\
 "
 
+#define CONF_LINE_RET_410 "Gone"
+#define CONF_MSG_RET_410 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
+<html>\r\n\
+  <head>\r\n\
+    <title>410 Gone</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>410 Gone</h1>\r\n\
+    <p>The requested resource is no longer available at the server and no forwarding address is known. This condition is expected to be considered permanent.</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
 #define CONF_LINE_RET_412 "Precondition Failed"
 #define CONF_MSG_RET_412 "\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
@@ -118,6 +132,20 @@
   <body>\r\n\
     <h1>414 Request-URI Too Long</h1>\r\n\
     <p>The document request was too long.</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
+#define CONF_LINE_RET_415 "Unsupported Media Type"
+#define CONF_MSG_RET_415 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
+<html>\r\n\
+  <head>\r\n\
+    <title>415 Unsupported Media Type</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>415 Unsupported Media Type</h1>\r\n\
+    <p>The server is refusing to service the request because the entity of the request is in a format not supported by the request.</p>\r\n\
   </body>\r\n\
 </html>\r\n\
 "
@@ -178,6 +206,20 @@
 </html>\r\n\
 "
 
+#define CONF_LINE_RET_503 "Service Unavailable"
+#define CONF_MSG_RET_503 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
+<html>\r\n\
+  <head>\r\n\
+    <title>503 Service Unavailable</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>503 Service Unavailable</h1>\r\n\
+    <p>The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
 #define CONF_LINE_RET_505 "Version not supported"
 #define CONF_MSG_RET_505 "\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
@@ -192,12 +234,12 @@
 </html>\r\n\
 "
 
-#define HTTPD_ERR(req, code) do {                                    \
-      req->http_error_code  = (code);                                \
-      req->http_error_line  = CONF_LINE_RET_ ## code ;               \
-      req->http_error_len   = strlen( CONF_MSG_RET_ ## code );       \
-      if (!req->head_op)                                             \
-        req->http_error_msg = CONF_MSG_RET_ ## code ;                \
+#define HTTPD_ERR(req, code) do {                               \
+      req->error_code  = (code);                                \
+      req->error_line  = CONF_LINE_RET_ ## code ;               \
+      req->error_len   = strlen( CONF_MSG_RET_ ## code );       \
+      if (!req->head_op)                                        \
+        req->error_msg = CONF_MSG_RET_ ## code ;                \
     } while (0)
 
 #define HTTPD_ERR_RET(req, code, val) do {              \
@@ -208,26 +250,6 @@
 #define HTTPD_ERR_GOTO(req, code, label) do {           \
       HTTPD_ERR(req, code);                             \
       goto label ;                                      \
-    } while (0)
-
-/* doing http://www.example.com/foo/bar where bar is a dir is bad
-   because all relative links will be relative to foo, not bar.
-   Also note that location must be "bar/" or "/foo/bar/", as it's relative
-   to the dirname of the request.
-*/
-#define HTTP_REQ_CHK_DIR(req, val) do {                                 \
-      ASSERT((req)->fname->len && vstr_export_chr((req)->fname, 1) != '/'); \
-                                                                        \
-      if (vstr_cmp_cstr_eq((req)->fname, 1, (req)->fname->len, "..") || \
-          VSUFFIX((req)->fname, 1, (req)->fname->len, "/.."))           \
-        HTTPD_ERR_RET(req, 403, val);                                   \
-      else if (VSUFFIX((req)->fname, 1, (req)->fname->len, "/"))        \
-        vstr_add_cstr_ptr((req)->fname, (req)->fname->len,serv->dir_filename); \
-      else                                                              \
-      {                                                                 \
-        http__req_redirect_dir(con, req);                               \
-        return (val);                                                   \
-      }                                                                 \
     } while (0)
       
 #endif

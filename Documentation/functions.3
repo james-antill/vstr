@@ -1,4 +1,4 @@
-.TH vstr 3 "23-Aug-2004" "Vstr 1.0.13" "Vstr String Library"
+.TH vstr 3 "09-Jan-2005" "Vstr 1.0.14" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -867,7 +867,7 @@ unsigned int \fBvstr_split_cstr_buf\fR(const struct Vstr_base *, size_t, size_t,
 .br
 .in \w'  unsigned int \fBvstr_split_cstr_chrs\fR('u
 .ti \w'  'u
-unsigned int \fBvstr_split_cstr_chrs\fR(const struct Vstr_base *, size_t, size_t, const char *, size_t, struct Vstr_sects *, unsigned int, unsigned int);
+unsigned int \fBvstr_split_cstr_chrs\fR(const struct Vstr_base *, size_t, size_t, const char *, struct Vstr_sects *, unsigned int, unsigned int);
 .br
 .in \w'  unsigned int \fBVSTR_SPLIT_CSTR_BUF\fR('u
 .ti \w'  'u
@@ -875,7 +875,7 @@ unsigned int \fBVSTR_SPLIT_CSTR_BUF\fR(const struct Vstr_base *, size_t, size_t,
 .br
 .in \w'  unsigned int \fBVSTR_SPLIT_CSTR_CHRS\fR('u
 .ti \w'  'u
-unsigned int \fBVSTR_SPLIT_CSTR_CHRS\fR(const struct Vstr_base *, size_t, size_t, const char *, size_t, struct Vstr_sects *, unsigned int, unsigned int);
+unsigned int \fBVSTR_SPLIT_CSTR_CHRS\fR(const struct Vstr_base *, size_t, size_t, const char *, struct Vstr_sects *, unsigned int, unsigned int);
 .sp
 .br
 .in \w'  void *\fBvstr_parse_num\fR('u
@@ -9094,24 +9094,19 @@ Parameter\fB[4]\fR: Pointer to characters to split on
 Type\fB[4]\fR: const char *
 
 .br
-Parameter\fB[5]\fR: Length of characters (Parameter[4])
+Parameter\fB[5]\fR: Vstr sections
 .br
-Type\fB[5]\fR: size_t
+Type\fB[5]\fR: struct Vstr_sects *
 
 .br
-Parameter\fB[6]\fR: Vstr sections
+Parameter\fB[6]\fR: Limit of sections to add to Vstr sections (Parameter[6])
 .br
-Type\fB[6]\fR: struct Vstr_sects *
+Type\fB[6]\fR: unsigned int
 
 .br
-Parameter\fB[7]\fR: Limit of sections to add to Vstr sections (Parameter[6])
+Parameter\fB[7]\fR: Flags starting VSTR_FLAG_SPLIT_*
 .br
 Type\fB[7]\fR: unsigned int
-
-.br
-Parameter\fB[8]\fR: Flags starting VSTR_FLAG_SPLIT_*
-.br
-Type\fB[8]\fR: unsigned int
 
 .br
 \fBExplanation:\fR
@@ -9197,24 +9192,19 @@ Parameter\fB[4]\fR: Pointer to characters to split on
 Type\fB[4]\fR: const char *
 
 .br
-Parameter\fB[5]\fR: Length of characters (Parameter[4])
+Parameter\fB[5]\fR: Vstr sections
 .br
-Type\fB[5]\fR: size_t
+Type\fB[5]\fR: struct Vstr_sects *
 
 .br
-Parameter\fB[6]\fR: Vstr sections
+Parameter\fB[6]\fR: Limit of sections to add to Vstr sections (Parameter[6])
 .br
-Type\fB[6]\fR: struct Vstr_sects *
+Type\fB[6]\fR: unsigned int
 
 .br
-Parameter\fB[7]\fR: Limit of sections to add to Vstr sections (Parameter[6])
+Parameter\fB[7]\fR: Flags starting VSTR_FLAG_SPLIT_*
 .br
 Type\fB[7]\fR: unsigned int
-
-.br
-Parameter\fB[8]\fR: Flags starting VSTR_FLAG_SPLIT_*
-.br
-Type\fB[8]\fR: unsigned int
 
 .br
 \fBExplanation:\fR
@@ -12325,7 +12315,7 @@ Type\fB[5]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
 .br
   However the arguments to the vstr_add_iovec_buf_* calls are limited so that only up to size (Parameter[4]) data will be read.
 .br
@@ -12383,7 +12373,18 @@ Type\fB[7]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the file descriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+.br
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only up to size (Parameter[4]) data will be read.
+.br
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only up to exactly size (Parameter[4]) data will be read. If size (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4]) will try and be read.
+.sp
+\fBNote:\fR
+
+.br
+  If all the data is read() and then close() fails with an error, although the error code will signify this the data will stay inside the Vstr as this seemed the most useful/sane behaviour.
+.br
+  read() is called multiple times from this function, so it should return after either all the data has been read from the file into the Vstr or an error has occured.
 
 .ti -2
 .br
@@ -12434,7 +12435,9 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  As with all calls in the vstr library, this is a non-blocking call. If you need all of the data specified (Parameter[5]) then you'll need to loop.
+  If all the data is read() and then close() fails with an error, although the error code will signify this the data will stay inside the Vstr as this seemed the most useful/sane behaviour.
+.br
+  read() is called multiple times from this function, so it should return after either all the data has been read from the file into the Vstr or an error has occured.
 
 .ti -2
 .br
@@ -12533,6 +12536,11 @@ Type\fB[8]\fR: unsigned int *
 
 .br
   This function is used to take data from a Vstr string and write it to a file, after open()ing the file (Parameter[4]) with open flags (Parameter[5]) and open mode (Parameter[6]).
+.sp
+\fBNote:\fR
+
+.br
+  Because multiple system calls will be done inside this function, and  that doing a write automatically removes data it's possible for this function to return failure but have actually written some data out. The other alternative would be to copy all the data until after the close() happened, which would be vastly less efficient.
 
 .ti -2
 .br

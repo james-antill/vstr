@@ -5,5 +5,6 @@
 
 extern void cntl_init(Vlg *, const char *, struct Evnt *);
 extern void cntl_free_acpt(struct Evnt *);
+extern void cntl_pipe_acpt_fds(int, int);
 
 #endif

@@ -59,6 +59,8 @@ struct Evnt
 
  unsigned int flag_io_nagle    : 1;
  unsigned int flag_io_cork     : 1;
+
+ unsigned int io_r_shutdown    : 1;
 };
 
 #define EVNT_SA(x)    (                      (x)->sa)
@@ -117,6 +119,7 @@ extern int evnt_epoll_enabled(void);
 
 extern unsigned int evnt_poll_add(struct Evnt *, int);
 extern void evnt_poll_del(struct Evnt *);
+extern int evnt_poll_swap(struct Evnt *, int);
 extern int evnt_poll(void);
 
 extern struct Evnt *evnt_find_least_used(void);

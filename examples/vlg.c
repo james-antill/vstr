@@ -53,15 +53,40 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
 
   ASSERT(vstr_export_chr(dlg, dlg->len) == '\n');
 
-  if (!vlg->daemon_mode)
+  if (vlg->daemon_mode)
+  {
+    const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len - 1);
+
+    if (!tmp)
+      errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
+
+    /* ignoring borken syslog()'s that overflow ... eventually implement
+     * syslog protocol, until then use a real OS */
+    syslog(type, "%s", tmp);
+    vstr_del(dlg, 1, dlg->len);
+  }
+  else
   {
     int fd = out_err ? STDERR_FILENO : STDOUT_FILENO;
     const char *tm = date_syslog(time(NULL));
+
+    /* Note: we add the begining backwards, it's easier that way */
+    if (!vlg->log_pid_stdout)
+    {
+      if (!vstr_add_cstr_ptr(dlg, 0, "]: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "prefix");
+    }
+    else
+    {
+      pid_t pid = getpid();
     
-    if (!vstr_add_cstr_ptr(dlg, 0, "]: ") || /* add backwards */
-        !vstr_add_cstr_ptr(dlg, 0, tm) ||
+      if (!vstr_add_fmt(dlg, 0, "] %lu: ", (unsigned long)pid))
+        errno = ENOMEM, err(EXIT_FAILURE, "prefix");
+    }
+    
+    if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
         !vstr_add_cstr_ptr(dlg, 0, "["))
-      errno = ENOMEM, err(EXIT_FAILURE, "time");
+      errno = ENOMEM, err(EXIT_FAILURE, "prefix");
 
     if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
       errno = ENOMEM, err(EXIT_FAILURE, "warn");
@@ -73,18 +98,6 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
     while (dlg->len)
       if (!vstr_sc_write_fd(dlg, 1, dlg->len, fd, NULL) && (errno != EAGAIN))
         err(EXIT_FAILURE, "vlg__flush");
-  }
-  else
-  {
-    const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len - 1);
-
-    if (!tmp)
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
-
-    /* ignoring borken syslog()'s that overflow ... eventually implement
-     * syslog protocol, until then use a real OS */
-    syslog(type, "%s", tmp);
-    vstr_del(dlg, 1, dlg->len);
   }
 }
 
@@ -213,9 +226,8 @@ static int vlg__fmt__add_vstr_add_sa(Vstr_base *base, size_t pos,
     break;
     
     case AF_LOCAL:
-    {
-      struct sockaddr_un *sun = (void *)sa;
-      ptr1 = sun->sun_path;
+    { /* struct sockaddr_un *sun = (void *)sa; */
+      ptr1 = "local";
       len1 = strlen(ptr1);
     }
     break;
@@ -310,8 +322,9 @@ Vlg *vlg_make(void)
   if (!(vlg->out_vstr = vstr_make_base(vlg__conf)))
     goto malloc_err_vstr_base;
   
-  vlg->out_dbg     = 0;
-  vlg->daemon_mode = FALSE;
+  vlg->out_dbg        = 0;
+  vlg->daemon_mode    = FALSE;
+  vlg->log_pid_stdout = FALSE;
   
   return (vlg);
 

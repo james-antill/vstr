@@ -18,8 +18,17 @@
     --public-only     - Toggle use of public only privilages (default: off).
     --dir-filename    - Filename to use when requesting directories.
     --server-name     - Contents of server header used in replies.
-    --gzip-content-replacement - Toggle use of gzip content replacement (default: on).
-    --debug -d        - Enable debug info.
+    --gzip-content-replacement
+                      - Toggle use of gzip content replacement (default: on).
+    --send-default-mime-type
+                      - Toggle sending a default mime type (default: off).
+    --default-mime-type
+                      - Default mime type (application/octet-stream).
+    --mime-types-main - Main mime types filename (default: /etc/mime.types).
+    --mime-types-xtra - Additional mime types filename.
+    --processes       - Number of processes to use (default: 1).
+    --defer-accept    - Time to defer dataless connections (default: 16s).
+    --debug -d        - Raise debug level (can be used upto 3 times).
     --host -H         - IPv4 address to bind (default: "all").
     --help -h         - Print this message.
     --max-clients -M  - Max clients allowed to connect (0 = no limit).

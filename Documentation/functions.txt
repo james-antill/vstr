@@ -5266,17 +5266,14 @@ Function: vstr_split_cstr_chrs()
  Parameter[4]: Pointer to characters to split on
  Type[4]: const char *
 
- Parameter[5]: Length of characters (Parameter[4])
- Type[5]: size_t
+ Parameter[5]: Vstr sections
+ Type[5]: struct Vstr_sects *
 
- Parameter[6]: Vstr sections
- Type[6]: struct Vstr_sects *
+ Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[6]: unsigned int
 
- Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_*
  Type[7]: unsigned int
-
- Parameter[8]: Flags starting VSTR_FLAG_SPLIT_*
- Type[8]: unsigned int
 
  Explanation:
 
@@ -5331,17 +5328,14 @@ Function: VSTR_SPLIT_CSTR_CHRS()
  Parameter[4]: Pointer to characters to split on
  Type[4]: const char *
 
- Parameter[5]: Length of characters (Parameter[4])
- Type[5]: size_t
+ Parameter[5]: Vstr sections
+ Type[5]: struct Vstr_sects *
 
- Parameter[6]: Vstr sections
- Type[6]: struct Vstr_sects *
+ Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[6]: unsigned int
 
- Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_*
  Type[7]: unsigned int
-
- Parameter[8]: Flags starting VSTR_FLAG_SPLIT_*
- Type[8]: unsigned int
 
  Explanation:
 

@@ -7,6 +7,9 @@ use File::Copy;
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
 
+our $root = "ex_httpd_root";
+our $truncate_segv = 0;
+
 sub httpd__munge_ret
   {
     my $output = shift;
@@ -43,7 +46,7 @@ sub httpd_file_tst
     $data =~ s/\n/\r\n/g;
 
     my $output = daemon_io($sock, $data,
-			   $xtra->{shutdown_w}, $xtra->{slow_write});
+			   $xtra->{shutdown_w}, $xtra->{slow_write}, 1);
 
     $output = httpd__munge_ret($output);
     daemon_put_io_w($io_w, $output);
@@ -62,39 +65,122 @@ sub httpd_gen_tst
     if (length($data) != 0)
       { failure(sprintf("data(%d) on gen tst", length($data))); }
 
+    if (! exists($xtra->{gen_output}))
+      { $xtra->{gen_output} = \&httpd__munge_ret; }
+
     $data = $xtra->{gen_input}->();
 
     my $output = daemon_io($sock, $data,
 			   $xtra->{shutdown_w}, $xtra->{slow_write}, 1);
 
-    $output = httpd__munge_ret($output);
+    $output = $xtra->{gen_output}->($output);
+
     daemon_put_io_w($io_w, $output);
   }
 
-sub gen_tsts()
+sub gen_tst_e2big
   {
     my $gen_cb = sub {
-      my $data = ("\r\n" x 200_000) . ("x" x 500_000);
+      my $data = ("\r\n" x 80_000) . ("x" x 150_000);
       return $data;
     };
 
-#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
-#	    {gen_input => $gen_cb});
+    my $gen_out_cb = sub { # Load ex_httpd_null_out_1 ?
+      $_ = shift;
+      if (m!^HTTP/1.1 400 !)
+	{
+	  $_ = "";
+	}
+
+      return $_;
+    };
+
     sub_tst(\&httpd_gen_tst, "ex_httpd_null",
-	    {gen_input => $gen_cb, shutdown_w => 0});
-#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
-#	    {gen_input => $gen_cb,                  slow_write => 1});
-#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
-#	    {gen_input => $gen_cb, shutdown_w => 0, slow_write => 1});
+	    {gen_input => $gen_cb, gen_output => $gen_out_cb,
+	     shutdown_w => 0});
+  }
+
+use POSIX; # _exit
+
+sub gen_tst_trunc
+  {
+    return if ($main::truncate_segv);
+
+    my $vhosts = shift;
+    my $pid = 0;
+
+    if (!($pid = tst_fork()) && defined($pid))
+      {
+	if (1)
+	  {
+	    open(STDIN,  "< /dev/null") || failure("open(2): $!");
+	    open(STDOUT, "> /dev/null") || failure("open(2): $!");
+	    open(STDERR, "> /dev/null") || failure("open(2): $!");
+	  }
+
+	my $fname = "$main::root/foo.example.com/4mb_2_2mb";
+
+	if (!$vhosts)
+	  {
+	    $fname = "$main::root/4mb_2_2mb";
+	  }
+
+	if (($pid = fork()) || !defined($pid))
+	  { # Parent goes
+	    sleep(4);
+	    truncate($fname, 2_000_000);
+	    success();
+	  }
+
+	open(OUT, ">> $fname") || failure("open($fname): $!");
+
+	truncate($fname, 4_000_000);
+
+	my $gen_cb = sub {
+	  sleep(1);
+	  my $pad = "x" x 64_000;
+	  my $data = <<EOL;
+GET http://foo.example.com/4mb_2_2mb HTTP/1.1\r
+Host: $pad\r
+\r
+EOL
+	  $data = $data x 16;
+	  return $data;
+	};
+
+	my $gen_out_cb = sub { # Load ex_httpd_null_out_1 ?
+	  unlink($fname);
+	  success();
+	};
+	# Randomly test as other stuff happens...
+	sub_tst(\&httpd_gen_tst, "ex_httpd_null",
+		{gen_input => $gen_cb, gen_output => $gen_out_cb,
+		 shutdown_w => 0});
+      }
+  }
+
+sub gen_tsts
+  {
+    my $vhosts = shift;
+
+    gen_tst_trunc($vhosts);
+    gen_tst_e2big();
   }
 
 sub all_vhost_tsts()
   {
+    gen_tsts(1);
     sub_tst(\&httpd_file_tst, "ex_httpd");
+    if ($>) { # mode 000 doesn't work if running !uid
+    sub_tst(\&httpd_file_tst, "ex_httpd_nonroot"); }
+
     sub_tst(\&httpd_file_tst, "ex_httpd_errs");
 
     sub_tst(\&httpd_file_tst, "ex_httpd",
 	    {shutdown_w => 0});
+    if ($>) {
+    sub_tst(\&httpd_file_tst, "ex_httpd_nonroot",
+	    {shutdown_w => 0}); }
     sub_tst(\&httpd_file_tst, "ex_httpd_errs",
 	    {shutdown_w => 0});
     sub_tst(\&httpd_file_tst, "ex_httpd_shut",
@@ -102,20 +188,26 @@ sub all_vhost_tsts()
 
     sub_tst(\&httpd_file_tst, "ex_httpd",
 	    {                 slow_write => 1});
+    if ($>) {
+    sub_tst(\&httpd_file_tst, "ex_httpd_nonroot",
+	    {                 slow_write => 1}); }
     sub_tst(\&httpd_file_tst, "ex_httpd_errs",
 	    {                 slow_write => 1});
 
     sub_tst(\&httpd_file_tst, "ex_httpd",
 	    {shutdown_w => 0, slow_write => 1});
+    if ($>) {
+    sub_tst(\&httpd_file_tst, "ex_httpd_nonroot",
+	    {shutdown_w => 0, slow_write => 1}); }
     sub_tst(\&httpd_file_tst, "ex_httpd_errs",
 	    {shutdown_w => 0, slow_write => 1});
     sub_tst(\&httpd_file_tst, "ex_httpd_shut",
 	    {shutdown_w => 0, slow_write => 1});
-    gen_tsts();
   }
 
 sub all_nonvhost_tsts()
   {
+    gen_tsts(0);
     sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts");
     sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts",
 	    {shutdown_w => 0});
@@ -123,11 +215,11 @@ sub all_nonvhost_tsts()
 	    {                 slow_write => 1});
     sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts",
 	    {shutdown_w => 0, slow_write => 1});
-    gen_tsts();
   }
 
 sub all_public_only_tsts()
   {
+    gen_tsts(1);
     sub_tst(\&httpd_file_tst, "ex_httpd_public-only");
     sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
 	    {shutdown_w => 0});
@@ -135,25 +227,19 @@ sub all_public_only_tsts()
 	    {                 slow_write => 1});
     sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
 	    {shutdown_w => 0, slow_write => 1});
-    gen_tsts();
   }
 
 if (@ARGV)
   {
     daemon_status(shift);
-    if (@ARGV && ($ARGV[0] eq "non-virtual-hosts"))
-      {
-	all_nonvhost_tsts();
-      }
+    if (@ARGV && (($ARGV[0] eq "virtual-hosts") || ($ARGV[0] eq "vhosts")))
+      { all_vhost_tsts(); }
+    elsif (@ARGV && ($ARGV[0] eq "public"))
+      { all_public_only_tsts(); }
     else
-      {
-	all_vhost_tsts();
-      }
+      {	all_nonvhost_tsts(); }
     success();
   }
-
-my $root = "ex_httpd_root";
-my $args = $root;
 
 rmtree($root);
 mkpath([$root . "/default",
@@ -202,6 +288,9 @@ make_html(2, "default", "$root/default/index.html");
 make_html(3, "norm",    "$root/foo.example.com/index.html");
 make_html(4, "port",    "$root/foo.example.com:1234/index.html");
 make_html(5, "corner",  "$root/foo.example.com/corner/index.html/index.html");
+make_html(6, "bt",      "$root/foo.example.com:1234/bt.torrent");
+make_html(7, "plain",   "$root/default/README");
+make_html(8, "backup",  "$root/default/index.html~");
 make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
 
@@ -225,26 +314,30 @@ utime $atime, $mtime, "$root/default/bin";
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-daemon_init("ex_httpd", $root, "--virtual-hosts=true  --mmap=false --sendfile=false");
+my $args = "--mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=false --sendfile=false");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--virtual-hosts=true  --mmap=true  --sendfile=false");
+$truncate_segv = 1;
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=true  --sendfile=false");
+system("cat > $root/default/fifo &");
+all_vhost_tsts();
+daemon_exit("ex_httpd");
+$truncate_segv = 0;
+
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true --mmap=false --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--virtual-hosts=true --mmap=true  --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
-system("cat > $root/default/fifo &");
-all_vhost_tsts();
-daemon_exit("ex_httpd");
-
-daemon_init("ex_httpd", $root, "--virtual-hosts=true  --public-only");
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --public-only=true");
 all_public_only_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--virtual-hosts=false --pid-file=$root/abcd");
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=false --pid-file=$root/abcd");
 my $abcd = daemon_get_io_r("$root/abcd");
 chomp $abcd;
 if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }

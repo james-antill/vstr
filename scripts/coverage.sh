@@ -49,7 +49,7 @@ function linkup()
   fi
 
 # Newer GCCs put them in the $srcdir
-  if [ ! -f ex_highlight-ex_highlight.da ]; then
+  if [ ! -f ex_highlight-ex_highlight.da -a ! -f vstr.da ]; then
     for i in .libs/*.da; do
       ln -f $i; rm -f $i
     done

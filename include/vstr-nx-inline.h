@@ -115,9 +115,9 @@ extern inline void vstr__debug_free(void *ptr)
   {
     unsigned int scan = vstr__debug_malloc_check_mem(ptr);
 
+    ASSERT(vstr__options.mem_num > 0);
     --vstr__options.mem_num;
 
-    ASSERT(vstr__options.mem_num >= 0);
     if (scan != vstr__options.mem_num)
     {
       SWAP_TYPE(vstr__options.mem_vals[scan].ptr,

@@ -1,3 +1,10 @@
+2005-01-09: Version 1.0.14 ... Couple of corner case bug fixes. In
+vstr_sc_*file_ no use O_NONBLOCK on open() to stop hangs on FIFOs, also repeat
+read() request until all file is read or have error. Encoded more characters in
+vstr_conv_encode_uri() by default. HTTPD example is now pretty compliant with
+HTTP/1.1, and has more than just better security going for it. Build fixes for
+non-Linux platforms.
+
 2004-08-29: Version 1.0.13 ... More testing, now at 100% code coverage.
 Some functions were added for working with binary data, using iterators,
 doing user friend byte output with large numbers, and working with things

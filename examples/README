@@ -6,49 +6,79 @@ happily work on win32 etc.
 
  All code in this dir. is also under the LGPL, not the GPL.
 
- ex_dir_list2webdav
+ NEW
+
+ ex_dir_list2webdav -- webdav is even more retarded than HTTP, so maybe not
+
+ ex_dnsd
+
+ ex_bt
+
+
+ TODO for existing code
+
+ evnt
+	fixing nagle off/on for cork (allow groups)
 
  ex_sock_filter
-
+	All asm calls should have names
 
  ex_httpd
 	 This should be a HTTP/1.1 compliant server, does most everything you'd
-	want for just serving files.
+	want (as long as you don't want CGI's :).
 
 http://www.sans.org/top20/#u2
 
+	man page
+	Documentation/httpd.html
+	jhttpd -> vstr-httpd
+	O(1) timer_q_add_node
+	Multi procs "cntl list" command pass through
+	max timeout for keep-alive
+	max requests for keep-alive?
 	conf
+	 Per file temp/perm directs (301/path or 307/path FS trees? -- and 302?)
+	  Allow 410 also? [w3/chips]
+	 Per file mime_type ... allow "cool URIs" [w3/chips]
+	 Per file extra headers: Content-Location; Content-Md5; 
+                                 Cache-Control; etc. [w3/chips]
+	 404 pages (and other return codes)
         mmap cache?
 	fd cache
 	stat cache
-	max timeout for keep-alive
-	max requests for keep-alive?
 	408 - request timeout?
-	configurable 404 pages (and maybe others)
         limiting IO
 	Support accept-language?
-        fixing nagle off/on for cork
+	 Other accept headers [w3/chips]
 	ipv6
-	apache style perl converter?
 	native syslog
 	edge triggered events
-	multi proc speed up
-	extension finder(/index and get index.html)
 	auth (rfc2617)
 	FreeBSD sendfile
 	FreeBSD kqueue
 
+  cleanups
+
+	move cl_timer_con() into evnt ?
+
     BUGS?
 	GMT time convertion isn't done ... fuck the broken apps.
-	CRLF should be done as (CR)?LF ... fuck the broken apps.
+	CRLF should be done as (CR)?LF ... fuck the broken apps. Although we
+       make sure things doing that can't get screwed by response splitting on
+       host or request.
 
   tst
 
-	file truncation/expantion, while sending
+	LFS
+	mtime in future
+	date_rfc850(mtime);
+	date_asctime(mtime);
+	use_keep_alive == FALSE
+	use_gzip == FALSE
+	use_range == FALSE
 	mmap failure
 	seek failure
 	sendfile failure
-	recv while sending
-	mem fail
+	mem failure
 
  ex_nc

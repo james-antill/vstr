@@ -4,10 +4,19 @@ use strict;
 use File::Basename;
 use File::Compare;
 
-my $tst_DBG    = $ENV{VSTR_TST_DBG}    || 0;
+use POSIX;
 
-my $tst_mp     = $ENV{VSTR_TST_MP}     || 1;
-my $tst_num_mp = $ENV{VSTR_TST_NUM_MP} || 2;
+use IO::Socket;
+
+my $tst_DBG    = $ENV{VSTR_TST_DBG};
+   $tst_DBG    = 0 if (!defined ($tst_DBG));
+
+my $tst_mp     = $ENV{VSTR_TST_MP};
+   $tst_mp     = 1 if (!defined ($tst_mp));
+my $tst_num_mp = $ENV{VSTR_TST_NUM_MP};
+   $tst_num_mp = 2 if (!defined ($tst_num_mp));
+
+my $child_no_cleanup = 0;
 
 my $xit_success = 0;
 my $xit_failure = 1;
@@ -18,12 +27,27 @@ sub failure
     my $txt = shift;
 
     warn("FAILURE($$) $0: $txt\n");
-    exit($xit_failure);
+    if ($child_no_cleanup)
+      { _exit($xit_failure); }
+    else
+      { exit($xit_failure); }
   }
 
 sub success
   {
-    exit($xit_success);
+    if ($child_no_cleanup)
+      { _exit($xit_success); }
+    else
+      { exit($xit_success); }
+  }
+
+sub tst_fork()
+  {
+    my $pid = fork();
+    if (defined($pid) && !$pid)
+      { $child_no_cleanup = 1; }
+
+    return $pid;
   }
 
 my $dir = "$ENV{SRCDIR}/tst";
@@ -50,8 +74,8 @@ sub sub_tst
 	--$num; $num %= $sz; ++$num;
 	if ($tst_mp)
 	  {
-	    my $pid = fork();
-	
+	    my $pid = tst_fork();
+
 	    if (!defined ($pid))
 	      { failure("fork: $!"); }
 
@@ -79,15 +103,17 @@ sub sub_tst
 	unlink("${prefix}_tmp_${num}_$$");
 
 	if ($tst_mp)
-	  { _exit(0); }
+	  { success(); }
       }
 
     for my $pid (@pids)
       {
 	if (waitpid($pid, 0) <= 0)
-	  { failure("wait($pid)"); }
-	if ($? != $xit_success)
-	  { failure("wait($pid)"); }
+	  { failure("waitpid($pid): $!"); }
+	my $code = $?;
+	# 13 seems to be some weird perl error code.
+	if (($code != $xit_success) && ($code != 13))
+	  { failure("waitpid($pid) == $code"); }
       }
   }
 
@@ -163,18 +189,26 @@ sub daemon_init
     my $port = "--port=0"; # Rand
 
     my $dbg = "";
-    my $no_out = ">/dev/null";
-    if ($tst_DBG)
+    my $no_out = ">/dev/null  2> /dev/null";
+    if ($tst_DBG > 1)
       {
-	$dbg    = '-d -d -d';
 	$no_out = '';
+	if ($tst_DBG > 2)
+	  { $dbg    = '-d -d -d'; }
       }
 
+    unlink("${cmd}_cntl"); # So we don't try connecting to the old one
+    print "TST: ${cmd} $opts -- $args\n";
     system("./${cmd} $port $opts $cntl $dbg -- $args $no_out &");
 
     # Wait for it...
+    my $num = 0;
     while (! -e "${cmd}_cntl")
-      { sleep(1); }
+      {
+	if (++$num > (60 * 5))
+	  { failure("Can't find ${cmd}_cntl file"); }
+	sleep(1);
+      }
 
     daemon_status("${cmd}_cntl");
   }
@@ -192,17 +226,25 @@ sub daemon_port
     return $daemon_port;
   }
 
-use POSIX;
-use IO::Socket;
-#require "sys/socket.ph";
-
 sub nonblock {
     my $socket = shift;
+    my $val = shift;
     my $flags;
+
+    if (!defined($val))
+      { $val = 1; }
 
     $flags = fcntl($socket, F_GETFL, 0)
       or failure("Can't get flags for socket: $!");
-    fcntl($socket, F_SETFL, $flags | O_NONBLOCK)
+
+    return if (!!($flags & O_NONBLOCK) == !!$val);
+
+    if ($val)
+      { $flags |= O_NONBLOCK; }
+    else
+      { $flags &= ~O_NONBLOCK; }
+
+    fcntl($socket, F_SETFL, $flags)
       or failure("Can't make socket nonblocking: $!");
 }
 sub daemon_connect_tcp
@@ -257,41 +299,57 @@ sub daemon_io
     # don't do shutdown by default....
     if (!defined($done_shutdown)) { $done_shutdown = 1; }
 
-# This busy spins ... fuckit...
+    my $fin_write = !$len;
     while (1)
       {
 	if ($len)
 	  {
-	    my $tmp = $len;
+	    # Block...
+	    {
+	      my $rin = '';
+	      my $win = '';
+	      vec($rin,fileno($sock),1) = 1;
+	      vec($win,fileno($sock),1) = 1;
+	      my $ein = $rin | $win;
+	      select($rin, $win, $ein, undef);
+	    }
 
-	    if ($slow_write && ($tmp > 1))
-	      { $tmp /= 2; }
-	    $tmp = $sock->syswrite($data, $tmp, $off);
-	    if (!defined($tmp) && $allow_write_truncate &&
+	    my $wret = $len;
+
+	    if ($slow_write && ($wret > 1))
+	      { $wret /= 2; }
+	    $wret = $sock->syswrite($data, $wret, $off);
+	    if (!defined($wret) && $allow_write_truncate &&
 		($! eq 'Connection reset by peer'))
-	      { $tmp = $len; }
-	    if (!defined($tmp) && ($! ne 'Resource temporarily unavailable'))
+	      { $wret = $len; }
+	    if (!defined($wret) && ($! ne 'Resource temporarily unavailable'))
 	      { failure("write: $!"); }
-	    if (defined($tmp))
+	    if (defined($wret))
 	      {
-		$len -= $tmp; $off += $tmp;
+		$len -= $wret; $off += $wret;
+		if (!$len)
+		  { $fin_write = 1; }
 	      }
+	  }
+	if ($fin_write)
+	  {
+	    nonblock($sock, 0);
+	    if (!$done_shutdown)
+	      {
+		$sock->shutdown(1);
+		$done_shutdown = 1;
+	      }
+	    $fin_write = 0;
 	  }
 
 	my $ret = $sock->sysread(my($buff), 4096);
 
 	next if (!defined($ret) &&
 		 ($! eq 'Resource temporarily unavailable'));
+	last if (!defined($ret) &&
+		 ($! eq 'Connection reset by peer'));
 	failure ("read: $!") if (!defined($ret));
 	last if (!$ret);
-
-	if (!$len && !$done_shutdown)
-	  {
-#	    if ($slow_write) # Makes this _slow_
-#	      { select(undef, undef, undef, 0.50); }
-	    $sock->shutdown(1);
-	    $done_shutdown = 1;
-	  }
 
 	$output .= $buff;
       }

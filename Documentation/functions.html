@@ -3509,10 +3509,9 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to characters to split on<br>Type<strong>[4]</strong>: const char *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a><br>Type<strong>[6]</strong>: struct Vstr_sects *
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a> (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting <a href="constants.html#vstr_split_cstr_chrs%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a><br>Type<strong>[5]</strong>: struct Vstr_sects *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Limit of sections to add to <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a> (Parameter[6])<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting <a href="constants.html#vstr_split_cstr_chrs%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[7]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function calls <a href="functions.html#vstr_split_chrs%28%29">vstr_split_chrs()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
@@ -3540,10 +3539,9 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to characters to split on<br>Type<strong>[4]</strong>: const char *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a><br>Type<strong>[6]</strong>: struct Vstr_sects *
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a> (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting <a href="constants.html#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a><br>Type<strong>[5]</strong>: struct Vstr_sects *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Limit of sections to add to <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a> (Parameter[6])<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting <a href="constants.html#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[7]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls <a href="functions.html#vstr_split_chrs%28%29">vstr_split_chrs()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
@@ -5055,8 +5053,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>, then readv() with
- the file descriptor got by opening the filename (Parameter[3]) and finally
- <a href="functions.html#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a> before returning.
+ the file descriptor (Parameter[3]) and finally <a href="functions.html#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
+ before returning.
 </p><p>  However the arguments to the vstr_add_iovec_buf_* calls
  are limited so that only up to size (Parameter[4]) data will be read.
 </p><p>  If size (Parameter[4]) is zero then the entire file will try to be read.
@@ -5078,8 +5076,22 @@
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[7]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>, then readv() with
- the file descriptor (Parameter[3]) and finally <a href="functions.html#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
- before returning.
+ the file descriptor got by opening the filename (Parameter[3]) and finally
+ <a href="functions.html#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a> before returning.
+</p><p>  However the arguments to the vstr_add_iovec_buf_* calls
+ are limited so that only up to size (Parameter[4]) data will be read.
+</p><p>  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
+ only up to exactly size (Parameter[4]) data will be read. If size
+ (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
+ will try and be read.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If all the data is read() and then close() fails with an error, although
+ the error code will signify this the data will stay inside the Vstr as this
+ seemed the most useful/sane behaviour.
+</p><p>  read() is called multiple times from this function, so it should return
+ after either all the data has been read from the file into the Vstr or an
+ error has occured.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -5101,8 +5113,12 @@
  will try and be read.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  As with all calls in the vstr library, this is a non-blocking call. If you
- need all of the data specified (Parameter[5]) then you'll need to loop.
+</p><p>  If all the data is read() and then close() fails with an error, although
+ the error code will signify this the data will stay inside the Vstr as this
+ seemed the most useful/sane behaviour.
+</p><p>  read() is called multiple times from this function, so it should return
+ after either all the data has been read from the file into the Vstr or an
+ error has occured.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -5138,6 +5154,13 @@
 </p><p>  This function is used to take data from a <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> and write it to a
  file, after open()ing the file (Parameter[4]) with open flags (Parameter[5])
  and open mode (Parameter[6]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Because multiple system calls will be done inside this function, and 
+ that doing a write automatically removes data it's possible for this function
+ to return failure but have actually written some data out. The other
+ alternative would be to copy all the data until after the close() happened,
+ which would be vastly less efficient.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">

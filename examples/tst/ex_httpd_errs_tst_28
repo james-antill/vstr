@@ -38,9 +38,9 @@ GET http://default/ HTTP/1.1
 Accept-Encoding: * ; q = 1 . 010 
 
 GET http://default/ HTTP/1.1
-Accept-Encoding: * ; q = 0 . 001 
+Accept-Encoding: ,,* ; q = 0 . 001 ,,
 
 GET http://default/ HTTP/1.1
-Accept-Encoding: blah,
+Accept-Encoding: ,,blah;q=1,,
 Connection: close
 

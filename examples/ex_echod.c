@@ -76,9 +76,14 @@ static Vlg *vlg = NULL;
 static int serv_recv(struct con *con)
 {
   unsigned int num = CONF_READ_CALL_LIMIT;
-
+  int done = FALSE;
+  
   while (num--)
-    if (!evnt_cb_func_recv(con->ev))
+    if (evnt_cb_func_recv(con->ev))
+      done = TRUE;
+    else if (done)
+      break;
+    else
       return (FALSE);
   
   vstr_mov(con->ev->io_w, con->ev->io_w->len,

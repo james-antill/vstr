@@ -15,6 +15,7 @@ my $filter_exts_re = qr/(?:
 			[.]gz  |
 			[.]bz2 |
 			[.]rpm |
+			[.]zip |
 			~      |
 			\#
 		       )$/x;

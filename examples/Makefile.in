@@ -353,8 +353,8 @@ ex_cntl_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 DAEMON_FILES_SRCS = opt.c date.c evnt.c vlg.c              cntl.c
 DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h cntl.h
 
-ex_httpd_SOURCES = ex_httpd.c $(DAEMON_FILES_SRCS)
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h $(DAEMON_FILES_HDRS)
+ex_httpd_SOURCES = ex_httpd.c mime_types.c $(DAEMON_FILES_SRCS)
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h mime_types.h $(DAEMON_FILES_HDRS)
 ex_httpd_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -447,11 +447,6 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl tst/tst_httpd.pl
 
 
-otherdir = $(EX_INST_DIR)
-other_DATA = \
-  hexdump_data highlight2style.pl
-
-
 example_code_html = \
   html/app.h.html \
   html/bag.c.html \
@@ -464,6 +459,8 @@ example_code_html = \
   html/dns.h.html \
   html/evnt.c.html \
   html/evnt.h.html \
+  html/mime_types.c.html \
+  html/mime_types.h.html \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
@@ -519,6 +516,26 @@ html_DATA = \
   html/f_c.css \
   \
   $(example_code_html)
+
+
+examplesscriptsdir = $(EX_INST_DIR)/scripts
+examplesscripts_DATA = \
+  gzip-r.pl \
+  highlight2style.pl \
+  jhttpd-syslog2apache-httpd-log.pl \
+  nodesize_plots.pl \
+  nodesize_split.pl
+
+
+extradatadir = $(EX_INST_DIR)/data
+extradata_DATA = \
+  hexdump_data \
+  mime_types_extra.txt \
+  README \
+  zcat_data_1.bz2 \
+  zcat_data_1.gz \
+  zcat_data_2.bz2 \
+  zcat_data_2.gz
 
 
 initddir = $(sysconfdir)/init.d
@@ -9126,7 +9143,8 @@ ex_highlight_LDFLAGS =
 am__objects_4 = ex_httpd-opt.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
 	ex_httpd-evnt.$(OBJEXT) ex_httpd-vlg.$(OBJEXT) \
 	ex_httpd-cntl.$(OBJEXT)
-am_ex_httpd_OBJECTS = ex_httpd-ex_httpd.$(OBJEXT) $(am__objects_4)
+am_ex_httpd_OBJECTS = ex_httpd-ex_httpd.$(OBJEXT) \
+	ex_httpd-mime_types.$(OBJEXT) $(am__objects_4)
 ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_httpd_LDFLAGS =
 ex_lookup_ip_SOURCES = ex_lookup_ip.c
@@ -9205,7 +9223,7 @@ DIST_SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c \
 	ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c \
 	ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) ex_sock_filter.c \
 	$(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
-DATA = $(html_DATA) $(other_DATA)
+DATA = $(examplesscripts_DATA) $(extradata_DATA) $(html_DATA)
 
 DIST_COMMON = README $(srcdir)/Makefile.in Makefile.am
 SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) ex_csv.c $(ex_dir_filter_SOURCES) ex_dir_list.c ex_dir_list2html.c $(ex_dir_sort_SOURCES) $(ex_dns_SOURCES) $(ex_echod_SOURCES) ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c ex_hello_world_x.c ex_hexdump.c ex_highlight.c $(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) ex_sock_filter.c $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
@@ -9758,6 +9776,15 @@ ex_httpd-ex_httpd.obj: ex_httpd.c
 ex_httpd-ex_httpd.lo: ex_httpd.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-ex_httpd.lo `test -f 'ex_httpd.c' || echo '$(srcdir)/'`ex_httpd.c
 
+ex_httpd-mime_types.o: mime_types.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.o `test -f 'mime_types.c' || echo '$(srcdir)/'`mime_types.c
+
+ex_httpd-mime_types.obj: mime_types.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.obj `if test -f 'mime_types.c'; then $(CYGPATH_W) 'mime_types.c'; else $(CYGPATH_W) '$(srcdir)/mime_types.c'; fi`
+
+ex_httpd-mime_types.lo: mime_types.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.lo `test -f 'mime_types.c' || echo '$(srcdir)/'`mime_types.c
+
 ex_httpd-opt.o: opt.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
@@ -9974,6 +10001,42 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+examplesscriptsDATA_INSTALL = $(INSTALL_DATA)
+install-examplesscriptsDATA: $(examplesscripts_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(examplesscriptsdir)
+	@list='$(examplesscripts_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(examplesscriptsDATA_INSTALL) $$d$$p $(DESTDIR)$(examplesscriptsdir)/$$f"; \
+	  $(examplesscriptsDATA_INSTALL) $$d$$p $(DESTDIR)$(examplesscriptsdir)/$$f; \
+	done
+
+uninstall-examplesscriptsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(examplesscripts_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(examplesscriptsdir)/$$f"; \
+	  rm -f $(DESTDIR)$(examplesscriptsdir)/$$f; \
+	done
+extradataDATA_INSTALL = $(INSTALL_DATA)
+install-extradataDATA: $(extradata_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(extradatadir)
+	@list='$(extradata_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(extradataDATA_INSTALL) $$d$$p $(DESTDIR)$(extradatadir)/$$f"; \
+	  $(extradataDATA_INSTALL) $$d$$p $(DESTDIR)$(extradatadir)/$$f; \
+	done
+
+uninstall-extradataDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(extradata_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(extradatadir)/$$f"; \
+	  rm -f $(DESTDIR)$(extradatadir)/$$f; \
+	done
 htmlDATA_INSTALL = $(INSTALL_DATA)
 install-htmlDATA: $(html_DATA)
 	@$(NORMAL_INSTALL)
@@ -9991,24 +10054,6 @@ uninstall-htmlDATA:
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(htmldir)/$$f"; \
 	  rm -f $(DESTDIR)$(htmldir)/$$f; \
-	done
-otherDATA_INSTALL = $(INSTALL_DATA)
-install-otherDATA: $(other_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(otherdir)
-	@list='$(other_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(otherDATA_INSTALL) $$d$$p $(DESTDIR)$(otherdir)/$$f"; \
-	  $(otherDATA_INSTALL) $$d$$p $(DESTDIR)$(otherdir)/$$f; \
-	done
-
-uninstall-otherDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(other_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(otherdir)/$$f"; \
-	  rm -f $(DESTDIR)$(otherdir)/$$f; \
 	done
 
 ETAGS = etags
@@ -10175,7 +10220,7 @@ check: check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(examplesdir) $(DESTDIR)$(initddir) $(DESTDIR)$(htmldir) $(DESTDIR)$(otherdir)
+	$(mkinstalldirs) $(DESTDIR)$(examplesdir) $(DESTDIR)$(initddir) $(DESTDIR)$(examplesscriptsdir) $(DESTDIR)$(extradatadir) $(DESTDIR)$(htmldir)
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -10219,8 +10264,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-examplesPROGRAMS install-htmlDATA \
-	install-initdSCRIPTS install-otherDATA
+install-data-am: install-examplesPROGRAMS install-examplesscriptsDATA \
+	install-extradataDATA install-htmlDATA install-initdSCRIPTS
 
 install-exec-am:
 
@@ -10247,23 +10292,25 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-examplesPROGRAMS uninstall-htmlDATA \
-	uninstall-info-am uninstall-initdSCRIPTS uninstall-otherDATA
+uninstall-am: uninstall-examplesPROGRAMS uninstall-examplesscriptsDATA \
+	uninstall-extradataDATA uninstall-htmlDATA uninstall-info-am \
+	uninstall-initdSCRIPTS
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
 	clean-examplesPROGRAMS clean-generic clean-libtool ctags \
 	distclean distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am \
-	install-examplesPROGRAMS install-exec install-exec-am \
+	install-examplesPROGRAMS install-examplesscriptsDATA \
+	install-exec install-exec-am install-extradataDATA \
 	install-htmlDATA install-info install-info-am \
-	install-initdSCRIPTS install-man install-otherDATA \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool pdf \
-	pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-examplesPROGRAMS uninstall-htmlDATA uninstall-info-am \
-	uninstall-initdSCRIPTS uninstall-otherDATA
+	install-initdSCRIPTS install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-examplesPROGRAMS \
+	uninstall-examplesscriptsDATA uninstall-extradataDATA \
+	uninstall-htmlDATA uninstall-info-am uninstall-initdSCRIPTS
 
 
 html/f_c.css: ../Documentation/f_c.css

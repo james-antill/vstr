@@ -252,7 +252,7 @@ void cntl_init(Vlg *passed_vlg, const char *fname,
   ASSERT(!acpt_cntl_evnt);
   
   acpt_evnt = passed_acpt_evnt;
-  
+    
   if (!(evnt = malloc(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "cntl file: %m\n"));
   
@@ -270,4 +270,38 @@ void cntl_free_acpt(struct Evnt *evnt)
   ASSERT(acpt_evnt == evnt);
 
   acpt_evnt = NULL;
+}
+
+static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
+{
+  vlg_dbg3(vlg, "cntl pipe acpt free %p %p\n", evnt, acpt_cntl_evnt);
+  
+  ASSERT(acpt_cntl_evnt == evnt);
+  
+  free(evnt);
+
+  acpt_cntl_evnt = NULL;
+
+  if (acpt_evnt)
+    evnt_close(acpt_evnt);
+}
+
+/* only used to get death sig atm. */
+void cntl_pipe_acpt_fds(int fd_r, int fd_w)
+{
+  ASSERT(fd_w == -1);
+  
+  if (acpt_evnt)
+  {
+    int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
+    
+    ASSERT(acpt_cntl_evnt);
+    
+    if (!evnt_poll_swap(acpt_cntl_evnt, fd_r))
+      vlg_abort(vlg, "swap_acpt: %m\n");
+
+    close(old_fd);
+    
+    acpt_cntl_evnt->cbs->cb_func_free   = cntl__cb_func_pipe_acpt_free;
+  }
 }

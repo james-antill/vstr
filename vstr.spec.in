@@ -155,7 +155,7 @@ cd dbg
 
 ../configure --prefix=%{prefix} --mandir=%{_mandir} \
   --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
-  --localstatedir=%{varprefix}/var
+  --localstatedir=%{varprefix}/var \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-debug \
   %{fmtfloatopt}
@@ -164,6 +164,7 @@ build
 cd ../opt
 ../configure  --prefix=%{prefix} --mandir=%{_mandir} \
   --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
+  --localstatedir=%{varprefix}/var \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt}
@@ -194,6 +195,7 @@ mkdir -p $RPM_BUILD_ROOT/var/empty/jechod
 mkdir -p $RPM_BUILD_ROOT/var/empty/jhttpd
 mkdir -p $RPM_BUILD_ROOT/var/www/html
 
+mkdir -p $RPM_BUILD_ROOT/%{_sbindir}
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_echod $RPM_BUILD_ROOT/%{_sbindir}/jechod
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_httpd $RPM_BUILD_ROOT/%{_sbindir}/jhttpd
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_cntl  $RPM_BUILD_ROOT/%{_sbindir}/jcntl

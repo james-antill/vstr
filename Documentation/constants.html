@@ -1839,6 +1839,8 @@
 </p><p>  This error code means that the call to readv() returned 0.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you pass 0 as the length to the read_*_file functions, you can still get
+ the _EOF error if the file is truncated while it is being read.
 </p><p>  To help the programer unify error paths errno is set to ENOSPC.
 
 

@@ -10,6 +10,7 @@ typedef struct Vlg
  struct Vstr_base *out_vstr;
  unsigned int out_dbg : 2;
  unsigned int daemon_mode : 1;
+ unsigned int log_pid_stdout : 1;
 } Vlg;
 
 extern void vlg_init(void);

@@ -1,4 +1,3 @@
-#define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
 
 #include <stdio.h>
@@ -24,6 +23,8 @@
 #include <timer_q.h>
 
 #include <sys/sendfile.h>
+
+#define CONF_EVNT_NO_EPOLL FALSE
 
 #include "vlg.h"
 #include "vlg_assert.h"
@@ -193,11 +194,8 @@ int evnt_cb_func_recv(struct Evnt *evnt)
   if (ret)
     return (TRUE);
 
-  if (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-  {
-    if (evnt->io_r->len || evnt->io_w->len)
-      return (evnt->cbs->cb_func_shutdown_r(evnt));
-  }
+  if ((ern == VSTR_TYPE_SC_READ_FD_ERR_EOF) && evnt->io_w->len)
+    return (evnt_shutdown_r(evnt));
   
   return (FALSE);
 }
@@ -221,7 +219,13 @@ void evnt_cb_func_free(struct Evnt *EVNT__ATTR_UNUSED(evnt))
 int evnt_cb_func_shutdown_r(struct Evnt *evnt)
 {
   vlg_dbg3(vlg, "SHUTDOWN from[$<sa:%p>]\n", evnt->sa);
-  return (FALSE);
+  
+  if (!evnt_shutdown_r(evnt))
+    return (FALSE);
+
+  /* called from outside read, and read'll never get called again ...
+   * so quit if we have nothing to send */
+  return (!!evnt->io_w->len);
 }
 
 static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
@@ -237,6 +241,8 @@ static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
   /* FIXME: need group settings, default no nagle but cork */
   evnt->flag_io_nagle    = evnt_opt_nagle;
   evnt->flag_io_cork     = FALSE;
+  
+  evnt->io_r_shutdown    = FALSE;
   
   evnt->acct.req_put = 0;
   evnt->acct.req_got = 0;
@@ -311,11 +317,12 @@ static void evnt__free_usr(struct Evnt *evnt)
   Timer_q_node *tm_o  = evnt->tm_o;
   
   evnt__free1(evnt);
+
+  ASSERT(evnt__num >= 1); /* in case they come back in via. the cb */
+  --evnt__num;
+
   evnt->cbs->cb_func_free(evnt);
   evnt__free2(sa, tm_o);
-
-  ASSERT(evnt__num >= 1);
-  --evnt__num;
 }
 
 void evnt_free(struct Evnt *evnt)
@@ -742,6 +749,13 @@ void evnt_send_del(struct Evnt *evnt)
 
 int evnt_shutdown_r(struct Evnt *evnt)
 {
+  int ret = FALSE;
+  unsigned int ern = 0;
+  
+  /* only a "small" amount of data left now... */
+  while ((ret = evnt_recv(evnt, &ern)))
+  { }
+
   vlg_dbg3(vlg, "shutdown(SHUT_RD) from[$<sa:%p>]\n", evnt->sa);
 
   evnt_wait_cntl_del(evnt, POLLIN|POLLHUP);
@@ -751,6 +765,7 @@ int evnt_shutdown_r(struct Evnt *evnt)
       vlg_warn(vlg, "shutdown(SHUT_RD): %m\n");
     return (FALSE);
   }
+  evnt->io_r_shutdown = TRUE;
 
   return (TRUE);
 }
@@ -843,8 +858,17 @@ int evnt_sendfile(struct Evnt *evnt, int ffd, VSTR_AUTOCONF_uintmax_t *f_off,
   
   *ern = 0;
   
+  ASSERT(evnt__valid(evnt));
+
   if (evnt->io_w->len)
-    return (evnt_send(evnt));
+  {
+    if (!evnt__call_send(evnt, ern))
+      return (FALSE);
+
+    gettimeofday(&evnt->mtime, NULL);
+    
+    return (TRUE);
+  }
   
   ASSERT(evnt__valid(evnt));
 
@@ -856,9 +880,16 @@ int evnt_sendfile(struct Evnt *evnt, int ffd, VSTR_AUTOCONF_uintmax_t *f_off,
     if (errno == EAGAIN)
       return (TRUE);
 
+    *ern = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
     return (FALSE);
   }
 
+  if (!ret)
+  {
+    *ern = VSTR_TYPE_SC_READ_FD_ERR_EOF;
+    return (FALSE);
+  }
+  
   *f_off = tmp_off;
   
   evnt->acct.bytes_w += ret;
@@ -1025,22 +1056,17 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       done = TRUE;
       if (!scan->cbs->cb_func_recv(scan))
         evnt_close(scan);
-      goto next_recv;
     }
     
-    if (SOCKET_POLL_INDICATOR(scan->ind)->revents & bad_poll_flags)
+    if (!done && (SOCKET_POLL_INDICATOR(scan->ind)->revents & bad_poll_flags))
     {
       done = TRUE;
-      if (!scan->cbs->cb_func_shutdown_r(scan))
+      if (!scan->io_r_shutdown && !scan->cbs->cb_func_shutdown_r(scan))
         evnt_close(scan);
-      goto next_recv;
     }
 
-    ASSERT(!done);
-    if (evnt_epoll_enabled()) break;
+    if (!done && evnt_epoll_enabled()) break;
 
-   next_recv:
-    SOCKET_POLL_INDICATOR(scan->ind)->revents = 0;
     if (done)
       --ready;
 
@@ -1070,22 +1096,16 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
         evnt_close(scan);
     }
 
-    if (SOCKET_POLL_INDICATOR(scan->ind)->revents & bad_poll_flags)
+    if (!done && (SOCKET_POLL_INDICATOR(scan->ind)->revents & bad_poll_flags))
     {
       done = TRUE;
-
-      if (!scan->cbs->cb_func_shutdown_r(scan))
-      {
+      if (!scan->io_r_shutdown && !scan->cbs->cb_func_shutdown_r(scan))
         evnt_close(scan);
-        goto next_send;
-      }
     }
 
-    SOCKET_POLL_INDICATOR(scan->ind)->revents = 0;
     if (!done && evnt_epoll_enabled()) break;
 
    next_send:
-    SOCKET_POLL_INDICATOR(scan->ind)->revents = 0;
     if (done)
       --ready;
 
@@ -1113,7 +1133,6 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
     if (evnt_epoll_enabled()) break;
     
    next_none:
-    SOCKET_POLL_INDICATOR(scan->ind)->revents = 0;
     if (done)
       --ready;
 
@@ -1322,6 +1341,17 @@ void evnt_poll_del(struct Evnt *evnt)
   socket_poll_del(evnt->ind);
 }
 
+int evnt_poll_swap(struct Evnt *evnt, int fd)
+{
+  int old_fd = SOCKET_POLL_INDICATOR(evnt->ind)->fd;
+
+  assert(old_fd != fd);
+  
+  SOCKET_POLL_INDICATOR(evnt->ind)->fd = fd;
+
+  return (TRUE);
+}
+
 int evnt_poll(void)
 {
   int msecs = evnt__get_timeout();
@@ -1340,10 +1370,13 @@ int evnt_epoll_init(void)
   assert(POLLOUT == EPOLLOUT);
   assert(POLLHUP == EPOLLHUP);
   assert(POLLERR == EPOLLERR);
+
+  if (!CONF_EVNT_NO_EPOLL)
+  {
+    evnt__epoll_fd = epoll_create(1); /* size does nothing */
   
-  evnt__epoll_fd = epoll_create(1); /* size does nothing */
-  
-  vlg_dbg2(vlg, "epoll_create(%d): %m\n", evnt__epoll_fd);
+    vlg_dbg2(vlg, "epoll_create(%d): %m\n", evnt__epoll_fd);
+  }
   
   return (evnt__epoll_fd != -1);
 }
@@ -1433,8 +1466,41 @@ void evnt_poll_del(struct Evnt *evnt)
     epevent->data.ptr = evnt;
     
     if (epoll_ctl(evnt__epoll_fd, EPOLL_CTL_DEL, fd, epevent) == -1)
-      vlg_warn(vlg, "epoll: %m\n");
+      vlg_abort(vlg, "epoll: %m\n");
   }
+}
+
+int evnt_poll_swap(struct Evnt *evnt, int fd)
+{
+  int old_fd = SOCKET_POLL_INDICATOR(evnt->ind)->fd;
+
+  assert(old_fd != fd);
+  
+  SOCKET_POLL_INDICATOR(evnt->ind)->fd = fd;
+
+  if (evnt_epoll_enabled())
+  {
+    struct epoll_event epevent[1];
+
+    vlg_dbg3(vlg, "epoll_swap(%p,%d)\n", evnt, fd);
+    
+    epevent->events   = SOCKET_POLL_INDICATOR(evnt->ind)->events;
+    epevent->data.ptr = evnt;
+    
+    if (epoll_ctl(evnt__epoll_fd, EPOLL_CTL_ADD, fd, epevent) == -1)
+    {
+      vlg_warn(vlg, "epoll: %m\n");
+      return (FALSE);
+    }
+    
+    epevent->events   = 0;
+    epevent->data.ptr = evnt;
+    
+    if (epoll_ctl(evnt__epoll_fd, EPOLL_CTL_DEL, old_fd, epevent) == -1)
+      vlg_abort(vlg, "epoll: %m\n");
+  }
+
+  return (TRUE);
 }
 
 #define EVNT__EPOLL_EVENTS 128
