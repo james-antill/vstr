@@ -1,0 +1,23 @@
+#! /bin/true
+# Simple tester...
+
+[1 2] ; simple list
+
+beg   ; simple symbol
+
+(abcd "foo" ; Not so simple list
+ [ xyz """\
+zoom
+""" blah]) # See if stuff works again, now...
+
+(bart baz)  # simple list 2
+[foo 'bar'] # simple list 3
+
+() # Empty lists...
+[ ]
+
+<> # Some symbols
+{}
+
+#no-comment;here# 
+-end-

@@ -62,7 +62,11 @@ extern int  vlg_sc_fmt_add_all(Vstr_conf *);
 extern void vlg_sc_bind_mount(const char *);
 
 #ifndef VLG_COMPILE_INLINE
-#define VLG_COMPILE_INLINE 1
+# ifdef VSTR_AUTOCONF_NDEBUG
+#  define VLG_COMPILE_INLINE 1
+# else
+#  define VLG_COMPILE_INLINE 0
+# endif
 #endif
 
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VLG_COMPILE_INLINE

@@ -266,7 +266,7 @@ endif
 if PERL_USR_BIN_AVAIL
 TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
-        tst/tst_sock_filter.pl \
+        tst/tst_sock_filter.pl tst/tst_conf.pl \
         tst/tst_echod.pl tst/tst_httpd.pl
 endif
 

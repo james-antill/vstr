@@ -1,0 +1,41 @@
+[Square bracket list]
+  <Symbol>
+   1
+  <Symbol>
+   2
+<Symbol>
+ beg
+[Circular bracket list]
+  <Symbol>
+   abcd
+  <Quoted string (double)>
+   foo
+  [Square bracket list]
+    <Symbol>
+     xyz
+    <Quoted string (3x double)>
+     \
+zoom
+
+    <Symbol>
+     blah
+[Circular bracket list]
+  <Symbol>
+   bart
+  <Symbol>
+   baz
+[Square bracket list]
+  <Symbol>
+   foo
+  <Quoted string (single)>
+   bar
+[Circular bracket list]
+[Square bracket list]
+<Symbol>
+ <>
+<Symbol>
+ {}
+<Symbol>
+ #no-comment;here#
+<Symbol>
+ -end-

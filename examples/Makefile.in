@@ -452,7 +452,7 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_sock_filter.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_sock_filter.pl tst/tst_conf.pl \
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl tst/tst_httpd.pl
 
 

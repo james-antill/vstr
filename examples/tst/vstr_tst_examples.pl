@@ -176,6 +176,25 @@ sub run_tst
     sub_tst(\&sub_run_pipe_tst, $prefix, {cmd => $cmd, opts => $opts});
   }
 
+sub run_simple_tst
+  {
+    my $cmd    = shift;
+    my $prefix = shift || $cmd;
+
+    sub sub_run_simple_tst
+      {
+	my $io_r = shift;
+	my $io_w = shift;
+	my $xtra = shift;
+
+	my $cmd  = $xtra->{cmd};
+
+	system("./${cmd} $io_r > $io_w");
+      }
+
+    sub_tst(\&sub_run_simple_tst, $prefix, {cmd => $cmd});
+  }
+
 {
 my $ldaemon_pid  = undef;
 my $daemon_pid  = undef;

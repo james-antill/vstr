@@ -24,6 +24,30 @@
 static Vstr_base *ent_data = NULL;
 static Vstr_sects *ents = NULL;
 
+static Vstr_sect_node *mime_types__srch(const Vstr_base *fname,
+                                        size_t pos, size_t len)
+{
+  unsigned int num = 0;
+  
+  ASSERT(fname && len && ents->num);
+
+  num = ents->num - 1; /* FIXME: off by one for addition */
+  while (num)
+  {
+    size_t epos  = VSTR_SECTS_NUM(ents, num)->pos;
+    size_t elen  = VSTR_SECTS_NUM(ents, num)->len;
+    unsigned int ext_num = num;
+    
+    --num;
+    --num;
+
+    if (vstr_cmp_eq(fname, pos, len, ent_data, epos, elen))
+      return (VSTR_SECTS_NUM(ents, ext_num));
+  }
+
+  return (NULL);
+}
+
 int mime_types_load_simple(const char *fname)
 {
   size_t orig_ent_data_len = ent_data->len;
@@ -75,6 +99,7 @@ int mime_types_load_simple(const char *fname)
       Vstr_sect_node *sext = VSTR_SECTS_NUM(sects, sects->num);
       size_t spos = 0;
       size_t slen = 0;
+      Vstr_sect_node *old_sext = NULL;
       
       if (!sct)
       {
@@ -101,6 +126,11 @@ int mime_types_load_simple(const char *fname)
       
       vstr_add_vstr(ent_data, ent_data->len,
                     data, sext->pos, sext->len, VSTR_TYPE_ADD_DEF);
+
+      /* replace old versions ... so we can match forwards */
+      if ((old_sext = mime_types__srch(ent_data, spos, slen)))
+        old_sext->len = 0;
+
       vstr_sects_add(ents, spos, slen);
       sects->num--;
     }
@@ -150,7 +180,6 @@ int mime_types_init(const char *def)
   return (TRUE);
 }
 
-/* FIXME: way too simple */
 int mime_types_match(const Vstr_base *fname, size_t pos, size_t len,
                      Vstr_base **ret_vs1, size_t *ret_pos, size_t *ret_len)
 {
@@ -158,20 +187,19 @@ int mime_types_match(const Vstr_base *fname, size_t pos, size_t len,
 
   ASSERT(ret_vs1 && ret_pos && ret_len);
 
-  num = ents->num;
-  while (num)
+  while (num++ < ents->num)
   {
-    size_t epos  = VSTR_SECTS_NUM(ents, num)->pos;
-    size_t elen  = VSTR_SECTS_NUM(ents, num)->len;
-    size_t ctpos = 0;
-    size_t ctlen = 0;
+    size_t ctpos = VSTR_SECTS_NUM(ents, num)->pos;
+    size_t ctlen = VSTR_SECTS_NUM(ents, num)->len;
+    size_t epos  = 0;
+    size_t elen  = 0;
 
-    --num;
-    ctpos = VSTR_SECTS_NUM(ents, num)->pos;
-    ctlen = VSTR_SECTS_NUM(ents, num)->len;
-    --num;
+    ASSERT(num < ents->num);
+    ++num;
+    epos  = VSTR_SECTS_NUM(ents, num)->pos;
+    elen  = VSTR_SECTS_NUM(ents, num)->len;
 
-    if (elen > len)
+    if (!elen || (elen > len))
       continue;
 
     if (vstr_cmp_eod_eq(fname, pos, len, ent_data, epos, elen))
