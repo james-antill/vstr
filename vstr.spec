@@ -1,6 +1,6 @@
 # This is hacked from glib
 # Note that this is NOT a relocatable package
-%define ver      0.9.4
+%define ver      0.9.5
 %define libver  0.9
 %define  RELEASE 1
 %define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
@@ -38,6 +38,8 @@ Group: Development/Libraries
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
+* Tue May 21 2002 James Antill <james@and.org>
+- Add linker script to configure.
 
 * Wed May  6 2002 James Antill <james@and.org>
 - Add man page.
@@ -56,7 +58,7 @@ fi
 
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
-  --libdir=%{_libdir} --includedir=%{_includedir}
+  --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script
 
 make
 

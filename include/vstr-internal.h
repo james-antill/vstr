@@ -2,7 +2,7 @@
 #define VSTR__INTERNAL_HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,40 @@
 #define VSTR__CONV_PTR_NEXT_PREV(x) \
  ((Vstr_node *)(((char *)(x)) - offsetof(Vstr_node, next)))
 
-#define VSTR__IS_ASCII_LOWER(x) (((x) >= 0x61) && ((x) <= 0x7A))
-#define VSTR__IS_ASCII_UPPER(x) (((x) >= 0x41) && ((x) <= 0x5A))
-#define VSTR__IS_ASCII_DIGIT(x) (((x) >= 0x30) && ((x) <= 0x39))
+#define VSTR__CONST_STR_SPACE_64 \
+"                                                                "
 
-#define VSTR__TO_ASCII_LOWER(x) ((x) + 0x20) /* must be an ASCII upper */
-#define VSTR__TO_ASCII_UPPER(x) ((x) - 0x20) /* must be an ASCII lower */
+#define VSTR__CONST_STR_SPACE_256 \
+  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64 \
+  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64
+
+#define VSTR__CONST_STR_SPACE_1024 \
+  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256 \
+  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256
+
+#define VSTR__CONST_STR_SPACE VSTR__CONST_STR_SPACE_1024
+
+#define VSTR__CONST_STR_ZERO_64 \
+"0000000000000000000000000000000000000000000000000000000000000000"
+
+#define VSTR__CONST_STR_ZERO_256 \
+  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64 \
+  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64
+
+#define VSTR__CONST_STR_ZERO_1024 \
+  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256 \
+  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256
+
+#define VSTR__CONST_STR_ZERO VSTR__CONST_STR_ZERO_1024
+
+
+#define VSTR__UC(x) ((unsigned char)(x))
+#define VSTR__IS_ASCII_LOWER(x) ((VSTR__UC(x) >= 0x61) && (VSTR__UC(x) <= 0x7A))
+#define VSTR__IS_ASCII_UPPER(x) ((VSTR__UC(x) >= 0x41) && (VSTR__UC(x) <= 0x5A))
+#define VSTR__IS_ASCII_DIGIT(x) ((VSTR__UC(x) >= 0x30) && (VSTR__UC(x) <= 0x39))
+
+#define VSTR__TO_ASCII_LOWER(x) (VSTR__UC(x) + 0x20) /* must be IS_ASCII_U */
+#define VSTR__TO_ASCII_UPPER(x) (VSTR__UC(x) - 0x20) /* must be IS_ASCII_L */
 
 #define VSTR__ASCII_DIGIT_0() (0x30)
 #define VSTR__ASCII_COLON() (0x3A)
@@ -96,12 +124,12 @@ typedef struct Vstr__sc_mmap_ref
 extern Vstr__options vstr__options;
 
 /* the size of ULONG_MAX converted to a string */
-#ifndef VSTR__AUTOCONF_ULONG_MAX_LEN
+#ifndef VSTR_AUTOCONF_ULONG_MAX_LEN
 extern size_t vstr__netstr2_ULONG_MAX_len;
 #define VSTR__ULONG_MAX_LEN vstr__netstr2_ULONG_MAX_len
 #define VSTR__ULONG_MAX_SET_LEN(x) (vstr__netstr2_ULONG_MAX_len = (x))
 #else
-#define VSTR__ULONG_MAX_LEN VSTR__AUTOCONF_ULONG_MAX_LEN
+#define VSTR__ULONG_MAX_LEN VSTR_AUTOCONF_ULONG_MAX_LEN
 #define VSTR__ULONG_MAX_SET_LEN(x) /* do nothing */
 #endif
 
@@ -154,7 +182,6 @@ extern void vstr__cache_free_cstr(const Vstr_base *);
 extern void vstr__cache_free_pos(const Vstr_base *);
 extern void vstr__cache_del(const Vstr_base *, size_t, size_t);
 extern void vstr__cache_add(const Vstr_base *, size_t, size_t);
-extern void vstr__cache_sub(const Vstr_base *, size_t, size_t);
 extern void vstr__cache_cstr_cpy(const Vstr_base *, size_t, size_t,
                                  const Vstr_base *, size_t);
 extern int  vstr__make_cache(const Vstr_base *);
@@ -166,7 +193,8 @@ extern int vstr__make_conf_loc_numeric(Vstr_conf *, const char *);
 
 extern void vstr__add_fmt_cleanup_spec(void);
 
-extern void vstr__version_func(void);
+/* so the linker-script does the right thing */
+extern void vstr_version_func(void);
     
 
 #endif

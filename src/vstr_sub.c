@@ -153,7 +153,7 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
 
       VSTR__SUB_BUF();
       
-      vstr__cache_sub(base, real_pos, tmp);
+      vstr_cache_sub(base, real_pos, tmp);
       
       len -= tmp;
       real_pos += tmp;

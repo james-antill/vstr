@@ -47,7 +47,7 @@
           --scan_len; \
           ++scan_str; \
         } while ((scan_len > 0) && \
-                 ((scan_len - start_scan_len) <= base->conf->buf_sz) && \
+                 ((start_scan_len - scan_len) <= base->conf->buf_sz) && \
                  (test)); \
         \
         continue; \
@@ -149,20 +149,19 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
   return (FALSE);
 }
 
-#define VSTR__UCHAR(x) ((unsigned char)(x))
 #define VSTR__IS_ASCII_PRINTABLE(x, flags) ( \
- (VSTR__UCHAR(x) == 0x00) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL)  : \
- (VSTR__UCHAR(x) == 0x07) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL)  : \
- (VSTR__UCHAR(x) == 0x08) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS)   : \
- (VSTR__UCHAR(x) == 0x09) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT)   : \
- (VSTR__UCHAR(x) == 0x0A) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF)   : \
- (VSTR__UCHAR(x) == 0x0B) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)   : \
- (VSTR__UCHAR(x) == 0x0C) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF)   : \
- (VSTR__UCHAR(x) == 0x0D) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR)   : \
- (VSTR__UCHAR(x) == 0x1B) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC)  : \
- (VSTR__UCHAR(x) == 0x7F) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL)  : \
- (VSTR__UCHAR(x) >  0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
- ((VSTR__UCHAR(x) >= 0x20) && (VSTR__UCHAR(x) <= 0x7E)))
+ (VSTR__UC(x) == 0x00) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL)  : \
+ (VSTR__UC(x) == 0x07) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL)  : \
+ (VSTR__UC(x) == 0x08) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS)   : \
+ (VSTR__UC(x) == 0x09) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT)   : \
+ (VSTR__UC(x) == 0x0A) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF)   : \
+ (VSTR__UC(x) == 0x0B) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)   : \
+ (VSTR__UC(x) == 0x0C) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF)   : \
+ (VSTR__UC(x) == 0x0D) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR)   : \
+ (VSTR__UC(x) == 0x1B) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC)  : \
+ (VSTR__UC(x) == 0x7F) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL)  : \
+ (VSTR__UC(x) >  0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
+ (unsigned int)((VSTR__UC(x) >= 0x20) && (VSTR__UC(x) <= 0x7E)))
 
 int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
                               unsigned int flags, char swp)
@@ -317,7 +316,6 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
  malloc_buf_needed_fail:
   return (FALSE);
 }
-#undef VSTR__UCHAR
 
 #if 0
 /* from section 6.7. of rfc2045 */

@@ -142,7 +142,7 @@ static void vstr__del_beg_cleanup(Vstr_base *base, unsigned int type,
  }
 }
 
-static void vstr_del_all(Vstr_base *base)
+static void vstr__del_all(Vstr_base *base)
 {
   size_t orig_len = base->len;
   unsigned int num = 0;
@@ -192,7 +192,7 @@ static void vstr_del_all(Vstr_base *base)
  assert(vstr__check_real_nodes(base));
 }
 
-static void vstr_del_beg(Vstr_base *base, size_t len)
+static void vstr__del_beg(Vstr_base *base, size_t len)
 {
   size_t orig_len = base->len;
   unsigned int num = 0;
@@ -354,12 +354,12 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
  {
    if (len >= base->len)
    {
-     vstr_del_all(base);
+     vstr__del_all(base);
      
      return (TRUE);
    }
    
-   vstr_del_beg(base, len);
+   vstr__del_beg(base, len);
    return (TRUE);
  }
 

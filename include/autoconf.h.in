@@ -78,10 +78,12 @@
 
 #undef HAVE_STRNCHR
 
-#undef HAVE_ASPRINTF
-
 #undef HAVE_VSNPRINTF
 
+#undef HAVE_ASPRINTF
+
+
+#undef HAVE_WCSNRTOMBS
 
 #undef HAVE_GETOPT_LONG
 
@@ -160,3 +162,9 @@
 #undef ULONG_MAX_LEN
 
 #undef NDEBUG
+
+#undef FMT_DBL_host
+#undef FMT_DBL_glibc
+#undef FMT_DBL_none
+
+#undef HAVE_LINKER_SCRIPT

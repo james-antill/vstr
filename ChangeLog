@@ -1,3 +1,22 @@
+2002-06-04  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.5
+
+2002-05-22  James Antill  <james@and.org>
+
+	* src/vstr_version.c.in (vstr_version_func): Rewrite function in inline
+	asm so it always works in x86 Linux.
+
+2002-05-21  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr_add_vfmt): Fix stupid for loop error.
+
+2002-05-20  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt_dbl_none.c (vstr__add_fmt_dbl): Added generic switch
+	for float printing, can currently do host and none. glibc support
+	comming soonish.
+
 2002-05-07  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.4

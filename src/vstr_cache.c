@@ -69,9 +69,7 @@ void vstr__cache_add(const Vstr_base *base, size_t pos, size_t len)
  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_ADD);
 }
 
-void vstr__cache_sub(const Vstr_base *base,
-                     size_t pos __attribute__ ((unused)),
-                     size_t len __attribute__ ((unused)))
+void vstr_cache_sub(const Vstr_base *base, size_t pos, size_t len)
 {
   if (!base->cache_available || !VSTR__CACHE(base))
     return;

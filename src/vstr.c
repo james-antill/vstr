@@ -610,7 +610,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
  return (node);
 }
 
-static int vstr_make_spare_node(Vstr_conf *conf, unsigned int type)
+static int vstr__make_spare_node(Vstr_conf *conf, unsigned int type)
 {
   Vstr_node *node = NULL;
   
@@ -681,7 +681,7 @@ unsigned int vstr_make_spare_nodes(Vstr_conf *conf, unsigned int type,
   
   while (count < num)
   {
-    if (!vstr_make_spare_node(conf, type))
+    if (!vstr__make_spare_node(conf, type))
     {
       assert(vstr__check_spare_nodes(conf));
       
@@ -697,7 +697,7 @@ unsigned int vstr_make_spare_nodes(Vstr_conf *conf, unsigned int type,
   return (count);
 }
 
-static int vstr_free_spare_node(Vstr_conf *conf, unsigned int type)
+static int vstr__free_spare_node(Vstr_conf *conf, unsigned int type)
 {
  Vstr_node *scan = NULL;
 
@@ -771,7 +771,7 @@ unsigned int vstr_free_spare_nodes(Vstr_conf *conf, unsigned int type,
   
   while (count < num)
   {
-    if (!vstr_free_spare_node(conf, type))
+    if (!vstr__free_spare_node(conf, type))
       return (count);
     
     ++count;

@@ -28,9 +28,7 @@
 
 #include "main.h"
 
-#define VSTR__MAX_ZEROS 64 /* max number of ascii zeros can copy at once */
-
-#ifndef VSTR__AUTOCONF_ULONG_MAX_LEN
+#ifndef VSTR_AUTOCONF_ULONG_MAX_LEN
 size_t vstr__netstr2_ULONG_MAX_len = 0; /* FIXME: should be a constant */
 #endif
 
@@ -62,11 +60,11 @@ static int vstr__netstr_end_start(Vstr_base *base,
                                   size_t netstr_beg_pos, size_t netstr_end_pos,
                                   size_t *count, char *buf)
 {
-  static const char comma[1] = {VSTR__ASCII_COMMA()};
+  const char comma[1] = {VSTR__ASCII_COMMA()};
   size_t netstr_len = 0;
   
- if (!VSTR__ULONG_MAX_LEN)
-   return (FALSE);
+  if (!VSTR__ULONG_MAX_LEN)
+    return (FALSE);
 
  if (netstr_beg_pos >= (netstr_end_pos - VSTR__ULONG_MAX_LEN + 1))
    return (FALSE);
@@ -102,8 +100,6 @@ int vstr_add_netstr2_end(Vstr_base *base,
   size_t count = 0;
   char buf[BUF_NUM_TYPE_SZ(unsigned long)];
   size_t len = 0;
-  static char zeros_buf[VSTR__MAX_ZEROS];
-  static size_t zeros_len = 0;
   
   assert(sizeof(buf) >= VSTR__ULONG_MAX_LEN);
   assert(netstr_beg_pos);
@@ -114,20 +110,14 @@ int vstr_add_netstr2_end(Vstr_base *base,
     return (FALSE);
   assert(count <= VSTR__ULONG_MAX_LEN);
   
-  if (!zeros_len)
-  {
-    zeros_len = sizeof(zeros_buf);
-    memset(zeros_buf, VSTR__ASCII_DIGIT_0(), zeros_len);
-  }
-  
   while (len < count)
   {
     size_t tmp = count - len;
     
-    if (tmp > zeros_len)
-      tmp = zeros_len;
+    if (tmp > CONST_STRLEN(VSTR__CONST_STR_ZERO))
+      tmp = CONST_STRLEN(VSTR__CONST_STR_ZERO);
     
-    vstr_sub_buf(base, netstr_beg_pos + len, tmp, zeros_buf, tmp);
+    vstr_sub_buf(base, netstr_beg_pos + len, tmp, VSTR__CONST_STR_ZERO, tmp);
     len += tmp;
   }
 

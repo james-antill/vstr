@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=4
+VSTR_MICRO_VERSION=5
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -152,9 +152,18 @@ else
 fi
 
 WARNS=""
-AC_ARG_ENABLE(debug, [  --enable-debug turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
-AC_ARG_ENABLE(ansi, [  --enable-ansi turn on ansi stuff (assumes gcc/gdb) [default=no]],WARNS="$WARNS -ansi -pedantic",)
+AC_ARG_ENABLE(debug, [  --enable-debug          turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
+AC_ARG_ENABLE(ansi, [  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) [default=no]],WARNS="$WARNS -ansi -pedantic",)
 AC_SUBST(WARNS)
+
+AC_ARG_ENABLE(linker-script, [  --enable-linker-script  turn on linker version script [default=no]], local_cv_linker_have_version_script=true,local_cv_linker_have_version_script=false)
+AM_CONDITIONAL(HAVE_LINKER_VERSION_SCRIPT, $local_cv_linker_have_version_script)
+case x$local_cv_linker_have_version_script in
+xtrue) AC_DEFINE(HAVE_LINKER_SCRIPT) ;;
+esac
+
+
+AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   how to convert floats to strings in %f etc. (glibc,none,host) [default=host]], AC_DEFINE_UNQUOTED(FMT_DBL_$withval),AC_DEFINE(FMT_DBL_host))
 
 TWOCAN_CONF_MSG(Checking for headers)
 

@@ -1,0 +1,4 @@
+VSTR_1.0 {
+  local:
+    vstr__*;
+};

@@ -285,8 +285,7 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
  return (TRUE);
 }
 
-int vstr_add_ptr(Vstr_base *base, size_t pos,
-                 const void *pass_ptr, size_t len)
+int vstr_add_ptr(Vstr_base *base, size_t pos, const void *pass_ptr, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -301,6 +300,32 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
    return (FALSE);
  
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_ptr_num, VSTR_TYPE_NODE_PTR, NULL);
+
+ if ((scan->type == VSTR_TYPE_NODE_PTR) &&
+     ((((char *)((Vstr_node_ptr *)scan)->ptr) + scan->len) == ptr) &&
+     (pos == scan->len) && (scan->len < VSTR_MAX_NODE_ALL))
+ {
+   size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
+     
+   if (tmp > len)
+     tmp = len;
+   
+   scan->len += tmp;
+   
+   vstr__cache_iovec_add_node_end(base, num, tmp);
+   
+   base->len += tmp;
+   len -= tmp;
+   
+   if (!len)
+   {
+     vstr__cache_add(base, orig_pos, orig_len);
+     
+     assert(vstr__check_real_nodes(base));
+     return (TRUE);
+   }
+ }
+ 
  VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_ptr_beg);
 
  ((Vstr_node_ptr *)scan)->ptr = ptr;
@@ -329,8 +354,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_non_num, VSTR_TYPE_NODE_NON,
                &orig_pos_scan_len);
  
- if ((scan->type == VSTR_TYPE_NODE_NON) &&
-     (scan->len < VSTR_MAX_NODE_ALL))
+ if ((scan->type == VSTR_TYPE_NODE_NON) && (scan->len < VSTR_MAX_NODE_ALL))
  {
    size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
 
@@ -375,6 +399,33 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
    return (FALSE);
  
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_ref_num, VSTR_TYPE_NODE_REF, NULL);
+
+ if ((scan->type == VSTR_TYPE_NODE_REF) &&
+     (((Vstr_node_ref *)scan)->ref == ref) &&
+     ((((Vstr_node_ref *)scan)->off + scan->len) == off) &&
+     (pos == scan->len) && (scan->len < VSTR_MAX_NODE_ALL))
+ {
+   size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
+     
+   if (tmp > len)
+     tmp = len;
+   
+   scan->len += tmp;
+   
+   vstr__cache_iovec_add_node_end(base, num, tmp);
+   
+   base->len += tmp;
+   len -= tmp;
+   
+   if (!len)
+   {
+     vstr__cache_add(base, orig_pos, orig_len);
+     
+     assert(vstr__check_real_nodes(base));
+     return (TRUE);
+   }
+ }
+ 
  VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_ref_beg);
 
  ((Vstr_node_ref *)scan)->ref = vstr_ref_add(ref);

@@ -43,7 +43,7 @@
 static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
                              struct Vstr__fmt_spec *spec)
 {
-  /* put in ported code from orig-glibc-dbl ... would this even be
+  /* put in ported code from .orig-glibc-dbl ... would this even be
    * portable ? */
   return (FALSE);
 }

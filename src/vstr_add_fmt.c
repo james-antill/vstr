@@ -55,32 +55,6 @@
 #define IS_ZERO (1 << 29) /* is the number zero */
 #define IS_NEGATIVE (1 << 30) /* is the number negative */
 
-#define VSTR__CONST_STR_SPACE_64 \
-"                                                                "
-
-#define VSTR__CONST_STR_SPACE_256 \
-  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64 \
-  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64
-
-#define VSTR__CONST_STR_SPACE_1024 \
-  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256 \
-  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256
-
-#define VSTR__CONST_STR_SPACE VSTR__CONST_STR_SPACE_1024
-
-#define VSTR__CONST_STR_ZERO_64 \
-"0000000000000000000000000000000000000000000000000000000000000000"
-
-#define VSTR__CONST_STR_ZERO_256 \
-  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64 \
-  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64
-
-#define VSTR__CONST_STR_ZERO_1024 \
-  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256 \
-  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256
-
-#define VSTR__CONST_STR_ZERO VSTR__CONST_STR_ZERO_1024
-
 #define VSTR__FMT_ADD(x, y, z) vstr_add_buf((x), ((x)->len - pos_diff), y, z)
 
 static int vstr__add_spaces(Vstr_base *base, size_t pos_diff, size_t len)
@@ -289,8 +263,7 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
        ++size;
   }
 
-  if (size)
-    --size;
+  if (size) --size;
  }
  
  if (flags & SPECIAL)
@@ -409,9 +382,12 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
    }
  }
  
- if (size > 0) /* left justify number */
+ if (size > 0)
+ {
+   assert(flags & LEFT);
    if (!vstr__add_spaces(base, pos_diff, size))
      goto failed_alloc;
+ }
  
  return (TRUE);
 
@@ -459,29 +435,15 @@ struct Vstr__fmt_spec
  struct Vstr__fmt_spec *next;
 };
 
-static struct Vstr__fmt_spec *spec_make = NULL;
-static struct Vstr__fmt_spec *spec_list_beg = NULL;
-static struct Vstr__fmt_spec *spec_list_end = NULL;
-
-#define VSTR__FMT_MV_SPEC(x) do { \
- struct Vstr__fmt_spec *tmp = spec_make; \
- spec_make = tmp->next; \
- if (!spec_list_beg) { \
-  spec_list_end = tmp; \
-  spec_list_beg = tmp; \
- } else { \
-  spec_list_end->next = tmp; \
-  spec_list_end = tmp; \
- } \
- tmp->next = NULL; \
- if (x && !tmp->main_param) tmp->main_param = ++params; \
- } while (FALSE);
+static struct Vstr__fmt_spec *vstr__fmt_spec_make = NULL;
+static struct Vstr__fmt_spec *vstr__fmt_spec_list_beg = NULL;
+static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 
 void vstr__add_fmt_cleanup_spec(void)
 { /* only done so leak detection is easier */
- struct Vstr__fmt_spec *scan = spec_make;
+ struct Vstr__fmt_spec *scan = vstr__fmt_spec_make;
 
- assert(!spec_list_beg && !spec_list_beg);
+ assert(!vstr__fmt_spec_list_beg && !vstr__fmt_spec_list_beg);
  
  while (scan)
  {
@@ -490,7 +452,7 @@ void vstr__add_fmt_cleanup_spec(void)
    scan = scan_next;
  }
 
- spec_make = NULL;
+ vstr__fmt_spec_make = NULL;
 }
 
 static int vstr__fmt_add_spec(void)
@@ -500,18 +462,43 @@ static int vstr__fmt_add_spec(void)
  if (!(spec = malloc(sizeof(struct Vstr__fmt_spec))))
    return (FALSE);
  
- spec->next = spec_make;
- spec_make = spec;
+ spec->next = vstr__fmt_spec_make;
+ vstr__fmt_spec_make = spec;
  
  return (TRUE);
 }
 
-static void vstr__fmt_mv_spec(void)
+static void vstr__fmt_del_specs(void)
 {
-  spec_list_end->next = spec_make;
-  spec_make = spec_list_beg;
-  spec_list_beg = NULL;
-  spec_list_end = NULL;
+  assert(vstr__fmt_spec_list_beg && vstr__fmt_spec_list_end);
+  
+  vstr__fmt_spec_list_end->next = vstr__fmt_spec_make;
+  vstr__fmt_spec_make = vstr__fmt_spec_list_beg;
+  vstr__fmt_spec_list_beg = NULL;
+  vstr__fmt_spec_list_end = NULL;
+}
+
+#define VSTR__FMT_MV_SPEC(x) vstr__fmt_mv_spec(spec, x, &params)
+static void vstr__fmt_mv_spec(struct Vstr__fmt_spec *spec,
+                              int main_param, int *params)
+{ 
+ vstr__fmt_spec_make = spec->next;
+
+ if (!vstr__fmt_spec_list_beg)
+ {
+   vstr__fmt_spec_list_end = spec;
+   vstr__fmt_spec_list_beg = spec;
+ }
+ else
+ {
+  vstr__fmt_spec_list_end->next = spec;
+  vstr__fmt_spec_list_end = spec;
+ }
+
+ spec->next = NULL;
+
+ if (main_param && !spec->main_param)
+   spec->main_param = ++*params;
 }
 
 static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
@@ -529,10 +516,15 @@ static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
  spec->field_width_usr = 0;
 }
 
-#if 0
+/* must match with code in vstr_version.c */
+#if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
 # include "vstr_add_fmt_dbl_glibc.c"
-#else
+#elif defined(VSTR_AUTOCONF_FMT_DBL_none)
+# include "vstr_add_fmt_dbl_none.c"
+#elif defined(VSTR_AUTOCONF_FMT_DBL_host)
 # include "vstr_add_fmt_dbl_host.c"
+#else
+# error "Please configure properly..."
 #endif
 
 #define VSTR__FMT_MK_N_PTR(x, y, z) \
@@ -552,7 +544,7 @@ static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
 static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
                                 size_t orig_len)
 {
-  struct Vstr__fmt_spec *spec = spec_list_beg;
+  struct Vstr__fmt_spec *spec = vstr__fmt_spec_list_beg;
   mbstate_t state;
   size_t len_mbs = 0;
   char *buf_mbs = NULL;
@@ -831,7 +823,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
 static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
 {
- struct Vstr__fmt_spec *beg = spec_list_beg;
+ struct Vstr__fmt_spec *beg = vstr__fmt_spec_list_beg;
  unsigned int count = 0;
  unsigned int need_to_fin_now = FALSE;
  
@@ -1090,30 +1082,32 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   unsigned int numb_precision = 1;
   int tmp_num = 0;
   const char *fmt_orig = fmt;
-  
-  if (!spec_make && !vstr__fmt_add_spec())
+  struct Vstr__fmt_spec *spec = NULL;
+
+  if (!vstr__fmt_spec_make && !vstr__fmt_add_spec())
     goto failed_alloc;
 
-  vstr__fmt_init_spec(spec_make);
+  spec = vstr__fmt_spec_make;
+  vstr__fmt_init_spec(spec);
   
   if (*fmt != '%')
   {
    char *next_percent = strchr(fmt, '%');
    
-   spec_make->fmt_code = 's';
-   spec_make->u.data_ptr = (char *)fmt;
+   spec->fmt_code = 's';
+   spec->u.data_ptr = (char *)fmt;
    
    if (next_percent)
    {
      size_t len = next_percent - fmt;
-     spec_make->precision = len;
-     spec_make->flags |= IS_USR_PREC;
+     spec->precision = len;
+     spec->flags |= IS_USR_PREC;
      fmt = fmt + len - 1;
    }
    else
    {
-     spec_make->precision = str_precision;
-     fmt = "";
+     spec->precision = str_precision;
+     fmt = " ";
    }
 
    VSTR__FMT_MV_SPEC(FALSE);
@@ -1124,8 +1118,8 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   ++fmt; /* this skips first the '%' */
   if (*fmt == '%')
   {
-   spec_make->u.data_c = '%';
-   spec_make->fmt_code = 'c';
+   spec->u.data_c = '%';
+   spec->fmt_code = 'c';
    VSTR__FMT_MV_SPEC(FALSE);
    continue;
   }
@@ -1136,14 +1130,14 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   {
    switch (*fmt)
    {
-    case '-': spec_make->flags |= LEFT; break;
-    case '+': spec_make->flags |= PLUS; break;
-    case ' ': spec_make->flags |= SPACE; break;
-    case '#': spec_make->flags |= SPECIAL; break;
-    case '0': spec_make->flags |= ZEROPAD; break;
+    case '-': spec->flags |= LEFT; break;
+    case '+': spec->flags |= PLUS; break;
+    case ' ': spec->flags |= SPACE; break;
+    case '#': spec->flags |= SPECIAL; break;
+    case '0': spec->flags |= ZEROPAD; break;
       /* in POSIX it shouldn't do anything ... so we can only enable this
        * in locales */
-    case '\'': spec_make->flags |= THOUSAND_SEP; break;
+    case '\'': spec->flags |= THOUSAND_SEP; break;
       
     default:
       goto got_flags;
@@ -1162,13 +1156,13 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
    
    ++fmt;
    have_dollars = 1;
-   spec_make->main_param = tmp_num;
+   spec->main_param = tmp_num;
   }
   
   /* get field width */   
   if (vstr__fmt_isdigit(*fmt))
   {
-    spec_make->field_width_usr = TRUE;
+    spec->field_width_usr = TRUE;
     
     tmp_num = strtol(fmt, (char **) &fmt, 10);
     
@@ -1176,18 +1170,18 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
     if (tmp_num < 0)
     {
       ++tmp_num;
-      spec_make->field_width = -tmp_num;
-      ++spec_make->field_width;
-      spec_make->flags |= LEFT;
+      spec->field_width = -tmp_num;
+      ++spec->field_width;
+      spec->flags |= LEFT;
     }
     else
-      spec_make->field_width = tmp_num;
+      spec->field_width = tmp_num;
   }
   else if (*fmt == '*')
   {
     const char *dollar_start = fmt;
 
-    spec_make->field_width_usr = TRUE;
+    spec->field_width_usr = TRUE;
 
     ++fmt;
     tmp_num = 0;
@@ -1197,19 +1191,19 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
     if (*fmt != '$')
     {
       fmt = dollar_start + 1;
-      spec_make->field_width_param = ++params;
+      spec->field_width_param = ++params;
     }
     else
     {
       ++fmt;
-      spec_make->field_width_param = tmp_num;
+      spec->field_width_param = tmp_num;
     }
   }
   
   /* get the precision */
   if (*fmt == '.')
   {
-    spec_make->flags |= IS_USR_PREC;
+    spec->flags |= IS_USR_PREC;
     
     ++fmt;
     if (vstr__fmt_isdigit(*fmt))
@@ -1232,12 +1226,12 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
       if (*fmt != '$')
       {
         fmt = dollar_start + 1;
-        spec_make->precision_param = ++params;
+        spec->precision_param = ++params;
       }
       else
       {
         ++fmt;
-        spec_make->precision_param = tmp_num;
+        spec->precision_param = tmp_num;
       }
     }
     else
@@ -1252,25 +1246,25 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
      if (*fmt == 'h')
      {
       ++fmt;
-      spec_make->int_type = CHAR_TYPE;
+      spec->int_type = CHAR_TYPE;
      }
      else
-       spec_make->int_type = SHORT_TYPE;
+       spec->int_type = SHORT_TYPE;
      break;
    case 'l':
      ++fmt;
      if (*fmt == 'l')
      {
       ++fmt;
-      spec_make->int_type = LONG_DOUBLE_TYPE;
+      spec->int_type = LONG_DOUBLE_TYPE;
      }
      else
-       spec_make->int_type = LONG_TYPE;
+       spec->int_type = LONG_TYPE;
      break;
-   case 'L': ++fmt; spec_make->int_type = LONG_DOUBLE_TYPE; break;
-   case 'z': ++fmt; spec_make->int_type = SIZE_T_TYPE; break;
-   case 't': ++fmt; spec_make->int_type = PTRDIFF_T_TYPE; break;
-   case 'j': ++fmt; spec_make->int_type = INTMAX_T_TYPE; break;
+   case 'L': ++fmt; spec->int_type = LONG_DOUBLE_TYPE; break;
+   case 'z': ++fmt; spec->int_type = SIZE_T_TYPE; break;
+   case 't': ++fmt; spec->int_type = PTRDIFF_T_TYPE; break;
+   case 'j': ++fmt; spec->int_type = INTMAX_T_TYPE; break;
 
    default:
      break;
@@ -1279,62 +1273,62 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   switch (*fmt)
   {
     case 'c':
-      if (spec_make->int_type != LONG_TYPE) /* %lc == %C */
+      if (spec->int_type != LONG_TYPE) /* %lc == %C */
       {
-        spec_make->fmt_code = *fmt;
+        spec->fmt_code = *fmt;
         VSTR__FMT_MV_SPEC(TRUE);
         continue;
       }
       /* FALL THROUGH */
       
     case 'C':
-      spec_make->fmt_code = 'C';
+      spec->fmt_code = 'C';
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
     case 's':
-      if (spec_make->int_type != LONG_TYPE) /* %ls == %S */
+      if (spec->int_type != LONG_TYPE) /* %ls == %S */
       {
-        spec_make->precision = str_precision;
-        spec_make->fmt_code = *fmt;
+        spec->precision = str_precision;
+        spec->fmt_code = *fmt;
         VSTR__FMT_MV_SPEC(TRUE);
         continue;
       }
       /* FALL THROUGH */
       
     case 'S':
-      spec_make->precision = str_precision;
-      spec_make->fmt_code = 'S';
+      spec->precision = str_precision;
+      spec->fmt_code = 'S';
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
     case 'd':
     case 'i':
-      spec_make->flags |= SIGN;
+      spec->flags |= SIGN;
     case 'u':
       break;
       
     case 'X':
-      spec_make->flags |= LARGE;
+      spec->flags |= LARGE;
     case 'x':
-      spec_make->num_base = 16;
+      spec->num_base = 16;
       break;
       
     case 'o':
-      spec_make->num_base = 8;
+      spec->num_base = 8;
       break;    
       
     case 'p':
-      spec_make->num_base = 16;
-      spec_make->int_type = INTMAX_T_TYPE;
-      spec_make->fmt_code = 'p';
-      spec_make->flags |= SPECIAL;
-      spec_make->precision = numb_precision; /* ok ? */
+      spec->num_base = 16;
+      spec->int_type = INTMAX_T_TYPE;
+      spec->fmt_code = 'p';
+      spec->flags |= SPECIAL;
+      spec->precision = numb_precision; /* ok ? */
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
     case 'n':
-      spec_make->fmt_code = 'n';
+      spec->fmt_code = 'n';
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
@@ -1346,25 +1340,25 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
     case 'G': /* use the smallest of E and F */
     case 'a': /* print like [-]x.xxxpxx -- in hex using abcdef */
     case 'A': /* print like [-]x.xxxPxx -- in hex using ABCDEF */
-      spec_make->fmt_code = *fmt;
-      spec_make->precision = numb_precision;
+      spec->fmt_code = *fmt;
+      spec->precision = numb_precision;
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
     default:
       assert(FALSE);
       
-      vstr__fmt_init_spec(spec_make);
-      spec_make->u.data_c = '%';
-      spec_make->fmt_code = 'c';
+      vstr__fmt_init_spec(spec);
+      spec->u.data_c = '%';
+      spec->fmt_code = 'c';
       VSTR__FMT_MV_SPEC(FALSE);
       fmt = fmt_orig;
       continue;
   }
 
   /* one of: d, i, u, X, x, o */
-  spec_make->precision = numb_precision;
-  spec_make->fmt_code = 'd';
+  spec->precision = numb_precision;
+  spec->fmt_code = 'd';
   VSTR__FMT_MV_SPEC(TRUE);
  }
 
@@ -1374,7 +1368,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
  if (!vstr__fmt_write_spec(base, pos_diff, orig_len))
    goto failed_alloc;
 
- vstr__fmt_mv_spec();
+ vstr__fmt_del_specs();
  
  return (base->len - orig_len);
 
@@ -1383,7 +1377,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
    vstr_del(base, start_pos, base->len - orig_len);
  
  no_format_for_arg:
- vstr__fmt_mv_spec();
+ vstr__fmt_del_specs();
  
  return (0);
 }

@@ -60,7 +60,7 @@ static void do_test(Vstr_base *str2, const char *filename)
                    &decimal_point);
     vstr_cntl_conf(str2->conf, VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP,
                    &thousands_sep);
-
+    
     vstr_add_fmt(str2, str2->len, "\n\nLocale information:\n"
                  "name: %s\n"
                  "decimal: %s\n"
@@ -221,6 +221,8 @@ int main(int argc, char *argv[])
    * The checking is done inside ex1_cpy_write() via. base->conf->malloc_bad
    *
    * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
+
+  vstr_add_fmt(str1, str1->len, "");
   
   vstr_add_fmt(str1, str1->len, "Hello %s, World is %d.\n", "vstr", 1);
   

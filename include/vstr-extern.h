@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -355,6 +355,7 @@ extern unsigned int vstr_cache_add_cb(struct Vstr_conf *, const char *,
 extern unsigned int vstr_cache_srch(struct Vstr_conf *, const char *);
 extern void *vstr_cache_get_data(const struct Vstr_base *, unsigned int);
 extern int vstr_cache_set_data(const struct Vstr_base *, unsigned int, void *);
+extern void vstr_cache_sub(const struct Vstr_base *, size_t, size_t);
 
 /* shortcut functions ... */
 extern int vstr_sc_add_fd(struct Vstr_base *, size_t, int, off_t, size_t,
