@@ -161,6 +161,134 @@ Constant: VSTR_TYPE_SUB_ALL_BUF
  that the data should all be added via. vstr_add_buf().
 
 
+Section: Constants used with vstr_fmt_add()
+
+Constant: VSTR_TYPE_FMT_END
+
+ Explanation:
+
+  This flag means that there are no more arguments to be expected.
+
+ Note:
+
+  Because you can have multiple arguments associated with one custom "fmt" 
+ specification this has to be the last argument to every call to
+ vstr_fmt_add().
+  Just specifiying this type means that there are no arguments used, by the
+ custom "fmt" specification.
+
+
+Constant: VSTR_TYPE_FMT_INT
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect a "int" type from
+ the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_UINT
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "unsigned int" type from
+ the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "long" type from
+ the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_ULONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "unsigned long" type from
+ the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_LONG_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "long long" type from
+ the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_ULONG_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "unsigned long long" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_SSIZE_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "ssize_t" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_SIZE_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "size_t" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTRDIFF_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "ptrdiff_t" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_INTMAX_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "intmax_t" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_UINTMAX_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "uintmax_t" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_DOUBLE
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "double" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_DOUBLE_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "long double" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_VOID
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "void *" type
+ from the argument list passed to it
+
 
 Section: Constants passed to vstr_conv_unprintable_*()
 
@@ -781,8 +909,8 @@ Constant: VSTR_TYPE_CACHE_FREE
 
 Section: Constants used with vstr_sc_add_fd() and vstr_sc_add_file()
 
-Constant: VSTR_TYPE_SC_ADD_FD_ERR_NONE
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_NONE
+Constant: VSTR_TYPE_SC_MMAP_FD_ERR_NONE
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_NONE
 
  Explanation:
 
@@ -790,30 +918,30 @@ Constant: VSTR_TYPE_SC_ADD_FILE_ERR_NONE
  mapping into the Vstr string.
 
 
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_OPEN_ERRNO
 
  Explanation:
 
   This error code means that the call to open() returned -1, errno is set.
 
 
-Constant: VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FD_ERR_FSTAT_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO
 
  Explanation:
 
   This error code means that the call to fstat() returned -1, errno is set.
 
 
-Constant: VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO
 
  Explanation:
 
   This error code means that the call to mmap() returned -1, errno is set.
 
 
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO
 
  Explanation:
 
@@ -821,14 +949,14 @@ Constant: VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO
 
  Note:
 
-  Even though this is an error, the mapping has already occured and happened
- successfully.
-  If another error occured (Eg. fstat()), then any errors from close() will be
- hidden.
+  Even though this is an error, the mapping has already occured and was
+ successful.
+  If another error occured (Eg. fstat()/mmap()), then any errors from close()
+ will be hidden.
 
 
-Constant: VSTR_TYPE_SC_ADD_FD_ERR_MEM
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_MEM
+Constant: VSTR_TYPE_SC_MMAP_FD_ERR_MEM
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_MEM
 
  Explanation:
 
@@ -840,8 +968,8 @@ Constant: VSTR_TYPE_SC_ADD_FILE_ERR_MEM
  TRUE, and errno is set to ENOMEM.
 
 
-Constant: VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE
-Constant: VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE
+Constant: VSTR_TYPE_SC_MMAP_FD_ERR_TOO_LARGE
+Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE
 
  Explanation:
 
@@ -857,6 +985,7 @@ Constant: VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE
 Section: Constants used with vstr_sc_read_fd()
 
 Constant: VSTR_TYPE_SC_READ_FD_ERR_NONE
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_NONE
 
  Explanation:
 
@@ -864,14 +993,52 @@ Constant: VSTR_TYPE_SC_READ_FD_ERR_NONE
  read() data into the Vstr string.
 
 
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO
+
+ Explanation:
+
+  This error code means that the call to open() returned -1, errno is set.
+
+
+Constant: VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_FSTAT_ERRNO
+
+ Explanation:
+
+  This error code means that the call to fstat() returned -1, errno is set.
+
+
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO
+
+ Explanation:
+
+  This error code means that the call to lseek() returned -1, errno is set.
+
+
 Constant: VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO
 
  Explanation:
 
   This error code means that the call to readv() returned -1, errno is set.
 
 
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_CLOSE_ERRNO
+
+ Explanation:
+
+  This error code means that the call to close() returned -1, errno is set.
+
+ Note:
+
+  Even though this is an error, the readv() has already occured and was
+ successful.
+  If another error occured (Eg. fstat()/readv()), then any errors from close()
+ will be hidden.
+
+
 Constant: VSTR_TYPE_SC_READ_FD_ERR_EOF
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_EOF
 
  Explanation:
 
@@ -883,6 +1050,7 @@ Constant: VSTR_TYPE_SC_READ_FD_ERR_EOF
 
 
 Constant: VSTR_TYPE_SC_READ_FD_ERR_MEM
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_MEM
 
  Explanation:
 
@@ -894,6 +1062,21 @@ Constant: VSTR_TYPE_SC_READ_FD_ERR_MEM
  TRUE, and errno is set to ENOMEM.
 
 
+Constant: VSTR_TYPE_SC_READ_FD_ERR_TOO_LARGE
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE
+
+ Explanation:
+
+  This error code means that the memory mapping was too big to fit in the
+ Vstr string (with LFS extentions files are 63 bits, while on a 32 bit
+ computer memory space is still hard limited to 32 bits so this isn't a
+ corner case).
+
+ Note:
+
+  To help the programer unify error paths errno is set to EFBIG.
+
+
 Section: Constants used with vstr_sc_write_fd() and vstr_sc_write_file()
 
 Constant: VSTR_TYPE_SC_WRITE_FD_ERR_NONE
@@ -903,6 +1086,13 @@ Constant: VSTR_TYPE_SC_WRITE_FILE_ERR_NONE
 
   This error code has the value 0, and means that no error occured adding the
  read() data into the Vstr string.
+
+
+Constant: VSTR_TYPE_SC_WRITE_FILE_ERR_SEEK_ERRNO
+
+ Explanation:
+
+  This error code means that the call to lseek() returned -1, errno is set.
 
 
 Constant: VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO
@@ -1196,6 +1386,34 @@ Constant: VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT
 
   This option will allow the vstr functions to split _BUF nodes on a
  del operations to Vstr strings.
+
+
+Constant: VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE
+
+ Parameter[1]: Returns value of flag
+ Type[1]: int *
+
+ Explanation:
+
+  This option will return the status of the flag that allows Vstr strings to
+ cache data.
+
+
+Constant: VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE
+
+ Parameter[1]: Value of flag
+ Type[1]: int
+
+ Explanation:
+
+  This option will allow the Vstr strings made from the Vstr configuration to
+ cache data.
+
+ Note:
+
+  If this option is turned off vstr_cache_add_cb() will not work on Vstr strings
+ made from the the Vstr configuration. However each Vstr string will become
+ smaller due to the lack of cache.
 
 
 Section: Constants you pass to the vstr_cntl_opt() function

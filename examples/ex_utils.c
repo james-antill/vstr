@@ -93,26 +93,20 @@ void ex_utils_warn(const char *fl, unsigned int l, const char *fu,
 
 int ex_utils_read(Vstr_base *str1, int fd)
 {
-  ssize_t bytes = -1;
-  struct iovec *iovs = NULL;
-  unsigned int num = 0;
-  
-  if (!vstr_add_iovec_buf_beg(str1, str1->len, 4, 32, &iovs, &num))
-    errno = ENOMEM, DIE("vstr_add_iovec_buf_beg:");
-  
-  bytes = readv(fd, iovs, num);
-  if ((bytes == -1) && (errno == EAGAIN))
-  {
-    vstr_add_iovec_buf_end(str1, str1->len, 0);
+  unsigned int err = 0;
+  int ret = vstr_sc_read_iov_fd(str1, str1->len, fd, 4, 32, &err);
+
+  if (!ret && (err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &&
+      (errno == EAGAIN))
     return (TRUE);
-  }
+
+  if (!ret && (err == VSTR_TYPE_SC_READ_FD_ERR_EOF))
+    return (FALSE);
+
+  if (!ret)
+    DIE("vstr_sc_read_iov_fd:");
   
-  if (bytes == -1)
-    DIE("readv:");
-  
-  vstr_add_iovec_buf_end(str1, str1->len, bytes);
-  
-  return (!!bytes);
+  return (ret);
 }
 
 int ex_utils_write(Vstr_base *base, int fd)

@@ -25,6 +25,11 @@ char *alloca ();
 #define FIX_XSTR1(x, y) FIX_XSTR2(x, y)
 #define FIX_SYMBOL(p) FIX_XSTR1(FIX_NAMESPACE_SYMBOL, p)
 
+#ifndef USE_WIDE_CHAR_T
+# define USE_WIDE_CHAR_T 1
+#endif
+
+
 #ifdef HAVE_PRCTL
 /* from linux/prctl.h ... but user space isn't supposed to use that */
 # ifndef PR_SET_PDEATHSIG
@@ -32,6 +37,14 @@ extern int prctl(int, unsigned long, unsigned long,
                  unsigned long, unsigned long);
 #  define PR_SET_PDEATHSIG 1
 # endif
+#endif
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ULONG_MAX
+#endif
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void *) -1)
 #endif
 
 #ifndef SHUT_RD
@@ -223,12 +236,6 @@ extern void *FIX_SYMBOL(memcpy)(void *dest, const void *src, size_t n);
 # undef memcmp
 extern int FIX_SYMBOL(memcmp)(const void *dest, const void *src, size_t n);
 #define memcmp(a, b, c) FIX_SYMBOL(memcmp)(a, b, c)
-#endif
-
-#ifndef HAVE_MEMCASECMP
-# undef memcasecmp
-extern int FIX_SYMBOL(memcasecmp)(const void *dest, const void *src, size_t n);
-#define memcasecmp(a, b, c) FIX_SYMBOL(memcasecmp)(a, b, c)
 #endif
 
 #ifndef HAVE_MEMMEM
@@ -489,7 +496,7 @@ extern ssize_t FIX_SYMBOL(sendfile)(int, int, off_t *, size_t);
 #define sendfile(a, b, c, d) FIX_SYMBOL(sendfile)(a, b, c, d)
 #endif
 
-#ifndef HAVE_WCSNRTOMBS
+#if !defined(HAVE_WCSNRTOMBS) && USE_WIDE_CHAR_T
 #undef wcsnrtombs
 extern size_t FIX_SYMBOL(wcsnrtombs)(char *, const wchar_t **, size_t,
                                      size_t, mbstate_t *);

@@ -1,9 +1,9 @@
 CC=gcc
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-LOCAL=0
+LOCAL=1
 PROFILE=0
-STATIC=0
+STATIC=1
 FAST=1
 
 ifeq ($(PROFILE),1)

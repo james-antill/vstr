@@ -11,18 +11,17 @@ tst = tst_char \
     tst_intmax_t \
     tst_double \
     tst_long_double \
+    tst_ptrdiff_t \
+    tst_size_t \
+    tst_n \
     tst_str_norm \
-    tst_num 
-
-# FIXME:
-# 	ptrdiff_t
-#	size_t
-#	%n
+    tst_num \
+    tst_usr
 
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 
-CFLAGS = @WARNS@
+CFLAGS = @CFLAGS@ @WARNS@
 LDADD = ../../src/.libs/libvstr.a
 

@@ -4,3 +4,4 @@ cache_get_data
 add_buf
 del
 sects_add
+add_rep_chr

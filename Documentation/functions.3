@@ -132,6 +132,10 @@ struct Vstr_conf *\fBvstr_make_conf\fR(void);
 .ti \w'  'u
 void \fBvstr_free_conf\fR(struct Vstr_conf *);
 .br
+.in \w'  int \fBvstr_swap_conf\fR('u
+.ti \w'  'u
+int \fBvstr_swap_conf\fR(struct Vstr_base *, struct Vstr_conf **);
+.br
 .in \w'  struct Vstr_base *\fBvstr_make_base\fR('u
 .ti \w'  'u
 struct Vstr_base *\fBvstr_make_base\fR(struct Vstr_conf *, struct Vstr_conf *);
@@ -139,6 +143,38 @@ struct Vstr_base *\fBvstr_make_base\fR(struct Vstr_conf *, struct Vstr_conf *);
 .in \w'  void \fBvstr_free_base\fR('u
 .ti \w'  'u
 void \fBvstr_free_base\fR(struct Vstr_base *);
+.br
+.in \w'  struct Vstr_base *\fBvstr_dup_buf\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_buf\fR(struct Vstr_conf *, const void *, size_t);
+.br
+.in \w'  struct Vstr_base *\fBvstr_dup_ptr\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_ptr\fR(struct Vstr_conf *, const void *, size_t);
+.br
+.in \w'  struct Vstr_base *\fBvstr_dup_non\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_non\fR(struct Vstr_conf *, size_t);
+.br
+.in \w'  struct Vstr_base *\fBvstr_dup_ref\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_ref\fR(struct Vstr_conf *, struct Vstr_ref *, size_t, size_t);
+.br
+.in \w'  struct Vstr_base *\fBvstr_dup_vstr\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_vstr\fR(struct Vstr_conf *, const struct Vstr_base *, size_t, size_t, unsigned int);
+.br
+.in \w'  struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  struct Vstr_base *\fBVSTR_DUP_CSTR_PTR\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBVSTR_DUP_CSTR_PTR\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBVSTR_DUP_CSTR_REF\fR('u
+.ti \w'  'u
+int \fBVSTR_DUP_CSTR_REF\fR(struct Vstr_base *, struct Vstr_ref *, size_t);
 .br
 .in \w'  struct Vstr_ref *\fBvstr_make_ref_malloc\fR('u
 .ti \w'  'u
@@ -177,6 +213,10 @@ int \fBvstr_add_ref\fR(const struct Vstr_base *, size_t, struct Vstr_ref *, size
 .ti \w'  'u
 int \fBvstr_add_vstr\fR(const struct Vstr_base *, size_t, const struct Vstr_base *, size_t, size_t, unsigned int);
 .br
+.in \w'  int \fBvstr_add_rep_chr\fR('u
+.ti \w'  'u
+int \fBvstr_add_rep_chr\fR(struct Vstr_base *, size_t, char, size_t);
+.br
 .in \w'  int \fBVSTR_ADD_CSTR_BUF\fR('u
 .ti \w'  'u
 int \fBVSTR_ADD_CSTR_BUF\fR(struct Vstr_base *, size_t, const char *);
@@ -189,38 +229,6 @@ int \fBVSTR_ADD_CSTR_PTR\fR(struct Vstr_base *, size_t, const char *);
 .ti \w'  'u
 int \fBVSTR_ADD_CSTR_REF\fR(struct Vstr_base *, size_t, struct Vstr_ref *, size_t);
 .br
-.in \w'  struct Vstr_base *\fBvstr_dup_buf\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBvstr_dup_buf\fR(struct Vstr_conf *, const void *, size_t);
-.br
-.in \w'  struct Vstr_base *\fBvstr_dup_ptr\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBvstr_dup_ptr\fR(struct Vstr_conf *, const void *, size_t);
-.br
-.in \w'  struct Vstr_base *\fBvstr_dup_non\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBvstr_dup_non\fR(struct Vstr_conf *, size_t);
-.br
-.in \w'  struct Vstr_base *\fBvstr_dup_ref\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBvstr_dup_ref\fR(struct Vstr_conf *, struct Vstr_ref *, size_t, size_t);
-.br
-.in \w'  struct Vstr_base *\fBvstr_dup_vstr\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBvstr_dup_vstr\fR(struct Vstr_conf *, const struct Vstr_base *, size_t, size_t, unsigned int);
-.br
-.in \w'  struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR(struct Vstr_conf *, const char *);
-.br
-.in \w'  struct Vstr_base *\fBVSTR_DUP_CSTR_PTR\fR('u
-.ti \w'  'u
-struct Vstr_base *\fBVSTR_DUP_CSTR_PTR\fR(struct Vstr_conf *, const char *);
-.br
-.in \w'  int \fBVSTR_DUP_CSTR_REF\fR('u
-.ti \w'  'u
-int \fBVSTR_DUP_CSTR_REF\fR(struct Vstr_base *, struct Vstr_ref *, size_t);
-.br
 .in \w'  size_t \fBvstr_add_vfmt\fR('u
 .ti \w'  'u
 size_t \fBvstr_add_vfmt\fR(struct Vstr_base *, size_t, const char *, va_list);
@@ -228,6 +236,14 @@ size_t \fBvstr_add_vfmt\fR(struct Vstr_base *, size_t, const char *, va_list);
 .in \w'  size_t \fBvstr_add_fmt\fR('u
 .ti \w'  'u
 size_t \fBvstr_add_fmt\fR(struct Vstr_base *, size_t, const char *, ...);
+.br
+.in \w'  size_t \fBvstr_add_vsysfmt\fR('u
+.ti \w'  'u
+size_t \fBvstr_add_vsysfmt\fR(struct Vstr_base *, size_t, const char *, va_list);
+.br
+.in \w'  size_t \fBvstr_add_sysfmt\fR('u
+.ti \w'  'u
+size_t \fBvstr_add_sysfmt\fR(struct Vstr_base *, size_t, const char *, ...);
 .br
 .in \w'  size_t \fBvstr_add_iovec_buf_beg\fR('u
 .ti \w'  'u
@@ -252,7 +268,6 @@ size_t \fBvstr_add_netstr2_beg\fR(struct Vstr_base *, size_t);
 .in \w'  int \fBvstr_add_netstr2_end\fR('u
 .ti \w'  'u
 int \fBvstr_add_netstr2_end\fR(struct Vstr_base *, size_t, size_t);
-.sp
 .br
 .in \w'  int \fBvstr_del\fR('u
 .ti \w'  'u
@@ -278,6 +293,10 @@ int \fBvstr_sub_ref\fR(struct Vstr_base *, size_t, size_t, struct Vstr_ref *, si
 .in \w'  int \fBvstr_sub_vstr\fR('u
 .ti \w'  'u
 int \fBvstr_sub_vstr\fR(struct Vstr_base *, size_t, size_t, const struct Vstr_base *, size_t, size_t, unsigned int);
+.br
+.in \w'  int \fBvstr_sub_rep_chr\fR('u
+.ti \w'  'u
+int \fBvstr_sub_rep_chr\fR(struct Vstr_base *, size_t, size_t, char, size_t);
 .br
 .in \w'  int \fBVSTR_SUB_CSTR_BUF\fR('u
 .ti \w'  'u
@@ -447,11 +466,11 @@ size_t \fBVSTR_CSPN_CSTR_CHRS_REV\fR(const struct Vstr_base *, size_t, size_t, c
 .br
 .in \w'  int \fBvstr_conv_lowercase\fR('u
 .ti \w'  'u
-int \fBvstr_conv_lowercase\fR(const struct Vstr_base *, size_t, size_t);
+int \fBvstr_conv_lowercase\fR(struct Vstr_base *, size_t, size_t);
 .br
 .in \w'  int \fBvstr_conv_uppercase\fR('u
 .ti \w'  'u
-int \fBvstr_conv_uppercase\fR(const struct Vstr_base *, size_t, size_t);
+int \fBvstr_conv_uppercase\fR(struct Vstr_base *, size_t, size_t);
 .br
 .in \w'  int \fBvstr_conv_unprintable_chr\fR('u
 .ti \w'  'u
@@ -577,6 +596,19 @@ size_t \fBvstr_parse_netstr2\fR(const struct Vstr_base *, size_t, size_t, size_t
 uintmax_t \fBvstr_parse_ipv4\fR(const struct Vstr_base *, size_t, size_t, unsigned char *, unsigned int *, unsigned int, size_t *, unsigned int *);
 .sp
 .br
+.in \w'  int \fBvstr_fmt_add\fR('u
+.ti \w'  'u
+int \fBvstr_fmt_add\fR(struct Vstr_conf *, const char *, int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *), ...);
+.br
+.in \w'  void \fBvstr_fmt_del\fR('u
+.ti \w'  'u
+void \fBvstr_fmt_del\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_fmt_srch\fR('u
+.ti \w'  'u
+int \fBvstr_fmt_srch\fR(struct Vstr_conf *, const char *);
+.sp
+.br
 .in \w'  void \fBvstr_cache_sub\fR('u
 .ti \w'  'u
 void \fBvstr_cache_sub\fR(const struct Vstr_base *, size_t, size_t);
@@ -598,17 +630,33 @@ int \fBvstr_cache_set_data\fR(const struct Vstr_base *, unsigned int, void *);
 unsigned int \fBvstr_cache_srch\fR(struct Vstr_conf *, const char *);
 .sp
 .br
-.in \w'  int \fBvstr_sc_add_fd\fR('u
+.in \w'  int \fBvstr_sc_fmt_add_vstr\fR('u
 .ti \w'  'u
-int \fBvstr_sc_add_fd\fR(struct Vstr_base *, size_t, int, off_t, size_t, unsigned int *);
+int \fBvstr_sc_fmt_add_vstr\fR(struct Vstr_conf *, const char *);
 .br
-.in \w'  int \fBvstr_sc_add_file\fR('u
+.in \w'  int \fBvstr_sc_mmap_fd\fR('u
 .ti \w'  'u
-int \fBvstr_sc_add_file\fR(struct Vstr_base *, size_t, const char *, unsigned int *);
+int \fBvstr_sc_mmap_fd\fR(struct Vstr_base *, size_t, int, off64_t, size_t, unsigned int *);
 .br
-.in \w'  int \fBvstr_sc_read_fd\fR('u
+.in \w'  int \fBvstr_sc_mmap_file\fR('u
 .ti \w'  'u
-int \fBvstr_sc_read_fd\fR(struct Vstr_base *, size_t, int, unsigned int, unsigned int, unsigned int *);
+int \fBvstr_sc_mmap_file\fR(struct Vstr_base *, size_t, const char *, off64_t, size_t, unsigned int *);
+.br
+.in \w'  int \fBvstr_sc_read_iov_fd\fR('u
+.ti \w'  'u
+int \fBvstr_sc_read_iov_fd\fR(struct Vstr_base *, size_t, int, unsigned int, unsigned int, unsigned int *);
+.br
+.in \w'  int \fBvstr_sc_read_len_fd\fR('u
+.ti \w'  'u
+int \fBvstr_sc_read_len_fd\fR(struct Vstr_base *, size_t, int, size_t, unsigned int *);
+.br
+.in \w'  int \fBvstr_sc_read_iov_file\fR('u
+.ti \w'  'u
+int \fBvstr_sc_read_iov_file\fR(struct Vstr_base *, size_t, const char *, off64_t, unsigned int, unsigned int, unsigned int *);
+.br
+.in \w'  int \fBvstr_sc_read_len_file\fR('u
+.ti \w'  'u
+int \fBvstr_sc_read_len_file\fR(struct Vstr_base *, size_t, const char *, off64_t, size_t, unsigned int *);
 .br
 .in \w'  int \fBvstr_sc_write_fd\fR('u
 .ti \w'  'u
@@ -616,7 +664,7 @@ int \fBvstr_sc_write_fd\fR(struct Vstr_base *, size_t, size_t, int, unsigned int
 .br
 .in \w'  int \fBvstr_sc_write_file\fR('u
 .ti \w'  'u
-int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, int, int, unsigned int *);
+int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, int, mode_t, off64_t, unsigned int *);
 
 .ti
 .HY
@@ -653,7 +701,7 @@ Type: int
 .br
 \fBFunction: \fR vstr_exit()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1228,7 +1276,7 @@ Type\fB[3]\fR: size_t
 .br
 \fBFunction: \fR vstr_export_cstr_buf()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1596,7 +1644,7 @@ Type\fB[4]\fR: size_t *
 .br
 \fBFunction: \fR vstr_ref_cb_free_nothing()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1614,7 +1662,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 .br
 \fBFunction: \fR vstr_ref_cb_free_ref()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1632,7 +1680,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 .br
 \fBFunction: \fR vstr_ref_cb_free_ptr()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1650,7 +1698,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 .br
 \fBFunction: \fR vstr_ref_cb_free_ptr_ref()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1716,7 +1764,7 @@ Returns: Vstr configuration
 Type: struct Vstr_conf *
 
 .br
-Parameter\fB[1]\fR: nothing
+Parameter\fB[1]\fR: Nothing
 .br
 Type\fB[1]\fR: void
 
@@ -1730,7 +1778,7 @@ Type\fB[1]\fR: void
 .br
 \fBFunction: \fR vstr_free_conf()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1744,6 +1792,48 @@ Type\fB[1]\fR: struct Vstr_conf *
 
 .br
   This function will free a Vstr configuration, allocated by vstr_make_conf().
+
+.ti -2
+.br
+\fBFunction: \fR vstr_swap_conf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: New Vstr configuration; returned old Vstr configuration
+.br
+Type\fB[2]\fR: struct Vstr_conf **
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will swap a Vstr configuration into a Vstr string possibly changing the Vstr configuration to be compatible with the Vstr string. On success the Vstr configuration that was being used by the Vstr string is returned.
+.sp
+\fBNote:\fR
+
+.br
+  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on a Vstr that you don't own, by doing...
+
+.Vb 4
+     if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
+     {
+       vstr_add_fmt(notmy_vstr_string, ... );
+       vstr_swap_conf(notmy_vstr_string, &my_vstr_conf);
+     }
+
+.Ve
+ ...note that the last call swaps the configuration back. However if you are
+ not using any custom specifiers then you can just call vstr_add_sysfmt() instead.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
 
 .ti -2
 .br
@@ -1773,7 +1863,7 @@ Type\fB[2]\fR: struct Vstr_conf *
 .br
 \fBFunction: \fR vstr_free_base()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -1787,427 +1877,6 @@ Type\fB[1]\fR: struct Vstr_base *
 
 .br
   This function will free a Vstr string, allocated by vstr_make_base().
-
-.ti -2
-.br
-\fBFunction: \fR vstr_make_ref_malloc()
-.br
-Returns: Vstr memory reference
-.br
-Type: struct Vstr_ref *
-
-.br
-Parameter\fB[1]\fR: Size of malloc'd area to create in the memory reference
-.br
-Type\fB[1]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
-
-.ti -2
-.br
-\fBFunction: \fR vstr_make_ref_ptr()
-.br
-Returns: Vstr memory reference
-.br
-Type: struct Vstr_ref *
-
-.br
-Parameter\fB[1]\fR: Pointer to memory
-.br
-Type\fB[1]\fR: void *
-
-.br
-Parameter\fB[1]\fR: Function callback for Vstr memory reference
-.br
-Type\fB[1]\fR: void (*)(struct Vstr_ref *)
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of pointer passed (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
-
-.ti -2
-.br
-\fBFunction: \fR vstr_make_spare_nodes()
-.br
-Returns: Number of nodes created
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[2]\fR: Vstr configuration
-.br
-Type\fB[2]\fR: struct Vstr_conf *
-
-.br
-Parameter\fB[2]\fR: Type of nodes to create
-.br
-Type\fB[2]\fR: unsigned int
-
-.br
-Parameter\fB[3]\fR: Number of nodes to create
-.br
-Type\fB[3]\fR: unsigned int
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function will try and create a number (Parameter[3]) of nodes of type (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  The number of nodes created will be less than or equal to the number requested (Parameter[3]), however if it is less than then the malloc_bad flag will be set (Parameter[1])->malloc_bad.
-
-.ti -2
-.br
-\fBFunction: \fR vstr_free_spare_nodes()
-.br
-Returns: Number of nodes destroyed
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Vstr configuration
-.br
-Type\fB[1]\fR: struct Vstr_conf *
-
-.br
-Parameter\fB[2]\fR: Type of nodes to destroy
-.br
-Type\fB[2]\fR: unsigned int
-
-.br
-Parameter\fB[3]\fR: Number of nodes to destroy
-.br
-Type\fB[3]\fR: unsigned int
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function will try and destroy a number (Parameter[3]) of nodes of type (Parameter[2]).
-.sp
-\fBNote:\fR
-
-.br
-  The number of nodes created will be less than or equal to the number requested (Parameter[3]), the only reason that less will be destroyed is if there are no more unused nodes of that type (Parameter[2]).
-
-.SH Functions to add data to a Vstr string
-
-
-.ti -2
-.br
-\fBFunction: \fR vstr_add_buf()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Pointer to data
-.br
-Type\fB[3]\fR: const void *
-
-.br
-Parameter\fB[4]\fR: Length of data (Parameter[3])
-.br
-Type\fB[4]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function is used to add a copy of the data in the data array to a  Vstr string.
-.br
-  Think of this function as doing a write() into a Vstr string.
-.br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
-.br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-
-.ti -2
-.br
-\fBFunction: \fR vstr_add_ptr()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Pointer to data
-.br
-Type\fB[3]\fR: const void *
-
-.br
-Parameter\fB[4]\fR: Length of data (Parameter[3])
-.br
-Type\fB[4]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function is used to add a pointer to a data array to a Vstr string.
-.br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
-.br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-.sp
-\fBNote:\fR
-
-.br
-  If the data in the array needs to be free'd the programer will have to decide when it is no longer being used by the Vstr string and free it. It is often easier to create a memory reference and use vstr_add_ref() instead.
-
-.ti -2
-.br
-\fBFunction: \fR vstr_add_non()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Length of non data
-.br
-Type\fB[3]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function is used to add "non" (or invisible) data to a Vstr string.
-.br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
-.br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-
-.ti -2
-.br
-\fBFunction: \fR vstr_add_ref()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: const struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Vstr memory reference
-.br
-Type\fB[3]\fR: struct Vstr_ref *
-
-.br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
-.br
-Type\fB[4]\fR: size_t
-
-.br
-Parameter\fB[5]\fR: Length of Vstr memory refernce (Parameter[3])
-.br
-Type\fB[5]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function is used to add a memory reference to a Vstr string.
-.br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
-.br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-
-.ti -2
-.br
-\fBFunction: \fR vstr_add_vstr()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: const struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Vstr string
-.br
-Type\fB[3]\fR: const struct Vstr_base *
-
-.br
-Parameter\fB[4]\fR: Start position in the Vstr string (Parameter[3])
-.br
-Type\fB[4]\fR: size_t
-
-.br
-Parameter\fB[5]\fR: Length in the Vstr string (Parameter[3])
-.br
-Type\fB[5]\fR: size_t
-
-.br
-Parameter\fB[6]\fR: Flags for Vstr add (VSTR_TYPE_ADD_*)
-.br
-Type\fB[6]\fR: unsigned int
-
-.br
-\fBExplanation:\fR
-
-.br
-  This function is used to add data in one Vstr string (Parameter[3]) to another Vstr string (Parameter[1]).
-.br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
-.br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-.sp
-\fBNote:\fR
-
-.br
-  The function can change how the data is added to the Vstr string (Parameter[1]) and in some cases even how the data is represented in the Vstr string (Parameter[3]) for more information see the documentation on the VSTR_TYPE_ADD_* constants.
-.br
-  This function will set _both_ (Parameter[1])->conf->malloc_bad and (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_ADD_CSTR_BUF()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Pointer to data
-.br
-Type\fB[3]\fR: const char *
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function calls vstr_add_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_ADD_CSTR_PTR()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Pointer to data
-.br
-Type\fB[3]\fR: const char *
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function calls vstr_add_ptr() with the length being the value of strlen() on the data parameter (Parameter[3]).
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_ADD_CSTR_REF()
-.br
-Returns: TRUE on success and FALSE on failure
-.br
-Type: int
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Vstr memory reference
-.br
-Type\fB[3]\fR: struct Vstr_ref *
-
-.br
-Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
-.br
-Type\fB[4]\fR: size_t
-
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function calls vstr_add_ref() with the length being the value of strlen() on the memory from the Vstr memory reference (Parameter[3]) starting at the offset (Parameter[4]).
 
 .ti -2
 .br
@@ -2444,6 +2113,467 @@ Type\fB[3]\fR: size_t
 
 .ti -2
 .br
+\fBFunction: \fR vstr_make_ref_malloc()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Size of malloc'd area to create in the memory reference
+.br
+Type\fB[1]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
+
+.ti -2
+.br
+\fBFunction: \fR vstr_make_ref_ptr()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Pointer to memory
+.br
+Type\fB[1]\fR: void *
+
+.br
+Parameter\fB[1]\fR: Function callback for Vstr memory reference
+.br
+Type\fB[1]\fR: void (*)(struct Vstr_ref *)
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of pointer passed (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_make_spare_nodes()
+.br
+Returns: Number of nodes created
+.br
+Type: unsigned int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Type of nodes to create
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+Parameter\fB[3]\fR: Number of nodes to create
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will try and create a number (Parameter[3]) of nodes of type (Parameter[2]).
+.sp
+\fBNote:\fR
+
+.br
+  The number of nodes created will be less than or equal to the number requested (Parameter[3]), however if it is less than then the malloc_bad flag will be set (Parameter[1])->malloc_bad.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_free_spare_nodes()
+.br
+Returns: Number of nodes destroyed
+.br
+Type: unsigned int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Type of nodes to destroy
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+Parameter\fB[3]\fR: Number of nodes to destroy
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will try and destroy a number (Parameter[3]) of nodes of type (Parameter[2]).
+.sp
+\fBNote:\fR
+
+.br
+  The number of nodes created will be less than or equal to the number requested (Parameter[3]), the only reason that less will be destroyed is if there are no more unused nodes of that type (Parameter[2]).
+
+.SH Functions to add and delete data to a Vstr string
+
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_buf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const void *
+
+.br
+Parameter\fB[4]\fR: Length of data (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a copy of the data in the data array to a  Vstr string.
+.br
+  Think of this function as doing a write() into a Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_ptr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const void *
+
+.br
+Parameter\fB[4]\fR: Length of data (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a pointer to a data array to a Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+.sp
+\fBNote:\fR
+
+.br
+  If the data in the array needs to be free'd the programer will have to decide when it is no longer being used by the Vstr string and free it. It is often easier to create a memory reference and use vstr_add_ref() instead.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_non()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length of non data
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add "non" (or invisible) data to a Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_ref()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Vstr memory reference
+.br
+Type\fB[3]\fR: struct Vstr_ref *
+
+.br
+Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+Parameter\fB[5]\fR: Length of Vstr memory refernce (Parameter[3])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a memory reference to a Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_vstr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Vstr string
+.br
+Type\fB[3]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[4]\fR: Start position in the Vstr string (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+Parameter\fB[5]\fR: Length in the Vstr string (Parameter[3])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Flags for Vstr add (VSTR_TYPE_ADD_*)
+.br
+Type\fB[6]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add data in one Vstr string (Parameter[3]) to another Vstr string (Parameter[1]).
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+.sp
+\fBNote:\fR
+
+.br
+  The function can change how the data is added to the Vstr string (Parameter[1]) and in some cases even how the data is represented in the Vstr string (Parameter[3]) for more information see the documentation on the VSTR_TYPE_ADD_* constants.
+.br
+  This function will set _both_ (Parameter[1])->conf->malloc_bad and (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_rep_chr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Character to repeat
+.br
+Type\fB[3]\fR: char
+
+.br
+Parameter\fB[4]\fR: Number of times to repeat characnter (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add 1 or more copies of the character (Parameter[3]) to the Vstr string.
+.br
+  Think of this function as doing a memset() into data in the Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_ADD_CSTR_BUF()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_add_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_ADD_CSTR_PTR()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_add_ptr() with the length being the value of strlen() on the data parameter (Parameter[3]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_ADD_CSTR_REF()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Vstr memory reference
+.br
+Type\fB[3]\fR: struct Vstr_ref *
+
+.br
+Parameter\fB[4]\fR: Offset of Vstr memory refernce (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_add_ref() with the length being the value of strlen() on the memory from the Vstr memory reference (Parameter[3]) starting at the offset (Parameter[4]).
+
+.ti -2
+.br
 \fBFunction: \fR vstr_add_vfmt()
 .br
 Returns: Number of bytes added
@@ -2461,12 +2591,12 @@ Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
 Type\fB[2]\fR: size_t
 
 .br
-Parameter\fB[3]\fR: 
+Parameter\fB[3]\fR: Format string, a superset of the rules for C99 printf
 .br
 Type\fB[3]\fR: const char *
 
 .br
-Parameter\fB[4]\fR: 
+Parameter\fB[4]\fR: Standard argument object from va_start()
 .br
 Type\fB[4]\fR: va_list
 
@@ -2474,7 +2604,7 @@ Type\fB[4]\fR: va_list
 \fBExplanation:\fR
 
 .br
-  This function works like calling vsprintf() directly into a Vstr string,  this is a portable implimentation which is feature complete with glibc-2.2.x sprintf().
+  This function works like calling vsprintf() directly into a Vstr string, however this is a portable implimentation which is feature complete with glibc-2.2.x sprintf(); implements custom specifiers, if you use the vstr_fmt_add() function, and doesn't require a double copy.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -2483,7 +2613,9 @@ Type\fB[4]\fR: va_list
 \fBNote:\fR
 
 .br
-  Double support is done by calling the underlying sprintf() routine, so if that doesn't understand a modifier ('\'' isn't well supported for instance) then that won't work for doubles.
+  Depending on how the library was compiled double support is implemented by either calling the underlying host implementation of sprintf(), by internal code or simply by assuming all double's are zero. When using the host implemention system bugs of inacuracy will show through, however the feature set remains the same (Ie. the ' flag works the same).
+.br
+  Because specifiers can be overridden using vstr_fmt_add() if you are adding data to a Vstr string that you didn't create you should use either vstr_add_vsysfmt() or vstr_swap_conf().
 
 .ti -2
 .br
@@ -2504,7 +2636,7 @@ Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
 Type\fB[2]\fR: size_t
 
 .br
-Parameter\fB[3]\fR: Format string, that complies with rules similar to C99 printf
+Parameter\fB[3]\fR: Format string, a superset of the rules for C99 printf
 .br
 Type\fB[3]\fR: const char *
 
@@ -2517,18 +2649,75 @@ Type\fB[4]\fR: ...
 \fBExplanation:\fR
 
 .br
-  This function works like calling sprintf() directly into a Vstr string, this is a portable implimentation which is feature complete with glibc-2.2.x sprintf().
+  This just calls vstr_add_vfmt() after convtering the argument list (Paramter[4]) a va_list object.
+
+.ti -2
 .br
-  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+\fBFunction: \fR vstr_add_vsysfmt()
 .br
-  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
-.sp
-\fBNote:\fR
+Returns: Number of bytes added
+.br
+Type: size_t
 
 .br
-  Double support is done by calling the underlying sprintf() routine, in a simple manner (Ie. the ' flag is dealt with in the vstr code). This does mean that any system bugs for inacuracy, etc. will show through.
+Parameter\fB[1]\fR: Vstr string
 .br
-  vstr_add_fmt() calls vstr_add_buf() to get data into the Vstr string.
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Format string, a superset of the rules for C99 printf
+.br
+Type\fB[3]\fR: const char *
+
+.br
+Parameter\fB[4]\fR: Standard argument object from va_start()
+.br
+Type\fB[4]\fR: va_list
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function does the same thing as vstr_add_vfmt() but ignores custom specifiers (see vstr_fmt_add()).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_add_sysfmt()
+.br
+Returns: Number of bytes added
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Format string, a superset of the rules for C99 printf
+.br
+Type\fB[3]\fR: const char *
+
+.br
+Parameter\fB[4]\fR: Options depending on value of Parameter[3]
+.br
+Type\fB[4]\fR: ...
+
+.br
+\fBExplanation:\fR
+
+.br
+  This just calls vstr_add_vsysfmt() after convtering the argument list (Paramter[4]) a va_list object.
 
 .ti -2
 .br
@@ -2589,7 +2778,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_add_iovec_buf_end()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -2742,8 +2931,6 @@ Type\fB[3]\fR: size_t
 .br
   No data is ever removed from the begining of a netstring2, this is imcompatible with the netstring spec. but is more efficient and doesn't cause problems if you know how big the Vstr string is and can't have it lose data from the begining/middle.
 
-.SH Function to delete data from a Vstr string
-
 .ti -2
 .br
 \fBFunction: \fR vstr_del()
@@ -2824,7 +3011,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to substitute a the data in the Vstr string with a copy of the data in the data array.
+  This function is used to substitute the data in the Vstr string with a copy of the data in the data array.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -3042,6 +3229,60 @@ Type\fB[6]\fR: unsigned int
   The length of the Vstr string (Parameter[3]) can be larger or smaller than the length of the data (Parameter[7]), think of this function like doing a vstr_del() and then a vstr_add_vstr() (but it's atomic).
 .br
   The function can change how the data is added to the Vstr string (Parameter[1]) and in some cases even how the data is represented in the Vstr string (Parameter[3]) for more information see the documentation on the VSTR_TYPE_SUB_* constants.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sub_rep_chr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Character to repeat
+.br
+Type\fB[4]\fR: char
+
+.br
+Parameter\fB[5]\fR: Number of times to repeat characnter (Parameter[3])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to substitute the data in the Vstr string with one or more copies of the character (Parameter[3]).
+.br
+  Think of this function as doing a memset() into data in the Vstr string.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so, although if it does fail the Vstr string won't have changed (Ie. the function is atomic).
+.sp
+\fBNote:\fR
+
+.br
+  The length of the Vstr string (Parameter[3]) can be larger or smaller than the length of the data (Parameter[5]).
+.br
+  Think of this function as doing a vstr_del() and then a vstr_add_rep_chr() (but it's atomic).
+.br
+  If the length of the data (Parameter[5]) is equal to the length of the Vstr string (Parameter[3]) and the data in the Vstr string is in a BUF node then the data will just be overwritten (Ie. no allocations will happen).
 
 .ti -2
 .br
@@ -4636,7 +4877,7 @@ Type: int
 .br
 Parameter\fB[1]\fR: Vstr string
 .br
-Type\fB[1]\fR: const struct Vstr_base *
+Type\fB[1]\fR: struct Vstr_base *
 
 .br
 Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
@@ -4664,7 +4905,7 @@ Type: int
 .br
 Parameter\fB[1]\fR: Vstr string
 .br
-Type\fB[1]\fR: const struct Vstr_base *
+Type\fB[1]\fR: struct Vstr_base *
 
 .br
 Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
@@ -4980,7 +5221,7 @@ Type\fB[1]\fR: unsigned int
 .br
 \fBFunction: \fR vstr_sects_free()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -5906,13 +6147,104 @@ Type\fB[8]\fR: unsigned int *
 .br
   This function will parse an ipv4 address, or optionaly an ipv4 address and a cidr mask / netmask, from the Vstr string.
 
+.SH Functions for hooking into the fmt function for the Vstr string
+
+.ti -2
+.br
+\fBFunction: \fR vstr_fmt_add()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+Parameter\fB[3]\fR: Function to use as callback from vstr_add_vfmt()
+.br
+Type\fB[3]\fR: int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *)
+
+.br
+Parameter\fB[4]\fR: List of VSTR_TYPE_FMT_* types for format specifier (Parameter[2])
+.br
+Type\fB[4]\fR: ...
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function allows you to register arbitrary format specifiers for printing from vstr_fmt_vstr(). Note that these trigger off the user escape character, which may or may not be the same as the "system" escape character of '%'.
+.sp
+\fBNote:\fR
+
+.br
+  If the user escape character is '%', then you can override system specifiers by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but is done so that you can have specifier names like "igloo" and it not be taken as a system specifier, however if you then did "%igoo" that would be interpreted as a "%i" (int) specification followed by the string "goo".
+.br
+  You can register multiple names with one callback, so you can register say "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%', will do the right thing with current printf warning checks with gcc. We can all hope that the former will be as usable eventually.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_fmt_del()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function allows you to deregister a format specifier added using vstr_fmt_add().
+
+.ti -2
+.br
+\fBFunction: \fR vstr_fmt_srch()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function allows you to find out if a format specifier has been added using vstr_fmt_add().
+
 .SH Functions for hooking into the cache system for the Vstr string
 
 .ti -2
 .br
 \fBFunction: \fR vstr_cache_sub()
 .br
-Returns: nothing
+Returns: Nothing
 .br
 Type: void
 
@@ -6066,7 +6398,38 @@ Type\fB[2]\fR: const char *
 
 .ti -2
 .br
-\fBFunction: \fR vstr_sc_add_fd()
+\fBFunction: \fR vstr_sc_fmt_add_vstr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print Vstr strings. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_VOID_PTR, VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END. These correspond to the last 4 arguments to vstr_add_vstr().
+.sp
+\fBNote:\fR
+
+.br
+  As you would expect the precision and field width values are used from the format, so the length of the Vstr string printed if the lower bound of the length passed and the precision.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_mmap_fd()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -6090,7 +6453,7 @@ Type\fB[3]\fR: int
 .br
 Parameter\fB[4]\fR: Offset to start map in file descriptor
 .br
-Type\fB[4]\fR: off_t
+Type\fB[4]\fR: off64_t
 
 .br
 Parameter\fB[5]\fR: Size of map in file descriptor
@@ -6098,7 +6461,7 @@ Parameter\fB[5]\fR: Size of map in file descriptor
 Type\fB[5]\fR: size_t
 
 .br
-Parameter\fB[6]\fR: Returns error code starting VSTR_TYPE_SC_ADD_FD_ERR_
+Parameter\fB[6]\fR: Returns error code starting VSTR_TYPE_SC_MMAP_FD_ERR_
 .br
 Type\fB[6]\fR: unsigned int *
 
@@ -6115,7 +6478,7 @@ Type\fB[6]\fR: unsigned int *
 
 .ti -2
 .br
-\fBFunction: \fR vstr_sc_add_file()
+\fBFunction: \fR vstr_sc_mmap_file()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -6137,9 +6500,19 @@ Parameter\fB[3]\fR: Filename to add a mapping from
 Type\fB[3]\fR: const char *
 
 .br
-Parameter\fB[4]\fR: Returns error code starting VSTR_TYPE_SC_ADD_FILE_ERR_
+Parameter\fB[4]\fR: Offset to start map in file open()'d by filename
 .br
-Type\fB[4]\fR: unsigned int *
+Type\fB[4]\fR: off64_t
+
+.br
+Parameter\fB[5]\fR: Size of map in file open()'d by filename
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Returns error code starting VSTR_TYPE_SC_MMAP_FILE_ERR_
+.br
+Type\fB[6]\fR: unsigned int *
 
 .br
 \fBExplanation:\fR
@@ -6149,7 +6522,7 @@ Type\fB[4]\fR: unsigned int *
 
 .ti -2
 .br
-\fBFunction: \fR vstr_sc_read_fd()
+\fBFunction: \fR vstr_sc_read_iov_fd()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -6190,6 +6563,154 @@ Type\fB[6]\fR: unsigned int *
 
 .br
   This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_read_len_fd()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: File descriptor
+.br
+Type\fB[3]\fR: int
+
+.br
+Parameter\fB[4]\fR: Size of data to try to read
+.br
+Type\fB[4]\fR: size_t
+
+.br
+Parameter\fB[5]\fR: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_
+.br
+Type\fB[5]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+.br
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only upto size (Parameter[4]) data will be read.
+.br
+  If size (Parameter[4]) is zero then the entire file will try to be read.
+.sp
+\fBNote:\fR
+
+.br
+  As with all calls in the vstr library, this is a non-blocking call. If you need all of the data specified (Parameter[4]) then you'll need to loop.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_read_iov_file()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Filename to read from
+.br
+Type\fB[3]\fR: const char *
+
+.br
+Parameter\fB[4]\fR: Offset to start reading at
+.br
+Type\fB[4]\fR: off64_t
+
+.br
+Parameter\fB[5]\fR: Minimum ammount of nodes to read into
+.br
+Type\fB[5]\fR: unsigned int
+
+.br
+Parameter\fB[6]\fR: Maximum ammount of nodes to read into
+.br
+Type\fB[6]\fR: unsigned int
+
+.br
+Parameter\fB[7]\fR: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_
+.br
+Type\fB[7]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_read_len_file()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Filename to read from
+.br
+Type\fB[3]\fR: const char *
+
+.br
+Parameter\fB[4]\fR: Offset to start reading at
+.br
+Type\fB[4]\fR: off64_t
+
+.br
+Parameter\fB[5]\fR: Size of data to try to read
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_
+.br
+Type\fB[6]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with the filedescriptor got by opening the filename (Parameter[3]) and finally vstr_add_iovec_buf_end() before returning.
+.br
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that only upto exactly size (Parameter[4]) data will be read. If size (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4]) will try and be read.
+.sp
+\fBNote:\fR
+
+.br
+  As with all calls in the vstr library, this is a non-blocking call. If you need all of the data specified (Parameter[5]) then you'll need to loop.
 
 .ti -2
 .br
@@ -6271,12 +6792,17 @@ Type\fB[5]\fR: int
 .br
 Parameter\fB[6]\fR: Mode to pass to the open() system call
 .br
-Type\fB[6]\fR: int
+Type\fB[6]\fR: mode_t
 
 .br
-Parameter\fB[7]\fR: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_
+Parameter\fB[7]\fR: Offset to start writing at
 .br
-Type\fB[7]\fR: unsigned int *
+Type\fB[7]\fR: off64_t
+
+.br
+Parameter\fB[8]\fR: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_
+.br
+Type\fB[8]\fR: unsigned int *
 
 .br
 \fBExplanation:\fR

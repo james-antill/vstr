@@ -41,7 +41,7 @@ int vstr_nx_cntl_opt(int option, ...)
   {
    Vstr_conf **val = va_arg(ap, Vstr_conf **);
    
-   *val = vstr__options.def;
+   vstr__add_user_conf(*val = vstr__options.def);
    
    ret = TRUE;
   }
@@ -54,7 +54,7 @@ int vstr_nx_cntl_opt(int option, ...)
    if (vstr__options.def != val)
    {
      vstr_nx_free_conf(vstr__options.def);
-     vstr__add_no_node_conf(vstr__options.def = val);
+     vstr__add_user_conf(vstr__options.def = val);
    }
    
    ret = TRUE;
@@ -82,29 +82,31 @@ int vstr_nx_cntl_base(Vstr_base *base, int option, ...)
  {
   case VSTR_CNTL_BASE_GET_CONF:
   {
-   Vstr_conf **val = va_arg(ap, Vstr_conf **);
-   
-   *val = base->conf;
-   ret = TRUE;
+    Vstr_conf **val = va_arg(ap, Vstr_conf **);
+    
+    vstr__add_user_conf(*val = base->conf);
+    
+    ret = TRUE;
   }
   break;
   
   case VSTR_CNTL_BASE_SET_CONF:
   {
-   Vstr_conf *val = va_arg(ap, Vstr_conf *);
-
-   if (!val)
-     val = vstr__options.def;
-
-   if (base->conf == val)
-     ret = TRUE;
-   else if ((val->buf_sz == base->conf->buf_sz) || !base->len)
-   {
-     vstr__del_conf(base->conf);
-     vstr__add_base_conf(base, val);
-
-     ret = TRUE;
-   }
+    Vstr_conf *val = va_arg(ap, Vstr_conf *);
+    
+    if (!val)
+      val = vstr__options.def;
+    
+    if (base->conf == val)
+      ret = TRUE;
+    else if (((val->buf_sz == base->conf->buf_sz) || !base->len) &&
+             vstr__cache_subset_cbs(val, base->conf))
+    {
+      vstr__del_conf(base->conf);
+      vstr__add_base_conf(base, val);
+      
+      ret = TRUE;
+    }
   }
   break;
 
@@ -120,9 +122,10 @@ int vstr_nx_cntl_base(Vstr_base *base, int option, ...)
 int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
 {
  int ret = 0;
- 
  va_list ap;
 
+ assert(conf->user_ref <= conf->ref);
+   
  va_start(ap, option);
  
  switch (option)
@@ -192,19 +195,17 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
   {
     unsigned int val = va_arg(ap, unsigned int);
 
-   /* this is too restrictive, but getting it "right" would require too much
-    * bookkeeping. */
-   assert(conf->no_node_ref >= 0);
-   assert(conf->no_node_ref <= 2);
-   assert(conf->no_node_ref <= conf->ref);
-   
-   if (!conf->spare_buf_num && (conf->no_node_ref == conf->ref) &&
-       (val <= VSTR_MAX_NODE_BUF))
-   {
-    conf->buf_sz = val;
+    if (val > VSTR_MAX_NODE_BUF)
+      val = VSTR_MAX_NODE_BUF;
     
-    ret = TRUE;
-   }
+    /* this is too restrictive, but getting it "right" would require too much
+     * bookkeeping. */
+    if (!conf->spare_buf_num && (conf->user_ref == conf->ref))
+    {
+      conf->buf_sz = val;
+      
+      ret = TRUE;
+    }
   }
   break;
 
@@ -366,6 +367,28 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      assert(val == !!val);
 
      conf->split_buf_del = val;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE:
+   {
+     int *val = va_arg(ap, int *);
+     
+     *val = conf->no_cache;
+     
+     ret = TRUE;
+   }
+   break;
+  
+   case VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE:
+   {
+     int val = va_arg(ap, int);
+
+     assert(val == !!val);
+
+     conf->no_cache = val;
      
      ret = TRUE;
    }

@@ -7,9 +7,9 @@ int tst(void)
   int ret = 0;
   size_t pos = 0;
 
-  sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
+  sprintf(buf, "X%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
-  vstr_add_fmt(s2, s2->len, "%0*d:", VSTR_AUTOCONF_ULONG_MAX_LEN, strlen(buf));
+  vstr_add_fmt(s2, s2->len, "%0*zu:", VSTR_AUTOCONF_ULONG_MAX_LEN, strlen(buf));
   VSTR_ADD_CSTR_PTR(s2, s2->len, buf);
   VSTR_ADD_CSTR_PTR(s2, s2->len, ",");
 

@@ -8,6 +8,7 @@ init
 exit
 make_conf
 free_conf
+swap_conf
 make_base
 free_base
 make_spare_nodes
@@ -23,6 +24,8 @@ dup_ref
 dup_vstr
 add_vfmt
 add_fmt
+add_vsysfmt
+add_sysfmt
 add_iovec_buf_beg
 add_iovec_buf_end
 add_netstr_beg
@@ -34,6 +37,7 @@ sub_ptr
 sub_non
 sub_ref
 sub_vstr
+sub_rep_chr
 conv_lowercase
 conv_uppercase
 conv_unprintable_chr
@@ -97,11 +101,19 @@ cache_add_cb
 cache_srch
 cache_set_data
 cache_sub
-sc_add_fd
-sc_add_file
-sc_read_fd
+fmt_add
+fmt_del
+fmt_srch
+sc_fmt_add_vstr
+sc_mmap_fd
+sc_mmap_file
+sc_read_iov_fd
+sc_read_len_fd
+sc_read_iov_file
+sc_read_len_file
 sc_write_fd
 sc_write_file
 extern_inline_add_buf
+extern_inline_add_rep_chr
 extern_inline_del
 extern_inline_sects_add

@@ -67,6 +67,35 @@ VSTR__DECL_TYPEDEF1(struct Vstr_node_ref)
  unsigned int off;
 } VSTR__DECL_TYPEDEF2(Vstr_node_ref);
 
+VSTR__DECL_TYPEDEF1(struct Vstr_fmt_spec)
+{
+  size_t vstr_orig_len; /* public/read|write */
+  
+  unsigned int obj_precision; /* public/read|write */
+  unsigned int obj_field_width; /* public/read|write */
+
+  unsigned int fmt_precision     : 1; /* public/read|write */
+  unsigned int fmt_field_width   : 1; /* public/read|write */
+  
+  unsigned int fmt_minus         : 1; /* public/read|write */
+  unsigned int fmt_plus          : 1; /* public/read|write */
+  unsigned int fmt_space         : 1; /* public/read|write */
+  unsigned int fmt_hash          : 1; /* public/read|write */
+  unsigned int fmt_zero          : 1; /* public/read|write */
+  unsigned int fmt_quote         : 1; /* public/read|write */
+  unsigned int fmt_I             : 1; /* public/read|write */
+  
+  VSTR__DEF_BITFLAG_1_4(1); /* private */
+  VSTR__DEF_BITFLAG_1_4(2); /* private */
+  VSTR__DEF_BITFLAG_1_4(3); /* private */
+  VSTR__DEF_BITFLAG_1_4(4); /* private */
+  VSTR__DEF_BITFLAG_1_4(5); /* private */
+  
+  const char *name; /* public/read|write */
+  
+  void *VSTR__STRUCT_HACK_ARRAY(data_ptr); /* public/read|write */
+} VSTR__DECL_TYPEDEF2(Vstr_fmt_spec);
+
 
 VSTR__DECL_TYPEDEF1(struct Vstr_locale)
 {
@@ -114,15 +143,18 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  unsigned int cache_pos_cb_pos; /* private */
  unsigned int cache_pos_cb_iovec; /* private */
  unsigned int cache_pos_cb_cstr; /* private */
+
+ unsigned char fmt_usr_escape; /* private */
+ void *fmt_usr_names; /* private */
  
  int ref; /* private */
+ int user_ref; /* private */
  
  unsigned int free_do : 1; /* private */
  unsigned int malloc_bad : 1; /* public/read|write */
  unsigned int iovec_auto_update : 1; /* private */
  unsigned int split_buf_del : 1; /* private */
 
- unsigned int no_node_ref : 2; /* private */
  unsigned int no_cache : 1; /* private */
  unsigned int unused04 : 1; /* private */
 
@@ -152,7 +184,11 @@ VSTR__DECL_TYPEDEF1(struct Vstr_base)
   unsigned int cache_available : 1; /* private */
   unsigned int cache_internal : 1; /* private */
   
-  VSTR__DEF_BITFLAG_1_4(6); /* private */
+  unsigned int node_buf_used : 1; /* private */
+  unsigned int node_non_used : 1; /* private */
+  unsigned int node_ptr_used : 1; /* private */
+  unsigned int node_ref_used : 1; /* private */
+
   VSTR__DEF_BITFLAG_1_4(7); /* private */
   VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_base);

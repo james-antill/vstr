@@ -51,36 +51,13 @@
 
 #include "vstr-internal-extern.h"
 
+#define VSTR_TYPE_FMT_UCHAR 1
+#define VSTR_TYPE_FMT_USHORT 2
+
 /* ISO C magic, converts a ptr to ->next into ->next->prev
  *   (even though ->prev doesn't exist) */
 #define VSTR__CONV_PTR_NEXT_PREV(x) \
  ((Vstr_node *)(((char *)(x)) - offsetof(Vstr_node, next)))
-
-#define VSTR__CONST_STR_SPACE_64 \
-"                                                                "
-
-#define VSTR__CONST_STR_SPACE_256 \
-  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64 \
-  VSTR__CONST_STR_SPACE_64 VSTR__CONST_STR_SPACE_64
-
-#define VSTR__CONST_STR_SPACE_1024 \
-  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256 \
-  VSTR__CONST_STR_SPACE_256 VSTR__CONST_STR_SPACE_256
-
-#define VSTR__CONST_STR_SPACE VSTR__CONST_STR_SPACE_1024
-
-#define VSTR__CONST_STR_ZERO_64 \
-"0000000000000000000000000000000000000000000000000000000000000000"
-
-#define VSTR__CONST_STR_ZERO_256 \
-  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64 \
-  VSTR__CONST_STR_ZERO_64 VSTR__CONST_STR_ZERO_64
-
-#define VSTR__CONST_STR_ZERO_1024 \
-  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256 \
-  VSTR__CONST_STR_ZERO_256 VSTR__CONST_STR_ZERO_256
-
-#define VSTR__CONST_STR_ZERO VSTR__CONST_STR_ZERO_1024
 
 #define VSTR__UC(x) ((unsigned char)(x))
 #define VSTR__IS_ASCII_LOWER(x) ((VSTR__UC(x) >= 0x61) && (VSTR__UC(x) <= 0x7A))
@@ -98,6 +75,11 @@
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
+typedef struct Vstr__options
+{
+ Vstr_conf *def;
+} Vstr__options;
+
 typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;
 
 typedef struct Vstr__cache_data_cstr Vstr__cache_data_cstr;
@@ -107,11 +89,6 @@ typedef struct Vstr__cache_data_pos Vstr__cache_data_pos;
 typedef struct Vstr__cache Vstr__cache;
 
 typedef struct Vstr__base_cache Vstr__base_cache;
-
-typedef struct Vstr__options
-{
- Vstr_conf *def;
-} Vstr__options;
 
 typedef struct Vstr__buf_ref
 {
@@ -125,6 +102,18 @@ typedef struct Vstr__sc_mmap_ref
  size_t mmap_len;
 } Vstr__sc_mmap_ref;
 
+typedef struct Vstr__fmt_usr_name_node
+{
+ struct Vstr__fmt_usr_name_node *next;
+ struct Vstr__fmt_usr_name_node *prev;
+
+ const char *name_str;
+ size_t      name_len;
+ int (*func)(Vstr_base *, size_t, struct Vstr_fmt_spec *);
+
+ unsigned int sz;
+ unsigned int VSTR__STRUCT_HACK_ARRAY(types);
+} Vstr__fmt_usr_name_node;
 
 extern Vstr__options VSTR__ATTR_H() vstr__options;
 
@@ -141,21 +130,21 @@ extern size_t vstr__netstr2_ULONG_MAX_len;
 #ifndef NDEBUG
 extern int vstr__check_real_nodes(Vstr_base *) VSTR__ATTR_I();
 extern int vstr__check_spare_nodes(Vstr_conf *) VSTR__ATTR_I();
-extern void vstr__ref_cb_free_buf_ref(struct Vstr_ref *);
+extern void vstr__ref_cb_free_buf_ref(struct Vstr_ref *) VSTR__ATTR_H();
 #else
 #define vstr__ref_cb_free_buf_ref vstr_ref_cb_free_ref
 #endif
 
-extern void vstr__add_conf(Vstr_conf *) VSTR__ATTR_I();
-extern void vstr__add_no_node_conf(Vstr_conf *) VSTR__ATTR_I();
+extern void vstr__add_user_conf(Vstr_conf *) VSTR__ATTR_I();
 extern void vstr__add_base_conf(Vstr_base *, Vstr_conf *) VSTR__ATTR_I();
+/* vstr__del_user_user == nx_free_conf */
 extern void vstr__del_conf(Vstr_conf *) VSTR__ATTR_I();
 
 extern Vstr_node *vstr__add_setup_pos(Vstr_base *, size_t *, unsigned int *,
                                       size_t *) VSTR__ATTR_I();
 
-extern void vstr__ref_cb_free_bufnode(struct Vstr_ref *);
-extern void vstr__ref_cb_free_bufnode_ref(struct Vstr_ref *);
+extern void vstr__ref_cb_free_bufnode(struct Vstr_ref *) VSTR__ATTR_H();
+extern void vstr__ref_cb_free_bufnode_ref(struct Vstr_ref *) VSTR__ATTR_H();
 
 extern char *vstr__export_node_ptr(const Vstr_node *) VSTR__ATTR_I();
 
@@ -198,6 +187,9 @@ extern void vstr__cache_cstr_cpy(const Vstr_base *, size_t, size_t,
 extern int  vstr__make_cache(const Vstr_base *) VSTR__ATTR_I();
 extern void vstr__free_cache(const Vstr_base *) VSTR__ATTR_I();
 extern int  vstr__cache_conf_init(Vstr_conf *) VSTR__ATTR_I();
+extern int  vstr__cache_subset_cbs(Vstr_conf *, Vstr_conf *) VSTR__ATTR_I();
+extern int  vstr__cache_dup_cbs(Vstr_conf *, Vstr_conf *) VSTR__ATTR_I();
+
 
 extern size_t vstr__loc_thou_grp_strlen(const char *) VSTR__ATTR_I();
 extern int vstr__make_conf_loc_numeric(Vstr_conf *, const char *)

@@ -16,7 +16,7 @@ Function: vstr_init()
 
 
 Function: vstr_exit()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Explanation:
@@ -403,7 +403,7 @@ Function: vstr_export_cstr_ptr()
 
 
 Function: vstr_export_cstr_buf()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr string
@@ -678,7 +678,7 @@ Section: Functions to use as callbacks in a Vstr memory reference
 
 
 Function: vstr_ref_cb_free_nothing()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -689,7 +689,7 @@ Function: vstr_ref_cb_free_nothing()
   This function does nothing.
 
 Function: vstr_ref_cb_free_ref()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -700,7 +700,7 @@ Function: vstr_ref_cb_free_ref()
   This will call free() on the Vstr_ref (Parameter[1]).
 
 Function: vstr_ref_cb_free_ptr()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -711,7 +711,7 @@ Function: vstr_ref_cb_free_ptr()
   This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
 
 Function: vstr_ref_cb_free_ptr_ref()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -756,7 +756,7 @@ Function: vstr_make_conf()
  Returns: Vstr configuration
  Type: struct Vstr_conf *
 
- Parameter[1]: nothing
+ Parameter[1]: Nothing
  Type[1]: void
 
  Explanation:
@@ -765,7 +765,7 @@ Function: vstr_make_conf()
 
 
 Function: vstr_free_conf()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr configuration
@@ -774,6 +774,40 @@ Function: vstr_free_conf()
  Explanation:
 
   This function will free a Vstr configuration, allocated by vstr_make_conf().
+
+
+Function: vstr_swap_conf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: New Vstr configuration; returned old Vstr configuration
+ Type[2]: struct Vstr_conf **
+
+ Explanation:
+
+  This function will swap a Vstr configuration into a Vstr string possibly
+ changing the Vstr configuration to be compatible with the Vstr string. On
+ success the Vstr configuration that was being used by the Vstr string is
+ returned.
+
+ Note:
+
+  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on
+ a Vstr that you don't own, by doing...
+
+     if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
+     {
+       vstr_add_fmt(notmy_vstr_string, ... );
+       vstr_swap_conf(notmy_vstr_string, &my_vstr_conf);
+     }
+
+ ...note that the last call swaps the configuration back. However if you are
+ not using any custom specifiers then you can just call vstr_add_sysfmt()
+ instead.
+  The function will return 0 if it needs to allocate memory and cannot do so.
 
 
 Function: vstr_make_base()
@@ -792,7 +826,7 @@ Function: vstr_make_base()
 
 
 Function: vstr_free_base()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr string
@@ -992,8 +1026,8 @@ Function: vstr_make_spare_nodes()
  Returns: Number of nodes created
  Type: unsigned int
 
- Parameter[2]: Vstr configuration
- Type[2]: struct Vstr_conf *
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
 
  Parameter[2]: Type of nodes to create
  Type[2]: unsigned int
@@ -1195,6 +1229,34 @@ Function: vstr_add_vstr()
  (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
 
 
+Function: vstr_add_rep_chr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Character to repeat
+ Type[3]: char
+
+ Parameter[4]: Number of times to repeat characnter (Parameter[3])
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is used to add 1 or more copies of the character (Parameter[3])
+ to the Vstr string.
+  Think of this function as doing a memset() into data in the Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+
 Function: VSTR_ADD_CSTR_BUF()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -1267,17 +1329,18 @@ Function: vstr_add_vfmt()
  Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
 
- Parameter[3]: 
+ Parameter[3]: Format string, a superset of the rules for C99 printf
  Type[3]: const char *
 
- Parameter[4]: 
+ Parameter[4]: Standard argument object from va_start()
  Type[4]: va_list
 
  Explanation:
 
-  This function works like calling vsprintf() directly into a Vstr string, 
- this is a portable implimentation which is feature complete with glibc-2.2.x
- sprintf().
+  This function works like calling vsprintf() directly into a Vstr string,
+ however this is a portable implimentation which is feature complete with
+ glibc-2.2.x sprintf(); implements custom specifiers, if you use the
+ vstr_fmt_add() function, and doesn't require a double copy.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1286,9 +1349,14 @@ Function: vstr_add_vfmt()
 
  Note:
 
-  Double support is done by calling the underlying sprintf() routine, so if
- that doesn't understand a modifier ('\'' isn't well supported for instance)
- then that won't work for doubles.
+  Depending on how the library was compiled double support is implemented by
+ either calling the underlying host implementation of sprintf(), by internal
+ code or simply by assuming all double's are zero. When using the host
+ implemention system bugs of inacuracy will show through, however the
+ feature set remains the same (Ie. the ' flag works the same).
+  Because specifiers can be overridden using vstr_fmt_add() if you are adding
+ data to a Vstr string that you didn't create you should use either
+ vstr_add_vsysfmt() or vstr_swap_conf().
 
 
 Function: vstr_add_fmt()
@@ -1301,7 +1369,7 @@ Function: vstr_add_fmt()
  Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
 
- Parameter[3]: Format string, that complies with rules similar to C99 printf
+ Parameter[3]: Format string, a superset of the rules for C99 printf
  Type[3]: const char *
 
  Parameter[4]: Options depending on value of Parameter[3]
@@ -1309,21 +1377,52 @@ Function: vstr_add_fmt()
 
  Explanation:
 
-  This function works like calling sprintf() directly into a Vstr string,
- this is a portable implimentation which is feature complete with glibc-2.2.x
- sprintf().
-  If the function can detect that the values of parameters are in error the
- function will return 0 to indicate an error.
-  The function will return 0 if it needs to allocate memory and cannot do so,
- although if it does fail the Vstr string won't have changed (Ie. the function
- is atomic).
+  This just calls vstr_add_vfmt() after convtering the argument list
+ (Paramter[4]) a va_list object.
 
- Note:
 
-  Double support is done by calling the underlying sprintf() routine, in a
- simple manner (Ie. the ' flag is dealt with in the vstr code). This does mean
- that any system bugs for inacuracy, etc. will show through.
-  vstr_add_fmt() calls vstr_add_buf() to get data into the Vstr string.
+Function: vstr_add_vsysfmt()
+ Returns: Number of bytes added
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Format string, a superset of the rules for C99 printf
+ Type[3]: const char *
+
+ Parameter[4]: Standard argument object from va_start()
+ Type[4]: va_list
+
+ Explanation:
+
+  This function does the same thing as vstr_add_vfmt() but ignores custom
+ specifiers (see vstr_fmt_add()).
+
+
+Function: vstr_add_sysfmt()
+ Returns: Number of bytes added
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Format string, a superset of the rules for C99 printf
+ Type[3]: const char *
+
+ Parameter[4]: Options depending on value of Parameter[3]
+ Type[4]: ...
+
+ Explanation:
+
+  This just calls vstr_add_vsysfmt() after convtering the argument list
+ (Paramter[4]) a va_list object.
 
 
 Function: vstr_add_iovec_buf_beg()
@@ -1372,7 +1471,7 @@ Function: vstr_add_iovec_buf_beg()
 
 
 Function: vstr_add_iovec_buf_end()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr string
@@ -1546,7 +1645,7 @@ Function: vstr_sub_buf()
 
  Explanation:
 
-  This function is used to substitute a the data in the Vstr string with a copy
+  This function is used to substitute the data in the Vstr string with a copy
  of the data in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1718,6 +1817,48 @@ Function: vstr_sub_vstr()
  (Parameter[1]) and in some cases even how the data is represented in the
  Vstr string (Parameter[3]) for more information see the documentation on the
  VSTR_TYPE_SUB_* constants.
+
+
+Function: vstr_sub_rep_chr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Character to repeat
+ Type[4]: char
+
+ Parameter[5]: Number of times to repeat characnter (Parameter[3])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to substitute the data in the Vstr string with one or
+ more copies of the character (Parameter[3]).
+  Think of this function as doing a memset() into data in the Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+ Note: 
+
+  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
+ length of the data (Parameter[5]).
+  Think of this function as doing a vstr_del() and then a vstr_add_rep_chr()
+ (but it's atomic).
+  If the length of the data (Parameter[5]) is equal to the
+ length of the Vstr string (Parameter[3]) and the data in the Vstr string is in
+ a BUF node then the data will just be overwritten (Ie. no allocations will
+ happen).
 
 
 Function: VSTR_SUB_CSTR_BUF()
@@ -3004,7 +3145,7 @@ Function: vstr_sects_make()
 
 
 Function: vstr_sects_free()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr sections
@@ -3649,10 +3790,79 @@ Function: vstr_parse_ipv4()
  cidr mask / netmask, from the Vstr string.
 
 
+Section: Functions for hooking into the fmt function for the Vstr string
+
+Function: vstr_fmt_add()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Parameter[3]: Function to use as callback from vstr_add_vfmt()
+ Type[3]: int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *)
+
+ Parameter[4]: List of VSTR_TYPE_FMT_* types for format specifier (Parameter[2])
+ Type[4]: ...
+
+ Explanation:
+
+  This function allows you to register arbitrary format specifiers for printing
+ from vstr_fmt_vstr(). Note that these trigger off the user escape character,
+ which may or may not be the same as the "system" escape character of '%'.
+
+ Note:
+
+  If the user escape character is '%', then you can override system specifiers
+ by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but
+ is done so that you can have specifier names like "igloo" and it not be taken
+ as a system specifier, however if you then did "%igoo" that would be
+ interpreted as a "%i" (int) specification followed by the string "goo".
+  You can register multiple names with one callback, so you can register say
+ "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%',
+ will do the right thing with current printf warning checks with gcc. We can
+ all hope that the former will be as usable eventually.
+
+
+Function: vstr_fmt_del()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function allows you to deregister a format specifier added
+ using vstr_fmt_add().
+
+
+Function: vstr_fmt_srch()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function allows you to find out if a format specifier has been added
+ using vstr_fmt_add().
+
+
 Section: Functions for hooking into the cache system for the Vstr string
 
 Function: vstr_cache_sub()
- Returns: nothing
+ Returns: Nothing
  Type: void
 
  Parameter[1]: Vstr string
@@ -3764,7 +3974,33 @@ Function: vstr_cache_srch()
 
 Section: Short cut helper functions
 
-Function: vstr_sc_add_fd()
+Function: vstr_sc_fmt_add_vstr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ Vstr strings. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_VOID_PTR, VSTR_TYPE_FMT_SIZE_T,
+ VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END. These
+ correspond to the last 4 arguments to vstr_add_vstr().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the Vstr string printed if the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_mmap_fd()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
@@ -3778,12 +4014,12 @@ Function: vstr_sc_add_fd()
  Type[3]: int
 
  Parameter[4]: Offset to start map in file descriptor
- Type[4]: off_t
+ Type[4]: off64_t
 
  Parameter[5]: Size of map in file descriptor
  Type[5]: size_t
 
- Parameter[6]: Returns error code starting VSTR_TYPE_SC_ADD_FD_ERR_
+ Parameter[6]: Returns error code starting VSTR_TYPE_SC_MMAP_FD_ERR_
  Type[6]: unsigned int *
 
  Explanation:
@@ -3799,7 +4035,7 @@ Function: vstr_sc_add_fd()
  minus the offset (Parameter[4]).
 
 
-Function: vstr_sc_add_file()
+Function: vstr_sc_mmap_file()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
@@ -3812,8 +4048,14 @@ Function: vstr_sc_add_file()
  Parameter[3]: Filename to add a mapping from
  Type[3]: const char *
 
- Parameter[4]: Returns error code starting VSTR_TYPE_SC_ADD_FILE_ERR_
- Type[4]: unsigned int *
+ Parameter[4]: Offset to start map in file open()'d by filename
+ Type[4]: off64_t
+
+ Parameter[5]: Size of map in file open()'d by filename
+ Type[5]: size_t
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_SC_MMAP_FILE_ERR_
+ Type[6]: unsigned int *
 
  Explanation:
 
@@ -3821,7 +4063,7 @@ Function: vstr_sc_add_file()
  (Parameter[3]) to a Vstr string.
 
 
-Function: vstr_sc_read_fd()
+Function: vstr_sc_read_iov_fd()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
@@ -3848,6 +4090,110 @@ Function: vstr_sc_read_fd()
   This function is used to call vstr_add_iovec_buf_beg(), then readv() with
  the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
  before returning.
+
+
+Function: vstr_sc_read_len_fd()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: File descriptor
+ Type[3]: int
+
+ Parameter[4]: Size of data to try to read
+ Type[4]: size_t
+
+ Parameter[5]: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_
+ Type[5]: unsigned int *
+
+ Explanation:
+
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor got by opening the filename (Parameter[3]) and finally
+ vstr_add_iovec_buf_end() before returning.
+  However the arguments to the vstr_add_iovec_buf_* calls
+ are limited so that only upto size (Parameter[4]) data will be read.
+  If size (Parameter[4]) is zero then the entire file will try to be read.
+
+ Note:
+
+  As with all calls in the vstr library, this is a non-blocking call. If you
+ need all of the data specified (Parameter[4]) then you'll need to loop.
+
+
+Function: vstr_sc_read_iov_file()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Filename to read from
+ Type[3]: const char *
+
+ Parameter[4]: Offset to start reading at
+ Type[4]: off64_t
+
+ Parameter[5]: Minimum ammount of nodes to read into
+ Type[5]: unsigned int
+
+ Parameter[6]: Maximum ammount of nodes to read into
+ Type[6]: unsigned int
+
+ Parameter[7]: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_
+ Type[7]: unsigned int *
+
+ Explanation:
+
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ before returning.
+
+
+Function: vstr_sc_read_len_file()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Filename to read from
+ Type[3]: const char *
+
+ Parameter[4]: Offset to start reading at
+ Type[4]: off64_t
+
+ Parameter[5]: Size of data to try to read
+ Type[5]: size_t
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor got by opening the filename (Parameter[3]) and finally
+ vstr_add_iovec_buf_end() before returning.
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
+ only upto exactly size (Parameter[4]) data will be read. If size
+ (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
+ will try and be read.
+
+ Note:
+
+  As with all calls in the vstr library, this is a non-blocking call. If you
+ need all of the data specified (Parameter[5]) then you'll need to loop.
 
 
 Function: vstr_sc_write_fd()
@@ -3901,10 +4247,13 @@ Function: vstr_sc_write_file()
  Type[5]: int
 
  Parameter[6]: Mode to pass to the open() system call
- Type[6]: int
+ Type[6]: mode_t
 
- Parameter[7]: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_
- Type[7]: unsigned int *
+ Parameter[7]: Offset to start writing at
+ Type[7]: off64_t
+
+ Parameter[8]: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_
+ Type[8]: unsigned int *
 
  Explanation:
 

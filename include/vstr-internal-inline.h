@@ -183,3 +183,42 @@ extern inline int vstr_nx_sects_add(struct Vstr_sects *sects,
   return (1);
 }
 
+extern inline int vstr_nx_add_rep_chr(struct Vstr_base *base, size_t pos,
+                                   char chr, size_t len)
+{ /* almost embarassingly similar to add_buf */
+  if (!len) return (1);
+
+  if (base->len && (pos == base->len) &&
+      (base->end->type == VSTR_TYPE_NODE_BUF) &&
+      (len <= (base->conf->buf_sz - base->end->len)) &&
+      (!base->cache_available || base->cache_internal))
+  {
+    Vstr_node *scan = base->end;
+
+    switch (len)
+    { /* Don't do a memset() on small values */
+      case 7:  ((Vstr_node_buf *)scan)->buf[scan->len + 6] = chr;
+      case 6:  ((Vstr_node_buf *)scan)->buf[scan->len + 5] = chr;
+      case 5:  ((Vstr_node_buf *)scan)->buf[scan->len + 4] = chr;
+      case 4:  ((Vstr_node_buf *)scan)->buf[scan->len + 3] = chr;
+      case 3:  ((Vstr_node_buf *)scan)->buf[scan->len + 2] = chr;
+      case 2:  ((Vstr_node_buf *)scan)->buf[scan->len + 1] = chr;
+      case 1:  ((Vstr_node_buf *)scan)->buf[scan->len + 0] = chr;
+               break;
+      default: memset(((Vstr_node_buf *)scan)->buf + scan->len, chr, len);
+               break;
+    }
+    scan->len += len;
+    base->len += len;
+
+    if (base->iovec_upto_date)
+    {
+      unsigned int num = base->num + VSTR__CACHE(base)->vec->off - 1;
+      VSTR__CACHE(base)->vec->v[num].iov_len += len;
+    }
+    
+    return (1);
+  }
+
+  return (vstr_nx_extern_inline_add_rep_chr(base, pos, chr, len));
+}

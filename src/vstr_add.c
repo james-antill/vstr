@@ -165,7 +165,7 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
   pos_scan = scan; \
   pos_scan_next = scan->next \
 
-#define VSTR__ADD_MID(max, spare_beg) \
+#define VSTR__ADD_MID(max, node_type) \
   if (scan != base->end) \
     base->iovec_upto_date = FALSE; \
  } \
@@ -176,7 +176,7 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
    vstr__base_zero_used(base); \
  } \
  \
- scan = (Vstr_node *)base->conf-> spare_beg; \
+ scan = (Vstr_node *)base->conf-> spare_ ## node_type ## _beg; \
  if (pos_scan) \
  { \
   assert(base->len); \
@@ -195,10 +195,11 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
   if (tmp > len) \
     tmp = len; \
   \
+  base-> node_ ## node_type ## _used = TRUE; \
   ++num; \
   ++base->num; \
   
-#define VSTR__ADD_END(spare_beg, spare_num, cast_type, int_type, o_p_s_l) \
+#define VSTR__ADD_END(node_type, int_type, o_p_s_l) \
   scan->len = tmp; \
   \
   if (!vstr__cache_iovec_maybe_add(base, scan, pos, tmp)) \
@@ -216,8 +217,9 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
   scan = scan->next; \
  } \
  \
- base->conf-> spare_beg = (cast_type *)scan->next; \
- base->conf-> spare_num -= num; \
+ base->conf-> spare_ ## node_type ## _beg = \
+   (Vstr_node_ ## node_type *)scan->next; \
+ base->conf-> spare_ ## node_type ## _num -= num; \
  \
  assert(!scan || (scan->type == int_type)); \
  \
@@ -253,6 +255,8 @@ int vstr_nx_extern_inline_add_buf(Vstr_base *base, size_t pos,
   {
     size_t tmp = (base->conf->buf_sz - scan->len);
     
+    assert(base->node_buf_used);
+    
     if (tmp > len)
       tmp = len;
 
@@ -274,14 +278,13 @@ int vstr_nx_extern_inline_add_buf(Vstr_base *base, size_t pos,
     }
   }
   
-  VSTR__ADD_MID(base->conf->buf_sz, spare_buf_beg);
+  VSTR__ADD_MID(base->conf->buf_sz, buf);
 
   /* always do memcpy -- don't do above */
   memcpy(((Vstr_node_buf *)scan)->buf, buffer, tmp);
   buffer = ((char *)buffer) + tmp;
 
-  VSTR__ADD_END(spare_buf_beg, spare_buf_num, Vstr_node_buf, VSTR_TYPE_NODE_BUF,
-                orig_pos_scan_len);
+  VSTR__ADD_END(buf, VSTR_TYPE_NODE_BUF, orig_pos_scan_len);
   
  return (TRUE);
 }
@@ -312,6 +315,8 @@ int vstr_nx_add_ptr(Vstr_base *base, size_t pos,
  {
    size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
      
+   assert(base->node_ptr_used);
+   
    if (tmp > len)
      tmp = len;
    
@@ -331,13 +336,13 @@ int vstr_nx_add_ptr(Vstr_base *base, size_t pos,
    }
  }
  
- VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_ptr_beg);
+ VSTR__ADD_MID(VSTR_MAX_NODE_ALL, ptr);
 
+ base->node_ptr_used = TRUE;
  ((Vstr_node_ptr *)scan)->ptr = ptr;
  ptr += tmp;
 
- VSTR__ADD_END(spare_ptr_beg, spare_ptr_num, Vstr_node_ptr, VSTR_TYPE_NODE_PTR,
-               pos_scan->len);
+ VSTR__ADD_END(ptr, VSTR_TYPE_NODE_PTR, pos_scan->len);
  
  return (TRUE);
 }
@@ -366,6 +371,8 @@ int vstr_nx_add_non(Vstr_base *base, size_t pos, size_t len)
  {
    size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
 
+   assert(base->node_non_used);
+    
    if (tmp > len)
      tmp = len;
 
@@ -385,9 +392,8 @@ int vstr_nx_add_non(Vstr_base *base, size_t pos, size_t len)
    }
  }
   
- VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_non_beg);
- VSTR__ADD_END(spare_non_beg, spare_non_num, Vstr_node_non, VSTR_TYPE_NODE_NON,
-               orig_pos_scan_len);
+ VSTR__ADD_MID(VSTR_MAX_NODE_ALL, non);
+ VSTR__ADD_END(non, VSTR_TYPE_NODE_NON, orig_pos_scan_len);
  
  return (TRUE);
 }
@@ -418,6 +424,8 @@ int vstr_nx_add_ref(Vstr_base *base, size_t pos,
  {
    size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
      
+   assert(base->node_ref_used);
+   
    if (tmp > len)
      tmp = len;
    
@@ -437,14 +445,13 @@ int vstr_nx_add_ref(Vstr_base *base, size_t pos,
    }
  }
  
- VSTR__ADD_MID(VSTR_MAX_NODE_ALL, spare_ref_beg);
+ VSTR__ADD_MID(VSTR_MAX_NODE_ALL, ref);
 
  ((Vstr_node_ref *)scan)->ref = vstr_nx_ref_add(ref);
  ((Vstr_node_ref *)scan)->off = off;
  off += len;
 
- VSTR__ADD_END(spare_ref_beg, spare_ref_num, Vstr_node_ref, VSTR_TYPE_NODE_REF,
-               pos_scan->len);
+ VSTR__ADD_END(ref, VSTR_TYPE_NODE_REF, pos_scan->len);
  
  return (TRUE);
 }
@@ -496,6 +503,8 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
       --base->conf->spare_ref_num;
       ref_node = (Vstr_node *)base->conf->spare_ref_beg;
       base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
+
+      base->node_ref_used = TRUE;
       
       ref_node->len = (*scan)->len;
       ((Vstr_node_ref *)ref_node)->ref = vstr_nx_ref_add(ref);
@@ -911,6 +920,8 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   unsigned int count = 0;
   Vstr_node *scan = NULL;
   Vstr_node **adder = NULL;
+
+  base->node_buf_used |= !!bytes;
   
   iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
@@ -1069,3 +1080,57 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   assert(vstr__check_real_nodes(base));
 }
 
+int vstr_nx_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
+                                      char chr, size_t len)
+{ /* almost embarassingly similar to add_buf */
+  unsigned int num = 0;
+  size_t orig_pos = pos;
+  size_t orig_len = len;
+  Vstr_node *scan = NULL;
+  Vstr_node *pos_scan = NULL;
+  Vstr_node *pos_scan_next = NULL;
+  size_t orig_pos_scan_len = 0;
+  
+  assert(!(!base || !len || (pos > base->len)));
+  if (!base || !len || (pos > base->len))
+    return (FALSE);
+  
+  VSTR__ADD_BEG(base->conf->buf_sz, spare_buf_num, VSTR_TYPE_NODE_BUF,
+                &orig_pos_scan_len);
+  
+  if ((scan->type == VSTR_TYPE_NODE_BUF) && (pos == scan->len) &&
+      (scan->len < base->conf->buf_sz))
+  {
+    size_t tmp = (base->conf->buf_sz - scan->len);
+
+    assert(base->node_buf_used);
+
+    if (tmp > len)
+      tmp = len;
+    
+    memset(((Vstr_node_buf *)scan)->buf + scan->len, chr, tmp);
+    scan->len += tmp;
+    
+    vstr__cache_iovec_add_node_end(base, num, tmp);
+    
+    base->len += tmp;
+    len -= tmp;
+    
+    if (!len)
+    {
+      vstr__cache_add(base, orig_pos, orig_len);
+      
+      assert(vstr__check_real_nodes(base));
+      return (TRUE);
+    }
+  }
+  
+  VSTR__ADD_MID(base->conf->buf_sz, buf);
+  
+  /* always do memset -- don't do above */
+  memset(((Vstr_node_buf *)scan)->buf, chr, tmp);
+  
+  VSTR__ADD_END(buf, VSTR_TYPE_NODE_BUF, orig_pos_scan_len);
+  
+  return (TRUE);
+}

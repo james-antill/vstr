@@ -21,6 +21,13 @@
  * it on to the host */
 /* Note that this file is #include'd */
 
+#ifdef USE_RESTRICTED_HEADERS /* always use C locale */
+# define localeconv()    NULL
+# define SYS_LOC(x) "."
+#else
+# define SYS_LOC(x) ((sys_loc)->x)
+#endif
+
 static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
                              struct Vstr__fmt_spec *spec)
 {
@@ -57,7 +64,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     fmt_buffer[tmp++] = '*';
   }
   
-  if (spec->int_type == LONG_DOUBLE_TYPE)
+  if (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG)
     fmt_buffer[tmp++] = 'L';
   
   fmt_buffer[tmp++] = spec->fmt_code;
@@ -65,9 +72,9 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   fmt_buffer[tmp] = 0;
   
   sys_loc = localeconv();
-  decimal_len = strlen(sys_loc->decimal_point);
+  decimal_len = strlen(SYS_LOC(decimal_point));
   
-  if (spec->int_type == LONG_DOUBLE_TYPE)
+  if (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG)
   {
     if (spec->field_width_usr && (spec->flags & PREC_USR))
       ret = asprintf(&float_buffer, fmt_buffer,
@@ -138,7 +145,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   while (tmp > 0)
   {
     if (decimal_len && (tmp >= decimal_len) &&
-        !memcmp(str, sys_loc->decimal_point, decimal_len))
+        !memcmp(str, SYS_LOC(decimal_point), decimal_len))
     {
       if (base->conf->loc->decimal_point_len)
       {

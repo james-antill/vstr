@@ -429,13 +429,12 @@ unsigned int vstr_nx_cache_add_cb(Vstr_conf *conf, const char *name,
     conf->malloc_bad = TRUE;
     return (0);
   }
+  conf->cache_cbs_sz = sz;
+  conf->cache_cbs_ents = ents;
 
   ents[sz - 1].name = name;
   ents[sz - 1].cb_func = func;
   
-  conf->cache_cbs_sz = sz;
-  conf->cache_cbs_ents = ents;
-
   return (sz);
 }
 
@@ -481,5 +480,47 @@ int vstr_nx_cache_set_data(const Vstr_base *base, unsigned int pos, void *data)
 
   VSTR__CACHE(base)->data[pos] = data;
   
+  return (TRUE);
+}
+
+int vstr__cache_subset_cbs(Vstr_conf *ful_conf, Vstr_conf *sub_conf)
+{
+  unsigned int scan = 0;
+  
+  if (sub_conf->cache_cbs_sz > ful_conf->cache_cbs_sz)
+    return (FALSE);
+
+  while (scan < ful_conf->cache_cbs_sz)
+  {
+    if (strcmp(ful_conf->cache_cbs_ents[scan].name,
+               sub_conf->cache_cbs_ents[scan].name))
+      return (FALSE); /* different ... so bad */
+
+    ++scan;
+  }
+
+  return (TRUE);
+}
+
+int vstr__cache_dup_cbs(Vstr_conf *conf, Vstr_conf *dupconf)
+{
+  Vstr_cache_cb *ents = conf->cache_cbs_ents;
+  unsigned int scan = 0;
+
+  if ((conf->cache_cbs_sz != dupconf->cache_cbs_sz) &&
+      !(ents = realloc(ents, sizeof(Vstr_cache_cb) * conf->cache_cbs_sz)))
+  {
+    conf->malloc_bad = TRUE;
+    return (FALSE);
+  }
+  conf->cache_cbs_sz = dupconf->cache_cbs_sz;
+  conf->cache_cbs_ents = ents;  
+
+  while (scan < dupconf->cache_cbs_sz)
+  {
+    ents[scan] = dupconf->cache_cbs_ents[scan];
+    ++scan;
+  }
+
   return (TRUE);
 }

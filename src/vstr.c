@@ -46,7 +46,7 @@ size_t vstr__loc_thou_grp_strlen(const char *passed_str)
   const unsigned char *str = (const unsigned char *)passed_str;
   size_t len = 0;
   
-  while (*str && (*str < CHAR_MAX))
+  while (*str && (*str < SCHAR_MAX))
   {
     ++len;
     ++str;
@@ -93,6 +93,14 @@ static int vstr__make_conf_loc_def_numeric(Vstr_locale *loc)
   return (FALSE);
 }
 
+#ifdef USE_RESTRICTED_HEADERS /* always use C locale */
+# define setlocale(x, y) NULL
+# define localeconv()    NULL
+# define SYS_LOC(x) ""
+#else
+# define SYS_LOC(x) ((sys_loc)->x)
+#endif
+
 int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
 {
   struct lconv *sys_loc = NULL;
@@ -111,9 +119,9 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
   {
     const char *name_numeric = NULL;
     size_t numeric_len = 0;
-    size_t grp_len = vstr__loc_thou_grp_strlen(sys_loc->grouping);
-    size_t thou_len = strlen(sys_loc->thousands_sep);
-    size_t deci_len = strlen(sys_loc->decimal_point);
+    size_t grp_len  = vstr__loc_thou_grp_strlen(SYS_LOC(grouping));
+    size_t thou_len =                    strlen(SYS_LOC(thousands_sep));
+    size_t deci_len =                    strlen(SYS_LOC(decimal_point));
     
     if (!(name_numeric = setlocale(LC_NUMERIC, NULL)))
       name_numeric = "C";
@@ -134,13 +142,13 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
     memcpy(loc->name_lc_numeric_str, name_numeric, numeric_len + 1);
     loc->name_lc_numeric_len = numeric_len;
     
-    memcpy(loc->grouping, sys_loc->grouping, grp_len);
+    memcpy(loc->grouping, SYS_LOC(grouping), grp_len);
     loc->grouping[grp_len] = 0; /* make sure all strs are 0 terminated */
     
-    memcpy(loc->thousands_sep_str, sys_loc->thousands_sep, thou_len + 1);
+    memcpy(loc->thousands_sep_str, SYS_LOC(thousands_sep), thou_len + 1);
     loc->thousands_sep_len = thou_len;
     
-    memcpy(loc->decimal_point_str, sys_loc->decimal_point, deci_len + 1);
+    memcpy(loc->decimal_point_str, SYS_LOC(decimal_point), deci_len + 1);
     loc->decimal_point_len = deci_len;
   }
 
@@ -216,6 +224,9 @@ Vstr_conf *vstr_nx_make_conf(void)
   
   conf->buf_sz = 64 - sizeof(Vstr_node_buf);
 
+  conf->fmt_usr_names = 0;
+  conf->fmt_usr_escape = 0;
+  
   conf->ref = 1;
   
   conf->free_do = TRUE;
@@ -223,10 +234,10 @@ Vstr_conf *vstr_nx_make_conf(void)
   conf->iovec_auto_update = TRUE;
   conf->split_buf_del = FALSE;
 
-  conf->no_node_ref = 1;
+  conf->user_ref = 1;
 
   conf->no_cache = FALSE;
-
+  
   return (conf);
 
  fail_numeric:
@@ -240,24 +251,24 @@ Vstr_conf *vstr_nx_make_conf(void)
   return (NULL);
 }
 
-void vstr__add_conf(Vstr_conf *conf)
+static void vstr__add_conf(Vstr_conf *conf)
 {
- ++conf->ref;
+  ++conf->ref;
 }
 
-void vstr__add_no_node_conf(Vstr_conf *conf)
+void vstr__add_user_conf(Vstr_conf *conf)
 {
-  assert(conf->no_node_ref == 1); /* only a user */
-  assert(conf->no_node_ref <= conf->ref);
+  assert(conf);
+  assert(conf->user_ref <= conf->ref);
   
-  ++conf->no_node_ref;
+  ++conf->user_ref;
 
   vstr__add_conf(conf);
 }
 
 void vstr__add_base_conf(Vstr_base *base, Vstr_conf *conf)
 {
-  assert(conf->no_node_ref <= conf->ref);
+  assert(conf->user_ref <= conf->ref);
   
   base->conf = conf;
   vstr__add_conf(conf);
@@ -282,9 +293,50 @@ void vstr__del_conf(Vstr_conf *conf)
 
   free(conf->cache_cbs_ents);
 
+  while (conf->fmt_usr_names)
+  {
+    Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_names;
+      
+    vstr_nx_fmt_del(conf, tmp->name_str);
+  }
+  
   if (conf->free_do)
     free(conf);
  }
+}
+
+int vstr_nx_swap_conf(Vstr_base *base, Vstr_conf **conf)
+{
+  assert(conf && *conf);
+  assert((*conf)->user_ref <= (*conf)->ref);
+
+  if (base->conf == *conf)
+    return (TRUE);
+  
+  if (base->conf->buf_sz != (*conf)->buf_sz)
+  {
+    if ((*conf)->user_ref >= (*conf)->ref)
+      return (FALSE);
+    
+    vstr_nx_free_spare_nodes(*conf, VSTR_TYPE_NODE_BUF, (*conf)->spare_buf_num);
+    (*conf)->buf_sz = base->conf->buf_sz;
+  }
+  
+  if (!vstr__cache_subset_cbs(*conf, base->conf))
+  {
+    if ((*conf)->user_ref >= (*conf)->ref)
+      return (FALSE);
+    
+    if (!vstr__cache_dup_cbs(*conf, base->conf))
+      return (FALSE);
+  }
+
+  --(*conf)->user_ref;
+  ++base->conf->user_ref;
+  
+  SWAP_TYPE(*conf, base->conf, Vstr_conf *);
+
+  return (TRUE);
 }
 
 void vstr_nx_free_conf(Vstr_conf *conf)
@@ -292,11 +344,10 @@ void vstr_nx_free_conf(Vstr_conf *conf)
   if (!conf)
     return;
   
-  assert(conf->no_node_ref > 0);
-  assert(conf->no_node_ref < 3); /* only a user and the default */
-  assert(conf->no_node_ref <= conf->ref);
+  assert(conf->user_ref > 0);
+  assert(conf->user_ref <= conf->ref);
   
-  --conf->no_node_ref;
+  --conf->user_ref;
   
   vstr__del_conf(conf);
 }
@@ -313,7 +364,7 @@ void vstr_nx_exit(void)
 { /* have count of mmaped files and do check */
   vstr__add_fmt_cleanup_spec();
 
-  assert((vstr__options.def->no_node_ref == 1) &&
+  assert((vstr__options.def->user_ref == 1) &&
          (vstr__options.def->ref == 1));
   
   vstr_nx_free_conf(vstr__options.def);
@@ -499,6 +550,11 @@ static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
  base->used = 0;
  base->free_do = FALSE;
  base->iovec_upto_date = FALSE;
+ 
+ base->node_buf_used = FALSE;
+ base->node_non_used = FALSE;
+ base->node_ptr_used = FALSE;
+ base->node_ref_used = FALSE;
  
  if (base->cache_available)
  {  
@@ -812,6 +868,10 @@ int vstr__check_real_nodes(Vstr_base *base)
 {
  size_t len = 0;
  size_t num = 0;
+ unsigned int node_buf_used = FALSE;
+ unsigned int node_non_used = FALSE;
+ unsigned int node_ptr_used = FALSE;
+ unsigned int node_ref_used = FALSE; 
  Vstr_node *scan = base->beg;
  
  assert(!base->used || (base->used < base->beg->len));
@@ -819,6 +879,17 @@ int vstr__check_real_nodes(Vstr_base *base)
  
  while (scan)
  {
+   switch (scan->type)
+   {
+     case VSTR_TYPE_NODE_BUF: node_buf_used = TRUE; break;
+     case VSTR_TYPE_NODE_NON: node_non_used = TRUE; break;
+     case VSTR_TYPE_NODE_PTR: node_ptr_used = TRUE; break;
+     case VSTR_TYPE_NODE_REF: node_ref_used = TRUE; break;
+     default:
+       assert(FALSE);
+       break;
+   }
+   
   len += scan->len;
   
   ++num;
@@ -826,6 +897,12 @@ int vstr__check_real_nodes(Vstr_base *base)
   scan = scan->next;
  }
 
+ /* it can be TRUE in the base and FALSE in reallity */
+ assert(!node_buf_used || base->node_buf_used);
+ assert(!node_non_used || base->node_non_used);
+ assert(!node_ptr_used || base->node_ptr_used);
+ assert(!node_ref_used || base->node_ref_used);
+ 
  assert(!!base->beg == !!base->end);
  assert(((len - base->used) == base->len) && (num == base->num));
 

@@ -27,11 +27,13 @@
 #endif
 
 #include <limits.h>
-#include <math.h>
 #include <ctype.h>
-#include <wchar.h>
 
-#include <locale.h>
+#ifndef USE_RESTRICTED_HEADERS /* dietlibc/klibc */
+# include <math.h>
+# include <wchar.h>
+# include <locale.h>
+#endif
 
 #ifdef HAVE_MALLOC_H
 # include <malloc.h>

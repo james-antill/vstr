@@ -23,17 +23,16 @@
 
 #include "main.h"
 
-#include <syscall.h>
-
-/* syscall on Linux x86 is weird and gives one of...
+/* syscall on Linux x86 doesn't work in a shared library as the PIC code 
+ * uses %bx. If you are compiling for static only, the this should work.
+ * However then you can't run the library anyway.
  * 
-   fixed or forbidden register 3 (bx) was spilled for class BREG.
-   can't find a register in class `BREG' while reloading `asm' 
- * 
- * ...so just do inline asm for i386 Linux */
+ * Code does inline asm for i386 Linux */
 #define TST_SYSCALL 0
 
 #if TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
+#include <syscall.h>
+
 # define write(x, y, z) vstr__sys_write(x, y, z)
 static _syscall3(int, write, int, fd, const void *, buf, int, count)
 # define exit(x) vstr__sys_exit(x)
@@ -65,6 +64,13 @@ void vstr_version_func(void)
  "    No POSIX host (iovec is manually defined, and vstr_sc_* are stubs)\n"
 #endif
 
+#ifdef HAVE_MMAP
+ "    Have mmap system call.\n"
+#endif
+    
+#if USE_RESTRICTED_HEADERS
+ "    Compiled with restricted functionality in lib C.\n"
+#endif
     
 #if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
  "    Formatting floats using -- glibc -- code.\n"
@@ -79,6 +85,18 @@ void vstr_version_func(void)
     
 #ifdef HAVE_LINKER_SCRIPT
  "    Linker script enabled (suppresses internal symbols).\n"
+#endif
+
+#ifdef HAVE_ATTRIB_ALIAS
+ "    Compiler supports -- alias -- attribute.\n"
+#endif
+
+#ifdef HAVE_ATTRIB_DEPRECATED
+ "    Compiler supports -- deprecated -- attribute.\n"
+#endif
+
+#ifdef HAVE_ATTRIB_VISIBILITY
+ "    Compiler supports -- visibility -- attribute.\n"
 #endif
 
 #ifdef HAVE_INLINE

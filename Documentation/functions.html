@@ -63,6 +63,7 @@
 <ul>
 <li><a href="#vstr_make_conf%28%29">vstr_make_conf()</a>
 <li><a href="#vstr_free_conf%28%29">vstr_free_conf()</a>
+<li><a href="#vstr_swap_conf%28%29">vstr_swap_conf()</a>
 <li><a href="#vstr_make_base%28%29">vstr_make_base()</a>
 <li><a href="#vstr_free_base%28%29">vstr_free_base()</a>
 <li><a href="#vstr_dup_buf%28%29">vstr_dup_buf()</a>
@@ -84,11 +85,14 @@
 <li><a href="#vstr_add_non%28%29">vstr_add_non()</a>
 <li><a href="#vstr_add_ref%28%29">vstr_add_ref()</a>
 <li><a href="#vstr_add_vstr%28%29">vstr_add_vstr()</a>
+<li><a href="#vstr_add_rep_chr%28%29">vstr_add_rep_chr()</a>
 <li><a href="#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a>
 <li><a href="#VSTR_ADD_CSTR_PTR%28%29">VSTR_ADD_CSTR_PTR()</a>
 <li><a href="#VSTR_ADD_CSTR_REF%28%29">VSTR_ADD_CSTR_REF()</a>
 <li><a href="#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>
 <li><a href="#vstr_add_fmt%28%29">vstr_add_fmt()</a>
+<li><a href="#vstr_add_vsysfmt%28%29">vstr_add_vsysfmt()</a>
+<li><a href="#vstr_add_sysfmt%28%29">vstr_add_sysfmt()</a>
 <li><a href="#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>
 <li><a href="#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
 <li><a href="#vstr_add_netstr_beg%28%29">vstr_add_netstr_beg()</a>
@@ -103,6 +107,7 @@
 <li><a href="#vstr_sub_non%28%29">vstr_sub_non()</a>
 <li><a href="#vstr_sub_ref%28%29">vstr_sub_ref()</a>
 <li><a href="#vstr_sub_vstr%28%29">vstr_sub_vstr()</a>
+<li><a href="#vstr_sub_rep_chr%28%29">vstr_sub_rep_chr()</a>
 <li><a href="#VSTR_SUB_CSTR_BUF%28%29">VSTR_SUB_CSTR_BUF()</a>
 <li><a href="#VSTR_SUB_CSTR_PTR%28%29">VSTR_SUB_CSTR_PTR()</a>
 <li><a href="#VSTR_SUB_CSTR_REF%28%29">VSTR_SUB_CSTR_REF()</a>
@@ -193,6 +198,11 @@
 <li><a href="#vstr_parse_netstr%28%29">vstr_parse_netstr()</a>
 <li><a href="#vstr_parse_netstr2%28%29">vstr_parse_netstr2()</a>
 <li><a href="#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a>
+</ul><li><a href="#Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string">Functions for hooking into the fmt function for the Vstr string</a>
+<ul>
+<li><a href="#vstr_fmt_add%28%29">vstr_fmt_add()</a>
+<li><a href="#vstr_fmt_del%28%29">vstr_fmt_del()</a>
+<li><a href="#vstr_fmt_srch%28%29">vstr_fmt_srch()</a>
 </ul><li><a href="#Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string">Functions for hooking into the cache system for the Vstr string</a>
 <ul>
 <li><a href="#vstr_cache_sub%28%29">vstr_cache_sub()</a>
@@ -202,9 +212,13 @@
 <li><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
-<li><a href="#vstr_sc_add_fd%28%29">vstr_sc_add_fd()</a>
-<li><a href="#vstr_sc_add_file%28%29">vstr_sc_add_file()</a>
-<li><a href="#vstr_sc_read_fd%28%29">vstr_sc_read_fd()</a>
+<li><a href="#vstr_sc_fmt_add_vstr%28%29">vstr_sc_fmt_add_vstr()</a>
+<li><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
+<li><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
+<li><a href="#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a>
+<li><a href="#vstr_sc_read_len_fd%28%29">vstr_sc_read_len_fd()</a>
+<li><a href="#vstr_sc_read_iov_file%28%29">vstr_sc_read_iov_file()</a>
+<li><a href="#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a>
 <li><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
 <li><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
 </ul></ul>
@@ -224,7 +238,7 @@
 
 <a name="vstr_exit%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_exit()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function can be called before exit, after all vstr objects have been
  freed, to cleanup data allocated internally in the vstr library.
@@ -447,7 +461,7 @@
 
 <a name="vstr_export_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_buf()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
@@ -628,28 +642,28 @@
 
 <a name="vstr_ref_cb_free_nothing%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_nothing()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function does nothing.
 
 <a name="vstr_ref_cb_free_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ref()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the Vstr_ref (Parameter[1]).
 
 <a name="vstr_ref_cb_free_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
 
 <a name="vstr_ref_cb_free_ptr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr_ref()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr and
@@ -680,17 +694,44 @@
 <a name="vstr_make_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_conf()
 </a><br>Returns: Vstr configuration<br>Type: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: nothing<br>Type<strong>[1]</strong>: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Nothing<br>Type<strong>[1]</strong>: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will make a Vstr configuration, or return NULL.
 
 
 <a name="vstr_free_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_free_conf()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will free a Vstr configuration, allocated by vstr_make_conf().
+
+
+<a name="vstr_swap_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_swap_conf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: New Vstr configuration; returned old Vstr configuration<br>Type<strong>[2]</strong>: struct Vstr_conf **
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will swap a Vstr configuration into a Vstr string possibly
+ changing the Vstr configuration to be compatible with the Vstr string. On
+ success the Vstr configuration that was being used by the Vstr string is
+ returned.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on
+ a Vstr that you don't own, by doing...
+<br><pre>
+     if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
+     {
+       vstr_add_fmt(notmy_vstr_string, ... );
+       vstr_swap_conf(notmy_vstr_string, &my_vstr_conf);
+     }
+
+</pre> ...note that the last call swaps the configuration back. However if you are
+ not using any custom specifiers then you can just call vstr_add_sysfmt()
+ instead.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 
 
 <a name="vstr_make_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -704,7 +745,7 @@
 
 <a name="vstr_free_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_free_base()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will free a Vstr string, allocated by vstr_make_base().
@@ -824,7 +865,7 @@
 <a name="vstr_make_spare_nodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_spare_nodes()
 </a><br>Returns: Number of nodes created<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr configuration<br>Type<strong>[2]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Type of nodes to create<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of nodes to create<br>Type<strong>[3]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -954,6 +995,24 @@
  (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
 
 
+<a name="vstr_add_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_rep_chr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Character to repeat<br>Type<strong>[3]</strong>: char
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Number of times to repeat characnter (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add 1 or more copies of the character (Parameter[3])
+ to the Vstr string.
+</p><p>  Think of this function as doing a memset() into data in the Vstr string.
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+
 <a name="VSTR_ADD_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_ADD_CSTR_BUF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
@@ -995,12 +1054,13 @@
 </a><br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: <br>Type<strong>[3]</strong>: const char *
-</td></tr><tr><td>Parameter<strong>[4]</strong>: <br>Type<strong>[4]</strong>: va_list
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Standard argument object from va_start()<br>Type<strong>[4]</strong>: va_list
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function works like calling vsprintf() directly into a Vstr string, 
- this is a portable implimentation which is feature complete with glibc-2.2.x
- sprintf().
+</p><p>  This function works like calling vsprintf() directly into a Vstr string,
+ however this is a portable implimentation which is feature complete with
+ glibc-2.2.x sprintf(); implements custom specifiers, if you use the
+ vstr_fmt_add() function, and doesn't require a double copy.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1008,9 +1068,14 @@
  is atomic).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Double support is done by calling the underlying sprintf() routine, so if
- that doesn't understand a modifier ('\'' isn't well supported for instance)
- then that won't work for doubles.
+</p><p>  Depending on how the library was compiled double support is implemented by
+ either calling the underlying host implementation of sprintf(), by internal
+ code or simply by assuming all double's are zero. When using the host
+ implemention system bugs of inacuracy will show through, however the
+ feature set remains the same (Ie. the ' flag works the same).
+</p><p>  Because specifiers can be overridden using vstr_fmt_add() if you are adding
+ data to a Vstr string that you didn't create you should use either
+ vstr_add_vsysfmt() or vstr_swap_conf().
 
 
 <a name="vstr_add_fmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1018,23 +1083,35 @@
 </a><br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, that complies with rules similar to C99 printf<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function works like calling sprintf() directly into a Vstr string,
- this is a portable implimentation which is feature complete with glibc-2.2.x
- sprintf().
-</p><p>  If the function can detect that the values of parameters are in error the
- function will return 0 to indicate an error.
-</p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
- although if it does fail the Vstr string won't have changed (Ie. the function
- is atomic).
+</p><p>  This just calls vstr_add_vfmt() after convtering the argument list
+ (Paramter[4]) a va_list object.
 
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Double support is done by calling the underlying sprintf() routine, in a
- simple manner (Ie. the ' flag is dealt with in the vstr code). This does mean
- that any system bugs for inacuracy, etc. will show through.
-</p><p>  vstr_add_fmt() calls vstr_add_buf() to get data into the Vstr string.
+
+<a name="vstr_add_vsysfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_vsysfmt()
+</a><br>Returns: Number of bytes added<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Standard argument object from va_start()<br>Type<strong>[4]</strong>: va_list
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function does the same thing as vstr_add_vfmt() but ignores custom
+ specifiers (see vstr_fmt_add()).
+
+
+<a name="vstr_add_sysfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_sysfmt()
+</a><br>Returns: Number of bytes added<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This just calls vstr_add_vsysfmt() after convtering the argument list
+ (Paramter[4]) a va_list object.
 
 
 <a name="vstr_add_iovec_buf_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1069,7 +1146,7 @@
 
 <a name="vstr_add_iovec_buf_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_iovec_buf_end()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of bytes added to the iovec array<br>Type<strong>[3]</strong>: size_t
@@ -1182,7 +1259,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to substitute a the data in the Vstr string with a copy
+</p><p>  This function is used to substitute the data in the Vstr string with a copy
  of the data in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1297,6 +1374,35 @@
  (Parameter[1]) and in some cases even how the data is represented in the
  Vstr string (Parameter[3]) for more information see the documentation on the
  VSTR_TYPE_SUB_* constants.
+
+
+<a name="vstr_sub_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sub_rep_chr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Character to repeat<br>Type<strong>[4]</strong>: char
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Number of times to repeat characnter (Parameter[3])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to substitute the data in the Vstr string with one or
+ more copies of the character (Parameter[3]).
+</p><p>  Think of this function as doing a memset() into data in the Vstr string.
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
+ length of the data (Parameter[5]).
+</p><p>  Think of this function as doing a vstr_del() and then a vstr_add_rep_chr()
+ (but it's atomic).
+</p><p>  If the length of the data (Parameter[5]) is equal to the
+ length of the Vstr string (Parameter[3]) and the data in the Vstr string is in
+ a BUF node then the data will just be overwritten (Ie. no allocations will
+ happen).
 
 
 <a name="VSTR_SUB_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1899,7 +2005,7 @@
 <a name="vstr_conv_lowercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_lowercase()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -1909,7 +2015,7 @@
 <a name="vstr_conv_uppercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_uppercase()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -2037,7 +2143,7 @@
 
 <a name="vstr_sects_free%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_free()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will free a Vstr sections, allocated by vstr_sects_make().
@@ -2408,11 +2514,57 @@
  cidr mask / netmask, from the Vstr string.
 
 
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string"><h2>Functions for hooking into the fmt function for the Vstr string</h2>
+</a>
+<a name="vstr_fmt_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_fmt_add()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Function to use as callback from vstr_add_vfmt()<br>Type<strong>[3]</strong>: int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *)
+</td></tr><tr><td>Parameter<strong>[4]</strong>: List of VSTR_TYPE_FMT_* types for format specifier (Parameter[2])<br>Type<strong>[4]</strong>: ...
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function allows you to register arbitrary format specifiers for printing
+ from vstr_fmt_vstr(). Note that these trigger off the user escape character,
+ which may or may not be the same as the "system" escape character of '%'.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the user escape character is '%', then you can override system specifiers
+ by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but
+ is done so that you can have specifier names like "igloo" and it not be taken
+ as a system specifier, however if you then did "%igoo" that would be
+ interpreted as a "%i" (int) specification followed by the string "goo".
+</p><p>  You can register multiple names with one callback, so you can register say
+ "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%',
+ will do the right thing with current printf warning checks with gcc. We can
+ all hope that the former will be as usable eventually.
+
+
+<a name="vstr_fmt_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_fmt_del()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function allows you to deregister a format specifier added
+ using vstr_fmt_add().
+
+
+<a name="vstr_fmt_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_fmt_srch()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function allows you to find out if a format specifier has been added
+ using vstr_fmt_add().
+
+
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string"><h2>Functions for hooking into the cache system for the Vstr string</h2>
 </a>
 <a name="vstr_cache_sub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_sub()
-</a><br>Returns: nothing<br>Type: void
+</a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2484,15 +2636,34 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>
 </a>
-<a name="vstr_sc_add_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_sc_add_fd()
+<a name="vstr_sc_fmt_add_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_vstr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ Vstr strings. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_VOID_PTR, VSTR_TYPE_FMT_SIZE_T,
+ VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END. These
+ correspond to the last 4 arguments to vstr_add_vstr().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  As you would expect the precision and field width values are used from the
+ format, so the length of the Vstr string printed if the lower bound of the
+ length passed and the precision.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+<a name="vstr_sc_mmap_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_mmap_fd()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: File descriptor<br>Type<strong>[3]</strong>: int
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start map in file descriptor<br>Type<strong>[4]</strong>: off_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start map in file descriptor<br>Type<strong>[4]</strong>: off64_t
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Size of map in file descriptor<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_ADD_FD_ERR_<br>Type<strong>[6]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_MMAP_FD_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a mmap()d mapping of data from a filedescriptor
  (Parameter[3]) at offset (Paramter[4]) and of size (Parameter[5]) to a
@@ -2504,20 +2675,22 @@
  minus the offset (Parameter[4]).
 
 
-<a name="vstr_sc_add_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_sc_add_file()
+<a name="vstr_sc_mmap_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_mmap_file()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Filename to add a mapping from<br>Type<strong>[3]</strong>: const char *
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns error code starting VSTR_TYPE_SC_ADD_FILE_ERR_<br>Type<strong>[4]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start map in file open()'d by filename<br>Type<strong>[4]</strong>: off64_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Size of map in file open()'d by filename<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_MMAP_FILE_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a mmap()d mapping of the entire data of filename
  (Parameter[3]) to a Vstr string.
 
 
-<a name="vstr_sc_read_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_sc_read_fd()
+<a name="vstr_sc_read_iov_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_read_iov_fd()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
@@ -2529,6 +2702,66 @@
 </p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
  the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
  before returning.
+
+
+<a name="vstr_sc_read_len_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_read_len_fd()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: File descriptor<br>Type<strong>[3]</strong>: int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Size of data to try to read<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor got by opening the filename (Parameter[3]) and finally
+ vstr_add_iovec_buf_end() before returning.
+</p><p>  However the arguments to the vstr_add_iovec_buf_* calls
+ are limited so that only upto size (Parameter[4]) data will be read.
+</p><p>  If size (Parameter[4]) is zero then the entire file will try to be read.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  As with all calls in the vstr library, this is a non-blocking call. If you
+ need all of the data specified (Parameter[4]) then you'll need to loop.
+
+
+<a name="vstr_sc_read_iov_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_read_iov_file()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Filename to read from<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start reading at<br>Type<strong>[4]</strong>: off64_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Minimum ammount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Maximum ammount of nodes to read into<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[7]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ before returning.
+
+
+<a name="vstr_sc_read_len_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_read_len_file()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Filename to read from<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset to start reading at<br>Type<strong>[4]</strong>: off64_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Size of data to try to read<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[6]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor got by opening the filename (Parameter[3]) and finally
+ vstr_add_iovec_buf_end() before returning.
+</p><p>  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
+ only upto exactly size (Parameter[4]) data will be read. If size
+ (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
+ will try and be read.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  As with all calls in the vstr library, this is a non-blocking call. If you
+ need all of the data specified (Parameter[5]) then you'll need to loop.
 
 
 <a name="vstr_sc_write_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2557,8 +2790,9 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Filename to add a mapping from<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Flags to pass to the open() system call<br>Type<strong>[5]</strong>: int
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Mode to pass to the open() system call<br>Type<strong>[6]</strong>: int
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_<br>Type<strong>[7]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Mode to pass to the open() system call<br>Type<strong>[6]</strong>: mode_t
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Offset to start writing at<br>Type<strong>[7]</strong>: off64_t
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to take data from a Vstr string and write it to a
  file, after open()ing the file (Parameter[4]) with open flags (Parameter[5])

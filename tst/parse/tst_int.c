@@ -91,10 +91,11 @@ int tst(void)
   DO_TEST_NUM(UINT_MAX, "%u", uint);
   DO_TEST_NUM(UINT_MAX, "%#x", uint);
   DO_TEST_NUM(UINT_MAX, "%#o", uint);
+#ifndef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */  
   DO_TEST_NUM(INTMAX_MIN, "%jd", intmax);
   DO_TEST_NUM(UINTMAX_MAX, "%ju", uintmax);
-  
   DO_TEST_UINTSTR("0xFFFFFFFFFFFF", "0XFFFFFFFF", "%#X");
+#endif
   
   DO_TEST_SINTSTR("0xffffffff", "0x7fffffff", "%#x");
   DO_TEST_SINTSTR("-0xFFFFFFFF", "-2147483648", "%d");

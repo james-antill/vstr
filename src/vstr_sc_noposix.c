@@ -21,80 +21,76 @@
 /* STUBS for - functions which are POSIX shortcuts */
 #include "main.h"
 
-int vstr_nx_sc_add_fd(Vstr_base *base __attribute__((unused)),
-                      size_t pos __attribute__((unused)),
-                      int fd __attribute__((unused)),
-                      off_t off __attribute__((unused)),
-                      size_t len __attribute__((unused)),
-                      unsigned int *err)
-{
-  if (err)
-  {
-    errno = ENOSYS;
-    *err = VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO;
-  }
-  
-  return (FALSE);
-}
+# define VSTR__SC_ENOSYS(x) \
+  if (err) \
+  { \
+    errno = ENOSYS; \
+    *err = (x); \
+  } \
+  \
+  return (FALSE)
 
-int vstr_nx_sc_add_file(Vstr_base *base __attribute__((unused)),
-                        size_t pos __attribute__((unused)),
-                        const char *filename __attribute__((unused)),
-                        unsigned int *err)
-{
-  if (err)
-  {
-    errno = ENOSYS;
-    *err = VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO;
-  }
-  
-  return (FALSE);
-}
-
-int vstr_nx_sc_read_fd(Vstr_base *base __attribute__((unused)),
+int vstr_nx_sc_mmap_fd(Vstr_base *base __attribute__((unused)),
                        size_t pos __attribute__((unused)),
                        int fd __attribute__((unused)),
-                       unsigned int min __attribute__((unused)),
-                       unsigned int max __attribute__((unused)),
+                       off64_t off __attribute__((unused)),
+                       size_t len __attribute__((unused)),
                        unsigned int *err)
-{
-  if (err)
-  {
-    errno = ENOSYS;
-    *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
-  }
-  
-  return (FALSE);
-}
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
+
+int vstr_nx_sc_mmap_file(Vstr_base *base __attribute__((unused)),
+                         size_t pos __attribute__((unused)),
+                         const char *filename __attribute__((unused)),
+                         off64_t off __attribute__((unused)),
+                         size_t len __attribute__((unused)),
+                         unsigned int *err)
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
+
+int vstr_nx_sc_read_iov_fd(Vstr_base *base __attribute__((unused)),
+                           size_t pos __attribute__((unused)),
+                           int fd __attribute__((unused)),
+                           unsigned int min __attribute__((unused)),
+                           unsigned int max __attribute__((unused)),
+                           unsigned int *err)
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO); }
+
+int vstr_nx_sc_read_len_fd(Vstr_base *base __attribute__((unused)),
+                           size_t pos __attribute__((unused)),
+                           int fd __attribute__((unused)),
+                           size_t len __attribute__((unused)),
+                           unsigned int *err)
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO); }
+
+int vstr_nx_sc_read_iov_file(Vstr_base *base __attribute__((unused)),
+                             size_t pos __attribute__((unused)),
+                             const char *filename __attribute__((unused)),
+                             off64_t off __attribute__((unused)),
+                             unsigned int min __attribute__((unused)),
+                             unsigned int max __attribute__((unused)),
+                             unsigned int *err)
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO); }
+
+int vstr_nx_sc_read_len_file(Vstr_base *base __attribute__((unused)),
+                             size_t pos __attribute__((unused)),
+                             const char *filename __attribute__((unused)),
+                             off64_t off __attribute__((unused)),
+                             size_t len __attribute__((unused)),
+                             unsigned int *err)
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO); }
 
 int vstr_nx_sc_write_fd(Vstr_base *base __attribute__((unused)),
                         size_t pos __attribute__((unused)),
                         size_t len __attribute__((unused)),
                         int fd __attribute__((unused)),
                         unsigned int *err)
-{
-  if (err)
-  {
-    errno = ENOSYS;
-    *err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO;
-  }
-  
-  return (FALSE);
-}
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO); }
 
 int vstr_nx_sc_write_file(Vstr_base *base __attribute__((unused)),
                           size_t pos __attribute__((unused)),
                           size_t len __attribute__((unused)),
                           const char *filename __attribute__((unused)),
                           int open_flags __attribute__((unused)),
-                          int mode __attribute__((unused)),
+                          mode_t mode __attribute__((unused)),
+                          off64_t off __attribute__((unused)),
                           unsigned int *err)
-{
-  if (err)
-  {
-    errno = ENOSYS;
-    *err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO;
-  }
-  
-  return (FALSE);
-}
+{ VSTR__SC_ENOSYS(VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO); }

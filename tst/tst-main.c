@@ -1,5 +1,8 @@
-
 #include "autoconf.h"
+
+#ifdef USE_RESTRICTED_HEADERS
+# define USE_WIDE_CHAR_T 0
+#endif
 
 #ifdef HAVE_POSIX_HOST
 # define USE_MMAP 1
@@ -18,11 +21,12 @@
 
 static int tst(void); /* fwd */
 
-#define TST_BUF_SZ (1024 * 32)
+#define TST_BUF_SZ (1024 * 512)
 
 static Vstr_base *s1 = NULL; /* normal */
 static Vstr_base *s2 = NULL; /* locale en_US */
 static Vstr_base *s3 = NULL; /* buf size = 4 */
+static Vstr_base *s4 = NULL; /* no cache */
 static char buf[TST_BUF_SZ];
 
 static const char *rf;
@@ -52,18 +56,23 @@ int main(void)
   int ret = 0;
   Vstr_conf *conf1 = NULL;
   Vstr_conf *conf2 = NULL;
+  Vstr_conf *conf3 = NULL;
 
   buf[0] = 0; /* make sure the compiler thinks buf is used ... */
   
   if (!vstr_init())
     die();
 
+#ifndef USE_RESTRICTED_HEADERS
   if (!setlocale(LC_ALL, "en_US"))
     die();
+#endif
   
   if (!(conf1 = vstr_make_conf()))
     die();
   if (!(conf2 = vstr_make_conf()))
+    die();
+  if (!(conf3 = vstr_make_conf()))
     die();
   
   if (!vstr_cntl_conf(conf1,
@@ -72,15 +81,20 @@ int main(void)
 
   vstr_cntl_conf(conf2, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
   
+  vstr_cntl_conf(conf3, VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE, 1);
+  
   if (!(s1 = vstr_make_base(NULL)))
     die();
   if (!(s2 = vstr_make_base(conf1)))
     die();
   if (!(s3 = vstr_make_base(conf2)))
     die();
+  if (!(s4 = vstr_make_base(conf3)))
+    die();
 
   vstr_free_conf(conf1);
   vstr_free_conf(conf2);
+  vstr_free_conf(conf3);
   
   if ((ret = tst()) && (ret != EXIT_FAILED_OK))
     fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
@@ -88,6 +102,7 @@ int main(void)
   vstr_free_base(s1);
   vstr_free_base(s2);
   vstr_free_base(s3);
+  vstr_free_base(s4);
   
   vstr_exit();
 

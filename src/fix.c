@@ -1299,7 +1299,7 @@ ssize_t FIX_SYMBOL(sendfile)(int out_fd, int in_fd,
 }
 #endif
 
-#ifndef HAVE_WCSNRTOMBS
+#if !defined(HAVE_WCSNRTOMBS) && USE_WIDE_CHAR_T
 size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
                               size_t len, mbstate_t *ps)
 {

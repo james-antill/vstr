@@ -43,7 +43,7 @@ size_t vstr_nx_add_netstr2_beg(Vstr_base *base, size_t pos)
 
  ret = pos + 1;
  /* number will be overwritten so it's ok in OS/compile default locale */
- tmp = vstr_nx_add_fmt(base, pos, "%lu%c", ULONG_MAX, VSTR__ASCII_COLON());
+ tmp = vstr_nx_add_sysfmt(base, pos, "%lu%c", ULONG_MAX, VSTR__ASCII_COLON());
 
  if (!tmp)
     return (0);
@@ -99,7 +99,6 @@ int vstr_nx_add_netstr2_end(Vstr_base *base,
 {
   size_t count = 0;
   char buf[BUF_NUM_TYPE_SZ(unsigned long)];
-  size_t len = 0;
   
   assert(sizeof(buf) >= VSTR__ULONG_MAX_LEN);
   assert(netstr_beg_pos);
@@ -110,16 +109,7 @@ int vstr_nx_add_netstr2_end(Vstr_base *base,
     return (FALSE);
   assert(count <= VSTR__ULONG_MAX_LEN);
   
-  while (len < count)
-  {
-    size_t tmp = count - len;
-    
-    if (tmp > CONST_STRLEN(VSTR__CONST_STR_ZERO))
-      tmp = CONST_STRLEN(VSTR__CONST_STR_ZERO);
-    
-    vstr_nx_sub_buf(base, netstr_beg_pos + len, tmp, VSTR__CONST_STR_ZERO, tmp);
-    len += tmp;
-  }
+  vstr_nx_sub_rep_chr(base, netstr_beg_pos, count, '0', count);
 
   if (count != VSTR__ULONG_MAX_LEN)
     vstr_nx_sub_buf(base, netstr_beg_pos + count, VSTR__ULONG_MAX_LEN - count,

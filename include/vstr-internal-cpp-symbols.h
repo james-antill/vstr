@@ -8,6 +8,7 @@
 #define vstr_nx_exit vstr_exit
 #define vstr_nx_make_conf vstr_make_conf
 #define vstr_nx_free_conf vstr_free_conf
+#define vstr_nx_swap_conf vstr_swap_conf
 #define vstr_nx_make_base vstr_make_base
 #define vstr_nx_free_base vstr_free_base
 #define vstr_nx_make_spare_nodes vstr_make_spare_nodes
@@ -23,6 +24,8 @@
 #define vstr_nx_dup_vstr vstr_dup_vstr
 #define vstr_nx_add_vfmt vstr_add_vfmt
 #define vstr_nx_add_fmt vstr_add_fmt
+#define vstr_nx_add_vsysfmt vstr_add_vsysfmt
+#define vstr_nx_add_sysfmt vstr_add_sysfmt
 #define vstr_nx_add_iovec_buf_beg vstr_add_iovec_buf_beg
 #define vstr_nx_add_iovec_buf_end vstr_add_iovec_buf_end
 #define vstr_nx_add_netstr_beg vstr_add_netstr_beg
@@ -34,6 +37,7 @@
 #define vstr_nx_sub_non vstr_sub_non
 #define vstr_nx_sub_ref vstr_sub_ref
 #define vstr_nx_sub_vstr vstr_sub_vstr
+#define vstr_nx_sub_rep_chr vstr_sub_rep_chr
 #define vstr_nx_conv_lowercase vstr_conv_lowercase
 #define vstr_nx_conv_uppercase vstr_conv_uppercase
 #define vstr_nx_conv_unprintable_chr vstr_conv_unprintable_chr
@@ -97,11 +101,19 @@
 #define vstr_nx_cache_srch vstr_cache_srch
 #define vstr_nx_cache_set_data vstr_cache_set_data
 #define vstr_nx_cache_sub vstr_cache_sub
-#define vstr_nx_sc_add_fd vstr_sc_add_fd
-#define vstr_nx_sc_add_file vstr_sc_add_file
-#define vstr_nx_sc_read_fd vstr_sc_read_fd
+#define vstr_nx_fmt_add vstr_fmt_add
+#define vstr_nx_fmt_del vstr_fmt_del
+#define vstr_nx_fmt_srch vstr_fmt_srch
+#define vstr_nx_sc_fmt_add_vstr vstr_sc_fmt_add_vstr
+#define vstr_nx_sc_mmap_fd vstr_sc_mmap_fd
+#define vstr_nx_sc_mmap_file vstr_sc_mmap_file
+#define vstr_nx_sc_read_iov_fd vstr_sc_read_iov_fd
+#define vstr_nx_sc_read_len_fd vstr_sc_read_len_fd
+#define vstr_nx_sc_read_iov_file vstr_sc_read_iov_file
+#define vstr_nx_sc_read_len_file vstr_sc_read_len_file
 #define vstr_nx_sc_write_fd vstr_sc_write_fd
 #define vstr_nx_sc_write_file vstr_sc_write_file
 #define vstr_nx_extern_inline_add_buf vstr_extern_inline_add_buf
+#define vstr_nx_extern_inline_add_rep_chr vstr_extern_inline_add_rep_chr
 #define vstr_nx_extern_inline_del vstr_extern_inline_del
 #define vstr_nx_extern_inline_sects_add vstr_extern_inline_sects_add

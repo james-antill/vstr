@@ -34,6 +34,7 @@
 
 #undef mode_t
 #undef off_t
+#undef off64_t
 #undef pid_t
 #undef size_t
 #undef ssize_t

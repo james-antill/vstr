@@ -27,25 +27,34 @@ extern "C"
 #endif
 
 #include <vstr-conf.h>
+#ifndef VSTR_AUTOCONF_HAVE_POSIX_HOST
+/* only undef the things we use externaly */
+# undef VSTR_AUTOCONF_HAVE_MMAP
+# undef VSTR_AUTOCONF_HAVE_WRITEV
+#endif
+
 #include <vstr-switch.h>
 
 #if VSTR_COMPILE_INCLUDE
-# include <stdlib.h>
-# include <stdarg.h>
-# include <string.h> /* strlen() in headers */
+# include <stdlib.h> /* size_t */
+# include <stdarg.h> /* va_list */
+# include <string.h> /* strlen()/memcpy()/memset() in headers */
 
 # ifdef VSTR_AUTOCONF_HAVE_POSIX_HOST
-#  include <sys/uio.h>
+#  include <sys/types.h>  /* mode_t */
+#  include <sys/uio.h>    /* struct iovec */
+#  include <sys/unistd.h> /* off64_t */
 # else
-struct iovec
+struct iovec /* need real definition, as it's used inline */
 {
  void *iov_base;
  size_t iov_len;
 };
+
 # endif
 
 # ifdef VSTR__AUTOCONF_NEED_INTTYPES_H
-#  include <stdint.h>
+#  include <stdint.h> /* intmax_t */
 # endif
 
 #endif

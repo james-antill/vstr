@@ -1,4 +1,88 @@
+2002-08-27  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.12
+
+	* src/vstr_sc_posix.c (vstr_sc_mmap_fd): Now directly returns ENOSYS
+	as a mmap() error if mmap() didn't exist at compile time.
+
+	* src/vstr_conv.c (vstr_conv_encode_uri): Made the conversion walk
+	forwards through the Vstr string, for speed.
+	(vstr_nx_conv_decode_uri): Made the conversion walk forwards through
+	the Vstr string, for speed.
+	(VSTR__BUF_NEEDED): Fast path when buf/non nodes are the only ones
+	in the Vstr string.
+
+	* src/vstr_add_fmt_dbl_none.c (vstr__add_fmt_dbl): Fixed conformance
+	issues.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_vstr): Added function.
+
+	* src/vstr_sub.c (vstr_sub_rep_chr): Added function.
+
+	* src/vstr_add.c (vstr_add_rep_chr): Added function.
+
+	* src/vstr.c (vstr_swap_conf): Added function, needed for other
+	libraries.
+
+	* src/vstr_add_fmt.c (vstr_fmt_del): Added function.
+	(vstr_fmt_srch): Added function.
+	(vstr_add_sysfmt): Added function, ignores custom specifiers.
+	(vstr_add_vsysfmt): Added function, ignores custom specifiers.
+
+	* src/vstr_sub.c (vstr__sub_buf_fast): Added fast path when substitution
+	is the length and buffers are the only nodes in the vstr.
+
+2002-08-21  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__fmt_fillin_spec): Handle negative precisions
+	according to the std.
+
+2002-08-20  James Antill  <james@and.org>
+
+	* src/vstr_cntl.c (vstr_cntl_base): Changed VSTR_CNTL_BASE_GET_CONF
+	so you have to call vstr_free_conf() when you have finished with
+	the Vstr_conf.
+
+	* src/vstr_srch.c (vstr__srch_buf_rev_fast): Added function, speeded up
+	reverse buf search.
+
+	* src/vstr_add_fmt.c (vstr_fmt_add): Add function for custom specifiers.
+
+2002-08-18  James Antill  <james@and.org>
+
+	* src/vstr_srch.c (vstr_srch_buf_fwd): Fixed a bug when last element
+	of a node was the start of the srch.
+
+2002-08-16  James Antill  <james@and.org>
+
+	* src/vstr_srch.c (vstr_srch_vstr_fwd): Major bug fix.
+	(vstr__srch_chr_rev_fast): Added function, speeded up reverse character
+	search.
+
+2002-08-15  James Antill  <james@and.org>
+
+	* include/vstr-const.h (VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE): Added
+	constant.
+	(VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE): Added constant.
+
+2002-08-13  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_mmap_fd): Changed name, changed off_t 
+	to off64_t.
+	(vstr_sc_mmap_file): Changed name, added offset and len parameters.
+	(vstr_sc_read_iov_fd): Changed name.
+	(vstr_sc_read_len_fd): Added function.
+	(vstr_sc_read_iov_file): Added function.
+	(vstr_sc_read_len_file): Added function.
+	(vstr_sc_write_file): Added offset parameter, change mode parameter to
+	mode_t.
+
 2002-08-12  James Antill  <james@and.org>
+
+	* scripts/check.sh: Rewrote large parts of script ... much hacky code,
+	now requires zsh :(.
+
+	* examples/ex_hexdump.c (EX_HEXDUMP_X2X2): Make hexdump much faster.
 
 	* NEWS: Release 0.9.11
 
@@ -27,8 +111,6 @@
 2002-08-10  James Antill  <james@and.org>
 
 	* Fixup references to vstr_nx_ in the ChangeLog.
-
-2002-08-10  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.10
 

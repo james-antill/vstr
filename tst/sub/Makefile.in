@@ -104,7 +104,8 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 tst = tst_buf \
     tst_ptr \
     tst_ref \
-    tst_vstr
+    tst_vstr \
+    tst_rep_chr
 
 
 # FIXME
@@ -114,13 +115,13 @@ check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 
-CFLAGS = @WARNS@
+CFLAGS = @CFLAGS@ @WARNS@
 LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
 check_PROGRAMS =  tst_buf$(EXEEXT) tst_ptr$(EXEEXT) tst_ref$(EXEEXT) \
-tst_vstr$(EXEEXT)
+tst_vstr$(EXEEXT) tst_rep_chr$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
 tst_buf_SOURCES = tst_buf.c
@@ -143,6 +144,11 @@ tst_vstr_OBJECTS =  tst_vstr.$(OBJEXT)
 tst_vstr_LDADD = $(LDADD)
 tst_vstr_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_vstr_LDFLAGS = 
+tst_rep_chr_SOURCES = tst_rep_chr.c
+tst_rep_chr_OBJECTS =  tst_rep_chr.$(OBJEXT)
+tst_rep_chr_LDADD = $(LDADD)
+tst_rep_chr_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_rep_chr_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -154,8 +160,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_buf.c tst_ptr.c tst_ref.c tst_vstr.c
-OBJECTS = tst_buf.$(OBJEXT) tst_ptr.$(OBJEXT) tst_ref.$(OBJEXT) tst_vstr.$(OBJEXT)
+SOURCES = tst_buf.c tst_ptr.c tst_ref.c tst_vstr.c tst_rep_chr.c
+OBJECTS = tst_buf.$(OBJEXT) tst_ptr.$(OBJEXT) tst_ref.$(OBJEXT) tst_vstr.$(OBJEXT) tst_rep_chr.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -236,6 +242,10 @@ tst_ref$(EXEEXT): $(tst_ref_OBJECTS) $(tst_ref_DEPENDENCIES)
 tst_vstr$(EXEEXT): $(tst_vstr_OBJECTS) $(tst_vstr_DEPENDENCIES)
 	@rm -f tst_vstr$(EXEEXT)
 	$(LINK) $(tst_vstr_LDFLAGS) $(tst_vstr_OBJECTS) $(tst_vstr_LDADD) $(LIBS)
+
+tst_rep_chr$(EXEEXT): $(tst_rep_chr_OBJECTS) $(tst_rep_chr_DEPENDENCIES)
+	@rm -f tst_rep_chr$(EXEEXT)
+	$(LINK) $(tst_rep_chr_LDFLAGS) $(tst_rep_chr_OBJECTS) $(tst_rep_chr_LDADD) $(LIBS)
 
 tags: TAGS
 

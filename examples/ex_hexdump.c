@@ -13,8 +13,65 @@
 /* hexdump in "readable" format ... note this is a bit more fleshed out than
  * some of the other examples mainly because I actually use it */
 
+/* this is roughly equiv. to...
+   
+hexdump -e '"%08_ax:"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"'
+        -e '"  " 16 "%_p" "\n"'
+
+ * ...except that it prints the address in big hex digits, and it doesn't take
+ * you 30 minutes to remember how to type it out.
+ */
+
+ 
 #define MAX_R_DATA_INCORE (1024 * 1024)
 #define MAX_W_DATA_INCORE (1024 * 8)
+
+#if 0
+# define EX_HEXDUMP_X8(s1, num) \
+  vstr_add_fmt(s1, (s1)->len, "%08X:", (num))
+# define EX_HEXDUMP_X2X2(s1, num1, num2) \
+  vstr_add_fmt(s1, (s1)->len, " %02X%02X", (num1), (num2))
+# define EX_HEXDUMP_X2__(s1, num1) \
+  vstr_add_fmt(s1, (s1)->len, " %02X  ",   (num1))
+#else
+# define EX_HEXDUMP_X8(s1, num) do { unsigned char xbuf[9]; \
+  const char *digs = "0123456789ABCDEF"; \
+  xbuf[8] = ':'; \
+  xbuf[7] = digs[(((num) >>  0) & 0xf)]; \
+  xbuf[6] = digs[(((num) >>  4) & 0xf)]; \
+  xbuf[5] = digs[(((num) >>  8) & 0xf)]; \
+  xbuf[4] = digs[(((num) >> 12) & 0xf)]; \
+  xbuf[3] = digs[(((num) >> 16) & 0xf)]; \
+  xbuf[2] = digs[(((num) >> 20) & 0xf)]; \
+  xbuf[1] = digs[(((num) >> 24) & 0xf)]; \
+  xbuf[0] = digs[(((num) >> 28) & 0xf)]; \
+  vstr_add_buf(s1, (s1)->len, xbuf, 9); } while (FALSE)
+# define EX_HEXDUMP_X2X2(s1, num1, num2) do { unsigned char xbuf[5]; \
+  const char *digs = "0123456789ABCDEF"; \
+  xbuf[0] = ' '; \
+  xbuf[4] = digs[(((num2) >> 0) & 0xf)]; \
+  xbuf[3] = digs[(((num2) >> 4) & 0xf)]; \
+  xbuf[2] = digs[(((num1) >> 0) & 0xf)]; \
+  xbuf[1] = digs[(((num1) >> 4) & 0xf)]; \
+  vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
+# define EX_HEXDUMP_X2__(s1, num1) do { unsigned char xbuf[5]; \
+  const char *digs = "0123456789ABCDEF"; \
+  xbuf[4] = ' '; \
+  xbuf[3] = ' '; \
+  xbuf[2] = digs[(((num1) >> 0) & 0xf)]; \
+  xbuf[1] = digs[(((num1) >> 4) & 0xf)]; \
+  xbuf[0] = ' '; \
+  vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
+#endif
+
 
 static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
 {
@@ -27,18 +84,19 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     unsigned char buf[16];
     
     vstr_export_buf(str2, 1, 16, buf, sizeof(buf));
+
+    EX_HEXDUMP_X8(str1, addr);
+
+    EX_HEXDUMP_X2X2(str1, buf[ 0], buf[ 1]);
+    EX_HEXDUMP_X2X2(str1, buf[ 2], buf[ 3]);
+    EX_HEXDUMP_X2X2(str1, buf[ 4], buf[ 5]);
+    EX_HEXDUMP_X2X2(str1, buf[ 6], buf[ 7]);
+    EX_HEXDUMP_X2X2(str1, buf[ 8], buf[ 9]);
+    EX_HEXDUMP_X2X2(str1, buf[10], buf[11]);
+    EX_HEXDUMP_X2X2(str1, buf[12], buf[13]);
+    EX_HEXDUMP_X2X2(str1, buf[14], buf[15]);
     
-    vstr_add_fmt(str1, str1->len, "%08X:", addr);
-    vstr_add_fmt(str1, str1->len,
-                 " %02X%02X %02X%02X"
-                 " %02X%02X %02X%02X"
-                 " %02X%02X %02X%02X"
-                 " %02X%02X %02X%02X"
-                 "  ",
-                 buf[ 0], buf[ 1], buf[ 2], buf[ 3],
-                 buf[ 4], buf[ 5], buf[ 6], buf[ 7],
-                 buf[ 8], buf[ 9], buf[10], buf[11],
-                 buf[12], buf[13], buf[14], buf[15]);
+    VSTR_ADD_CSTR_BUF(str1, str1->len, "  ");
     
     vstr_conv_unprintable_chr(str2, 1, 16, flags, '.');
     vstr_add_vstr(str1, str1->len, str2, 1, 16, VSTR_TYPE_ADD_ALL_BUF);
@@ -61,22 +119,21 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     missing -= (missing % 2);
     vstr_export_buf(str2, 1, str2->len, buf, sizeof(buf));
 
-    vstr_add_fmt(str1, str1->len, "%08X:", addr);
+    EX_HEXDUMP_X8(str1, addr);
     
     while (got >= 2)
     {
-      vstr_add_fmt(str1, str1->len, " %02X%02X", ptr[0], ptr[1]);
+      EX_HEXDUMP_X2X2(str1, ptr[0], ptr[1]);
       got -= 2;
       ptr += 2;
     }
     if (got)
     {
-      vstr_add_fmt(str1, str1->len, " %02X  ", ptr[0]);
+      EX_HEXDUMP_X2__(str1, ptr[0]);
       got -= 2;
     }
-    
-    vstr_add_fmt(str1, str1->len,
-                 "%*s", (missing * 2) + (missing / 2) + 2, "");
+
+    vstr_add_rep_chr(str1, str1->len, ' ', (missing * 2) + (missing / 2) + 2);
     
     vstr_conv_unprintable_chr(str2, 1, str2->len, flags, '.');
     vstr_add_vstr(str1, str1->len, str2, 1, str2->len, VSTR_TYPE_ADD_ALL_BUF);
@@ -90,7 +147,7 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     errno = ENOMEM, DIE("adding data:");
 }
 
-int ex_hexdump_set_o_nonblock(int fd)
+static int ex_hexdump_set_o_nonblock(int fd)
 {
   int flags = 0;
 
@@ -128,7 +185,7 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2,
   {
     if (str2->len < MAX_R_DATA_INCORE)
     {
-      vstr_sc_read_fd(str2, str2->len, fd, 2, 32, &err);
+      vstr_sc_read_iov_fd(str2, str2->len, fd, 2, 32, &err);
       if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
         break;
       if ((err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) && (errno == EINTR))
@@ -197,10 +254,10 @@ int main(int argc, char *argv[])
     unsigned int err = 0;
     
     if (str2->len < MAX_R_DATA_INCORE)
-      vstr_sc_add_file(str2, str2->len, argv[count], &err);
+      vstr_sc_mmap_file(str2, str2->len, argv[count], 0, 0, &err);
     
-    if ((err == VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO) ||
-        (err == VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE))
+    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
       
@@ -211,7 +268,7 @@ int main(int argc, char *argv[])
       
       close(fd);
     }
-    else if (err && (err != VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO))
+    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
       DIE("add:");
     else /* worked */
       ex_hexdump_process(str1, str2, FALSE);

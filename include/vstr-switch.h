@@ -110,3 +110,12 @@
 # endif
 #endif
 
+#ifndef VSTR_AUTOCONF_mode_t
+# define VSTR_AUTOCONF_mode_t mode_t
+/* always include types.h */
+#endif
+
+#ifndef VSTR_AUTOCONF_off64_t
+# define VSTR_AUTOCONF_off64_t off64_t
+/* always include unistd.h ... because off64_t might == off_t */
+#endif

@@ -8,11 +8,12 @@ int tst(void)
   static Vstr_ref ref2;
   static Vstr_ref ref3;
   int ret = 0;
+  char nil[1] = "";
   
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
   ref1.func = vstr_ref_cb_free_nothing;
-  ref1.ptr = "";
+  ref1.ptr = nil;
   ref1.ref = 0;
   
   ref2.func = vstr_ref_cb_free_nothing;
@@ -20,7 +21,7 @@ int tst(void)
   ref2.ref = 0;
   
   ref3.func = vstr_ref_cb_free_nothing;
-  ref3.ptr = "";
+  ref3.ptr = nil;
   ref3.ref = 0;
   
   VSTR_ADD_CSTR_REF(s1, s1->len, &ref1, 0);

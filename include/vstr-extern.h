@@ -169,6 +169,8 @@ extern void vstr_exit(void) ;
 
 extern struct Vstr_conf *vstr_make_conf(void) ;
 extern void vstr_free_conf(struct Vstr_conf *) ;
+extern int vstr_swap_conf(struct Vstr_base *, struct Vstr_conf **)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
 
 extern struct Vstr_base *vstr_make_base(struct Vstr_conf *) ;
 extern void vstr_free_base(struct Vstr_base *) ;
@@ -196,6 +198,8 @@ extern int vstr_add_vstr(struct Vstr_base *, size_t,
                          const struct Vstr_base *, size_t, size_t,
                          unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern int vstr_add_rep_chr(struct Vstr_base *, size_t, char, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
 
 extern struct Vstr_base *vstr_dup_buf(struct Vstr_conf *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
@@ -214,6 +218,10 @@ extern struct Vstr_base *vstr_dup_vstr(struct Vstr_conf *,
 extern size_t vstr_add_vfmt(struct Vstr_base *, size_t, const char *, va_list)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_FMT(3, 0) ;
 extern size_t vstr_add_fmt(struct Vstr_base *, size_t, const char *, ...)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_FMT(3, 4) ;
+extern size_t vstr_add_vsysfmt(struct Vstr_base *, size_t, const char *, va_list)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_FMT(3, 0) ;
+extern size_t vstr_add_sysfmt(struct Vstr_base *, size_t, const char *, ...)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_FMT(3, 4) ;
 
 extern size_t vstr_add_iovec_buf_beg(struct Vstr_base *, size_t,
@@ -252,6 +260,9 @@ extern int vstr_sub_ref(struct Vstr_base *, size_t, size_t,
 extern int vstr_sub_vstr(struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t,
                          unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern int vstr_sub_rep_chr(struct Vstr_base *, size_t, size_t,
+                            char, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 
 /* convertion functions */
@@ -446,8 +457,8 @@ extern size_t vstr_parse_netstr2(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
 
 /* section functions -- seperate namespace */
-extern struct Vstr_sects *vstr_sects_make(unsigned int);
-extern void vstr_sects_free(struct Vstr_sects *);
+extern struct Vstr_sects *vstr_sects_make(unsigned int) ;
+extern void vstr_sects_free(struct Vstr_sects *) ;
 
 extern int vstr_sects_add(struct Vstr_sects *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
@@ -495,22 +506,49 @@ extern int vstr_cache_set_data(const struct Vstr_base *, unsigned int, void *)
 extern void vstr_cache_sub(const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 
+extern int vstr_fmt_add(struct Vstr_conf *, const char *,
+                        int (*)(struct Vstr_base *, size_t,
+                                struct Vstr_fmt_spec *), ...)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern void vstr_fmt_del(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern int vstr_fmt_srch(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+
+
 /* shortcut functions ... */
-extern int vstr_sc_add_fd(struct Vstr_base *, size_t, int, off_t, size_t,
-                          unsigned int *)
+extern int vstr_sc_fmt_add_vstr(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+
+extern int vstr_sc_mmap_fd(struct Vstr_base *, size_t, int, 
+                           VSTR_AUTOCONF_off64_t, size_t, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
-extern int vstr_sc_add_file(struct Vstr_base *, size_t, const char *,
-                            unsigned int *)
+extern int vstr_sc_mmap_file(struct Vstr_base *, size_t,
+                             const char *, VSTR_AUTOCONF_off64_t, size_t, 
+                             unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 3)) ;
-extern int vstr_sc_read_fd(struct Vstr_base *, size_t, int,
-                           unsigned int, unsigned int,
-                           unsigned int *)
+extern int vstr_sc_read_iov_fd(struct Vstr_base *, size_t, int,
+                               unsigned int, unsigned int,
+                               unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
+extern int vstr_sc_read_len_fd(struct Vstr_base *, size_t, int,
+                               size_t, unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
+extern int vstr_sc_read_iov_file(struct Vstr_base *, size_t,
+           	                 const char *, VSTR_AUTOCONF_off64_t, 
+                                 unsigned int, unsigned int,
+                                 unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1, 3)) ;
+extern int vstr_sc_read_len_file(struct Vstr_base *, size_t,
+           	                 const char *, VSTR_AUTOCONF_off64_t, size_t,
+                                 unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1, 3)) ;
 extern int vstr_sc_write_fd(struct Vstr_base *, size_t, size_t, int,
                             unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1)) ;
 extern int vstr_sc_write_file(struct Vstr_base *, size_t, size_t,
-                              const char *, int, int, unsigned int *)
+                              const char *, int, VSTR_AUTOCONF_mode_t,
+                              VSTR_AUTOCONF_off64_t, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) ;
 
 /* == inline helper functions == */
@@ -521,4 +559,7 @@ extern int vstr_sc_write_file(struct Vstr_base *, size_t, size_t,
  extern int vstr_extern_inline_del(struct Vstr_base *, size_t, size_t)
      VSTR__COMPILE_ATTR_NONNULL_A() ;
  extern int vstr_extern_inline_sects_add(struct Vstr_sects *, size_t, size_t)
+     VSTR__COMPILE_ATTR_NONNULL_A() ;
+ extern int vstr_extern_inline_add_rep_chr(struct Vstr_base *, size_t, 
+                                           char, size_t)
      VSTR__COMPILE_ATTR_NONNULL_A() ;

@@ -189,6 +189,11 @@ static void vstr__del_all(Vstr_base *base)
  assert(!base->beg);
  base->end = NULL;
  
+ base->node_buf_used = FALSE;
+ base->node_non_used = FALSE;
+ base->node_ptr_used = FALSE;
+ base->node_ref_used = FALSE;
+ 
  vstr__cache_iovec_reset(base);
 
  vstr__cache_del(base, 1, orig_len);

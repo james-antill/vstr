@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <errno.h>
 
 #if STDC_HEADERS
 # include <string.h>
@@ -24,6 +26,25 @@
 # endif
 #endif
 
+#include <limits.h>
+#include <ctype.h>
+
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#ifndef USE_RESTRICTED_HEADERS /* dietlibc/klibc */
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -35,27 +56,14 @@
 # endif
 #endif
 
-#include <limits.h>
-#include <math.h>
-#include <ctype.h>
-#include <wchar.h>
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#else
-# warning "Don't have unistd.h ... Errm lets carry on, see what happens."
-#endif
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
-#include <netdb.h>
-#include <signal.h>
-#include <setjmp.h>
-#include <dirent.h>
-#include <locale.h>
+# include <math.h>
+# include <wchar.h>
+# include <locale.h>
+
+
 #ifdef HAVE_GETOPT_LONG
 # include <getopt.h>
 #endif
-#include <stdarg.h>
 #ifdef HAVE_DLFCN_H
 # include <dlfcn.h>
 #else
@@ -63,19 +71,23 @@
 #  undef USE_DL_LOAD
 # endif
 #endif
+
+#include <netdb.h>
+#include <setjmp.h>
+#include <sys/file.h>
+
+#include <netinet/tcp.h> /* not in klibc ... probably should be ? */
+#include <arpa/telnet.h>
+
+#endif /* USE_RESTRICTED_HEADERS */
+
 #ifdef HAVE_MALLOC_H
 # include <malloc.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
+
 #ifdef HAVE_SYS_UN_H
 # include <sys/un.h>
 #endif
-#include <sys/ioctl.h>
-#include <sys/file.h>
-#include <sys/wait.h>
-#include <sys/resource.h>
 
 #ifdef HAVE_POLL
 # include <sys/poll.h>
@@ -109,12 +121,6 @@
 #  undef USE_MMAP
 # endif
 #endif
-
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-
-#include <arpa/inet.h>
-#include <arpa/telnet.h>
 
 #ifndef TELOPT_COMPRESS
 # define TELOPT_COMPRESS 85

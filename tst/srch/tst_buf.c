@@ -7,6 +7,12 @@ int tst(void)
   unsigned int lens_fwd[4];
   int ret = 0;
   
+#ifdef USE_RESTRICTED_HEADERS /* %n doesn't work in dietlibc */
+  return (EXIT_FAILED_OK);
+#endif
+
+  /* FIXME: do with iovec and without */
+  
   sprintf(buf, "%d%nabcd %d%nxyz %u%n!& %u%nabcd",
           INT_MAX,  lens_fwd + 0,
           INT_MIN,  lens_fwd + 1,

@@ -100,7 +100,7 @@ static void ex_nl_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2, int fd)
   
   while (TRUE)
   {
-    vstr_sc_read_fd(str2, str2->len, fd, 2, 32, &err);
+    vstr_sc_read_iov_fd(str2, str2->len, fd, 2, 32, &err);
     if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
       break;
     if (err)
@@ -165,9 +165,9 @@ int main(int argc, char *argv[])
   {
     unsigned int err = 0;
     
-    vstr_sc_add_file(str2, str2->len, argv[count], &err);
-    if ((err == VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO) ||
-        (err == VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE))
+    vstr_sc_mmap_file(str2, str2->len, argv[count], 0, 0, &err);
+    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
       
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
       
       close(fd);
     }
-    else if (err && (err != VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO))
+    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
       DIE("add:");
     else
       ex_nl_process(str1, str2, FALSE);

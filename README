@@ -37,3 +37,16 @@ if it has an inline version).
  You'll then need to run the ./scripts/autogen.sh file, this then generate
 the real extern and inline files and do all the symbol stuff.
  
+ -------------- Compiling against dietlibc on Linux --------------
+
+ Done by doing...
+
+CC="diet gcc" CFLAGS="-O2 -g -DUSE_RESTRICTED_HEADERS" ./configure
+
+ These are warnings produced by dietlibc...
+
+1. memcpy()/memset() aren't defined in dietlibc header files this
+produces warnings in debug mode.
+
+2. stdarg produces lots of warnings about using (void *) arithmetric.
+

@@ -21,13 +21,15 @@
 /* functions for converting data in vstrs */
 #include "main.h"
 
-/* can overestimate number of nodes needed, as you get a new one
- * everytime you get a new node but it's not a big problem */
+/* Can overestimate number of nodes needed, as you get a new one
+ * everytime you get a new node but it's not a big problem.
+ * Also note that if you just have _NON nodes and _BUF nodes ot doesn't do
+ * anything */
 #define VSTR__BUF_NEEDED(test, val_count) do { \
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len); \
   if (!scan) goto malloc_buf_needed_fail; \
   \
-  do \
+  if (base->node_ptr_used || base->node_ref_used) { do \
   { \
     if (scan->type == VSTR_TYPE_NODE_BUF) \
       continue; \
@@ -58,7 +60,7 @@
     } \
   } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num, \
                                            scan, &scan_str, &scan_len))); \
-  \
+  } \
   len = passed_len; \
 } while (FALSE)
 
@@ -192,17 +194,27 @@ int vstr_nx_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
    
   while (len)
   {
-    char tmp = vstr_nx_export_chr(base, pos);
+    size_t skip_non = vstr_nx_spn_chrs_fwd(base, pos, len, NULL, 1);
 
-    if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags) &&
-        !vstr_nx_sub_buf(base, pos, 1, &swp, 1))
+    if (skip_non)
     {
-      assert(FALSE);
-      return (FALSE);
+      pos += skip_non;
+      len -= skip_non;
     }
-    
-    ++pos;
-    --len;
+    else
+    {
+      char tmp = vstr_nx_export_chr(base, pos);
+      
+      if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags) &&
+          !vstr_nx_sub_buf(base, pos, 1, &swp, 1))
+      {
+        assert(FALSE);
+        return (FALSE);
+      }
+      
+      ++pos;
+      --len;
+    }
   }
 
   return (TRUE);
@@ -297,26 +309,36 @@ int vstr_nx_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
    
   while (len)
   {
-    char tmp = vstr_nx_export_chr(base, pos);
+    size_t skip_non = vstr_nx_spn_chrs_fwd(base, pos, len, NULL, 1);
 
-    if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags))
+    if (skip_non)
     {
-      if (!del_pos)
-        del_pos = pos;
+      pos += skip_non;
+      len -= skip_non;
+    }
+    else
+    {
+      char tmp = vstr_nx_export_chr(base, pos);
       
-      assert(pos >= del_pos);
+      if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags))
+      {
+        if (!del_pos)
+          del_pos = pos;
+        
+        assert(pos >= del_pos);
+      }
+      else if (del_pos)
+      {
+        vstr_nx_del(base, del_pos, pos - del_pos);
+        pos = del_pos;
+        del_pos = 0;
+      }
+      
+      ++pos;
+      --len;
     }
-    else if (del_pos)
-    {
-      vstr_nx_del(base, del_pos, pos - del_pos);
-      pos = del_pos;
-      del_pos = 0;
-    }
-    
-    ++pos;
-    --len;
   }
-
+  
   if (del_pos)
     vstr_nx_del(base, del_pos, pos - del_pos);
 
@@ -370,7 +392,8 @@ int vstr_nx_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
    0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF /* high ascii */
   };
   unsigned int extra_nodes = 0;
-
+  unsigned int scan = 0;
+  
   if (!sects)
   {
     base->conf->malloc_bad = TRUE;
@@ -408,20 +431,26 @@ int vstr_nx_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
       return (FALSE);
   }
   
-  while (sects->num--)
+  while (scan < sects->num)
   {
     unsigned int bad = 0;
     char sub[3];
-    const char *digits = "0123456789abcdef";
+    const char *const digits = "0123456789abcdef";
+    /* TODO: tpos is instead of vstr_sub_alter_sects_buf */
+    size_t tpos = sects->ptr[scan].pos + (scan * 2);
     
-    assert(sects->ptr[sects->num].len == 1);
+    assert(sects->ptr[scan].len == 1);
 
-    bad = vstr_nx_export_chr(base, sects->ptr[sects->num].pos);
+    bad = vstr_nx_export_chr(base, tpos);
     sub[0] = '%';
     sub[1] = digits[((bad >> 4) & 0x0F)];
     sub[2] = digits[(bad & 0x0F)];
 
-    vstr_nx_sub_buf(base, sects->ptr[sects->num].pos, 1, sub, 3);
+    len = base->len;
+    vstr_nx_sub_buf(base, tpos, 1, sub, 3);
+    assert(len == (base->len - 2));
+
+    ++scan;
   }
   
   vstr_nx_sects_free(sects);
@@ -437,6 +466,7 @@ int vstr_nx_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
   unsigned int err = 0;
   size_t hex_len = 0;
   unsigned int extra_nodes = 0;
+  unsigned int scan = 0;
   
   if (!sects)
   {
@@ -481,18 +511,24 @@ int vstr_nx_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
       return (FALSE);
   }
 
-  while (sects->num--)
+  while (scan < sects->num)
   {
     unsigned char sub = 0;
-
-    assert(sects->ptr[sects->num].len == 3);
-    sub = vstr_nx_parse_ushort(base, sects->ptr[sects->num].pos + 1, 2,
+    /* TODO: tpos is instead of vstr_sub_alter_sects_buf */
+    size_t tpos = sects->ptr[scan].pos - (scan * 2);
+    
+    assert(sects->ptr[scan].len == 3);
+    sub = vstr_nx_parse_ushort(base, tpos + 1, 2,
                                16 | VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                                &hex_len, &err);
     assert(!err);
     assert(hex_len == 2);
 
-    vstr_nx_sub_buf(base, sects->ptr[sects->num].pos, 3, &sub, 1);
+    len = base->len;
+    vstr_nx_sub_buf(base, tpos, 3, &sub, 1);
+    assert(len == (base->len + 2));
+               
+    ++scan;
   }  
   
   vstr_nx_sects_free(sects);

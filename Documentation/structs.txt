@@ -129,3 +129,116 @@ Member: ptr
   This is a pointer to the section nodes.
 
 
+Section: struct Vstr_fmt_spec (aka. Vstr format specifier)
+
+Member: vstr_orig_len
+
+ Explanation:
+
+  This is the length of the Vstr string prior to vstr_add_vfmt() being called,
+ this allows you to work out how much data has been added to the Vstr string
+ already.
+
+
+Member: fmt_precision
+
+ Explanation:
+
+  This flag specifies that the caller passed a precision, either directory or
+ via. an argument. The precision itself is then passed as obj_precision.
+
+
+Member: obj_precision
+
+ Explanation:
+
+  This is the value passed as the precision, if one is set.
+
+ Note:
+
+  Even though the obj_precision argument is an unsigned type, as an argument
+ the type has to be treated as signed as ISO 9899:1999 specifies that
+ a negative precision means that the precision should be ignored (hence in this
+ case fmt_precision will be 0). This doesn't apply to a precision typed
+ directly into the format.
+
+
+Member: fmt_field_width
+
+ Explanation:
+
+  This flag specifies that the caller passed a field width, either directory or
+ via. an argument. The field width itself is then passed as obj_field_width.
+
+
+Member: obj_field_width
+
+ Explanation:
+
+  This is the value passed as the field_width, if one is set.
+
+ Note:
+
+  Even though the obj_field_width is an unsigned type, as an argument
+ the type has to be treated as signed as ISO 9899:1999 specifies that
+ a negative field width means that the fmt_minus flag should be set and 
+ the field width should become it's positive counter part (in vstr this 
+ work properly for INT_MIN). This doesn't apply to a field width typed
+ directly into the format.
+
+
+Member: fmt_minus
+
+ Explanation:
+
+  This is a flag specifing that the user put a '-' attribute on the format,
+ either directly or via. a negative field width value.
+
+
+Member: fmt_plus
+
+ Explanation:
+
+  This is a flag specifing that the user put a '+' attribute on the format.
+
+
+Member: fmt_space
+
+ Explanation:
+
+  This is a flag specifing that the user put a ' ' attribute on the format.
+
+
+Member: fmt_hash
+
+ Explanation:
+
+  This is a flag specifing that the user put a '#' attribute on the format.
+
+
+Member: fmt_zero
+
+ Explanation:
+
+  This is a flag specifing that the user put a '0' attribute on the format.
+
+
+Member: fmt_quote
+
+ Explanation:
+
+  This is a flag specifing that the user put a '\'' attribute on the format.
+
+
+Member: fmt_I
+
+ Explanation:
+
+  This is a flag specifing that the user put a 'I' attribute on the format.
+
+ Note:
+
+  This is used by glibc to mean that integers should come out as locale
+ dependant bytes. This flag currently does nothing in vstr, apart from being
+ passed to custom specifiers.
+

@@ -118,6 +118,10 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   unsigned int beg_num = 0;
   unsigned int end_num = 0;
   unsigned int num = 0;
+  unsigned int from_node_buf_used = FALSE;
+  unsigned int from_node_non_used = FALSE;
+  unsigned int from_node_ptr_used = FALSE;
+  unsigned int from_node_ref_used = FALSE;
   
   if (!len)
     return (TRUE);
@@ -143,6 +147,11 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   if (!(con = vstr__mov_setup_end(base, pos, NULL)))
     return (FALSE);
 
+  from_node_buf_used = from_base->node_buf_used;
+  from_node_non_used = from_base->node_non_used;
+  from_node_ptr_used = from_base->node_ptr_used;
+  from_node_ref_used = from_base->node_ref_used;
+  
   /* NOTE: the numbers might be off by one if con is before beg,
    * but that doesn't matter as we just need the difference */
   num = end_num - beg_num + 1;
@@ -158,6 +167,14 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   from_base->num -= num;
   vstr__cache_del(from_base, from_pos, len);
   vstr__mov_iovec_kill(from_base);
+
+  if (!from_base->len)
+  {
+    from_base->node_buf_used = FALSE;
+    from_base->node_non_used = FALSE;
+    from_base->node_ptr_used = FALSE;
+    from_base->node_ref_used = FALSE;
+  }
   
   beg = &tmp;
 
@@ -169,6 +186,12 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
 
   base->len += len;
   base->num += num;
+
+  base->node_buf_used |= from_node_buf_used;
+  base->node_non_used |= from_node_non_used;
+  base->node_ptr_used |= from_node_ptr_used;
+  base->node_ref_used |= from_node_ref_used;
+  
   vstr__cache_add(base, pos, len);
   vstr__mov_iovec_kill(base); /* This is easy to rm, if they append */
   
