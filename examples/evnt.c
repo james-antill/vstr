@@ -1345,10 +1345,13 @@ int evnt_epoll_enabled(void)
 
 void evnt_wait_cntl_add(struct Evnt *evnt, int flags)
 {
+  if ((SOCKET_POLL_INDICATOR(evnt->ind)->events & flags) == flags)
+    return;
+  
   SOCKET_POLL_INDICATOR(evnt->ind)->events  |=  flags;
   SOCKET_POLL_INDICATOR(evnt->ind)->revents |= (flags & POLLIN);
   
-  if (flags && evnt_epoll_enabled())
+  if (evnt_epoll_enabled())
   {
     struct epoll_event epevent[1];
     
@@ -1363,6 +1366,9 @@ void evnt_wait_cntl_add(struct Evnt *evnt, int flags)
 
 void evnt_wait_cntl_del(struct Evnt *evnt, int flags)
 {
+  if (!(SOCKET_POLL_INDICATOR(evnt->ind)->events & flags))
+    return;
+  
   SOCKET_POLL_INDICATOR(evnt->ind)->events  &= ~flags;
   SOCKET_POLL_INDICATOR(evnt->ind)->revents &= ~flags;
   

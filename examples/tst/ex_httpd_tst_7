@@ -1,0 +1,24 @@
+HEAD http://default/ HTTP/1.1
+Accept-Encoding: gzip
+
+HEAD http://default/index.html HTTP/1.1
+Accept-Encoding: gzip
+
+HEAD http://default/index.html.gz HTTP/1.1
+
+GET http://default/ HTTP/1.1
+
+GET http://default/ HTTP/1.1
+Accept-Encoding: gzip
+Range: bytes = 0-
+
+GET http://default/ HTTP/1.1
+Accept-Encoding: gzip; q = 0 . 000
+
+GET http://default/ HTTP/1.1
+Accept-Encoding: foo, bar;q= 0 . 020 , *;q = 1 . 00 , end
+
+GET http://default/ HTTP/1.1
+Accept-Encoding: x-gzip
+Connection: close
+

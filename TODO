@@ -7,6 +7,8 @@ was needed for vstr-1.0.0
  Maybe During 1.0.x
  ------------------
 
+. vstr_spn_cstr_buf_fwd etc.
+
 . test len=0 on _sc_*()
 
 . read/write entire file with read_file/write_file

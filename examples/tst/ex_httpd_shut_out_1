@@ -1,6 +1,6 @@
 HTTP/1.1 404 Not Found
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -8,7 +8,7 @@ Content-Length: 228
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: message/http
@@ -20,7 +20,7 @@ Host:
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -37,7 +37,7 @@ Content-Length: 159
 </html>
 HTTP/1.1 304 NOT MODIFIED
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -45,7 +45,7 @@ Content-Length: 159
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -54,7 +54,7 @@ Content-Range: bytes 2-9/159
 
 DOCTYPE HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -62,7 +62,7 @@ Content-Length: 159
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -71,7 +71,7 @@ Content-Range: bytes 2-9/159
 
 DOCTYPE HTTP/1.1 403 Forbidden
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -89,7 +89,7 @@ Content-Length: 216
 </html>
 HTTP/1.1 403 Forbidden
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -107,7 +107,7 @@ Content-Length: 216
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -117,7 +117,7 @@ Content-Range: bytes 151-158/159
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -127,7 +127,7 @@ Content-Range: bytes 151-158/159
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -137,7 +137,7 @@ Content-Range: bytes 151-158/159
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -147,7 +147,7 @@ Content-Range: bytes 151-158/159
 </html>
 HTTP/1.1 304 NOT MODIFIED
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -155,7 +155,7 @@ Content-Length: 159
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html

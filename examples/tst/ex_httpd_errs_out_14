@@ -1,6 +1,6 @@
 HTTP/1.1 501 Not Implemented
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes

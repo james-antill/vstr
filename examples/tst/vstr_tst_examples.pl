@@ -36,6 +36,8 @@ sub sub_tst
     my @files  = <$dir/${prefix}_tst_*>;
     my $sz     = scalar @files;
 
+    print "TST: ${prefix}\n";
+
     print "DBG: files=@files\n" if ($tst_DBG);
     @files = undef;
 
@@ -43,10 +45,9 @@ sub sub_tst
       { failure("NO files: ${prefix}"); }
 
     my @pids = ();
-    $sz *= $tst_num_mp;
-    for my $num ($tst_num_mp..$sz)
+    for my $num (1..($sz * $tst_num_mp))
       {
-	$num = floor($num / $tst_num_mp);
+	--$num; $num %= $sz; ++$num;
 	if ($tst_mp)
 	  {
 	    my $pid = fork();
@@ -193,6 +194,7 @@ sub daemon_port
 
 use POSIX;
 use IO::Socket;
+#require "sys/socket.ph";
 
 sub nonblock {
     my $socket = shift;
@@ -212,6 +214,8 @@ sub daemon_connect_tcp
 					 Timeout  => 2) ||
 					   failure("connect: $!");
     nonblock($sock);
+#    setsockopt($sock, SOL_SOCKET, TCP_NODELAY, 1) ||
+#      failure("TCP_NODELAY: $!");
     return $sock;
   }
 
@@ -245,6 +249,7 @@ sub daemon_io
     my $data = shift;
     my $done_shutdown = shift;
     my $slow_write = shift;
+    my $allow_write_truncate = shift;
     my $len = length($data);
     my $off = 0;
     my $output = '';
@@ -259,11 +264,18 @@ sub daemon_io
 	  {
 	    my $tmp = $len;
 
-	    if ($slow_write)
-	      { $tmp = 1; }
+	    if ($slow_write && ($tmp > 1))
+	      { $tmp /= 2; }
 	    $tmp = $sock->syswrite($data, $tmp, $off);
-	    failure("write: $!") if (!defined($tmp));
-	    $len -= $tmp; $off += $tmp;
+	    if (!defined($tmp) && $allow_write_truncate &&
+		($! eq 'Connection reset by peer'))
+	      { $tmp = $len; }
+	    if (!defined($tmp) && ($! ne 'Resource temporarily unavailable'))
+	      { failure("write: $!"); }
+	    if (defined($tmp))
+	      {
+		$len -= $tmp; $off += $tmp;
+	      }
 	  }
 
 	my $ret = $sock->sysread(my($buff), 4096);

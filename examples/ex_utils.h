@@ -270,13 +270,21 @@ static int io_fd_set_o_nonblock(int fd)
 # define EX_UTILS_OPEN open
 #endif
 
+/* This is inherited from open() on Linux, is it always? */
+#ifdef __linux__
+# define OS_INHERITS_NONBLOCK_FROM_OPEN 1
+#else
+# define OS_INHERITS_NONBLOCK_FROM_OPEN 0
+#endif
+
 #ifndef EX_UTILS_NO_USE_OPEN
 # ifndef VSTR_AUTOCONF_HAVE_OPEN64
 #  define open64 open
 # endif
 static int io_open(const char *filename)
-{
-  int fd = EX_UTILS_OPEN(filename, O_RDONLY | O_NOCTTY | O_NONBLOCK);
+{ /* do we alway6s want to do this for fifo's ? */
+  int flags = O_RDONLY | O_NOCTTY | O_NONBLOCK;
+  int fd = EX_UTILS_OPEN(filename, flags);
 
   if ((fd == -1) && EX_UTILS_RET_FAIL)
     return (-1);
@@ -286,7 +294,8 @@ static int io_open(const char *filename)
 
   /* When doing IO, it should always be non-blocking -- doesn't work
    * for files, but fd object might be a FIFO etc. */
-  io_fd_set_o_nonblock(fd);
+  if (OS_INHERITS_NONBLOCK_FROM_OPEN && (flags & O_NONBLOCK))
+    io_fd_set_o_nonblock(fd);
 
   return (fd);
 }

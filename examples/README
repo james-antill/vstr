@@ -16,31 +16,29 @@ happily work on win32 etc.
 http://www.sans.org/top20/#u2
 
 	conf
+        mmap cache?
+	fd cache
+	stat cache
 	configurable 404 pages (and maybe others)
         limiting IO
         fixing nagle off/on for cork
 	ipv6
-        mmap cache?
-	fd cache
-	auth rfc2617
-	apache style logs?
+	extension finder(/index and get index.html)
+	apache style perl converter?
 	native syslog
 	edge triggered events
 	multi proc speed up
-	stat cache
 	http/1.0 only mode?
+	auth (rfc2617)
 	FreeBSD sendfile
 	FreeBSD kqueue
-	gzip transfer encoding (with pregen files)
 
     BUGS?
 	GMT time convertion isn't done ... fuck the broken apps.
 	CRLF should be done as (CR)?LF ... fuck the broken apps.
-	CRLF* at the start of the request line.
 
   tst
 
-	socket filter
 	file truncation/expantion, while sending
 	mmap failure
 	seek failure

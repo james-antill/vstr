@@ -1,6 +1,6 @@
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -17,7 +17,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -34,7 +34,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -51,7 +51,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -69,7 +69,7 @@ Content-Range: bytes 0-164/165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -86,7 +86,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -103,7 +103,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 416 Requested Range Not Satisfiable
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -122,7 +122,7 @@ Content-Range: bytes */165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -139,7 +139,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -156,7 +156,7 @@ Content-Length: 165
 </html>
 HTTP/1.1 416 Requested Range Not Satisfiable
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -175,7 +175,7 @@ Content-Range: bytes */165
 </html>
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.7.1 (Vstr)
+Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Connection: close
 Accept-Ranges: bytes

@@ -1,19 +1,19 @@
-HTTP/1.1 417 Expectation Failed
+HTTP/1.1 403 Forbidden
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 297
+Content-Length: 216
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>417 Expectation Failed</title>
+    <title>403 Forbidden</title>
   </head>
   <body>
-    <h1>417 Expectation Failed</h1>
-    <p>The expectation given in an Expect request-header field could not be met by this server.</p>
+    <h1>403 Forbidden</h1>
+    <p>The request is forbidden.</p>
   </body>
 </html>
 HTTP/1.1 403 Forbidden

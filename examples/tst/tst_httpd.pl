@@ -7,7 +7,30 @@ use File::Copy;
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
 
-sub sub_http_tst
+sub httpd__munge_ret
+  {
+    my $output = shift;
+
+    # Remove date, because that changes each time
+    $output =~ s/^(Date:).*$/$1/gm;
+    # Remove last-modified = start date for error messages
+    $output =~
+      s!(HTTP/1[.]1 \s (?:301|40[0345]|41[2467]|50[015]) .*)$ (\n)
+	^(Date:)$ (\n)
+	^(Server:.*)$ (\n)
+	^(Last-Modified:) .*$
+	!$1$2$3$4$5$6$7!gmx;
+    # Remove last modified for trace ops
+    $output =~
+      s!^(Last-Modified:).*$ (\n)
+        ^(Accept-Ranges:.*)$ (\n)
+        ^(Content-Type: \s message/http.*)$
+	!$1$2$3$4$5!gmx;
+
+    return $output;
+  }
+
+sub httpd_file_tst
   {
     my $io_r = shift;
     my $io_w = shift;
@@ -22,69 +45,97 @@ sub sub_http_tst
     my $output = daemon_io($sock, $data,
 			   $xtra->{shutdown_w}, $xtra->{slow_write});
 
-    # Remove date, because that changes each time
-    $output =~ s/^(Date:).*$/$1/gm;
-    # Remove last-modified = start date for error messages
-    $output =~
-      s!(HTTP/1[.]1 \s (?:301|400|403|404|405|412|414|416|417|501|505) .*)$ (\n)
-	^(Date:)$ (\n)
-	^(Server:.*)$ (\n)
-	^(Last-Modified:) .*$
-	!$1$2$3$4$5$6$7!gmx;
-    # Remove last modified for trace ops
-    $output =~
-      s!^(Last-Modified:).*$ (\n)
-        ^(Accept-Ranges:.*)$ (\n)
-        ^(Content-Type: \s message/http.*)$
-	!$1$2$3$4$5!gmx;
+    $output = httpd__munge_ret($output);
     daemon_put_io_w($io_w, $output);
+  }
+
+sub httpd_gen_tst
+  {
+    my $io_r = shift;
+    my $io_w = shift;
+    my $xtra = shift || {};
+    my $sz   = shift;
+
+    my $sock = daemon_connect_tcp();
+    my $data = daemon_get_io_r($io_r);
+
+    if (length($data) != 0)
+      { failure(sprintf("data(%d) on gen tst", length($data))); }
+
+    $data = $xtra->{gen_input}->();
+
+    my $output = daemon_io($sock, $data,
+			   $xtra->{shutdown_w}, $xtra->{slow_write}, 1);
+
+    $output = httpd__munge_ret($output);
+    daemon_put_io_w($io_w, $output);
+  }
+
+sub gen_tsts()
+  {
+    my $gen_cb = sub {
+      my $data = ("\r\n" x 200_000) . ("x" x 500_000);
+      return $data;
+    };
+
+#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
+#	    {gen_input => $gen_cb});
+    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
+	    {gen_input => $gen_cb, shutdown_w => 0});
+#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
+#	    {gen_input => $gen_cb,                  slow_write => 1});
+#    sub_tst(\&httpd_gen_tst, "ex_httpd_null",
+#	    {gen_input => $gen_cb, shutdown_w => 0, slow_write => 1});
   }
 
 sub all_vhost_tsts()
   {
-    sub_tst(\&sub_http_tst, "ex_httpd");
-    sub_tst(\&sub_http_tst, "ex_httpd_errs");
+    sub_tst(\&httpd_file_tst, "ex_httpd");
+    sub_tst(\&httpd_file_tst, "ex_httpd_errs");
 
-    sub_tst(\&sub_http_tst, "ex_httpd",
+    sub_tst(\&httpd_file_tst, "ex_httpd",
 	    {shutdown_w => 0});
-    sub_tst(\&sub_http_tst, "ex_httpd_errs",
+    sub_tst(\&httpd_file_tst, "ex_httpd_errs",
 	    {shutdown_w => 0});
-    sub_tst(\&sub_http_tst, "ex_httpd_shut",
+    sub_tst(\&httpd_file_tst, "ex_httpd_shut",
 	    {shutdown_w => 0});
 
-    sub_tst(\&sub_http_tst, "ex_httpd",
-	    {slow_write => 1});
-    sub_tst(\&sub_http_tst, "ex_httpd_errs",
-	    {slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_errs",
+	    {                 slow_write => 1});
 
-    sub_tst(\&sub_http_tst, "ex_httpd",
+    sub_tst(\&httpd_file_tst, "ex_httpd",
 	    {shutdown_w => 0, slow_write => 1});
-    sub_tst(\&sub_http_tst, "ex_httpd_errs",
+    sub_tst(\&httpd_file_tst, "ex_httpd_errs",
 	    {shutdown_w => 0, slow_write => 1});
-    sub_tst(\&sub_http_tst, "ex_httpd_shut",
+    sub_tst(\&httpd_file_tst, "ex_httpd_shut",
 	    {shutdown_w => 0, slow_write => 1});
+    gen_tsts();
   }
 
 sub all_nonvhost_tsts()
   {
-    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts");
-    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
+    sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts");
+    sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts",
 	    {shutdown_w => 0});
-    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
-	    {slow_write => 1});
-    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
+    sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_non-virtual-hosts",
 	    {shutdown_w => 0, slow_write => 1});
+    gen_tsts();
   }
 
 sub all_public_only_tsts()
   {
-    sub_tst(\&sub_http_tst, "ex_httpd_public-only");
-    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
+    sub_tst(\&httpd_file_tst, "ex_httpd_public-only");
+    sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
 	    {shutdown_w => 0});
-    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
-	    {slow_write => 1});
-    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
+    sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
 	    {shutdown_w => 0, slow_write => 1});
+    gen_tsts();
   }
 
 if (@ARGV)
@@ -109,6 +160,19 @@ mkpath([$root . "/default",
 	$root . "/foo.example.com/nxt",
 	$root . "/foo.example.com:1234"]);
 
+sub munge_mtime
+  {
+    my $num   = shift;
+    my $fname = shift;
+
+    my ($a, $b, $c, $d,
+	$e, $f, $g, $h,
+	$atime, $mtime) = stat("$ENV{SRCDIR}/tst/ex_httpd_tst_1");
+    $atime -= ($num * (60 * 60 * 24));
+    $mtime -= ($num * (60 * 60 * 24));
+    utime $atime, $mtime, $fname;
+  }
+
 sub make_html
   {
     my $num   = shift;
@@ -129,12 +193,7 @@ sub make_html
 EOL
     close(OUT) || failure("close");
 
-    my ($a, $b, $c, $d,
-	$e, $f, $g, $h,
-	$atime, $mtime) = stat("$ENV{SRCDIR}/tst/ex_httpd_tst_1");
-    $atime -= ($num * (60 * 60 * 24));
-    $mtime -= ($num * (60 * 60 * 24));
-    utime $atime, $mtime, $fname;
+    munge_mtime($num, $fname);
   }
 
 make_html(1, "root",    "$root/index.html");
@@ -145,6 +204,9 @@ make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
 chmod(0000, "$root/default/noprivs.html");
 chmod(0600, "$root/default/noallprivs.html");
+
+system("gzip -c -9 $root/default/index.html > $root/default/index.html.gz");
+munge_mtime(0, "$root/default/index.html.gz");
 
 system("mkfifo $root/default/fifo");
 
@@ -167,7 +229,7 @@ system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true");
+daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
 system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");

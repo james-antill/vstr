@@ -104,6 +104,10 @@ extern inline void vlg_dbg3(Vlg *vlg, const char *fmt, ... )
       vlg_warn fmt ;                                  \
       return val ;                                    \
     } while (0)
+#define VLG_WARN_RET_VOID(fmt) do {                   \
+      vlg_warn fmt ;                                  \
+      return;                                         \
+    } while (0)
 
 #define VLG_WARNNOMEM_GOTO(label, fmt) do {           \
       errno = ENOMEM;                                 \

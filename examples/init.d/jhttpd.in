@@ -25,20 +25,29 @@ JHTTPD_NUM=1
 JHTTPD1_DIR=${localstatedir}/www/html
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
 
+function jhttpd_dirs()
+{
+          CNTL_FILE="${FILE_BASE}$i.cntl"
+          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
+          U__CALL_DIR="JHTTPD${i}_DIR"
+	  if [ "x${!U__CALL_CHROOT}" = "x" ]; then
+	    REAL_DIR="${!U__CALL_DIR:-/}"
+	  else
+	    REAL_DIR="${!U__CALL_CHROOT}${!U__CALL_DIR:+/}${!U__CALL_DIR}"
+	  fi
+}
+
 function start()
 {
         RETVAL=0
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          CNTL_FILE="${FILE_BASE}$i.cntl"
+          jhttpd_dirs
           PID_FILE="${FILE_BASE}$i.pid"
-          I_ARGS="--daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
           U__CALL_ARGS="JHTTPD${i}_ARGS"
-          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
-          U__CALL_DIR="JHTTPD${i}_DIR"
-          REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
-          U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-.}"
+          I_ARGS="--daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
+          U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
           echo -n $"Starting $prog_name(${REAL_DIR}): "
           daemon --check $prog_name$i $prog_exe $I_ARGS $U_ARGS
           RETVAL=$?
@@ -55,9 +64,7 @@ function stop()
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
-          U__CALL_DIR="JHTTPD${i}_DIR"
-          REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
+          jhttpd_dirs
           echo -n $"Shutting down $prog_name(${REAL_DIR}): "
           killproc $prog_name$i
           RETVAL=$?
@@ -74,10 +81,7 @@ function softstop()
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          CNTL_FILE="${FILE_BASE}$i.cntl"
-          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
-          U__CALL_DIR="JHTTPD${i}_DIR"
-	  REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
+          jhttpd_dirs
           echo -n $"Soft shutdown $prog_name(${REAL_DIR}): "
           $cntl_exe $CNTL_FILE -e close > /dev/null
           RETVAL=$?
@@ -138,7 +142,7 @@ function statuses()
         i=1
 	while [ $i -le $JHTTPD_NUM ];
         do
-          CNTL_FILE="${FILE_BASE}$i.cntl"
+          jhttpd_dirs
           mystatus $prog_name $i
           RETVAL=$?
           [ $RETVAL -eq 0 ] && $cntl_exe $CNTL_FILE -e status

@@ -1,48 +1,37 @@
-HTTP/1.1 404 Not Found
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified:
-Connection: Keep-Alive
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 228
-
-HTTP/1.1 200 OK
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
-Connection: Keep-Alive
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 159
-
 HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
-Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
 Content-Length: 165
 
-HTTP/1.1 403 Forbidden
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>Foo default</title>
+  </head>
+  <body>
+    <h1>Foo default</h1>
+  </body>
+</html>
+HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.9.1 (Vstr)
-Last-Modified:
-Connection: Keep-Alive
+Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 165
 
-HTTP/1.1 403 Forbidden
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified:
-Connection: Keep-Alive
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 216
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>Foo default</title>
+  </head>
+  <body>
+    <h1>Foo default</h1>
+  </body>
+</html>
 HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.9.1 (Vstr)
