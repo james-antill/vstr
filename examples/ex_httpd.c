@@ -87,6 +87,8 @@ static unsigned int server_max_header_sz = CONF_INPUT_MAXSZ;
 
 static int server_daemon = FALSE;
 
+static time_t server_beg = (time_t)-1;
+
 static unsigned int cl_dbg_opt = FALSE;
 static Vstr_base *cl_dbg_log = NULL;
 
@@ -263,32 +265,63 @@ static const char *serv_date_asctime(time_t val)
   SERV__STRFTIME(val, "%a %b %e %T %Y");
 }
 
-static void add_header_cstr(Vstr_base *out, size_t len,
+static void app_header_cstr(Vstr_base *out,
                             const char *hdr, const char *data)
 {
-  vstr_add_fmt(out, len, "%s: %s\r\n", hdr, data);
+  vstr_add_fmt(out, out->len, "%s: %s\r\n", hdr, data);
 }
 
-static void add_header_vstr(Vstr_base *out, size_t len,
+static void app_header_vstr(Vstr_base *out,
                             const char *hdr,
                             Vstr_base *s1, size_t vpos, size_t vlen,
                             unsigned int type)
 {
-  vstr_add_fmt(out, len, "%s: ${vstr:%p%zu%zu%u}\r\n", hdr,
+  vstr_add_fmt(out, out->len, "%s: ${vstr:%p%zu%zu%u}\r\n", hdr,
                s1, vpos, vlen, type);
 }
 
-static void add_header_uintmax(Vstr_base *out, size_t len,
+static void app_header_uintmax(Vstr_base *out,
                                const char *hdr, uintmax_t data)
 {
-  vstr_add_fmt(out, len, "%s: %ju\r\n", hdr, data);
+  vstr_add_fmt(out, out->len, "%s: %ju\r\n", hdr, data);
 }
 
-static void add_def_headers(Vstr_base *out)
+static void app_def_headers(Vstr_base *out, time_t now)
 {
-  add_header_cstr(out, out->len, "Date", serv_date_rfc1123(time(NULL)));
-  add_header_cstr(out, out->len, "Server", CONF_SERV_NAME);
-  /*  add_header_cstr(out, out->len, "Connection", "close"); */
+  app_header_cstr(out, "Date", serv_date_rfc1123(now));
+  app_header_cstr(out, "Server", CONF_SERV_NAME);
+  /*  app_header_cstr(out, out->len, "Connection", "close"); */
+}
+
+static void app_response_ok(Vstr_base *out,
+                            const char *h_if_mod_since, time_t mtime,
+                            time_t now, int *head_op)
+{
+  if (difftime(now, mtime) < 0) /* if mtime in future, chop it 14.29 */
+    mtime = now;
+
+  /* assumes time doesn't go backwards ... From rfc2616:
+   *
+   Note: When handling an If-Modified-Since header field, some
+   servers will use an exact date comparison function, rather than a
+   less-than function, for deciding whether to send a 304 (Not
+   Modified) response. To get best results when sending an If-
+   Modified-Since header field for cache validation, clients are
+   advised to use the exact date string received in a previous Last-
+   Modified header field whenever possible.
+  */
+  if (h_if_mod_since &&
+      (CSTREQ(h_if_mod_since, serv_date_rfc1123(mtime)) ||
+       CSTREQ(h_if_mod_since, serv_date_rfc850(mtime))  ||
+       CSTREQ(h_if_mod_since, serv_date_asctime(mtime))))
+  {
+    *head_op = TRUE;
+    vstr_add_fmt(out, out->len, "%s %03d %s\r\n",
+                 "HTTP/1.0", 304, "NOT MODIFIED");
+  }
+  else
+    vstr_add_fmt(out, out->len, "%s %03d %s\r\n",
+                 "HTTP/1.0", 200, "OK");
 }
 
 static int serv_recv(struct con *con)
@@ -383,13 +416,11 @@ static int serv_recv(struct con *con)
               vstr_cmp_bod_cstr_eq(data, op_pos, op_len,
                                    "If-Modified-Since: "))
           {
-            char *tmp = NULL;
-            
             op_pos += strlen("If-Modified-Since: ");
             op_len -= strlen("If-Modified-Since: ");
-            if (!(tmp = vstr_export_cstr_malloc(data, op_pos, op_len)))
+            if (!(req_head_if_mod_since =
+                  vstr_export_cstr_malloc(data, op_pos, op_len)))
               goto con_cleanup;
-            req_head_if_mod_since = tmp;
           }
         }
       }
@@ -404,7 +435,7 @@ static int serv_recv(struct con *con)
         goto con_cleanup;
       
       if (vstr_srch_chr_fwd(data, 1, data->len, 0))
-      {
+      { /* POSIX APIs don't like embedded NILs */
         HTTPD_ERR(400, head_op);
         goto con_fin_error_code;
       }
@@ -502,25 +533,16 @@ static int serv_recv(struct con *con)
       
       if (!ver_0_9)
       {
-        const char *tmp = req_head_if_mod_since;
-        
-        /* assumes time doesn't go backwards ... I'm 99% sure a client can't
-         * legally discover we did something different */
-        if (tmp &&
-            (CSTREQ(tmp, serv_date_rfc1123(f_stat.st_mtime)) ||
-             CSTREQ(tmp, serv_date_rfc850(f_stat.st_mtime))  ||
-             CSTREQ(tmp, serv_date_asctime(f_stat.st_mtime))))
-          head_op = TRUE;
-        
-        vstr_add_fmt(out, out->len, "%s %03d %s\r\n",
-                     "HTTP/1.0", 200, "OK");
-        
-        add_def_headers(out);
-        add_header_cstr(out, out->len, "Last-Modified",
+        time_t now = time(NULL);
+
+        app_response_ok(out,
+                        req_head_if_mod_since, f_stat.st_mtime, now, &head_op);
+        app_def_headers(out, now);
+        app_header_cstr(out, "Last-Modified",
                         serv_date_rfc1123(f_stat.st_mtime));
-        add_header_cstr(out, out->len, "Content-Type",
+        app_header_cstr(out, "Content-Type",
                         http_req_content_type);
-        add_header_uintmax(out, out->len, "Content-Length", f_stat.st_size);
+        app_header_uintmax(out, "Content-Length", f_stat.st_size);
         vstr_add_cstr_ptr(out, out->len, "\r\n");
         
         if (out->conf->malloc_bad)
@@ -565,16 +587,17 @@ static int serv_recv(struct con *con)
   {
     vstr_add_fmt(out, out->len, "%s %03u %s\r\n\r\r",
                  "HTTP/1.0", http_error_code, "BAD");
-    add_def_headers(out);
+    app_def_headers(out, time(NULL));
     if (redirect_loc)
-      add_header_vstr(out, out->len, "Location", data, 1, data->len, 0);
-    add_header_cstr(out, out->len, "Last-Modified", serv_date_rfc1123(0));
-    add_header_cstr(out, out->len, "Content-Type", "text/html");
+      app_header_vstr(out, "Location", data, 1, data->len, 0);
+    app_header_cstr(out, "Last-Modified",
+                    serv_date_rfc1123(server_beg));
+    app_header_cstr(out, "Content-Type", "text/html");
     if (redirect_loc)
-      add_header_uintmax(out, out->len, "Content-Length",
+      app_header_uintmax(out, "Content-Length",
                          CONF_MSG_LEN_301(data, 1, data->len));
     else
-      add_header_uintmax(out, out->len, "Content-Length",
+      app_header_uintmax(out, "Content-Length",
                          strlen(http_error_msg));
     vstr_add_cstr_ptr(out, out->len, "\r\n\r\r");
   }
@@ -820,7 +843,7 @@ static void cl_cmd_line(int argc, char *argv[])
         break;
 
       case 99:
-        if (daemon(FALSE, TRUE) == -1)
+        if (daemon(FALSE, FALSE) == -1)
           err(EXIT_FAILURE, "daemon");
         server_daemon = TRUE;
         openlog("jhttpd", 0, LOG_DAEMON);
@@ -863,6 +886,7 @@ int main(int argc, char *argv[])
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 
+  server_beg = time(NULL);
   if (server_daemon)
     syslog(LOG_NOTICE, "READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
   else

@@ -41,17 +41,22 @@ function del()
 
 function linkup()
 {
-  cd src
+  for dir in src examples; do
+  cd $dir
 
   if $doln; then
-   lndir ../$s/../src
+   lndir ../$s/../$dir
   fi
 
-  for i in .libs/*.da; do
-    ln -f $i; rm -f $i
-  done
+# Newer GCCs put them in the $srcdir
+  if [ ! -f ex_highlight-ex_highlight.da ]; then
+    for i in .libs/*.da; do
+      ln -f $i; rm -f $i
+    done
+  fi
 
   cd ..
+  done
 }
 
 function cov()

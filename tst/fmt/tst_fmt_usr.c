@@ -240,7 +240,7 @@ static void tst_fmt(int ret, Vstr_base *t1)
 
   vstr_del(t1, 1, t1->len);
 
-#ifdef USE_RESTRICTED_HEADERS
+#if !USE_WIDE_CHAR_T
   return;
 #endif  
   
@@ -585,7 +585,6 @@ int tst(void)
       vstr_add_fmt(s4, s4->len, fmt, spaces, num);
       
     TST_B_TST(ret, 15, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -604,7 +603,6 @@ int tst(void)
     vstr_add_fmt(s4, s4->len, fmt, num);
     
     TST_B_TST(ret, 16, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
     
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -622,7 +620,6 @@ int tst(void)
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 17, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -640,7 +637,6 @@ int tst(void)
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 18, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -658,7 +654,6 @@ int tst(void)
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 19, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -676,7 +671,6 @@ int tst(void)
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 20, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -695,7 +689,6 @@ int tst(void)
     vstr_mov(s4, s4->len, s2, 1, s2->len);
   
     TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
@@ -714,7 +707,6 @@ int tst(void)
     vstr_mov(s4, s4->len, s2, 1, s2->len);
   
     TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
     
     ++spaces;
     }

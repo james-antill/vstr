@@ -2,6 +2,8 @@
 
 static const char *rf = __FILE__;
 
+#define CSTREQ(x, y) (!strcmp(x, y))
+
 int tst(void)
 {
   int ret = 0;
@@ -10,6 +12,10 @@ int tst(void)
   return (EXIT_FAILED_OK);
 #endif
 
+  sprintf(buf, "%8a", 0.0);
+  if (!CSTREQ(buf, "  0x0p+0")) /* debian woody has a broken glibc */
+    return (EXIT_FAILED_OK);
+  
   vstr_del(s1, 1, s1->len);
   sprintf(buf,        "%E %e %F %f %G %g %A %8a %#a %#20.4a %#g %#.g %.20g %.f %#.f %-20.8e",
           0.0, 0.0, 0.0, 0.0,

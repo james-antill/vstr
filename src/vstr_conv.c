@@ -268,7 +268,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   Vstr_sects *sects = vstr_sects_make(VSTR__SECTS_SZ);
   size_t count = 0;
   /* from section 2.4.3. of rfc2396 */
-  unsigned char chrs_disallowed[] = {
+  static const unsigned char chrs_disallowed[] = {
    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
    0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
@@ -338,7 +338,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   {
     unsigned int bad = 0;
     char sub[3];
-    const char *const digits = "0123456789abcdef";
+    static const char digits[] = "0123456789abcdef";
     size_t tpos = sects->ptr[scan].pos + (scan * 2);
 
     assert(sects->ptr[scan].len == 1);

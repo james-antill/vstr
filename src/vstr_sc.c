@@ -1501,7 +1501,7 @@ size_t vstr_sc_conv_num_uint(char *out, size_t len, unsigned int val,
 
 size_t vstr_sc_conv_num10_uint(char *out, size_t len, unsigned int val)
 {
-  const char *const chrs_base = "0123456789";
+  static const char chrs_base[] = "0123456789";
   const unsigned int num_base = 10;
   VSTR__SC_CONV_NUM(unsigned int);
 }
@@ -1514,7 +1514,7 @@ size_t vstr_sc_conv_num_ulong(char *out, size_t len, unsigned long val,
 
 size_t vstr_sc_conv_num10_ulong(char *out, size_t len, unsigned long val)
 {
-  const char *const chrs_base = "0123456789";
+  static const char chrs_base[] = "0123456789";
   const unsigned int num_base = 10;
   VSTR__SC_CONV_NUM(unsigned long);
 }
@@ -1527,7 +1527,7 @@ size_t vstr_sc_conv_num_size(char *out, size_t len, size_t val,
 
 size_t vstr_sc_conv_num10_size(char *out, size_t len, size_t val)
 {
-  const char *const chrs_base = "0123456789";
+  static const char chrs_base[] = "0123456789";
   const unsigned int num_base = 10;
   VSTR__SC_CONV_NUM(size_t);
 }
@@ -1540,7 +1540,7 @@ size_t vstr_sc_conv_num_uintmax(char *out, size_t len, uintmax_t val,
 
 size_t vstr_sc_conv_num10_uintmax(char *out, size_t len, uintmax_t val)
 {
-  const char *const chrs_base = "0123456789";
+  static const char chrs_base[] = "0123456789";
   const unsigned int num_base = 10;
   VSTR__SC_CONV_NUM(uintmax_t);
 }

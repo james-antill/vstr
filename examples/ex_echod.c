@@ -295,7 +295,7 @@ static void cl_cmd_line(int argc, char *argv[])
         break;
 
       case 99:
-        if (daemon(FALSE, TRUE) == -1)
+        if (daemon(FALSE, FALSE) == -1)
           err(EXIT_FAILURE, "daemon");
         server_daemon = TRUE;
         openlog("jechod", 0, LOG_DAEMON);

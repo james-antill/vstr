@@ -23,12 +23,15 @@ fi
 gendesc $d/coverage_descriptions.txt -o descriptions
 
 cd src
-lcov --capture --directory . --output-file ../lib-$1.info --test-name lib$1
+lcov --capture --directory . --output-file ../lib-$1.info --test-name lib-$1
 cd ..
 
-# cd tst
-# lcov --capture --directory . --output-file ../tst-$1.info --test-name tst-$1
-# cd ..
+cd examples
+lcov --capture --directory . --output-file ../examples-$1.info --test-name examples-$1
+cd ..
 
-genhtml *.info --output-directory output --title "Vstr coverage" --show-details --description-file $d/tst-descriptions
-echo Point your browser at file:`pwd`/output/index.html
+mkdir output || true
+genhtml lib*.info --output-directory output/lib --title "Vstr coverage" --show-details --description-file descriptions
+genhtml examples*.info --output-directory output/examples --title "Vstr EXAMPLES coverage" --show-details --description-file descriptions
+genhtml *.info --output-directory output/all --title "Vstr ALL coverage" --show-details --description-file descriptions
+echo Point your browser at file:`pwd`/output/lib/index.html

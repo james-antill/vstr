@@ -9,6 +9,8 @@ was needed for vstr-1.0.0
 
 . evnt groups .. epoll?
 
+. glibc printf tests ... enable all three forms of fmt for coverage?
+
 . examples/ex_relay
 
 . examples/ex_httpd 1.1

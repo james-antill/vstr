@@ -233,8 +233,8 @@ static int vstr__parse_num_beg(const Vstr_base *base,
     char ascii_let_low_end = 0x7A;                                      \
     char ascii_let_high_end = 0x5A;                                     \
     char local_num_end = '9';                                           \
-    const char *local_let_low  = "abcdefghijklmnopqrstuvwxyz";          \
-    const char *local_let_high = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";          \
+    static const char local_let_low[]  = "abcdefghijklmnopqrstuvwxyz";  \
+    static const char local_let_high[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";  \
                                                                         \
     if (ret_len) *ret_len = 0;                                          \
     if (!err) err = &dummy_err;                                         \

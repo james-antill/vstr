@@ -3,21 +3,27 @@
 static const char *rf = __FILE__;
 
 #define TST_FLAG(num, name, old, new) \
+  tmp_f = 0xF0F0F0F0; \
   TST_B_TST(ret, (num), \
-            !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_f) && \
-              tmp_f == (old))); \
+            !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_f))); \
+  TST_B_TST(ret, (num), \
+            !(tmp_f == (old))); \
   TST_B_TST(ret, (num), \
             !vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_ ## name, (new))); \
+  tmp_f = 0xF0F0F0F0; \
   TST_B_TST(ret, (num), \
-            !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_f) && \
-              tmp_f == (new)))
+            !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_f))); \
+  TST_B_TST(ret, (num), \
+            !(tmp_f == (new)))
 
 #define TST_CHR(num, name, old, new) \
+  tmp_c = 0xF; \
   TST_B_TST(ret, (num), \
             !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_c) && \
               tmp_c == (old))); \
   TST_B_TST(ret, (num), \
             !vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_ ## name, (new))); \
+  tmp_c = 0xF; \
   TST_B_TST(ret, (num), \
             !(!!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_GET_ ## name, &tmp_c) && \
               tmp_c == (new)))

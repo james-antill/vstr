@@ -2,6 +2,8 @@
 
 static const char *rf = __FILE__;
 
+#define CSTREQ(x, y) (strcmp(x, y) == 0)
+
 int tst(void)
 {
   int ret = 0;
@@ -34,7 +36,7 @@ int tst(void)
 
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
 
-#ifdef USE_RESTRICTED_HEADERS
+#if !USE_WIDE_CHAR_T
   return (TST_B_RET(ret));
 #endif
   
@@ -79,16 +81,19 @@ int tst(void)
   TST_B_TST(ret, 7, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "abcd abcd"));
 
   vstr_del(s1, 1, s1->len);
-  ASSERT(!vstr_add_fmt(s1, 0, "%s%lc", "abcd", (wint_t)L'\xFEFE'));
-  ASSERT(!s1->len && !s1->conf->malloc_bad);
-  /* ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd",
-   *                      L"\x80\x80\x80\x80 123456789")); */
-  ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd", L"\xFEFE 123456789"));
-  ASSERT(!s1->len && !s1->conf->malloc_bad);
-  
+  if (!vstr_add_fmt(s1, 0, "%s%lc", "abcd", (wint_t)L'\xFEFE'))
+  { /* glibc refuses badly encoded stuff */
+    ASSERT(!s1->len && !s1->conf->malloc_bad);
+    /* ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd",
+     *                      L"\x80\x80\x80\x80 123456789")); */
+    ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd", L"\xFEFE 123456789"));
+    ASSERT(!s1->len && !s1->conf->malloc_bad);
+  }
+  else
+    vstr_del(s1, 1, s1->len);
+
   vstr_add_fmt(s1, 0, "%.*ls", 1, L"abcd");
   TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a"));
-
   
   return (TST_B_RET(ret));
 }

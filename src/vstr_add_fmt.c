@@ -151,6 +151,9 @@ struct Vstr__fmt_spec
   void *data_ptr;
  } u;
 
+ ptrdiff_t data_t; /* NOTE: no uptrdiff_t, but need real ptrdiff_t for
+                    * custom formatters. So normal uintmax_t */
+ 
  unsigned char fmt_code;
  int num_base;
  unsigned int int_type;
@@ -181,6 +184,7 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
   char *buf = buf_beg + sizeof(buf_beg);
   size_t i = 0;
   size_t real_i = 0;
+  /* can't make array */
   const char *chrs_base = "0123456789abcdefghijklmnopqrstuvwxyz";
   const char *grouping = NULL;
   unsigned char grp_num = 0;
@@ -768,13 +772,17 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
       case VSTR_TYPE_FMT_ULONG_LONG:
       case VSTR_TYPE_FMT_SSIZE_T:
       case VSTR_TYPE_FMT_SIZE_T:
-      case VSTR_TYPE_FMT_PTRDIFF_T:
       case VSTR_TYPE_FMT_INTMAX_T:
       case VSTR_TYPE_FMT_UINTMAX_T:
       case VSTR_TYPE_FMT_DOUBLE:
       case VSTR_TYPE_FMT_DOUBLE_LONG:
         usr_spec->data_ptr[scan] = &spec->u;
         break;
+      case VSTR_TYPE_FMT_PTRDIFF_T:
+        ASSERT(spec->data_t == (ptrdiff_t)spec->u.data_m);
+        usr_spec->data_ptr[scan] = &spec->data_t;
+        break;
+        
       case VSTR_TYPE_FMT_PTR_VOID:
       case VSTR_TYPE_FMT_PTR_CHAR:
       case VSTR_TYPE_FMT_PTR_WCHAR_T:
@@ -1067,8 +1075,11 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
                   if (1)
                   { /* no unsigned type ... */
                     /* FIXME: volatile for bug in gcc-2.95.x */
-                    volatile intmax_t tmp = va_arg(ap, ptrdiff_t);
-                    VSTR__FMT_ABS_NUM(u.data_m, tmp);
+                    volatile ptrdiff_t ttmp = va_arg(ap, ptrdiff_t);
+                    volatile intmax_t jtmp = ttmp;
+
+                    spec->data_t = ttmp;
+                    VSTR__FMT_ABS_NUM(u.data_m, jtmp);
                   }
                   if (!u.data_m) spec->flags |= NUM_IS_ZERO;
                   spec->int_type = VSTR_TYPE_FMT_UINTMAX_T;

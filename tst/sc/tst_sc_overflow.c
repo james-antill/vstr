@@ -63,8 +63,10 @@ int tst(void)
   /* What the while loop above does */
   vstr_sc_reduce(s1, 1, s1->len, fsize);
   
-  ASSERT(vstr_sc_read_len_file(s1, s1->len, __FILE__, 0, 0, &ern));
-  ASSERT(s1->len == SIZE_MAX);
+  ASSERT(!(fsize - (SIZE_MAX - s1->len)));
+  while (s1->len != SIZE_MAX)
+    ASSERT(vstr_sc_read_len_file(s1, s1->len, __FILE__,
+                                 fsize - (SIZE_MAX - s1->len), 0, &ern));
   ASSERT(vstr_cmp_buf_eq(s1, 1, (SIZE_MAX - count), NULL, (SIZE_MAX - count)));
   ASSERT(vstr_cmp_cstr_eq(s1, (SIZE_MAX - count) + 1, tlen,
                           "/* TEST: abcd */\n"));

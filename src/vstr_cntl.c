@@ -591,7 +591,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
 
     case VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS:
     {
-      char *val = va_arg(ap, char *);
+      int *val = va_arg(ap, int *);
 
       *val = conf->atomic_ops;
 

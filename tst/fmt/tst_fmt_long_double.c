@@ -2,6 +2,8 @@
 
 static const char *rf = __FILE__;
 
+#define CSTREQ(x, y) (!strcmp(x, y))
+
 int tst(void)
 {
   int ret = 0;
@@ -11,6 +13,10 @@ int tst(void)
   return (EXIT_FAILED_OK);
 #endif
 
+  sprintf(buf, "%8La", ldz);
+  if (!CSTREQ(buf, "  0x0p+0")) /* debian woody has a broken glibc */
+    return (EXIT_FAILED_OK);
+  
   sprintf(buf,        "%LE %Le %LF %Lf %LG %Lg %LA %La %#La %#20.4La %#Lg %#.Lg %.20Lg %.Lf %#.Lf %-20.8Le",
           ldz, ldz, ldz, ldz,
           ldz, ldz, ldz, ldz,

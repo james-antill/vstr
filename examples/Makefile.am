@@ -139,8 +139,11 @@ ex_perf_add_LDADD  = $(GEN_LDLIBS)
 
 
 examplesdir = $(EX_INST_DIR)
-examples_PROGRAMS = \
-  ex_netstr ex_perf_nodesize ex_perf_add
+examples_PROGRAMS = ex_netstr
+
+if MALLINFO_AVAIL
+examples_PROGRAMS += ex_perf_nodesize ex_perf_add
+endif
 
 # Turn on Programs we can compile...
 
@@ -150,7 +153,8 @@ hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
 
 
-examples_PROGRAMS += ex_tdns
+# Don't build by default, requires threads...
+# examples_PROGRAMS += ex_tdns
 
 examples_PROGRAMS += \
   ex_cat \
@@ -186,7 +190,9 @@ hi_APP = jhighlight
 endif
 
 if OPENSSL_AVAIL
+if MALLINFO_AVAIL
 examples_PROGRAMS += ex_perf_sgopenssl
+endif
 endif
 
 if GMP_AVAIL
@@ -195,7 +201,9 @@ examples_PROGRAMS += \
 endif
 
 if GLIB20_AVAIL
+if MALLINFO_AVAIL
 examples_PROGRAMS += ex_perf_nodesize_foreach
+endif
 endif
 
 
