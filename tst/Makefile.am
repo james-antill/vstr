@@ -130,7 +130,8 @@ tst_export = \
 xfail_tst_export = \
     export/xfail_tst_export_buf_NULL \
     export/xfail_tst_export_buf_oob_pos \
-    export/xfail_tst_export_buf_oob_len
+    export/xfail_tst_export_buf_oob_len \
+    export/xfail_tst_export_cstr_buf_NULL
 
 tst_fmt = \
     fmt/tst_fmt_char \

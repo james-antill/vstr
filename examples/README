@@ -25,18 +25,16 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
+        syslog2apache, do merge/catchup
 	Check config, Ie. --dir-filename="foo bar"
 	condrestart doesn't work?
 	man page
-        syslog2apache, do merge/catchup
-	chroot+/dev/log
 	jhttpd -> vstr-httpd?
 	O(1) timer_q_add_node
+	mime_types speed, by having explicit filename/ext matches
 	Multi procs "cntl list" command pass through
 	max timeout for keep-alive
 	max requests for keep-alive?
-	getopt conf. for gzip-r, syslog2apache and make_index
-	mime_types speed, by having explicit filename/ext matches
 	conf
 	 Support accept/accept-language per file [w3/chips]
            GALEON
@@ -78,12 +76,12 @@ http://www.sans.org/top20/#u2
   tst
 
 	LFS
+	half response splitting requests
 	mtime in future
-	date_rfc850(mtime);
-	date_asctime(mtime);
-	use_keep_alive == FALSE
-	use_gzip == FALSE
-	use_range == FALSE
+	too many clients
+	getopt:
+		daemon, chroot, drop-privs
+	signals
 	mmap failure
 	seek failure
 	sendfile failure

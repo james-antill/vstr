@@ -103,6 +103,9 @@ static int vstr__sc_get_size(size_t base_len,
     return (FALSE);
   }
 
+  if (!stat_buf.st_size)
+    return (TRUE);
+  
   if (stat_buf.st_size <= off)
   {
     *err = err_fstat;

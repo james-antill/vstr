@@ -144,7 +144,9 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr_iter iter[1];
 
-  ASSERT_RET(buf, 0);
+  ASSERT_RET(base && buf && pos &&
+             (((pos <= base->len) &&
+               (vstr_sc_poslast(pos, len) <= base->len)) || !len), 0);
 
   if (!buf_len)
     return (0);

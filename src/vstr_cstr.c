@@ -1,6 +1,6 @@
 #define VSTR_CSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,9 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   Vstr__cache_data_cstr *data = NULL;
   unsigned int off = 3;
 
-  ASSERT(base && pos && ((pos + len - 1) <= base->len) && ret_off);
-  ASSERT(len || (!base->len && (pos == 1)));
+  ASSERT_RET(base && ret_off && pos &&
+             (((pos <= base->len) &&
+               (vstr_sc_poslast(pos, len) <= base->len)) || !len), NULL);
 
   ASSERT(off == base->conf->cache_pos_cb_cstr);
 
@@ -152,7 +153,7 @@ Vstr_ref *vstr_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr__cache_data_cstr *data = NULL;
 
-  ASSERT(ret_off);
+  ASSERT_RET(base && ret_off, NULL);
 
   if (!base->cache_available)
   {
@@ -176,6 +177,10 @@ size_t vstr_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
 {
   size_t cpy_len = len;
 
+  ASSERT_RET(base && buf && pos &&
+             (((pos <= base->len) &&
+               (vstr_sc_poslast(pos, len) <= base->len)) || !len), 0);
+  
   if (!buf_len)
     return (0);
 

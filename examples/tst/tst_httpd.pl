@@ -35,7 +35,7 @@ sub httpd__munge_ret
     $output =~ s/^(Date:).*$/$1/gm;
     # Remove last-modified = start date for error messages
     $output =~
-      s!(HTTP/1[.]1 \s (?:301|40[03456]|41[234567]|50[015]) .*)$ (\n)
+      s!(HTTP/1[.]1 \s (?:301|40[03456]|41[0234567]|50[0135]) .*)$ (\n)
 	^(Date:)$ (\n)
 	^(Server:.*)$ (\n)
 	^(Last-Modified:) .*$
@@ -246,6 +246,18 @@ sub all_public_only_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
+sub all_none_tsts()
+  {
+    gen_tsts(1);
+    sub_tst(\&httpd_file_tst, "ex_httpd_none");
+    sub_tst(\&httpd_file_tst, "ex_httpd_none",
+	    {shutdown_w => 0});
+    sub_tst(\&httpd_file_tst, "ex_httpd_none",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_none",
+	    {shutdown_w => 0, slow_write => 1});
+  }
+
 if (@ARGV)
   {
     daemon_status(shift);
@@ -253,6 +265,8 @@ if (@ARGV)
       { all_vhost_tsts(); }
     elsif (@ARGV && ($ARGV[0] eq "public"))
       { all_public_only_tsts(); }
+    elsif (@ARGV && ($ARGV[0] eq "none"))
+      { all_none_tsts(); }
     else
       {	all_nonvhost_tsts(); }
     success();
@@ -310,6 +324,8 @@ make_html(5, "corner",  "$root/foo.example.com/corner/index.html/index.html");
 make_html(6, "bt",      "$root/foo.example.com:1234/bt.torrent");
 make_html(7, "plain",   "$root/default/README");
 make_html(8, "backup",  "$root/default/index.html~");
+make_html(9, "welcome", "$root/default/welcome.html");
+make_html(9, "welcome", "$root/default/welcome.txt");
 make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
 
@@ -370,6 +386,31 @@ my $abcd = daemon_get_io_r("$root/abcd");
 chomp $abcd;
 if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }
 all_nonvhost_tsts();
+daemon_exit("ex_httpd");
+
+my $nargs  = "--default-hostname=default ";
+   $nargs .= "--mime-types-main=$ENV{SRCDIR}/mime_types_extra.txt ";
+   $nargs .= "--mime-types-xtra=$ENV{SRCDIR}/tst/ex_httpd_bad_mime ";
+   $nargs .= "--keep-alive=false ";
+   $nargs .= "--range=false ";
+   $nargs .= "--gzip-content-replacement=false ";
+   $nargs .= "--send-err-406=false ";
+   $nargs .= "--defer-accept=1 ";
+   $nargs .= "--max-clients=32 ";
+   $nargs .= "--max-header-sz=2048 ";
+   $nargs .= "--nagle=true ";
+   $nargs .= "--host=127.0.0.2 ";
+   $nargs .= "--timeout=16 ";
+   $nargs .= "--send-default-mime-type=true ";
+   $nargs .= "--default-mime-type=bar/baz ";
+   $nargs .= "--dir-filename=welcome.html ";
+   $nargs .= "--accept-filter-file=$ENV{SRCDIR}/tst/ex_httpd_null_tst_1 ";
+   $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)'";
+daemon_init("ex_httpd", $root, $nargs . " --virtual-hosts=true");
+tst_proc_limit(30);
+$list_pid = http_cntl_list_beg();
+all_none_tsts();
+http_cntl_list_cleanup($list_pid);
 daemon_exit("ex_httpd");
 
 rmtree($root);

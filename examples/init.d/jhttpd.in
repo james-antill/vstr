@@ -181,7 +181,7 @@ case "$1" in
         statuses
         ;;
   condrestart)
-        [ -f /var/lock/subsys/${prog_name}1 ] && softrestart || :
+        [ -f /var/lock/subsys/${prog_name} ] && softrestart || :
         ;;
   *)
 	echo $"Usage: $0 {start|stop|restart|softstop|softrestart|reload|status|condrestart}"

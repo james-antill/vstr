@@ -43,6 +43,7 @@
 
 #ifdef __linux__
 # include <sys/prctl.h>
+# include <sys/mount.h>
 #else
 # define prctl(x1, x2, x3, x4, x5) 0
 #endif
@@ -73,6 +74,14 @@
 
 /* **** compile time conf **** */
 
+#ifdef MS_BIND
+# define SERV_CONF_USE_MOUNT_BIND TRUE
+# define SERV_BIND_MOUNT(x, y) mount(x, y, NULL, MS_BIND, NULL)
+#else
+# define SERV_BIND_MOUNT(x, y) -1 /* do nothing */
+# define SERV_CONF_USE_MOUNT_BIND FALSE
+#endif
+
 #if !defined(SO_DETACH_FILTER) || !defined(SO_ATTACH_FILTER)
 # define CONF_SERV_USE_SOCKET_FILTERS FALSE
 struct sock_fprog { int dummy; };
@@ -97,8 +106,8 @@ struct sock_fprog
 };
 #endif
 
-/* strip www. from front of host names, strip trailing . */
-#define CONF_SERV_USE_CANONIZE_HOST TRUE
+/* strip leading "www.", strip trailing '.' */
+#define CONF_SERV_USE_CANONIZE_HOST FALSE
 /* allow any old host header, if it fails fall back to default */
 #define CONF_SERV_USE_NON_HOST_ERR_400 TRUE
 
@@ -2276,7 +2285,8 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
     HTTPD_ERR_RET(req, 403, FALSE);
       
-  if (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/../"))
+  if (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/../") ||
+      VSUFFIX(req->fname, 1, req->fname->len, "/.."))
     HTTPD_ERR_RET(req, 403, FALSE);
 
   ASSERT(fname->len);
@@ -2564,17 +2574,6 @@ static void http__req_absolute_uri(struct Con *con, struct Http_req_data *req,
   vstr_add_cstr_buf(lfn, lfn->len, "/");
 }
 
-static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
-{
-  http__req_absolute_uri(con, req, req->fname);
-  
-  req->error_code = 301;
-  req->error_line = CONF_LINE_RET_301;
-  req->error_len  = CONF_MSG_LEN_301(req->fname);
-  
-  return (http_fin_err_req(con, req));
-}
-
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar.
    Also note that location must be "http://www.example.com/foo/bar/" or maybe
@@ -2585,11 +2584,16 @@ static int http__req_chk_dir(struct Con *con, struct Http_req_data *req)
   ASSERT(req->fname->len && (vstr_export_chr(req->fname, 1) != '/') &&
          (vstr_export_chr(req->fname, req->fname->len) != '/'));
   
-  if (VSUFFIX(req->fname, 1, req->fname->len, "/..") ||
-      vstr_cmp_cstr_eq(req->fname, 1, req->fname->len, ".."))
-    HTTPD_ERR_RET(req, 403, http_fin_err_req(con, req));
+  assert(!VSUFFIX(req->fname, 1, req->fname->len, "/..") &&
+         !vstr_cmp_cstr_eq(req->fname, 1, req->fname->len, ".."));
   
-  return (http__req_redirect_dir(con, req));
+  http__req_absolute_uri(con, req, req->fname);
+  
+  req->error_code = 301;
+  req->error_line = CONF_LINE_RET_301;
+  req->error_len  = CONF_MSG_LEN_301(req->fname);
+  
+  return (http_fin_err_req(con, req));
 }
 
 /* Lookup content type for filename, If this lookup "fails" it still returns
@@ -3243,18 +3247,16 @@ static void serv_filter_attach(int fd, const char *fname)
 
   if (ern &&
       ((ern != VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO) || (errno != ENOENT)))
-    vlg_err(vlg, EXIT_FAILURE, "filter_attach(%s): %m\n", fname);
-
-  if ((s1->len / sizeof(struct sock_filter)) > USHRT_MAX)
+    vlg_err(vlg, EXIT_FAILURE, "filter_attach1(%s): %m\n", fname);
+  else if ((s1->len / sizeof(struct sock_filter)) > USHRT_MAX)
   {
     errno = E2BIG;
-    vlg_err(vlg, EXIT_FAILURE, "filter_attach(%s): %m\n", fname);
+    vlg_err(vlg, EXIT_FAILURE, "filter_attach2(%s): %m\n", fname);
   }
-  
-  if (!s1->len)
+  else if (!s1->len)
   {
     if (!done)
-      vlg_warn(vlg, "filter_attach(%s): Empty file\n", fname);
+      vlg_warn(vlg, "filter_attach3(%s): Empty file\n", fname);
     else
     {
       if (setsockopt(fd, SOL_SOCKET, SO_DETACH_FILTER, NULL, 0) == -1)
@@ -3271,7 +3273,7 @@ static void serv_filter_attach(int fd, const char *fname)
     filter->filter = (void *)vstr_export_cstr_ptr(s1, 1, s1->len);
     
     if (!filter->filter)
-      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "filter_attach: %m\n"));
+      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "filter_attach4: %m\n"));
   
     if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, filter, len) == -1)
       vlg_err(vlg, EXIT_FAILURE,
@@ -3285,7 +3287,7 @@ static void serv_filter_attach(int fd, const char *fname)
 
 static void cl_cmd_line(int argc, char *argv[])
 {
-  char optchar = 0;
+  int optchar = 0;
   const char *program_name = NULL;
   struct option long_options[] =
   {
@@ -3460,12 +3462,43 @@ static void cl_cmd_line(int argc, char *argv[])
   { /* preload locale info. so syslog can log in localtime */
     time_t now = time(NULL);
     (void)localtime(&now);
+
+    if (SERV_CONF_USE_MOUNT_BIND)
+    { /* make sure we can reconnect to syslog */
+      Vstr_base *tmp = NULL;
+      const char *src = "/dev/log";
+      const char *dst = NULL;
+      struct stat64 st_src[1];
+      struct stat64 st_dst[1];
+    
+      if (!(tmp = vstr_make_base(NULL)))
+        errno = ENOMEM, err(EXIT_FAILURE, "bind-mount");
+
+      vstr_add_fmt(tmp, 0, "%s%s", chroot_dir, "/dev/log");
+      dst = vstr_export_cstr_ptr(tmp, 1, tmp->len);
+      if (tmp->conf->malloc_bad)
+        errno = ENOMEM, err(EXIT_FAILURE, "bind-mount");
+
+      if (stat64(src, st_src) == -1)
+        err(EXIT_FAILURE, "stat(%s)", src);
+      if (stat64(dst, st_dst) == -1)
+        err(EXIT_FAILURE, "stat(%s)", dst);
+
+      if ((st_src->st_ino != st_dst->st_ino) ||
+          (st_src->st_dev != st_dst->st_dev))
+      {
+        if (SERV_BIND_MOUNT(src, dst) == -1)
+          err(EXIT_FAILURE, "bind-mount(%s, %s)", src, dst);
+      }
+      
+      vstr_free_base(tmp);
+    }
   }
   
   /* after daemon so syslog works */
   if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
     vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
-  
+    
   if (chdir(argv[0]) == -1)
     vlg_err(vlg, EXIT_FAILURE, "chdir(%s): %m\n", argv[0]);
 

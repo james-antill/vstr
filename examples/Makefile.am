@@ -267,10 +267,10 @@ else
 
 # Use pre-installed version...
 hi_DEP =
-hi_APP = jhighlight
+hi_APP = echo -- hi
 ls_DEP =
-ls1_APP = echo
-ls2_APP = `date`
+ls1_APP = echo -- ls1
+ls2_APP = echo -- ls2
 
 endif
 

@@ -554,6 +554,9 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   
   if (bind(fd, evnt->sa, alloc_len) == -1)
     goto bind_fail;
+
+  if (fchmod(fd, 0600) == -1)
+    goto fchmod_fail;
   
   if (listen(fd, 512) == -1)
     goto listen_fail;
@@ -568,6 +571,7 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   saved_errno = errno;
   vlg_warn(vlg, "bind(%s): %m\n", fname);
   errno = saved_errno;
+ fchmod_fail:
  listen_fail:
   evnt__uninit(evnt);
  init_fail:

@@ -50,6 +50,41 @@ sub tst_fork()
     return $pid;
   }
 
+my $tst__proc_limit = 1_000_000;
+
+sub tst_proc_limit
+  {
+    $tst__proc_limit = shift;
+  }
+my @TST__PROCS = ();
+sub tst_proc_wait()
+  {
+    my $pid = shift @TST__PROCS;
+
+    if (waitpid($pid, 0) <= 0)
+      { failure("waitpid($pid): $!"); }
+    my $code = $?;
+    # 13 seems to be some weird perl error code.
+    if (($code != $xit_success) && ($code != 13))
+      { failure("waitpid($pid) == $code"); }
+  }
+
+sub tst_proc_fork()
+  {
+    if (@TST__PROCS >= $tst__proc_limit)
+      {
+	tst_proc_wait();
+      }
+
+    my $pid = tst_fork();
+
+    if (!defined ($pid))
+      { failure("fork: $!"); }
+
+    push @TST__PROCS, $pid;
+    return $pid;
+  }
+
 my $dir = "$ENV{SRCDIR}/tst";
 
 sub sub_tst
@@ -68,18 +103,12 @@ sub sub_tst
     if (!$sz)
       { failure("NO files: ${prefix}"); }
 
-    my @pids = ();
     for my $num (1..($sz * $tst_num_mp))
       {
 	--$num; $num %= $sz; ++$num;
 	if ($tst_mp)
 	  {
-	    my $pid = tst_fork();
-
-	    if (!defined ($pid))
-	      { failure("fork: $!"); }
-
-	    push @pids, $pid;
+	    my $pid = tst_proc_fork();
 	    next    if ($pid);
 	  }
 
@@ -106,14 +135,9 @@ sub sub_tst
 	  { success(); }
       }
 
-    for my $pid (@pids)
+    while (@TST__PROCS)
       {
-	if (waitpid($pid, 0) <= 0)
-	  { failure("waitpid($pid): $!"); }
-	my $code = $?;
-	# 13 seems to be some weird perl error code.
-	if (($code != $xit_success) && ($code != 13))
-	  { failure("waitpid($pid) == $code"); }
+	tst_proc_wait();
       }
   }
 

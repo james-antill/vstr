@@ -19,6 +19,26 @@ Accept-Ranges: bytes
 Content-Length: 0
 Allow: GET, HEAD, OPTIONS, TRACE
 
+HTTP/1.1 403 Forbidden
+Date:
+Server: jhttpd/0.9.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 327
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>403 Forbidden</title>
+  </head>
+  <body>
+    <h1>403 Forbidden</h1>
+    <p>The request is forbidden.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
+  </body>
+</html>
 HTTP/1.1 400 Bad Request
 Date:
 Server: jhttpd/0.9.1 (Vstr)

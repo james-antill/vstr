@@ -426,13 +426,13 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 
 # Turn on Programs we can compile...
 @HAVE_POSIX_HOST_TRUE@hi_DEP = ex_highlight
-@HAVE_POSIX_HOST_FALSE@hi_APP = jhighlight
+@HAVE_POSIX_HOST_FALSE@hi_APP = echo -- hi
 @HAVE_POSIX_HOST_TRUE@hi_APP = ./ex_highlight
 @HAVE_POSIX_HOST_FALSE@ls_DEP = 
 @HAVE_POSIX_HOST_TRUE@ls_DEP = ex_dir_list ex_dir_filter ex_dir_sort ex_dir_list2html
-@HAVE_POSIX_HOST_FALSE@ls1_APP = echo
+@HAVE_POSIX_HOST_FALSE@ls1_APP = echo -- ls1
 @HAVE_POSIX_HOST_TRUE@ls1_APP = ./ex_dir_list --size --follow -- 
-@HAVE_POSIX_HOST_FALSE@ls2_APP = `date`
+@HAVE_POSIX_HOST_FALSE@ls2_APP = echo -- ls2
 @HAVE_POSIX_HOST_TRUE@ls2_APP = | ./ex_dir_filter \
 @HAVE_POSIX_HOST_TRUE@ -A .. --deny-name-beg . \
 @HAVE_POSIX_HOST_TRUE@ -D index.html -D dir_list.css \
