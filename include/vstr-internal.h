@@ -381,7 +381,7 @@ extern void *vstr_wrap_memrchr(const void *, int, size_t)
 # define VSTR__DEBUG_MALLOC_DEC() \
   (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
 
-extern int vstr__debug_malloc_check_mem(const void *)
+extern unsigned int vstr__debug_malloc_check_mem(const void *)
     VSTR__ATTR_I();
 extern void vstr__debug_malloc_check_empty(void)
     VSTR__ATTR_I();

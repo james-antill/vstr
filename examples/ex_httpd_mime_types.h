@@ -9,13 +9,13 @@
     else if (((s1)->len >= strlen("/" all)) &&                          \
              vstr_cmp_case_eod_cstr_eq((s1), 1, (s1)->len, "/" all))    \
       (var) = (mt);                                                     \
-    else if (((s1)->len >= strlen(all)) &&                              \
-             vstr_cmp_case_cstr_eq((s1), 1, (s1)->len, all))            \
+    else if (vstr_cmp_case_cstr_eq((s1), 1, (s1)->len, all))            \
       (var) = (mt)
 
 /* should be in a file -- so it's configurable, also allow overloads */
 #define HTTP_REQ_MIME_TYPE(s1, var) do {                                \
-      if (0) { }                                                        \
+ if (0) { }                                                             \
+ HTTP__REQ_MT_END(s1, var, "application/x-bittorrent",    ".torrent");  \
  HTTP__REQ_MT_END(s1, var, "application/x-gzip",          ".gz");       \
  HTTP__REQ_MT_END(s1, var, "application/x-ns-proxy-autoconfig", ".pac"); \
  HTTP__REQ_MT_END(s1, var, "application/pdf",             ".pdf");      \
@@ -49,10 +49,11 @@
  HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "SConstruct"); \
  HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "THANKS");    \
  HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "TODO");      \
- HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "config.log"); \
- HTTP__REQ_MT_END(s1, var, "text/plain",                  ".txt");      \
  HTTP__REQ_MT_END(s1, var, "text/plain",                  ".c");        \
  HTTP__REQ_MT_END(s1, var, "text/plain",                  ".h");        \
+ HTTP__REQ_MT_END(s1, var, "text/plain",                  ".log");      \
+ HTTP__REQ_MT_END(s1, var, "text/plain",                  ".spec");     \
+ HTTP__REQ_MT_END(s1, var, "text/plain",                  ".txt");      \
  HTTP__REQ_MT_END(s1, var, "text/html",                   ".htm");      \
  HTTP__REQ_MT_END(s1, var, "text/html",                   ".html");     \
  HTTP__REQ_MT_END(s1, var, "text/richtext",               ".rtx");      \

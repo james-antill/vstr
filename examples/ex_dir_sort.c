@@ -185,14 +185,14 @@ static void ex_dir_sort_cmd_line(int *passed_argc, char **passed_argv[])
   struct option long_options[] =
   { /* allow sorting by size etc. */
    {"help", no_argument, NULL, 'h'},
-   {"without-locale", no_argument, NULL, 128},
+   {"without-locale", no_argument, NULL, 1},
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
   
   program_name = opt_program_name(argv[0], "jdir_sort");
 
-  while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
+  while ((optchar = getopt_long(argc, argv, "hV",
                                 long_options, NULL)) != EOF)
   {
     switch (optchar)
@@ -212,9 +212,9 @@ Uses Vstr string library.\n\
                program_name, __DATE__);
         exit (EXIT_SUCCESS);
 
-        case 128:
-          sort_cmp = bag_cb_sort_key_strcmp;
-          break;
+      case 1:
+        sort_cmp = bag_cb_sort_key_strcmp;
+        break;
           
       default:
         abort();

@@ -428,6 +428,18 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@hi_DEP = ex_highlight
 @HAVE_POSIX_HOST_FALSE@hi_APP = jhighlight
 @HAVE_POSIX_HOST_TRUE@hi_APP = ./ex_highlight
+@HAVE_POSIX_HOST_FALSE@ls_DEP = 
+@HAVE_POSIX_HOST_TRUE@ls_DEP = ex_dir_list ex_dir_filter ex_dir_sort ex_html_dir_list
+@HAVE_POSIX_HOST_FALSE@ls1_APP = echo
+@HAVE_POSIX_HOST_TRUE@ls1_APP = ./ex_dir_list --size --follow -- 
+@HAVE_POSIX_HOST_FALSE@ls2_APP = `date`
+@HAVE_POSIX_HOST_TRUE@ls2_APP = | ./ex_dir_filter \
+@HAVE_POSIX_HOST_TRUE@ -A .. --deny-name-beg . \
+@HAVE_POSIX_HOST_TRUE@ -D index.html -D dir_list.css \
+@HAVE_POSIX_HOST_TRUE@ --deny-name-end ~ --deny-name-end \\\# | \
+@HAVE_POSIX_HOST_TRUE@ ./ex_dir_sort --without-locale | \
+@HAVE_POSIX_HOST_TRUE@ ./ex_html_dir_list --name
+
 
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
@@ -439,9 +451,7 @@ other_DATA = \
   hexdump_data highlight2style.pl
 
 
-htmldir = $(EX_INST_DIR)/html
-html_DATA = \
-  html/f_c.css \
+example_code_html = \
   html/app.h.html \
   html/bag.c.html \
   html/bag.h.html \
@@ -501,6 +511,15 @@ html_DATA = \
 
 
 #  html/ex_tdns.c.html 
+htmldir = $(EX_INST_DIR)/html
+html_DATA = \
+  html/index.html \
+  html/dir_list.css \
+  html/f_c.css \
+  \
+  $(example_code_html)
+
+
 initddir = $(sysconfdir)/init.d
 initd_SCRIPTS = \
   init.d/jechod \
@@ -10249,6 +10268,13 @@ uninstall-am: uninstall-examplesPROGRAMS uninstall-htmlDATA \
 html/f_c.css: ../Documentation/f_c.css
 		-@mkdir html
 		-$(LN_S) ../$< html
+
+html/dir_list.css: ../examples/dir_list.css
+		-@mkdir html
+		-$(LN_S) ../$< html
+
+html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
+		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --cssfile=f_c.css $< > $@

@@ -41,16 +41,19 @@
 #define TRUE 1
 #define FALSE 0
 
+/* only get accept() events when there is readable data, or seconds expire */
+#define CONF_SERV_DEF_TCP_DEFER_ACCEPT 16
 
 #define CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
 #define CONF_MEM_PREALLOC_MIN (16  * 1024)
 #define CONF_MEM_PREALLOC_MAX (128 * 1024)
 
-#define CL_PACKET_MAX 0xFFFF
-#define CL_MAX_CONNECT 128
-
 /* is the data is less than this, queue instead of hitting write */
 #define CL_MAX_WAIT_SEND 16
+
+#define CONF_READ_CALL_LIMIT 4
+
+#define CONF_DATA_CONNECTION_MAX (256 * 1024)
 
 struct con
 {
@@ -72,20 +75,39 @@ static Vlg *vlg = NULL;
 
 static int serv_recv(struct con *con)
 {
-  if (!evnt_cb_func_recv(con->ev))
-    return (FALSE);
+  unsigned int num = CONF_READ_CALL_LIMIT;
+
+  while (num--)
+    if (!evnt_cb_func_recv(con->ev))
+      return (FALSE);
   
   vstr_mov(con->ev->io_w, con->ev->io_w->len,
            con->ev->io_r, 1, con->ev->io_r->len);
   
-  evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND);
-  
-  return (TRUE);
+  return (evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND));
 }
 
 static int serv_cb_func_recv(struct Evnt *evnt)
 {
   return (serv_recv((struct con *)evnt));
+}
+
+static int serv_send(struct con *con)
+{
+  if (!evnt_cb_func_send(con->ev))
+    return (FALSE);
+
+  if (con->ev->io_w->len > CONF_DATA_CONNECTION_MAX)
+    evnt_wait_cntl_del(con->ev, POLLIN);
+  else
+    evnt_wait_cntl_add(con->ev, POLLIN);
+
+  return (TRUE);
+}
+
+static int serv_cb_func_send(struct Evnt *evnt)
+{
+  return (serv_send((struct con *)evnt));
 }
 
 static void serv_cb_func_free(struct Evnt *evnt)
@@ -133,6 +155,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
   vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->ev->sa);
   
   con->ev->cbs->cb_func_recv = serv_cb_func_recv;
+  con->ev->cbs->cb_func_send = serv_cb_func_send;
   con->ev->cbs->cb_func_free = serv_cb_func_free;
   
   return (con->ev);
@@ -154,6 +177,8 @@ static void serv_make_bind(const char *acpt_addr, short acpt_port)
   
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
+
+  evnt_fd_set_defer_accept(acpt_evnt, CONF_SERV_DEF_TCP_DEFER_ACCEPT);
 }
 
 static void usage(const char *program_name, int tst_err)
@@ -231,7 +256,7 @@ static void serv_cmd_line(int argc, char *argv[])
 
       case 't': client_timeout      = atoi(optarg); break;
       case 'H': server_ipv4_address = optarg;       break;
-      case 'M': server_max_clients   = atoi(optarg);  break;
+      case 'M': server_max_clients  = atoi(optarg);  break;
       case 'P': server_port         = atoi(optarg); break;
 
       case 'd': vlg_debug(vlg);                     break;

@@ -41,6 +41,10 @@ daemon_init("ex_echod");
 all_tsts();
 daemon_exit("ex_echod");
 
+daemon_init("ex_echod", undef, '-H 127.0.0.4');
+all_tsts();
+daemon_exit("ex_echod");
+
 success();
 
 END {

@@ -201,7 +201,14 @@ int evnt_cb_func_recv(struct Evnt *evnt)
 
 int evnt_cb_func_send(struct Evnt *evnt)
 {
-  return (evnt_send(evnt));
+  int ret = -1;
+
+  evnt_fd_set_cork(evnt, TRUE);
+  ret = evnt_send(evnt);
+  if (!evnt->io_w->len)
+    evnt_fd_set_cork(evnt, FALSE);
+  
+  return (ret);
 }
 
 void evnt_cb_func_free(struct Evnt *EVNT__ATTR_UNUSED(evnt))
@@ -214,7 +221,7 @@ int evnt_cb_func_shutdown_r(struct Evnt *evnt)
   return (FALSE);
 }
 
-static int evnt_init(struct Evnt *evnt, int fd)
+static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
 {
   evnt->flag_q_accept    = FALSE;
   evnt->flag_q_connect   = FALSE;
@@ -223,9 +230,10 @@ static int evnt_init(struct Evnt *evnt, int fd)
   evnt->flag_q_none      = FALSE;
   
   evnt->flag_q_send_now  = FALSE;
-  
+
+  /* FIXME: need group settings, default no nagle but cork */
   evnt->flag_io_nagle    = evnt_opt_nagle;
-  evnt->flag_io_cork     = FALSE; /* FIXME: need group setting, stop nagle */
+  evnt->flag_io_cork     = FALSE;
   
   evnt->acct.req_put = 0;
   evnt->acct.req_got = 0;
@@ -248,7 +256,6 @@ static int evnt_init(struct Evnt *evnt, int fd)
   if (!(evnt->ind = evnt_poll_add(evnt, fd)))
     goto poll_add_fail;
 
-  evnt->sa   = NULL;
   evnt->tm_o = NULL;
   
   gettimeofday(&evnt->ctime, NULL);
@@ -257,10 +264,15 @@ static int evnt_init(struct Evnt *evnt, int fd)
   if (fcntl(fd, F_SETFD, TRUE) == -1)
     goto fcntl_fail;
   
+  if (!(evnt->sa = calloc(1, sa_len)))
+    goto malloc_sockaddr_fail;
+  
   evnt_fd_set_nonblock(fd, TRUE);
 
   return (TRUE);
 
+ malloc_sockaddr_fail:
+  errno = ENOMEM;
  fcntl_fail:
   evnt_poll_del(evnt);
  poll_add_fail:
@@ -272,7 +284,7 @@ static int evnt_init(struct Evnt *evnt, int fd)
   return (FALSE);
 }
 
-static void evnt__free(struct Evnt *evnt)
+static void evnt__free1(struct Evnt *evnt)
 {
   evnt_send_del(evnt);
   
@@ -282,19 +294,31 @@ static void evnt__free(struct Evnt *evnt)
   evnt_poll_del(evnt);
 }
 
-void evnt_free(struct Evnt *evnt)
+static void evnt__free2(struct sockaddr *sa, Timer_q_node *tm_o)
+{ /* post callbacks, evnt no longer exists */
+  free(sa);
+  
+  if (tm_o)
+    timer_q_quick_del_node(tm_o);
+}
+
+static void evnt__free_usr(struct Evnt *evnt)
 {
-  ASSERT(evnt__valid(evnt));
- 
-  evnt__free(evnt);
+  struct sockaddr *sa = evnt->sa;
+  Timer_q_node *tm_o  = evnt->tm_o;
   
-  free(evnt->sa);
-  
-  if (evnt->tm_o)
-    timer_q_quick_del_node(evnt->tm_o);
+  evnt__free1(evnt);
+  evnt->cbs->cb_func_free(evnt);
+  evnt__free2(sa, tm_o);
 
   ASSERT(evnt__num >= 1);
   --evnt__num;
+}
+
+void evnt_free(struct Evnt *evnt)
+{
+  ASSERT(evnt__valid(evnt));
+  evnt__free_usr(evnt);
 }
 
 static void evnt__uninit(struct Evnt *evnt)
@@ -302,12 +326,8 @@ static void evnt__uninit(struct Evnt *evnt)
   ASSERT((evnt->flag_q_connect + evnt->flag_q_accept + evnt->flag_q_recv +
           evnt->flag_q_send_recv + evnt->flag_q_none) == 0);
 
-  evnt__free(evnt);
-  
-  free(evnt->sa);
-  
-  if (evnt->tm_o)
-    timer_q_quick_del_node(evnt->tm_o);
+  evnt__free1(evnt);
+  evnt__free2(evnt->sa, evnt->tm_o);
 }
 
 static int evnt__make_true(struct Evnt **que, struct Evnt *evnt, int flags)
@@ -323,6 +343,22 @@ static int evnt__make_true(struct Evnt **que, struct Evnt *evnt, int flags)
   return (TRUE);
 }
 
+static int evnt_fd_set_nodelay(int fd, int val)
+{
+  return (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &val, sizeof(val)) != -1);
+}
+
+static int evnt_fd_set_reuse(int fd, int val)
+{
+  return (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) != -1);
+}
+
+static void evnt__fd_close_noerrno(int fd)
+{
+  int saved_errno = errno;
+  close(fd);
+  errno = saved_errno;
+}
 
 int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
 {
@@ -330,29 +366,13 @@ int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
   socklen_t alloc_len = sizeof(struct sockaddr_in);
   
   if ((fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-    return (FALSE);
+    goto sock_fail;
   
-  if (!evnt_init(evnt, fd))
-  {
-    close(fd);
-    errno = ENOMEM;
-    return (FALSE);
-  }
+  if (!evnt_init(evnt, fd, alloc_len))
+    goto init_fail;
   
   if (!evnt->flag_io_nagle)
-  {
-    int nodelay = TRUE;
-    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
-  }
-  
-  if (!(evnt->sa = malloc(alloc_len)))
-  {
-    close(fd);
-    evnt__uninit(evnt);
-    errno = ENOMEM;
-    return (FALSE);
-  }
-  memset(evnt->sa, 0, alloc_len);
+    evnt_fd_set_nodelay(fd, TRUE);
   
   EVNT_SA_IN(evnt)->sin_family = AF_INET;
   EVNT_SA_IN(evnt)->sin_port = htons(port);
@@ -362,23 +382,24 @@ int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
   
   if (connect(fd, evnt->sa, alloc_len) == -1)
   {
-    int save_errno = errno;
-    
     if (errno == EINPROGRESS)
     { /* The connection needs more time....*/
       evnt->flag_q_connect = TRUE;
       return (evnt__make_true(&q_connect, evnt, POLLOUT));
     }
-    
-    close(fd);
-    evnt__uninit(evnt);
-    
-    errno = save_errno;
-    return (FALSE);
+
+    goto connect_fail;
   }
   
   evnt->flag_q_none = TRUE;
   return (evnt__make_true(&q_none, evnt, 0));
+  
+ connect_fail:
+  evnt__uninit(evnt);
+ init_fail:
+  evnt__fd_close_noerrno(fd);
+ sock_fail:
+  return (FALSE);
 }
 
 int evnt_make_con_local(struct Evnt *evnt, const char *fname)
@@ -392,71 +413,47 @@ int evnt_make_con_local(struct Evnt *evnt, const char *fname)
   alloc_len = SUN_LEN(&tmp_sun) + len;
   
   if ((fd = socket(PF_LOCAL, SOCK_STREAM, 0)) == -1)
-    return (FALSE);
+    goto sock_fail;
   
-  if (!evnt_init(evnt, fd))
-  {
-    close(fd);
-    errno = ENOMEM;
-    return (FALSE);
-  }
+  if (!evnt_init(evnt, fd, alloc_len))
+    goto init_fail;
   
   if (!evnt->flag_io_nagle)
-  {
-    int nodelay = TRUE;
-    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
-  }
-
-  if (!(evnt->sa = malloc(alloc_len)))
-  {
-    close(fd);
-    evnt__uninit(evnt);
-    errno = ENOMEM;
-    return (FALSE);
-  }
-  memset(evnt->sa, 0, alloc_len);
+    evnt_fd_set_nodelay(fd, TRUE);
   
   EVNT_SA_UN(evnt)->sun_family = AF_LOCAL;
   memcpy(EVNT_SA_UN(evnt)->sun_path, fname, len);
   
   if (connect(fd, evnt->sa, alloc_len) == -1)
   {
-    int save_errno = errno;
-    
     if (errno == EINPROGRESS)
     { /* The connection needs more time....*/
       evnt->flag_q_connect = TRUE;
       return (evnt__make_true(&q_connect, evnt, POLLOUT));
     }
     
-    close(fd);
-    evnt__uninit(evnt);
-    
-    errno = save_errno;
-    return (FALSE);
+    goto connect_fail;
   }
 
   evnt->flag_q_none = TRUE;
   return (evnt__make_true(&q_none, evnt, 0));
+  
+ connect_fail:
+  evnt__uninit(evnt);
+ init_fail:
+  evnt__fd_close_noerrno(fd);
+ sock_fail:
+  return (FALSE);
 }
 
 int evnt_make_acpt(struct Evnt *evnt, int fd,struct sockaddr *sa, socklen_t len)
 {
-  if (!evnt_init(evnt, fd))
+  if (!evnt_init(evnt, fd, len))
     return (FALSE);
-  
-  if (!(evnt->sa = malloc(len)))
-  {
-    evnt__uninit(evnt);
-    return (FALSE);
-  }
   memcpy(evnt->sa, sa, len);
   
   if (!evnt->flag_io_nagle)
-  {
-    int nodelay = TRUE;
-    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
-  }
+    evnt_fd_set_nodelay(fd, TRUE);
 
   evnt->flag_q_recv = TRUE;
   return (evnt__make_true(&q_recv, evnt, POLLIN));
@@ -466,22 +463,14 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
                         const char *acpt_addr, short server_port)
 {
   int fd = -1;
-  int opt_t = TRUE;
   int saved_errno = 0;
   socklen_t alloc_len = sizeof(struct sockaddr_in);
   
   if ((fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
     goto sock_fail;
   
-  if (!evnt_init(evnt, fd))
+  if (!evnt_init(evnt, fd, alloc_len))
     goto init_fail;
-
-  if (!(evnt->sa = malloc(alloc_len)))
-  {
-    errno = ENOMEM;
-    goto malloc_sockaddr_in_fail;
-  }
-  memset(evnt->sa, 0, alloc_len);
 
   EVNT_SA_IN(evnt)->sin_family = AF_INET;
   if (acpt_addr)
@@ -493,7 +482,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   }
   EVNT_SA_IN(evnt)->sin_port = htons(server_port);
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt_t, sizeof(opt_t)) == -1)
+  if (!evnt_fd_set_reuse(fd, TRUE))
     goto reuse_fail;
   
   if (bind(fd, evnt->sa, alloc_len) == -1)
@@ -502,7 +491,6 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   if (!server_port)
     if (getsockname(fd, evnt->sa, &alloc_len) == -1)
       vlg_err(vlg, EXIT_FAILURE, "getsockname: %m\n");
-      
   
   if (listen(fd, 512) == -1)
     goto listen_fail;
@@ -519,12 +507,9 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   errno = saved_errno;
  listen_fail:
  reuse_fail:
- malloc_sockaddr_in_fail:
- init_fail:
-  saved_errno = errno;
   evnt__uninit(evnt);
-  close(fd);
-  errno = saved_errno;
+ init_fail:
+  evnt__fd_close_noerrno(fd);
  sock_fail:
   return (FALSE);
 }
@@ -543,15 +528,8 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   if ((fd = socket(PF_LOCAL, SOCK_STREAM, 0)) == -1)
     goto sock_fail;
   
-  if (!evnt_init(evnt, fd))
+  if (!evnt_init(evnt, fd, alloc_len))
     goto init_fail;
-  
-  if (!(evnt->sa = malloc(alloc_len)))
-  {
-    errno = ENOMEM;
-    goto malloc_sockaddr_un_fail;
-  }
-  memset(evnt->sa, 0, alloc_len);
                                                                               
   EVNT_SA_UN(evnt)->sun_family = AF_LOCAL;
   memcpy(EVNT_SA_UN(evnt)->sun_path, fname, len);
@@ -575,32 +553,17 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   vlg_warn(vlg, "bind(%s): %m\n", fname);
   errno = saved_errno;
  listen_fail:
- malloc_sockaddr_un_fail:
- init_fail:
-  saved_errno = errno;
   evnt__uninit(evnt);
-  close(fd);
-  errno = saved_errno;
+ init_fail:
+  evnt__fd_close_noerrno(fd);
  sock_fail:
   return (FALSE);
 }
 
 static void evnt__close(struct Evnt *evnt)
 {
-  struct sockaddr *sa = evnt->sa;
-  Timer_q_node *tm_o  = evnt->tm_o;
-  
   close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
-  evnt__free(evnt);
-  evnt->cbs->cb_func_free(evnt);
-
-  free(sa);
-  
-  if (tm_o)
-    timer_q_quick_del_node(tm_o);
-
-  ASSERT(evnt__num >= 1);
-  --evnt__num;
+  evnt__free_usr(evnt);
 }
 
 void evnt_add(struct Evnt **que, struct Evnt *node)
@@ -666,7 +629,7 @@ void evnt_close(struct Evnt *evnt)
 {
   ASSERT(evnt__valid(evnt));
 
-  evnt_io_cork(evnt, FALSE); /* FIXME: is this one needed? */
+  evnt_fd_set_cork(evnt, FALSE); /* FIXME: is this one needed? */
   
   evnt__del_whatever(evnt);
   
@@ -1266,26 +1229,23 @@ struct Evnt *evnt_queue(const char *qname)
 # define TCP_CORK 0
 #endif
 
-void evnt_io_cork(struct Evnt *evnt, int val)
+void evnt_fd_set_cork(struct Evnt *evnt, int val)
 { /* assume it can't work for set and fail for unset */
-  socklen_t len = sizeof(int);
-
   ASSERT(evnt__valid(evnt));
 
   if (!USE_TCP_CORK)
     return;
   
-  if (!evnt->flag_io_cork && !val)
+  if (!evnt->flag_io_cork == !val)
     return;
 
   if (!evnt->flag_io_nagle) /* flags can't be combined ... stupid */
   {
-    int nodelay = FALSE;
-    setsockopt(evnt_fd(evnt), IPPROTO_TCP, TCP_NODELAY, &nodelay, len);
+    evnt_fd_set_nodelay(evnt_fd(evnt), FALSE);
     evnt->flag_io_nagle = TRUE;
   }
   
-  if (setsockopt(evnt_fd(evnt), IPPROTO_TCP, TCP_CORK, &val, len) == -1)
+  if (setsockopt(evnt_fd(evnt), IPPROTO_TCP, TCP_CORK, &val, sizeof(val)) == -1)
     return;
   
   evnt->flag_io_cork = !!val;
@@ -1298,7 +1258,7 @@ void evnt_io_cork(struct Evnt *evnt, int val)
 # define TCP_DEFER_ACCEPT 0
 #endif
 
-void evnt_io_defer_accept(struct Evnt *evnt, int val)
+void evnt_fd_set_defer_accept(struct Evnt *evnt, int val)
 {
   socklen_t len = sizeof(int);
 

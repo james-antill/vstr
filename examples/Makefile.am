@@ -199,6 +199,14 @@ if HAVE_POSIX_HOST
 
 hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
+ls_DEP =   ex_dir_list ex_dir_filter ex_dir_sort ex_html_dir_list
+ls1_APP = ./ex_dir_list --size --follow -- 
+ls2_APP = | ./ex_dir_filter \
+ -A .. --deny-name-beg . \
+ -D index.html -D dir_list.css \
+ --deny-name-end ~ --deny-name-end \\\# | \
+ ./ex_dir_sort --without-locale | \
+ ./ex_html_dir_list --name
 
 
 # Don't build by default, requires threads...
@@ -258,6 +266,9 @@ else
 # Use pre-installed version...
 hi_DEP =
 hi_APP = jhighlight
+ls_DEP =
+ls1_APP = echo
+ls2_APP = `date`
 
 endif
 
@@ -265,9 +276,7 @@ otherdir   = $(EX_INST_DIR)
 other_DATA = \
   hexdump_data highlight2style.pl
 
-htmldir   = $(EX_INST_DIR)/html
-html_DATA = \
-  html/f_c.css \
+example_code_html = \
   html/app.h.html \
   html/bag.c.html \
   html/bag.h.html \
@@ -326,6 +335,15 @@ html_DATA = \
   html/vlg.h.html
 #  html/ex_tdns.c.html 
 
+
+htmldir   = $(EX_INST_DIR)/html
+html_DATA = \
+  html/index.html \
+  html/dir_list.css \
+  html/f_c.css \
+  \
+  $(example_code_html)
+
 initddir = $(sysconfdir)/init.d
 initd_SCRIPTS = \
   init.d/jechod \
@@ -337,6 +355,13 @@ CLEANFILES=$(html_DATA) html
 html/f_c.css: ../Documentation/f_c.css
 		-@mkdir html
 		-$(LN_S) ../$< html
+
+html/dir_list.css: ../examples/dir_list.css
+		-@mkdir html
+		-$(LN_S) ../$< html
+
+html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
+		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --cssfile=f_c.css $< > $@

@@ -2,6 +2,7 @@
 
 use strict;
 use File::Path;
+use File::Copy;
 
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
@@ -145,18 +146,29 @@ make_html(0, "privs",   "$root/default/noallprivs.html");
 chmod(0000, "$root/default/noprivs.html");
 chmod(0600, "$root/default/noallprivs.html");
 
+system("mkfifo $root/default/fifo");
+
+my ($a, $b, $c, $d,
+    $e, $f, $g, $h,
+    $atime, $mtime) = stat("$ENV{SRCDIR}/tst/ex_cat_tst_4");
+copy("$ENV{SRCDIR}/tst/ex_cat_tst_4", "$root/default/bin");
+utime $atime, $mtime, "$root/default/bin";
+
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
 daemon_init("ex_httpd", $root, "--mmap=false --sendfile=false");
+system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
 daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=false");
+system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
 daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true");
+system("cat > $root/default/fifo &");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 

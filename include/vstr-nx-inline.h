@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -94,7 +94,7 @@ extern inline void *vstr__debug_malloc(size_t sz,
   return (ret);
 }
 
-extern inline int vstr__debug_malloc_check_mem(const void *ptr)
+extern inline unsigned int vstr__debug_malloc_check_mem(const void *ptr)
 {
   unsigned int scan = 0;
 
@@ -117,6 +117,7 @@ extern inline void vstr__debug_free(void *ptr)
 
     --vstr__options.mem_num;
 
+    ASSERT(vstr__options.mem_num >= 0);
     if (scan != vstr__options.mem_num)
     {
       SWAP_TYPE(vstr__options.mem_vals[scan].ptr,

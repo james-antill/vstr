@@ -1,3 +1,19 @@
+2004-12-15  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_data_set): Fix gcc extension of allowing
+	"return void;".
+
+2004-12-06  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_mmap_file): Add O_NONBLOCK to stop hang
+	on FIFOs.
+	(vstr_sc_read_iov_file): Add O_NONBLOCK to stop hang on FIFOs.
+	(vstr_sc_read_len_file): Add O_NONBLOCK to stop hang on FIFOs.
+	(vstr_sc_write_file): Add O_NONBLOCK to default open flags to stop hang
+	on FIFOs.
+
+	* src/vstr_conv.c (vstr_conv_encode_uri): Add extra chars to encode.
+
 2004-10-14  James Antill  <james@and.org>
 
 	* tst/regression/tst_regression_conv.c (tst): Added testcase for conv

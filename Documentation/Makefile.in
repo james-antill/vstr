@@ -302,7 +302,6 @@ SEC_SSI_FILES = \
   sec/strncpy4.c \
   sec/strncpy5.c \
   sec/strncpy6.c \
-  sec/strncpy7.c \
   sec/asprintf1.c \
   sec/snprintf1.c \
   sec/snprintf2.c

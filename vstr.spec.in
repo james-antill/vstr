@@ -3,7 +3,8 @@
 %define real_release_num 1
 %define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
-%define prefix   /usr
+%define prefix    /usr
+%define varprefix /
 %define name    vstr
 
 # Do we want to run "make check" after the build...
@@ -154,6 +155,7 @@ cd dbg
 
 ../configure --prefix=%{prefix} --mandir=%{_mandir} \
   --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
+  --localstatedir=%{varprefix}/var
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-debug \
   %{fmtfloatopt}
@@ -192,6 +194,7 @@ mkdir -p $RPM_BUILD_ROOT/var/empty/jechod
 mkdir -p $RPM_BUILD_ROOT/var/empty/jhttpd
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_echod $RPM_BUILD_ROOT/%{_sbindir}/jechod
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_httpd $RPM_BUILD_ROOT/%{_sbindir}/jhttpd
+ln -s %{_libdir}/%{name}-%{ver}/examples/ex_cntl  $RPM_BUILD_ROOT/%{_sbindir}/jcntl
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -254,8 +257,8 @@ fi
 %files initd
 %defattr(111, root, root)
 
-/var/empty/j*d
+/var/empty/
 
 %defattr(-, root, root)
-%{_sysconfdir}/init.d/j*d
-%{_sbindir}/j*d
+%{_sysconfdir}/init.d/
+%{_sbindir}/

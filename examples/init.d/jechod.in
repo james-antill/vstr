@@ -13,12 +13,16 @@
 # Needed to resolve sbindir ... *sigh*
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
+localstatedir="@localstatedir@"
 
 prog_name=jechod
 prog_exe="@sbindir@/${prog_name}"
 
-I_ARGS="--daemon --pid-file /var/run/${prog_name}.pid"
+I_ARG_PID="--pid-file ${localstatedir}/run/${prog_name}"
+I_ARG_CNTL="--cntl-file ${localstatedir}/run/${prog_name}"
 [ -r /etc/sysconfig/jechod ] && . /etc/sysconfig/jechod
+
+I_ARGS="--daemon $I_ARG_PID.pid $I_ARG_CNTL.cntl"
 
 function start()
 {

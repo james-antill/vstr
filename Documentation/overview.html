@@ -697,20 +697,25 @@ but it only does the include statement. I use this to generate some
 documentation.
 </li>
 <li>
-<a href="examples/ex_netstr.c.html">Netstring generator</a> - Takes text on the cmd line and outputs it as a netstring within which each parameter is a single
-netstring.
+<a href="examples/ex_httpd.c.html">HTTP/1.1 server</a> - Serves static files over HTTP/1.1, this shows off Vstr how it was designed to be used ... as a non-blocking IO server.
 </li>
 <li>
-<a href="examples/ex_rainbow.c.html">html text rainbow</a> - Turn text into an assortment of html span tags to produce a "rainbow" of colors.
-</li>
-<li>
-<a href="examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
+<a href="examples/ex_perf_sgopenssl.c.html">Scatter gather comparison</a> (this also requires the
 <a href="http://www.openssl.org/">OpenSSL</a> library) - This program times
 the usage of the MD5 or SHA1 functions from OpenSSL, with a all of: A single chunk of data, an iovec list of the data at the default buffer size, and
 an iovec list of the data at a configured buffer size. This was written to
 disprove the theory that iovec lists are always too slow to use, I believe I
-did this assuming you have a chunk size that isn't tiny (and the default chunk
+did this, assuming you have a chunk size that isn't tiny (and the default chunk
 size is probably good enough).
+</li>
+<li>
+<a href="examples/ex_perf_add.c.html">Adding data to Vstr comparison</a> - This
+program times the overhead of adding data to a Vstr, in a few different ways.
+Note that the hand optimized way depends on internals that aren't guaranteed by
+the API, however the hand iovec method is basically as fast and only uses the
+documented API (this isn't surprising in my opinion, as the library was
+designed with the idea that the performance critical data would be comming in
+through iovecs).
 </li>
 </ul>
 
@@ -727,10 +732,12 @@ the test suite works, you know that those uses do work). However do note that
 a couple of the tests do use undocumentation members of structs etc., and you
 still shouldn't use those.
 </p><p>
- There is also a <i>full application</i>, an FTP server,
-<a href="http://freshmeat.net/projects/vsftpd/">vsftpd</a> which I ported to
+ There is also a <i>"port"</i> of the
+<a href="http://freshmeat.net/projects/vsftpd/">vsftpd</a> FTP server to
 use the Vstr string library. It can be found
-<a href="ftp://ftp.and.org/pub/james/vstr/apps/and-vsftpd/">here</a>.
+<a href="ftp://ftp.and.org/pub/james/vstr/apps/and-vsftpd/">here</a>. This was
+mainly an experiment in how well/easily Vstr would work inside an application
+designed for a traditional String API model.
 
 </p></td></tr>
 
@@ -740,7 +747,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Sun Aug 29 19:51:05 EDT 2004
+Last modified: Tue Nov 30 17:56:32 EST 2004
 <!-- hhmts end -->
   </body>
 </html>

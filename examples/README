@@ -6,6 +6,49 @@ happily work on win32 etc.
 
  All code in this dir. is also under the LGPL, not the GPL.
 
+ ex_sock_filter
+
+
  ex_httpd
 	 This should be a HTTP/1.1 compliant server, does most everything you'd
 	want for just serving files.
+
+http://www.sans.org/top20/#u2
+
+        soft shutdown (via. cntl)
+        status (via. cntl)
+	conf
+	configurable 404 pages (and maybe others)
+        limiting IO
+        fixing nagle off/on for cork
+	ipv6
+        mmap cache?
+	fd cache
+	auth rfc2617
+	apache style logs?
+	native syslog
+	edge triggered events
+	multi proc speed up
+	built in ssi?
+	stat cache
+	http/1.0 only mode?
+	FreeBSD sendfile
+	FreeBSD kqueue
+	gzip transfer encoding
+
+    BUGS?
+	GMT time convertion isn't done ... fuck the broken apps.
+	CRLF should be done as (CR)?LF ... fuck the broken apps.
+	CRLF* at the start of the request line.
+
+  tst
+
+	socket filter
+	file truncation/expantion, while sending
+	mmap failure
+	seek failure
+	sendfile failure
+	recv while sending
+	mem fail
+
+ ex_nc

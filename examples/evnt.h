@@ -109,8 +109,8 @@ extern void evnt_scan_send_fds(void);
 extern unsigned int evnt_num_all(void);
 extern int evnt_waiting(void);
 
-extern void evnt_io_cork(struct Evnt *, int);
-extern void evnt_io_defer_accept(struct Evnt *, int);
+extern void evnt_fd_set_cork(struct Evnt *, int);
+extern void evnt_fd_set_defer_accept(struct Evnt *, int);
 
 extern int evnt_epoll_init(void);
 extern int evnt_epoll_enabled(void);

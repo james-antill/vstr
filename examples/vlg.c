@@ -56,15 +56,15 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
     int fd = out_err ? STDERR_FILENO : STDOUT_FILENO;
     const char *tm = date_syslog(time(NULL));
     
-    if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
-        !vstr_add_cstr_ptr(dlg, 0, "[") ||
-        !vstr_add_cstr_ptr(dlg, strlen(tm) + 1, "]: "))
+    if (!vstr_add_cstr_ptr(dlg, 0, "]: ") || /* add backwards */
+        !vstr_add_cstr_ptr(dlg, 0, tm) ||
+        !vstr_add_cstr_ptr(dlg, 0, "["))
       errno = ENOMEM, err(EXIT_FAILURE, "time");
 
     if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
       errno = ENOMEM, err(EXIT_FAILURE, "warn");
     if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "warn");
+      errno = ENOMEM, err(EXIT_FAILURE, "err");
     if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
       errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
 
@@ -85,6 +85,19 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
     vstr_del(dlg, 1, dlg->len);
   }
 }
+
+static void vlg__add_chk_flush(Vlg *vlg, const char *fmt, va_list ap,
+                               int type, int out_err)
+{
+  Vstr_base *dlg = vlg->out_vstr;
+
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
+    errno = ENOMEM, err(EXIT_FAILURE, "chk_flush");
+  
+  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+    vlg__flush(vlg, type, out_err);
+}
+
 
 /* because vlg goes away quickly it's likely we'll want to just use _BUF_PTR
    for Vstr data to save the copying. So here is a helper. */
@@ -332,61 +345,24 @@ void vlg_debug(Vlg *vlg)
 /* ---------- va_list ---------- */
 void vlg_vabort(Vlg *vlg, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-
-  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vabort");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_ALERT, TRUE);
-  
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_ALERT, TRUE);
   abort();
 }
 
 void vlg_verr(Vlg *vlg, int exit_code, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-
-  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(exit_code, "vlog_verr");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_ALERT, TRUE);
-  
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_ALERT, TRUE);
   _exit(exit_code);
 }
 
 void vlg_vwarn(Vlg *vlg, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-
-  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vwarn");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_WARNING, TRUE);
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_WARNING, TRUE);
 }
 
 void vlg_vinfo(Vlg *vlg, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-  
-  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vinfo");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_NOTICE, FALSE);
-}
-
-static void vlg__vdbg(Vlg *vlg, const char *fmt, va_list ap)
-{
-  Vstr_base *dlg = vlg->out_vstr;
-  
-  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_DEBUG, FALSE);
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_NOTICE, FALSE);
 }
 
 void vlg_vdbg1(Vlg *vlg, const char *fmt, va_list ap)
@@ -394,7 +370,7 @@ void vlg_vdbg1(Vlg *vlg, const char *fmt, va_list ap)
   if (vlg->out_dbg < 1)
     return;
 
-  vlg__vdbg(vlg, fmt, ap);
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_DEBUG, TRUE);
 }
 
 void vlg_vdbg2(Vlg *vlg, const char *fmt, va_list ap)
@@ -402,7 +378,7 @@ void vlg_vdbg2(Vlg *vlg, const char *fmt, va_list ap)
   if (vlg->out_dbg < 2)
     return;
 
-  vlg__vdbg(vlg, fmt, ap);
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_DEBUG, TRUE);
 }
 
 void vlg_vdbg3(Vlg *vlg, const char *fmt, va_list ap)
@@ -410,11 +386,10 @@ void vlg_vdbg3(Vlg *vlg, const char *fmt, va_list ap)
   if (vlg->out_dbg < 3)
     return;
 
-  vlg__vdbg(vlg, fmt, ap);
+  vlg__add_chk_flush(vlg, fmt, ap, LOG_DEBUG, TRUE);
 }
 
 /* ---------- ... ---------- */
-
 void vlg_abort(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;

@@ -1,5 +1,5 @@
 HEAD   http:/ HTTP/1 . 0
-Connection:     Keep-Alive
+connection:     Keep-Alive
 
 HEAD / HTTP/1.0
 

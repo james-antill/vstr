@@ -22,11 +22,11 @@
 #include "main.h"
 
 #if !(USE_FD_CLOSE_CHECK) /* hack to test code path on close error */
-# define VSTR__POSIX_OPEN(x, y, z) open64(x, y, z)
+# define VSTR__POSIX_OPEN3(x, y, z) open64(x, y, z)
 # define VSTR__POSIX_CLOSE(x) close(x)
 #else
  /* this is all non threadsafe ... */
-# define VSTR__POSIX_OPEN(x, y, z)  vstr__sc_posix_open(x, y, z)
+# define VSTR__POSIX_OPEN3(x, y, z)  vstr__sc_posix_open(x, y, z)
 # define VSTR__POSIX_CLOSE(x) vstr__sc_posix_close(x)
 static int vstr__sc_posix_open(const char *pathname, int flags,
                                VSTR_AUTOCONF_mode_t mode)
@@ -54,6 +54,9 @@ static int vstr__sc_posix_close(int fd)
   return (ret);
 }
 #endif
+
+#define VSTR__POSIX_OPEN1(x)                                    \
+    VSTR__POSIX_OPEN3(x, O_RDONLY | O_NOCTTY | O_NONBLOCK, 0)
 
 #ifndef HAVE_MMAP
 # define VSTR__SC_ENOSYS(x) \
@@ -209,7 +212,7 @@ int vstr_sc_mmap_file(Vstr_base *base, size_t pos, const char *filename,
     err = &dummy_err;
   *err = 0;
 
-  if ((fd = VSTR__POSIX_OPEN(filename, O_RDONLY | O_NOCTTY, 0)) == -1)
+  if ((fd = VSTR__POSIX_OPEN1(filename)) == -1)
   {
     *err = VSTR_TYPE_SC_MMAP_FILE_ERR_OPEN_ERRNO;
     return (FALSE);
@@ -459,7 +462,7 @@ int vstr_sc_read_iov_file(Vstr_base *base, size_t pos,
   
   ASSERT_GOTO(base && (pos <= base->len), inval_args);
 
-  if ((fd = VSTR__POSIX_OPEN(filename, O_RDONLY | O_NOCTTY, 0)) == -1)
+  if ((fd = VSTR__POSIX_OPEN1(filename)) == -1)
   {
     *err = VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO;
     return (FALSE);
@@ -531,7 +534,7 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
 
   ASSERT_GOTO(base && (pos <= base->len), inval_args);
   
-  if ((fd = VSTR__POSIX_OPEN(filename, O_RDONLY | O_NOCTTY, 0)) == -1)
+  if ((fd = VSTR__POSIX_OPEN1(filename)) == -1)
   {
     *err = VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO;
     return (FALSE);
@@ -704,9 +707,9 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
     return (TRUE);
 
   if (!open_flags) /* O_RDONLY isn't valid, for obvious reasons */
-    open_flags = (O_WRONLY | O_CREAT | O_EXCL);
+    open_flags = (O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK);
 
-  if ((fd = VSTR__POSIX_OPEN(filename, open_flags, mode)) == -1)
+  if ((fd = VSTR__POSIX_OPEN3(filename, open_flags, mode)) == -1)
   {
     *err = VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO;
     return (FALSE);

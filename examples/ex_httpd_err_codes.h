@@ -204,7 +204,10 @@
 #define HTTP_REQ_CHK_DIR(req, val) do {                                 \
       Vstr_base *lfn = (req)->fname;                                    \
                                                                         \
-      if (VSUFFIX(lfn, 1, lfn->len, "/.."))                             \
+      ASSERT(lfn->len && vstr_export_chr(lfn, 1) != '/');               \
+                                                                        \
+      if (vstr_cmp_cstr_eq(lfn, 1, lfn->len, "..") ||                   \
+          VSUFFIX(lfn, 1, lfn->len, "/.."))                             \
         HTTPD_ERR_RET(req, 403, val);                                   \
       else if (!VSUFFIX(lfn, 1, lfn->len, "/"))                         \
       {                                                                 \

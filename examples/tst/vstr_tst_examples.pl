@@ -6,6 +6,9 @@ use File::Compare;
 
 my $tst_DBG = 0;
 
+my $tst_mp     = 1;
+my $tst_num_mp = 2;
+
 my $xit_success = 0;
 my $xit_failure = 1;
 my $xit_fail_ok = 77;
@@ -14,7 +17,7 @@ sub failure
   {
     my $txt = shift;
 
-    warn("FAILURE $0: $txt\n");
+    warn("FAILURE($$) $0: $txt\n");
     exit($xit_failure);
   }
 
@@ -39,8 +42,22 @@ sub sub_tst
     if (!$sz)
       { failure("NO files: ${prefix}"); }
 
-    for my $num (1..$sz)
+    my @pids = ();
+    $sz *= $tst_num_mp;
+    for my $num ($tst_num_mp..$sz)
       {
+	$num = floor($num / $tst_num_mp);
+	if ($tst_mp)
+	  {
+	    my $pid = fork();
+	
+	    if (!defined ($pid))
+	      { failure("fork: $!"); }
+
+	    push @pids, $pid;
+	    next    if ($pid);
+	  }
+
 	if (! -f "$dir/${prefix}_tst_$num")
 	  { failure("NO file: $dir/${prefix}_tst_$num"); }
 	if (! -f "$dir/${prefix}_out_$num")
@@ -48,13 +65,28 @@ sub sub_tst
 
 	my $fsz = -s "$dir/${prefix}_out_$num";
 
-	unlink("${prefix}_tmp_$num");
-	print "DBG: $dir/${prefix}_tst_$num ${prefix}_tmp_$num\n" if ($tst_DBG);
-	$func->("$dir/${prefix}_tst_$num", "${prefix}_tmp_$num", $xtra, $fsz);
+	unlink("${prefix}_tmp_${num}_$$");
+	print "DBG: $dir/${prefix}_tst_$num ${prefix}_tmp_${num}\n" if ($tst_DBG);
+	$func->("$dir/${prefix}_tst_$num", "${prefix}_tmp_${num}_$$",
+		$xtra, $fsz);
 
-	if (compare("$dir/${prefix}_out_$num", "${prefix}_tmp_$num") != 0)
-	  { failure("tst ${prefix} $num"); }
-	unlink("${prefix}_tmp_$num");
+	if (compare("$dir/${prefix}_out_$num", "${prefix}_tmp_${num}_$$") != 0)
+	  {
+	    rename("${prefix}_tmp_${num}_$$", "${prefix}_tmp_${num}");
+	    failure("tst ${prefix} $num");
+	  }
+	unlink("${prefix}_tmp_${num}_$$");
+
+	if ($tst_mp)
+	  { _exit(0); }
+      }
+
+    for my $pid (@pids)
+      {
+	if (waitpid($pid, 0) <= 0)
+	  { failure("wait($pid)"); }
+	if ($? != $xit_success)
+	  { failure("wait($pid)"); }
       }
   }
 
@@ -84,7 +116,9 @@ sub run_tst
 	my $cmd  = $xtra->{cmd};
 	my $opts = $xtra->{opts};
 
-	system("./ex_cat $io_r | ./${cmd} $opts > $io_w");
+	system("./ex_slowcat -b 64 -s 0 -u 40   $io_r | " .
+	       "./${cmd} $opts | " .
+	       "./ex_slowcat -b 32 -s 0 -u 40 > $io_w");
       }
 
     sub_tst(\&sub_run_tst,      $prefix, {cmd => $cmd, opts => $opts});
@@ -109,7 +143,7 @@ sub daemon_status
 
 	if ($daemon_addr eq '0.0.0.0')
 	  {
-	    $daemon_addr = 'localhost';
+	    $daemon_addr = '127.0.0.1';
 	  }
 	last;
       }
@@ -175,7 +209,8 @@ sub daemon_connect_tcp
 					 PeerPort => daemon_port(),
 					 Proto    => "tcp",
 					 Type     => SOCK_STREAM,
-					 Timeout  => 2) || failure("connect");
+					 Timeout  => 2) ||
+					   failure("connect: $!");
     nonblock($sock);
     return $sock;
   }

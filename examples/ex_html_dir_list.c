@@ -5,6 +5,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static const char *def_prefix = "";
+
+static const char *css_fname = "dir_list.css";
+
 #define SUB_CODE(x) do {                                \
       if (!vstr_sub_cstr_buf(s1, pos, 1, x))            \
         return (FALSE);                                 \
@@ -111,33 +115,31 @@ static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
 
   if (name->pos)
   {
+    Vstr_base *href = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
+    Vstr_base *text = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
+    VSTR_AUTOCONF_uintmax_t val = 0;
+      
     *row_num %= 2;
     ++*row_num;
-    
-    {
-      Vstr_base *href = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
-      Vstr_base *text = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
 
-      if (!href || !vstr_conv_encode_uri(href, 1, href->len))
-        errno = ENOMEM, err(EXIT_FAILURE, "html");
-      if (!text || !html_conv_encode_data(text, 1, text->len))
-        errno = ENOMEM, err(EXIT_FAILURE, "html");
+    if (!href || !vstr_conv_encode_uri(href, 1, href->len))
+      errno = ENOMEM, err(EXIT_FAILURE, "html");
+    if (!text || !html_conv_encode_data(text, 1, text->len))
+      errno = ENOMEM, err(EXIT_FAILURE, "html");
 
-      vstr_add_fmt(s1, s1->len, "  <tr class=\"r%d\"> <td class=\"c1\">"
-                   "<a href=\"${vstr:%p%zu%zu%u}\">${vstr:%p%zu%zu%u}</a></td>",
-                   *row_num,
-                   href, (size_t)1, href->len, 0,
-                   text, (size_t)1, text->len, 0);
-      vstr_free_base(href);
-      vstr_free_base(text);
-    }
+    vstr_add_fmt(s1, s1->len, "  <tr class=\"r%d\"> <td class=\"c1\">"
+                 "<a href=\"%s${vstr:%p%zu%zu%u}\">${vstr:%p%zu%zu%u}</a></td>",
+                 *row_num,
+                 def_prefix,
+                 href, (size_t)1, href->len, 0,
+                 text, (size_t)1, text->len, 0);
+    vstr_free_base(href); href = NULL;
+    vstr_free_base(text); text = NULL;
     
     if (!size->pos)
       vstr_add_cstr_buf(s1, s1->len, " <td class=\"c2\"></td>");
     else
     {
-      VSTR_AUTOCONF_uintmax_t val = 0;
-
       val = vstr_parse_uintmax(s2, size->pos, size->len, 10, NULL, NULL);
 
       vstr_add_fmt(s1, s1->len, " <td class=\"c2\">${BKMG.ju:%ju}</td>", val);
@@ -147,8 +149,6 @@ static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
       vstr_add_cstr_buf(s1, s1->len, " <td class=\"c3\"></td>");
     else
     { /* FIXME: add option to skip for block devices etc. */
-      VSTR_AUTOCONF_uintmax_t val = 0;
-
       val = vstr_parse_uintmax(s2, type->pos, type->len, 10, NULL, NULL);
       
       vstr_add_cstr_buf(s1, s1->len, " <td class=\"c3\">");
@@ -197,7 +197,7 @@ static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
 <html>\n\
  <head>\n\
   <title>Directory listing of %s</title>\n\
- <link rel=\"stylesheet\" type=\"text/css\" href=\"dir_list.css\">\
+ <link rel=\"stylesheet\" type=\"text/css\" href=\"%s\">\
  </head>\n\
  <body>\n\
   \n\
@@ -210,7 +210,7 @@ static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
   </thead>\n\
   \n\
   <tbody>\n\
-", fname, fname);
+", fname, css_fname, fname);
 }
 
 static void ex_html_dir_list_end(Vstr_base *s1)
@@ -266,6 +266,8 @@ int main(int argc, char *argv[])
       ++count;
       break;
     }
+    EX_UTILS_GETOPT_CSTR("prefix-path", def_prefix);
+    EX_UTILS_GETOPT_CSTR("css-filename", css_fname);
     EX_UTILS_GETOPT_CSTR("name", def_name);
     else if (!strcmp("--version", argv[count]))
     { /* print version and exit */
@@ -284,10 +286,11 @@ Usage: jhtml_dir_list [FILENAME]...\n\
    or: jhtml_dir_list OPTION\n\
 Output filenames.\n\
 \n\
-      --help     Display this help and exit\n\
-      --version  Output version information and exit\n\
-      --name     Name to be used if input from stdin\n\
-      --         Treat rest of cmd line as input filenames\n\
+      --help        - Display this help and exit\n\
+      --version     - Output version information and exit\n\
+      --name        - Name to be used if input from stdin\n\
+      --prefix-path - Prefix for href on each name in directory listing\n\
+      --            - Treat rest of cmd line as input filenames\n\
 \n\
 Report bugs to James Antill <james@and.org>.\n\
 ");

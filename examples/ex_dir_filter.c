@@ -240,7 +240,7 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
   if (!(filters = bag_make(argc, bag_cb_free_nothing, bag_cb_free_nothing)))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
-  while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
+  while ((optchar = getopt_long(argc, argv, "A:D:hV",
                                 long_options, NULL)) != EOF)
   {
     switch (optchar)

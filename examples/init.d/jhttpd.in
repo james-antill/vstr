@@ -13,30 +13,79 @@
 # Needed to resolve sbindir ... *sigh*
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
+localstatedir="@localstatedir@"
 
 prog_name=jhttpd
 prog_exe="@sbindir@/${prog_name}"
 
-I_ARGS="--daemon --pid-file /var/run/${prog_name}.pid"
-JHTTPD_DIR=/var/www/html
+cntl_exe="@sbindir@/jcntl"
+
+FILE_BASE="${localstatedir}/run/${prog_name}"
+JHTTPD_NUM=1
+JHTTPD1_DIR=${localstatedir}/www/html
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
 
 function start()
 {
-        echo -n $"Starting $prog_name: "
-        daemon --check $prog_name $prog_exe $I_ARGS $JHTTPD_ARGS $JHTTPD_DIR
-        RETVAL=$?
-        echo
+        RETVAL=0
+        i=1
+	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
+        do
+          CNTL_FILE="${FILE_BASE}$i.cntl"
+          PID_FILE="${FILE_BASE}$i.pid"
+          I_ARGS="--daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
+          U__CALL_ARGS="JHTTPD${i}_ARGS"
+          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
+          U__CALL_DIR="JHTTPD${i}_DIR"
+          REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
+          U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-.}"
+          echo -n $"Starting $prog_name(${REAL_DIR}): "
+          daemon --check $prog_name$i $prog_exe $I_ARGS $U_ARGS
+          RETVAL=$?
+          echo
+          i=$(($i + 1))
+        done
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name
         return $RETVAL
 }
 
 function stop()
 {
-        echo -n $"Shutting down $prog_name: "
-        killproc $prog_name
-        RETVAL=$?
-        echo
+        RETVAL=0
+        i=1
+	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
+        do
+          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
+          U__CALL_DIR="JHTTPD${i}_DIR"
+          REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
+          echo -n $"Shutting down $prog_name(${REAL_DIR}): "
+          killproc $prog_name$i
+          RETVAL=$?
+	  echo
+          i=$(($i + 1))
+        done
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog_name
+        return $RETVAL
+}
+
+function softstop()
+{
+        RETVAL=0
+        i=1
+	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
+        do
+          CNTL_FILE="${FILE_BASE}$i.cntl"
+          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
+          U__CALL_DIR="JHTTPD${i}_DIR"
+	  REAL_DIR="${!U__CALL_CHROOT:-}${!U__CALL_CHROOT:+/}${!U__CALL_DIR:-}"
+          echo -n $"Soft shutdown $prog_name(${REAL_DIR}): "
+          $cntl_exe $CNTL_FILE -e close > /dev/null
+          RETVAL=$?
+          [ $RETVAL -eq 0 ] && success $"$prog_name$i soft shutdown" || \
+	     failure $"$prog_name$i soft shutdown"
+	  echo
+          i=$(($i + 1))
+        done
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog_name
         return $RETVAL
 }
@@ -44,6 +93,11 @@ function stop()
 function restart()
 {
         stop; start;
+}
+
+function softrestart()
+{
+        softstop; start;
 }
 
 case "$1" in
@@ -56,17 +110,26 @@ case "$1" in
   restart)
         restart
         ;;
+  softstop)
+        softstop
+        ;;
+  softrestart)
+        softrestart
+        ;;
+  graceful)
+        softstop
+        ;;
   reload)
-        restart
+        softrestart
         ;;
   status)
         status $prog_name
         ;;
   condrestart)
-        [ -f /var/lock/subsys/$prog_name ] && restart || :
+        [ -f /var/lock/subsys/${prog_name}1 ] && softrestart || :
         ;;
   *)
-	echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+	echo $"Usage: $0 {start|stop|restart|softstop|softrestart|reload|status|condrestart}"
         exit 1
 esac
                                                                              

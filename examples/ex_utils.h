@@ -184,7 +184,7 @@ static int io_put(Vstr_base *io_w, int fd)
 #ifndef EX_UTILS_NO_USE_BLOCK
 #ifndef EX_UTILS_NO_USE_PUTALL
 /* loop outputting data until empty, blocking when needed */
-static void io_put_all(Vstr_base *io_w, int fd)
+static int io_put_all(Vstr_base *io_w, int fd)
 {
   int state = IO_NONE;
 
@@ -192,7 +192,12 @@ static void io_put_all(Vstr_base *io_w, int fd)
   {
     if (state == IO_BLOCK)
       io_block(-1, fd);
+    
+    if (EX_UTILS_RET_FAIL && (state == IO_FAIL))
+      return (IO_FAIL);
   }
+
+  return (state);
 }
 #endif
 #endif
@@ -271,7 +276,7 @@ static int io_fd_set_o_nonblock(int fd)
 # endif
 static int io_open(const char *filename)
 {
-  int fd = EX_UTILS_OPEN(filename, O_RDONLY | O_NOCTTY);
+  int fd = EX_UTILS_OPEN(filename, O_RDONLY | O_NOCTTY | O_NONBLOCK);
 
   if ((fd == -1) && EX_UTILS_RET_FAIL)
     return (-1);

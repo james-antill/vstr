@@ -29,3 +29,10 @@ const char *opt_program_name(const char *argv0, const char *def)
   return (def);
 }
 
+const char *opt_def_toggle(int val)
+{
+  if (val)
+    return (" (default: on)");
+  else
+    return (" (default: off)");
+}

@@ -432,29 +432,27 @@ slightly wrong. The second is particularly sad, as the reason it's done that
 way is to improve performance (using an interface that can cause over
 25,000% overhead, in the common case).
 </p><p>
-      One other usage of strncpy() I've seen that's similar to the above is to
-do...
+      Note that the last example listed above...
 </p>
 
 <!--#exec cmd="ex_highlight --id=strncpy-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex5\">&para;</a>
-' --end='</span>' sec/strncpy5.c" -->
+' --end='</span>' sec/strncpy4.c" -->
 
-<p>
-...here you "get rid" of the problem of the programer remembering to write NIL
-terminator by "knowing" that the last byte will always be a NIL and so not
+<p>...works by "getting rid" of the problem (not remembering to write NIL
+terminator) by "knowing" that the last byte will always be a NIL and so not
 overwriting that. However this is a very big trap for those that don't
 intimately know what is happening, due to...
 </p>
 
 <!--#exec cmd="ex_highlight --id=strncpy-ex6 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex6\">&para;</a>
-' --end='</span>' sec/strncpy6.c" -->
+' --end='</span>' sec/strncpy5.c" -->
 
 <p>
 ...or...
 </p>
 
 <!--#exec cmd="ex_highlight --id=strncpy-ex7 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex7\">&para;</a>
-' --end='</span>' sec/strncpy7.c" -->
+' --end='</span>' sec/strncpy6.c" -->
 
 <p>
 ...being errors.
@@ -561,7 +559,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Sun Sep 19 21:57:38 EDT 2004
+Last modified: Thu Dec  2 19:38:43 EST 2004
 <!-- hhmts end -->
   </body>
 </html>

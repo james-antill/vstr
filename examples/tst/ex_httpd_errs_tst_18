@@ -20,7 +20,7 @@ Range: bytes = 2000000
 
 GET / HTTP/1.1
 Host: default
-Range: bytes = 2000000-x
+range: bytes = 2000000-x
 
 GET / HTTP/1.1
 Host: default
@@ -29,7 +29,7 @@ Range: bytes = 2000000-1
 GET / HTTP/1.1
 Host: default
 If-Range: foo
-Range: bytes = 2000000-1
+range: bytes = 2000000-1
 
 GET / HTTP/1.1
 Host: default
@@ -37,6 +37,10 @@ Range: bytes = 1 - 2000000x
 
 GET / HTTP/1.1
 Host: default
+Range: bytes =  - 000000
+
+GET / HTTP/1.1
+Host: default
 Range: bytes = 1 - 2000000
-Connection: close
+connection: close
 

@@ -230,7 +230,10 @@ extern inline void vstr_data_set(struct Vstr_conf *conf,
                                  unsigned int pos,  struct Vstr_ref *ref)
 {
   if (!conf)
-    return (vstr_extern_inline_data_set(pos, ref));
+  {
+    vstr_extern_inline_data_set(pos, ref);
+    return;
+  }
   
   VSTR__ASSERT_RET_VOID(pos && (pos <= conf->data_usr_len));
 
@@ -676,7 +679,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
       }
       if (base->iovec_upto_date)
       {
-        unsigned int num = 1 + VSTR__CACHE(base)->vec->off - 1;
+        unsigned int num = VSTR__CACHE(base)->vec->off;
 
         if (scan->type != VSTR_TYPE_NODE_NON)
         {

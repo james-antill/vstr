@@ -1,28 +1,29 @@
 
  Format: ex_httpd [-dHhMnPtV] <dir>
-    --daemon          - Toggle becoming a daemon.
+    --daemon          - Toggle becoming a daemon (default: off).
     --chroot          - Change root.
-    --drop-privs      - Toggle droping privilages, after moving to directory.
+    --drop-privs      - Toggle droping privilages (default: off).
     --priv-uid        - Drop privilages to this uid.
     --priv-gid        - Drop privilages to this gid.
     --pid-file        - Log pid to file.
     --cntl-file       - Create control file.
-    --sendfile        - Toggle use of sendfile() to load files.
-    --mmap            - Toggle use of mmap() to load files.
-    --keep-alive      - Toggle use of Keep-Alive handling.
-    --keep-alive-1.0  - Toggle use of Keep-Alive handling for 1.0.
-    --virtual-hosts   - Toggle use of Host header.
-    --range           - Toggle use of partial responces.
-    --range-1.0       - Toggle use of partial responces for 1.0.
-    --public-only     - Toggle use of public only privilages.
+    --accept-filter-file - Load Linux Socket Filter code for accept().
+    --mmap            - Toggle use of mmap() to load files (default: off).
+    --sendfile        - Toggle use of sendfile() to load files (default: on).
+    --keep-alive      - Toggle use of Keep-Alive handling (default: on).
+    --keep-alive-1.0  - Toggle use of Keep-Alive handling for HTTP/1.0 (default: on).
+    --virtual-hosts   - Toggle use of Host header (default: on).
+    --range           - Toggle use of partial responces (default: on).
+    --range-1.0       - Toggle use of partial responces for HTTP/1.0 (default: on).
+    --public-only     - Toggle use of public only privilages (default: off).
     --dir-filename    - Filename to use when requesting directories.
     --server-name     - Contents of server header used in replies.
     --debug -d        - Enable debug info.
-    --host -H         - IPv4 address to bind (def: "all").
+    --host -H         - IPv4 address to bind (default: "all").
     --help -h         - Print this message.
     --max-clients -M  - Max clients allowed to connect (0 = no limit).
     --max-header-sz   - Max size of http header (0 = no limit).
-    --nagle -n        - Toggle usage of nagle TCP option.
+    --nagle -n        - Toggle usage of nagle TCP option (default: off).
     --port -P         - Port to bind to.
     --timeout -t      - Timeout (usecs) for connections.
     --version -V      - Print the version string.
