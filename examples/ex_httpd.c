@@ -37,16 +37,11 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
-#include <sys/stat.h>
 #include <signal.h>
 #include <grp.h>
 
-#include "opt.h"
-
 /* is the data is less than this, queue instead of hitting write */
-#define CL_MAX_WAIT_SEND 16
-
-#include "evnt.h"
+#define SERV_CONF_MAX_WAIT_SEND 16
 
 #define EX_UTILS_NO_USE_INIT  1
 #define EX_UTILS_NO_USE_EXIT  1
@@ -60,42 +55,15 @@
 #include "date.h"
 #include "mime_types.h"
 
-#define CONF_SERV_DEF_ADDR NULL
 #define CONF_SERV_DEF_PORT   80
 
-#define CONF_SERV_VERSION "0.9.5"
-
-/* **** compile time conf **** */
-
-
-/* **** defaults for runtime conf **** */
-#define CONF_SERV_DEF_NAME "jhttpd/" CONF_SERV_VERSION " (Vstr)"
-#define CONF_SERV_USE_MMAP FALSE
-#define CONF_SERV_USE_SENDFILE TRUE
-#define CONF_SERV_USE_KEEPA TRUE
-#define CONF_SERV_USE_KEEPA_1_0 TRUE
-#define CONF_SERV_USE_VHOSTS FALSE
-#define CONF_SERV_USE_RANGE TRUE
-#define CONF_SERV_USE_RANGE_1_0 TRUE
-#define CONF_SERV_USE_PUBLIC_ONLY FALSE
-#define CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT TRUE
-#define CONF_SERV_DEF_TCP_DEFER_ACCEPT 16 /* HC usage txt */
-#define CONF_SERV_DEF_DIR_FILENAME "index.html"
-#define CONF_SERV_USE_DEFAULT_MIME_TYPE FALSE
-#define CONF_SERV_DEF_MIME_TYPE "application/octet-stream"
-#define CONF_SERV_MIME_TYPE_MAIN "/etc/mime.types"
-#define CONF_SERV_MIME_TYPE_XTRA NULL
-#define CONF_SERV_USE_ERR_406 TRUE
-#define CONF_SERV_USE_CANONIZE_HOST FALSE
-#define CONF_SERV_USE_NON_HOST_ERR_400 TRUE
-
-#include "ex_httpd_err_codes.h"
+#include "httpd.h"
 
 #define CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
 #define CONF_MEM_PREALLOC_MIN (16  * 1024)
 #define CONF_MEM_PREALLOC_MAX (128 * 1024)
 
-#ifdef NDEBUG
+#ifdef VSTR_AUTOCONF_NDEBUG
 # define CONF_HTTP_MMAP_LIMIT_MIN (16 * 1024) /* a couple of pages */
 #else
 # define CONF_HTTP_MMAP_LIMIT_MIN 8 /* debug... */
@@ -103,37 +71,6 @@
 #define CONF_HTTP_MMAP_LIMIT_MAX (50 * 1024 * 1024)
 
 #define CONF_FS_READ_CALL_LIMIT 8
-
-/* this is configurable, but is much higher than EX_MAX_R_DATA_INCORE due to
- * allowing largish requests with HTTP */
-#ifdef NDEBUG
-# define CONF_INPUT_MAXSZ (  1 * 1024 * 1024)
-#else
-# define CONF_INPUT_MAXSZ (128 * 1024) /* debug */
-#endif
-
-/* Linear Whitespace, a full stds. check for " " and "\t" */
-#define HTTP_LWS " \t"
-
-/* End of Line */
-#define HTTP_EOL "\r\n"
-
-/* End of Request - blank line following previous line in request */
-#define HTTP_END_OF_REQUEST HTTP_EOL HTTP_EOL
-
-/* HTTP crack -- Implied linear whitespace between tokens, note that it
- * is *LWS == *([CRLF] 1*(SP | HT)) */
-#define HTTP_SKIP_LWS(s1, p, l) do {                                    \
-      char http__q_tst_lws = 0;                                         \
-                                                                        \
-      if (!l) break;                                                    \
-      http__q_tst_lws = vstr_export_chr(s1, p);                         \
-      if ((http__q_tst_lws != '\r') && (http__q_tst_lws != ' ') &&      \
-          (http__q_tst_lws != '\t'))                                    \
-        break;                                                          \
-                                                                        \
-      http__skip_lws(s1, &p, &l);                                       \
-    } while (FALSE)
 
 /* is the cstr a prefix of the vstr */
 #define VPREFIX(vstr, p, l, cstr)                                       \
@@ -153,84 +90,6 @@
 #define TRUE  1
 #define FALSE 0
 
-struct Http_hdrs
-{
- Vstr_sect_node hdr_ua[1];
- Vstr_sect_node hdr_referer[1]; /* NOTE: referrer */
-
- Vstr_sect_node hdr_expect[1];
- Vstr_sect_node hdr_host[1];
- Vstr_sect_node hdr_if_match[1];
- Vstr_sect_node hdr_if_modified_since[1];
- Vstr_sect_node hdr_if_none_match[1];
- Vstr_sect_node hdr_if_range[1];
- Vstr_sect_node hdr_if_unmodified_since[1];
-
- /* can have multiple headers... */
- struct Http_hdrs__multi {
-  Vstr_base *combiner_store;
-  Vstr_base *comb;
-  Vstr_sect_node hdr_accept[1];
-  Vstr_sect_node hdr_accept_encoding[1];
-  Vstr_sect_node hdr_accept_language[1];
-  Vstr_sect_node hdr_connection[1];
-  Vstr_sect_node hdr_range[1];
- } multi[1];
-};
-
-struct Http_req_data
-{
- struct Http_hdrs http_hdrs[1];
- Vstr_base *fname;
- size_t len;
- size_t path_pos;
- size_t path_len;
- unsigned int error_code;
- const char * error_line;
- const char * error_msg;
- size_t       error_len;
- Vstr_sects *sects;
- struct stat64 f_stat[1];
- size_t orig_io_w_len;
- Vstr_base *f_mmap;
- const Vstr_base *content_type_vs1;
- size_t           content_type_pos;
- size_t           content_type_len;
- Vstr_base *content_location;
- unsigned int ver_0_9 : 1;
- unsigned int ver_1_1 : 1;
- unsigned int use_mmap : 1;
- unsigned int head_op : 1;
-
- unsigned int content_encoding_gzip  : 1;
- unsigned int content_encoding_xgzip : 1; /* only valid if gzip is TRUE */
- 
- unsigned int content_encoding_identity : 1;
-
- unsigned int using_req : 1;
- unsigned int done_once : 1;
-
- unsigned int malloc_bad : 1;
-};
-
-struct Con
-{
- struct Evnt evnt[1];
-
- int f_fd;
- VSTR_AUTOCONF_uintmax_t f_off;
- VSTR_AUTOCONF_uintmax_t f_len;
-
- unsigned int parsed_method_ver_1_0 : 1;
- unsigned int keep_alive : 3;
- 
- unsigned int use_sendfile : 1; 
-};
-
-#define HTTP_NIL_KEEP_ALIVE 0
-#define HTTP_1_0_KEEP_ALIVE 1
-#define HTTP_1_1_KEEP_ALIVE 2
-
 #define HTTP__HDR_SET(req, h, p, l) do {               \
       (req)-> http_hdrs -> hdr_ ## h ->pos = (p);          \
       (req)-> http_hdrs -> hdr_ ## h ->len = (l);          \
@@ -240,60 +99,29 @@ struct Con
       (req)-> http_hdrs -> multi -> hdr_ ## h ->len = (l); \
     } while (FALSE)
 
+#define HTTP__CONTENT_INIT_HDR(x) do {          \
+      req-> x ## _vs1 = NULL;                   \
+      req-> x ## _pos = 0;                      \
+      req-> x ## _len = 0;                      \
+    } while (FALSE)
+
+#define HTTP__CONTENT_APP_HDR(o, x, y) do {                             \
+      if (req-> x ## _vs1)                                              \
+      {                                                                 \
+        ASSERT(!vstr_srch_cstr_chrs_fwd(req-> x ## _vs1,                \
+                                        req-> x ## _pos,                \
+                                        req-> x ## _len, HTTP_EOL));    \
+        http_app_header_vstr(o, y, req-> x ## _vs1,                     \
+                             req-> x ## _pos, req-> x ## _len,          \
+                             VSTR_TYPE_ADD_DEF);                        \
+      }                                                                 \
+    } while (FALSE)
+
 static struct Evnt *acpt_evnt = NULL;
 
-static unsigned int client_timeout = (2 * 60); /* 2 minutes */
-
-static const char *server_ipv4_address = CONF_SERV_DEF_ADDR;
-static short server_port = CONF_SERV_DEF_PORT;
-
-static unsigned int server_max_clients = 0;
-
-static unsigned int server_max_header_sz = CONF_INPUT_MAXSZ;
+static HTTPD_CONF_MAIN_DECL_OPTS(opts, CONF_SERV_DEF_PORT);
 
 static time_t server_beg = (time_t)-1;
-
-static struct 
-{
- const char * server_name;
-
- unsigned int use_mmap : 1;
- unsigned int use_sendfile : 1;
- unsigned int use_keep_alive : 1;
- unsigned int use_keep_alive_1_0 : 1;
- unsigned int use_vhosts : 1;
- unsigned int use_range : 1;
- unsigned int use_range_1_0 : 1;
- unsigned int use_public_only : 1; /* 8th bitfield */
- unsigned int use_gzip_content_replacement : 1;
- unsigned int use_default_mime_type : 1;
- unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (10th-22nd bitfields) */
- unsigned int use_err_406 : 1; /* 23rd bitfield */
- unsigned int canonize_host : 1;
- unsigned int non_host_err_400 : 1; /* 25th bitfield */
- 
- const char * dir_filename;
- const char * mime_types_default_type;
- const char * mime_types_main;
- const char * mime_types_xtra;
- Vstr_base *default_hostname;
-} serv[1] = {{CONF_SERV_DEF_NAME,
-              CONF_SERV_USE_MMAP, CONF_SERV_USE_SENDFILE,
-              CONF_SERV_USE_KEEPA, CONF_SERV_USE_KEEPA_1_0,
-              CONF_SERV_USE_VHOSTS,
-              CONF_SERV_USE_RANGE, CONF_SERV_USE_RANGE_1_0,
-              CONF_SERV_USE_PUBLIC_ONLY,
-              CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT,
-              CONF_SERV_USE_DEFAULT_MIME_TYPE,
-              CONF_SERV_DEF_TCP_DEFER_ACCEPT,
-              CONF_SERV_USE_ERR_406,
-              CONF_SERV_USE_CANONIZE_HOST,
-              CONF_SERV_USE_NON_HOST_ERR_400,
-              CONF_SERV_DEF_DIR_FILENAME,
-              CONF_SERV_DEF_MIME_TYPE,
-              CONF_SERV_MIME_TYPE_MAIN,
-              CONF_SERV_MIME_TYPE_XTRA,
-              NULL}};
 
 static Vlg *vlg = NULL;
 
@@ -305,7 +133,8 @@ static void usage(const char *program_name, int ret, const char *prefix)
     errno = ENOMEM, err(EXIT_FAILURE, "usage");
 
   vstr_add_fmt(out, 0, "%s\n\
- Format: %s [-dHhMnPtV] <dir>\n\
+ Format: %s [options] <dir>\n\
+  Daemon options\n\
     --daemon          - Toggle becoming a daemon%s.\n\
     --chroot          - Change root.\n\
     --drop-privs      - Toggle droping privilages%s.\n\
@@ -316,56 +145,61 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --accept-filter-file\n\
                       - Load Linux Socket Filter code for accept().\n\
     --processes       - Number of processes to use (default: 1).\n\
+    --debug -d        - Raise debug level (can be used upto 3 times).\n\
+    --host -H         - IPv4 address to bind (default: \"all\").\n\
+    --help -h         - Print this message.\n\
+    --max-connections\n\
+                  -M  - Max connections allowed (0 = no limit).\n\
+    --nagle -n        - Toggle usage of nagle TCP option%s.\n\
+    --port -P         - Port to bind to.\n\
+    --idle-timeout -t - Timeout (usecs) for connections that are idle.\n\
+    --defer-accept    - Time to defer dataless connections (default: 8s)\n\
+    --version -V      - Print the version string.\n\
+\n\
+  HTTPD options\n\
     --mmap            - Toggle use of mmap() to load files%s.\n\
     --sendfile        - Toggle use of sendfile() to load files%s.\n\
     --keep-alive      - Toggle use of Keep-Alive handling%s.\n\
     --keep-alive-1.0  - Toggle use of Keep-Alive handling for HTTP/1.0%s.\n\
-    --virtual-hosts   - Toggle use of Host header%s.\n\
+    --virtual-hosts\n\
+    --vhosts          - Toggle use of Host header%s.\n\
     --range           - Toggle use of partial responces%s.\n\
     --range-1.0       - Toggle use of partial responces for HTTP/1.0%s.\n\
     --public-only     - Toggle use of public only privilages%s.\n\
+    --directory-filename\n\
     --dir-filename    - Filename to use when requesting directories.\n\
     --server-name     - Contents of server header used in replies.\n\
     --gzip-content-replacement\n\
                       - Toggle use of gzip content replacement%s.\n\
-    --send-default-mime-type\n\
-                      - Toggle sending a default mime type%s.\n\
+    --require-content-type\n\
+                      - Send a default content-type, if we don't know it%s.\n\
     --default-mime-type\n\
                       - Default mime type (application/octet-stream).\n\
     --mime-types-main - Main mime types filename (default: /etc/mime.types).\n\
     --mime-types-xtra - Additional mime types filename.\n\
-    --send-err-406    - Toggle sending 406 responses%s.\n\
+    --error-406       - Toggle sending 406 responses%s.\n\
     --canonize-host   - Strip leading 'www.', strip trailing '.'%s.\n\
-    --err-host-400    - Give an 400 error for a bad host%s.\n\
-    --defer-accept    - Time to defer dataless connections (default: 16s).\n\
-    --default-hostname\n\
-                      - Hostname used when not supplied (default is hostname).\n\
-    --debug -d        - Raise debug level (can be used upto 3 times).\n\
-    --host -H         - IPv4 address to bind (default: \"all\").\n\
-    --help -h         - Print this message.\n\
-    --max-clients -M  - Max clients allowed to connect (0 = no limit).\n\
+    --error-host-400  - Give an 400 error for a bad host%s.\n\
+    --unspecified-hostname\n\
+                      - Used for req with no Host header (default is hostname).\n\
     --max-header-sz   - Max size of http header (0 = no limit).\n\
-    --nagle -n        - Toggle usage of nagle TCP option%s.\n\
-    --port -P         - Port to bind to.\n\
-    --timeout -t      - Timeout (usecs) for connections.\n\
-    --version -V      - Print the version string.\n\
 ",
                prefix, program_name,
                opt_def_toggle(FALSE), opt_def_toggle(FALSE),
-               opt_def_toggle(CONF_SERV_USE_MMAP),
-               opt_def_toggle(CONF_SERV_USE_SENDFILE),
-               opt_def_toggle(CONF_SERV_USE_KEEPA),
-               opt_def_toggle(CONF_SERV_USE_KEEPA_1_0),
-               opt_def_toggle(CONF_SERV_USE_VHOSTS),
-               opt_def_toggle(CONF_SERV_USE_RANGE),
-               opt_def_toggle(CONF_SERV_USE_RANGE_1_0),
-               opt_def_toggle(CONF_SERV_USE_PUBLIC_ONLY),
-               opt_def_toggle(CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT),
-               opt_def_toggle(CONF_SERV_USE_DEFAULT_MIME_TYPE),
-               opt_def_toggle(CONF_SERV_USE_ERR_406),
-               opt_def_toggle(CONF_SERV_USE_CANONIZE_HOST),
-               opt_def_toggle(CONF_SERV_USE_NON_HOST_ERR_400),
-               opt_def_toggle(evnt_opt_nagle));
+               opt_def_toggle(EVNT_CONF_NAGLE),
+               opt_def_toggle(HTTPD_CONF_USE_MMAP),
+               opt_def_toggle(HTTPD_CONF_USE_SENDFILE),
+               opt_def_toggle(HTTPD_CONF_USE_KEEPA),
+               opt_def_toggle(HTTPD_CONF_USE_KEEPA_1_0),
+               opt_def_toggle(HTTPD_CONF_USE_VHOSTS),
+               opt_def_toggle(HTTPD_CONF_USE_RANGE),
+               opt_def_toggle(HTTPD_CONF_USE_RANGE_1_0),
+               opt_def_toggle(HTTPD_CONF_USE_PUBLIC_ONLY),
+               opt_def_toggle(HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT),
+               opt_def_toggle(HTTPD_CONF_USE_DEFAULT_MIME_TYPE),
+               opt_def_toggle(HTTPD_CONF_USE_ERR_406),
+               opt_def_toggle(HTTPD_CONF_USE_CANONIZE_HOST),
+               opt_def_toggle(HTTPD_CONF_USE_HOST_ERR_400));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
     err(EXIT_FAILURE, "write");
@@ -587,8 +421,6 @@ static int http__fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
 
 static void serv_init(void)
 {
-  Vstr_base *tmp = NULL;
-  
   if (!vstr_init()) /* init the library */
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
@@ -611,24 +443,6 @@ static void serv_init(void)
                        "<http-esc.vstr.sect", "p%p%u", ">"))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-  if (!(tmp = vstr_make_base(NULL)))
-    errno = ENOMEM, err(EXIT_FAILURE, "init");
-  else
-  {
-    char buf[256];
-
-    if (gethostname(buf, sizeof(buf)) == -1)
-      err(EXIT_FAILURE, "gethostname");
-    
-    buf[255] = 0;
-    vstr_add_cstr_buf(tmp, 0, buf);
-    vstr_conv_lowercase(tmp, 1, tmp->len);
-  }
-  if (tmp->conf->malloc_bad)
-    errno = ENOMEM, err(EXIT_FAILURE, "init");
-
-  serv->default_hostname = tmp;
-  
   if (!(vlg = vlg_make()))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
@@ -661,7 +475,7 @@ static void serv_cntl_resources(void)
 }
 
 
-static void http_req_split_method(struct Con *con, struct Http_req_data *req)
+static void http_req_split_method(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *s1 = con->evnt->io_r;
   size_t pos = 1;
@@ -711,7 +525,7 @@ static void http_req_split_method(struct Con *con, struct Http_req_data *req)
     req->ver_0_9 = TRUE;
 }
 
-static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
+static void http_req_split_hdrs(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *s1 = con->evnt->io_r;
   size_t pos = 1;
@@ -777,6 +591,14 @@ static void http_app_header_vstr(Vstr_base *out, const char *hdr,
   http__app_header_eol(out);
 }
 
+static void http_app_header_conf_vstr(Vstr_base *out, const char *hdr,
+                                      const Vstr_base *s1)
+{
+  http__app_header_hdr(out, hdr);
+  vstr_add_vstr(out, out->len, s1, 1, s1->len, VSTR_TYPE_ADD_DEF);
+  http__app_header_eol(out);
+}
+
 static void http_app_header_fmt(Vstr_base *out, const char *hdr,
                                 const char *fmt, ...)
    VSTR__COMPILE_ATTR_FMT(3, 4);
@@ -803,10 +625,9 @@ static void http_app_header_uintmax(Vstr_base *out,
   http__app_header_eol(out);
 }
 
-static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
+static void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
                               unsigned int http_ret_code,
-                              const char *http_ret_line,
-                              time_t now, time_t mtime,
+                              const char *http_ret_line, time_t mtime,
                               const char *custom_content_type,
                               VSTR_AUTOCONF_uintmax_t content_length)
 {
@@ -814,43 +635,41 @@ static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
 
   vstr_add_fmt(out, out->len, "%s %03u %s" HTTP_EOL,
                "HTTP/1.1", http_ret_code, http_ret_line);
-  http_app_header_cstr(out, "Date", date_rfc1123(now));
-  http_app_header_cstr(out, "Server", serv->server_name);
+  http_app_header_cstr(out, "Date", date_rfc1123(req->now));
+  http_app_header_conf_vstr(out, "Server", opts->server_name);
   
-  if (difftime(now, mtime) < 0) /* if mtime in future, chop it #14.29 */
-    mtime = now;
+  if (difftime(req->now, mtime) < 0) /* if mtime in future, chop it #14.29 */
+    mtime = req->now;
 
   if (mtime)
     http_app_header_cstr(out, "Last-Modified", date_rfc1123(mtime));
 
   switch (con->keep_alive)
   {
-    case HTTP_NIL_KEEP_ALIVE:
+    case HTTP_NON_KEEP_ALIVE:
       http_app_header_cstr(out, "Connection", "close");
       break;
       
     case HTTP_1_0_KEEP_ALIVE:
       http_app_header_cstr(out, "Connection", "Keep-Alive");
       /* FALLTHROUGH */
-    case HTTP_1_1_KEEP_ALIVE:
-      if (0) /* do we really want this info. public ? */
+    case HTTP_1_1_KEEP_ALIVE: /* max=xxx ? */
+      if (req->output_keep_alive_hdr)
         http_app_header_fmt(out, "Keep-Alive",
-                            "%s=%u", "timeout", client_timeout); /* max=xxx ? */
+                            "%s=%u", "timeout", opts->s->idle_timeout);
       
       ASSERT_NO_SWITCH_DEF();
   }
   
-  if (serv->use_range)
+  if (opts->use_range)
     http_app_header_cstr(out, "Accept-Ranges", "bytes");
-  if (serv->use_gzip_content_replacement)
+  if (opts->use_gzip_content_replacement)
     http_app_header_cstr(out, "Vary", "Accept-Encoding");
   
   if (custom_content_type)
     http_app_header_cstr(out, "Content-Type", custom_content_type);
   else if (req->content_type_vs1) /* possible we don't send one */
-    http_app_header_vstr(out, "Content-Type", req->content_type_vs1,
-                         req->content_type_pos, req->content_type_len,
-                         VSTR_TYPE_ADD_DEF);
+    HTTP__CONTENT_APP_HDR(out, content_type, "Content-Type");
   
   if (req->content_encoding_gzip)
   {
@@ -987,8 +806,7 @@ static time_t http_parse_date(Vstr_base *s1, size_t pos, size_t len, time_t now)
 /* gets here if the GET/HEAD response is ok, we test for caching etc. using the
  * if-* headers */
 /* FALSE = 412 Precondition Failed */
-static int http_response_ok(struct Con *con, struct Http_req_data *req,
-                            time_t now,
+static int http_response_ok(struct Con *con, struct Httpd_req_data *req,
                             unsigned int *http_ret_code,
                             const char ** http_ret_line)
 {
@@ -1006,8 +824,8 @@ static int http_response_ok(struct Con *con, struct Http_req_data *req,
   int cached_output = FALSE;
   const char *date = NULL;
   
-  if (difftime(now, mtime) < 0) /* if mtime in future, chop it #14.29 */
-    mtime = now;
+  if (difftime(req->now, mtime) < 0) /* if mtime in future, chop it #14.29 */
+    mtime = req->now;
 
   if (req->ver_1_1 && h_iums->pos)
     h_iums_tst = TRUE;
@@ -1220,7 +1038,7 @@ static void http__hdr_fixup(Vstr_base *data, size_t *pos, size_t *len,
         HTTPD_ERR_RET(req, 500, FALSE);                                 \
     } while (FALSE)
 
-static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
+static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   struct Http_hdrs *http_hdrs = req->http_hdrs;
@@ -1266,7 +1084,7 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
 #undef HDR__SET
 #undef HDR__MUTLI_SET
 
-static void http__clear_hdrs(struct Http_req_data *req)
+static void http__clear_hdrs(struct Httpd_req_data *req)
 {
   Vstr_base *tmp = req->http_hdrs->multi->combiner_store;
 
@@ -1298,7 +1116,7 @@ static void http__clear_hdrs(struct Http_req_data *req)
  * ...seemed not as easy. It also seems like you have to accept...
  * "HTTP / 01 . 01" as "HTTP/1.1"
  */
-static int http_req_parse_version(struct Con *con, struct Http_req_data *req)
+static int http_req_parse_version(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   size_t op_pos = VSTR_SECTS_NUM(req->sects, 3)->pos;
@@ -1360,7 +1178,7 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req)
         req -> http_hdrs -> multi -> hdr_ ## h ->pos = 0;               \
         req -> http_hdrs -> multi -> hdr_ ## h ->len = 0;               \
       } while (FALSE)
-static void http__parse_connection(struct Con *con, struct Http_req_data *req)
+static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
@@ -1383,11 +1201,11 @@ static void http__parse_connection(struct Con *con, struct Http_req_data *req)
     if (req->ver_1_1)
     { /* this is all we have to do for HTTP/1.1 ... proxies understnad it */
       if (VIEQ(data, pos, tmp, "close"))
-        con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+        con->keep_alive = HTTP_NON_KEEP_ALIVE;
     }
     else if (VIEQ(data, pos, tmp, "keep-alive"))
     {
-      if (serv->use_keep_alive_1_0)
+      if (opts->use_keep_alive_1_0)
         con->keep_alive = HTTP_1_0_KEEP_ALIVE;
     }
     /* now fixup connection headers for HTTP/1.0 proxies */
@@ -1421,7 +1239,7 @@ static void http__parse_connection(struct Con *con, struct Http_req_data *req)
 #undef HDR__CON_1_0_MULTI_FIXUP
                                   
 /* parse >= 1.0 things like, version and headers */
-static int http__parse_1_x(struct Con *con, struct Http_req_data *req)
+static int http__parse_1_x(struct Con *con, struct Httpd_req_data *req)
 {
   ASSERT(!req->ver_0_9);
   
@@ -1431,7 +1249,7 @@ static int http__parse_1_x(struct Con *con, struct Http_req_data *req)
   if (!http__parse_hdrs(con, req))
     return (FALSE);
 
-  if (!serv->use_keep_alive)
+  if (!opts->use_keep_alive)
     return (TRUE);
 
   http__parse_connection(con, req);
@@ -1453,7 +1271,7 @@ static int http__chk_single_crlf(Vstr_base *data, size_t pos, size_t len)
 
 /* convert a http://abcd/foo into /foo with host=abcd ...
  * also do sanity checking on the URI and host for valid characters */
-static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
+static int http_absolute_uri(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   size_t op_pos = req->path_pos;
@@ -1564,7 +1382,7 @@ static void http__parse_skip_blanks(Vstr_base *data,
    ...not allowing multiple ranges at once though, as multipart/byteranges
    is too much crack, I think this is stds. compliant.
  */
-static int http_parse_range(struct Http_req_data *req,
+static int http_parse_range(struct Httpd_req_data *req,
                             VSTR_AUTOCONF_uintmax_t *range_beg,
                             VSTR_AUTOCONF_uintmax_t *range_end)
 {
@@ -1653,7 +1471,7 @@ static int http_parse_range(struct Http_req_data *req,
   return (200);
 }
 
-static void serv_conf_file(struct Con *con, struct Http_req_data *req,
+static void serv_conf_file(struct Con *con, struct Httpd_req_data *req,
                            VSTR_AUTOCONF_uintmax_t f_off,
                            VSTR_AUTOCONF_uintmax_t f_len)
 {
@@ -1667,7 +1485,7 @@ static void serv_conf_file(struct Con *con, struct Http_req_data *req,
   con->f_len = f_len;
 }
 
-static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
+static void serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
                            VSTR_AUTOCONF_uintmax_t off,
                            VSTR_AUTOCONF_uintmax_t f_len)
 {
@@ -1682,7 +1500,7 @@ static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
   if (con->use_sendfile)
     return;
 
-  if (!serv->use_mmap ||
+  if (!opts->use_mmap ||
       (f_len < CONF_HTTP_MMAP_LIMIT_MIN) || (f_len > CONF_HTTP_MMAP_LIMIT_MAX))
     return;
   
@@ -1713,7 +1531,7 @@ static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
   con->f_len = f_len;
 }
 
-static int serv_call_seek(struct Con *con, struct Http_req_data *req,
+static int serv_call_seek(struct Con *con, struct Httpd_req_data *req,
                           VSTR_AUTOCONF_uintmax_t f_off,
                           VSTR_AUTOCONF_uintmax_t f_len,
                           unsigned int *http_ret_code,
@@ -1728,7 +1546,7 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
   { /* this should be impossible for normal files AFAIK */
     vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
              req->fname, 1, req->fname->len, f_off);
-    /* serv->use_range - turn off? */
+    /* opts->use_range - turn off? */
     req->http_hdrs->multi->hdr_range->pos = 0;
     *http_ret_code = 200;
     *http_ret_line = "OK - Range Failed";
@@ -1823,7 +1641,7 @@ static int http_parse_quality(Vstr_base *data,
 }
 #undef HTTP__PARSE_CHK_RET_OK
 
-static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
+static int http_parse_accept_encoding_gzip(struct Httpd_req_data *req)
 {
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
@@ -1835,7 +1653,7 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
   pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
   len = req->http_hdrs->multi->hdr_accept_encoding->len;
 
-  if (!serv->use_err_406 && !serv->use_gzip_content_replacement)
+  if (!opts->use_err_406 && !req->allow_accept_encoding)
     return (FALSE);
   
   if (!len)
@@ -1855,15 +1673,14 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
       if (!http_parse_quality(data, &pos, &len, FALSE, &identity_val))
         return (FALSE);
     }
-    else if (serv->use_gzip_content_replacement && VEQ(data, pos, tmp, "gzip"))
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "gzip"))
     {
       len -= tmp; pos += tmp;
       req->content_encoding_xgzip = FALSE;
       if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
         return (FALSE);
     }
-    else if (serv->use_gzip_content_replacement &&
-             VEQ(data, pos, tmp, "x-gzip"))
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "x-gzip"))
     {
       len -= tmp; pos += tmp;
       req->content_encoding_xgzip = TRUE;
@@ -1892,7 +1709,7 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
     HTTP_SKIP_LWS(data, pos, len);
   }
 
-  if (!serv->use_gzip_content_replacement)
+  if (!req->allow_accept_encoding)
     gzip_val = 0;
   
   if (gzip_val     == 1001) gzip_val     = star_val;
@@ -1912,7 +1729,7 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
 }
 
 /* try to use gzip content-encoding on entity */
-static void http__try_gzip_content(struct Con *con, struct Http_req_data *req)
+static void http__try_gzip_content(struct Con *con, struct Httpd_req_data *req)
 {
   const char *fname_cstr = NULL;
   int fd = -1;
@@ -1928,7 +1745,7 @@ static void http__try_gzip_content(struct Con *con, struct Http_req_data *req)
     
     if (fstat64(fd, f_stat) == -1)
       vlg_warn(vlg, "fstat: %m\n");
-    else if ((serv->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
+    else if ((opts->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
              (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
              (req->f_stat->st_mtime >  f_stat->st_mtime) ||
              (req->f_stat->st_size  <= f_stat->st_size))
@@ -2023,7 +1840,7 @@ static int http__skip_parameters(Vstr_base *data, size_t *pos, size_t *len)
 
 /* returns TRUE if we can use the content-type,
 * this does mean that if we fail to parse the "Accept:" line, we return TRUE */
-static int http_parse_accept(struct Http_req_data *req)
+static int http_parse_accept(struct Httpd_req_data *req)
 {
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
@@ -2038,7 +1855,7 @@ static int http_parse_accept(struct Http_req_data *req)
   pos = req->http_hdrs->multi->hdr_accept->pos;
   len = req->http_hdrs->multi->hdr_accept->len;
   
-  if (!serv->use_err_406 || !len)
+  if (!req->parse_accept || !len)
     return (TRUE);
 
   if (!(ct_sub_len = vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '/')) ||
@@ -2094,7 +1911,7 @@ static int http_parse_accept(struct Http_req_data *req)
   return (val);
 }
 
-static int http_req_1_x(struct Con *con, struct Http_req_data *req,
+static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
                         unsigned int *http_ret_code,
                         const char **http_ret_line)
 {
@@ -2102,7 +1919,6 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
   VSTR_AUTOCONF_uintmax_t range_beg = 0;
   VSTR_AUTOCONF_uintmax_t range_end = 0;
   VSTR_AUTOCONF_uintmax_t f_len     = 0;
-  time_t now = time(NULL);
   Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
   
   if (req->ver_1_1 && req->http_hdrs->hdr_expect->len)
@@ -2114,7 +1930,7 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
    * http://www.w3.org/TR/chips/#gl6 says that's bad */
   if (http_parse_accept_encoding_gzip(req))
     http__try_gzip_content(con, req);
-  if (serv->use_err_406 &&
+  if (opts->use_err_406 &&
       !req->content_encoding_identity && !req->content_encoding_gzip)
     HTTPD_ERR_RET(req, 406, FALSE);
   
@@ -2122,7 +1938,7 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
   {
     int ret_code = 0;
 
-    if (!(serv->use_range && (req->ver_1_1 || serv->use_range_1_0)))
+    if (!(opts->use_range && (req->ver_1_1 || opts->use_range_1_0)))
       h_r->pos = 0;
     else if (!(ret_code = http_parse_range(req, &range_beg, &range_end)))
       h_r->pos = 0;
@@ -2135,7 +1951,7 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
     }
   }
 
-  if (!http_response_ok(con, req, now, http_ret_code, http_ret_line))
+  if (!http_response_ok(con, req, http_ret_code, http_ret_line))
     HTTPD_ERR_RET(req, 412, FALSE);
 
   if (h_r->pos)
@@ -2157,18 +1973,23 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
   }
 
   http_app_def_hdrs(con, req, *http_ret_code, *http_ret_line,
-                    now, req->f_stat->st_mtime, NULL, con->f_len);
+                    req->f_stat->st_mtime, NULL, con->f_len);
   if (h_r->pos)
     http_app_header_fmt(out, "Content-Range",
                         "%s %ju-%ju/%ju", "bytes", range_beg, range_end,
                         (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
+  HTTP__CONTENT_APP_HDR(out, content_location, "Content-Location");
+  HTTP__CONTENT_APP_HDR(out, content_md5,      "Content-MD5");
+  HTTP__CONTENT_APP_HDR(out, cache_control,    "Cache-Control");
+  HTTP__CONTENT_APP_HDR(out, expires,          "Expires");
+  /* TODO: ETag */
   
   http_app_end_hdrs(out);
   
   return (TRUE);
 }
 
-static void http_vlg_def(struct Con *con, struct Http_req_data *req)
+static void http_vlg_def(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   Vstr_sect_node *h_h  = req->http_hdrs->hdr_host;
@@ -2191,23 +2012,27 @@ static void http_vlg_def(struct Con *con, struct Http_req_data *req)
            data, req->path_pos, req->path_len);
 }
 
-static int serv__init_default_hostname(const char *def_hostname)
+static int serv__init_default_hostname(void)
 {
-  Vstr_base *lfn = serv->default_hostname;
+  Vstr_base *lfn = opts->default_hostname;
   
-  if (def_hostname)
-    vstr_sub_cstr_ptr(lfn, 1, lfn->len, def_hostname);
-  else if (server_port != 80)
-    vstr_add_fmt(lfn, lfn->len, ":%hd", server_port);
+  if (!lfn->len)
+  {
+    char buf[256];
+
+    if (gethostname(buf, sizeof(buf)) == -1)
+      err(EXIT_FAILURE, "gethostname");
+    
+    buf[255] = 0;
+    vstr_add_cstr_buf(lfn, 0, buf);
+
+    if (opts->s->tcp_port != 80)
+      vstr_add_fmt(lfn, lfn->len, ":%hd", opts->s->tcp_port);
+  }
+
+  vstr_conv_lowercase(lfn, 1, lfn->len);
 
   return (!lfn->conf->malloc_bad);
-}
-
-static int serv_add_default_hostname(Vstr_base *lfn, size_t pos)
-{
-  Vstr_base *d_h = serv->default_hostname;
-  
-  return (vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF));
 }
 
 static int serv_chk_vhost(Vstr_base *lfn, size_t pos, size_t len)
@@ -2227,7 +2052,7 @@ static int serv_chk_vhost(Vstr_base *lfn, size_t pos, size_t len)
   return (TRUE);
 }
 
-static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
+static int serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   Vstr_base *fname = req->fname;
@@ -2235,7 +2060,7 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
   size_t h_h_pos = h_h->pos;
   size_t h_h_len = h_h->len;
     
-  if (h_h_len && serv->canonize_host)
+  if (h_h_len && opts->use_canonize_host)
   {
     size_t dots = 0;
     
@@ -2247,7 +2072,7 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
   }
   
   if (!h_h_len)
-    serv_add_default_hostname(fname, 0);
+    httpd_sc_add_default_hostname(opts, fname, 0);
   else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
                          h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
   {
@@ -2255,7 +2080,7 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
     
     if (!serv_chk_vhost(fname, 1, h_h_len))
     {
-      if (serv->non_host_err_400)
+      if (opts->use_host_err_400)
         HTTPD_ERR_RET(req, 400, FALSE); /* rfc 5.2 */
       else
       { /* what everything else does ... *sigh* */
@@ -2263,7 +2088,7 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
           return (TRUE);
       
         vstr_del(fname, 1, h_h_len);
-        serv_add_default_hostname(fname, 0);
+        httpd_sc_add_default_hostname(opts, fname, 0);
       }  
     }
   }
@@ -2272,7 +2097,7 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
   return (TRUE);
 }
 
-static int http_req_make_path(struct Con *con, struct Http_req_data *req)
+static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   Vstr_base *fname = req->fname;
@@ -2293,11 +2118,11 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
   if (fname->conf->malloc_bad) /* dealt with as errmem_req() later */
     return (TRUE);
   
-  if (serv->use_vhosts)
+  if (opts->use_vhosts)
     if (!serv_add_vhost(con, req))
       return (FALSE);
   
-  /* check path ... including hostname */
+  /* check posix path ... including hostname, for NIL and chdir() escapes */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
     HTTPD_ERR_RET(req, 403, FALSE);
       
@@ -2314,8 +2139,11 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
     return (TRUE);
   
   if (vstr_export_chr(fname, fname->len) == '/')
-    vstr_add_cstr_ptr(fname, fname->len, serv->dir_filename);
-
+  {
+    Vstr_base *tmp = opts->dir_filename;
+    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_DEF);
+  }
+  
   return (TRUE);
 }
 
@@ -2338,10 +2166,10 @@ static int http_parse_wait_io_r(struct Con *con)
   return (TRUE);
 }
 
-static struct Http_req_data *http_make_req(struct Con *con)
+static struct Httpd_req_data *http_req_make(struct Con *con)
 {
-  static struct Http_req_data real_req[1];
-  struct Http_req_data *req = real_req;
+  static struct Httpd_req_data real_req[1];
+  struct Httpd_req_data *req = real_req;
 
   ASSERT(!req->using_req);
 
@@ -2356,13 +2184,19 @@ static struct Http_req_data *http_make_req(struct Con *con)
         !(req->http_hdrs->multi->combiner_store = vstr_make_base(conf)) ||
         !(req->sects = vstr_sects_make(8)))
       return (NULL);
+    
+    req->f_mmap       = NULL;
+    req->xtra_content = NULL;
   }
+  
+  http__clear_hdrs(req);
   
   req->http_hdrs->multi->comb = con ? con->evnt->io_r : NULL;
 
-  http__clear_hdrs(req);
-  
   vstr_del(req->fname, 1, req->fname->len);
+
+  req->now = time(NULL);
+  
   req->len = 0;
 
   req->path_pos = 0;
@@ -2378,18 +2212,36 @@ static struct Http_req_data *http_make_req(struct Con *con)
   if (con)
     req->orig_io_w_len = con->evnt->io_w->len;
 
+  /* NOTE: These should probably be allocated at init time, depending on the
+   * option flags given */
+  ASSERT(!req->f_mmap || !req->f_mmap->len);
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
-
-  req->content_type_vs1 = NULL;
-  req->content_type_pos = 0;
-  req->content_type_len = 0;
-
+  ASSERT(!req->xtra_content || !req->xtra_content->len);
+  if (req->xtra_content)
+    vstr_del(req->xtra_content, 1, req->xtra_content->len);
+  
+  HTTP__CONTENT_INIT_HDR(content_type);
+  HTTP__CONTENT_INIT_HDR(content_location);
+  HTTP__CONTENT_INIT_HDR(content_md5);
+  HTTP__CONTENT_INIT_HDR(cache_control);
+  HTTP__CONTENT_INIT_HDR(expires);
+  
   req->sects->malloc_bad = FALSE;
 
   req->content_encoding_gzip     = FALSE;
   req->content_encoding_identity = TRUE;
-    
+
+  req->parse_accept          = opts->use_err_406;
+  req->allow_accept_encoding = opts->use_gzip_content_replacement;
+
+  req->output_keep_alive_hdr = FALSE;
+
+  req->user_return_error_code = FALSE;
+  
+  req->direct_uri      = FALSE;
+  req->direct_filename = FALSE;
+  
   req->ver_0_9    = FALSE;
   req->ver_1_1    = FALSE;
   req->use_mmap   = FALSE;
@@ -2403,7 +2255,7 @@ static struct Http_req_data *http_make_req(struct Con *con)
   return (req);
 }
 
-static void http_req_free(struct Http_req_data *req)
+static void http_req_free(struct Httpd_req_data *req)
 {
   if (!req) /* for if/when move to malloc/free */
     return;
@@ -2415,9 +2267,16 @@ static void http_req_free(struct Http_req_data *req)
   ASSERT(!req->http_hdrs->multi->combiner_store->len);
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
+
+  if (req->xtra_content)
+    vstr_del(req->xtra_content, 1, req->xtra_content->len);
+
+  HTTP__CONTENT_INIT_HDR(content_type);
+  HTTP__CONTENT_INIT_HDR(content_location);
+  HTTP__CONTENT_INIT_HDR(content_md5);
+  HTTP__CONTENT_INIT_HDR(cache_control);
+  HTTP__CONTENT_INIT_HDR(expires);
   
-  req->content_type_vs1 = NULL;
-    
   req->http_hdrs->multi->comb = NULL;
 
   req->using_req = FALSE;
@@ -2425,22 +2284,25 @@ static void http_req_free(struct Http_req_data *req)
 
 static void http_req_exit(void)
 {
-  struct Http_req_data *req = http_make_req(NULL);
-
+  struct Httpd_req_data *req = http_req_make(NULL);
+  struct Http_hdrs__multi *tmp = NULL;
+  
   if (!req)
     return;
+
+  tmp = req->http_hdrs->multi;
   
-  vstr_free_base(req->fname);  req->fname  = NULL;
-  vstr_free_base(req->http_hdrs->multi->combiner_store);
-                 req->http_hdrs->multi->combiner_store = NULL;
-  vstr_free_base(req->f_mmap); req->f_mmap = NULL;
-  vstr_sects_free(req->sects); req->sects  = NULL;
+  vstr_free_base(req->fname);          req->fname          = NULL;
+  vstr_free_base(tmp->combiner_store); tmp->combiner_store = NULL;
+  vstr_free_base(req->f_mmap);         req->f_mmap         = NULL;
+  vstr_free_base(req->xtra_content);   req->xtra_content   = NULL;
+  vstr_sects_free(req->sects);         req->sects          = NULL;
   
   req->done_once = FALSE;
   req->using_req = FALSE;
 }
 
-static int http_con_cleanup(struct Con *con, struct Http_req_data *req)
+static int http_con_cleanup(struct Con *con, struct Httpd_req_data *req)
 {
   con->evnt->io_r->conf->malloc_bad = FALSE;
   con->evnt->io_w->conf->malloc_bad = FALSE;
@@ -2451,7 +2313,7 @@ static int http_con_cleanup(struct Con *con, struct Http_req_data *req)
   return (FALSE);
 }
 
-static int http_fin_req(struct Con *con, struct Http_req_data *req)
+static int http_fin_req(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
   
@@ -2477,7 +2339,7 @@ static int http_fin_req(struct Con *con, struct Http_req_data *req)
   return (serv_send(con));
 }
 
-static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
+static int http_fin_err_req(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
 
@@ -2486,7 +2348,7 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   if ((req->error_code == 400) || (req->error_code == 405) ||
       (req->error_code == 413) ||
       (req->error_code == 500) || (req->error_code == 501))
-    con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+    con->keep_alive = HTTP_NON_KEEP_ALIVE;
   
   ASSERT(!con->f_len);
   
@@ -2506,20 +2368,27 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   if (!req->ver_0_9)
   {
     http_app_def_hdrs(con, req, req->error_code, req->error_line,
-                      time(NULL), server_beg, "text/html", req->error_len);
+                      server_beg, "text/html", req->error_len);
     if (req->error_code == 416)
       http_app_header_fmt(out, "Content-Range", "%s */%ju", "bytes",
                           (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
 
     if ((req->error_code == 405) || (req->error_code == 501))
       http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
-    if (req->error_code == 301)
+    if ((req->error_code == 301) || (req->error_code == 302) ||
+        (req->error_code == 303) || (req->error_code == 307))
     { /* make sure we haven't screwed up and allowed response splitting */
-      Vstr_base *loc = req->fname;
+      Vstr_base *tmp = req->fname;
       
-      ASSERT(!vstr_srch_cstr_chrs_fwd(loc, 1, loc->len, HTTP_EOL));
+      ASSERT(!vstr_srch_cstr_chrs_fwd(tmp, 1, tmp->len, HTTP_EOL));
       http_app_header_vstr(out, "Location",
-                           loc, 1, loc->len, VSTR_TYPE_ADD_ALL_BUF);
+                           tmp, 1, tmp->len, VSTR_TYPE_ADD_ALL_BUF);
+    }
+    
+    if (req->user_return_error_code)
+    {
+      HTTP__CONTENT_APP_HDR(out, cache_control, "Cache-Control");
+      HTTP__CONTENT_APP_HDR(out, expires,       "Expires");
     }
     http_app_end_hdrs(out);
   }
@@ -2527,14 +2396,27 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   if (!req->head_op)
   {
     Vstr_base *loc = req->fname;
-    
-    if (req->error_code == 301)
-      vstr_add_fmt(out, out->len, CONF_MSG_FMT_301,
-                   CONF_MSG__FMT_301_BEG,
-                   loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
-                   CONF_MSG__FMT_301_END);
-    else
-      vstr_add_ptr(out, out->len, req->error_msg, req->error_len);
+
+    switch (req->error_code)
+    {
+      case 301: vstr_add_fmt(out, out->len, CONF_MSG_FMT_301,
+                             CONF_MSG__FMT_301_BEG,
+                             loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
+                             CONF_MSG__FMT_30x_END); break;
+      case 302: vstr_add_fmt(out, out->len, CONF_MSG_FMT_302,
+                             CONF_MSG__FMT_302_BEG,
+                             loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
+                             CONF_MSG__FMT_30x_END); break;
+      case 303: vstr_add_fmt(out, out->len, CONF_MSG_FMT_303,
+                             CONF_MSG__FMT_303_BEG,
+                             loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
+                             CONF_MSG__FMT_30x_END); break;
+      case 307: vstr_add_fmt(out, out->len, CONF_MSG_FMT_307,
+                             CONF_MSG__FMT_307_BEG,
+                             loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
+                             CONF_MSG__FMT_30x_END); break;
+      default: vstr_add_ptr(out, out->len, req->error_msg, req->error_len);
+    }
   }
   
   vlg_dbg2(vlg, "ERROR REPLY:\n$<vstr:%p%zu%zu>\n", out, (size_t)1, out->len);
@@ -2545,13 +2427,13 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   return (http_fin_req(con, req));
 }
 
-static int http_fin_err_close_req(struct Con *con, struct Http_req_data *req)
+static int http_fin_err_close_req(struct Con *con, struct Httpd_req_data *req)
 {
   serv_fd_close(con);
   return (http_fin_err_req(con, req));
 }
 
-static int http_fin_errmem_req(struct Con *con, struct Http_req_data *req)
+static int http_fin_errmem_req(struct Con *con, struct Httpd_req_data *req)
 { /* try sending a 500 as the last msg */
   Vstr_base *out = con->evnt->io_w;
   
@@ -2565,25 +2447,24 @@ static int http_fin_errmem_req(struct Con *con, struct Http_req_data *req)
   HTTPD_ERR_RET(req, 500, http_fin_err_req(con, req));
 }
 
-static void http__req_absolute_uri(struct Con *con, struct Http_req_data *req,
-                                   Vstr_base *lfn)
+/* doing http://www.example.com/foo/bar where bar is a dir is bad
+   because all relative links will be relative to foo, not bar.
+   Also note that location must be "http://www.example.com/foo/bar/" or maybe
+   "http:/foo/bar/"
+*/
+static int http__req_chk_dir(struct Con *con, struct Httpd_req_data *req)
 {
-  Vstr_base *data = con->evnt->io_r;
-  Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
-
+  Vstr_base *lfn = req->fname;
+  
+  ASSERT(lfn->len && (vstr_export_chr(lfn, 1) != '/') &&
+         (vstr_export_chr(lfn, lfn->len) != '/'));
+  
+  assert(!VSUFFIX(lfn, 1, lfn->len, "/..") &&
+         !VEQ(lfn, 1, lfn->len, ".."));
+  
   vstr_del(lfn, 1, lfn->len);
+  httpd_req_absolute_uri(opts, con, req, lfn);
   
-  vstr_add_cstr_buf(lfn, lfn->len, "http://");
-  
-  if (!h_h->len)
-    serv_add_default_hostname(lfn, lfn->len);
-  else
-    vstr_add_vstr(lfn, lfn->len,
-                  data, h_h->pos, h_h->len, VSTR_TYPE_ADD_ALL_BUF);
-
-  vstr_add_vstr(lfn, lfn->len, con->evnt->io_r, req->path_pos, req->path_len,
-                VSTR_TYPE_ADD_ALL_BUF);
-
   /* we got:       http://foo/bar/
    * and so tried: http://foo/bar/index.html
    *
@@ -2591,29 +2472,14 @@ static void http__req_absolute_uri(struct Con *con, struct Http_req_data *req,
    *               http://foo/bar/index.html/
    */
   if (VSUFFIX(lfn, 1, lfn->len, "/"))
-    vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);
+  {
+    Vstr_base *tmp = opts->dir_filename;
+    vstr_add_vstr(lfn, lfn->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_DEF);
+  }
   
   vstr_add_cstr_buf(lfn, lfn->len, "/");
-}
-
-/* doing http://www.example.com/foo/bar where bar is a dir is bad
-   because all relative links will be relative to foo, not bar.
-   Also note that location must be "http://www.example.com/foo/bar/" or maybe
-   "http:/foo/bar/"
-*/
-static int http__req_chk_dir(struct Con *con, struct Http_req_data *req)
-{
-  ASSERT(req->fname->len && (vstr_export_chr(req->fname, 1) != '/') &&
-         (vstr_export_chr(req->fname, req->fname->len) != '/'));
   
-  assert(!VSUFFIX(req->fname, 1, req->fname->len, "/..") &&
-         !VEQ(req->fname, 1, req->fname->len, ".."));
-  
-  http__req_absolute_uri(con, req, req->fname);
-  
-  req->error_code = 301;
-  req->error_line = CONF_LINE_RET_301;
-  req->error_len  = CONF_MSG_LEN_301(req->fname);
+  HTTPD_ERR_301(req);
   
   return (http_fin_err_req(con, req));
 }
@@ -2622,16 +2488,24 @@ static int http__req_chk_dir(struct Con *con, struct Http_req_data *req)
  * the default content-type. So we just have to determine if we want to use
  * it or not. Can also return "content-types" like /404/ which returns a 404
  * error for the request */
-static int http__req_content_type(struct Http_req_data *req)
+static int http__req_content_type(struct Httpd_req_data *req)
 {
   Vstr_base *vs1 = NULL;
   size_t     pos = 0;
   size_t     len = 0;
-  int ret = mime_types_match(req->fname, 1, req->fname->len, &vs1, &pos, &len);
+  int ret = 0;
 
-  if (!serv->use_default_mime_type && !ret)
+  if (req->content_type_vs1) /* manually set */
     return (TRUE);
 
+  ret = mime_types_match(req->fname, 1, req->fname->len, &vs1, &pos, &len);
+
+  if (!opts->use_default_mime_type && !ret)
+  {
+    req->parse_accept = FALSE;
+    return (TRUE);
+  }
+  
   if ((vstr_export_chr(vs1, pos) == '/') && (len > 2) &&
       (vstr_export_chr(vs1, vstr_sc_poslast(pos, len)) == '/'))
   {
@@ -2639,6 +2513,7 @@ static int http__req_content_type(struct Http_req_data *req)
 
     len -= 2;
     ++pos;
+    req->user_return_error_code = TRUE;
     switch (vstr_parse_uint(vs1, pos, len, 0, &num_len, NULL))
     {
       case 400: if (num_len == len) HTTPD_ERR_RET(req, 400, FALSE);
@@ -2649,6 +2524,7 @@ static int http__req_content_type(struct Http_req_data *req)
       case 503: if (num_len == len) HTTPD_ERR_RET(req, 503, FALSE);
         
       default: /* just ignore any other content */
+        req->user_return_error_code = FALSE;
         return (TRUE);
     }
   }
@@ -2657,13 +2533,10 @@ static int http__req_content_type(struct Http_req_data *req)
   req->content_type_pos = pos;
   req->content_type_len = len;
 
-  if (!http_parse_accept(req))
-    HTTPD_ERR_RET(req, 406, FALSE);
-  
   return (TRUE);
 }
 
-static int http_req_op_get(struct Con *con, struct Http_req_data *req)
+static int http_req_op_get(struct Con *con, struct Httpd_req_data *req)
 { /* GET or HEAD ops */
   Vstr_base *data = con->evnt->io_r;
   Vstr_base *out  = con->evnt->io_w;
@@ -2676,13 +2549,23 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
     goto mem_err;
 
   assert(VPREFIX(fname, 1, fname->len, "/"));
+
+  if (!httpd_conf_req_parse_file(NULL, opts, con, req))
+    return (http_fin_err_req(con, req));
   
+  if (req->direct_uri)
+    HTTPD_ERR_RET(req, 500, http_fin_err_req(con, req));
+
   if (!http__req_content_type(req))
     return (http_fin_err_req(con, req));
+  
+  if (!http_parse_accept(req))
+    HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
 
   /* change "///foo" into "foo" ... this is done now
    * as req_content_type is done on a full path name */
-  vstr_del(fname, 1, vstr_spn_cstr_chrs_fwd(fname, 1, fname->len, "/"));
+  if (!req->direct_filename)
+    vstr_del(fname, 1, vstr_spn_cstr_chrs_fwd(fname, 1, fname->len, "/"));
 
   fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
   
@@ -2711,7 +2594,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   }
   if (fstat64(con->f_fd, req->f_stat) == -1)
     HTTPD_ERR_RET(req, 500, http_fin_err_close_req(con, req));
-  if (serv->use_public_only && !(req->f_stat->st_mode & S_IROTH))
+  if (opts->use_public_only && !(req->f_stat->st_mode & S_IROTH))
     HTTPD_ERR_RET(req, 403, http_fin_err_close_req(con, req));
   
   if (S_ISDIR(req->f_stat->st_mode))
@@ -2758,23 +2641,22 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(): %m\n"));
 }
 
-static int http_req_op_opts(struct Con *con, struct Http_req_data *req)
+static int http_req_op_opts(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
   Vstr_base *fname = req->fname;
-  time_t now = time(NULL);
   VSTR_AUTOCONF_uintmax_t tmp = 0;
 
   if (fname->conf->malloc_bad)
     goto mem_err;
   
   assert(VPREFIX(fname, 1, fname->len, "/") ||
-         !serv->use_vhosts || !serv->non_host_err_400 ||
+         !opts->use_vhosts || !opts->use_host_err_400 ||
          VEQ(con->evnt->io_r, req->path_pos, req->path_len, "*"));
   
   /* apache doesn't test for 404's here ... which seems weird */
   
-  http_app_def_hdrs(con, req, 200, "OK", now, 0, NULL, 0);
+  http_app_def_hdrs(con, req, 200, "OK", 0, NULL, 0);
   http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
   http_app_end_hdrs(out);
   if (out->conf->malloc_bad)
@@ -2790,14 +2672,13 @@ static int http_req_op_opts(struct Con *con, struct Http_req_data *req)
   VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_opts(): %m\n"));
 }
 
-static int http_req_op_trace(struct Con *con, struct Http_req_data *req)
+static int http_req_op_trace(struct Con *con, struct Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   Vstr_base *out  = con->evnt->io_w;
-  time_t now = time(NULL);
   VSTR_AUTOCONF_uintmax_t tmp = 0;
       
-  http_app_def_hdrs(con, req, 200, "OK", now, now, "message/http", req->len);
+  http_app_def_hdrs(con, req, 200, "OK", req->now, "message/http", req->len);
   http_app_end_hdrs(out);
   vstr_add_vstr(out, out->len, data, 1, req->len, VSTR_TYPE_ADD_DEF);
   if (out->conf->malloc_bad)
@@ -2811,9 +2692,9 @@ static int http_req_op_trace(struct Con *con, struct Http_req_data *req)
   return (http_fin_req(con, req));
 }
 
-static int http__parse_no_req(struct Con *con, struct Http_req_data *req)
+static int http__parse_no_req(struct Con *con, struct Httpd_req_data *req)
 {
-  if (server_max_header_sz && (con->evnt->io_r->len > server_max_header_sz))
+  if (opts->max_header_sz && (con->evnt->io_r->len > opts->max_header_sz))
     HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
 
   http_req_free(req);
@@ -2822,7 +2703,7 @@ static int http__parse_no_req(struct Con *con, struct Http_req_data *req)
 }
 
 /* http spec says ignore leading LWS ... *sigh* */
-static int http__parse_req_all(struct Con *con, struct Http_req_data *req,
+static int http__parse_req_all(struct Con *con, struct Httpd_req_data *req,
                                const char *eol, int *ern)
 {
   Vstr_base *data = con->evnt->io_r;
@@ -2857,12 +2738,12 @@ static int http__parse_req_all(struct Con *con, struct Http_req_data *req,
 static int http_parse_req(struct Con *con)
 {
   Vstr_base *data = con->evnt->io_r;
-  struct Http_req_data *req = NULL;
+  struct Httpd_req_data *req = NULL;
   int ern_req_all = 0;
 
   ASSERT(!con->f_len);
 
-  if (!(req = http_make_req(con)))
+  if (!(req = http_req_make(con)))
     return (FALSE);
 
   if (con->parsed_method_ver_1_0) /* wait for all the headers */
@@ -2876,7 +2757,7 @@ static int http_parse_req(struct Con *con)
       return (ern_req_all);
   }
 
-  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+  con->keep_alive = HTTP_NON_KEEP_ALIVE;
   http_req_split_method(con, req);
   if (req->sects->malloc_bad)
     VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "split: %m\n"));
@@ -2961,7 +2842,7 @@ static int http_parse_req(struct Con *con)
 
       /* Speed hack: Don't even call make_path if it's "OPTIONS * ..."
        * and we don't need to check the Host header */
-      if (serv->use_vhosts && serv->non_host_err_400 &&
+      if (opts->use_vhosts && opts->use_host_err_400 &&
           !VEQ(data, req->path_pos, req->path_len, "*") &&
           !http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
@@ -2987,7 +2868,7 @@ static int http_parse_req(struct Con *con)
 static int serv_q_send(struct Con *con)
 {
   vlg_dbg3(vlg, "Q $<sa:%p>\n", con->evnt->sa);
-  if (!evnt_send_add(con->evnt, TRUE, CL_MAX_WAIT_SEND))
+  if (!evnt_send_add(con->evnt, TRUE, SERV_CONF_MAX_WAIT_SEND))
   {
     if (errno != EPIPE)
       vlg_warn(vlg, "send q: %m\n");
@@ -3065,7 +2946,7 @@ static int serv_send(struct Con *con)
           goto file_eof;
         
         if (errno == ENOSYS) /* also logs it */
-          serv->use_sendfile = FALSE;
+          opts->use_sendfile = FALSE;
         if ((errno == EPIPE) || (errno == ECONNRESET))
           return (FALSE);
         else
@@ -3144,7 +3025,7 @@ static int serv_recv(struct Con *con)
   {
     ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
     
-    if (server_max_header_sz && (data->len > server_max_header_sz))
+    if (opts->max_header_sz && (data->len > opts->max_header_sz))
       evnt_wait_cntl_del(con->evnt, POLLIN);
 
     return (TRUE);
@@ -3169,7 +3050,8 @@ static void serv_cb_func_free(struct Evnt *evnt)
 {
   struct Con *con = (struct Con *)evnt;
 
-  if (acpt_evnt && server_max_clients && (evnt_num_all() < server_max_clients))
+  if (acpt_evnt &&
+      opts->s->max_connections && (evnt_num_all() < opts->s->max_connections))
     evnt_wait_cntl_add(acpt_evnt, POLLIN);
 
   serv_fd_close(con);
@@ -3201,7 +3083,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
 
   ASSERT(acpt_evnt);
   
-  if (server_max_clients && (evnt_num_all() >= server_max_clients))
+  if (opts->s->max_connections && (evnt_num_all() >= opts->s->max_connections))
     evnt_wait_cntl_del(acpt_evnt, POLLIN);
   
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
@@ -3215,10 +3097,10 @@ static struct Evnt *serv_cb_func_accept(int fd,
   con->f_len =  0;
   
   con->parsed_method_ver_1_0 = FALSE;
-  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
-  con->use_sendfile  = serv->use_sendfile;
+  con->keep_alive = HTTP_NON_KEEP_ALIVE;
+  con->use_sendfile  = opts->use_sendfile;
   
-  if (!evnt_sc_timeout_via_mtime(con->evnt, client_timeout * 1000))
+  if (!evnt_sc_timeout_via_mtime(con->evnt, opts->s->idle_timeout * 1000))
     goto timer_add_fail;
 
   vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
@@ -3243,45 +3125,35 @@ static void serv_make_bind(const char *acpt_addr, short acpt_port)
   if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
   
-  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port))
+  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port,
+                           opts->s->q_listen_len))
     vlg_err(vlg, 2, "%s: %m\n", __func__);
   
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 
-  if (serv->defer_accept)
-    evnt_fd_set_defer_accept(acpt_evnt, serv->defer_accept);
+  if (opts->s->defer_accept)
+    evnt_fd_set_defer_accept(acpt_evnt, opts->s->defer_accept);
 
   sinv4 = EVNT_SA_IN(acpt_evnt);
-  ASSERT(!server_port || (server_port == ntohs(sinv4->sin_port)));
-  server_port = ntohs(sinv4->sin_port);
+  ASSERT(!opts->s->tcp_port || (opts->s->tcp_port == ntohs(sinv4->sin_port)));
+  opts->s->tcp_port = ntohs(sinv4->sin_port);
 }
 
-static void cl_cmd_line(int argc, char *argv[])
+static void serv_cmd_line(int argc, char *argv[])
 {
   int optchar = 0;
   const char *program_name = NULL;
   struct option long_options[] =
   {
-   {"help", no_argument, NULL, 'h'},
-   {"daemon", optional_argument, NULL, 1},
-   {"chroot", required_argument, NULL, 2},
-   {"drop-privs", optional_argument, NULL, 3},
-   {"priv-uid", required_argument, NULL, 4},
-   {"priv-gid", required_argument, NULL, 5},
-   {"pid-file", required_argument, NULL, 6},
-   {"cntl-file", required_argument, NULL, 7},
-   {"acpt-filter-file", required_argument, NULL, 8},
-   {"accept-filter-file", required_argument, NULL, 8},
-   {"processes", required_argument, NULL, 9},
-   {"procs", required_argument, NULL, 9},
-   {"debug", no_argument, NULL, 'd'},
-   {"host", required_argument, NULL, 'H'},
-   {"port", required_argument, NULL, 'P'},
-   {"nagle", optional_argument, NULL, 'n'},
-   {"max-clients", required_argument, NULL, 'M'},
-   {"timeout", required_argument, NULL, 't'},
-   {"version", no_argument, NULL, 'V'},
+   OPT_SERV_DECL_GETOPTS(),
+   
+   {"configuration-file", required_argument, NULL, 'C'},
+   {"config-file",        required_argument, NULL, 'C'},
+   {"configuration-data-daemon", required_argument, NULL, 143},
+   {"config-data-daemon",        required_argument, NULL, 143},
+   {"configuration-data-jhttpd", required_argument, NULL, 144},
+   {"config-data-jhttpd",        required_argument, NULL, 144},
    
    {"sendfile", optional_argument, NULL, 31},
    {"mmap", optional_argument, NULL, 30},
@@ -3297,28 +3169,36 @@ static void cl_cmd_line(int argc, char *argv[])
    {"dir-filename", required_argument, NULL, 135},
    {"server-name", required_argument, NULL, 136},
    {"gzip-content-replacement", optional_argument, NULL, 137},
-   {"send-default-mime-type", optional_argument, NULL, 138},
-   {"send-err-406", optional_argument, NULL, 139},
+   {"require-content-type", optional_argument, NULL, 138},
+   {"error-406", optional_argument, NULL, 139},
    {"default-mime-type", required_argument, NULL, 140},
    {"mime-types-main", required_argument, NULL, 141},
    {"mime-types-extra", required_argument, NULL, 142},
    {"mime-types-xtra", required_argument, NULL, 142},
    /* 143 */
-   {"defer-accept", required_argument, NULL, 144},
-   {"default-hostname", required_argument, NULL, 145},
+   /* 144 -- config data above */
+   {"unspecified-hostname", required_argument, NULL, 145},
    {"canonize-host", optional_argument, NULL, 146},
-   {"err-host-400", optional_argument, NULL, 147},
+   {"error-host-400", optional_argument, NULL, 147},
    /* {"404-file", required_argument, NULL, 0}, */
    {NULL, 0, NULL, 0}
   };
-  const char *default_hostname = NULL;
-  OPT_SC_SERV_DECL_OPTS();
+  const char *chroot_dir = NULL;
+  const char *document_root = NULL;
+  Vstr_base *out = vstr_make_base(NULL);
+  
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "command line");
 
   evnt_opt_nagle = TRUE;
   
   program_name = opt_program_name(argv[0], "jhttpd");
+
+  if (!opt_serv_conf_init(opts->s) ||
+      !httpd_conf_main_init(opts))
+    errno = ENOMEM, err(EXIT_FAILURE, "options");
   
-  while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
+  while ((optchar = getopt_long(argc, argv, "C:dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
   {
     switch (optchar)
@@ -3327,87 +3207,115 @@ static void cl_cmd_line(int argc, char *argv[])
       case 'h': usage(program_name, EXIT_SUCCESS, "");
         
       case 'V':
-      {
-        Vstr_base *out = vstr_make_base(NULL);
-        
-        if (!out)
-          errno = ENOMEM, err(EXIT_FAILURE, "version");
-
         vstr_add_fmt(out, 0, " %s version %s.\n",
-                     program_name, CONF_SERV_VERSION);
-
+                     program_name, HTTPD_CONF_VERSION);
+        
         if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
           err(EXIT_FAILURE, "write");
-
+        
         exit (EXIT_SUCCESS);
-      }
       
-        OPT_SC_SERV_OPTS();
+      OPT_SERV_GETOPTS(opts->s);
+
+      case 'C':
+        if (!httpd_conf_main_parse_file(out, opts, optarg))
+          goto out_err_msg;
+        break;
+      case 143:
+        if (!opt_serv_conf_parse_cstr(out, opts->s, optarg))
+          goto out_err_msg;
+      break;
+      case 144:
+        if (!httpd_conf_main_parse_cstr(out, opts, optarg))
+          goto out_err_msg;
+        break;
         
-      case 't': client_timeout       = atoi(optarg);  break;
-      case 'H': server_ipv4_address  = optarg;        break;
-      case 'M': server_max_clients   = atoi(optarg);  break;
-      case 'P': server_port          = atoi(optarg);  break;
-      case 128: server_max_header_sz = atoi(optarg);  break;
+      case 128: OPT_NUM_NR_ARG(opts->max_header_sz, "max header size"); break;
         
-      case 'd': vlg_debug(vlg);                       break;
+      case  31: OPT_TOGGLE_ARG(opts->use_sendfile);                 break;
+      case  30: OPT_TOGGLE_ARG(opts->use_mmap);                     break;
         
-      case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle);       break;
-        
-      case 31: OPT_TOGGLE_ARG(serv->use_sendfile);    break;
-      case 30: OPT_TOGGLE_ARG(serv->use_mmap);        break;
-        
-      case 129: OPT_TOGGLE_ARG(serv->use_keep_alive);              break;
-      case 130: OPT_TOGGLE_ARG(serv->use_keep_alive_1_0);          break;
-      case 131: OPT_TOGGLE_ARG(serv->use_vhosts);                   break;
-      case 132: OPT_TOGGLE_ARG(serv->use_range);                    break;
-      case 133: OPT_TOGGLE_ARG(serv->use_range_1_0);                break;
-      case 134: OPT_TOGGLE_ARG(serv->use_public_only);              break;
-      case 135: serv->dir_filename = optarg;                        break;
-      case 136: serv->server_name  = optarg;                        break;
-      case 137: OPT_TOGGLE_ARG(serv->use_gzip_content_replacement); break;
-      case 138: OPT_TOGGLE_ARG(serv->use_default_mime_type);        break;
-      case 139: OPT_TOGGLE_ARG(serv->use_err_406);                  break;
-      case 140: serv->mime_types_default_type = optarg;             break;
-      case 141: serv->mime_types_main = optarg;                     break;
-      case 142: serv->mime_types_xtra = optarg;                     break;
+      case 129: OPT_TOGGLE_ARG(opts->use_keep_alive);               break;
+      case 130: OPT_TOGGLE_ARG(opts->use_keep_alive_1_0);           break;
+      case 131: OPT_TOGGLE_ARG(opts->use_vhosts);                   break;
+      case 132: OPT_TOGGLE_ARG(opts->use_range);                    break;
+      case 133: OPT_TOGGLE_ARG(opts->use_range_1_0);                break;
+      case 134: OPT_TOGGLE_ARG(opts->use_public_only);              break;
+      case 135: OPT_VSTR_ARG(opts->dir_filename);                   break;
+      case 136: OPT_VSTR_ARG(opts->server_name);                    break;
+      case 137: OPT_TOGGLE_ARG(opts->use_gzip_content_replacement); break;
+      case 138: OPT_TOGGLE_ARG(opts->use_default_mime_type);        break;
+      case 139: OPT_TOGGLE_ARG(opts->use_err_406);                  break;
+      case 140: OPT_VSTR_ARG(opts->mime_types_default_type);        break;
+      case 141: OPT_VSTR_ARG(opts->mime_types_main);                break;
+      case 142: OPT_VSTR_ARG(opts->mime_types_xtra);                break;
         /* case 143: */
-      case 144: OPT_NUM_ARG(serv->defer_accept, "seconds to defer connections",
-                            0, 4906, " (1 hour 8 minutes)");        break;
-      case 145: default_hostname = optarg;                          break;
-      case 146: OPT_TOGGLE_ARG(serv->canonize_host);                break;
-      case 147: OPT_TOGGLE_ARG(serv->non_host_err_400);
+        /* case 144: */
+      case 145: OPT_VSTR_ARG(opts->default_hostname);               break;
+      case 146: OPT_TOGGLE_ARG(opts->use_canonize_host);            break;
+      case 147: OPT_TOGGLE_ARG(opts->use_host_err_400);
         
       
       ASSERT_NO_SWITCH_DEF();
     }
   }
-
+  vstr_free_base(out); out = NULL;
+  
   argc -= optind;
   argv += optind;
 
-  if (argc != 1)
+  if (argc > 1)
     usage(program_name, EXIT_FAILURE, " Too many arguments.\n");
 
-  if (!mime_types_init(serv->mime_types_default_type))
-    errno = ENOMEM, err(EXIT_FAILURE, "init");
+  if (argc == 1)
+  {
+    Vstr_base *tmp = opts->document_root;
+    vstr_sub_cstr_ptr(tmp, 1, tmp->len, argv[0]);
+  }
   
-  if (!mime_types_load_simple(serv->mime_types_main))
-    err(EXIT_FAILURE, "load_mime(%s)", serv->mime_types_main);
+  if (!opts->document_root->len)
+    usage(program_name, EXIT_FAILURE, " Not specified a document root.\n");
   
-  if (!mime_types_load_simple(serv->mime_types_xtra))
-    err(EXIT_FAILURE, "load_mime(%s)", serv->mime_types_main);
-  
-  if (become_daemon)
+  if (opts->s->become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)
       err(EXIT_FAILURE, "daemon");
     vlg_daemon(vlg, program_name);
   }
 
-  serv_make_bind(server_ipv4_address, server_port);
+  {
+    const char *ipv4_address = NULL;
+    const char *pid_file = NULL;
+    const char *cntl_file = NULL;
+    const char *acpt_filter_file = NULL;
+    const char *mime_types_default_type = NULL;
+    const char *mime_types_main = NULL;
+    const char *mime_types_xtra = NULL;
+    
+    OPT_SC_EXPORT_CSTR(ipv4_address,     opts->s->ipv4_address,     FALSE,
+                       "ipv4 address");
+    OPT_SC_EXPORT_CSTR(pid_file,         opts->s->pid_file,         FALSE,
+                       "pid file");
+    OPT_SC_EXPORT_CSTR(cntl_file,        opts->s->cntl_file,        FALSE,
+                       "control file");
+    OPT_SC_EXPORT_CSTR(acpt_filter_file, opts->s->acpt_filter_file, FALSE,
+                       "accept filter file");
+    OPT_SC_EXPORT_CSTR(chroot_dir,       opts->s->chroot_dir,       FALSE,
+                       "chroot directory");
+    
+    OPT_SC_EXPORT_CSTR(mime_types_default_type, opts->mime_types_default_type,
+                       TRUE, "MIME types default type");
+    OPT_SC_EXPORT_CSTR(mime_types_main, opts->mime_types_main, FALSE,
+                       "MIME types main file");
+    OPT_SC_EXPORT_CSTR(mime_types_xtra, opts->mime_types_xtra, FALSE,
+                       "MIME types extra file");
+    
+    OPT_SC_EXPORT_CSTR(document_root, opts->document_root, TRUE,
+                       "document root");
+    
+  serv_make_bind(ipv4_address, opts->s->tcp_port);
 
-  if (!serv__init_default_hostname(default_hostname))
+  if (!serv__init_default_hostname())
     errno = ENOMEM, err(EXIT_FAILURE, "default_hostname");
   
   if (pid_file)
@@ -3419,6 +3327,18 @@ static void cl_cmd_line(int argc, char *argv[])
   if (acpt_filter_file)
     if (!evnt_fd_set_filter(acpt_evnt, acpt_filter_file))
       errx(EXIT_FAILURE, "set_filter");
+
+  if (!mime_types_default_type)
+    errx(EXIT_FAILURE, "MIME types default type unset");
+  
+  if (!mime_types_init(mime_types_default_type))
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
+  
+  if (!mime_types_load_simple(mime_types_main))
+    err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
+  
+  if (!mime_types_load_simple(mime_types_xtra))
+    err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
   
   if (chroot_dir)
   { /* preload locale info. so syslog can log in localtime */
@@ -3432,45 +3352,58 @@ static void cl_cmd_line(int argc, char *argv[])
   if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
     vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
     
-  if (chdir(argv[0]) == -1)
-    vlg_err(vlg, EXIT_FAILURE, "chdir(%s): %m\n", argv[0]);
+  if (chdir(document_root) == -1)
+    vlg_err(vlg, EXIT_FAILURE, "chdir(%s): %m\n", document_root);
 
-  if (drop_privs)
+  if (opts->s->drop_privs)
   {
-    if (setgroups(1, &priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)priv_gid);
+    OPT_SC_RESOLVE_UID(opts->s);
+    OPT_SC_RESOLVE_GID(opts->s);
+
+    /* FIXME: called from all daemons */
+    if (setgroups(1, &opts->s->priv_gid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)opts->s->priv_gid);
     
-    if (setgid(priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)priv_gid);
+    if (setgid(opts->s->priv_gid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)opts->s->priv_gid);
     
-    if (setuid(priv_uid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)priv_uid);
+    if (setuid(opts->s->priv_uid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)opts->s->priv_uid);
   }
 
-  if (num_procs > 1)
-    cntl_sc_multiproc(vlg, acpt_evnt, num_procs, !!cntl_file);
+  if (opts->s->num_procs > 1)
+    cntl_sc_multiproc(vlg, acpt_evnt, opts->s->num_procs, !!cntl_file);
+  }
 
   if (!vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF,
                              (CONF_MEM_PREALLOC_MIN / CONF_BUF_SZ)))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
-
+  
   server_beg = time(NULL);
   
   vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", acpt_evnt->sa,
            chroot_dir ? chroot_dir : "",
            chroot_dir ?        "/" : "",
-           argv[0]);
+           document_root);
+  
+  opt_serv_conf_free(opts->s);
+  return;
+
+ out_err_msg:
+  if (io_put_all(out, STDERR_FILENO) == IO_FAIL)
+    err(EXIT_FAILURE, "write");
+  exit (EXIT_FAILURE);  
 }
 
 int main(int argc, char *argv[])
 {
   serv_init();
 
-  cl_cmd_line(argc, argv);
+  serv_cmd_line(argc, argv);
 
   while (evnt_waiting() && !child_exited)
   {
-    evnt_sc_main_loop(CL_MAX_WAIT_SEND);
+    evnt_sc_main_loop(SERV_CONF_MAX_WAIT_SEND);
     serv_cntl_resources();
   }
   evnt_out_dbg3("E");
@@ -3488,7 +3421,7 @@ int main(int argc, char *argv[])
   vlg_free(vlg);
   vlg_exit();
 
-  vstr_free_base(serv->default_hostname);
+  httpd_conf_main_free(opts);
   
   vstr_exit();
   

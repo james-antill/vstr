@@ -23,27 +23,69 @@
     <p>" msg ".</p>\r\n" \
     CONF_MSG_RET_END
 
+#define CONF_MSG__FMT_30x_END "\
+\">here</a>.</p>\r\n" \
+    CONF_MSG_RET_END
+
 #define CONF_LINE_RET_301 "Moved Permanently"
 #define CONF_MSG_FMT_301 "%s${vstr:%p%zu%zu%u}%s"
-#define CONF_MSG__FMT_301_BEG "\
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
-<html>\r\n\
-  <head>\r\n\
+#define CONF_MSG__FMT_301_BEG CONF_MSG_RET_BEG "\
     <title>301 Moved Permanently</title>\r\n\
   </head>\r\n\
   <body>\r\n\
     <h1>301 Moved Permanently</h1>\r\n\
     <p>The document has moved <a href=\"\
 "
-
-#define CONF_MSG__FMT_301_END "\
-\">here</a>.</p>\r\n" \
-    CONF_MSG_RET_END
-
+#define CONF_MSG__FMT_301_END CONF_MSG__FMT_30x_END
 
 #define CONF_MSG_LEN_301(s1) (((s1)->len) +                             \
                               strlen(CONF_MSG__FMT_301_BEG) +           \
                               strlen(CONF_MSG__FMT_301_END))
+
+#define CONF_LINE_RET_302 "Found"
+#define CONF_MSG_FMT_302 "%s${vstr:%p%zu%zu%u}%s"
+#define CONF_MSG__FMT_302_BEG CONF_MSG_RET_BEG "\
+    <title>302 Found</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>302 Found</h1>\r\n\
+    <p>The document can be found <a href=\"\
+"
+#define CONF_MSG__FMT_302_END CONF_MSG__FMT_30x_END
+
+#define CONF_MSG_LEN_302(s1) (((s1)->len) +                             \
+                              strlen(CONF_MSG__FMT_302_BEG) +           \
+                              strlen(CONF_MSG__FMT_302_END))
+
+#define CONF_LINE_RET_303 "See Other"
+#define CONF_MSG_FMT_303 "%s${vstr:%p%zu%zu%u}%s"
+#define CONF_MSG__FMT_303_BEG CONF_MSG_RET_BEG "\
+    <title>303 See Other</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>303 See Other</h1>\r\n\
+    <p>The document should be seen <a href=\"\
+"
+#define CONF_MSG__FMT_303_END CONF_MSG__FMT_30x_END
+
+#define CONF_MSG_LEN_303(s1) (((s1)->len) +                             \
+                              strlen(CONF_MSG__FMT_303_BEG) +           \
+                              strlen(CONF_MSG__FMT_303_END))
+
+#define CONF_LINE_RET_307 "Temporary Redirect"
+#define CONF_MSG_FMT_307 "%s${vstr:%p%zu%zu%u}%s"
+#define CONF_MSG__FMT_307_BEG CONF_MSG_RET_BEG "\
+    <title>307 Temporary Redirect</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>307 Temporary Redirect</h1>\r\n\
+    <p>The document has temporarily moved <a href=\"\
+"
+#define CONF_MSG__FMT_307_END CONF_MSG__FMT_30x_END
+
+#define CONF_MSG_LEN_307(s1) (((s1)->len) +                             \
+                              strlen(CONF_MSG__FMT_307_BEG) +           \
+                              strlen(CONF_MSG__FMT_307_END))
 
 #define CONF_LINE_RET_400 "Bad Request"
 #define CONF_MSG_RET_400 \
@@ -110,12 +152,36 @@
 #define CONF_MSG_RET_505 \
     CONF_MSG__MAKE("505", "Version not supported", "The version of http used is not supported")
 
-#define HTTPD_ERR(req, code) do {                               \
-      req->error_code  = (code);                                \
-      req->error_line  = CONF_LINE_RET_ ## code ;               \
-      req->error_len   = strlen( CONF_MSG_RET_ ## code );       \
-      if (!req->head_op)                                        \
-        req->error_msg = CONF_MSG_RET_ ## code ;                \
+#define HTTPD_ERR_301(req) do {                           \
+      (req)->error_code = 301;                            \
+      (req)->error_line = CONF_LINE_RET_301;              \
+      (req)->error_len  = CONF_MSG_LEN_301((req)->fname); \
+    } while (0)
+
+#define HTTPD_ERR_302(req) do {                           \
+      (req)->error_code = 302;                            \
+      (req)->error_line = CONF_LINE_RET_302;              \
+      (req)->error_len  = CONF_MSG_LEN_302((req)->fname); \
+    } while (0)
+
+#define HTTPD_ERR_303(req) do {                           \
+      (req)->error_code = 303;                            \
+      (req)->error_line = CONF_LINE_RET_303;              \
+      (req)->error_len  = CONF_MSG_LEN_303((req)->fname); \
+    } while (0)
+
+#define HTTPD_ERR_307(req) do {                           \
+      (req)->error_code = 307;                            \
+      (req)->error_line = CONF_LINE_RET_307;              \
+      (req)->error_len  = CONF_MSG_LEN_307((req)->fname); \
+    } while (0)
+
+#define HTTPD_ERR(req, code) do {                           \
+      (req)->error_code  = (code);                          \
+      (req)->error_line  = CONF_LINE_RET_ ## code ;         \
+      (req)->error_len   = strlen( CONF_MSG_RET_ ## code ); \
+      if (!(req)->head_op)                                  \
+        (req)->error_msg = CONF_MSG_RET_ ## code ;          \
     } while (0)
 
 #define HTTPD_ERR_RET(req, code, val) do {              \

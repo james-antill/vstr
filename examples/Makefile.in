@@ -357,13 +357,19 @@ ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS = bag.c cntl.c date.c evnt.c hexdump.c opt.c vlg.c
-DAEMON_FILES_HDRS = bag.h cntl.h date.h evnt.h hexdump.h opt.h vlg.h \
-                    vlg_assert.h
+DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
+                    opt.c opt_serv.c vlg.c
+
+DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
+                    opt.h opt_serv.h vlg.h vlg_assert.h
 
 
-ex_httpd_SOURCES = mime_types.c $(DAEMON_FILES_SRCS) ex_httpd.c
-ex_httpd_DEPENDENCIES = mime_types.h $(DAEMON_FILES_HDRS) ex_httpd_err_codes.h
+ex_httpd_SOURCES = mime_types.c httpd_conf_main.c httpd_conf_req.c \
+                        $(DAEMON_FILES_SRCS) httpd.c ex_httpd.c
+
+ex_httpd_DEPENDENCIES = mime_types.h httpd_conf_main.h httpd_conf_req.h \
+                        $(DAEMON_FILES_HDRS) httpd.h httpd_err_codes.h
+
 ex_httpd_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -496,7 +502,6 @@ example_code_html = \
   html/ex_highlight.c.html \
   html/ex_dir_list2html.c.html \
   html/ex_httpd.c.html \
-  html/ex_httpd_err_codes.h.html \
   html/ex_lookup_ip.c.html \
   html/ex_mon_cp.c.html \
   html/ex_netstr.c.html \
@@ -517,7 +522,16 @@ example_code_html = \
   html/ex_zcat.c.html \
   html/hexdump.c.html \
   html/hexdump.h.html \
+  html/httpd.c.html \
+  html/httpd.h.html \
+  html/httpd_err_codes.h.html \
+  html/httpd_conf_main.c.html \
+  html/httpd_conf_main.h.html \
+  html/httpd_conf_req.c.html \
+  html/httpd_conf_req.h.html \
   html/opt.h.html \
+  html/opt_serv.c.html \
+  html/opt_serv.h.html \
   html/vlg.c.html \
   html/vlg.h.html
 
@@ -9378,9 +9392,10 @@ am_ex_dns_OBJECTS = ex_dns-dns.$(OBJEXT) $(am__objects_2) \
 	ex_dns-ex_dns.$(OBJEXT)
 ex_dns_OBJECTS = $(am_ex_dns_OBJECTS)
 ex_dns_LDFLAGS =
-am__objects_3 = ex_echod-bag.$(OBJEXT) ex_echod-cntl.$(OBJEXT) \
-	ex_echod-date.$(OBJEXT) ex_echod-evnt.$(OBJEXT) \
-	ex_echod-hexdump.$(OBJEXT) ex_echod-opt.$(OBJEXT) \
+am__objects_3 = ex_echod-bag.$(OBJEXT) ex_echod-conf.$(OBJEXT) \
+	ex_echod-cntl.$(OBJEXT) ex_echod-date.$(OBJEXT) \
+	ex_echod-evnt.$(OBJEXT) ex_echod-hexdump.$(OBJEXT) \
+	ex_echod-opt.$(OBJEXT) ex_echod-opt_serv.$(OBJEXT) \
 	ex_echod-vlg.$(OBJEXT)
 am_ex_echod_OBJECTS = $(am__objects_3) ex_echod-ex_echod.$(OBJEXT)
 ex_echod_OBJECTS = $(am_ex_echod_OBJECTS)
@@ -9417,12 +9432,15 @@ ex_hexdump_LDFLAGS =
 ex_highlight_SOURCES = ex_highlight.c
 ex_highlight_OBJECTS = ex_highlight-ex_highlight.$(OBJEXT)
 ex_highlight_LDFLAGS =
-am__objects_4 = ex_httpd-bag.$(OBJEXT) ex_httpd-cntl.$(OBJEXT) \
-	ex_httpd-date.$(OBJEXT) ex_httpd-evnt.$(OBJEXT) \
-	ex_httpd-hexdump.$(OBJEXT) ex_httpd-opt.$(OBJEXT) \
+am__objects_4 = ex_httpd-bag.$(OBJEXT) ex_httpd-conf.$(OBJEXT) \
+	ex_httpd-cntl.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
+	ex_httpd-evnt.$(OBJEXT) ex_httpd-hexdump.$(OBJEXT) \
+	ex_httpd-opt.$(OBJEXT) ex_httpd-opt_serv.$(OBJEXT) \
 	ex_httpd-vlg.$(OBJEXT)
-am_ex_httpd_OBJECTS = ex_httpd-mime_types.$(OBJEXT) $(am__objects_4) \
-	ex_httpd-ex_httpd.$(OBJEXT)
+am_ex_httpd_OBJECTS = ex_httpd-mime_types.$(OBJEXT) \
+	ex_httpd-httpd_conf_main.$(OBJEXT) \
+	ex_httpd-httpd_conf_req.$(OBJEXT) $(am__objects_4) \
+	ex_httpd-httpd.$(OBJEXT) ex_httpd-ex_httpd.$(OBJEXT)
 ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_httpd_LDFLAGS =
 ex_lookup_ip_SOURCES = ex_lookup_ip.c
@@ -9949,6 +9967,15 @@ ex_echod-bag.obj: bag.c
 ex_echod-bag.lo: bag.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-bag.lo `test -f 'bag.c' || echo '$(srcdir)/'`bag.c
 
+ex_echod-conf.o: conf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf.o `test -f 'conf.c' || echo '$(srcdir)/'`conf.c
+
+ex_echod-conf.obj: conf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf.obj `if test -f 'conf.c'; then $(CYGPATH_W) 'conf.c'; else $(CYGPATH_W) '$(srcdir)/conf.c'; fi`
+
+ex_echod-conf.lo: conf.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf.lo `test -f 'conf.c' || echo '$(srcdir)/'`conf.c
+
 ex_echod-cntl.o: cntl.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-cntl.o `test -f 'cntl.c' || echo '$(srcdir)/'`cntl.c
 
@@ -9993,6 +10020,15 @@ ex_echod-opt.obj: opt.c
 
 ex_echod-opt.lo: opt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_echod-opt_serv.o: opt_serv.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_serv.o `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
+
+ex_echod-opt_serv.obj: opt_serv.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_serv.obj `if test -f 'opt_serv.c'; then $(CYGPATH_W) 'opt_serv.c'; else $(CYGPATH_W) '$(srcdir)/opt_serv.c'; fi`
+
+ex_echod-opt_serv.lo: opt_serv.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_serv.lo `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
 
 ex_echod-vlg.o: vlg.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
@@ -10120,6 +10156,24 @@ ex_httpd-mime_types.obj: mime_types.c
 ex_httpd-mime_types.lo: mime_types.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.lo `test -f 'mime_types.c' || echo '$(srcdir)/'`mime_types.c
 
+ex_httpd-httpd_conf_main.o: httpd_conf_main.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_main.o `test -f 'httpd_conf_main.c' || echo '$(srcdir)/'`httpd_conf_main.c
+
+ex_httpd-httpd_conf_main.obj: httpd_conf_main.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_main.obj `if test -f 'httpd_conf_main.c'; then $(CYGPATH_W) 'httpd_conf_main.c'; else $(CYGPATH_W) '$(srcdir)/httpd_conf_main.c'; fi`
+
+ex_httpd-httpd_conf_main.lo: httpd_conf_main.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_main.lo `test -f 'httpd_conf_main.c' || echo '$(srcdir)/'`httpd_conf_main.c
+
+ex_httpd-httpd_conf_req.o: httpd_conf_req.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.o `test -f 'httpd_conf_req.c' || echo '$(srcdir)/'`httpd_conf_req.c
+
+ex_httpd-httpd_conf_req.obj: httpd_conf_req.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.obj `if test -f 'httpd_conf_req.c'; then $(CYGPATH_W) 'httpd_conf_req.c'; else $(CYGPATH_W) '$(srcdir)/httpd_conf_req.c'; fi`
+
+ex_httpd-httpd_conf_req.lo: httpd_conf_req.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.lo `test -f 'httpd_conf_req.c' || echo '$(srcdir)/'`httpd_conf_req.c
+
 ex_httpd-bag.o: bag.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-bag.o `test -f 'bag.c' || echo '$(srcdir)/'`bag.c
 
@@ -10128,6 +10182,15 @@ ex_httpd-bag.obj: bag.c
 
 ex_httpd-bag.lo: bag.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-bag.lo `test -f 'bag.c' || echo '$(srcdir)/'`bag.c
+
+ex_httpd-conf.o: conf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf.o `test -f 'conf.c' || echo '$(srcdir)/'`conf.c
+
+ex_httpd-conf.obj: conf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf.obj `if test -f 'conf.c'; then $(CYGPATH_W) 'conf.c'; else $(CYGPATH_W) '$(srcdir)/conf.c'; fi`
+
+ex_httpd-conf.lo: conf.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf.lo `test -f 'conf.c' || echo '$(srcdir)/'`conf.c
 
 ex_httpd-cntl.o: cntl.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-cntl.o `test -f 'cntl.c' || echo '$(srcdir)/'`cntl.c
@@ -10174,6 +10237,15 @@ ex_httpd-opt.obj: opt.c
 ex_httpd-opt.lo: opt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
+ex_httpd-opt_serv.o: opt_serv.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.o `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
+
+ex_httpd-opt_serv.obj: opt_serv.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.obj `if test -f 'opt_serv.c'; then $(CYGPATH_W) 'opt_serv.c'; else $(CYGPATH_W) '$(srcdir)/opt_serv.c'; fi`
+
+ex_httpd-opt_serv.lo: opt_serv.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.lo `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
+
 ex_httpd-vlg.o: vlg.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
 
@@ -10182,6 +10254,15 @@ ex_httpd-vlg.obj: vlg.c
 
 ex_httpd-vlg.lo: vlg.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
+ex_httpd-httpd.o: httpd.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.o `test -f 'httpd.c' || echo '$(srcdir)/'`httpd.c
+
+ex_httpd-httpd.obj: httpd.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.obj `if test -f 'httpd.c'; then $(CYGPATH_W) 'httpd.c'; else $(CYGPATH_W) '$(srcdir)/httpd.c'; fi`
+
+ex_httpd-httpd.lo: httpd.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.lo `test -f 'httpd.c' || echo '$(srcdir)/'`httpd.c
 
 ex_httpd-ex_httpd.o: ex_httpd.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-ex_httpd.o `test -f 'ex_httpd.c' || echo '$(srcdir)/'`ex_httpd.c

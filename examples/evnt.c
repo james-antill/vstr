@@ -47,6 +47,22 @@
 
 #define CONF_EVNT_NO_EPOLL FALSE
 
+#ifndef CONF_FULL_STATIC
+# include <netdb.h>
+# define EVNT__RESOLVE_NAME(evnt, x) do {                       \
+      struct hostent *h = gethostbyname(x);                     \
+                                                                \
+      if (h)                                                    \
+        memcpy(&EVNT_SA_IN(evnt)->sin_addr.s_addr,              \
+               h->h_addr_list[0],                               \
+               sizeof(EVNT_SA_IN(evnt)->sin_addr.s_addr));      \
+                                                                \
+    } while (FALSE)
+#else
+# define EVNT__RESOLVE_NAME(evnt, x)                     \
+    EVNT_SA_IN(evnt)->sin_addr.s_addr = inet_addr(x)
+#endif
+
 #if !defined(SO_DETACH_FILTER) || !defined(SO_ATTACH_FILTER)
 # define CONF_USE_SOCKET_FILTERS FALSE
 struct sock_fprog { int dummy; };
@@ -95,7 +111,7 @@ struct sock_fprog
 # define EVNT__ATTR_USED() 
 #endif
 
-int evnt_opt_nagle = FALSE;
+int evnt_opt_nagle = EVNT_CONF_NAGLE;
 
 static struct Evnt *q_send_now = NULL;  /* Try a send "now" */
 static struct Evnt *q_closed   = NULL;  /* Close when fin. */
@@ -535,7 +551,8 @@ int evnt_make_acpt(struct Evnt *evnt, int fd,struct sockaddr *sa, socklen_t len)
 }
 
 int evnt_make_bind_ipv4(struct Evnt *evnt,
-                        const char *acpt_addr, short server_port)
+                        const char *acpt_addr, short server_port,
+                        unsigned int listen_len)
 {
   int fd = -1;
   int saved_errno = 0;
@@ -548,8 +565,8 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
     goto init_fail;
 
   EVNT_SA_IN(evnt)->sin_family = AF_INET;
-  if (acpt_addr)
-    EVNT_SA_IN(evnt)->sin_addr.s_addr = inet_addr(acpt_addr); /* FIXME */
+  if (acpt_addr && *acpt_addr)
+    EVNT__RESOLVE_NAME(evnt, acpt_addr);
   else
   {
     EVNT_SA_IN(evnt)->sin_addr.s_addr = htonl(INADDR_ANY);
@@ -567,7 +584,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
     if (getsockname(fd, evnt->sa, &alloc_len) == -1)
       vlg_err(vlg, EXIT_FAILURE, "getsockname: %m\n");
   
-  if (listen(fd, 512) == -1)
+  if (listen(fd, listen_len) == -1)
     goto listen_fail;
 
   vstr_free_base(evnt->io_r); evnt->io_r = NULL;
@@ -589,7 +606,8 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   return (FALSE);
 }
 
-int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
+int evnt_make_bind_local(struct Evnt *evnt, const char *fname,
+                         unsigned int listen_len)
 {
   int fd = -1;
   int saved_errno = 0;
@@ -617,7 +635,7 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   if (fchmod(fd, 0600) == -1)
     goto fchmod_fail;
   
-  if (listen(fd, 512) == -1)
+  if (listen(fd, listen_len) == -1)
     goto listen_fail;
 
   vstr_free_base(evnt->io_r); evnt->io_r = NULL;
@@ -1057,7 +1075,9 @@ static int evnt__get_timeout(void)
     else
       msecs = 0;
   }
-  
+
+  vlg_dbg2(vlg, "get_timeout = %d\n", msecs);
+
   return (msecs);
 }
 
@@ -1354,8 +1374,7 @@ void evnt_scan_send_fds(void)
     scan = scan_s_next;
   }
 
-  if (q_closed)
-    evnt__scan_q_close();
+  evnt__scan_q_close();
 }
 
 void evnt_close_all(void)
@@ -1557,7 +1576,7 @@ static Timer_q_node *evnt__timeout_mtime_make(struct Evnt *evnt,
 {
   Timer_q_node *tm_o = NULL;
 
-  vlg_dbg2(vlg, "mtime_make(%lu)\n", msecs);
+  vlg_dbg2(vlg, "mtime_make(%p, %lu)\n", evnt, msecs);
   
   if (0) { }
   else if (msecs >= ( 99 * 1000))
@@ -1619,13 +1638,14 @@ static void evnt__timer_cb_mtime(int type, void *data)
 void evnt_timeout_init(void)
 {
   ASSERT(!evnt__timeout_1);
-  
+
+  /* move when empty is buggy, *sigh* */
   evnt__timeout_1   = timer_q_add_base(evnt__timer_cb_mtime,
-                                       TIMER_Q_FLAG_BASE_DEFAULT);
+                                       TIMER_Q_FLAG_BASE_INSERT_FROM_END);
   evnt__timeout_10  = timer_q_add_base(evnt__timer_cb_mtime,
-                                       TIMER_Q_FLAG_BASE_DEFAULT);
+                                       TIMER_Q_FLAG_BASE_INSERT_FROM_END);
   evnt__timeout_100 = timer_q_add_base(evnt__timer_cb_mtime,
-                                       TIMER_Q_FLAG_BASE_DEFAULT);
+                                       TIMER_Q_FLAG_BASE_INSERT_FROM_END);
 
   if (!evnt__timeout_1 || !evnt__timeout_10 || !evnt__timeout_100)
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "timer init"));
@@ -1664,9 +1684,12 @@ int evnt_sc_timeout_via_mtime(struct Evnt *evnt, unsigned long msecs)
 
 void evnt_sc_main_loop(size_t max_sz)
 {
-  int ready = evnt_poll();
+  int ready = 0;
   struct timeval tv;
-    
+
+  evnt__scan_q_close(); /* startup close's */
+
+  ready = evnt_poll();
   if ((ready == -1) && (errno != EINTR))
     vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "poll");
   if (ready == -1)

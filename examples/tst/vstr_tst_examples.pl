@@ -209,8 +209,11 @@ sub daemon_status
 
     while (<INFO>)
       {
-	/^PID: (\d+) ADDR (\d+[.]\d+[.]\d+[.]\d+)@(\d+)$/ || next;
-	($daemon_pid, $daemon_addr, $daemon_port) = ($1, $2, $3);
+	/^STATUS: / || next;
+	/from\[(\d+[.]\d+[.]\d+[.]\d+)@(\d+)\]/ || next;
+	($daemon_addr, $daemon_port) = ($1, $2);
+	/pid\[(\d+)\]$/ || next;
+	$daemon_pid = $1;
 
 	if ($daemon_addr eq '0.0.0.0')
 	  {

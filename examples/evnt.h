@@ -8,6 +8,8 @@
 
 #include <timer_q.h>
 
+#define EVNT_CONF_NAGLE FALSE
+
 struct Evnt;
 
 struct Evnt_cbs
@@ -95,8 +97,8 @@ extern int evnt_cb_func_shutdown_r(struct Evnt *);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
 extern int evnt_make_con_local(struct Evnt *, const char *);
-extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short);
-extern int evnt_make_bind_local(struct Evnt *, const char *);
+extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short,unsigned int);
+extern int evnt_make_bind_local(struct Evnt *, const char *, unsigned int);
 extern int evnt_make_acpt(struct Evnt *, int, struct sockaddr *, socklen_t);
 extern int evnt_make_custom(struct Evnt *, int, socklen_t, int);
 

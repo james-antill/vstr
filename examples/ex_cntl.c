@@ -191,6 +191,8 @@ static void ui_parse(void)
 
     if (0) { /* not reached */ }
     UI_CMD("CLOSE");
+    UI_CMD("DBG");
+    UI_CMD("UNDBG");
     UI_CMD("LIST");
     UI_CMD("STATUS");
 

@@ -22,6 +22,7 @@ extern void vlg_free(Vlg *);
 
 extern void vlg_daemon(Vlg *, const char *);
 extern void vlg_debug(Vlg *);
+extern void vlg_undbg(Vlg *);
 
 extern int vlg_pid_set(Vlg *, int);
 extern int vlg_prefix_set(Vlg *, int);

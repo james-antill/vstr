@@ -128,12 +128,15 @@ ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS = bag.c cntl.c date.c evnt.c hexdump.c opt.c vlg.c
-DAEMON_FILES_HDRS = bag.h cntl.h date.h evnt.h hexdump.h opt.h vlg.h \
-                    vlg_assert.h
+DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
+                    opt.c opt_serv.c vlg.c
+DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
+                    opt.h opt_serv.h vlg.h vlg_assert.h
 
-ex_httpd_SOURCES      = mime_types.c $(DAEMON_FILES_SRCS) ex_httpd.c
-ex_httpd_DEPENDENCIES = mime_types.h $(DAEMON_FILES_HDRS) ex_httpd_err_codes.h
+ex_httpd_SOURCES      = mime_types.c httpd_conf_main.c httpd_conf_req.c \
+                        $(DAEMON_FILES_SRCS) httpd.c ex_httpd.c
+ex_httpd_DEPENDENCIES = mime_types.h httpd_conf_main.h httpd_conf_req.h \
+                        $(DAEMON_FILES_HDRS) httpd.h httpd_err_codes.h
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -322,7 +325,6 @@ example_code_html = \
   html/ex_highlight.c.html \
   html/ex_dir_list2html.c.html \
   html/ex_httpd.c.html \
-  html/ex_httpd_err_codes.h.html \
   html/ex_lookup_ip.c.html \
   html/ex_mon_cp.c.html \
   html/ex_netstr.c.html \
@@ -343,7 +345,16 @@ example_code_html = \
   html/ex_zcat.c.html \
   html/hexdump.c.html \
   html/hexdump.h.html \
+  html/httpd.c.html \
+  html/httpd.h.html \
+  html/httpd_err_codes.h.html \
+  html/httpd_conf_main.c.html \
+  html/httpd_conf_main.h.html \
+  html/httpd_conf_req.c.html \
+  html/httpd_conf_req.h.html \
   html/opt.h.html \
+  html/opt_serv.c.html \
+  html/opt_serv.h.html \
   html/vlg.c.html \
   html/vlg.h.html
 #  html/ex_tdns.c.html 

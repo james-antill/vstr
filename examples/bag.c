@@ -27,7 +27,7 @@ void bag_del_all(Bag *bag)
   while (bag->num--)
   {
     bag->free_key_func((void *)bag->data[bag->num].key);
-    bag->free_val_func((void *)bag->data[bag->num].val);
+    bag->free_val_func(bag->data[bag->num].val);
   }
   bag->num = 0;
 }

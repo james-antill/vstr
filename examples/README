@@ -34,6 +34,11 @@ happily work on win32 etc.
 	All asm calls should have names
 
 
+  ex_dir_list_sort
+
+	Sort by verscmp
+
+
   ex_dir_list2html
 
 	Should produce sort by size
@@ -48,27 +53,28 @@ happily work on win32 etc.
 http://www.sans.org/top20/#u2
 
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
+         C-z fg
 	mime_types speed, by having explicit filename/ext matches
-	 Also walk through configuration Vstr forwards.
 	public/symlinks path checking
 	 fd cache
 	 stat cache
 	conf
-	 Support accept/accept-language per file [w3/chips]
+         Support ../ in relative urls (only begining though).
+         conf file mmaps.
+         Support charset/accept-charset (appended to text/* Content types)
+	  Support default
+	  Support per file.
+	 Support accept/accept-language/accept-encoding switch files [w3/chips]
+          Vary: accept,accept-language,accept-encoding
+	  Allow fall back, or to go 406 for content-type
            GALEON
               Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,image/jpeg,image/gif;q=0.2,*/*;q=0.1
               Accept-Language: en
            FIREFOX
               Accept: image/png,*/*;q=0.5
               Accept-Language: en-us,en;q=0.5
-	 Per file temp/perm directs (301/path or 307/path FS trees? -- and 302?)
-	  Allow 410 also? [w3/chips]
-	  Allow 404 etc.
-	 Per file mime_type ... allow "cool URIs" [w3/chips]
-	 Per file extra headers: Content-Location; Content-Md5; 
-                                 Cache-Control; etc. [w3/chips]
-         Vary: accept-language,...
-         Allow custom error code pages, start with 404
+         Allow addition of ETag header
+         Allow custom error-code pages, start with 404
 	man page
         limiting IO
 	  easyish to do globally, not possible other wise until conf. done

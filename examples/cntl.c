@@ -189,7 +189,11 @@ static void cntl__close(Vstr_base *out)
     return;
 
   cntl__ns_out_cstr_ptr(out, "CLOSE");
-  cntl__ns_out_fmt(out, "$<sa:%p>", acpt_evnt->sa);
+  cntl__ns_out_fmt(out, "from[$<sa:%p>]", acpt_evnt->sa);
+  cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
+                   (unsigned long)acpt_evnt->ctime.tv_sec,
+                   (unsigned long)acpt_evnt->ctime.tv_usec);
+  cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
     
   vstr_add_netstr_end(out, ns1, out->len);
 
@@ -216,6 +220,10 @@ static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
 
     cntl__ns_out_fmt(out, "EVNT %s", tag);
     cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
+    cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
+                     (unsigned long)ev->ctime.tv_sec,
+                     (unsigned long)ev->ctime.tv_usec);
+    cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
     cntl__ns_out_fmt(out, "req_got[%'u:%u]",
                      ev->acct.req_got, ev->acct.req_got);
     cntl__ns_out_fmt(out, "req_put[%'u:%u]",
@@ -231,22 +239,38 @@ static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
   }
 }
 
-static void cntl__status(Vstr_base *out, pid_t pid)
+static void cntl__status(Vstr_base *out)
 {
   size_t ns1 = 0;
 
   if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
     return;
 
-  cntl__ns_out_cstr_ptr(out, "PID");
-  cntl__ns_out_fmt(out, "%lu", (unsigned long)pid);
-
+  cntl__ns_out_cstr_ptr(out, "STATUS");
   if (acpt_evnt)
   {
-    cntl__ns_out_cstr_ptr(out, "ADDR");
-    cntl__ns_out_fmt(out, "$<sa:%p>", acpt_evnt->sa);
+    struct Evnt *ev = acpt_evnt;
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
+    cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
+                     (unsigned long)ev->ctime.tv_sec,
+                     (unsigned long)ev->ctime.tv_usec);
   }
   
+  cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+
+  vstr_add_netstr_end(out, ns1, out->len);
+}
+
+static void cntl__dbg(Vstr_base *out)
+{
+  size_t ns1 = 0;
+  
+  if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
+    return;
+
+  cntl__ns_out_cstr_ptr(out, "DBG");
+  cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+  cntl__ns_out_fmt(out, "dbg[%u]", (unsigned)vlg->out_dbg);
   vstr_add_netstr_end(out, ns1, out->len);
 }
 
@@ -318,6 +342,22 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
       if (!cntl_waiter_add(evnt, 1, ns1, &stop))
         goto malloc_bad;
     }
+    else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "DBG"))
+    {
+      vlg_debug(vlg);
+      cntl__dbg(evnt->io_w);
+
+      if (!cntl_waiter_add(evnt, 1, ns1, &stop))
+        goto malloc_bad;
+    }
+    else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "UNDBG"))
+    {
+      vlg_undbg(vlg);
+      cntl__dbg(evnt->io_w);
+
+      if (!cntl_waiter_add(evnt, 1, ns1, &stop))
+        goto malloc_bad;
+    }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "LIST"))
     {
       cntl__scan_events(evnt->io_w, "CONNECT",   evnt_queue("connect"));
@@ -332,25 +372,10 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
     }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "STATUS"))
     {
-      cntl__status(evnt->io_w, getpid());
+      cntl__status(evnt->io_w);
 
-      if (childs)
-      {
-        Bag_iter iter[1];
-        const Bag_obj *obj = bag_iter_beg(childs, iter);
-
-        while (obj)
-        { /* SPEED hack */
-          struct Cntl_child_obj *child = (void *)obj->val;
-
-          if (child)
-            cntl__status(evnt->io_w, child->pid);
-          
-          obj = bag_iter_nxt(iter);
-        }
-      }
-      
-      cntl__fin(evnt->io_w);
+      if (!cntl_waiter_add(evnt, 1, ns1, &stop))
+        goto malloc_bad;
     }
     else
       return (FALSE);
@@ -435,7 +460,7 @@ void cntl_make_file(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
   if (!(evnt = malloc(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "cntl file: %m\n"));
   
-  if (!evnt_make_bind_local(evnt, fname))
+  if (!evnt_make_bind_local(evnt, fname, 8))
     vlg_err(vlg, EXIT_FAILURE, "cntl file: %m\n");
   
   evnt->cbs->cb_func_accept = cntl__cb_func_accept;
@@ -483,7 +508,6 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
 
     close(old_fd);
     
-    acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
     acpt_cntl_evnt->cbs->cb_func_recv = cntl__cb_func_recv;
   }
   else
@@ -501,9 +525,8 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
 
     if (!evnt_make_custom(acpt_cntl_evnt, fd, 0, 0))
       vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "cntl file");
-  
-    acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
   }
+  acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
 }
 
 static void bag_cb_free_evnt(void *val)
@@ -515,9 +538,9 @@ void cntl_child_make(unsigned int num)
 {
   ASSERT(!childs && !waiters && acpt_cntl_evnt);
   
-  if (!(childs = bag_make(num, bag_cb_free_nothing, bag_cb_free_evnt)))
+  if (!(childs  = bag_make(num, bag_cb_free_nothing, bag_cb_free_evnt)))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl children"));
-  if (!(waiters = bag_make(4, bag_cb_free_nothing, bag_cb_free_malloc)))
+  if (!(waiters = bag_make(4,   bag_cb_free_nothing, bag_cb_free_malloc)))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl children"));
 }
 

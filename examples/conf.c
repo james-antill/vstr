@@ -19,12 +19,10 @@
  */
 /* configuration file functions */
 
-#include <vstr.h>
-
-#include <err.h>
-
 #define CONF_COMPILE_INLINE 0
 #include "conf.h"
+
+#include <err.h>
 
 #ifndef VSTR_AUTOCONF_NDEBUG
 # define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
@@ -34,10 +32,6 @@
 # define assert(x)
 #endif
 #define ASSERT_NOT_REACHED() assert(FALSE)
-
-/* how much memory should we preallocate so it's "unlikely" we'll get mem errors
- * when writting a log entry */
-#define VLG_MEM_PREALLOC (4 * 1024)
 
 #ifndef FALSE
 # define FALSE 0
@@ -187,13 +181,16 @@ int conf_parse_lex(Conf_parse *conf)
 
   data = conf->data;
   len  = data->len;
-  if (FALSE && conf->parsed)
+  /*  if (FALSE && conf->parsed)
   {
-    //    conf__setup_list_nums(conf, list_nums);
+    conf__setup_list_nums(conf, list_nums);
     pos = conf->parsed + 1;
     len = conf->data->len - conf->parsed;
-  }
-  
+    } */
+
+  if (conf->state != CONF_PARSE_STATE_BEG)
+    return (CONF_PARSE_ERR);
+
   while (len)
   {
     size_t plen = 0; /* amount parsed this loop */
@@ -201,9 +198,12 @@ int conf_parse_lex(Conf_parse *conf)
     switch (conf->state)
     {
       case CONF_PARSE_STATE_BEG: /* unix she-bang */
+        conf->state = CONF_PARSE_STATE_CHOOSE;
         if (VPREFIX(data, pos, len, "#!"))
+        {
           plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "\n");
-        conf->state = CONF_PARSE_STATE_WS;
+          conf->state = CONF_PARSE_STATE_WS;
+        }
         break;
         
       case CONF_PARSE_STATE_WS:
@@ -429,7 +429,8 @@ int conf_parse_lex(Conf_parse *conf)
 
   if (conf->sects->malloc_bad)
     return (CONF_PARSE_ERR);
-    
+
+  conf->state = CONF_PARSE_STATE_END;
   return (CONF_PARSE_FIN);
 }
 
@@ -474,7 +475,7 @@ static unsigned int conf__tok_get_type(Vstr_base *s1, size_t pos, size_t len)
   }
 }
 
-int conf_parse_token(Conf_parse *conf, Conf_token *token)
+int conf_parse_token(const Conf_parse *conf, Conf_token *token)
 {
   Vstr_sect_node *node = NULL;
  
@@ -589,4 +590,242 @@ int conf_token_cmp_str_cstr_eq(const Conf_parse *conf, const Conf_token *token,
     return (conf_token_cmp_val_cstr_eq(conf, token, cstr));
   
   return (FALSE);
+}
+
+extern inline int conf_token_cmp_case_val_cstr_eq(const Conf_parse *conf,
+                                                  const Conf_token *token,
+                                                  const char *cstr)
+{
+  const Vstr_sect_node *val = conf_token_value(token);
+  
+  if (!val) return (FALSE);
+  
+  return (vstr_cmp_case_cstr_eq(conf->data, val->pos, val->len, cstr));
+}
+
+extern inline int conf_token_cmp_case_sym_cstr_eq(const Conf_parse *conf,
+                                                  const Conf_token *token,
+                                                  const char *cstr)
+{
+  ASSERT(conf && conf->sects &&
+         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
+  
+  if (token->type == CONF_TOKEN_TYPE_SYMBOL)
+    return (conf_token_cmp_case_val_cstr_eq(conf, token, cstr));
+  return (FALSE);
+}
+
+extern inline int conf_token_cmp_case_str_cstr_eq(const Conf_parse *conf,
+                                                  const Conf_token *token,
+                                                  const char *cstr)
+{
+  ASSERT(conf && conf->sects &&
+         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
+  
+  if ((token->type >= CONF_TOKEN_TYPE_QUOTE_DDD) &&
+      (token->type <= CONF_TOKEN_TYPE_QUOTE_S))
+    return (conf_token_cmp_case_val_cstr_eq(conf, token, cstr));
+  
+  return (FALSE);
+}
+
+unsigned int conf_token_list_num(const Conf_token *token, unsigned int depth)
+{
+  ASSERT(token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
+  
+  if (!depth || (depth > token->depth_num))
+    return (0);
+
+  ASSERT(token->depth_nums[depth - 1] >= token->num);
+  
+  return (token->depth_nums[depth - 1] - token->num);
+}
+
+int conf_sc_token_parse_toggle(const Conf_parse *conf,
+                               Conf_token *token, int *val)
+{
+  unsigned int num = conf_token_list_num(token, token->depth_num);
+  int ern = CONF_SC_TYPE_RET_OK;
+  
+  ASSERT(val);
+
+  if (num > 1)
+    ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
+  
+  if (!num)
+  {
+    *val = !*val;
+    return (ern);
+  }
+
+  conf_parse_token(conf, token);
+  if (0) { }
+  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "on") ||
+           conf_token_cmp_case_val_cstr_eq(conf, token, "true") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "1"))
+    *val = 1;
+  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "off") ||
+           conf_token_cmp_case_val_cstr_eq(conf, token, "false") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "0"))
+    *val = 0;
+  else
+    ern = CONF_SC_TYPE_RET_ERR_NO_MATCH;
+
+  return (ern);
+}
+
+int conf_sc_token_parse_uint(const Conf_parse *conf, Conf_token *token,
+                             unsigned int *val)
+{
+  unsigned int num = conf_token_list_num(token, token->depth_num);
+  int ern = CONF_SC_TYPE_RET_OK;
+  const Vstr_sect_node *pv = NULL;
+  unsigned int nflags = VSTR_FLAG02(PARSE_NUM, OVERFLOW, SEP);
+  size_t len = 0;
+  
+  ASSERT(val);
+
+  if (!num)
+    return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
+  if (num > 1)
+    ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
+
+  conf_parse_token(conf, token);
+  pv   = conf_token_value(token);
+  *val = vstr_parse_uint(conf->data, pv->pos, pv->len, nflags, &len, NULL);
+  if (len != pv->len)
+    ern = CONF_SC_TYPE_RET_ERR_PARSE;
+  
+  return (ern);
+}
+
+int conf_sc_token_app_vstr(const Conf_parse *conf, Conf_token *token,
+                           Vstr_base *s1,
+                           const Vstr_base **a_s1, size_t *a_pos, size_t *a_len)
+{
+  unsigned int num = conf_token_list_num(token, token->depth_num);
+  int ern = CONF_SC_TYPE_RET_OK;
+  const Vstr_sect_node *pv = NULL;
+  
+  ASSERT(s1);
+
+  if (!num)
+    return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
+  conf_parse_token(conf, token);
+  pv = conf_token_value(token);
+  
+  if (vstr_add_vstr(s1, s1->len, conf->data, pv->pos, pv->len,
+                    VSTR_TYPE_SUB_BUF_REF))
+  {
+    *a_s1  = s1;
+    *a_pos = (s1->len - pv->len) + 1;
+    *a_len = pv->len;
+  }
+  
+  return (ern);
+}
+
+int conf_sc_token_sub_vstr(const Conf_parse *conf, Conf_token *token,
+                           Vstr_base *s1, size_t pos, size_t len)
+{
+  unsigned int num = conf_token_list_num(token, token->depth_num);
+  int ern = CONF_SC_TYPE_RET_OK;
+  const Vstr_sect_node *pv = NULL;
+  
+  ASSERT(s1);
+
+  if (!num)
+    return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
+  conf_parse_token(conf, token);
+  pv = conf_token_value(token);
+  vstr_sub_vstr(s1, pos, len, conf->data, pv->pos, pv->len,
+                VSTR_TYPE_SUB_BUF_REF);
+  
+  return (ern);
+}
+
+#define SUB2(x, y, z) vstr_sub_cstr_buf(x, y, 2, z)
+int conf_sc_conv_unesc(Vstr_base *s1, size_t pos, size_t len,
+                       size_t *ret_len)
+{
+  size_t dummy_len;
+
+  if (!ret_len) ret_len = &dummy_len;
+  
+  *ret_len = len;
+  
+  while (!s1->conf->malloc_bad && (len > 1))
+  {
+    size_t plen = vstr_cspn_cstr_chrs_fwd(s1, pos, len, "\\");
+
+    if (!plen)
+    {
+      char chr = vstr_export_chr(s1, pos + 1);
+
+      if (chr == '\n')
+      {
+        vstr_del(s1, pos, 2);
+        len -= 2; *ret_len -= 2;
+        continue;
+      }
+      else if (chr == 't') { SUB2(s1, pos, "\t"); --len; --*ret_len; }
+      else if (chr == 'v') { SUB2(s1, pos, "\v"); --len; --*ret_len; }
+      else if (chr == 'r') { SUB2(s1, pos, "\r"); --len; --*ret_len; }
+      else if (chr == 'n') { SUB2(s1, pos, "\n"); --len; --*ret_len; }
+      else if (chr == 'b') { SUB2(s1, pos, "\b"); --len; --*ret_len; }
+      else if (chr == '0')
+      { /* \0 == NIL \0x0 == NIL */
+        unsigned char val = 0;
+        unsigned int nflags = VSTR_FLAG02(PARSE_NUM, OVERFLOW, SEP);
+
+        if (chr != '0') nflags |= 8;
+
+        /* FIXME: ... parse uchar */
+        val = vstr_parse_ushort(s1, pos + 1, len - 1, nflags, &plen, NULL);
+        vstr_sub_rep_chr(s1, pos, plen + 1, val, 1);
+        len      -= plen; /* byte == \ ... so not plen + 1 */
+        *ret_len -= plen;
+      }
+      else
+      { /* rm \ ... Eg. \" == " and \\ == \ */
+        vstr_del(s1, pos, 1);
+        --len; --*ret_len;
+      }
+      plen = 1;
+    }
+    
+    len -= plen;
+    pos += plen;
+  }
+
+  return (!s1->conf->malloc_bad);
+}
+#undef SUB
+
+void conf_parse_backtrace(Vstr_base *out, const char *filename,
+                          const Conf_parse *conf, const Conf_token *token)
+{
+  const Vstr_sect_node *val = NULL;
+
+  if (!out)
+    return;
+  
+  if (conf->state != CONF_PARSE_STATE_END)
+  {
+    vstr_add_fmt(out, out->len, "Syntax error in %s.\n", filename);
+    return;
+  }
+
+  if (!(val = conf_token_value(token)))
+    vstr_add_fmt(out, out->len, "Failed parse on node %u [%s]\n",
+                 token->num, conf_token_name(token));
+  else
+  {
+    Vstr_base *s1 = conf->data;
+    
+    vstr_add_fmt(out, out->len, "Failed parse on node %u <%s>: ",
+                 token->num, conf_token_name(token));
+    vstr_add_vstr(out, out->len, s1, val->pos, val->len, VSTR_TYPE_ADD_BUF_REF);
+    vstr_add_cstr_buf(out, out->len, "\n");
+  }
 }

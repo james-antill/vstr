@@ -353,7 +353,7 @@ utime $atime, $mtime, "$root/default/bin";
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-my $args = "--default-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+my $args = "--unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 
 my $list_pid = undef;
 
@@ -392,27 +392,27 @@ if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }
 all_nonvhost_tsts();
 daemon_exit("ex_httpd");
 
-my $nargs  = "--default-hostname=default ";
+my $nargs  = "--unspecified-hostname=default ";
    $nargs .= "--mime-types-main=$ENV{SRCDIR}/mime_types_extra.txt ";
    $nargs .= "--mime-types-xtra=$ENV{SRCDIR}/tst/ex_httpd_bad_mime ";
    $nargs .= "--virtual-hosts=true ";
    $nargs .= "--keep-alive=false ";
    $nargs .= "--range=false ";
    $nargs .= "--gzip-content-replacement=false ";
-   $nargs .= "--send-err-406=false ";
+   $nargs .= "--error-406=false ";
    $nargs .= "--defer-accept=1 ";
-   $nargs .= "--max-clients=32 ";
+   $nargs .= "--max-connections=32 ";
    $nargs .= "--max-header-sz=2048 ";
    $nargs .= "--nagle=true ";
    $nargs .= "--host=127.0.0.2 ";
-   $nargs .= "--timeout=16 ";
-   $nargs .= "--send-default-mime-type=true ";
+   $nargs .= "--idle-timeout=16 ";
+   $nargs .= "--require-content-type=true ";
    $nargs .= "--default-mime-type=bar/baz ";
    $nargs .= "--dir-filename=welcome.html ";
    $nargs .= "--accept-filter-file=$ENV{SRCDIR}/tst/ex_httpd_null_tst_1 ";
    $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)' ";
    $nargs .= "--canonize-host=true ";
-   $nargs .= "--err-host-400=false ";
+   $nargs .= "--error-host-400=false ";
 daemon_init("ex_httpd", $root, $nargs);
 tst_proc_limit(30);
 $list_pid = http_cntl_list_beg();

@@ -485,6 +485,14 @@ void vlg_debug(Vlg *vlg)
   ++vlg->out_dbg;
 }
 
+void vlg_undbg(Vlg *vlg)
+{
+  if (vlg->out_dbg)
+    return;
+
+  --vlg->out_dbg;
+}
+
 int vlg_pid_set(Vlg *vlg, int pid)
 {
   int old = vlg->log_pid_console;

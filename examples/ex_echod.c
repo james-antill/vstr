@@ -48,7 +48,7 @@
 #include <socket_poll.h>
 #include <timer_q.h>
 
-#include "opt.h"
+#include "opt_serv.h"
 
 #include "cntl.h"
 #include "date.h"
@@ -67,8 +67,7 @@
 #define TRUE 1
 #define FALSE 0
 
-/* only get accept() events when there is readable data, or seconds expire */
-#define CONF_SERV_DEF_TCP_DEFER_ACCEPT 16
+#define CONF_SERV_DEF_PORT    7
 
 #define CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
 #define CONF_MEM_PREALLOC_MIN (16  * 1024)
@@ -88,12 +87,7 @@ struct con
 
 static struct Evnt *acpt_evnt = NULL;
 
-static unsigned int client_timeout = (2 * 60); /* 2 minutes */
-
-static const char *server_ipv4_address = NULL;
-static short server_port = 7;
-
-static unsigned int server_max_clients = 0;
+static OPT_SERV_CONF_DECL_OPTS(opts, CONF_SERV_DEF_PORT);
 
 static Vlg *vlg = NULL;
 
@@ -151,6 +145,10 @@ static void serv_cb_func_free(struct Evnt *evnt)
 {
   struct con *con = (struct con *)evnt;
 
+  if (acpt_evnt && opts->max_connections &&
+      (evnt_num_all() < opts->max_connections))
+    evnt_wait_cntl_add(acpt_evnt, POLLIN);
+
   evnt_vlg_stats_info(evnt, "FREE");
 
   free(con);
@@ -173,8 +171,8 @@ static struct Evnt *serv_cb_func_accept(int fd,
 {
   struct con *con = malloc(sizeof(struct con));
 
-  if (server_max_clients && (evnt_num_all() >= server_max_clients))
-    goto make_acpt_fail;
+  if (opts->max_connections && (evnt_num_all() >= opts->max_connections))
+    evnt_wait_cntl_del(acpt_evnt, POLLIN);
 
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
     goto make_acpt_fail;
@@ -182,7 +180,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
   if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
     goto make_acpt_fail;
   
-  if (!evnt_sc_timeout_via_mtime(con->evnt, client_timeout * 1000))
+  if (!evnt_sc_timeout_via_mtime(con->evnt, opts->idle_timeout * 1000))
     goto timer_add_fail;
 
   vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
@@ -204,14 +202,15 @@ static void serv_make_bind(const char *acpt_addr, short acpt_port)
 {
   if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
-  
-  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port))
+
+  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port, opts->q_listen_len))
     vlg_err(vlg, 2, "%s: %m\n", __func__);
   
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 
-  evnt_fd_set_defer_accept(acpt_evnt, CONF_SERV_DEF_TCP_DEFER_ACCEPT);
+  if (opts->defer_accept)
+    evnt_fd_set_defer_accept(acpt_evnt, opts->defer_accept);
 }
 
 static void usage(const char *program_name, int ret, const char *prefix)
@@ -222,10 +221,11 @@ static void usage(const char *program_name, int ret, const char *prefix)
     errno = ENOMEM, err(EXIT_FAILURE, "usage");
 
   vstr_add_fmt(out, 0, "%s\n\
- Format: %s [-dHhnPtV]\n\
-    --daemon          - Become a daemon.\n\
+ Format: %s [options]\n\
+  Daemon options\n\
+    --daemon          - Toggle becoming a daemon%s.\n\
     --chroot          - Change root.\n\
-    --drop-privs      - Drop privilages, after startup.\n\
+    --drop-privs      - Toggle droping privilages%s.\n\
     --priv-uid        - Drop privilages to this uid.\n\
     --priv-gid        - Drop privilages to this gid.\n\
     --pid-file        - Log pid to file.\n\
@@ -233,16 +233,20 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --accept-filter-file\n\
                       - Load Linux Socket Filter code for accept().\n\
     --processes       - Number of processes to use (default: 1).\n\
-    --debug -d        - Enable debug info.\n\
-    --host -H         - IPv4 address to bind (def: \"all\").\n\
+    --debug -d        - Raise debug level (can be used upto 3 times).\n\
+    --host -H         - IPv4 address to bind (default: \"all\").\n\
     --help -h         - Print this message.\n\
+    --max-connections\n\
+                  -M  - Max connections allowed (0 = no limit).\n\
+    --nagle -n        - Toggle usage of nagle TCP option%s.\n\
     --port -P         - Port to bind to.\n\
-    --max-clients -M  - Max clients allowed to connect (0 = no limit).\n\
-    --nagle -n        - Enable/disable nagle TCP option.\n\
-    --timeout -t      - Timeout (usecs) for connections.\n\
+    --idle-timeout -t - Timeout (usecs) for connections that are idle.\n\
+    --defer-accept    - Time to defer dataless connections (default: 8s)\n\
     --version -V      - Print the version string.\n\
 ",
-          prefix, program_name);
+               prefix, program_name,
+               opt_def_toggle(FALSE), opt_def_toggle(FALSE),
+               opt_def_toggle(EVNT_CONF_NAGLE));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
     err(EXIT_FAILURE, "write");
@@ -309,31 +313,15 @@ static void serv_cmd_line(int argc, char *argv[])
   const char *program_name = NULL;
   struct option long_options[] =
   {
-   {"help", no_argument, NULL, 'h'},
-   {"daemon", optional_argument, NULL, 1},
-   {"chroot", required_argument, NULL, 2},
-   {"drop-privs", optional_argument, NULL, 3},
-   {"priv-uid", required_argument, NULL, 4},
-   {"priv-gid", required_argument, NULL, 5},
-   {"pid-file", required_argument, NULL, 6},
-   {"cntl-file", required_argument, NULL, 7},
-   {"acpt-filter-file", required_argument, NULL, 8},
-   {"accept-filter-file", required_argument, NULL, 8},
-   {"processes", required_argument, NULL, 9},
-   {"procs", required_argument, NULL, 9},
-   {"debug", no_argument, NULL, 'd'},
-   {"host", required_argument, NULL, 'H'},
-   {"port", required_argument, NULL, 'P'},
-   {"nagle", optional_argument, NULL, 'n'},
-   {"max-clients", required_argument, NULL, 'M'},
-   {"timeout", required_argument, NULL, 't'},
-   {"version", no_argument, NULL, 'V'},
+   OPT_SERV_DECL_GETOPTS(),
    {NULL, 0, NULL, 0}
   };
-  OPT_SC_SERV_DECL_OPTS();
   
   program_name = opt_program_name(argv[0], "jechod");
 
+  if (!opt_serv_conf_init(opts))
+    errno = ENOMEM, err(EXIT_FAILURE, "options");
+  
   while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
   {
@@ -357,17 +345,13 @@ static void serv_cmd_line(int argc, char *argv[])
         exit (EXIT_SUCCESS);
       }
 
-        OPT_SC_SERV_OPTS();
-        
-      case 't': client_timeout      = atoi(optarg); break;
-      case 'H': server_ipv4_address = optarg;       break;
-      case 'M': server_max_clients  = atoi(optarg); break;
-      case 'P': server_port         = atoi(optarg); break;
+      OPT_SERV_GETOPTS(opts);
 
-      case 'd': vlg_debug(vlg);                     break;
-        
-      case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle);     break;
-        
+      case 'C':
+        //        if (!opt_serv_conf_parse(opts, optarg))
+        //          errx(EXIT_FAILURE, "Failed to parse configuration file: %s", optarg);
+        break;
+      
       ASSERT_NO_SWITCH_DEF();
     }
   }
@@ -378,15 +362,33 @@ static void serv_cmd_line(int argc, char *argv[])
   if (argc != 0)
     usage(program_name, EXIT_FAILURE, " Too many arguments.\n");
 
-  if (become_daemon)
+  if (opts->become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)
       err(EXIT_FAILURE, "daemon");
     vlg_daemon(vlg, program_name);
   }
   
-  serv_make_bind(server_ipv4_address, server_port);
+  {
+    const char *ipv4_address = NULL;
+    const char *pid_file = NULL;
+    const char *cntl_file = NULL;
+    const char *acpt_filter_file = NULL;
+    const char *chroot_dir = NULL;
+    
+    OPT_SC_EXPORT_CSTR(ipv4_address,     opts->ipv4_address,     FALSE,
+                       "ipv4 address");
+    OPT_SC_EXPORT_CSTR(pid_file,         opts->pid_file,         FALSE,
+                       "pid file");
+    OPT_SC_EXPORT_CSTR(cntl_file,        opts->cntl_file,        FALSE,
+                       "control file");
+    OPT_SC_EXPORT_CSTR(acpt_filter_file, opts->acpt_filter_file, FALSE,
+                       "accept filter file");
+    OPT_SC_EXPORT_CSTR(chroot_dir,       opts->chroot_dir,       FALSE,
+                       "chroot directory");
 
+  serv_make_bind(ipv4_address, opts->tcp_port);
+  
   if (pid_file)
     vlg_pid_file(vlg, pid_file);
   
@@ -409,20 +411,25 @@ static void serv_cmd_line(int argc, char *argv[])
   if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
     vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
   
-  if (drop_privs)
+  if (opts->drop_privs)
   {
-    if (setgroups(1, &priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)priv_gid);
+    OPT_SC_RESOLVE_UID(opts);
+    OPT_SC_RESOLVE_GID(opts);
     
-    if (setgid(priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)priv_gid);
+    if (setgroups(1, &opts->priv_gid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)opts->priv_gid);
     
-    if (setuid(priv_uid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)priv_uid);    
+    if (setgid(opts->priv_gid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)opts->priv_gid);
+    
+    if (setuid(opts->priv_uid) == -1)
+      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)opts->priv_uid);
   }
 
-  if (num_procs > 1)
-    cntl_sc_multiproc(vlg, acpt_evnt, num_procs, !!cntl_file);
+  if (opts->num_procs > 1)
+    cntl_sc_multiproc(vlg, acpt_evnt, opts->num_procs, !!cntl_file);
+  }
+  opt_serv_conf_free(opts);
   
   /*  if (make_dumpable && (prctl(PR_SET_DUMPABLE, 1, 0, 0, 0) == -1))
    *    vlg_warn(vlg, "prctl(SET_DUMPABLE, TRUE): %m\n"); */
