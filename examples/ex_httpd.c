@@ -55,7 +55,6 @@
 #define CONF_OUTPUT_SZ   (1024 * 128)
 
 #include <assert.h>
-#define ASSERT assert
 #define ASSERT_NOT_REACHED() assert(FALSE)
 
 #define CSTREQ(x, y) (strcmp(x, y) == 0)
@@ -807,10 +806,10 @@ static void cl_cmd_line(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if (argc != 2)
-    usage(argv[0], EXIT_FAILURE);
+  if (argc != 1)
+    usage(program_name, EXIT_FAILURE);
 
-  if (chdir(argv[1]) == -1)
+  if (chdir(argv[0]) == -1)
     err(EXIT_FAILURE, "chdir(%s)", argv[1]);
 }
 
@@ -829,14 +828,14 @@ int main(int argc, char *argv[])
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   
   if (!evnt_make_bind_ipv4(acpt_evnt, server_ipv4_address, server_port))
-    err(EXIT_FAILURE, "bind(%s:%hu)",
-        server_ipv4_address ? server_ipv4_address : "any", server_port);
+    errx(EXIT_FAILURE, __func__);
 
   SOCKET_POLL_INDICATOR(acpt_evnt->ind)->events |= POLLIN;
 
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 
+  printf("READY!\n");
   while (acpt_evnt || server_clients_count)
   {
     int ready = evnt_poll();

@@ -237,8 +237,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   return (TRUE);
 
  bind_fail:
-  err(EXIT_FAILURE, "bind(%s:%d): %s\n", acpt_addr, server_port,
-      strerror(errno));
+  warn("bind(%s:%hd)", acpt_addr ? acpt_addr : "any", server_port);
  listen_fail:
  reuse_fail:
  init_fail:

@@ -290,7 +290,7 @@ static void cl_cmd_line(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if (argc != 1)
+  if (argc != 0)
     usage(program_name, TRUE);
 }
 
@@ -331,7 +331,7 @@ static void cl_beg(void)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
   if (!cl_make_bind(server_ipv4_address, server_port))
-    err(EXIT_FAILURE, __func__);
+    errx(EXIT_FAILURE, __func__);
 }
 
 static void cl_signals(void)
@@ -373,6 +373,7 @@ int main(int argc, char *argv[])
 
   cl_beg();
   
+  printf("READY!\n");
   while (acpt_sock || server_clients_count)
   {
     int ready = evnt_poll();
