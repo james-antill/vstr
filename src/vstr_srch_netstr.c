@@ -29,6 +29,17 @@
 
 #include "main.h"
 
+#define VSTR__ASCII_DIGITS() VSTR__ASCII_DIGIT_0(), \
+ VSTR__ASCII_DIGIT_0() + 1, \
+ VSTR__ASCII_DIGIT_0() + 2, \
+ VSTR__ASCII_DIGIT_0() + 3, \
+ VSTR__ASCII_DIGIT_0() + 4, \
+ VSTR__ASCII_DIGIT_0() + 5, \
+ VSTR__ASCII_DIGIT_0() + 6, \
+ VSTR__ASCII_DIGIT_0() + 7, \
+ VSTR__ASCII_DIGIT_0() + 8, \
+ VSTR__ASCII_DIGIT_0() + 9
+
 static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
                                 size_t *ret_pos, size_t *ret_len, int netstr2)
 {
@@ -40,23 +51,24 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
    return (0);
 
  /* setup beg */
- if (!vstr__netstr2_num_len)
+ if (!VSTR__ULONG_MAX_LEN)
  {
-  Vstr_base *tmp = vstr_make_base(NULL);
-  if (!tmp)
+  Vstr_base *str1 = vstr_make_base(NULL);
+  int tmp = 0;
+  
+  if (!str1)
     goto malloc_failed;
   
-  vstr__netstr2_num_len = vstr_add_fmt(tmp, 0, "%lu", ULONG_MAX);
-  assert(vstr__netstr2_num_len || tmp->conf->malloc_bad);
+  tmp = vstr_add_fmt(str1, 0, "%lu", ULONG_MAX);
+  vstr_free_base(str1);
   
-  vstr_free_base(tmp);
-  if (!vstr__netstr2_num_len)
+  if (!VSTR__ULONG_MAX_SET_LEN(tmp))
     goto malloc_failed;
  }
 
  if (!buf)
  {
-  buf = malloc(vstr__netstr2_num_len + 1);
+  buf = malloc(VSTR__ULONG_MAX_LEN + 1);
   if (!buf)
     goto malloc_failed;
  }
@@ -68,33 +80,34 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
 
  while (len > 0)
  {
-  size_t tmp = len + vstr__netstr2_num_len;
+  size_t tmp = len + VSTR__ULONG_MAX_LEN;
   size_t first_char_pos = 0;
   unsigned int count = 0;
+  static const char digits[10] = {VSTR__ASCII_DIGITS()};
   
   assert((pos + len - 1) <= base->len);
   if ((pos + tmp - 1) > base->len)
     tmp = (base->len - pos) + 1;
 
-  if (!(tmp = vstr_spn_buf_fwd(base, pos, tmp, "1234567890", 10)))
+  if (!(tmp = vstr_spn_buf_fwd(base, pos, tmp, digits, 10)))
   {
-   tmp = vstr_cspn_buf_fwd(base, pos, len, "1234567890", 10);
+   tmp = vstr_cspn_buf_fwd(base, pos, len, digits, 10);
    if (!tmp)
      return (0);
    assert(tmp <= len);
    goto next_loop;
   }
 
-  if (tmp > vstr__netstr2_num_len)
+  if (tmp > VSTR__ULONG_MAX_LEN)
   {
-   tmp -= vstr__netstr2_num_len;
+   tmp -= VSTR__ULONG_MAX_LEN;
    /* this recalcs the _spn_ number, but then I can't imagine this is
     * something that most people would want to do -- esp. as it means it's
     * very hard to find out later which number we start from for the netstr */
    goto next_loop;
   }
   
-  if (netstr2 && (tmp != vstr__netstr2_num_len))
+  if (netstr2 && (tmp != VSTR__ULONG_MAX_LEN))
     goto next_loop;
    
   vstr_export_buf(base, pos, tmp + 1, buf);

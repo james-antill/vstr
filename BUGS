@@ -1,0 +1,7 @@
+. vstr_add_fmt()
+  floating point relies somewhat on the underlying implimentation, so for
+  instance l10n thousand_sep doesn't work unless the underlying OS sprintf()
+  does.
+
+. size overflows, just don't do it (tm).
+

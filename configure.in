@@ -49,7 +49,7 @@ if test ".`echo dummy $@ | grep help`" = .; then
     T_MD="`$ac_shtool echo -n -e %B 2>/dev/null`"
     T_ME="`$ac_shtool echo -n -e %b 2>/dev/null`"
     echo "Configuring ${T_MD}vstr${T_ME}, (Library)${T_ME}"
-    echo "Copyright (c) 1999, 2000, 2001 James Antill <james@and.org>"
+    echo "Copyright (c) 1999, 2000, 2001, 2002 James Antill <james@and.org>"
     echo "                   See ${T_MD}AUTHORS${T_ME} file for more info."
 
 # Could just del this, but it looks cool and like I know what I'm doing :)
@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=7
-VSTR_MICRO_VERSION=1
+VSTR_MICRO_VERSION=2
 VSTR_INTERFACE_AGE=1
 VSTR_BINARY_AGE=1
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -141,7 +141,7 @@ AC_PATH_PROG(GNOME_CONFIG_PATH, gnome-config, ${srcdir}/gnome-config-missing.sh,
              $PATH:/usr/bin:/bin:/usr/local/bin:/usr/gnu/bin:/usr/local/gnu/bin:/opt/gnu/bin)
 
 WARNS=""
-AC_ARG_ENABLE(debug, [  --enable-debug turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3",AC_DEFINE(NDEBUG))
+AC_ARG_ENABLE(debug, [  --enable-debug turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
 AC_SUBST(WARNS)
 
 INST_GNOME_CONFIG_HACK="/"
@@ -254,7 +254,7 @@ TWOCAN_CONF_MSG(Checking for libraries to link against)
 
 
 # AC_CHECK_LIB(socket, main)
-AC_CHECK_LIB(m, log10)
+# AC_CHECK_LIB(m, log10)
 AC_SUBST(LIBS)
 
 TWOCAN_CONF_MSG(Checking for functions)
@@ -1051,33 +1051,31 @@ AM_CONDITIONAL(HAVE_LINKER_MAIN_RELOCATE, $local_cv_linker_have_relocationable_m
 LDFLAGS="$XLDFLAGS"
 
 
-# You have to have one of the known locales installed...
-AC_MSG_CHECKING(for a tousands support in *sprintf())
-AC_CACHE_VAL(local_cv_has_thousands_sprintf,[
+AC_MSG_CHECKING(for the length of ULONG_MAX as a string)
+AC_CACHE_VAL(local_cv_has_ULONG_MAX_len_sprintf,[
 AC_TRY_RUN([
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
-#include <locale.h>
+#include <limits.h>
+
 int main() {
  char buffer[1024];
- if (setlocale(LC_ALL, "en_US")) {
-   if ((sprintf(buffer, "%'d", 4000) != 5) || strcmp(buffer, "4,000"))
-    exit (1);
- }
- else if (setlocale(LC_ALL, "en_GB")) {
-   if ((sprintf(buffer, "%'d", 4000) != 5) || strcmp(buffer, "4,000"))
-    exit (1);
+ int len;
+ sprintf(buffer, "%lu%n", ULONG_MAX, &len);
+ { FILE *f = fopen("conftestval", "w");
+   if (!f) exit (1);
+   fprintf(f, "%d\n", len);
  }
  return 0;
 }],
-local_cv_has_thousands_sprintf=yes,
-local_cv_has_thousands_sprintf=no,
+[local_cv_has_ULONG_MAX_len_sprintf=`cat conftestval`],
+local_cv_has_ULONG_MAX_len_sprintf="nope",
 )])
-AC_MSG_RESULT($local_cv_has_thousands_sprintf)
-case x$local_cv_has_thousands_sprintf in
-xyes) AC_DEFINE(HAVE_THOUSANDS_SPRINTF)
+AC_MSG_RESULT($local_cv_has_ULONG_MAX_len_sprintf)
+case x$local_cv_has_ULONG_MAX_len_sprintf in
+xnope) ;;
+*) AC_DEFINE_UNQUOTED(ULONG_MAX_LEN, $local_cv_has_ULONG_MAX_len_sprintf)
 esac
 
 TWOCAN_CONF_MSG(Output Substitution)

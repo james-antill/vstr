@@ -55,7 +55,7 @@ void vstr__ref_cb_free_bufnode_ref(Vstr_ref *ref)
  free(ref);
 }
 
-void vstr_ref_del_ref(Vstr_ref *tmp)
+void vstr_ref_del(Vstr_ref *tmp)
 {
  assert(tmp->ref);
  
@@ -63,7 +63,7 @@ void vstr_ref_del_ref(Vstr_ref *tmp)
    (*tmp->func)(tmp);
 }
 
-Vstr_ref *vstr_ref_add_ref(Vstr_ref *tmp)
+Vstr_ref *vstr_ref_add(Vstr_ref *tmp)
 {
  if (!tmp)
  {

@@ -26,6 +26,10 @@
 # define VSTR_COMPILE_TYPEDEF 1
 #endif
 
+#ifndef VSTR_COMPILE_INCLUDE
+# define VSTR_COMPILE_INCLUDE 0
+#endif
+
 #if VSTR_COMPILE_TYPEDEF
 # define VSTR__DECL_TYPEDEF1(x) typedef x
 # define VSTR__DECL_TYPEDEF2(x) x
@@ -63,4 +67,18 @@
 # define VSTR_TYPE_CONST_DEBUG_1 1
 # define VSTR_TYPE_CONST_DEBUG_16 0x5555 /* ok for signed too */
 # define VSTR_TYPE_CONST_DEBUG_32 0x55555555 /* ok for signed too */
+#endif
+
+#ifndef VSTR_AUTOCONF_intmax_t
+# define VSTR_AUTOCONF_intmax_t intmax_t
+# ifndef VSTR__AUTOCONF_NEED_INTTYPES_H
+#  define VSTR__AUTOCONF_NEED_INTTYPES_H 1
+# endif
+#endif
+
+#ifndef VSTR_AUTOCONF_uintmax_t
+# define VSTR_AUTOCONF_uintmax_t uintmax_t
+# ifndef VSTR__AUTOCONF_NEED_INTTYPES_H
+#  define VSTR__AUTOCONF_NEED_INTTYPES_H 1
+# endif
 #endif

@@ -28,84 +28,173 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   unsigned int num = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
-  size_t real_len = len;
   size_t orig_pos = pos;
+  size_t orig_len = 0;
   size_t orig_buf_len = buf_len;
-  const void *orig_buf = buf;
-  int ret = TRUE;
-
-  assert(len && buf_len);
+  size_t sub_add_len = 0;
+  size_t add_len = 0;
+  size_t del_len = 0;
+  size_t rm_pos = 0;
+  size_t rm_len = 0;
+  size_t real_pos = 0;
 
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
-
+  
+  if (len > buf_len)
+  {
+    del_len = len - buf_len;
+    len = buf_len;
+  }
+  else
+    add_len = buf_len - len;
+  
+  orig_len = len;
+  
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  while (scan && (scan->type == VSTR_TYPE_NODE_BUF))
+  if (!scan)
+    return (FALSE);
+  do
   {
     size_t tmp = scan_len;
     
-    if (tmp > real_len)
-      tmp = real_len;
     if (tmp > buf_len)
       tmp = buf_len;
-
-    /* can't roll back if we do it now -- memcpy(scan_str, buf, tmp); */
     
-    pos += tmp;
-    buf = ((char *)buf) + tmp;
-    real_len -= tmp;
+    if (scan->type != VSTR_TYPE_NODE_BUF)
+      sub_add_len += tmp;
+    
     buf_len -= tmp;
-    if (!buf_len || !real_len)
-      break;
+  } while (buf_len &&
+           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                           scan, &scan_str, &scan_len)));
+
+  len = orig_len;
+  buf_len = orig_buf_len;
+  
+  if (sub_add_len == buf_len)
+  { /* no _BUF nodes, so we can't optimise it anyway ... */
+    int ret = vstr_add_buf(base, pos - 1, buf, buf_len);
     
-    scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                   scan, &scan_str, &scan_len);
+    if (!ret)
+    {
+      assert(vstr__check_spare_nodes(base->conf));
+      assert(vstr__check_real_nodes(base));
+      return (FALSE);
+    }
+    
+    ret = vstr_del(base, pos + buf_len, len);
+    if (!ret)
+    {
+      ret = vstr_del(base, pos, buf_len);
+      assert(ret); /* this must work as a split can't happen */
+
+      assert(vstr__check_spare_nodes(base->conf));
+      assert(vstr__check_real_nodes(base));
+      return (FALSE);
+    }
   }
+
+  /* allocate extra _BUF nodes needed, all other are ok -- no splits will
+   * happen on non _BUF nodes */
+  num = (len / base->conf->buf_sz) + 2;
+  if (num > base->conf->spare_buf_num)
+  {
+    num -= base->conf->spare_buf_num;
+    if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num)
+      return (FALSE);
+  }
+  
+  /* loop again removing any non _BUF nodes and substituting on _BUF */
+  if ((pos + len - 1) > base->len)
+    len = base->len - (pos - 1);
+  scan = vstr__base_pos(base, &pos, &num, TRUE);
+  assert(scan);
+  
+  --pos;
+  if (pos && (scan == base->beg) && (pos == base->used) &&
+      (buf_len >= scan->len) && (add_len >= base->used))
+  { /* save space by filling in the begining of the _BUF node */
+    len += base->used;
+    base->len += base->used;
+    add_len -= base->used;
+    
+    if (base->iovec_upto_date)
+    {
+      struct iovec *vec = NULL;
+      char *scan_buf = ((Vstr_node_buf *)scan)->buf;
+      
+      vec = &(VSTR__CACHE(base)->vec->v[VSTR__CACHE(base)->vec->off]);
+
+      assert(vec->iov_base == (scan_buf + base->used));
+      assert(vec->iov_len == (size_t)(scan->len - base->used));
+      
+      vec->iov_len += base->used;
+      vec->iov_base = scan_buf;
+    }
+
+    base->used = 0;
+    pos = 0;
+  }
+
+  real_pos = orig_pos;
+  do
+  {
+    assert(scan);
+    
+    if (rm_pos)
+    {
+      assert(rm_pos == real_pos);
+      vstr_del(base, rm_pos, rm_len);
+    }
+    
+    if (scan->type != VSTR_TYPE_NODE_BUF)
+    {
+      rm_pos = real_pos;
+      rm_len = scan->len - pos;
+      len -= rm_len;
+    }
+    else
+    {
+      size_t tmp = base->conf->buf_sz - pos;
+      
+      if (tmp > buf_len)
+        tmp = buf_len;
+      if (tmp > len)
+        tmp = len;
+      
+      rm_pos = 0;
+
+      memcpy(((Vstr_node_buf *)scan)->buf + pos, buf, tmp);
+      buf_len -= tmp;
+      buf = ((char *)buf) + tmp;
+
+      len -= tmp;
+      real_pos += tmp;
+    }
+
+    pos = 0;
+    scan = scan->next;
+  } while (buf_len && len);
+
+  if (rm_pos)
+  {
+    assert(rm_pos == real_pos);
+    vstr_del(base, rm_pos, rm_len);
+  }
+  
+  if (del_len)
+    vstr_del(base, real_pos, del_len);
 
   if (buf_len)
-    ret = vstr_add_buf(base, pos - 1, buf, buf_len);
+    vstr_add_buf(base, real_pos - 1, buf, buf_len);
 
-  if (!ret)
-    return (FALSE);
-  
-  if (real_len)
-    ret = vstr_del(base, pos + buf_len, real_len);
-  if (!ret)
-  {
-    ret = vstr_del(base, pos, buf_len);
-    assert(ret); /* this must work as a split can't happen */
-    return (FALSE);
-  }
-
-  /* nothing can go wrong at this point ... */
-  pos = orig_pos;
-  len = orig_buf_len - buf_len;
-  if (!len)
-    return (ret);
-  
-  scan = NULL;
-  num = 0;
-  scan_str = NULL;
-  scan_len = 0;
-  buf = orig_buf;
-  
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  while (scan && (scan->type == VSTR_TYPE_NODE_BUF))
-  {
-    size_t tmp = scan_len; /* scan_len is always right now */
-
-    memcpy(scan_str, buf, tmp);
-    pos += tmp;
-    buf = ((char *)buf) + tmp;
-    
-    scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                   scan, &scan_str, &scan_len);
-  }  
+  assert(!base->conf->malloc_bad);
 
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
 
-  return (ret);
+  return (TRUE);
 }
 
 int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
@@ -167,7 +256,8 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
 int vstr_sub_vstr(Vstr_base *base, size_t pos, size_t len,
                   const Vstr_base *from_base, size_t from_pos, size_t from_len,
                   unsigned int type)
-{
+{ /* this is inefficient compared to vstr_sub_buf() because of atomic
+   * guarantees - could be made to work with _ALL_BUF */
   int ret = vstr_add_vstr(base, pos - 1, from_base, from_pos, from_len, type);
 
   if (!ret)

@@ -193,7 +193,8 @@ int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
    assert(conf->no_node_ref <= 2);
    assert(conf->no_node_ref <= conf->ref);
    
-   if (!conf->spare_buf_num && (conf->no_node_ref == conf->ref))
+   if (!conf->spare_buf_num && (conf->no_node_ref == conf->ref) &&
+       (val <= VSTR_MAX_NODE_BUF))
    {
     conf->buf_sz = val;
     

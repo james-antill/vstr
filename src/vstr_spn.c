@@ -175,7 +175,7 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
 size_t vstr_spn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                         const char *spn_buf, size_t spn_len)
 {
-  if (!vstr__cache_iovec_valid((Vstr_base *)base))
+  if (base->iovec_upto_date)
     return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len));
   
   return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
@@ -331,7 +331,7 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
 size_t vstr_cspn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                          const char *cspn_buf, size_t cspn_len)
 {  
-  if (!vstr__cache_iovec_valid((Vstr_base *)base))
+  if (base->iovec_upto_date)
     return (vstr__cspn_buf_rev_fast(base, pos, len, cspn_buf, cspn_len));
   
   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));

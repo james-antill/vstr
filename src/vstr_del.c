@@ -27,14 +27,15 @@ static void vstr__cache_iovec_reset(Vstr_base *base)
  assert(!base->num);
  assert(!base->len);
 
- if (!(base->cache && base->cache->vec && base->cache->vec->sz))
+ if (!(base->cache_available && VSTR__CACHE(base) &&
+       VSTR__CACHE(base)->vec && VSTR__CACHE(base)->vec->sz))
    return;
 
- base->cache->vec->off = 0;
+ VSTR__CACHE(base)->vec->off = 0;
  base->iovec_upto_date = TRUE;
  
- if (base->cache->vec->sz > base->conf->iov_min_offset)
-   base->cache->vec->off = base->conf->iov_min_offset;
+ if (VSTR__CACHE(base)->vec->sz > base->conf->iov_min_offset)
+   VSTR__CACHE(base)->vec->off = base->conf->iov_min_offset;
 }
 
 static void vstr__cache_iovec_del_node_end(Vstr_base *base, unsigned int num,
@@ -43,7 +44,7 @@ static void vstr__cache_iovec_del_node_end(Vstr_base *base, unsigned int num,
  if (!base->iovec_upto_date)
    return;
  
- base->cache->vec->v[num - 1].iov_len -= len;
+ VSTR__CACHE(base)->vec->v[num - 1].iov_len -= len;
 }
 
 static void vstr__cache_iovec_del_node_beg(Vstr_base *base, Vstr_node *node,
@@ -52,20 +53,20 @@ static void vstr__cache_iovec_del_node_beg(Vstr_base *base, Vstr_node *node,
  if (!base->iovec_upto_date)
    return;
 
- num += base->cache->vec->off - 1;
+ num += VSTR__CACHE(base)->vec->off - 1;
  
  if (node->type != VSTR_TYPE_NODE_NON)
  {
-  char *tmp = base->cache->vec->v[num].iov_base;
+  char *tmp = VSTR__CACHE(base)->vec->v[num].iov_base;
   tmp += len;
-  base->cache->vec->v[num].iov_base = tmp;
+  VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
  }
 
- base->cache->vec->v[num].iov_len -= len;
+ VSTR__CACHE(base)->vec->v[num].iov_len -= len;
  
- assert((node->len == base->cache->vec->v[num].iov_len) ||
+ assert((node->len == VSTR__CACHE(base)->vec->v[num].iov_len) ||
         ((base->beg == node) &&
-         (node->len == (base->cache->vec->v[num].iov_len + base->used))));
+         (node->len == (VSTR__CACHE(base)->vec->v[num].iov_len + base->used))));
 }
 
 static void vstr__cache_iovec_del_beg(Vstr_base *base, unsigned int num)
@@ -73,10 +74,10 @@ static void vstr__cache_iovec_del_beg(Vstr_base *base, unsigned int num)
  if (!base->iovec_upto_date)
    return;
 
- base->cache->vec->off += num;
+ VSTR__CACHE(base)->vec->off += num;
 
- assert(base->cache->vec->sz > base->cache->vec->off);
- assert((base->cache->vec->sz - base->cache->vec->off) >= base->num);
+ assert(VSTR__CACHE(base)->vec->sz > VSTR__CACHE(base)->vec->off);
+ assert((VSTR__CACHE(base)->vec->sz - VSTR__CACHE(base)->vec->off) >= base->num);
 }
 
 static void vstr__del_beg_cleanup(Vstr_base *base, unsigned int type,
@@ -171,7 +172,7 @@ static void vstr_del_all(Vstr_base *base)
   ++num;
   
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del_ref(((Vstr_node_ref *)*scan)->ref);
+    vstr_ref_del(((Vstr_node_ref *)*scan)->ref);
   
   scan = &(*scan)->next;
  }
@@ -214,7 +215,7 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
  {
   assert((*scan)->len > base->used);
   
-  if (len < ((*scan)->len - base->used))
+  if (len < (size_t)((*scan)->len - base->used))
   {
    base->used += len;
    
@@ -228,7 +229,7 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
   
   len -= ((*scan)->len - base->used);
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del_ref(((Vstr_node_ref *)(*scan))->ref);
+    vstr_ref_del(((Vstr_node_ref *)(*scan))->ref);
   type = (*scan)->type;
   
   scan = &(*scan)->next;
@@ -258,7 +259,7 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
   ++num;
   len -= (*scan)->len;
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del_ref(((Vstr_node_ref *)(*scan))->ref);
+    vstr_ref_del(((Vstr_node_ref *)(*scan))->ref);
   
   scan = &(*scan)->next;
  }
@@ -450,7 +451,7 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
   ++num;
   
   if ((*pscan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del_ref(((Vstr_node_ref *)(*pscan))->ref);
+    vstr_ref_del(((Vstr_node_ref *)(*pscan))->ref);
   
   len -= (*pscan)->len;
   
@@ -476,8 +477,8 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
  {
   size_t rebeg_num = saved_num + del_nodes;
   
-  memmove(base->cache->vec->v + base->cache->vec->off + saved_num,
-          base->cache->vec->v + base->cache->vec->off + rebeg_num,
+  memmove(VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off + saved_num,
+          VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off + rebeg_num,
           (base->num - rebeg_num) * sizeof(struct iovec));
  }
  base->num -= del_nodes;

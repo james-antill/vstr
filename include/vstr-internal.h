@@ -21,11 +21,6 @@
  *  email: james@and.org
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
     /* ISO C magic, converts a ptr to ->next into ->next->prev */
 #define VSTR__CONV_PTR_NEXT_PREV(x) \
  ((Vstr_node *)(((char *)(x)) - offsetof(Vstr_node, next)))
@@ -41,7 +36,42 @@ extern "C"
 #define VSTR__ASCII_COLON() (0x3A)
 #define VSTR__ASCII_COMMA() (0x2C)
 
-    
+typedef struct Vstr_iovec
+{
+ struct iovec *v; /* private */
+ unsigned char *t; /* private */
+ /* num == base->num */
+ unsigned int off; /* private */
+ unsigned int sz; /* private */
+} Vstr_iovec;
+
+typedef struct Vstr_cache
+{
+ struct Vstr_cache_cstr
+ {
+  size_t pos; /* private */
+  size_t len; /* private */
+  struct Vstr_ref *ref; /* private */
+ } cstr; /* private */
+ 
+ struct Vstr_cache_pos
+ {
+  size_t pos; /* private */
+  unsigned int num; /* private */
+  struct Vstr_node *node; /* private */
+ } pos; /* private */
+
+ struct Vstr_iovec *vec; /* private */
+} Vstr_cache;
+
+typedef struct Vstr__base_cache
+{
+ Vstr_base base;
+ Vstr_cache *cache;
+} Vstr__base_cache;
+
+#define VSTR__CACHE(x) ((Vstr__base_cache *)(x))->cache
+
 typedef struct Vstr__options
 {
  Vstr_conf *def;
@@ -53,9 +83,23 @@ typedef struct Vstr__cstr_ref
  char VSTR__STRUCT_HACK_ARRAY(buf);
 } Vstr__cstr_ref;
 
+typedef struct Vstr__sc_mmap_ref
+{
+ Vstr_ref ref;
+ size_t mmap_len;
+} Vstr__sc_mmap_ref;
+
 extern Vstr__options vstr__options;
 
-extern size_t vstr__netstr2_num_len;
+/* the size of ULONG_MAX converted to a string */
+#ifndef VSTR__AUTOCONF_ULONG_MAX_LEN
+extern size_t vstr__netstr2_ULONG_MAX_len;
+#define VSTR__ULONG_MAX_LEN vstr__netstr2_ULONG_MAX_len
+#define VSTR__ULONG_MAX_SET_LEN(x) (vstr__netstr2_ULONG_MAX_len = (x))
+#else
+#define VSTR__ULONG_MAX_LEN VSTR__AUTOCONF_ULONG_MAX_LEN
+#define VSTR__ULONG_MAX_SET_LEN(x) /* do nothing */
+#endif
 
 #ifndef NDEBUG
 extern int vstr__check_real_nodes(Vstr_base *);
@@ -106,9 +150,5 @@ extern void vstr__free_cache(Vstr_base *);
 
 extern void vstr__version_func(void);
     
-#ifdef __cplusplus
-}
-#endif
-
 
 #endif

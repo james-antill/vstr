@@ -3,6 +3,7 @@
 
 #include "autoconf.h"
 
+#define USE_MMAP 1
 #include "main_system.h"
 
 #define FIX_NAMESPACE_SYMBOL vstr_autoconf_

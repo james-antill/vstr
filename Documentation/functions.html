@@ -183,18 +183,28 @@
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_ref_cb_free_nothing()
 <br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This does nothing.
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_ref_cb_free_ref()
 <br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This will call free() on the Vstr_ref (Parameter[1]).
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_ref_cb_free_ptr()
 <br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_ref_cb_free_ptr_ref()
 <br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr and
+ then call free() on the Vstr_ref (Parameter[1]).
+
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Functions to reference and dereference a Vstr memory reference</h2>
 
@@ -213,6 +223,7 @@
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_make_conf()
 <br>Returns: Vstr configuration<br>Type: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: nothing<br>Type<strong>[1]</strong>: void
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_init_base()

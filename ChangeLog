@@ -1,3 +1,51 @@
+2002-02-01  James Antill  <james@and.org>
+
+	* include/vstr-switch.h (VSTR_COMPILE_INCLUDE): Added compile switch
+	function, so to automatic includes.
+
+	* src/vstr_cstr.c (vstr_export_cstr_buf): Added function.
+
+	* src/vstr_ref.c (vstr_ref_add): Changed function name.
+	(vstr_ref_del): Changed function name.
+
+	* include/vstr-extern.h (VSTR_DECL_INIT_SECTS): Added macro function.
+	(VSTR_DECL_SECTS): Added macro function.
+	(VSTR_SECTS_NUM): Added macro function.
+
+	* include/vstr-def.h (struct Vstr_base): Saved some space.
+	(struct Vstr_node): Saved some space.
+
+	* src/vstr_sc.c (vstr_sc_add_fd): 
+	(vstr_sc_add_file): Added function.
+	(vstr_sc_read_fd): Added function.
+	(vstr_sc_write_file): Added function.
+
+	* src/vstr_sect.c (vstr_make_sects): Added function.
+	(vstr_free_sects): Added function.
+	(vstr_sects_add): Added function.
+	(vstr_sects_del): Added function.
+	(vstr_sects_srch): Added function.
+	(vstr_sects_foreach): Added function.
+
+	* src/vstr_split.c (vstr_split_buf): Added function.
+
+	* src/vstr_parse.c (vstr_parse_short): Added function.
+	(vstr_parse_ushort): Added function.
+	(vstr_parse_int): Added function.
+	(vstr_parse_uint): Added function.
+	(vstr_parse_long): Added function.
+	(vstr_parse_ulong): Added function.
+	(vstr_parse_intmax): Added function.
+	(vstr_parse_uintmax): Added function.
+
+	* src/vstr_add.c (vstr_add_vstr): Added _ALL_BUF type.
+
+2002-01-12  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr__add_number): Bunch of fixes for 
+	field widths on ints, moved thousands_sep printing to use 
+	vstr__grouping_add_num as that's cleaner.
+
 2002-01-07  James Antill  <james@and.org>
 
 	* src/vstr_srch_netstr.c (vstr__srch_netstr): Make ASCII everywhere.

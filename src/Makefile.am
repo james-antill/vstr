@@ -28,8 +28,12 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_dup.c \
                         vstr_export.c \
                         vstr_mov.c \
+                        vstr_parse.c \
                         vstr_ref.c \
+                        vstr_sc.c \
+                        vstr_sect.c \
                         vstr_spn.c \
+                        vstr_split.c \
                         vstr_srch.c \
                         vstr_srch_netstr.c \
                         vstr_sub.c \
@@ -39,5 +43,4 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
         -release $(LT_RELEASE) \
-        -export-dynamic $(VSTR__LINKER_RELOC_MAIN) -lm
-
+        -export-dynamic $(VSTR__LINKER_RELOC_MAIN)

@@ -18,7 +18,7 @@
  * 
  *  email: james@and.org
  */
-/* functions for exporting a vstr to other types */
+/* functions for exporting data out of the Vstr -- see also vstr_cstr.c */
 #include "main.h"
 
 
@@ -31,7 +31,7 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
  if (!vstr__cache_iovec_valid((Vstr_base *)base))
    return (0);
 
- *iovs = base->cache->vec->v + base->cache->vec->off;
+ *iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
 
  *ret_num = base->num;
  

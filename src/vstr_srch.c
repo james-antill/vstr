@@ -79,7 +79,7 @@ size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
                          char srch)
 { /* FIXME: this needs to use iovec to walk backwards */
 
-  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+  /* if (base->iovec_upto_date)
    *   return (vstr__srch_chr_rev_fast(base, pos, len, srch)); */
   
   return (vstr__srch_chr_rev_slow(base, pos, len, srch));
@@ -181,7 +181,7 @@ size_t vstr_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
 {
   /* FIXME: this needs to use iovec to walk backwards */
   
-  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+  /* if (base->iovec_upto_date)
    *   return (vstr__srch_buf_rev_fast(base, pos, len, str, str_len)); */
   
   return (vstr__srch_buf_rev_slow(base, pos, len, str, str_len));
@@ -200,11 +200,17 @@ size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
   while ((scan_pos < (pos + len - 1)) &&
          (scan_len >= ndl_len))
   {
+    size_t tmp = 0;
+    char cspn[1];
+    
     if (!vstr_cmp(base, scan_pos, scan_len, ndl_base, ndl_pos, ndl_len))
       return (pos);
+
+    cspn[0] = vstr_export_chr(ndl_base, ndl_pos);
+    tmp = vstr_cspn_buf_fwd(base, scan_pos, scan_len - ndl_len + 1, cspn, 1);
     
-    --scan_len;
-    ++scan_pos;
+    scan_len -= tmp;
+    scan_pos += scan_pos;
   }
   
   return (0);

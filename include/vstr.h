@@ -28,6 +28,16 @@ extern "C"
 
 #include <vstr-conf.h>
 #include <vstr-switch.h>
+
+#if VSTR_COMPILE_INCLUDE
+# include <stdlib.h>
+# include <stdarg.h>
+# include <sys/uio.h>
+# ifdef VSTR__AUTOCONF_NEED_INTTYPES_H
+#  include <stdint.h>
+# endif
+#endif
+
 #include <vstr-const.h>
 #include <vstr-def.h>
 #include <vstr-extern.h>

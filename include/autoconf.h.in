@@ -115,10 +115,6 @@
 
 #undef HAVE_POLL
 
-#undef HAVE_POSIX_SPRINTF
-
-#undef HAVE_POSIX_VSPRINTF
-
 #undef HAVE_WRITEV
 
 #undef HAVE_DL_RTLD_GLOBAL
@@ -161,6 +157,6 @@
 
 #undef HAVE_SOCKADDR_IN6
 
-#undef HAVE_THOUSANDS_SPRINTF
+#undef ULONG_MAX_LEN
 
 #undef NDEBUG

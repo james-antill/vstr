@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -38,15 +38,9 @@ VSTR__DECL_TYPEDEF1(struct Vstr_node)
 {
  struct Vstr_node *next; /* private */
 
- unsigned int len; /* private */
+ unsigned int len : 28; /* private */
  
  unsigned int type : 4; /* private */
-
- VSTR__DEF_BITFLAG_1_4(4); /* private */
- VSTR__DEF_BITFLAG_1_4(5); /* private */
- VSTR__DEF_BITFLAG_1_4(6); /* private */
- VSTR__DEF_BITFLAG_1_4(7); /* private */
- VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_node);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_node_buf)
@@ -114,7 +108,7 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  unsigned int split_buf_del : 1; /* private */
 
  unsigned int no_node_ref : 2; /* private */
- unsigned int unused03 : 1; /* private */
+ unsigned int no_cache : 1; /* private */
  unsigned int unused04 : 1; /* private */
 
  VSTR__DEF_BITFLAG_1_4(3); /* private */
@@ -125,57 +119,57 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
-
-VSTR__DECL_TYPEDEF1(struct Vstr_iovec)
-{
- struct iovec *v; /* private */
- unsigned char *t; /* private */
- /* num == base->num */
- unsigned int off; /* private */
- unsigned int sz; /* private */
-} VSTR__DECL_TYPEDEF2(Vstr_iovec);
-
-VSTR__DECL_TYPEDEF1(struct Vstr_cache)
-{
- struct Vstr_cache_cstr
- {
-  size_t pos; /* private */
-  size_t len; /* private */
-  struct Vstr_ref *ref; /* private */
- } cstr; /* private */
- 
- struct Vstr_cache_pos
- {
-  size_t pos; /* private */
-  unsigned int num; /* private */
-  struct Vstr_node *node; /* private */
- } pos; /* private */
-
- struct Vstr_iovec *vec; /* private */
-} VSTR__DECL_TYPEDEF2(Vstr_cache);
-
 VSTR__DECL_TYPEDEF1(struct Vstr_base)
 {
  struct Vstr_node *beg; /* private */
  struct Vstr_node *end; /* private */
  
  size_t len; /* public/read -- bytes in vstr */
- unsigned int num; /* public/read -- nodes for export_iovec */
+
+ unsigned int num; /* private */
 
  struct Vstr_conf *conf; /* public/read */
-
- struct Vstr_cache *cache; /* private */
  
- unsigned int used; /* private */
+ unsigned int used : 16; /* private */
  
  unsigned int free_do : 1; /* private */
  unsigned int iovec_upto_date : 1; /* private */
- unsigned int unused03 : 1; /* private */
+ unsigned int cache_available : 1; /* private */
  unsigned int unused04 : 1; /* private */
  
- VSTR__DEF_BITFLAG_1_4(4); /* private */
- VSTR__DEF_BITFLAG_1_4(5); /* private */
  VSTR__DEF_BITFLAG_1_4(6); /* private */
  VSTR__DEF_BITFLAG_1_4(7); /* private */
  VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_base);
+
+VSTR__DECL_TYPEDEF1(struct Vstr_sect_node)
+{
+  size_t pos;
+  size_t len;
+} VSTR__DECL_TYPEDEF2(Vstr_sect_node);
+
+VSTR__DECL_TYPEDEF1(struct Vstr_sects)
+{
+  unsigned int num;
+  unsigned int sz;
+  
+  unsigned int malloc_bad : 1; /* public/read|write */
+  unsigned int free_ptr : 1; /* public/read|write */
+  unsigned int can_add_sz : 1; /* public/read|write */
+  unsigned int can_del_sz : 1; /* public/read|write */
+  
+  unsigned int alloc_double : 1; /* public/read|write */
+  unsigned int unused02 : 1; /* private */
+  unsigned int unused03 : 1; /* private */
+  unsigned int unused04 : 1; /* private */
+
+  VSTR__DEF_BITFLAG_1_4(3); /* private */
+  VSTR__DEF_BITFLAG_1_4(4); /* private */
+  VSTR__DEF_BITFLAG_1_4(5); /* private */
+  VSTR__DEF_BITFLAG_1_4(6); /* private */
+  VSTR__DEF_BITFLAG_1_4(7); /* private */
+  VSTR__DEF_BITFLAG_1_4(8); /* private */
+  
+  struct Vstr_sect_node *ptr; /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_sects);
+

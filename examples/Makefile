@@ -7,16 +7,24 @@ LDFLAGS=`gnome-config --libs vstr`
 TQ_CFLAGS=`gnome-config --cflags timer_q`
 TQ_LDFLAGS=`gnome-config --libs timer_q`
 
-FILES=ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex_cat ex_slowcat
+FILES=ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 \
+          ex_test1 ex_test2 \
+          ex_cat ex_nl ex_slowcat
 
 all: $(FILES)
 
+ex_utils.o: ex_utils.c ex_utils.h
+		$(CC) $(CFLAGS) -o ex_utils.o -c ex_utils.c
 
-ex%: ex%.c
-		$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+ex%.o: ex%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
 
-ex_slowcat: ex_slowcat.c
-		-$(CC) $(TQ_CFLAGS) $(CFLAGS) -o $@ $< $(TQ_LDFLAGS) $(LDFLAGS) 
+ex%: ex%.o ex_utils.o
+		$(CC) -o $@ $< ex_utils.o $(LDFLAGS) 
+
+ex_slowcat: ex_slowcat.c ex_utils.o
+		$(CC) $(TQ_CFLAGS) $(CFLAGS) -o ex_slowcat.o -c $<
+		$(CC) -o $@ ex_slowcat.o ex_utils.o $(TQ_LDFLAGS) $(LDFLAGS) 
 
 clean:
 		rm -f *.o $(FILES)

@@ -21,14 +21,35 @@
  *  email: james@and.org
  */
 
+/* == macro functions == */
+#define VSTR_DECL_INIT_SECTS(sz, ptr) { 0, (sz), \
+ 0, 0, 0, 0, \
+ \
+ 1, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ 0, 0, 0, 0, \
+ ptr}
+
+#define VSTR_DECL_SECTS(pre, name, sz) \
+ pre struct Vstr_sect_node vstr__sect_array__ ## name [sz]; \
+ pre struct Vstr_sects name = VSTR_DECL_INIT_SECTS(sz, vstr__sect_array__ ## name)
+
+#define VSTR_SECTS_NUM(sects, off) ((sects)->ptr[(off) - 1])
+
+/* == real functions == */
+
 /* not really vectored string functions ... just stuff needed */
 extern void vstr_ref_cb_free_nothing(struct Vstr_ref *);
 extern void vstr_ref_cb_free_ref(struct Vstr_ref *);
 extern void vstr_ref_cb_free_ptr(struct Vstr_ref *);
 extern void vstr_ref_cb_free_ptr_ref(struct Vstr_ref *);
 
-extern struct Vstr_ref *vstr_ref_add_ref(struct Vstr_ref *);
-extern void vstr_ref_del_ref(struct Vstr_ref *);
+extern struct Vstr_ref *vstr_ref_add(struct Vstr_ref *);
+extern void vstr_ref_del(struct Vstr_ref *);
 
 /* real start of vector string functions */
 
@@ -172,6 +193,69 @@ extern size_t vstr_export_iovec_cpy_ptr(const struct Vstr_base *,
 extern size_t vstr_export_buf(const struct Vstr_base *, size_t, size_t, void *);
 extern char vstr_export_chr(const struct Vstr_base *, size_t);
 
+extern short vstr_parse_short(const struct Vstr_base *,
+                              size_t, size_t, unsigned int, size_t *,
+                              unsigned int *);
+extern unsigned short vstr_parse_ushort(const struct Vstr_base *,
+                                        size_t, size_t,
+                                        unsigned int, size_t *,
+                                        unsigned int *);
+extern int vstr_parse_int(const struct Vstr_base *,
+                          size_t, size_t, unsigned int, size_t *,
+                          unsigned int *);
+extern unsigned int vstr_parse_uint(const struct Vstr_base *,
+                                    size_t, size_t, unsigned int, size_t *,
+                                    unsigned int *);
+extern long vstr_parse_long(const struct Vstr_base *,
+                            size_t, size_t, unsigned int, size_t *,
+                            unsigned int *);
+extern unsigned long vstr_parse_ulong(const struct Vstr_base *,
+                                      size_t, size_t, unsigned int, size_t *,
+                                      unsigned int *);
+extern VSTR_AUTOCONF_intmax_t vstr_parse_intmax(const struct Vstr_base *,
+                                                size_t, size_t, unsigned int,
+                                                size_t *, unsigned int *);
+extern VSTR_AUTOCONF_uintmax_t vstr_parse_uintmax(const struct Vstr_base *,
+                                                  size_t, size_t,
+                                                  unsigned int, size_t *,
+                                                  unsigned int *);
+
 extern char *vstr_export_cstr_ptr(const struct Vstr_base *, size_t, size_t);
+extern void vstr_export_cstr_buf(const struct Vstr_base *, size_t, size_t,
+                                 void *, size_t);
 extern struct Vstr_ref *vstr_export_cstr_ref(const struct Vstr_base *,
                                              size_t, size_t);
+/* section functions */
+extern struct Vstr_sects *vstr_make_sects(unsigned int);
+extern void vstr_free_sects(struct Vstr_sects *);
+
+extern int vstr_sects_add(struct Vstr_sects *, size_t, size_t);
+extern int vstr_sects_del(struct Vstr_sects *, unsigned int);
+
+extern unsigned int vstr_sects_srch(struct Vstr_sects *, size_t, size_t);
+
+extern int vstr_sects_foreach(struct Vstr_base *, struct Vstr_sects *,
+                              unsigned int,
+                              int (*) (const struct Vstr_base *, size_t, size_t,
+                                       void *),
+                              void *);
+
+/* split functions */
+extern unsigned int vstr_split_buf(const struct Vstr_base *, size_t, size_t,
+                                   const void *, size_t, struct Vstr_sects *,
+                                   unsigned int, unsigned int);
+
+/* shortcut functions ... */
+extern int vstr_sc_add_fd(struct Vstr_base *, size_t, int, off_t, size_t,
+                          unsigned int *);
+extern int vstr_sc_add_file(struct Vstr_base *, size_t, const char *,
+                            unsigned int *);
+extern int vstr_sc_read_fd(struct Vstr_base *, size_t, int,
+                           unsigned int, unsigned int,
+                           unsigned int *);
+extern int vstr_sc_write_fd(struct Vstr_base *, size_t, size_t, int,
+                            unsigned int *);
+extern int vstr_sc_write_file(struct Vstr_base *, size_t, size_t,
+                              const char *, int, int, unsigned int *);
+
+    

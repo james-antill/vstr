@@ -72,6 +72,10 @@ extern int prctl(int, unsigned long, unsigned long,
 # define TCP_CORK 0
 #endif
 
+#ifndef SA_NODEFER
+# define SA_NODEFER 0
+#endif
+
 #ifndef SA_NOMASK
 # define SA_NOMASK SA_NODEFER
 #endif

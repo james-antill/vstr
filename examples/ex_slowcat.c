@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
@@ -23,32 +24,7 @@
 
 #include <vstr.h>
 
-#ifndef FALSE
-# define FALSE 0
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
-
-#ifndef __GNUC__
-# define __PRETTY_FUNCTION__ "(unknown)"
-#endif
-
-#define STR(x) #x
-#define XSTR(x) STR(x)
-
-#define SHOW(x, y, z) \
- "File: " x "\n" \
- "Function: " y "\n" \
- "Line: " XSTR(z) "\n" \
- "Problem: "
-
-
-
-#define PROBLEM(x) problem(SHOW(__FILE__, __PRETTY_FUNCTION__, __LINE__) x)
-
-#define assert(x) do { if (!(x)) PROBLEM("Assert=\"" #x "\""); } while (FALSE)
+#include "ex_utils.h"
 
 #define EX_SLOWCAT_WRITE_BYTES 80
 #define EX_SLOWCAT_WRITE_WAIT_SEC 1
@@ -90,70 +66,6 @@ static void ex_slowcat_ref_munmap(Vstr_ref *passed_ref)
  --have_mmaped_file;
 }
 
-
-static void problem(const char *msg, ... )
-{
- int saved_errno = errno;
- Vstr_base *str = NULL;
- struct iovec *vec;
- unsigned int num = 0;
- size_t len = 0;
- ssize_t bytes = 0;
- 
- str = vstr_make_base(NULL);
- if (str)
- {
-  va_list ap;
-
-  va_start(ap, msg);
-  vstr_add_vfmt(str, str->len, msg, ap);
-  va_end(ap);
-  
-  if (vstr_export_chr(str, str->len) == ':')
-    vstr_add_fmt(str, str->len, " %s", strerror(saved_errno));
-
-  vstr_add_buf(str, str->len, "\n", 1);
-
-  len = vstr_export_iovec_ptr_all(str, &vec, &num);
-  if (!len)
-    _exit (EXIT_FAILURE);
-  
-  while ((size_t)(bytes = writev(2, vec, num)) != len)
-  {
-   if ((bytes == -1) && (errno != EAGAIN))
-     break;
-   if (bytes == -1)
-     continue;
-   
-   vstr_del(str, 1, (size_t)bytes);
-   
-   len = vstr_export_iovec_ptr_all(str, &vec, &num);
-  }
- }
- 
- _exit (EXIT_FAILURE);
-}
-
-static int ex_slowcat_readv(Vstr_base *str1, int fd)
-{
- ssize_t bytes = -1;
- struct iovec *iovs = NULL;
- unsigned int num = 0;
- 
- if (!vstr_add_iovec_buf_beg(str1, str1->len, 4, 32, &iovs, &num))
-   errno = ENOMEM, PROBLEM("vstr_add_iovec_buf_beg:");
- 
- bytes = readv(fd, iovs, num);
- if ((bytes == -1) && (errno == EAGAIN))
-   bytes = 0;
- if (bytes == -1)
-   PROBLEM("readv:");
- 
- vstr_add_iovec_buf_end(str1, str1->len, bytes);
-
- return (!!bytes);
-}
-
 static void ex_slowcat_del_write(Vstr_base *base, int fd, size_t max_bytes)
 {
  Vstr_base *cpy = base;
@@ -169,7 +81,7 @@ static void ex_slowcat_del_write(Vstr_base *base, int fd, size_t max_bytes)
  
  len = vstr_export_iovec_ptr_all(cpy, &vec, &num);
  if (!len)
-   errno = ENOMEM, PROBLEM("vstr_export_iovec_ptr_all:");
+   errno = ENOMEM, DIE("vstr_export_iovec_ptr_all:");
 
  if (max_bytes > len)
    max_bytes = len;
@@ -197,7 +109,7 @@ static void ex_slowcat_del_write(Vstr_base *base, int fd, size_t max_bytes)
  if ((size_t)(bytes = writev(fd, vec, num)) != len)
  {
   if ((bytes == -1) && (errno != EAGAIN))
-    PROBLEM("writev:");
+    DIE("writev:");
   if (bytes == -1)
     return;
  }
@@ -217,26 +129,26 @@ static void ex_slowcat_mmap_file(Vstr_base *str1, int fd, size_t len)
    return;
  
  if (!(ref = malloc(sizeof(ex_slowcat_mmap_ref))))
-   errno = ENOMEM, PROBLEM("malloc ex_slowcat_mmap:");
+   errno = ENOMEM, DIE("malloc ex_slowcat_mmap:");
  
  ref->len = len;
  
  addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
  if (addr == (caddr_t)-1)
-   PROBLEM("mmap:");
+   DIE("mmap:");
  
  if (close(fd) == -1)
-   PROBLEM("close:");
+   DIE("close:");
  
  ref->ref.func = ex_slowcat_ref_munmap;
  ref->ref.ptr = (char *)addr;
  ref->ref.ref = 0;
  
  if (offsetof(ex_slowcat_mmap_ref, ref))
-   PROBLEM("assert");
+   DIE("assert");
  
  if (!vstr_add_ref(str1, str1->len, &ref->ref, 0, ref->len))
-   errno = ENOMEM, PROBLEM("vstr_add_ref:");
+   errno = ENOMEM, DIE("vstr_add_ref:");
 
  ++have_mmaped_file;
 }
@@ -270,10 +182,10 @@ static void ex_slowcat_timer_func(int type, void *data)
     v->fd = open(v->argv[v->arg_count++], O_RDONLY);
     
     if (v->fd == -1)
-      problem("open(%s):", v->argv[v->arg_count - 1]);
+      ex_utils_die("open(%s):", v->argv[v->arg_count - 1]);
     
     if (fstat(v->fd, &stat_buf) == -1)
-      PROBLEM("fstat:");
+      DIE("fstat:");
     
     if (S_ISREG(stat_buf.st_mode))
     {
@@ -287,18 +199,18 @@ static void ex_slowcat_timer_func(int type, void *data)
      int tmp_fcntl_flags = 0;
      
      if ((tmp_fcntl_flags = fcntl(v->fd, F_GETFL)) == -1)
-       PROBLEM("fcntl(GET NONBLOCK):");
+       DIE("fcntl(GET NONBLOCK):");
      if (!(tmp_fcntl_flags & O_NONBLOCK) &&
          (fcntl(v->fd, F_SETFL, tmp_fcntl_flags | O_NONBLOCK) == -1))
-       PROBLEM("fcntl(SET NONBLOCK):");
+       DIE("fcntl(SET NONBLOCK):");
     }
    }
   }
   
-  if (!v->finished_reading_file && !ex_slowcat_readv(v->str1, v->fd))
+  if (!v->finished_reading_file && !ex_utils_read(v->str1, v->fd))
   {
    if (close(v->fd) == -1)
-     PROBLEM("close:");
+     DIE("close:");
 
    if (v->arg_count >= v->argc)
      v->finished_reading_data = TRUE;
@@ -310,7 +222,7 @@ static void ex_slowcat_timer_func(int type, void *data)
  { /* we've just finished */
   if (v->str1->len) /* set it back to blocking, to be nice */
     if (fcntl(1, F_SETFL, v->fcntl_flags & ~O_NONBLOCK) == -1)
-      PROBLEM("fcntl(SET BLOCK):");
+      DIE("fcntl(SET BLOCK):");
  }
  
  /* do a write of the right ammount */
@@ -327,7 +239,7 @@ static void ex_slowcat_timer_func(int type, void *data)
 
  v->node = timer_q_add_node(v->base, v, &s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
  if (!v->node)
-   errno = ENOMEM, PROBLEM("timer_q_add_node:");
+   errno = ENOMEM, DIE("timer_q_add_node:");
 }
 
 static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
@@ -368,7 +280,7 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
       help_stdout = stderr;
     case 'H':
     case 'h':
-      fprintf(help_stdout, "\n Format: %s [-bhsuvHV]\n"
+      fprintf(help_stdout, "\n Format: %s [-bhsuvHV] [files]\n"
               " --bytes -b        - Number of bytes to write at once.\n"
               " --help -h         - Print this message.\n"
               " --seconds -s      - Number of seconds to wait between write calls.\n"
@@ -422,7 +334,7 @@ int main(int argc, char *argv[])
  v.finished_reading_file = TRUE;
  
  if (!vstr_init())
-   errno = ENOMEM, PROBLEM("vstr_init:");
+   errno = ENOMEM, DIE("vstr_init:");
 
  /* setup code... */
 
@@ -433,24 +345,24 @@ int main(int argc, char *argv[])
  
  v.base = timer_q_add_base(ex_slowcat_timer_func, TIMER_Q_FLAG_BASE_DEFAULT);
  if (!v.base)
-   errno = ENOMEM, PROBLEM("timer_q_add_base:");
+   errno = ENOMEM, DIE("timer_q_add_base:");
  
  gettimeofday(&s_tv, NULL);
  TIMER_Q_TIMEVAL_ADD_SECS(&s_tv, 1, 500000); /* 1.5 seconds */
 
  v.node = timer_q_add_node(v.base, &v, &s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
  if (!v.node)
-   errno = ENOMEM, PROBLEM("timer_q_add_node:"); 
+   errno = ENOMEM, DIE("timer_q_add_node:"); 
  
  v.str1 = vstr_make_base(NULL);
  if (!v.str1)
-   errno = ENOMEM, PROBLEM("vstr_make_base:"); 
+   errno = ENOMEM, DIE("vstr_make_base:"); 
 
  if ((v.fcntl_flags = fcntl(1, F_GETFL)) == -1)
-   PROBLEM("fcntl(GET NONBLOCK):");
+   DIE("fcntl(GET NONBLOCK):");
  if (!(v.fcntl_flags & O_NONBLOCK) &&
      (fcntl(1, F_SETFL, v.fcntl_flags | O_NONBLOCK) == -1))
-   PROBLEM("fcntl(SET NONBLOCK):");
+   DIE("fcntl(SET NONBLOCK):");
 
  while ((tv = timer_q_first_timeval()))
  {
