@@ -78,6 +78,7 @@
 typedef struct Vstr__options
 {
  Vstr_conf *def;
+ unsigned int mmap_count;
 } Vstr__options;
 
 typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;

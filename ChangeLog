@@ -1,3 +1,31 @@
+2002-09-11  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.14
+
+	* src/vstr_add_fmt.c (vstr__add_vfmt): Fixed bug when the user specifier
+	escape was %.
+
+2002-09-10  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (VSTR__ADD_FMT_STRTOL): Fix bug with 3 or more 
+	digit static field widths and precisions.
+
+	* src/vstr_spn.c (vstr_cspn_chrs_fwd): Add fast path for single char
+	spanning.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_ipv6_ptr): Added function.
+	(vstr_sc_fmt_add_ipv4_ptr): Added function.
+	(vstr_sc_fmt_cb_beg): Added function.
+	(vstr_sc_fmt_cb_end): Added function.
+
+2002-09-02  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_nx_sc_mmap_fd): Add checks for mmap()
+	counts, when in debugging mode.
+
+	* src/vstr.c (vstr_nx_exit): Add checks for mmap() counts, when in 
+	debugging mode.
+
 2002-09-02  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.13

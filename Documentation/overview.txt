@@ -1,10 +1,11 @@
    ABOUT
 
  This is a string library, it's designed so you can work optimally
-with readv()/writev() for input/output. It has features somewhat like
-the C++ STL rope (http://www.sgi.com/tech/stl/Rope.html) code,
-but written in C. It also has features unavailable in Rope, and is more
-effecient for many cases.
+with readv()/writev() for input/output. As well as having features directly
+related to IO with strings, it does splitting of strings (ala. perl) and has
+custom printf format specifiers. It also attaches a notion of a locale to the
+string configuration itself ... so you can do Network IO in the C locale and
+user IO in the users locale.
 
    INTRODUCTION
 

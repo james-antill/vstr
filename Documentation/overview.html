@@ -28,10 +28,11 @@
 <table width="80%"><tr><td><p>
 
  This is a string library, it's designed so you can work optimally
-with readv()/writev() for input/output. It has features somewhat like
-the <a href="http://www.sgi.com/tech/stl/Rope.html">C++ STL rope</a> code,
-but written in C. It also has features unavailable in Rope, and is more
-effecient for many cases.
+with readv()/writev() for input/output. As well as having features directly
+related to IO with strings, it does splitting of strings (ala. perl) and has
+custom printf format specifiers. It also attaches a notion of a locale to the
+string configuration itself ... so you can do Network IO in the C locale and
+user IO in the users locale.
 
 </p></td></tr>
 
@@ -99,7 +100,7 @@ be seen on the examples directory or htmlized
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Wed Aug 28 01:37:49 EDT 2002
+Last modified: Mon Sep  2 16:16:31 EDT 2002
 <!-- hhmts end -->
   </body>
 </html>

@@ -46,7 +46,7 @@ static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 /* a very small number of digits is _by far_ the norm */
 #define VSTR__ADD_FMT_STRTOL(x) \
  (VSTR__ADD_FMT_ISDIGIT((x)[1]) ? \
-  VSTR__ADD_FMT_ISDIGIT((x)[2]) ? strtol(x, (char **) (x), 10) : \
+  VSTR__ADD_FMT_ISDIGIT((x)[2]) ? strtol(x, (char **) &(x), 10) : \
   ((x) += 2, VSTR__ADD_FMT_CHAR2INT_2((x)[-2], (x)[-1])) : \
   ((x) += 1, VSTR__ADD_FMT_CHAR2INT_1((x)[-1])))
 
@@ -1230,6 +1230,7 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
       switch (scan_node->types[scan])
       {
         case VSTR_TYPE_FMT_END:
+          spec->fmt_code = 0;
           have_arg = FALSE;
           break;
         case VSTR_TYPE_FMT_INT:
@@ -1565,8 +1566,8 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     continue;
   }
 
-  spec->fmt_code = *fmt;
   vstr__fmt_sys_escapes:
+  spec->fmt_code = *fmt;
   switch (*fmt)
   {
     case 'c':

@@ -512,7 +512,18 @@ extern int vstr_nx_fmt_srch(struct Vstr_conf *, const char *)
 
 
 /* shortcut functions ... */
+extern int vstr_nx_sc_fmt_cb_beg(struct Vstr_base *, size_t *,
+                              struct Vstr_fmt_spec *, size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_cb_end(struct Vstr_base *, size_t,
+                              struct Vstr_fmt_spec *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_vstr(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+
+extern int vstr_nx_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ipv6_ptr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
 extern int vstr_nx_sc_mmap_fd(struct Vstr_base *, size_t, int, 

@@ -104,6 +104,10 @@
 #define vstr_nx_fmt_del vstr_fmt_del
 #define vstr_nx_fmt_srch vstr_fmt_srch
 #define vstr_nx_sc_fmt_add_vstr vstr_sc_fmt_add_vstr
+#define vstr_nx_sc_fmt_add_ipv4_ptr vstr_sc_fmt_add_ipv4_ptr
+#define vstr_nx_sc_fmt_add_ipv6_ptr vstr_sc_fmt_add_ipv6_ptr
+#define vstr_nx_sc_fmt_cb_beg vstr_sc_fmt_cb_beg
+#define vstr_nx_sc_fmt_cb_end vstr_sc_fmt_cb_end
 #define vstr_nx_sc_mmap_fd vstr_sc_mmap_fd
 #define vstr_nx_sc_mmap_file vstr_sc_mmap_file
 #define vstr_nx_sc_read_iov_fd vstr_sc_read_iov_fd

@@ -122,8 +122,6 @@ static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
    if (!memchr(spn_chrs, scan_str[count], spn_len))
    {
     ret = ((scan_len - count) - 1);
-    if (!len)
-      return (ret);
     goto next_loop_memchr_fail;
    }
   }
@@ -227,17 +225,25 @@ size_t vstr_nx_cspn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   if (!cspn_chrs)
     goto next_loop;
   
-  if (scan->type != VSTR_TYPE_NODE_NON)
-  {
-   size_t count = 0;
-   while (count < scan_len)
-   {
-    if (memchr(cspn_chrs, scan_str[count], cspn_len))
-      return (ret + count);
-    ++count;
-   }
+  if (cspn_len == 1)
+  { /* Much faster for the single char case */
+    char *tmp = memchr(scan_str, cspn_chrs[0], scan_len);
+    if (tmp)
+      return (ret + (tmp - scan_str));
   }
-
+  else
+  {
+    size_t count = 0;
+    
+    while (count < scan_len)
+    {
+      if (memchr(cspn_chrs, scan_str[count], cspn_len))
+        return (ret + count);
+      ++count;
+    }
+    assert(count == scan_len);
+  }
+  
  next_loop:
   ret += scan_len;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
@@ -288,8 +294,6 @@ static size_t vstr__cspn_chrs_rev_slow(const Vstr_base *base,
    if (memchr(cspn_chrs, scan_str[count], cspn_len))
    {
     ret = ((scan_len - count) - 1);
-    if (!len)
-      return (ret);
     goto next_loop_memchr_fail;
    }
   }
@@ -324,8 +328,6 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
   
   do
   {
-    size_t count = 0;
-    
     if ((type == VSTR_TYPE_NODE_NON) && cspn_chrs)
       return (ret);
     
@@ -338,14 +340,25 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
     if (!cspn_chrs)
       return (ret);
     
-    while (count < scan_len)
-    {
-      if (memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
-        return (ret + count);
-      ++count;
+    if (cspn_len == 1)
+    { /* Much faster for the single char case */
+      char *tmp = memrchr(scan_str, cspn_chrs[0], scan_len);
+      if (tmp)
+        return (ret + (tmp - scan_str));
     }
-    assert(count == scan_len);
-    
+    else
+    {
+      size_t count = 0;
+      
+      while (count < scan_len)
+      {
+        if (memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
+          return (ret + count);
+        ++count;
+      }
+      assert(count == scan_len);
+    }
+  
    next_loop:
     ret += scan_len;
   } while (vstr__base_scan_rev_nxt(base, &len, &num, &type,

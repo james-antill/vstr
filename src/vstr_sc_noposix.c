@@ -94,3 +94,15 @@ int vstr_nx_sc_write_file(Vstr_base *base __attribute__((unused)),
                           off64_t off __attribute__((unused)),
                           unsigned int *err)
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO); }
+
+int vstr_nx_sc_fmt_add_ipv4_ptr(Vstr_conf *conf __attribute__((unused)),
+                                const char *name __attribute__((unused)))
+{
+  return (FALSE);
+}
+
+int vstr_nx_sc_fmt_add_ipv6_ptr(Vstr_conf *conf __attribute__((unused)),
+                                const char *name __attribute__((unused)))
+{
+  return (FALSE);
+}

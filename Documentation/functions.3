@@ -630,9 +630,25 @@ int \fBvstr_cache_set_data\fR(const struct Vstr_base *, unsigned int, void *);
 unsigned int \fBvstr_cache_srch\fR(struct Vstr_conf *, const char *);
 .sp
 .br
+.in \w'  int \fBvstr_sc_fmt_cb_beg\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_cb_beg\fR(struct Vstr_base *, size_t *, struct Vstr_fmt_spec *, size_t *);
+.br
+.in \w'  int \fBvstr_sc_fmt_cb_end\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_cb_end\fR(struct Vstr_base *, size_t, struct Vstr_fmt_spec *, size_t);
+.br
 .in \w'  int \fBvstr_sc_fmt_add_vstr\fR('u
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_vstr\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_ipv4_ptr\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv4_ptr\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_ipv6_ptr\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv6_ptr\fR(struct Vstr_conf *, const char *);
 .br
 .in \w'  int \fBvstr_sc_mmap_fd\fR('u
 .ti \w'  'u
@@ -6398,6 +6414,85 @@ Type\fB[2]\fR: const char *
 
 .ti -2
 .br
+\fBFunction: \fR vstr_sc_fmt_cb_beg()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Position in the Vstr string (Parameter[1]), updated for padding.
+.br
+Type\fB[2]\fR: size_t *
+
+.br
+Parameter\fB[3]\fR: Format specifier passed to a callback of vstr_add_vfmt()
+.br
+Type\fB[3]\fR: struct Vstr_fmt_spec *
+
+.br
+Parameter\fB[4]\fR: Length of data you are going to add, updated due to precision.
+.br
+Type\fB[4]\fR: size_t *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function for any custom format specifiers you write, it takes care of doing the standard transforms to your data before it is output as if you were printing a string.
+.sp
+\fBNote:\fR
+
+.br
+  If this function returns FALSE, you should probably just return from the callback with FALSE.
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_cb_end()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Position you added your data to the Vstr (Parameter[1]).
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Format specifier passed to a callback of vstr_add_vfmt()
+.br
+Type\fB[3]\fR: struct Vstr_fmt_spec *
+
+.br
+Parameter\fB[4]\fR: Length of data you added.
+.br
+Type\fB[4]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function for any custom format specifiers you write, it takes care of doing the standard transforms to your data after it is output as if you were printing a string.
+.sp
+\fBNote:\fR
+
+.br
+  You shouldn't alter the position between calling vstr_sc_fmt_cb_beg() and vstr_sc_fmt_cb_end(), if padding is added in vstr_sc_fmt_cb_end() it is added at position (Parameter[2]) + length (Parameter[4]).
+.br
+  If this function returns FALSE, you should probably just return from the callback with FALSE.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_sc_fmt_add_vstr()
 .br
 Returns: TRUE on success and FALSE on failure
@@ -6426,6 +6521,54 @@ Type\fB[2]\fR: const char *
   As you would expect the precision and field width values are used from the format, so the length of the Vstr string printed if the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv4_ptr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv4 IP addresses from a struct in_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is a struct in_addr *, to be passed to inet_ntop().
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv6_ptr()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv4 IP addresses from a struct in6_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is a struct in6_addr *, to be passed to inet_ntop().
 
 .ti -2
 .br

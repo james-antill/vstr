@@ -1267,16 +1267,20 @@ ssize_t FIX_SYMBOL(writev)(int fd, const struct iovec *iovs, int iov_num)
 const char *FIX_SYMBOL(inet_ntop)(int af, const void *cp, char *buf, size_t len)
 {
 #ifdef HAVE_INET_NTOA
- const char *ptr = inet_ntoa(*(struct in_addr *)cp);
- size_t l_len = strlen(ptr) + 1;
- if (l_len > len)
-   l_len = len;
- memcpy(buf, ptr, l_len);
- buf[len - 1] = 0; /* assume this is correct */
+  if (af == AF_INET)
+  {
+    const char *ptr = inet_ntoa(*(struct in_addr *)cp);
+    size_t l_len = strlen(ptr) + 1;
+    if (l_len > len)
+      l_len = len;
+    memcpy(buf, ptr, l_len);
+    buf[len - 1] = 0; /* assume this is correct */
+    return (buf);
+  }
 #else
 # error "inet_ntop doesn't work"
- return ("<error>");
 #endif
+  return (NULL);
 }
 #endif
 
@@ -1284,22 +1288,29 @@ const char *FIX_SYMBOL(inet_ntop)(int af, const void *cp, char *buf, size_t len)
 int FIX_SYMBOL(inet_pton)(int af, const char *cp, void *buf)
 {
 #ifdef HAVE_INET_ATON
- return (inet_aton(cp, buf));
+  if (af == AF_INET)
+  {
+    return (inet_aton(cp, buf));
+  }
 #else
 # ifdef INET_ADDR
- long addr = 0;
- addr = inet_addr(cp);
- if (addr == -1)
-   return (0);
+  if (af == AF_INET)
+  {
+    long addr = 0;
+    addr = inet_addr(cp);
+    if (addr == -1)
+      return (0);
 
- memcpy(buf, &addr, sizeof(long)); /* people will assume it's an in or a long ? */
+    /* will people assume it's an int or a long ? */
+    memcpy(buf, &addr, sizeof(long));
  
- return (1);
+    return (1);
+  }
 # else
 # error "inet_pton doesn't work"
- return (0);
 # endif
 #endif
+  return (0);
 }
 #endif
 

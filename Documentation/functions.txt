@@ -3974,6 +3974,64 @@ Function: vstr_cache_srch()
 
 Section: Short cut helper functions
 
+Function: vstr_sc_fmt_cb_beg()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Position in the Vstr string (Parameter[1]), updated for padding.
+ Type[2]: size_t *
+
+ Parameter[3]: Format specifier passed to a callback of vstr_add_vfmt()
+ Type[3]: struct Vstr_fmt_spec *
+
+ Parameter[4]: Length of data you are going to add, updated due to precision.
+ Type[4]: size_t *
+
+ Explanation:
+
+  This function is a helper function for any custom format specifiers you write,
+ it takes care of doing the standard transforms to your data before it is
+ output as if you were printing a string.
+
+ Note:
+
+  If this function returns FALSE, you should probably just return from the
+ callback with FALSE.
+
+Function: vstr_sc_fmt_cb_end()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Position you added your data to the Vstr (Parameter[1]).
+ Type[2]: size_t
+
+ Parameter[3]: Format specifier passed to a callback of vstr_add_vfmt()
+ Type[3]: struct Vstr_fmt_spec *
+
+ Parameter[4]: Length of data you added.
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is a helper function for any custom format specifiers you write,
+ it takes care of doing the standard transforms to your data after it is
+ output as if you were printing a string.
+
+ Note:
+
+  You shouldn't alter the position between calling vstr_sc_fmt_cb_beg() and
+ vstr_sc_fmt_cb_end(), if padding is added in vstr_sc_fmt_cb_end() it is added
+ at position (Parameter[2]) + length (Parameter[4]).
+  If this function returns FALSE, you should probably just return from the
+ callback with FALSE.
+
+
 Function: vstr_sc_fmt_add_vstr()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -3998,6 +4056,44 @@ Function: vstr_sc_fmt_add_vstr()
  format, so the length of the Vstr string printed if the lower bound of the
  length passed and the precision.
   The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_fmt_add_ipv4_ptr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ ipv4 IP addresses from a struct in_addr *. It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is
+ a struct in_addr *, to be passed to inet_ntop().
+
+
+Function: vstr_sc_fmt_add_ipv6_ptr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ ipv4 IP addresses from a struct in6_addr *. It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is
+ a struct in6_addr *, to be passed to inet_ntop().
 
 
 Function: vstr_sc_mmap_fd()

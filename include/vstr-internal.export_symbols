@@ -104,6 +104,10 @@ fmt_add
 fmt_del
 fmt_srch
 sc_fmt_add_vstr
+sc_fmt_add_ipv4_ptr
+sc_fmt_add_ipv6_ptr
+sc_fmt_cb_beg
+sc_fmt_cb_end
 sc_mmap_fd
 sc_mmap_file
 sc_read_iov_fd

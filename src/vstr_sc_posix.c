@@ -42,6 +42,8 @@ static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
   munmap(mmap_ref->ref.ptr, mmap_ref->mmap_len); /* this _can't_ be -1 */
   
   free(mmap_ref);
+
+  assert(vstr__options.mmap_count-- > 0);
 }
 #endif
 
@@ -109,6 +111,8 @@ int vstr_nx_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
   if (!vstr_nx_add_ref(base, pos, &mmap_ref->ref, 0, len))
     goto add_ref_failed;
 
+  assert(++vstr__options.mmap_count);
+  
   return (TRUE);
 
  add_ref_failed:
@@ -571,4 +575,72 @@ int vstr_nx_sc_write_file(Vstr_base *base, size_t pos, size_t len,
     errno = saved_errno;
 
   return (ret);
+}
+
+static int vstr__sc_fmt_add_ipv4_ptr_cb(Vstr_base *base, size_t pos,
+                                        Vstr_fmt_spec *spec)
+{
+  struct in_addr *ipv4 = spec->data_ptr[0];
+  size_t obj_len = 0;
+  char buf[1024];
+  const char *ptr = NULL;
+  
+  assert(sizeof(buf) >= INET_ADDRSTRLEN);
+  
+  ptr = inet_ntop(AF_INET, ipv4, buf, sizeof(buf));
+  if (!ptr) ptr = "0.0.0.0";
+
+  obj_len = strlen(ptr);
+  
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len))
+    return (FALSE);
+
+  if (!vstr_nx_add_buf(base, pos, ptr, obj_len))
+    return (FALSE);  
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, obj_len))
+    return (FALSE);
+
+  return (TRUE);
+}
+
+static int vstr__sc_fmt_add_ipv6_ptr_cb(Vstr_base *base, size_t pos,
+                                        Vstr_fmt_spec *spec)
+{
+  struct in6_addr *ipv6 = spec->data_ptr[0];
+  size_t obj_len = 0;
+  char buf[1024];
+  const char *ptr = NULL;
+
+  assert(sizeof(buf) >= INET6_ADDRSTRLEN);
+  
+  ptr = inet_ntop(AF_INET6, ipv6, buf, sizeof(buf));
+  if (!ptr) ptr = "::";
+
+  obj_len = strlen(ptr);
+  
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len))
+    return (FALSE);
+
+  if (!vstr_nx_add_buf(base, pos, ptr, obj_len))
+    return (FALSE);  
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, obj_len))
+    return (FALSE);
+
+  return (TRUE);
+}
+
+int vstr_nx_sc_fmt_add_ipv4_ptr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_ipv4_ptr_cb,
+                          VSTR_TYPE_FMT_PTR_VOID,
+                          VSTR_TYPE_FMT_END));
+}
+
+int vstr_nx_sc_fmt_add_ipv6_ptr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_ipv6_ptr_cb,
+                          VSTR_TYPE_FMT_PTR_VOID,
+                          VSTR_TYPE_FMT_END));
 }

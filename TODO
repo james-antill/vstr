@@ -10,6 +10,12 @@
 
 . Add --with-libc=diet,host,klibc -- put into test framework.
 
+. parse_ipv6
+ *   1. hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh
+ *   2. any number of 0000 may be abbreviated as "::", but only once
+ *   3. The last two words may be written as IPv4 address
+  include CIDR
+
  Not needed for 1.0
  ------------------
 

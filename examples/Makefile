@@ -6,10 +6,10 @@ CC=gcc3
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-LOCAL=1
+LOCAL=0
 PROFILE=0
 # 1 == Static with libvstr, 2 == really static
-STATIC=2
+STATIC=0
 FAST=1
 
 ifeq ($(PROFILE),1)

@@ -81,6 +81,24 @@ extern int prctl(int, unsigned long, unsigned long,
 # define AF_LOCAL AF_UNIX
 #endif
 
+#ifndef AF_INET
+# define AF_INET 65532
+#endif
+
+#ifndef AF_INET6
+# define AF_INET6 (AF_INET+1)
+#endif
+
+#ifndef INET_ADDRSTRLEN
+# define INET_ADDRSTRLEN sizeof("255.255.255.255")
+#endif
+
+#ifndef INET6_ADDRSTRLEN
+/* the padding at the end is bcause glibc has this value as 46, which is
+ * 6 more than the below would give otherwise ... who knows why ? */
+# define INET6_ADDRSTRLEN sizeof("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF0123456")
+#endif
+
 #ifndef TCP_CORK
 # define TCP_CORK 0
 #endif

@@ -18,7 +18,7 @@
  * 
  *  email: james@and.org
  */
-/* master file, contains all the base functions */
+/* master file, contains most of the base functions */
 #include "main.h"
 
 
@@ -143,7 +143,7 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
     loc->name_lc_numeric_len = numeric_len;
     
     memcpy(loc->grouping, SYS_LOC(grouping), grp_len);
-    loc->grouping[grp_len] = 0; /* make sure all strs are 0 terminated */
+    loc->grouping[grp_len] = 0; /* make sure all cstrs are 0 terminated */
     
     memcpy(loc->thousands_sep_str, SYS_LOC(thousands_sep), thou_len + 1);
     loc->thousands_sep_len = thou_len;
@@ -354,14 +354,20 @@ void vstr_nx_free_conf(Vstr_conf *conf)
 
 int vstr_nx_init(void)
 {
-  if (!vstr__options.def && !(vstr__options.def = vstr_nx_make_conf()))
-    return (FALSE);
+  if (!vstr__options.def)
+  {
+    if (!(vstr__options.def = vstr_nx_make_conf()))
+      return (FALSE);
+    vstr__options.mmap_count = 0;
+  }
   
   return (TRUE);
 }
 
 void vstr_nx_exit(void)
-{ /* have count of mmaped files and do check */
+{
+  assert(!vstr__options.mmap_count);
+
   vstr__add_fmt_cleanup_spec();
 
   assert((vstr__options.def->user_ref == 1) &&
@@ -1057,10 +1063,10 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
  return (scan);
 }
 
-Vstr_node * vstr__base_scan_fwd_beg(const Vstr_base *base,
-                                    size_t pos, size_t *len,
-                                    unsigned int *num, 
-                                    char **scan_str, size_t *scan_len)
+Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
+                                   size_t pos, size_t *len,
+                                   unsigned int *num, 
+                                   char **scan_str, size_t *scan_len)
 {
   Vstr_node *scan = NULL;
   

@@ -1,6 +1,6 @@
 #define VSTR_CNTL_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,14 @@
  * 
  *  email: james@and.org
  */
-/* functions for the "misc" stuff. like reading struct values etc. */
+/* functions for the "misc" control stuff. like reading struct values etc. */
 #include "main.h"
 
 
 Vstr__options vstr__options =
 {
  NULL,
+ 0,
 };
 
 int vstr_nx_cntl_opt(int option, ...)
