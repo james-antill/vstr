@@ -16,11 +16,18 @@ cd ../build/vstr
 rm -rf vstr-${v}james
 cp -a $s ./vstr-${v}james
 cd ./vstr-${v}james
-./scripts/clean.sh
+./scripts/clean.sh full
+
+# Perf output...
+rm -rf ./examples/perf*
 
 find . \
  \( -name "*.o" -o -name ".*[%~]" -o -name "*[%~]" -o -name "#*#" \) \
  -print0 | xargs --no-run-if-empty -0 rm -f
+
+# Arch stuff...
+rm -rf ./{arch}
+find . -name .arch-ids -type d -print0 | xargs -0 rm -rf
 
 cp $s/vstr.spec .
 
