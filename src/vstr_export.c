@@ -25,6 +25,8 @@
 size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
                                  struct iovec **iovs, unsigned int *ret_num)
 {
+  ASSERT(base);
+  
   if (!base->num)
     return (0);
 
@@ -115,7 +117,7 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base,
   unsigned int dummy_ret_num = 0;
   unsigned int ret_num = 0;
 
-  assert(iovs && num_max && real_ret_num);
+  assert(iovs && num_max);
 
   if (!num_max)
     return (0);

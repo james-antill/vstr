@@ -18,6 +18,8 @@ int tst(void)
   num = vstr_num(s1, 1, s1->len);
   iov = malloc(sizeof(struct iovec) * num);
 
+  vstr_export_iovec_cpy_ptr(s1, 1, 2, iov, 1, NULL);
+
   len = vstr_export_iovec_cpy_ptr(s1, 1, s1->len, iov, num, &ret_num);
 
   ret |= (1 << 0) * (len != s1->len);
@@ -34,6 +36,7 @@ int tst(void)
   }
   ret |= (1 << 3) * (len != s1->len);
   ret |= (1 << 4) * (num != count);
+  ret |= (1 << 5) * (num != vstr_num(s1, 1, s1->len - 1));
 
   free(iov);
   

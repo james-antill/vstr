@@ -125,11 +125,14 @@ Function: vstr_export_cstr_ptr()
   If you alter the Vstr in anyway then the returned pointer may point to
  free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
  instead.
-  If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call vstr_cache_cb_free() on the cookie from "/vstr__/cstr".
+  This data needs to be cached in the Vstr string, and so can only work if the
+ Vstr string has the ability to cache data (see
+ VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE). If you want to make sure that the cached
+ data is gone from the Vstr string, cache then you can call
+ vstr_cache_cb_free() on the cookie from "/vstr__/cstr".
   Any _NON data in the Vstr will be uninitialized data in the "C string".
   If there are any 0 bytes in the Vstr they will make the string look shorter
- than it really is to normal C/POSIX string functions.
+ than it really is to normal C style string functions.
 
 
 Function: vstr_export_cstr_malloc()
@@ -4639,6 +4642,11 @@ Function: vstr_spn_chrs_fwd()
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+ Note:
+
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will be looked for in the span.
+
 
 Function: vstr_spn_chrs_rev()
  Returns: Number of characters in the span
@@ -4665,6 +4673,11 @@ Function: vstr_spn_chrs_rev()
  Vstr string that are in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+ Note:
+
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will be looked for in the span.
 
 
 Function: vstr_cspn_chrs_fwd()
@@ -4696,6 +4709,11 @@ Function: vstr_cspn_chrs_fwd()
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+ Note:
+
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will not be looked for in the span.
+
 
 Function: vstr_cspn_chrs_rev()
  Returns: Number of characters in the compliment span
@@ -4722,6 +4740,11 @@ Function: vstr_cspn_chrs_rev()
  Vstr string that are in the compliment of those in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+ Note:
+
+  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will not be looked for in the span.
 
 
 Function: vstr_spn_cstr_chrs_fwd()

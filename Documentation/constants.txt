@@ -1405,6 +1405,7 @@ Constant: VSTR_CNTL_BASE_GET_CONF
 
   This option will get the Vstr configuration for the Vstr string
 
+
 Constant: VSTR_CNTL_BASE_SET_CONF
 
  Parameter[1]: Vstr configuration
@@ -1420,6 +1421,18 @@ Constant: VSTR_CNTL_BASE_SET_CONF
  the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
   If the Vstr configuration (Parameter[1]) is NULL, then the default
  Vstr configuration will be used.
+
+
+Constant: VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE
+
+ Parameter[1]: Returns value of flag
+ Type[1]: int *
+
+ Explanation:
+
+  This option lets you know if the Vstr string can cache data, this can only
+ be controlled using the VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE flag.
+
 
 Section: Constants passed to vstr_cntl_conf()
 

@@ -42,10 +42,18 @@
 	      testing of the library.
 	    </li>
 
-	    <li> <a href="comparison.html">Comparison</a> - Other libraries, and how
-	      they compare in features, speed, usability and standards
-	      compliance. Also includes a section on libraries that just
-	      provide a printf() like function.
+	    <li> <a href="#debug">Debugging</a> - A description of the
+	      testing of the library.
+	    </li>
+
+	    <li> <a href="comparison.html">String library comparison</a> - 
+	      Other libraries, and how
+	      they compare in features, speed, usability etc.
+	    </li>
+
+	    <li> <a href="printf_comparison.html">printf() comparison</a> - 
+	      Other implementations of printf(), and how they compare in stds. 
+	      compliance and ability to register custom formatters.
 	    </li>
 
 	    <li> <a href="#reference">API Reference</a> - The API reference
@@ -80,15 +88,22 @@
 <!-- Section -->    
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2><a name="download"></a>Download URLs</h2>
+	  <h2><a name="download"></a>Download Information</h2>
 	</td></tr></table>
     
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.1</h2>
+	  <h2>Current version is 1.0.3</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
               <a href="latest/"><b>http</b></a>
+	    </li>
+            <li> An upto date <a href="ftp://ftp.and.org/apt/apt-0.5.4cnc9-fr1.i386.rpm">apt-rpm</a> repository is available (containing only the non debug versions of the rpms)...<br>
+<pre>
+rpm     ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
+rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
+</pre>
+	      ...at which point you can just "apt-get install vstr".
 	    </li>
             <li> RPMs can are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/rpms/">ftp</a> and
@@ -99,6 +114,9 @@
 	    </li>
             <li> TODO file can be found
               <a href="TODO">here</a>
+	    </li>
+            <li> BUGS file can be found
+              <a href="BUGS">here</a>
 	    </li>
 </td></tr></table>
 
@@ -209,13 +227,57 @@
 	    suite).
 	  </p><p>
 	    Using the coverage analysis available with gcc the test suite has
-	  <emp>coverage of over 82% of the source</emp>
+	  <emp>coverage of over 84% of the source</emp>
 	  (the biggest untested sections of code are those from
 	  the malloc() error paths).
 	</p><p>
 	    Note that even if the library had 100% coverage, that still
 	    doesn't mean that there are no bugs in the code (as you need a
 	    test for every code path). 
+	  </p>
+</td></tr>
+
+</table>
+
+<!-- Section -->    
+
+<table width="90%"><tr><td bgcolor="#DDDDFF">
+	  <h2><a name="debug"></a>Debugging Vstr APIs</h2>
+	</td></tr></table>
+
+<table width="80%"><tr><td>
+	  <p>
+	    While I've tried to make the API simple enough that you don't have 
+	    to do anything complicated to get things done, there might still be
+	    times when you do a bunch of calls that you aren't sure are ok
+	    or maybe you get some memory management wrong, and pass invalid/NULL
+	    pointers to the Vstr API functions. The easiest way to find out
+	    what is going wrong is to compile without inline support and with
+	    debug support (Eg. --enable-tst-noinline --enable-debug options 
+	    to ./configure). Then as you call the functions almost all calls
+	    check input values for validity, and all calls that modify a Vstr 
+	    will check the Vstr both 
+	    before and after their operations. Finaly if you call vstr_exit()
+	    the number of memory allocations/deallocations and
+	    mmap()/munmap() operations will be counted and assert() calls will
+	    be raised if data hasn't been freed.
+	    NOTE: If you are using rpms, then there are already rpms for the
+	    debug build ... and they should be accepted as "newer" than the
+	    normal rpms so you can just install them while you develop.
+</p><p>
+	    As well as that, in all builds gcc attribute support is checked for
+	    the following attrbiutes nonnull, pure, const, format and malloc.
+	    the const and pure attributes let the optomiser do some things
+	    that can be supprising if you are trying to debug something
+	    (for example if you call vstr_cmp() and don't use the return
+	    value, gcc will never even do the call in the first place)
+	    ... so you need to watch for that.
+	    The nonnull attribute should catch errors if you obviously pass
+	    NULL pointers to function that don't take them, and the format
+	    attribute will catch errors in the calls to printf() like functions.
+	    However you may want to temporarily disable attributes due to the 
+	    opomising problems (if so define VSTR_COMPILE_ATTRIBUTES to be 0
+	    before include the vstr.h header).	    
 	  </p>
 </td></tr>
 
@@ -567,7 +629,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu Feb 13 13:29:20 EST 2003
+Last modified: Tue Mar  4 02:30:22 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

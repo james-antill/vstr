@@ -317,8 +317,8 @@ int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
     return (TRUE);
   }
 
-  assert(vstr__check_spare_nodes(base->conf));
-  assert(vstr__check_real_nodes(base));
+  ASSERT(vstr__check_spare_nodes(base->conf));
+  ASSERT(vstr__check_real_nodes(base));
  
   --pos; /* pos == ammount of chars ok from begining */
 

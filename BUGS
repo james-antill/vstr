@@ -1,2 +1,7 @@
-. size overflows, just don't do it (tm).
+. size overflows, just don't do it (tm) ... (Ie. having a Vstr string of
+  length (SIZE_MAX - 1) and adding 2 bytes to it will just break.
 
+. wchar_t support is there because the std. printf() requires it ... it only
+  works if your OS supports wcrtomb() (FreeBSD-4.6 doesn't) and that means that
+  the locale information is process local, not string local ... as other
+  locale information is.

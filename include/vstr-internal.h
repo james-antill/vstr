@@ -100,6 +100,7 @@ typedef struct Vstr__options
  unsigned int mmap_count;
  unsigned long  mem_sz;
  unsigned long  mem_num;
+ unsigned long  mem_fail_num;
  void **mem_vals;
 } Vstr__options;
 
@@ -150,8 +151,8 @@ extern size_t vstr__netstr2_ULONG_MAX_len;
 #endif
 
 #ifndef NDEBUG
-extern int vstr__check_real_nodes(Vstr_base *) VSTR__ATTR_I();
-extern int vstr__check_spare_nodes(Vstr_conf *) VSTR__ATTR_I();
+extern int vstr__check_real_nodes(const Vstr_base *) VSTR__ATTR_I();
+extern int vstr__check_spare_nodes(const Vstr_conf *) VSTR__ATTR_I();
 #endif
 
 extern void vstr__add_user_conf(Vstr_conf *) VSTR__ATTR_I();

@@ -33,10 +33,10 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>vstr</Program_Name>
-    <Program_Version>1.0.1</Program_Version>
-    <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>20</Program_Release_Day>
-    <Program_Release_Year>2002</Program_Release_Year>
+    <Program_Version>1.0.2</Program_Version>
+    <Program_Release_Month>02</Program_Release_Month>
+    <Program_Release_Day>21</Program_Release_Day>
+    <Program_Release_Year>2003</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Cost_Other_Code>USD</Program_Cost_Other_Code>
     <Program_Cost_Other/>
@@ -54,11 +54,11 @@
     <Includes_DirectX>N</Includes_DirectX>
     <File_Info>
       <Filename_Generic>vstr</Filename_Generic>
-      <Filename_Versioned>vstr-1.0.1</Filename_Versioned>
-      <Filename_Previous>vstr-1.0.0</Filename_Previous>
-      <Filename_Long>vstr-1.0.1.tar.gz</Filename_Long>
-      <File_Size_Bytes>638797</File_Size_Bytes>
-      <File_Size_K>623.83</File_Size_K>
+      <Filename_Versioned>vstr-1.0.2</Filename_Versioned>
+      <Filename_Previous>vstr-1.0.1</Filename_Previous>
+      <Filename_Long>vstr-1.0.2.tar.gz</Filename_Long>
+      <File_Size_Bytes>644035</File_Size_Bytes>
+      <File_Size_K>628.94</File_Size_K>
       <File_Size_MB>0.61</File_Size_MB>
     </File_Info>
     <Expire_Info>
@@ -72,7 +72,7 @@
       <Char_Desc_80>String library, using safe dyanmic resizing of storage, quick and easy to use.</Char_Desc_80>
       <Char_Desc_250>Vstr is a safe and fast string library for C. It is designed for network communication. Its design uses of ptr+length data, so adding, substituting, and deleting data are all fast operations.</Char_Desc_250>
       <Char_Desc_450>Vstr is a safe and fast string library for C. It is designed for network communication. Its design uses blocks of ptr+length data, so adding, substituting, and deleting data are all fast operations. This model also allows it to do automatic referencing for mmap() areas of memory. Another big feature of the library is a POSIX and ISO 9899:1999 compliant printf() like function.</Char_Desc_450>
-      <Char_Desc_2000>Vstr is a safe and fast string library for C. It is designed for network communication. Its design uses blocks of ptr+length data, so adding, substituting, and deleting data are all fast operations. This model also allows it to do automatic referencing for mmap() areas of memory. Shortcut APIs are included to mmap() a file into a Vstr string, and read()/write() data to/from a Vstr string. Another big feature of the library is a POSIX and ISO 9899:1999 compliant printf() like function, which can also be extended with user supplied formatters that are gcc warning compatible. The total API is over 140 functions, but laid out in a easy to remember manner, including data parsing functions, a non-destructive split() function, and conversion functions (among others).</Char_Desc_2000>
+      <Char_Desc_2000>Vstr is a safe and fast string library for C. It is designed for network communication. Its design uses blocks of ptr+length data, so adding, substituting, and deleting data are all fast operations. This model also allows it to do automatic referencing for mmap() areas of memory. Shortcut APIs are included to mmap() a file into a Vstr string, and read()/write() data to/from a Vstr string. Another big feature of the library is a POSIX and ISO 9899:1999 compliant printf() like function, which can also be extended with user supplied formatters that are gcc warning compatible. The total API is over 270 functions, but laid out in a easy to remember manner, including data parsing functions, a non-destructive split() function, and conversion functions (among others).</Char_Desc_2000>
     </English>
   </Program_Descriptions>
   <Web_Info>
@@ -84,8 +84,8 @@
       <Application_XML_File_URL>http://www.and.org/vstr/vstr_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://www.and.org/vstr/1.0.1/vstr-1.0.1.tar.gz</Primary_Download_URL>
-      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/1.0.1/vstr-1.0.1.tar.gz</Secondary_Download_URL>
+      <Primary_Download_URL>http://www.and.org/vstr/1.0.2/vstr-1.0.2.tar.gz</Primary_Download_URL>
+      <Secondary_Download_URL>ftp://ftp.and.org/pub/james/vstr/1.0.2/vstr-1.0.2.tar.gz</Secondary_Download_URL>
       <Additional_Download_URL_1>http://www.and.org/vstr/rpms/</Additional_Download_URL_1>
       <Additional_Download_URL_2>ftp://ftp.and.org/pub/james/vstr/rpms/</Additional_Download_URL_2>
     </Download_URLs>

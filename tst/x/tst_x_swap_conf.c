@@ -3,11 +3,20 @@
 
 static const char *rf = __FILE__;
 
-static int tst_cache_cb(struct  Vstr_base *d1 __attribute__((unused)),
-                        size_t d2 __attribute__((unused)),
-                        struct Vstr_fmt_spec *d3 __attribute__((unused)))
+static int tst_fmt_cb(struct Vstr_base *d1 __attribute__((unused)),
+                      size_t d2 __attribute__((unused)),
+                      struct Vstr_fmt_spec *d3 __attribute__((unused)))
 {
   return (TRUE);
+}
+
+static void *tst_cache_cb(const struct Vstr_base *d1 __attribute__((unused)),
+                          size_t d2 __attribute__((unused)),
+                          size_t d3 __attribute__((unused)),
+                          unsigned int d4 __attribute__((unused)),
+                          void *d5 __attribute__((unused)))
+{
+  return (NULL);
 }
 
 int tst(void)
@@ -69,7 +78,8 @@ int tst(void)
   TST_B_TST(ret, 27, (conf->buf_sz != s3->conf->buf_sz));
   TST_B_TST(ret, 28, (conf != orig));
 
-  vstr_fmt_add(s3->conf, "fubar", tst_cache_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s3->conf, "fubar", tst_fmt_cb, VSTR_TYPE_FMT_END);
+  vstr_cache_add(s3->conf, "fubar", tst_cache_cb);
   TST_B_TST(ret, 29, s3->conf->cache_cbs_sz < conf->cache_cbs_sz);
   TST_B_TST(ret, 30, !vstr_swap_conf(s3, &conf));
   TST_B_TST(ret, 31, s3->conf->cache_cbs_sz != conf->cache_cbs_sz);

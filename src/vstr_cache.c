@@ -113,6 +113,9 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   Vstr__cache_data_cstr *from_data = NULL;
   unsigned int off = base->conf->cache_pos_cb_cstr;
   unsigned int from_off = from_base->conf->cache_pos_cb_cstr;
+
+  ASSERT(off      == 3);
+  ASSERT(from_off == 3);
   
   if (!base->cache_available || !VSTR__CACHE(base))
     return;
@@ -126,11 +129,14 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   if (data->ref || !from_data->ref)
     return;
 
-  if ((from_pos == from_data->pos) && (len == from_data->len))
+  if ((from_pos >= from_data->pos) &&
+      (len == (from_data->len - (from_data->pos - from_pos))))
   {
     data->ref = vstr_ref_add(from_data->ref);
     data->pos = pos + 1;
     data->len = len;
+    data->sz  = from_data->sz;
+    data->off = from_data->off + (from_data->pos - from_pos);
   }
 }
 
@@ -366,11 +372,12 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
   Vstr__cache_data_cstr *data = passed_data;
   const size_t end_pos = (pos + len - 1);
   const size_t data_end_pos = (data->pos + data->len - 1);
+
+  ASSERT(passed_data);
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
-    if (data)
-      vstr_ref_del(data->ref);
+    vstr_ref_del(data->ref);
     VSTR__F(data);
     return (NULL);
   }
@@ -396,6 +403,15 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
   {
     if (type == VSTR_TYPE_CACHE_DEL)
       data->pos -= len;
+    
+    return (data);
+  }
+  else if ((type == VSTR_TYPE_CACHE_DEL) && (data_end_pos > end_pos))
+  { /* delete some of the begining of the cache cstr */
+    data->len -= vstr_sc_posdiff(data->pos, end_pos);
+    data->off += vstr_sc_posdiff(data->pos, end_pos);
+
+    data->pos = pos;
     
     return (data);
   }
@@ -505,7 +521,7 @@ int vstr__cache_subset_cbs(Vstr_conf *ful_conf, Vstr_conf *sub_conf)
 {
   unsigned int scan = 0;
   
-  if (sub_conf->cache_cbs_sz > ful_conf->cache_cbs_sz)
+  if (sub_conf->cache_cbs_sz < ful_conf->cache_cbs_sz)
     return (FALSE);
 
   while (scan < ful_conf->cache_cbs_sz)

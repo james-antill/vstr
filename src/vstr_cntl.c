@@ -24,11 +24,16 @@
 
 Vstr__options vstr__options =
 {
- NULL,
- 0,
- 0,
- 0,
- NULL
+ NULL, /* def */
+ 0, /* mmap count */
+
+ /* BEG: mem */
+ 0, /* sz */
+ 0, /* num */
+ 0, /* fail on num */
+ NULL /* values */
+ /* END: mem */
+ 
 };
 
 int vstr_cntl_opt(int option, ...)
@@ -63,7 +68,18 @@ int vstr_cntl_opt(int option, ...)
    
       ret = TRUE;
     }
+
+#ifndef NDEBUG
+    case 666:
+    {
+      unsigned long val = va_arg(ap, unsigned long);
+
+      vstr__options.mem_fail_num = val;
+   
+      ret = TRUE;
+    }
     break;
+#endif
   
     default:
       break;
@@ -114,6 +130,16 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
     }
     break;
 
+    case VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE:
+    {
+      int *val = va_arg(ap, int *);
+     
+      *val = !!base->cache_available;
+     
+      ret = TRUE;
+    }
+    break;
+  
     default:
       break;
   }

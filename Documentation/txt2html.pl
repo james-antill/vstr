@@ -34,6 +34,9 @@ my $html_body = <<EOF;
       body { background: #FFFFFF; }
 
       td.heading { background: #DDDDDD; }
+
+      li       ul li.obj { display: none; }
+      li:hover ul li.obj { display: list-item; list-style-type: square; }
     </style>
 
   </head>
@@ -60,7 +63,7 @@ sub convert_index()
 	    my $uri = $2;
 	    $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
-	    print OUT "<li><a href=\"#$uri\">$name</a>\n";
+	    print OUT "<li class=\"obj\"><a href=\"#$uri\">$name</a>\n";
 	  }
         elsif (/^Section:\s*(.*)$/)
 	  {

@@ -4,8 +4,6 @@
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1
 
-#define USE_ASSERT_LOOP 1
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>

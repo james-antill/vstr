@@ -32,23 +32,52 @@ int tst(void)
   TST_B_TST(ret, 4, !!strcmp(buf + 3, ptr));
   TST_B_TST(ret, 5, (ptr != (optr + 3)));
 
+  ptr = vstr_export_cstr_ptr(s1, 1, 4);
+  
+  TST_B_TST(ret, 6, !!memcmp(buf, ptr, 4));
+  TST_B_TST(ret, 7, !!ptr[4]);
+
+  ptr = vstr_export_cstr_ptr(s1, 2, 4);
+  
+  TST_B_TST(ret, 8, !!memcmp(buf + 1, ptr, 4));
+  TST_B_TST(ret, 9, !!ptr[4]);
+  
+  {
+    size_t off = 0;
+    Vstr_ref *ref = vstr_export_cstr_ref(s1, 2, 4, &off);
+
+    ASSERT((ptr - off) == ref->ptr);
+    
+    TST_B_TST(ret, 10, !!memcmp(buf + 1, ptr, 4));
+    TST_B_TST(ret, 11, !!ptr[4]);
+    
+    ptr = vstr_export_cstr_ptr(s1, 1, 4);
+    vstr_ref_del(ref);
+  }
+    
+  TST_B_TST(ret, 12, !!memcmp(buf, ptr, 4));
+  TST_B_TST(ret, 13, !!ptr[4]);
+
+  optr = vstr_export_cstr_ptr(s1, 1, s1->len);
+  
   /* s2 */
   vstr_add_buf(s2, 0, "a", 1);
   ptr = vstr_export_cstr_ptr(s2, 1, s2->len);
+  vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
   vstr_del(s2, 1, s2->len);
   
   vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
   ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);
   
-  TST_B_TST(ret, 6, !!strcmp(buf + 5, ptr));
-  TST_B_TST(ret, 7, (ptr != (optr + 5)));
+  TST_B_TST(ret, 14, !!strcmp(buf + 5, ptr));
+  TST_B_TST(ret, 15, (ptr != (optr + 5)));
 
   vstr_cache_cb_free(s2, 0); /* free all cached stuff */
   
   ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);
   
-  TST_B_TST(ret, 8, !!strcmp(buf + 5, ptr));
-  TST_B_TST(ret, 9, (ptr == (optr + 5)));
+  TST_B_TST(ret, 16, !!strcmp(buf + 5, ptr));
+  TST_B_TST(ret, 17, (ptr == (optr + 5)));
 
   /* s3 */
   vstr_add_buf(s3, 0, "a", 1);
@@ -60,8 +89,8 @@ int tst(void)
   
   ptr = vstr_export_cstr_ptr(s3, 6, s3->len - 5);
   
-  TST_B_TST(ret, 10, !!strcmp(buf + 5, ptr));
-  TST_B_TST(ret, 11, (ptr == (optr + 5)));
+  TST_B_TST(ret, 18, !!strcmp(buf + 5, ptr));
+  TST_B_TST(ret, 19, (ptr == (optr + 5)));
 
   return (TST_B_RET(ret));
 }

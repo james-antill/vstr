@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <title>Vstr string library comparisons</title>
+    <title>string library comparisons</title>
 
     <style>
       A:hover { color: #20b2aa; }
@@ -10,70 +10,111 @@
       body { background: #FFFFFF; }
 
       td.heading { background: #DDDDDD; }
+
+      dt { font-weight: bold;  }
     </style>
 
   </head>
 
   <body>
-    <h1>Vstr string library comparisons</h1>
+    <h1>string library comparisons</h1>
 
     <p> This page is a rough comparison between the 
       <a href="overview.html">Vstr</a> string library and other string libraries
       that I've seen. This may be somewhat biased, due to the fact that I wrote
-      the Vstr library ... then again it is better :).
+      the Vstr library ... then again it is better :). For a comparison of
+      printf() like functions see
+      <a href="printf_comparison.html">this page</a>.
     </p>
-
+    
     <hr>
 
-    <p>
+    <h3>
       These are libraries that provide a string API.
-    </p>
+    </h3>
 
     <!-- BEG OF string libraries -->
     <ul>
       <li>
+	<h2> <a href="overview.html">Vstr string library</a>
+	</h2>
+	<dl>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>Complicated (list of nodes containing legnth of data of different types, including inline data pointer to data and references to data)</dd>
+	<dt>Namespace:</dt> <dd>Self contained namespace of "vstr_" on everything but members of structs.</dd>
+	<dt>Testing:</dt> <dd> Small amount of user testing. Testsuite tests all functions and constants ... 82% coverage of lines of code of implementation (35% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>1.0.2</dd>
+      </dl> <hr width="40%" />
+
+	<p> Rich API, full printf() implementation including custom formatters.
+	  For more detail see the other pages on this site. </p>
+      </li> <hr width="80%" />
+
+      <li>
 	<h2> <a href="http://www.sgi.com/tech/stl/Rope.html">C++ STL rope</a>
 	</h2>
-	<p>Obviously this is in C++, and not C. This library tries to do what
-	  Vstr does, as well as it does it, however it is "compatible" with the
-	  normal C++ string API and so is constrained in that way. It also
-	  doesn't really seem to have a <emp>reason</emp> for existing ... it just wants
-	  to do "strings well" as far as I can see.
-	  Apart from that, the major differences are that:
+	<dl>
+	  <dt>Language:</dt> <dd>C++ (std::string compat. API)</dd>
+	  <dt>Model:</dt> <dd>Complicated (list of nodes containing data, "data producing functions" or references to rope strings -- evolution of the cord design)</dd>
+	  <dt>Namespace:</dt> <dd>Uses standard C++ namespaces, and no #define's.</dd>
+	  <dt>Testing:</dt> <dd> Included in libstdc++-v3, so possibly good user testing. No testsuite. </dd>
+	  <dt>Version:</dt> <dd>unknown (libstdc++-v3 cvs from 2003-02-24)</dd>
+	</dl> <hr width="40%" />
+
+	<p>This library tries to do something similar to what Vstr does. 
+	  The major differences are that:
 	  <ul>
 	    <li> ropes can have a function as a string
 	      generator whereas Vstr doesn't allow that (error cases are 
 	      a nightmare here), however the major use of
 	      this is file IO, and Vstr has functions to help there. </li>
 	      <li> Vstr substitution is much faster than in ropes.</li>
-	      <li> Vstr makes a distinction between adding data at a pointer,
-	      and adding the pointer itself.</li>
+	      <li> Vstr easily allows you to add references to data, so that
+	    you can add mmap() memory to the string etc.
+	    It's not obvious if it's possible to do this with a rope, so that
+	    you can make sure it isn't copied and/or cleanup properly when no
+    strings references the data (this may be possible with inheritance).</li>
 	  </ul>
-</p>
-	<p>Also it doesn't seem possible to act with a substring of a Rope, you
-	  can only make a copy of a substring using the substr call. Vstr
-	  doesn't have a true distinction between the entire Vstr and a portion
+      </p>
+	<p>Also, due to conforming to the std::string C++ API, it isn't
+      possible to act with a substring of a Rope, you
+      can only make a copy of a substring using the substr call (however
+      that substring makes everything internal references). Vstr
+      doesn't have a true distinction between the entire Vstr and a portion
 	  thereof.</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://developer.gnome.org/doc/API/2.0/glib/glib-strings.html">GLib</a></h2>
-	<p> This is probably the most used C string library, and comes with the
-	  glib utility library. This works on a simple start pointer and
-	  length, model. This makes it much more memory effiecient for small
-	  strings. This feature also makes it pretty much impossible to do IO
-	  into the strings, share data between strings and kills performance
-	  on substitutions. Failure to allocate memory calls
-	  abort().</p>
-	<p>Also note that the printf implementation just calls the host
-	  implementation of sprintf/asprintf/etc. directly. So it's impossible
-	  to have custom formatters (the most annoying fallout of this is that
+       <dl>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd> Pointer, length and size (expansion of length/pointer is done to the nearest power of 2).</dd>
+        <dt>Namespace:</dt> <dd> Needs entire glib API, so mostly self contained namespace of "g_" on everything but members of structs (a couple of exceptions are made for things like the MAX() macro).</dd>
+<!-- perl -ne '/(g_string_[a-z_]+)\s*\(/ && print "$1\n"' glib/gstring.h | egrep -v g_string_chunk -->
+<!-- perl -ne '/(g_string_[a-z_]+)\s*\(/ && print "$1\n"' tests/string-test.c | egrep -v g_string_chunk -->
+        <dt>Testing:</dt> <dd> Included in glib, so very good user testing. Testsuite tests 11 functions, implementation has 28 functions (30% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>2.2.1</dd>
+       </dl> <hr width="40%" />
+
+  <p> This is probably the most used C string library, and comes with the
+    glib utility library. This works on a simple start pointer and
+    length, model. This makes it much more memory effiecient for small
+    strings. This feature also makes it pretty much impossible to do IO
+    into the strings, share data between strings and kills performance
+    on substitutions. Failure to allocate memory calls
+    abort().</p>
+	<p>The printf implementation calls the host
+	  implementation of sprintf/asprintf/etc. if it looks like a valid C99
+ implementation, and uses the trio library internally otherwise (this is only 
+true as of version 2.2.0 though -- before that it'll just crash in some
+ instances). 
+ So it's impossible
+	  to have custom formatters (the most obvious annoying fallout of this is that
 	  you can't add a GString to a GString as part of a printf() call) and
 	  portability is a problem 
-	  (currently [2002-09-02] it
-	  doesn't even tell you that you'll crash your program in certain
-	  cases, and loses data in certain cases when you add a '\0' byte 
-	  to the string -- I've submitted a patch for the last problem).</p>
+	  (Although it is supposed to be valid to work with data that has NIL
+ bytes in it doing so loses data in certain cases -- 
+I've submitted a patch for the last problem).</p>
 	<p>There is no substitution API in glib, probably because you can't 
 	  share data so you just do a memcpy() and an overwrite. It's also
 	  worth noting that your program may crash if you try and add data in
@@ -83,10 +124,21 @@
 	  (Eg. g_strsplit() in the case of vstr_split_chrs()). There is also
 	  limited support in glib for doing things in ASCII regardless of the
 	  current user locale.</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://www.ossp.org/pkg/lib/str/">OSSP str</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>C Style strings (so embedded NIL characters aren't allowed)</dd>
+	<dt>Namespace:</dt> <dd>Mostly self contained namespace of "str_" on everything but members of structs, which is a system namespace in C (exceptions are TRUE and FALSE etc.).</dd>
+
+<!-- perl -ne '/(str_[a-z_]+)\s*\(/ && print "$1\n"' str.h -->
+<!-- perl -ne '/(str_[a-z_]+)\s*\(/ && print "$1\n"' str_test.c -->
+
+	<dt>Testing:</dt> <dd> Small amount of user testing. Testsuite tests 7 functions, implementation has 15 functions ... at least 4 constants are also untested (5% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>0.9.8</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  This library is a slightly saner version of the ISO C str* functions,
 	  with a few extentions. It works with (char *) as the native type,
@@ -110,11 +162,21 @@
 	  uses a snprint() interface, this means that data can be lost using the
 	  interface if the programer isn't carefull.
 	</p>
-      </li>
-
+      </li> <hr width="80%" />
       
       <li>
 	<h2> <a href="http://www.annexia.org/freeware/c2lib/">c2lib</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>C Style strings (so embedded NIL characters aren't allowed)</dd>
+	<dt>Namespace:</dt> <dd> not currently written. </dd>
+
+<!-- perl -ne '/(pstr[a-z_]+)\s*\(/ && print "$1\n"' pstring.h -->
+<!-- perl -ne '/(pstr[a-z_]+)\s*\(/ && print "$1\n"' test_pstring.c -->
+
+	<dt>Testing:</dt> <dd> Testsuite tests all 10 functions (48% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>1.4.1</dd>
+      </dl> <hr width="40%" />
+
 	<p>
           This library works with (char *) as the base type, although
           all allocator functions are also passed a "pool" that the (char *)
@@ -142,78 +204,58 @@
 	  are always reserved for use as identifiers with file scope in both
 	  the ordinary and tag name spaces."
 	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://cade.webbg.com/away/vstring/">VSTRING</a></h2>
-	<p>
-	  This is currently just a C++ wrapper class around a (char *), with
-	  a couple of extra functions not available in std. C. It does to
-	  auto matic resizing. It also look looks like the implementation
-	  could be changed to fix a lot of
-	  problems with this (Eg. the length is calculated using strlen(), so
-	  embeded '\0' characters corrupt data) 
-	  without affecting source compatability. The printf like function calls
-	  the host implementation.
-	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://freshmeat.net/projects/my_string/">my_string</a></h2>
+
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>C Style strings (so embedded NIL characters aren't allowed)</dd>
+	<dt>Namespace:</dt> <dd> No real namespace, a few functions are in the "Str" system namespace, and the rest are named randomly (presumably the same as the php versions).</dd>
+	<dt>Testing:</dt> <dd> Testsuite tests 4 functions, implementation has 13 functions (8% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>1.0.0</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  This is a bunch of add on functions to the std. C string functions,
 	  inspired by PHP.
 	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://libtext.sourceforge.net/">libtext</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>C Style strings (so embedded NIL characters aren't allowed)</dd>
+	<dt>Namespace:</dt> <dd>Mostly self contained namespaces of "t_" and "Text" on everything but members of structs, however it also uses "_Text" which is a system namespace in C and a couple in the "__" is the system namespace (exceptions are SHOWBUFINFO and PrintTinfo which are for debuging the library and will be removed).</dd>
+
+<!-- perl -ne '/(t_[a-z_]+)\s*\(/ && print "$1\n"'  -->
+<!-- perl -ne '/(t_[a-z_]+)\s*\(/ && print "$1\n"'  -->
+
+	<dt>Testing:</dt> <dd> Testsuite test 15 functions, implementation has 67 functions (9% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>0.0.0-beta1</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  This library doesn't allow "binary" (!isgraph &amp;&amp; !isspace --
-	  so depends depending on global locale) characters. 
+	  so changes depending on global locale) characters. 
 	  Printf like function calls the host implementation. Has a large API
-	  for  just add, delete and substitue.
+	  for add, find, delete and substitue. A couple of other APIs for
+          reverse, uppercasing and lowercasing.
 	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
-	<h2> <a href="http://freshmeat.net/projects/firestring/">firestring</a></h2>
-	<p>
-	  Has a start pointer and length model, but it doesn't 
-	  allocate/reallocate memory itself. So the user has to do half the work
-	  of the library to pre-allocate the right ammount of data before using
-	  the functions. The printf like function has almost no resemblence to 
-	  the ISO printf function, which is bound to confuse the user.
-	  It provides a function to do a read, which is nice. Also has a
-	  simple "parse configuration file" function.
-	</p>
-      </li>
+	<h2> <a href="http://herd.plethora.net/~seebs/c/sz.html">sz</a></h2>
+<!-- Peter Seebs -->
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>Complicated (A tree of nodes to make up the string, all of which have a pointer and length).</dd>
+	<dt>Namespace:</dt> <dd> Somewhat confined to namespace of "sz" however there are a few leaks for "mem2" and "str2" importer functions whioch are in the system namespace (also has a str_decode() function which is in the system namespace). </dd>
+<!-- perl -ne '/((sz|mem|str)[a-z2_]+)\s*\(/ && print "$1\n"'  sz.h -->
+<!-- perl -ne '/((sz|mem|str)[a-z2_]+)\s*\(/ && print "$1\n"'  test/*.c samples/szcat.c sztest.c sztr.c -->
+	<dt>Testing:</dt> <dd> Testsuite tests 30 functions, implementation has 48 functions (8% size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>0.9.2</dd>
+      </dl> <hr width="40%" />
 
-      <li>
-	<h2> <a href="http://freshmeat.net/projects/mstringandmstringarray/">MString</a></h2>
-	<p>
-	  This is a C++ library designed to be compatible with the string 
-	  library that comes with the Microsoft Foundation Classes. <b>Each
-	  character</b> in the string is actually a <b>class itself</b>. This
-	  could probably be fixed without changing source compatability.
-	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://www2.dystance.net:8080/ping/pingutil/pingutil.html#String%20Manipulation%20and%20Parsing%20Functions">pingutil</a></h2>
-	<p>
-	  This library is a slightly saner version of the ISO C str* functions,
-	  with a few extentions. It works with (char *) as the native type,
-	  and doesn't do automatic allocation ... but <b>almost</b> all
-	  functions are size limited so buffer overflows aren't a big concern,
-	  but losing data is.
-	  The library has some vector functions, but it uses (char **) as the
-	  vector type and alters the original string in it's verison of split.
-	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://herd.plethora.net/~seebs/c/sz.html">Peter Seebs -- sz</a></h2>
 	<p>
 	  An interesting library, it uses an opaque type for the string which
 	  is suitably non simplistic internally to allow quite a few
@@ -230,10 +272,17 @@
 	  that constant life becomes interesting. There is no printf like 
 	  function.
 	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://vsftpd.beasts.org/">vsftpd</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd> Pointer, length and size. </dd>
+	<dt>Namespace:</dt> <dd> Self contained namespace of "str_" on all functions and "mystr" and "str_" for structure tag, structure members are in private namespace of "PRIVATE_HANDS_OFF_". </dd>
+	<dt>Testing:</dt> <dd> User testing as part of the application. </dd>
+	<dt>Version:</dt> <dd>1.0.0 of vsftpd</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  This has a fairly well abstracted namespace, esp. considering it is
 	  only bundled with the <emp>vsftpd</emp> ftp server. It works on the
@@ -247,10 +296,17 @@
 	  It is somewhat ammusing that even though this isn't a string library, 
 	  it is much better than most of the other string libraries here.
 	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/cordh.txt">Bohem GC string</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd> Complicated (tree of nodes containing data, "data producing functions" or references to cord strings - data is all read only). </dd>
+	<dt>Namespace:</dt> <dd> Mostly self contained namespace of "CORD" on everything except structure members (which are all private -- exceptions are MAX_DEPTH and FUNCTION_BUF_SZ). </dd>
+	<dt>Testing:</dt> <dd> Probably good user testing. No apparent testsuite. </dd>
+	<dt>Version:</dt> <dd> not obvious </dd>
+      </dl> <hr width="40%" />
+
 	<p> This is the string implementation that comes with the Boehm
 	  Garbage Collector (and so is included in gcc etc.). It pretty much
 	  requires a GC as you can't "alter"
@@ -274,40 +330,18 @@
 	  This is an "old" implementation though, with the last copyright from
 	  1994 so some of these problems probably stem from that.
 	</p>
-      </li>
+      </li> <hr width="80%" />
 
       <li>
-	<h2> <a href="http://www.fefe.de/libowfat/">libowfat</a></h2>
-	<p>
-	  This is a reimplementation of the functions in qmail, but under a GPL
-	  license. 
-	  It does have a stralloc set of calls
-	  that operate on a start pointer and length model, they do dynamically
-	  reallocate memory and pass memory failure back to the caller.
-	  As with all DJB code though, the API is written as a set of small
-	  atomic operations. For instance printf like functionality is 
-	  implemented over 12 different functions named fmt_* (which don't
-	  check for overflows, but <b>some</b> are also reimplemented as a as
-	  stralloc functions). This design makes using the API much more clumsy,
-	  for a minor speedup, makes doing i18n almost impossible and goes
-	  directly against "premature optimization is bad".
-	</p>
-	<p>
-	  It's worth nothing that although the stralloc functions deal with 
-	  dynamic memory a lot of the other function ignore bounds checking
-	  and/or assume things are terminated with a '\0' character. Even more
-	  so than the DJB functions, although this is probably bad just
-	  implementation rather than deliberate -- but then why would you
-	  think you can write good code with an interface when the
-	  implementor can't	  
-	  (for 
-	  instance the scan_long and scan_8long functions are almost completely
-	  broken in libowfat ... but fine in qmail).
-	</p>
-      </li>      
+	<h2> <a href="http://www.postfix.org/ftp-sites.html">postfix</a></h2>
+<!-- Wietse Venema -->
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>Pointers, length and size (start of memory is different to start of data)</dd>
+	<dt>Namespace:</dt> <dd> not currently written. </dd>
+	<dt>Testing:</dt> <dd> not currently written. </dd>
+	<dt>Version:</dt> <dd>1.7.1 of postfix</dd>
+      </dl> <hr width="40%" />
 
-      <li>
-	<h2> <a href="http://www.postfix.org/ftp-sites.html">Wietse Venema -- postfix</a></h2>
 	<p>
 	  This is a set of functions used in the <emp>postfix</emp> MTA daemon
 	  but obviously well abstracted so that they can be easily used in 
@@ -349,10 +383,56 @@
 	  long doulbe types, i18n 
 	  argument number specifiers or thousand seperator modifiers.
 	</p>
-      </li>      
+      </li> <hr width="80%" />
 
       <li>
-	<h2> <a href="http://doc.trolltech.com/3.0/qstring.html">Qt</a></h2>
+	<h2> <a href="http://www.praeclarus.demon.co.uk/tech/libretto/">libretto</a></h2>
+        <dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>Pointer, length, size</dd>
+	<dt>Namespace:</dt> <dd> Needs entire libretto API, so terrible ... each subsystem takes it's own namespace, with some other random stuff. </dd>
+<!-- perl -ne '/(abuf_[a-z_]+)\s*\(/ && print "$1\n"' src/autobuf.c -->
+<!-- perl -ne '/(astr_[a-z_]+)\s*\(/ && print "$1\n"' src/autostr.c src/autostr-func.c -->
+	<dt>Testing:</dt> <dd> Testsuite tests 32 autostr and 32 autobuf functions, implementation has 53 autostr functions and 36 autobuf functions (%31 size ratio between implementation and testsuite -- simple line count). </dd>
+	<dt>Version:</dt> <dd>2.1</dd>
+      </dl> <hr width="40%" />
+
+	<p>
+         Similar implementation to glib, however there are a lot more utility
+         functions for finding data dna comparing strings. There are really two
+         string APIs, one for strings (Autostr) and one fo "dynamic buffers"
+         (Autobuf) ... these type would be interchangable apart from the fact
+         that the members are ordered differently in their structure
+         definitions. Autobuf's can handle data with NIL bytes in it, while
+         Autostr calls the ISO C str*() functions dna silently fails. Both 
+         string types share features, however the Autostr API
+         has a few more functions.
+         This library is now unmaintained, according to
+         the original author.
+	</p>
+	<p>
+        Like glib printf() like function calls the host seperately for each 
+        % token after calculating the max possible size of that tokens output.
+        It doesn't
+        include '\'' (thousand modifiers), 'A', 'a', 'td', 'zd' and
+	  i18n format parameter modifiers. However they will be equally 
+        unportable everywhere.
+	</p>
+	<p>
+         Note that there are static extentions to the printf() like function so
+         that you can print the Autostr string type.
+	</p>
+      </li> <hr width="80%" />
+
+      <li>
+	<h2> <a href="http://doc.trolltech.com/3.0/qstring.html">Qt QString</a></h2>
+        <dt>Language:</dt> <dd>C++ (std::string compat. API)</dd>
+	<dt>Model:</dt> <dd>Pointer, length, size and reference count (shares entire strings only)</dd>
+	<dt>Namespace:</dt> <dd> Needs entire Qt API, so mostly self contained namespace of "Q". </dd>
+
+	<dt>Testing:</dt> <dd> Included in Qt, so very good user testing. No apparent testsuite (this is backed by a proprietry software company, so it's possible they have an internal testsuite). </dd>
+	<dt>Version:</dt> <dd>3.0.5</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  Again, C++ ... uses a pointer and length model but allows reference 
 	  counting on entire QString objects. This means that an assignment
@@ -366,10 +446,17 @@
 	  calls out to the host sprintf() implementation for numbers, pointers 
 	  and doubles.
 	</p>
-      </li>      
+      </li> <hr width="80%" />
 
       <li>
 	<h2> <a href="http://www-wales.ch.cam.ac.uk/doc/mimelib-1.1.2/string.html">Mimelib DwString</a></h2>
+        <dt>Language:</dt> <dd>C++ (std::string compat. API)</dd>
+	<dt>Model:</dt> <dd>Pointer, length, size and reference count (shares any substring)</dd>
+	<dt>Namespace:</dt> <dd> Needs entire MimeLib API, so mostly self contained namespace of "dw". </dd>
+	<dt>Testing:</dt> <dd> Included in MimeLib, so good user testing. Testsuite doesn't test entire string API (EG. DwStrcasecmp isn't tested), however being C++ it is non-trivial to tell automatically how much is (this is made worse by the fact that there are not specific string tests, just entire mimelib tests). </dd>
+	<dt>Version:</dt> <dd>3.0.0 of kdenetwork</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  C++ ... uses a pointer and length model but allows reference 
 	  counting the Dwtring objects. This means that an assignment
@@ -377,9 +464,17 @@
 	  the storage, but altering any part of either object will nullify all 
 	  sharing. Apart from that it is much like QString in the QT library.
 	</p>
-      </li>
+      </li> <hr width="80%" />
+
       <li>
 	<h2> <a href="http://freshmeat.net/projects/libast/">libast (formerly libmej)</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>Pointer, length and size</dd>
+	<dt>Namespace:</dt> <dd> Needs entire libast API, so terrible ... namespace is all over the place for large parts of the library, although strings tend to stay in spif_str_*() ... but there is no way to get just those functions. </dd>
+	<dt>Testing:</dt> <dd> not currently written. </dd>
+	<dt>Version:</dt> <dd>0.5</dd>
+      </dl> <hr width="40%" />
+
 	<p>
 	  Has a start pointer and length model, however it does grow the strings
 	  itself ... and call abort() is the allocations fails. However, note 
@@ -412,116 +507,152 @@
 	  added to it (see below for the Samba version which is slightly 
 	  better version of Patrick's code with floating point).
 	</p>
-      </li>
-    </ul>
-    <!-- END OF string libraries -->
+      </li> <hr width="80%" />
 
+      <li>
+	<h2> <a href="http://www.mibsoftware.com/librock/text/">librock text processing</a></h2>
+	<dt>Language:</dt> <dd>C</dd>
+	<dt>Model:</dt> <dd>C Style strings (so embedded NIL characters aren't allowed)</dd>
+	<dt>Namespace:</dt> <dd> Self contained namespace of "librock_". </dd>
+        <dt>Testing:</dt> <dd> No public testsuite, private testsuite doesn't
+ cover everything (I've not seen it, just spoken to the author). </dd>
+	<dt>Version:</dt> <dd> unknown (2003-02-25) </dd>
+      </dl> <hr width="40%" />
+
+	<p>
+	  This library has allocating versions of most of the std. modifying
+          str*() library functions. It has a specialised version of strspn() 
+          for matching "C identifier" like names.
+          It also has a couple of utility functions
+          for reading IO ... however blocking is mandatory, and speed may be a
+          problem due to numerous realloc() calls for large datasets.
+	</p>
+	<p>
+          The printf() like function just calls the host implementation. Note
+          that before 2003-02-25 the failure path was broken, and would crash.
+       </p>
+     </li> <hr width="80%" />
+
+<!-- -->
+<!-- More C -->
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/firestring/">firestring</a></h2>
+	<p>
+	  Has a start pointer and length model, but it doesn't 
+	  allocate/reallocate memory itself. So the user has to do half the work
+	  of the library to pre-allocate the right ammount of data before using
+	  the functions. The printf like function has almost no resemblence to 
+	  the ISO printf function, which is bound to confuse the user.
+	  It provides a function to do a read, which is nice. Also has a
+	  simple "parse configuration file" function.
+	</p>
+      </li> <hr width="80%" />
+
+      <li>
+	<h2> <a href="http://www2.dystance.net:8080/ping/pingutil/pingutil.html#String%20Manipulation%20and%20Parsing%20Functions">pingutil</a></h2>
+	<p>
+	  This library is a slightly saner version of the ISO C str* functions,
+	  with a few extentions. It works with (char *) as the native type,
+	  and doesn't do automatic allocation ... but <b>almost</b> all
+	  functions are size limited so buffer overflows aren't a big concern,
+	  but losing data is.
+	  The library has some vector functions, but it uses (char **) as the
+	  vector type and alters the original string in it's verison of split.
+	</p>
+      </li> <hr width="80%" />
+
+      <li>
+	<h2> <a href="http://www.fefe.de/libowfat/">libowfat</a></h2>
+	<p>
+	  This is a reimplementation of the functions in qmail, but under a GPL
+	  license. 
+	  It does have a stralloc set of calls
+	  that operate on a start pointer and length model, they do dynamically
+	  reallocate memory and pass memory failure back to the caller.
+	  As with all DJB code though, the API is written as a set of small
+	  atomic operations. For instance printf like functionality is 
+	  implemented over 12 different functions named fmt_* (which don't
+	  check for overflows, but <b>some</b> are also reimplemented as a as
+	  stralloc functions). This design makes using the API much more clumsy,
+	  for a minor speedup, makes doing i18n almost impossible and goes
+	  directly against "premature optimization is bad".
+	</p>
+	<p>
+	  It's worth nothing that although the stralloc functions deal with 
+	  dynamic memory a lot of the other function ignore bounds checking
+	  and/or assume things are terminated with a '\0' character. Even more
+	  so than the DJB functions, although this is probably bad just
+	  implementation rather than deliberate -- but then why would you
+	  think you can write good code with an interface when the
+	  implementor can't	  
+	  (for 
+	  instance the scan_long and scan_8long functions are almost completely
+	  broken in libowfat ... but fine in qmail).
+	</p>
+      </li> <hr width="80%" />
+
+      <li>
+	<h2> <a href="http://www.prism.gatech.edu/~gte477n/languages/c/xstring.html">xstring</a></h2>
+	<p>
+	  This library works on a simple start pointer and length, model. It
+	  is mostly a subset of the glib functionality, and like glib also
+	  calls abort() on memory errors. One of the obvious missing pieces is
+	  a printf() like function.
+	</p>
+	<p> The namespace isn't terrible, apart from the fact that the 
+	  identifiers "xmalloc", "xrealloc" and "xfree" are all defined and
+	  exported from the library (which is compiled shared, but given a 
+	  static library ".a" suffix).
+	</p>
+      </li> <hr width="80%" />
+
+<!-- More C++ -->
+      <li>
+	<h2> <a href="http://cade.webbg.com/away/vstring/">VSTRING</a></h2>
+	<p>
+	  This is currently just a C++ wrapper class around a (char *), with
+	  a couple of extra functions not available in std. C. It does to
+	  auto matic resizing. It also look looks like the implementation
+	  could be changed to fix a lot of
+	  problems with this (Eg. the length is calculated using strlen(), so
+	  embeded '\0' characters corrupt data) 
+	  without affecting source compatability. The printf like function calls
+	  the host implementation.
+	</p>
+      </li> <hr width="80%" />
+
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/mstringandmstringarray/">MString</a></h2>
+	<p>
+	  This is a C++ library designed to be compatible with the string 
+	  library that comes with the Microsoft Foundation Classes. <b>Each
+	  character</b> in the string is actually a <b>class itself</b>. This
+	  could probably be fixed without changing source compatability.
+	</p>
+      </li> <hr width="80%" />
+
+    </ul>
+
+
+
+ <!-- OTHERS -->
+   <!-- http://www.robertnz.net/string.htm -- C++ compat. dito ? -->
+   <!-- http://open.nit.ca/wvstreams/tutorial/ -- C++ compat. (+ extra functions) -->
+   <!-- http://www.rainingdata.com/support/techpubs/0852head.html -- 
+        proprietry ? + wierd namespace -->
+   <!--  -- similar to glib, 
+        now unmaintained ... has more fleshed out API ... 
+        but bad names/namespace ? -->
+   <!-- need to do perl/python/ruby/rep -->
+
+    <!-- END OF string libraries -->
     <hr>
 
-    <p>
-      These are libraries that provide a printf() like function, note that
-      if the library provides more than just a printf() like it will be
-      in the "string API" section above and the printf() like function
-      will be compared as part of the overall string API.
-    </p>
+<p>
+      For a comparison of "portable" printf() like functions, you should look at
+      <a href="printf_comparison.html">this page</a>
+</p>
     
-    <!-- BEG OF printf() like libraries -->
-    <ul>	
-      <li>
-	<h2> <a href="http://www.ijs.si/software/snprintf/">Mark Martinec snprintf</a></h2>
-	<p>
-	  Not a bad implementation for what is actually done (it seems to be
-	  fairly stds. compliant, and has optional platform specific behaviour,
-	  it seems to have been written by reading man pages from what I can
-	  see -- no small feat), however there is a lot of missing
-	  functionality (most of which it readily admits to on the web page).
-	  Probably the most noticable of is the missing 'zu', 'zd', 'ju',
-	  'jd', 'td', 'hhd', etc. formats (it is hard to write a portable
-	  program without these).
-	  Next being missng i18n format modifiers, and the 'n' format.
-	</p>
-	<p>
-	  No attempt is made to provide user specified formats.
-	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://www.contactor.se/~dast/trio/">Trio I/O library</a></h2>
-	<p>
-	  The printf() like function is not stds. compliant in a number of 
-	  ways, however it does try to implement most of the features of the
-	  std.
-	  Also worth noting is that the i18n format parameter modifiers have
-	  an arbitrary limit, and the double output is custom code that may
-	  well not produce the same output as a real implementation and as an
-	  I/O library the output model isn't very good for a dynamically 
-	  expanding string.
-	</p>
-	<p>
-	  User specified formats are supported, however they are done in such a
-	  way that the gcc warning parser makes them useless.
-	</p>
-
-      </li>
-      
-      <li>
-	<h2> <a href="http://samba.org/cgi-bin/cvsweb/samba/source/lib/snprintf.c">Patrick Powell's snprintf() as used in Samba</a></h2>
-	<p>
-	  This code was originally posted to BrugTraq, and has since been
-	  hacked on by at least four more people. This is the version in
-	  Samba, however there are other versions of this code floating around
-	  as it was a favourite for people to jsut copy and paste into their
-	  project.
-	</p>
-	<p>
-	  This is very poor for stds. compliance, it doesn't even support '#x' 
-	  to print a leading "0x" before the number.
-	  '\'' (thousand modifiers), 'A', 'a', 'F', 'zd', 'td', 'hhd', etc. and
-	  i18n format parameter modifiers are all completly missing. 
-	  An empty precision format doesn't make the precision zero. Unspecified
-	  precisions are wrong on double values, and zero specified ones aren't 
-	  correct for octal etc.
-	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://httpd.apache.org/dev/">Apache HTTPD snprintf()</a></h2>
-	<p>
-	  '\'' (thousand modifiers), 'a', 'F', 'Lf', 'lld', 'td', 'zd', 'hhd' , etc.
-	  and i18n format parameter modifiers are all completly missing
-	  (although 'qd' is available for "long long" ints). 'A'
-	  isn't the std. formatter but a custom one. Unspecified precision is
-	  broken, as is corner cases for octal etc. also infinity/nan output 
-	  is not correct with regard to case. <b>Buffer overflows are possible
-	    in the integer formatting paths</b>
-	</p>
-	<p>
-	  Aopart from the static extensions 'A' and 'I', this is the basis of
-	  the OSSP str library implementation.
-	</p>
-      </li>
-
-      <li>
-	<h2> <a href="http://www.research.att.com/sw/tools/sfio/">Sfio</a></h2>
-	<p>
-	  The sfio97 version available <a href="http://www.cpan.org/src/misc/sfio97.src.unix.tar.gz">here</a> is the version I 
-	  looked at, it's possible that the 2002 versions fixes some of the
-	  problems. However I didn't get access to it.
-	<p>
-	<p>
-	  This is fairly stds. complian, for when it was written. However it 
-	  doesn't support '\'' (thousand seperators) 'td', 'jd', 'zd', 'hhd',
-	  'a', 'A', or i18n parameter modifiers etc.
-	  Also double printing of infinity is wrong with regard to case.
-	</p>
-	<p>
-	  This code contains a bunch of static extensions, and no way to define
-	  your own.
-	</p>
-      </li>
-    </ul>
-    <!-- END OF printf() like libraries -->
-
     <p> Any corrections or omissions you see in the above, feel free to contact 
       me at the address below </p>
 
@@ -529,7 +660,7 @@
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Mon Feb 10 12:58:38 EST 2003
+Last modified: Tue Feb 25 21:13:54 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

@@ -35,7 +35,8 @@ int tst(void)
   
   tst_v("%s", "123456789 123456789 123456789 123456789 123456789 123456789 ");
   assert(s1->len == 120);
-  vstr_iter_fwd_beg(s1, 1, s1->len + 1, iter);
+  /* FAIL: vstr_iter_fwd_beg(s1, 1, s1->len + 1, iter); */
+  vstr_iter_fwd_beg(s1, 1, s1->len, iter);
   ASSERT((iter->len + iter->remaining) == 120);
   vstr_iter_fwd_nxt(iter);
   

@@ -50,8 +50,11 @@ extern inline void *vstr__debug_malloc(size_t sz)
 {
   void *ret = NULL;
   
+  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+    return (NULL);
+  
   ++vstr__options.mem_num;
-
+  
   if (!vstr__options.mem_sz)
   {
     vstr__options.mem_sz = 8;
@@ -71,7 +74,8 @@ extern inline void *vstr__debug_malloc(size_t sz)
   ASSERT(sz);
 
   ret = malloc(sz);
-
+  ASSERT(ret);
+  
   vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
   
   return (ret);
@@ -80,6 +84,9 @@ extern inline void *vstr__debug_malloc(size_t sz)
 extern inline void *vstr__debug_calloc(size_t num, size_t sz)
 {
   void *ret = NULL;
+  
+  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+    return (NULL);
   
   ++vstr__options.mem_num;
   
@@ -102,7 +109,8 @@ extern inline void *vstr__debug_calloc(size_t num, size_t sz)
   ASSERT(num && sz);
 
   ret = calloc(num, sz);
-
+  ASSERT(ret);
+  
   vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
 
   return (ret);
@@ -136,10 +144,14 @@ extern inline void vstr__debug_free(void *ptr)
 
 extern inline int vstr__safe_realloc(void **ptr, size_t sz)
 {
-  void *tmp = realloc(*ptr, sz);
+  void *tmp = NULL;
 
   ASSERT(*ptr && sz);
   
+  if (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
+    return (FALSE);
+
+  tmp = realloc(*ptr, sz);
   if (!tmp)
     return (FALSE);
 

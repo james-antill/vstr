@@ -22,7 +22,6 @@ int tst(void)
   TST_B_TST(ret, 2, !!strcmp(buf + 3, ptr));
 
   free(ptr);
-  
 
   return (TST_B_RET(ret));
 }

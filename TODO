@@ -7,21 +7,31 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
-. Asserts in inline functions
+. Have a way to make thousands sep. group/output differently for hex numbers?
+  (functionality)
 
-. vstr_mov() doesn't move cache information.
+. doco internal datastructures (docs)
 
-. Make sure everything builds on different platforms.
+. autodetect linker-script options (build)
 
-. Get rid of inet_ntop() ?
+. autogen the linker script file, use explicit names (build)
 
-. Try to find a way to test malloc() failure cases in testsuite ... last 17%
-  XFAIL_TESTS
+. vstr_mov() doesn't move cache information. (speed)
 
-. wcrtomb() doesn't exist on FreeBSD ... relies on LC_CTYPE
+. Make sure everything builds on different platforms. (build/portability)
+
+. Get rid of inet_ntop() ? (functionality/portability)
+
+. Try to find a way to test malloc() failure cases in testsuite (testing)
+
+. wcrtomb() doesn't exist on FreeBSD ... relies on LC_CTYPE (portability)
 
 . del() inline kills cache too easily ... make cb's extern inline and call
-   directly.
+   directly. (speed)
+
+. have vstr_export_cstr_ptr()/etc. have a size so you don't need to go through
+   malloc each call to getsame sized bits ... mostly done ... free's when it
+   isn't in use which won't always be appreciated ... fix that.
 
  1.2.x
  -----

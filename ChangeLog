@@ -1,3 +1,86 @@
+2003-03-04  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.3
+
+	* src/vstr_add.c (vstr_add_vstr): Fix off by one error in malloc()
+	failure cleanup path.
+
+	* src/vstr.c (vstr_make_base): Fixed reference leak on memory failure.
+	(vstr_make_base): Fix non setting of conf->malloc_bad flag, on memory
+	failure.
+
+	* include/vstr-nx-inline.h (vstr__debug_malloc): Added special test
+	code so we can manually fail malloc()/calloc()/realloc() ... only to
+	be used in testsuite.
+
+	* src/vstr_srch_case.c (vstr_srch_case_buf_rev): Fix return value when
+	searching for empty strings.
+
+	* src/vstr_srch.c (vstr_srch_buf_rev): Fix return value when searching
+	for empty strings.
+
+	* src/vstr_srch_case.c (vstr_srch_case_buf_rev): Fixed bug when
+	searching for 1	length _NON data.
+
+	* src/vstr_srch.c (vstr_srch_buf_fwd): Fixed bug when searching for 1
+	length _NON data.
+	(vstr_srch_buf_rev): Fixed bug when searching for 1 length _NON data.
+	(vstr_srch_buf_fwd): Fixed bug when searching for any length of _NON
+	data.
+
+2003-03-03  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_del): Fixed bug when deleteing from
+	end of single node Vstr string, that has a ->used amount.
+
+	* tst/export/tst_export_iovec_ptr_all.c (tst_iovec): Added tests for
+	expanding iovec cache.
+
+	* src/vstr_cstr.c (vstr__export_cstr_cache): Implement offset and size
+	as part of the data cache, so we don't have to enter malloc/free so
+	much.
+
+	* include/vstr-inline.h (vstr_del): Fixed bug in cached data when
+	deleteing from the front (introduced in the optomisations
+	in 1.0.2).
+
+	* tst/del/tst_del_beg.c (tst): Added test coverage for optomisations
+	added in 1.0.2.
+
+	* tst/del/tst_del_end.c (tst): Added test coverage for optomisations
+	added in 1.0.2.
+
+	* include/vstr-const.h (VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE): Add 
+	constant so you can find out if the Vstr string can cache data.
+
+2003-02-28  James Antill  <james@and.org>
+
+	* examples/ex_hexdump.c (main): Fall back to read/write if fstat, 
+	filesize == 0, fails.
+
+	* examples/ex_nl.c (main): Fall back to read/write if fstat, 
+	filesize == 0, fails.
+
+	* examples/ex_rot13.c (main): Fall back to read/write if fstat, 
+	filesize == 0, fails.
+
+2003-02-27  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (VSTR__ASSERT): Added assert() checks for inline
+	functions (when not compiled inline)
+
+	* include/vstr-inline.h (vstr_wrap_memcpy): Call "system" memcpy() if
+	the argument is a constant, as it'll be picked up by gcc.
+	(vstr_wrap_memcmp): Call "system" memcmp() if
+	the argument is a constant, as it'll be picked up by gcc.
+	(vstr_wrap_memset): Call "system" memset() if
+	the argument is a constant, as it'll be picked up by gcc.
+
+	* include/vstr-switch.h: Check for GNUC/non-ansi-strict on all
+	attribute uses, simple way to mostly do the right thing.
+	(VSTR__BULTIN_CONST_P): Add ability to call builtin_constant_p() in
+	gcc.
+
 2003-02-21  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.2

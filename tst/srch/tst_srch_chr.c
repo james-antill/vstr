@@ -16,9 +16,9 @@ static void tst_srch_chr(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 4,
             vstr_srch_chr_rev(t1, 1, t1->len, 'x') != lens_fwd[1]);
   TST_B_TST(ret, off + 5,
-            vstr_srch_chr_fwd(t1, 1, t1->len, '!') != lens_fwd[2]);
+            vstr_srch_cstr_buf_fwd(t1, 1, t1->len, "!") != lens_fwd[2]);
   TST_B_TST(ret, off + 6,
-            vstr_srch_chr_rev(t1, 1, t1->len, '!') != lens_fwd[2]);
+            vstr_srch_cstr_buf_rev(t1, 1, t1->len, "!") != lens_fwd[2]);
   /* note that t1->len - lens_fwd[0] isn't the rest of the string, it's
    * the rest minus 1 */
   TST_B_TST(ret, off + 7,

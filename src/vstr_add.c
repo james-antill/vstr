@@ -732,8 +732,8 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
  fail:
   /* must work as orig_pos must now be at the begining of a node */
   from_base->conf->malloc_bad = TRUE;
-  vstr_del(base, orig_pos, base->len - orig_base_len);
-  assert(base->len == orig_len);
+  vstr_del(base, orig_pos + 1, base->len - orig_base_len);
+  assert(base->len == orig_base_len);
 
   DO_VALID_CHK();
 

@@ -126,25 +126,9 @@ tst_add = \
     add/tst_add_netstr2
 
 
-tst_fmt = \
-    fmt/tst_fmt_char \
-    fmt/tst_fmt_short \
-    fmt/tst_fmt_int \
-    fmt/tst_fmt_long \
-    fmt/tst_fmt_intmax_t \
-    fmt/tst_fmt_double \
-    fmt/tst_fmt_long_double \
-    fmt/tst_fmt_ptrdiff_t \
-    fmt/tst_fmt_size_t \
-    fmt/tst_fmt_m \
-    fmt/tst_fmt_n \
-    fmt/tst_fmt_p \
-    fmt/tst_fmt_str_norm \
-    fmt/tst_fmt_num \
-    fmt/tst_fmt_bkmg \
-    fmt/tst_fmt_ip \
-    fmt/tst_fmt_i18n \
-    fmt/tst_fmt_usr
+xfail_tst_add = \
+    add/xfail_tst_add_buf_pos \
+    add/xfail_tst_add_buf_NULL
 
 
 tst_cache = \
@@ -202,6 +186,32 @@ tst_export = \
     export/tst_export_buf \
     export/tst_export_chr \
     export/tst_export_ref
+
+
+tst_fmt = \
+    fmt/tst_fmt_char \
+    fmt/tst_fmt_short \
+    fmt/tst_fmt_int \
+    fmt/tst_fmt_long \
+    fmt/tst_fmt_intmax_t \
+    fmt/tst_fmt_double \
+    fmt/tst_fmt_long_double \
+    fmt/tst_fmt_ptrdiff_t \
+    fmt/tst_fmt_size_t \
+    fmt/tst_fmt_m \
+    fmt/tst_fmt_n \
+    fmt/tst_fmt_p \
+    fmt/tst_fmt_str_norm \
+    fmt/tst_fmt_num \
+    fmt/tst_fmt_bkmg \
+    fmt/tst_fmt_ip \
+    fmt/tst_fmt_i18n \
+    fmt/tst_fmt_usr
+
+
+xfail_tst_fmt = \
+    fmt/xfail_tst_fmt_invalid_sysfmt \
+    fmt/xfail_tst_fmt_invalid_fmt
 
 
 tst_loc = \
@@ -276,12 +286,12 @@ tst_x = \
     x/tst_x_make \
     x/tst_x_misc \
     x/tst_x_ref \
-    x/tst_x_swap_conf
+    x/tst_x_swap_conf \
+    x/tst_x_version
 
 
 tst = \
   $(tst_add) \
-  $(tst_fmt) \
   $(tst_cache) \
   $(tst_cmp) \
   $(tst_cntl) \
@@ -289,6 +299,7 @@ tst = \
   $(tst_del) \
   $(tst_dup) \
   $(tst_export) \
+  $(tst_fmt) \
   $(tst_loc) \
   $(tst_mov) \
   $(tst_parse) \
@@ -301,9 +312,18 @@ tst = \
   $(tst_x)
 
 
-check_PROGRAMS = $(tst)
+xfail_tst = \
+  $(xfail_tst_add) \
+  $(xfail_tst_fmt)
 
-TESTS = $(tst)
+
+check_PROGRAMS = $(tst) $(xfail_tst)
+
+@NDEBUG_FALSE@@USE_ASSERT_LOOP_FALSE@XF_TST = $(xfail_tst)
+
+TESTS = $(tst) $(XF_TST)
+
+XFAIL_TESTS = $(xfail_tst)
 LDADD = -L../src/ -lvstr
 subdir = tst
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -313,16 +333,7 @@ check_PROGRAMS = add/tst_add_buf$(EXEEXT) add/tst_add_ptr$(EXEEXT) \
 	add/tst_add_ref$(EXEEXT) add/tst_add_vstr$(EXEEXT) \
 	add/tst_add_non$(EXEEXT) add/tst_add_rep_chr$(EXEEXT) \
 	add/tst_add_iovec_buf$(EXEEXT) add/tst_add_netstr$(EXEEXT) \
-	add/tst_add_netstr2$(EXEEXT) fmt/tst_fmt_char$(EXEEXT) \
-	fmt/tst_fmt_short$(EXEEXT) fmt/tst_fmt_int$(EXEEXT) \
-	fmt/tst_fmt_long$(EXEEXT) fmt/tst_fmt_intmax_t$(EXEEXT) \
-	fmt/tst_fmt_double$(EXEEXT) fmt/tst_fmt_long_double$(EXEEXT) \
-	fmt/tst_fmt_ptrdiff_t$(EXEEXT) fmt/tst_fmt_size_t$(EXEEXT) \
-	fmt/tst_fmt_m$(EXEEXT) fmt/tst_fmt_n$(EXEEXT) \
-	fmt/tst_fmt_p$(EXEEXT) fmt/tst_fmt_str_norm$(EXEEXT) \
-	fmt/tst_fmt_num$(EXEEXT) fmt/tst_fmt_bkmg$(EXEEXT) \
-	fmt/tst_fmt_ip$(EXEEXT) fmt/tst_fmt_i18n$(EXEEXT) \
-	fmt/tst_fmt_usr$(EXEEXT) cache/tst_cache_usr$(EXEEXT) \
+	add/tst_add_netstr2$(EXEEXT) cache/tst_cache_usr$(EXEEXT) \
 	cache/tst_cache_free$(EXEEXT) cache/tst_cache_srch$(EXEEXT) \
 	cmp/tst_cmp$(EXEEXT) cmp/tst_cmp_case$(EXEEXT) \
 	cmp/tst_cmp_vers$(EXEEXT) cmp/tst_cmp_non$(EXEEXT) \
@@ -344,7 +355,16 @@ check_PROGRAMS = add/tst_add_buf$(EXEEXT) add/tst_add_ptr$(EXEEXT) \
 	export/tst_export_iovec_cpy_buf$(EXEEXT) \
 	export/tst_export_iovec_cpy_ptr$(EXEEXT) \
 	export/tst_export_buf$(EXEEXT) export/tst_export_chr$(EXEEXT) \
-	export/tst_export_ref$(EXEEXT) loc/tst_loc_num$(EXEEXT) \
+	export/tst_export_ref$(EXEEXT) fmt/tst_fmt_char$(EXEEXT) \
+	fmt/tst_fmt_short$(EXEEXT) fmt/tst_fmt_int$(EXEEXT) \
+	fmt/tst_fmt_long$(EXEEXT) fmt/tst_fmt_intmax_t$(EXEEXT) \
+	fmt/tst_fmt_double$(EXEEXT) fmt/tst_fmt_long_double$(EXEEXT) \
+	fmt/tst_fmt_ptrdiff_t$(EXEEXT) fmt/tst_fmt_size_t$(EXEEXT) \
+	fmt/tst_fmt_m$(EXEEXT) fmt/tst_fmt_n$(EXEEXT) \
+	fmt/tst_fmt_p$(EXEEXT) fmt/tst_fmt_str_norm$(EXEEXT) \
+	fmt/tst_fmt_num$(EXEEXT) fmt/tst_fmt_bkmg$(EXEEXT) \
+	fmt/tst_fmt_ip$(EXEEXT) fmt/tst_fmt_i18n$(EXEEXT) \
+	fmt/tst_fmt_usr$(EXEEXT) loc/tst_loc_num$(EXEEXT) \
 	mov/tst_mov_empty$(EXEEXT) mov/tst_mov_data$(EXEEXT) \
 	parse/tst_parse_ipv4$(EXEEXT) parse/tst_parse_ipv6$(EXEEXT) \
 	parse/tst_parse_num$(EXEEXT) parse/tst_parse_netstr$(EXEEXT) \
@@ -366,7 +386,11 @@ check_PROGRAMS = add/tst_add_buf$(EXEEXT) add/tst_add_ptr$(EXEEXT) \
 	x/tst_x_typedef$(EXEEXT) x/tst_x_inline$(EXEEXT) \
 	x/tst_x_include$(EXEEXT) x/tst_x_macros$(EXEEXT) \
 	x/tst_x_make$(EXEEXT) x/tst_x_misc$(EXEEXT) \
-	x/tst_x_ref$(EXEEXT) x/tst_x_swap_conf$(EXEEXT)
+	x/tst_x_ref$(EXEEXT) x/tst_x_swap_conf$(EXEEXT) \
+	x/tst_x_version$(EXEEXT) add/xfail_tst_add_buf_pos$(EXEEXT) \
+	add/xfail_tst_add_buf_NULL$(EXEEXT) \
+	fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT) \
+	fmt/xfail_tst_fmt_invalid_fmt$(EXEEXT)
 add_tst_add_buf_SOURCES = add/tst_add_buf.c
 add_tst_add_buf_OBJECTS = tst_add_buf.$(OBJEXT)
 add_tst_add_buf_LDADD = $(LDADD)
@@ -412,6 +436,16 @@ add_tst_add_vstr_OBJECTS = tst_add_vstr.$(OBJEXT)
 add_tst_add_vstr_LDADD = $(LDADD)
 add_tst_add_vstr_DEPENDENCIES =
 add_tst_add_vstr_LDFLAGS =
+add_xfail_tst_add_buf_NULL_SOURCES = add/xfail_tst_add_buf_NULL.c
+add_xfail_tst_add_buf_NULL_OBJECTS = xfail_tst_add_buf_NULL.$(OBJEXT)
+add_xfail_tst_add_buf_NULL_LDADD = $(LDADD)
+add_xfail_tst_add_buf_NULL_DEPENDENCIES =
+add_xfail_tst_add_buf_NULL_LDFLAGS =
+add_xfail_tst_add_buf_pos_SOURCES = add/xfail_tst_add_buf_pos.c
+add_xfail_tst_add_buf_pos_OBJECTS = xfail_tst_add_buf_pos.$(OBJEXT)
+add_xfail_tst_add_buf_pos_LDADD = $(LDADD)
+add_xfail_tst_add_buf_pos_DEPENDENCIES =
+add_xfail_tst_add_buf_pos_LDFLAGS =
 cache_tst_cache_free_SOURCES = cache/tst_cache_free.c
 cache_tst_cache_free_OBJECTS = tst_cache_free.$(OBJEXT)
 cache_tst_cache_free_LDADD = $(LDADD)
@@ -688,6 +722,19 @@ fmt_tst_fmt_usr_OBJECTS = tst_fmt_usr.$(OBJEXT)
 fmt_tst_fmt_usr_LDADD = $(LDADD)
 fmt_tst_fmt_usr_DEPENDENCIES =
 fmt_tst_fmt_usr_LDFLAGS =
+fmt_xfail_tst_fmt_invalid_fmt_SOURCES = fmt/xfail_tst_fmt_invalid_fmt.c
+fmt_xfail_tst_fmt_invalid_fmt_OBJECTS = \
+	xfail_tst_fmt_invalid_fmt.$(OBJEXT)
+fmt_xfail_tst_fmt_invalid_fmt_LDADD = $(LDADD)
+fmt_xfail_tst_fmt_invalid_fmt_DEPENDENCIES =
+fmt_xfail_tst_fmt_invalid_fmt_LDFLAGS =
+fmt_xfail_tst_fmt_invalid_sysfmt_SOURCES = \
+	fmt/xfail_tst_fmt_invalid_sysfmt.c
+fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS = \
+	xfail_tst_fmt_invalid_sysfmt.$(OBJEXT)
+fmt_xfail_tst_fmt_invalid_sysfmt_LDADD = $(LDADD)
+fmt_xfail_tst_fmt_invalid_sysfmt_DEPENDENCIES =
+fmt_xfail_tst_fmt_invalid_sysfmt_LDFLAGS =
 loc_tst_loc_num_SOURCES = loc/tst_loc_num.c
 loc_tst_loc_num_OBJECTS = tst_loc_num.$(OBJEXT)
 loc_tst_loc_num_LDADD = $(LDADD)
@@ -913,6 +960,11 @@ x_tst_x_typedef_OBJECTS = tst_x_typedef.$(OBJEXT)
 x_tst_x_typedef_LDADD = $(LDADD)
 x_tst_x_typedef_DEPENDENCIES =
 x_tst_x_typedef_LDFLAGS =
+x_tst_x_version_SOURCES = x/tst_x_version.c
+x_tst_x_version_OBJECTS = tst_x_version.$(OBJEXT)
+x_tst_x_version_LDADD = $(LDADD)
+x_tst_x_version_DEPENDENCIES =
+x_tst_x_version_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -928,7 +980,8 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c \
 	add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c \
-	add/tst_add_vstr.c cache/tst_cache_free.c \
+	add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c \
+	add/xfail_tst_add_buf_pos.c cache/tst_cache_free.c \
 	cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c \
 	cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c \
 	cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c \
@@ -950,26 +1003,28 @@ DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c \
 	fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c \
 	fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c \
-	loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c \
-	parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c \
-	parse/tst_parse_netstr.c parse/tst_parse_netstr2.c \
-	parse/tst_parse_num.c sc/tst_sc_basename.c sc/tst_sc_dirname.c \
-	sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c \
-	sects/tst_sects_add.c sects/tst_sects_del.c \
-	sects/tst_sects_foreach.c sects/tst_sects_join.c \
-	sects/tst_sects_srch.c sects/tst_sects_update.c \
-	split/tst_split_buf.c split/tst_split_chrs.c \
-	spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c srch/tst_srch_buf.c \
-	srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c \
-	srch/tst_srch_case_vstr.c srch/tst_srch_chr.c \
-	srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c \
-	srch/tst_srch_vstr.c sub/tst_sub_buf.c sub/tst_sub_non.c \
-	sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c \
-	sub/tst_sub_vstr.c x/tst_x_include.c x/tst_x_inline.c \
-	x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c \
-	x/tst_x_swap_conf.c x/tst_x_typedef.c
+	fmt/xfail_tst_fmt_invalid_fmt.c \
+	fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c \
+	mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c \
+	parse/tst_parse_ipv6.c parse/tst_parse_netstr.c \
+	parse/tst_parse_netstr2.c parse/tst_parse_num.c \
+	sc/tst_sc_basename.c sc/tst_sc_dirname.c sc/tst_sc_mmap.c \
+	sc/tst_sc_read.c sc/tst_sc_write.c sects/tst_sects_add.c \
+	sects/tst_sects_del.c sects/tst_sects_foreach.c \
+	sects/tst_sects_join.c sects/tst_sects_srch.c \
+	sects/tst_sects_update.c split/tst_split_buf.c \
+	split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c \
+	srch/tst_srch_buf.c srch/tst_srch_case_buf.c \
+	srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c \
+	srch/tst_srch_chr.c srch/tst_srch_chrs.c \
+	srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c \
+	sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c \
+	sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c \
+	x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c \
+	x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c \
+	x/tst_x_typedef.c x/tst_x_version.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c sc/tst_sc_basename.c sc/tst_sc_dirname.c sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c x/tst_x_typedef.c
+SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c add/xfail_tst_add_buf_pos.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c fmt/xfail_tst_fmt_invalid_fmt.c fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c sc/tst_sc_basename.c sc/tst_sc_dirname.c sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c
 
 all: all-am
 
@@ -1026,6 +1081,14 @@ tst_add_vstr.$(OBJEXT): add/tst_add_vstr.c
 add/tst_add_vstr$(EXEEXT): $(add_tst_add_vstr_OBJECTS) $(add_tst_add_vstr_DEPENDENCIES) add/.dirstamp
 	@rm -f add/tst_add_vstr$(EXEEXT)
 	$(LINK) $(add_tst_add_vstr_LDFLAGS) $(add_tst_add_vstr_OBJECTS) $(add_tst_add_vstr_LDADD) $(LIBS)
+xfail_tst_add_buf_NULL.$(OBJEXT): add/xfail_tst_add_buf_NULL.c
+add/xfail_tst_add_buf_NULL$(EXEEXT): $(add_xfail_tst_add_buf_NULL_OBJECTS) $(add_xfail_tst_add_buf_NULL_DEPENDENCIES) add/.dirstamp
+	@rm -f add/xfail_tst_add_buf_NULL$(EXEEXT)
+	$(LINK) $(add_xfail_tst_add_buf_NULL_LDFLAGS) $(add_xfail_tst_add_buf_NULL_OBJECTS) $(add_xfail_tst_add_buf_NULL_LDADD) $(LIBS)
+xfail_tst_add_buf_pos.$(OBJEXT): add/xfail_tst_add_buf_pos.c
+add/xfail_tst_add_buf_pos$(EXEEXT): $(add_xfail_tst_add_buf_pos_OBJECTS) $(add_xfail_tst_add_buf_pos_DEPENDENCIES) add/.dirstamp
+	@rm -f add/xfail_tst_add_buf_pos$(EXEEXT)
+	$(LINK) $(add_xfail_tst_add_buf_pos_LDFLAGS) $(add_xfail_tst_add_buf_pos_OBJECTS) $(add_xfail_tst_add_buf_pos_LDADD) $(LIBS)
 tst_cache_free.$(OBJEXT): cache/tst_cache_free.c
 cache/.dirstamp:
 	@$(mkinstalldirs) cache
@@ -1266,6 +1329,15 @@ tst_fmt_usr.$(OBJEXT): fmt/tst_fmt_usr.c
 fmt/tst_fmt_usr$(EXEEXT): $(fmt_tst_fmt_usr_OBJECTS) $(fmt_tst_fmt_usr_DEPENDENCIES) fmt/.dirstamp
 	@rm -f fmt/tst_fmt_usr$(EXEEXT)
 	$(LINK) $(fmt_tst_fmt_usr_LDFLAGS) $(fmt_tst_fmt_usr_OBJECTS) $(fmt_tst_fmt_usr_LDADD) $(LIBS)
+xfail_tst_fmt_invalid_fmt.$(OBJEXT): fmt/xfail_tst_fmt_invalid_fmt.c
+fmt/xfail_tst_fmt_invalid_fmt$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_fmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_fmt_DEPENDENCIES) fmt/.dirstamp
+	@rm -f fmt/xfail_tst_fmt_invalid_fmt$(EXEEXT)
+	$(LINK) $(fmt_xfail_tst_fmt_invalid_fmt_LDFLAGS) $(fmt_xfail_tst_fmt_invalid_fmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_fmt_LDADD) $(LIBS)
+xfail_tst_fmt_invalid_sysfmt.$(OBJEXT): \
+	fmt/xfail_tst_fmt_invalid_sysfmt.c
+fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_sysfmt_DEPENDENCIES) fmt/.dirstamp
+	@rm -f fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT)
+	$(LINK) $(fmt_xfail_tst_fmt_invalid_sysfmt_LDFLAGS) $(fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_sysfmt_LDADD) $(LIBS)
 tst_loc_num.$(OBJEXT): loc/tst_loc_num.c
 loc/.dirstamp:
 	@$(mkinstalldirs) loc
@@ -1476,6 +1548,10 @@ tst_x_typedef.$(OBJEXT): x/tst_x_typedef.c
 x/tst_x_typedef$(EXEEXT): $(x_tst_x_typedef_OBJECTS) $(x_tst_x_typedef_DEPENDENCIES) x/.dirstamp
 	@rm -f x/tst_x_typedef$(EXEEXT)
 	$(LINK) $(x_tst_x_typedef_LDFLAGS) $(x_tst_x_typedef_OBJECTS) $(x_tst_x_typedef_LDADD) $(LIBS)
+tst_x_version.$(OBJEXT): x/tst_x_version.c
+x/tst_x_version$(EXEEXT): $(x_tst_x_version_OBJECTS) $(x_tst_x_version_DEPENDENCIES) x/.dirstamp
+	@rm -f x/tst_x_version$(EXEEXT)
+	$(LINK) $(x_tst_x_version_LDFLAGS) $(x_tst_x_version_OBJECTS) $(x_tst_x_version_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -1591,6 +1667,24 @@ tst_add_vstr.obj: add/tst_add_vstr.c
 
 tst_add_vstr.lo: add/tst_add_vstr.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_add_vstr.lo `test -f 'add/tst_add_vstr.c' || echo '$(srcdir)/'`add/tst_add_vstr.c
+
+xfail_tst_add_buf_NULL.o: add/xfail_tst_add_buf_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_NULL.o `test -f 'add/xfail_tst_add_buf_NULL.c' || echo '$(srcdir)/'`add/xfail_tst_add_buf_NULL.c
+
+xfail_tst_add_buf_NULL.obj: add/xfail_tst_add_buf_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_NULL.obj `cygpath -w add/xfail_tst_add_buf_NULL.c`
+
+xfail_tst_add_buf_NULL.lo: add/xfail_tst_add_buf_NULL.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_NULL.lo `test -f 'add/xfail_tst_add_buf_NULL.c' || echo '$(srcdir)/'`add/xfail_tst_add_buf_NULL.c
+
+xfail_tst_add_buf_pos.o: add/xfail_tst_add_buf_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_pos.o `test -f 'add/xfail_tst_add_buf_pos.c' || echo '$(srcdir)/'`add/xfail_tst_add_buf_pos.c
+
+xfail_tst_add_buf_pos.obj: add/xfail_tst_add_buf_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_pos.obj `cygpath -w add/xfail_tst_add_buf_pos.c`
+
+xfail_tst_add_buf_pos.lo: add/xfail_tst_add_buf_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_add_buf_pos.lo `test -f 'add/xfail_tst_add_buf_pos.c' || echo '$(srcdir)/'`add/xfail_tst_add_buf_pos.c
 
 tst_cache_free.o: cache/tst_cache_free.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_cache_free.o `test -f 'cache/tst_cache_free.c' || echo '$(srcdir)/'`cache/tst_cache_free.c
@@ -2078,6 +2172,24 @@ tst_fmt_usr.obj: fmt/tst_fmt_usr.c
 tst_fmt_usr.lo: fmt/tst_fmt_usr.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_fmt_usr.lo `test -f 'fmt/tst_fmt_usr.c' || echo '$(srcdir)/'`fmt/tst_fmt_usr.c
 
+xfail_tst_fmt_invalid_fmt.o: fmt/xfail_tst_fmt_invalid_fmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_fmt.o `test -f 'fmt/xfail_tst_fmt_invalid_fmt.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_fmt.c
+
+xfail_tst_fmt_invalid_fmt.obj: fmt/xfail_tst_fmt_invalid_fmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_fmt.obj `cygpath -w fmt/xfail_tst_fmt_invalid_fmt.c`
+
+xfail_tst_fmt_invalid_fmt.lo: fmt/xfail_tst_fmt_invalid_fmt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_fmt.lo `test -f 'fmt/xfail_tst_fmt_invalid_fmt.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_fmt.c
+
+xfail_tst_fmt_invalid_sysfmt.o: fmt/xfail_tst_fmt_invalid_sysfmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_sysfmt.o `test -f 'fmt/xfail_tst_fmt_invalid_sysfmt.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_sysfmt.c
+
+xfail_tst_fmt_invalid_sysfmt.obj: fmt/xfail_tst_fmt_invalid_sysfmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_sysfmt.obj `cygpath -w fmt/xfail_tst_fmt_invalid_sysfmt.c`
+
+xfail_tst_fmt_invalid_sysfmt.lo: fmt/xfail_tst_fmt_invalid_sysfmt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_sysfmt.lo `test -f 'fmt/xfail_tst_fmt_invalid_sysfmt.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_sysfmt.c
+
 tst_loc_num.o: loc/tst_loc_num.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_loc_num.o `test -f 'loc/tst_loc_num.c' || echo '$(srcdir)/'`loc/tst_loc_num.c
 
@@ -2482,6 +2594,15 @@ tst_x_typedef.obj: x/tst_x_typedef.c
 
 tst_x_typedef.lo: x/tst_x_typedef.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_typedef.lo `test -f 'x/tst_x_typedef.c' || echo '$(srcdir)/'`x/tst_x_typedef.c
+
+tst_x_version.o: x/tst_x_version.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_version.o `test -f 'x/tst_x_version.c' || echo '$(srcdir)/'`x/tst_x_version.c
+
+tst_x_version.obj: x/tst_x_version.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_version.obj `cygpath -w x/tst_x_version.c`
+
+tst_x_version.lo: x/tst_x_version.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_version.lo `test -f 'x/tst_x_version.c' || echo '$(srcdir)/'`x/tst_x_version.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

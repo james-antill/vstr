@@ -36,7 +36,7 @@ int tst(void)
   TST_B_TST(ret, 2, s1->len);
   
   vstr_del(s1, 1, s1->len);
-  vstr_add_fmt(s1, 0, "%.*d", 0, 0);
+  vstr_add_fmt(s1, 0, "%I.*d", 0, 0);
   TST_B_TST(ret, 3, s1->len);
   
   vstr_del(s1, 1, s1->len);

@@ -205,7 +205,7 @@ sub conf
 
   my $ok = 0;
 
-  if (!system($c, @_) &&
+  if (!system($c, @_, "--enable-tst-noassert-loop") &&
       !system("make", "clean") &&
       !system("make", "check") &&
       (!$conf_time || !system("time", "make", "check")))

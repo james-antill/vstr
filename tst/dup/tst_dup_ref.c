@@ -36,5 +36,20 @@ int tst(void)
 
   vstr_free_base(t1);
 
+  if (MFAIL_NUM_OK)
+  {
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
+    vstr_free_spare_nodes(NULL,     VSTR_TYPE_NODE_REF, 1000);
+    
+    TST_B_TST(ret,  5, !tst_mfail_num(1));
+    TST_B_TST(ret,  6, vstr_dup_cstr_ref(s3->conf, &ref2, 0));
+    TST_B_TST(ret,  7, !tst_mfail_num(2));
+    TST_B_TST(ret,  8, vstr_dup_cstr_ref(s3->conf, &ref2, 0));
+    TST_B_TST(ret,  9, !tst_mfail_num(1));
+    TST_B_TST(ret, 10, vstr_dup_cstr_ref(NULL, &ref2, 0));
+    TST_B_TST(ret, 11, !tst_mfail_num(2));
+    TST_B_TST(ret, 12, vstr_dup_cstr_ref(NULL, &ref2, 0));
+  }
+  
   return (TST_B_RET(ret));
 }

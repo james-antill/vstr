@@ -262,7 +262,8 @@ int main(int argc, char *argv[])
     if (s2->len < MAX_R_DATA_INCORE)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
 
-    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);

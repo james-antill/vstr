@@ -63,6 +63,9 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_sub.c \
                         vstr_version.c
 
+# Rebuild the extern inline functions, when the inline's are changed.
+vstr_inline.lo: ../include/vstr-inline.h ../include/vstr-nx-inline.h
+
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
         -release $(LT_RELEASE) \

@@ -336,10 +336,10 @@ int vstr_swap_conf(Vstr_base *base, Vstr_conf **conf)
     (*conf)->buf_sz = base->conf->buf_sz;
   }
   
-  if (!vstr__cache_subset_cbs(*conf, base->conf))
+  if (!vstr__cache_subset_cbs(base->conf, *conf))
   {
     if ((*conf)->user_ref != (*conf)->ref)
-      return (FALSE);
+      return (FALSE); /* not used in any base string objects */
     
     if (!vstr__cache_dup_cbs(*conf, base->conf))
       return (FALSE);
@@ -445,13 +445,13 @@ int vstr__cache_iovec_valid(Vstr_base *base)
 }
 
 #ifndef NDEBUG
-static int vstr__cache_iovec_check(Vstr_base *base)
+static void vstr__cache_iovec_check(const Vstr_base *base)
 {
   unsigned int count = 0;
   Vstr_node *scan = NULL;
  
   if (!base->iovec_upto_date || !base->beg)
-    return (TRUE);
+    return;
 
   count = VSTR__CACHE(base)->vec->off;
   scan = base->beg;
@@ -484,21 +484,38 @@ static int vstr__cache_iovec_check(Vstr_base *base)
   
     scan = scan->next;
   }
- 
-  return (TRUE);
 }
 
-static int vstr__cache_cstr_check(Vstr_base *base)
+static void vstr__cache_cstr_check(const Vstr_base *base)
 {
   Vstr__cache_data_cstr *data = NULL;
+  const char *ptr = NULL;
+
+  ASSERT(base->conf->cache_pos_cb_cstr == 3);
   
   if (!(data = vstr_cache_get(base, base->conf->cache_pos_cb_cstr)))
-    return (TRUE);
+    return;
   if (!data->ref)
-    return (TRUE);
+    return;
 
-  return (VSTR_CMP_BUF_EQ(base, data->pos, data->len,
-                          data->ref->ptr,  data->len));
+  ASSERT(data->len < data->sz);
+  
+  ptr  = data->ref->ptr;
+  ptr += data->off;
+  
+  { /* special case vstr_cmp_buf_eq() ... works with _NON data */
+    Vstr_iter iter[1];
+    
+    if (!vstr_iter_fwd_beg(base, data->pos, data->len, iter))
+      assert(FALSE);
+    
+    do
+    {
+      if (iter->node->type != VSTR_TYPE_NODE_NON)
+        ASSERT(!memcmp(iter->ptr, ptr, iter->len));
+      ptr += iter->len;
+    } while (vstr_iter_fwd_nxt(iter));
+  }
 }
 #endif
 
@@ -533,8 +550,11 @@ static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
   if (base->cache_available)
   {  
     if (!vstr__cache_iovec_alloc(base, 0))
+    {
+      vstr__del_conf(conf);
       return (FALSE);
-   
+    }
+    
     if (VSTR__CACHE(base) &&
         VSTR__CACHE(base)->vec && VSTR__CACHE(base)->vec->sz)
       base->iovec_upto_date = TRUE;
@@ -578,19 +598,19 @@ Vstr_base *vstr_make_base(Vstr_conf *conf)
   base = VSTR__MK(sz);
   
   if (!base)
-  {
-    conf->malloc_bad = TRUE;
-    return (NULL);
-  }
+    goto malloc_fail_base;
   
   if (!vstr__init_base(conf, base))
-  {
-    VSTR__F(base);
-    return (NULL);
-  }
+    goto malloc_fail_init;
+  
   base->free_do = TRUE;
   
   return (base);
+ malloc_fail_init:
+  VSTR__F(base);
+ malloc_fail_base:
+  conf->malloc_bad = TRUE;
+  return (NULL);
 }
     
 Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
@@ -850,7 +870,7 @@ unsigned int vstr_free_spare_nodes(Vstr_conf *passed_conf, unsigned int type,
 }
 
 #ifndef NDEBUG
-int vstr__check_real_nodes(Vstr_base *base)
+int vstr__check_real_nodes(const Vstr_base *base)
 {
   size_t len = 0;
   size_t num = 0;
@@ -898,7 +918,7 @@ int vstr__check_real_nodes(Vstr_base *base)
   return (TRUE);
 }
 
-int vstr__check_spare_nodes(Vstr_conf *conf)
+int vstr__check_spare_nodes(const Vstr_conf *conf)
 {
   unsigned int num = 0;
   Vstr_node *scan = NULL;

@@ -1,5 +1,4 @@
 
-
 #ifndef VSTR__HEADER_H
 # error " You must _just_ #include <vstr.h>"
 #endif
@@ -449,6 +448,8 @@
 
 #define VSTR_CNTL_BASE_GET_CONF VSTR__CNTL(BASE, 1)
 #define VSTR_CNTL_BASE_SET_CONF VSTR__CNTL(BASE, 2)
+#define VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE VSTR__CNTL(BASE, 3)
+/* #define VSTR_CNTL_BASE_SET_FLAG_HAVE_CACHE VSTR__CNTL(BASE, 4) */
 
 #define VSTR_CNTL_CONF_GET_NUM_REF VSTR__CNTL(CONF, 1)
 /* #define VSTR_CNTL_CONF_SET_NUM_REF VSTR__CNTL(CONF, 2) */

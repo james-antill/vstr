@@ -185,10 +185,13 @@ static size_t vstr__srch_case_buf_rev_slow(const Vstr_base *base,
 size_t vstr_srch_case_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                               const void *const str, const size_t str_len)
 {
-  if (!len || (str_len > len) || !str_len)
+  if (!len || (str_len > len))
     return (0);
   
-  if (str_len == 1)
+  if (!str_len)
+    return (pos + len - 1);
+  
+  if (str && (str_len == 1))
     return (vstr_srch_case_chr_rev(base, pos, len, *(const char *)str));
   
   return (vstr__srch_case_buf_rev_slow(base, pos, len, str, str_len));

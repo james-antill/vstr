@@ -1,3 +1,8 @@
+ Version 1.0.3 ... a few corner case bugs fixed ... added a HAVE_CACHE control
+for Vstr strings ... fixed the examples to work on 0 length proc files ...
+added assert calls to inline functions ... added builtin_constant_p() and
+speedups related to that.
+
  Version 1.0.2 ... a couple more functions added to make life easier for
 calculating lengths given positions ... build fixes for FreeBSD ... runtime
 fixes for using code from C++.

@@ -54,7 +54,15 @@ static void vstr__ref_cb_free_ref(Vstr_ref *ref)
 
 Vstr_ref *vstr_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
 {
-  Vstr_ref *ref = malloc(sizeof(Vstr_ref));
+  Vstr_ref *ref = NULL;
+
+  if (func == vstr_ref_cb_free_ref)
+  {
+    ref = VSTR__MK(sizeof(Vstr_ref));
+    func = vstr__ref_cb_free_ref;
+  }
+  else
+    ref = malloc(sizeof(Vstr_ref));
   
   if (!ref)
     return (NULL);

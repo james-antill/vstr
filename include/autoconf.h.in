@@ -222,3 +222,6 @@
 
 #undef USE_WRAP_MEMMOVE
 
+#undef USE_SYSCALL_ASM
+
+#undef USE_ASSERT_LOOP

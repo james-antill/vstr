@@ -11,6 +11,9 @@
       body { background: #FFFFFF; }
 
       td.heading { background: #DDDDDD; }
+
+      li       ul li.obj { display: none; }
+      li:hover ul li.obj { display: list-item; list-style-type: square; }
     </style>
 
   </head>
@@ -21,323 +24,323 @@
 <ul>
 <li><a href="#Initialization%20function">Initialization function</a>
 <ul>
-<li><a href="#vstr_init%28%29">vstr_init()</a>
-<li><a href="#vstr_exit%28%29">vstr_exit()</a>
+<li class="obj"><a href="#vstr_init%28%29">vstr_init()</a>
+<li class="obj"><a href="#vstr_exit%28%29">vstr_exit()</a>
 </ul><li><a href="#Functions%20to%20choose%20multiple%20VSTR_FLAG_%2a%20constants">Functions to choose multiple VSTR_FLAG_* constants</a>
 <ul>
-<li><a href="#VSTR_FLAGXX%28%29">VSTR_FLAGXX()</a>
+<li class="obj"><a href="#VSTR_FLAGXX%28%29">VSTR_FLAGXX()</a>
 </ul><li><a href="#Functions%20to%20get%20specific%20data%20about%20the%20vstr">Functions to get specific data about the vstr</a>
 <ul>
-<li><a href="#vstr_num%28%29">vstr_num()</a>
+<li class="obj"><a href="#vstr_num%28%29">vstr_num()</a>
 </ul><li><a href="#Functions%20to%20export%20vstr%20data">Functions to export vstr data</a>
 <ul>
-<li><a href="#vstr_export_cstr_ptr%28%29">vstr_export_cstr_ptr()</a>
-<li><a href="#vstr_export_cstr_malloc%28%29">vstr_export_cstr_malloc()</a>
-<li><a href="#vstr_export_cstr_buf%28%29">vstr_export_cstr_buf()</a>
-<li><a href="#vstr_export_cstr_ref%28%29">vstr_export_cstr_ref()</a>
-<li><a href="#vstr_export_iovec_ptr_all%28%29">vstr_export_iovec_ptr_all()</a>
-<li><a href="#vstr_export_iovec_cpy_buf%28%29">vstr_export_iovec_cpy_buf()</a>
-<li><a href="#vstr_export_iovec_cpy_ptr%28%29">vstr_export_iovec_cpy_ptr()</a>
-<li><a href="#vstr_export_buf%28%29">vstr_export_buf()</a>
-<li><a href="#vstr_export_chr%28%29">vstr_export_chr()</a>
-<li><a href="#vstr_export_ref%28%29">vstr_export_ref()</a>
+<li class="obj"><a href="#vstr_export_cstr_ptr%28%29">vstr_export_cstr_ptr()</a>
+<li class="obj"><a href="#vstr_export_cstr_malloc%28%29">vstr_export_cstr_malloc()</a>
+<li class="obj"><a href="#vstr_export_cstr_buf%28%29">vstr_export_cstr_buf()</a>
+<li class="obj"><a href="#vstr_export_cstr_ref%28%29">vstr_export_cstr_ref()</a>
+<li class="obj"><a href="#vstr_export_iovec_ptr_all%28%29">vstr_export_iovec_ptr_all()</a>
+<li class="obj"><a href="#vstr_export_iovec_cpy_buf%28%29">vstr_export_iovec_cpy_buf()</a>
+<li class="obj"><a href="#vstr_export_iovec_cpy_ptr%28%29">vstr_export_iovec_cpy_ptr()</a>
+<li class="obj"><a href="#vstr_export_buf%28%29">vstr_export_buf()</a>
+<li class="obj"><a href="#vstr_export_chr%28%29">vstr_export_chr()</a>
+<li class="obj"><a href="#vstr_export_ref%28%29">vstr_export_ref()</a>
 </ul><li><a href="#Functions%20to%20use%20as%20callbacks%20in%20a%20Vstr%20memory%20reference">Functions to use as callbacks in a Vstr memory reference</a>
 <ul>
-<li><a href="#vstr_ref_cb_free_nothing%28%29">vstr_ref_cb_free_nothing()</a>
-<li><a href="#vstr_ref_cb_free_ref%28%29">vstr_ref_cb_free_ref()</a>
-<li><a href="#vstr_ref_cb_free_ptr%28%29">vstr_ref_cb_free_ptr()</a>
-<li><a href="#vstr_ref_cb_free_ptr_ref%28%29">vstr_ref_cb_free_ptr_ref()</a>
+<li class="obj"><a href="#vstr_ref_cb_free_nothing%28%29">vstr_ref_cb_free_nothing()</a>
+<li class="obj"><a href="#vstr_ref_cb_free_ref%28%29">vstr_ref_cb_free_ref()</a>
+<li class="obj"><a href="#vstr_ref_cb_free_ptr%28%29">vstr_ref_cb_free_ptr()</a>
+<li class="obj"><a href="#vstr_ref_cb_free_ptr_ref%28%29">vstr_ref_cb_free_ptr_ref()</a>
 </ul><li><a href="#Functions%20to%20reference%20and%20dereference%20a%20Vstr%20memory%20reference">Functions to reference and dereference a Vstr memory reference</a>
 <ul>
-<li><a href="#vstr_ref_add%28%29">vstr_ref_add()</a>
-<li><a href="#vstr_ref_del%28%29">vstr_ref_del()</a>
+<li class="obj"><a href="#vstr_ref_add%28%29">vstr_ref_add()</a>
+<li class="obj"><a href="#vstr_ref_del%28%29">vstr_ref_del()</a>
 </ul><li><a href="#Creation%2fdestruction%20of%20core%20objects">Creation/destruction of core objects</a>
 <ul>
-<li><a href="#vstr_make_conf%28%29">vstr_make_conf()</a>
-<li><a href="#vstr_free_conf%28%29">vstr_free_conf()</a>
-<li><a href="#vstr_swap_conf%28%29">vstr_swap_conf()</a>
-<li><a href="#vstr_make_base%28%29">vstr_make_base()</a>
-<li><a href="#vstr_free_base%28%29">vstr_free_base()</a>
-<li><a href="#vstr_dup_buf%28%29">vstr_dup_buf()</a>
-<li><a href="#vstr_dup_ptr%28%29">vstr_dup_ptr()</a>
-<li><a href="#vstr_dup_non%28%29">vstr_dup_non()</a>
-<li><a href="#vstr_dup_ref%28%29">vstr_dup_ref()</a>
-<li><a href="#vstr_dup_vstr%28%29">vstr_dup_vstr()</a>
-<li><a href="#vstr_dup_rep_chr%28%29">vstr_dup_rep_chr()</a>
-<li><a href="#vstr_dup_cstr_buf%28%29">vstr_dup_cstr_buf()</a>
-<li><a href="#vstr_dup_cstr_ptr%28%29">vstr_dup_cstr_ptr()</a>
-<li><a href="#vstr_dup_cstr_ref%28%29">vstr_dup_cstr_ref()</a>
-<li><a href="#VSTR_DUP_CSTR_BUF%28%29">VSTR_DUP_CSTR_BUF()</a>
-<li><a href="#VSTR_DUP_CSTR_PTR%28%29">VSTR_DUP_CSTR_PTR()</a>
-<li><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
-<li><a href="#vstr_ref_make_malloc%28%29">vstr_ref_make_malloc()</a>
-<li><a href="#vstr_ref_make_ptr%28%29">vstr_ref_make_ptr()</a>
-<li><a href="#vstr_ref_make_memdup%28%29">vstr_ref_make_memdup()</a>
-<li><a href="#vstr_ref_make_vstr_base%28%29">vstr_ref_make_vstr_base()</a>
-<li><a href="#vstr_ref_make_vstr_conf%28%29">vstr_ref_make_vstr_conf()</a>
-<li><a href="#vstr_ref_make_vstr_sects%28%29">vstr_ref_make_vstr_sects()</a>
-<li><a href="#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a>
-<li><a href="#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>
+<li class="obj"><a href="#vstr_make_conf%28%29">vstr_make_conf()</a>
+<li class="obj"><a href="#vstr_free_conf%28%29">vstr_free_conf()</a>
+<li class="obj"><a href="#vstr_swap_conf%28%29">vstr_swap_conf()</a>
+<li class="obj"><a href="#vstr_make_base%28%29">vstr_make_base()</a>
+<li class="obj"><a href="#vstr_free_base%28%29">vstr_free_base()</a>
+<li class="obj"><a href="#vstr_dup_buf%28%29">vstr_dup_buf()</a>
+<li class="obj"><a href="#vstr_dup_ptr%28%29">vstr_dup_ptr()</a>
+<li class="obj"><a href="#vstr_dup_non%28%29">vstr_dup_non()</a>
+<li class="obj"><a href="#vstr_dup_ref%28%29">vstr_dup_ref()</a>
+<li class="obj"><a href="#vstr_dup_vstr%28%29">vstr_dup_vstr()</a>
+<li class="obj"><a href="#vstr_dup_rep_chr%28%29">vstr_dup_rep_chr()</a>
+<li class="obj"><a href="#vstr_dup_cstr_buf%28%29">vstr_dup_cstr_buf()</a>
+<li class="obj"><a href="#vstr_dup_cstr_ptr%28%29">vstr_dup_cstr_ptr()</a>
+<li class="obj"><a href="#vstr_dup_cstr_ref%28%29">vstr_dup_cstr_ref()</a>
+<li class="obj"><a href="#VSTR_DUP_CSTR_BUF%28%29">VSTR_DUP_CSTR_BUF()</a>
+<li class="obj"><a href="#VSTR_DUP_CSTR_PTR%28%29">VSTR_DUP_CSTR_PTR()</a>
+<li class="obj"><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
+<li class="obj"><a href="#vstr_ref_make_malloc%28%29">vstr_ref_make_malloc()</a>
+<li class="obj"><a href="#vstr_ref_make_ptr%28%29">vstr_ref_make_ptr()</a>
+<li class="obj"><a href="#vstr_ref_make_memdup%28%29">vstr_ref_make_memdup()</a>
+<li class="obj"><a href="#vstr_ref_make_vstr_base%28%29">vstr_ref_make_vstr_base()</a>
+<li class="obj"><a href="#vstr_ref_make_vstr_conf%28%29">vstr_ref_make_vstr_conf()</a>
+<li class="obj"><a href="#vstr_ref_make_vstr_sects%28%29">vstr_ref_make_vstr_sects()</a>
+<li class="obj"><a href="#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a>
+<li class="obj"><a href="#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>
 </ul><li><a href="#Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string">Functions to add and delete data to a Vstr string</a>
 <ul>
-<li><a href="#vstr_add_buf%28%29">vstr_add_buf()</a>
-<li><a href="#vstr_add_ptr%28%29">vstr_add_ptr()</a>
-<li><a href="#vstr_add_non%28%29">vstr_add_non()</a>
-<li><a href="#vstr_add_ref%28%29">vstr_add_ref()</a>
-<li><a href="#vstr_add_vstr%28%29">vstr_add_vstr()</a>
-<li><a href="#vstr_add_rep_chr%28%29">vstr_add_rep_chr()</a>
-<li><a href="#vstr_add_cstr_buf%28%29">vstr_add_cstr_buf()</a>
-<li><a href="#vstr_add_cstr_ptr%28%29">vstr_add_cstr_ptr()</a>
-<li><a href="#vstr_add_cstr_ref%28%29">vstr_add_cstr_ref()</a>
-<li><a href="#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a>
-<li><a href="#VSTR_ADD_CSTR_PTR%28%29">VSTR_ADD_CSTR_PTR()</a>
-<li><a href="#VSTR_ADD_CSTR_REF%28%29">VSTR_ADD_CSTR_REF()</a>
-<li><a href="#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>
-<li><a href="#vstr_add_fmt%28%29">vstr_add_fmt()</a>
-<li><a href="#vstr_add_vsysfmt%28%29">vstr_add_vsysfmt()</a>
-<li><a href="#vstr_add_sysfmt%28%29">vstr_add_sysfmt()</a>
-<li><a href="#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>
-<li><a href="#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
-<li><a href="#vstr_add_netstr_beg%28%29">vstr_add_netstr_beg()</a>
-<li><a href="#vstr_add_netstr_end%28%29">vstr_add_netstr_end()</a>
-<li><a href="#vstr_add_netstr2_beg%28%29">vstr_add_netstr2_beg()</a>
-<li><a href="#vstr_add_netstr2_end%28%29">vstr_add_netstr2_end()</a>
-<li><a href="#vstr_del%28%29">vstr_del()</a>
+<li class="obj"><a href="#vstr_add_buf%28%29">vstr_add_buf()</a>
+<li class="obj"><a href="#vstr_add_ptr%28%29">vstr_add_ptr()</a>
+<li class="obj"><a href="#vstr_add_non%28%29">vstr_add_non()</a>
+<li class="obj"><a href="#vstr_add_ref%28%29">vstr_add_ref()</a>
+<li class="obj"><a href="#vstr_add_vstr%28%29">vstr_add_vstr()</a>
+<li class="obj"><a href="#vstr_add_rep_chr%28%29">vstr_add_rep_chr()</a>
+<li class="obj"><a href="#vstr_add_cstr_buf%28%29">vstr_add_cstr_buf()</a>
+<li class="obj"><a href="#vstr_add_cstr_ptr%28%29">vstr_add_cstr_ptr()</a>
+<li class="obj"><a href="#vstr_add_cstr_ref%28%29">vstr_add_cstr_ref()</a>
+<li class="obj"><a href="#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a>
+<li class="obj"><a href="#VSTR_ADD_CSTR_PTR%28%29">VSTR_ADD_CSTR_PTR()</a>
+<li class="obj"><a href="#VSTR_ADD_CSTR_REF%28%29">VSTR_ADD_CSTR_REF()</a>
+<li class="obj"><a href="#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>
+<li class="obj"><a href="#vstr_add_fmt%28%29">vstr_add_fmt()</a>
+<li class="obj"><a href="#vstr_add_vsysfmt%28%29">vstr_add_vsysfmt()</a>
+<li class="obj"><a href="#vstr_add_sysfmt%28%29">vstr_add_sysfmt()</a>
+<li class="obj"><a href="#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>
+<li class="obj"><a href="#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
+<li class="obj"><a href="#vstr_add_netstr_beg%28%29">vstr_add_netstr_beg()</a>
+<li class="obj"><a href="#vstr_add_netstr_end%28%29">vstr_add_netstr_end()</a>
+<li class="obj"><a href="#vstr_add_netstr2_beg%28%29">vstr_add_netstr2_beg()</a>
+<li class="obj"><a href="#vstr_add_netstr2_end%28%29">vstr_add_netstr2_end()</a>
+<li class="obj"><a href="#vstr_del%28%29">vstr_del()</a>
 </ul><li><a href="#Functions%20to%20substitute%20data%20in%20a%20Vstr%20string%20with%20other%20data">Functions to substitute data in a Vstr string with other data</a>
 <ul>
-<li><a href="#vstr_sub_buf%28%29">vstr_sub_buf()</a>
-<li><a href="#vstr_sub_ptr%28%29">vstr_sub_ptr()</a>
-<li><a href="#vstr_sub_non%28%29">vstr_sub_non()</a>
-<li><a href="#vstr_sub_ref%28%29">vstr_sub_ref()</a>
-<li><a href="#vstr_sub_vstr%28%29">vstr_sub_vstr()</a>
-<li><a href="#vstr_sub_rep_chr%28%29">vstr_sub_rep_chr()</a>
-<li><a href="#vstr_sub_cstr_buf%28%29">vstr_sub_cstr_buf()</a>
-<li><a href="#vstr_sub_cstr_ptr%28%29">vstr_sub_cstr_ptr()</a>
-<li><a href="#vstr_sub_cstr_ref%28%29">vstr_sub_cstr_ref()</a>
-<li><a href="#VSTR_SUB_CSTR_BUF%28%29">VSTR_SUB_CSTR_BUF()</a>
-<li><a href="#VSTR_SUB_CSTR_PTR%28%29">VSTR_SUB_CSTR_PTR()</a>
-<li><a href="#VSTR_SUB_CSTR_REF%28%29">VSTR_SUB_CSTR_REF()</a>
+<li class="obj"><a href="#vstr_sub_buf%28%29">vstr_sub_buf()</a>
+<li class="obj"><a href="#vstr_sub_ptr%28%29">vstr_sub_ptr()</a>
+<li class="obj"><a href="#vstr_sub_non%28%29">vstr_sub_non()</a>
+<li class="obj"><a href="#vstr_sub_ref%28%29">vstr_sub_ref()</a>
+<li class="obj"><a href="#vstr_sub_vstr%28%29">vstr_sub_vstr()</a>
+<li class="obj"><a href="#vstr_sub_rep_chr%28%29">vstr_sub_rep_chr()</a>
+<li class="obj"><a href="#vstr_sub_cstr_buf%28%29">vstr_sub_cstr_buf()</a>
+<li class="obj"><a href="#vstr_sub_cstr_ptr%28%29">vstr_sub_cstr_ptr()</a>
+<li class="obj"><a href="#vstr_sub_cstr_ref%28%29">vstr_sub_cstr_ref()</a>
+<li class="obj"><a href="#VSTR_SUB_CSTR_BUF%28%29">VSTR_SUB_CSTR_BUF()</a>
+<li class="obj"><a href="#VSTR_SUB_CSTR_PTR%28%29">VSTR_SUB_CSTR_PTR()</a>
+<li class="obj"><a href="#VSTR_SUB_CSTR_REF%28%29">VSTR_SUB_CSTR_REF()</a>
 </ul><li><a href="#Functions%20to%20move%20data%20from%20a%20Vstr%20string%20to%20another%20Vstr%20string">Functions to move data from a Vstr string to another Vstr string</a>
 <ul>
-<li><a href="#vstr_mov%28%29">vstr_mov()</a>
+<li class="obj"><a href="#vstr_mov%28%29">vstr_mov()</a>
 </ul><li><a href="#Functions%20for%20miscellaneous%20control%20of%20options">Functions for miscellaneous control of options</a>
 <ul>
-<li><a href="#vstr_cntl_opt%28%29">vstr_cntl_opt()</a>
-<li><a href="#vstr_cntl_base%28%29">vstr_cntl_base()</a>
-<li><a href="#vstr_cntl_conf%28%29">vstr_cntl_conf()</a>
+<li class="obj"><a href="#vstr_cntl_opt%28%29">vstr_cntl_opt()</a>
+<li class="obj"><a href="#vstr_cntl_base%28%29">vstr_cntl_base()</a>
+<li class="obj"><a href="#vstr_cntl_conf%28%29">vstr_cntl_conf()</a>
 </ul><li><a href="#Functions%20to%20compare%20with%20a%20Vstr%20string">Functions to compare with a Vstr string</a>
 <ul>
-<li><a href="#vstr_cmp%28%29">vstr_cmp()</a>
-<li><a href="#vstr_cmp_buf%28%29">vstr_cmp_buf()</a>
-<li><a href="#vstr_cmp_case%28%29">vstr_cmp_case()</a>
-<li><a href="#vstr_cmp_case_buf%28%29">vstr_cmp_case_buf()</a>
-<li><a href="#vstr_cmp_vers%28%29">vstr_cmp_vers()</a>
-<li><a href="#vstr_cmp_vers_buf%28%29">vstr_cmp_vers_buf()</a>
-<li><a href="#vstr_cmp_eq%28%29">vstr_cmp_eq()</a>
-<li><a href="#vstr_cmp_cstr%28%29">vstr_cmp_cstr()</a>
-<li><a href="#vstr_cmp_buf_eq%28%29">vstr_cmp_buf_eq()</a>
-<li><a href="#vstr_cmp_cstr_eq%28%29">vstr_cmp_cstr_eq()</a>
-<li><a href="#vstr_cmp_case_eq%28%29">vstr_cmp_case_eq()</a>
-<li><a href="#vstr_cmp_case_cstr%28%29">vstr_cmp_case_cstr()</a>
-<li><a href="#vstr_cmp_case_buf_eq%28%29">vstr_cmp_case_buf_eq()</a>
-<li><a href="#vstr_cmp_case_cstr_eq%28%29">vstr_cmp_case_cstr_eq()</a>
-<li><a href="#vstr_cmp_vers_eq%28%29">vstr_cmp_vers_eq()</a>
-<li><a href="#vstr_cmp_vers_cstr%28%29">vstr_cmp_vers_cstr()</a>
-<li><a href="#vstr_cmp_vers_buf_eq%28%29">vstr_cmp_vers_buf_eq()</a>
-<li><a href="#vstr_cmp_vers_cstr_eq%28%29">vstr_cmp_vers_cstr_eq()</a>
-<li><a href="#vstr_cmp_bod%28%29">vstr_cmp_bod()</a>
-<li><a href="#vstr_cmp_eod%28%29">vstr_cmp_eod()</a>
-<li><a href="#vstr_cmp_bod_eq%28%29">vstr_cmp_bod_eq()</a>
-<li><a href="#vstr_cmp_eod_eq%28%29">vstr_cmp_eod_eq()</a>
-<li><a href="#vstr_cmp_bod_buf%28%29">vstr_cmp_bod_buf()</a>
-<li><a href="#vstr_cmp_eod_buf%28%29">vstr_cmp_eod_buf()</a>
-<li><a href="#vstr_cmp_bod_buf_eq%28%29">vstr_cmp_bod_buf_eq()</a>
-<li><a href="#vstr_cmp_eod_buf_eq%28%29">vstr_cmp_eod_buf_eq()</a>
-<li><a href="#vstr_cmp_bod_cstr%28%29">vstr_cmp_bod_cstr()</a>
-<li><a href="#vstr_cmp_eod_cstr%28%29">vstr_cmp_eod_cstr()</a>
-<li><a href="#vstr_cmp_bod_cstr_eq%28%29">vstr_cmp_bod_cstr_eq()</a>
-<li><a href="#vstr_cmp_eod_cstr_eq%28%29">vstr_cmp_eod_cstr_eq()</a>
-<li><a href="#vstr_cmp_case_bod%28%29">vstr_cmp_case_bod()</a>
-<li><a href="#vstr_cmp_case_eod%28%29">vstr_cmp_case_eod()</a>
-<li><a href="#vstr_cmp_case_bod_eq%28%29">vstr_cmp_case_bod_eq()</a>
-<li><a href="#vstr_cmp_case_eod_eq%28%29">vstr_cmp_case_eod_eq()</a>
-<li><a href="#vstr_cmp_case_bod_buf%28%29">vstr_cmp_case_bod_buf()</a>
-<li><a href="#vstr_cmp_case_eod_buf%28%29">vstr_cmp_case_eod_buf()</a>
-<li><a href="#vstr_cmp_case_bod_buf_eq%28%29">vstr_cmp_case_bod_buf_eq()</a>
-<li><a href="#vstr_cmp_case_eod_buf_eq%28%29">vstr_cmp_case_eod_buf_eq()</a>
-<li><a href="#vstr_cmp_case_bod_cstr%28%29">vstr_cmp_case_bod_cstr()</a>
-<li><a href="#vstr_cmp_case_eod_cstr%28%29">vstr_cmp_case_eod_cstr()</a>
-<li><a href="#vstr_cmp_case_bod_cstr_eq%28%29">vstr_cmp_case_bod_cstr_eq()</a>
-<li><a href="#vstr_cmp_case_eod_cstr_eq%28%29">vstr_cmp_case_eod_cstr_eq()</a>
-<li><a href="#vstr_cmp_vers_bod%28%29">vstr_cmp_vers_bod()</a>
-<li><a href="#vstr_cmp_vers_eod%28%29">vstr_cmp_vers_eod()</a>
-<li><a href="#vstr_cmp_vers_bod_eq%28%29">vstr_cmp_vers_bod_eq()</a>
-<li><a href="#vstr_cmp_vers_eod_eq%28%29">vstr_cmp_vers_eod_eq()</a>
-<li><a href="#vstr_cmp_vers_bod_buf%28%29">vstr_cmp_vers_bod_buf()</a>
-<li><a href="#vstr_cmp_vers_eod_buf%28%29">vstr_cmp_vers_eod_buf()</a>
-<li><a href="#vstr_cmp_vers_bod_buf_eq%28%29">vstr_cmp_vers_bod_buf_eq()</a>
-<li><a href="#vstr_cmp_vers_eod_buf_eq%28%29">vstr_cmp_vers_eod_buf_eq()</a>
-<li><a href="#vstr_cmp_vers_bod_cstr%28%29">vstr_cmp_vers_bod_cstr()</a>
-<li><a href="#vstr_cmp_vers_eod_cstr%28%29">vstr_cmp_vers_eod_cstr()</a>
-<li><a href="#vstr_cmp_vers_bod_cstr_eq%28%29">vstr_cmp_vers_bod_cstr_eq()</a>
-<li><a href="#vstr_cmp_vers_eod_cstr_eq%28%29">vstr_cmp_vers_eod_cstr_eq()</a>
-<li><a href="#VSTR_CMP_EQ%28%29">VSTR_CMP_EQ()</a>
-<li><a href="#VSTR_CMP_CSTR%28%29">VSTR_CMP_CSTR()</a>
-<li><a href="#VSTR_CMP_BUF_EQ%28%29">VSTR_CMP_BUF_EQ()</a>
-<li><a href="#VSTR_CMP_CSTR_EQ%28%29">VSTR_CMP_CSTR_EQ()</a>
-<li><a href="#VSTR_CMP_CASE_EQ%28%29">VSTR_CMP_CASE_EQ()</a>
-<li><a href="#VSTR_CMP_CASE_CSTR%28%29">VSTR_CMP_CASE_CSTR()</a>
-<li><a href="#VSTR_CMP_CASE_BUF_EQ%28%29">VSTR_CMP_CASE_BUF_EQ()</a>
-<li><a href="#VSTR_CMP_CASE_CSTR_EQ%28%29">VSTR_CMP_CASE_CSTR_EQ()</a>
-<li><a href="#VSTR_CMP_VERS_EQ%28%29">VSTR_CMP_VERS_EQ()</a>
-<li><a href="#VSTR_CMP_VERS_CSTR%28%29">VSTR_CMP_VERS_CSTR()</a>
-<li><a href="#VSTR_CMP_VERS_BUF_EQ%28%29">VSTR_CMP_VERS_BUF_EQ()</a>
-<li><a href="#VSTR_CMP_VERS_CSTR_EQ%28%29">VSTR_CMP_VERS_CSTR_EQ()</a>
+<li class="obj"><a href="#vstr_cmp%28%29">vstr_cmp()</a>
+<li class="obj"><a href="#vstr_cmp_buf%28%29">vstr_cmp_buf()</a>
+<li class="obj"><a href="#vstr_cmp_case%28%29">vstr_cmp_case()</a>
+<li class="obj"><a href="#vstr_cmp_case_buf%28%29">vstr_cmp_case_buf()</a>
+<li class="obj"><a href="#vstr_cmp_vers%28%29">vstr_cmp_vers()</a>
+<li class="obj"><a href="#vstr_cmp_vers_buf%28%29">vstr_cmp_vers_buf()</a>
+<li class="obj"><a href="#vstr_cmp_eq%28%29">vstr_cmp_eq()</a>
+<li class="obj"><a href="#vstr_cmp_cstr%28%29">vstr_cmp_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_buf_eq%28%29">vstr_cmp_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_cstr_eq%28%29">vstr_cmp_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_eq%28%29">vstr_cmp_case_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_cstr%28%29">vstr_cmp_case_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_case_buf_eq%28%29">vstr_cmp_case_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_cstr_eq%28%29">vstr_cmp_case_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eq%28%29">vstr_cmp_vers_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_cstr%28%29">vstr_cmp_vers_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_vers_buf_eq%28%29">vstr_cmp_vers_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_cstr_eq%28%29">vstr_cmp_vers_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_bod%28%29">vstr_cmp_bod()</a>
+<li class="obj"><a href="#vstr_cmp_eod%28%29">vstr_cmp_eod()</a>
+<li class="obj"><a href="#vstr_cmp_bod_eq%28%29">vstr_cmp_bod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_eod_eq%28%29">vstr_cmp_eod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_bod_buf%28%29">vstr_cmp_bod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_eod_buf%28%29">vstr_cmp_eod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_bod_buf_eq%28%29">vstr_cmp_bod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_eod_buf_eq%28%29">vstr_cmp_eod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_bod_cstr%28%29">vstr_cmp_bod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_eod_cstr%28%29">vstr_cmp_eod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_bod_cstr_eq%28%29">vstr_cmp_bod_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_eod_cstr_eq%28%29">vstr_cmp_eod_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod%28%29">vstr_cmp_case_bod()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod%28%29">vstr_cmp_case_eod()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod_eq%28%29">vstr_cmp_case_bod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod_eq%28%29">vstr_cmp_case_eod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod_buf%28%29">vstr_cmp_case_bod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod_buf%28%29">vstr_cmp_case_eod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod_buf_eq%28%29">vstr_cmp_case_bod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod_buf_eq%28%29">vstr_cmp_case_eod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod_cstr%28%29">vstr_cmp_case_bod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod_cstr%28%29">vstr_cmp_case_eod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_case_bod_cstr_eq%28%29">vstr_cmp_case_bod_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_case_eod_cstr_eq%28%29">vstr_cmp_case_eod_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod%28%29">vstr_cmp_vers_bod()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod%28%29">vstr_cmp_vers_eod()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod_eq%28%29">vstr_cmp_vers_bod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod_eq%28%29">vstr_cmp_vers_eod_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod_buf%28%29">vstr_cmp_vers_bod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod_buf%28%29">vstr_cmp_vers_eod_buf()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod_buf_eq%28%29">vstr_cmp_vers_bod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod_buf_eq%28%29">vstr_cmp_vers_eod_buf_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod_cstr%28%29">vstr_cmp_vers_bod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod_cstr%28%29">vstr_cmp_vers_eod_cstr()</a>
+<li class="obj"><a href="#vstr_cmp_vers_bod_cstr_eq%28%29">vstr_cmp_vers_bod_cstr_eq()</a>
+<li class="obj"><a href="#vstr_cmp_vers_eod_cstr_eq%28%29">vstr_cmp_vers_eod_cstr_eq()</a>
+<li class="obj"><a href="#VSTR_CMP_EQ%28%29">VSTR_CMP_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_CSTR%28%29">VSTR_CMP_CSTR()</a>
+<li class="obj"><a href="#VSTR_CMP_BUF_EQ%28%29">VSTR_CMP_BUF_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_CSTR_EQ%28%29">VSTR_CMP_CSTR_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_CASE_EQ%28%29">VSTR_CMP_CASE_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_CASE_CSTR%28%29">VSTR_CMP_CASE_CSTR()</a>
+<li class="obj"><a href="#VSTR_CMP_CASE_BUF_EQ%28%29">VSTR_CMP_CASE_BUF_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_CASE_CSTR_EQ%28%29">VSTR_CMP_CASE_CSTR_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_VERS_EQ%28%29">VSTR_CMP_VERS_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_VERS_CSTR%28%29">VSTR_CMP_VERS_CSTR()</a>
+<li class="obj"><a href="#VSTR_CMP_VERS_BUF_EQ%28%29">VSTR_CMP_VERS_BUF_EQ()</a>
+<li class="obj"><a href="#VSTR_CMP_VERS_CSTR_EQ%28%29">VSTR_CMP_VERS_CSTR_EQ()</a>
 </ul><li><a href="#Functions%20to%20search%20in%20a%20Vstr%20string">Functions to search in a Vstr string</a>
 <ul>
-<li><a href="#vstr_srch_chr_fwd%28%29">vstr_srch_chr_fwd()</a>
-<li><a href="#vstr_srch_chr_rev%28%29">vstr_srch_chr_rev()</a>
-<li><a href="#vstr_srch_chrs_fwd%28%29">vstr_srch_chrs_fwd()</a>
-<li><a href="#vstr_srch_chrs_rev%28%29">vstr_srch_chrs_rev()</a>
-<li><a href="#vstr_csrch_chrs_fwd%28%29">vstr_csrch_chrs_fwd()</a>
-<li><a href="#vstr_csrch_chrs_rev%28%29">vstr_csrch_chrs_rev()</a>
-<li><a href="#vstr_srch_buf_fwd%28%29">vstr_srch_buf_fwd()</a>
-<li><a href="#vstr_srch_buf_rev%28%29">vstr_srch_buf_rev()</a>
-<li><a href="#vstr_srch_vstr_fwd%28%29">vstr_srch_vstr_fwd()</a>
-<li><a href="#vstr_srch_vstr_rev%28%29">vstr_srch_vstr_rev()</a>
-<li><a href="#vstr_srch_case_chr_fwd%28%29">vstr_srch_case_chr_fwd()</a>
-<li><a href="#vstr_srch_case_chr_rev%28%29">vstr_srch_case_chr_rev()</a>
-<li><a href="#vstr_srch_case_buf_fwd%28%29">vstr_srch_case_buf_fwd()</a>
-<li><a href="#vstr_srch_case_buf_rev%28%29">vstr_srch_case_buf_rev()</a>
-<li><a href="#vstr_srch_case_vstr_fwd%28%29">vstr_srch_case_vstr_fwd()</a>
-<li><a href="#vstr_srch_case_vstr_rev%28%29">vstr_srch_case_vstr_rev()</a>
-<li><a href="#vstr_srch_cstr_buf_fwd%28%29">vstr_srch_cstr_buf_fwd()</a>
-<li><a href="#vstr_srch_cstr_buf_rev%28%29">vstr_srch_cstr_buf_rev()</a>
-<li><a href="#vstr_srch_cstr_chrs_fwd%28%29">vstr_srch_cstr_chrs_fwd()</a>
-<li><a href="#vstr_srch_cstr_chrs_rev%28%29">vstr_srch_cstr_chrs_rev()</a>
-<li><a href="#vstr_csrch_cstr_chrs_fwd%28%29">vstr_csrch_cstr_chrs_fwd()</a>
-<li><a href="#vstr_csrch_cstr_chrs_rev%28%29">vstr_csrch_cstr_chrs_rev()</a>
-<li><a href="#vstr_srch_case_cstr_buf_fwd%28%29">vstr_srch_case_cstr_buf_fwd()</a>
-<li><a href="#vstr_srch_case_cstr_buf_rev%28%29">vstr_srch_case_cstr_buf_rev()</a>
-<li><a href="#VSTR_SRCH_CSTR_BUF_FWD%28%29">VSTR_SRCH_CSTR_BUF_FWD()</a>
-<li><a href="#VSTR_SRCH_CSTR_BUF_REV%28%29">VSTR_SRCH_CSTR_BUF_REV()</a>
-<li><a href="#VSTR_SRCH_CSTR_CHRS_FWD%28%29">VSTR_SRCH_CSTR_CHRS_FWD()</a>
-<li><a href="#VSTR_SRCH_CSTR_CHRS_REV%28%29">VSTR_SRCH_CSTR_CHRS_REV()</a>
-<li><a href="#VSTR_CSRCH_CSTR_CHRS_FWD%28%29">VSTR_CSRCH_CSTR_CHRS_FWD()</a>
-<li><a href="#VSTR_CSRCH_CSTR_CHRS_REV%28%29">VSTR_CSRCH_CSTR_CHRS_REV()</a>
-<li><a href="#VSTR_SRCH_CASE_CSTR_BUF_FWD%28%29">VSTR_SRCH_CASE_CSTR_BUF_FWD()</a>
-<li><a href="#VSTR_SRCH_CASE_CSTR_BUF_REV%28%29">VSTR_SRCH_CASE_CSTR_BUF_REV()</a>
+<li class="obj"><a href="#vstr_srch_chr_fwd%28%29">vstr_srch_chr_fwd()</a>
+<li class="obj"><a href="#vstr_srch_chr_rev%28%29">vstr_srch_chr_rev()</a>
+<li class="obj"><a href="#vstr_srch_chrs_fwd%28%29">vstr_srch_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_srch_chrs_rev%28%29">vstr_srch_chrs_rev()</a>
+<li class="obj"><a href="#vstr_csrch_chrs_fwd%28%29">vstr_csrch_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_csrch_chrs_rev%28%29">vstr_csrch_chrs_rev()</a>
+<li class="obj"><a href="#vstr_srch_buf_fwd%28%29">vstr_srch_buf_fwd()</a>
+<li class="obj"><a href="#vstr_srch_buf_rev%28%29">vstr_srch_buf_rev()</a>
+<li class="obj"><a href="#vstr_srch_vstr_fwd%28%29">vstr_srch_vstr_fwd()</a>
+<li class="obj"><a href="#vstr_srch_vstr_rev%28%29">vstr_srch_vstr_rev()</a>
+<li class="obj"><a href="#vstr_srch_case_chr_fwd%28%29">vstr_srch_case_chr_fwd()</a>
+<li class="obj"><a href="#vstr_srch_case_chr_rev%28%29">vstr_srch_case_chr_rev()</a>
+<li class="obj"><a href="#vstr_srch_case_buf_fwd%28%29">vstr_srch_case_buf_fwd()</a>
+<li class="obj"><a href="#vstr_srch_case_buf_rev%28%29">vstr_srch_case_buf_rev()</a>
+<li class="obj"><a href="#vstr_srch_case_vstr_fwd%28%29">vstr_srch_case_vstr_fwd()</a>
+<li class="obj"><a href="#vstr_srch_case_vstr_rev%28%29">vstr_srch_case_vstr_rev()</a>
+<li class="obj"><a href="#vstr_srch_cstr_buf_fwd%28%29">vstr_srch_cstr_buf_fwd()</a>
+<li class="obj"><a href="#vstr_srch_cstr_buf_rev%28%29">vstr_srch_cstr_buf_rev()</a>
+<li class="obj"><a href="#vstr_srch_cstr_chrs_fwd%28%29">vstr_srch_cstr_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_srch_cstr_chrs_rev%28%29">vstr_srch_cstr_chrs_rev()</a>
+<li class="obj"><a href="#vstr_csrch_cstr_chrs_fwd%28%29">vstr_csrch_cstr_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_csrch_cstr_chrs_rev%28%29">vstr_csrch_cstr_chrs_rev()</a>
+<li class="obj"><a href="#vstr_srch_case_cstr_buf_fwd%28%29">vstr_srch_case_cstr_buf_fwd()</a>
+<li class="obj"><a href="#vstr_srch_case_cstr_buf_rev%28%29">vstr_srch_case_cstr_buf_rev()</a>
+<li class="obj"><a href="#VSTR_SRCH_CSTR_BUF_FWD%28%29">VSTR_SRCH_CSTR_BUF_FWD()</a>
+<li class="obj"><a href="#VSTR_SRCH_CSTR_BUF_REV%28%29">VSTR_SRCH_CSTR_BUF_REV()</a>
+<li class="obj"><a href="#VSTR_SRCH_CSTR_CHRS_FWD%28%29">VSTR_SRCH_CSTR_CHRS_FWD()</a>
+<li class="obj"><a href="#VSTR_SRCH_CSTR_CHRS_REV%28%29">VSTR_SRCH_CSTR_CHRS_REV()</a>
+<li class="obj"><a href="#VSTR_CSRCH_CSTR_CHRS_FWD%28%29">VSTR_CSRCH_CSTR_CHRS_FWD()</a>
+<li class="obj"><a href="#VSTR_CSRCH_CSTR_CHRS_REV%28%29">VSTR_CSRCH_CSTR_CHRS_REV()</a>
+<li class="obj"><a href="#VSTR_SRCH_CASE_CSTR_BUF_FWD%28%29">VSTR_SRCH_CASE_CSTR_BUF_FWD()</a>
+<li class="obj"><a href="#VSTR_SRCH_CASE_CSTR_BUF_REV%28%29">VSTR_SRCH_CASE_CSTR_BUF_REV()</a>
 </ul><li><a href="#Functions%20to%20calculate%20spanning%20in%20a%20Vstr%20string">Functions to calculate spanning in a Vstr string</a>
 <ul>
-<li><a href="#vstr_spn_chrs_fwd%28%29">vstr_spn_chrs_fwd()</a>
-<li><a href="#vstr_spn_chrs_rev%28%29">vstr_spn_chrs_rev()</a>
-<li><a href="#vstr_cspn_chrs_fwd%28%29">vstr_cspn_chrs_fwd()</a>
-<li><a href="#vstr_cspn_chrs_rev%28%29">vstr_cspn_chrs_rev()</a>
-<li><a href="#vstr_spn_cstr_chrs_fwd%28%29">vstr_spn_cstr_chrs_fwd()</a>
-<li><a href="#vstr_spn_cstr_chrs_rev%28%29">vstr_spn_cstr_chrs_rev()</a>
-<li><a href="#vstr_cspn_cstr_chrs_fwd%28%29">vstr_cspn_cstr_chrs_fwd()</a>
-<li><a href="#vstr_cspn_cstr_chrs_rev%28%29">vstr_cspn_cstr_chrs_rev()</a>
-<li><a href="#VSTR_SPN_CSTR_CHRS_FWD%28%29">VSTR_SPN_CSTR_CHRS_FWD()</a>
-<li><a href="#VSTR_SPN_CSTR_CHRS_REV%28%29">VSTR_SPN_CSTR_CHRS_REV()</a>
-<li><a href="#VSTR_CSPN_CSTR_CHRS_FWD%28%29">VSTR_CSPN_CSTR_CHRS_FWD()</a>
-<li><a href="#VSTR_CSPN_CSTR_CHRS_REV%28%29">VSTR_CSPN_CSTR_CHRS_REV()</a>
+<li class="obj"><a href="#vstr_spn_chrs_fwd%28%29">vstr_spn_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_spn_chrs_rev%28%29">vstr_spn_chrs_rev()</a>
+<li class="obj"><a href="#vstr_cspn_chrs_fwd%28%29">vstr_cspn_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_cspn_chrs_rev%28%29">vstr_cspn_chrs_rev()</a>
+<li class="obj"><a href="#vstr_spn_cstr_chrs_fwd%28%29">vstr_spn_cstr_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_spn_cstr_chrs_rev%28%29">vstr_spn_cstr_chrs_rev()</a>
+<li class="obj"><a href="#vstr_cspn_cstr_chrs_fwd%28%29">vstr_cspn_cstr_chrs_fwd()</a>
+<li class="obj"><a href="#vstr_cspn_cstr_chrs_rev%28%29">vstr_cspn_cstr_chrs_rev()</a>
+<li class="obj"><a href="#VSTR_SPN_CSTR_CHRS_FWD%28%29">VSTR_SPN_CSTR_CHRS_FWD()</a>
+<li class="obj"><a href="#VSTR_SPN_CSTR_CHRS_REV%28%29">VSTR_SPN_CSTR_CHRS_REV()</a>
+<li class="obj"><a href="#VSTR_CSPN_CSTR_CHRS_FWD%28%29">VSTR_CSPN_CSTR_CHRS_FWD()</a>
+<li class="obj"><a href="#VSTR_CSPN_CSTR_CHRS_REV%28%29">VSTR_CSPN_CSTR_CHRS_REV()</a>
 </ul><li><a href="#Functions%20for%20converting%20data%20in%20a%20vstr">Functions for converting data in a vstr</a>
 <ul>
-<li><a href="#vstr_conv_lowercase%28%29">vstr_conv_lowercase()</a>
-<li><a href="#vstr_conv_uppercase%28%29">vstr_conv_uppercase()</a>
-<li><a href="#vstr_conv_unprintable_chr%28%29">vstr_conv_unprintable_chr()</a>
-<li><a href="#vstr_conv_unprintable_del%28%29">vstr_conv_unprintable_del()</a>
-<li><a href="#vstr_conv_encode_uri%28%29">vstr_conv_encode_uri()</a>
-<li><a href="#vstr_conv_decode_uri%28%29">vstr_conv_decode_uri()</a>
+<li class="obj"><a href="#vstr_conv_lowercase%28%29">vstr_conv_lowercase()</a>
+<li class="obj"><a href="#vstr_conv_uppercase%28%29">vstr_conv_uppercase()</a>
+<li class="obj"><a href="#vstr_conv_unprintable_chr%28%29">vstr_conv_unprintable_chr()</a>
+<li class="obj"><a href="#vstr_conv_unprintable_del%28%29">vstr_conv_unprintable_del()</a>
+<li class="obj"><a href="#vstr_conv_encode_uri%28%29">vstr_conv_encode_uri()</a>
+<li class="obj"><a href="#vstr_conv_decode_uri%28%29">vstr_conv_decode_uri()</a>
 </ul><li><a href="#Functions%20for%20dealing%20with%20a%20section%20of%20a%20vstr">Functions for dealing with a section of a vstr</a>
 <ul>
-<li><a href="#VSTR_SECTS_DECL%28%29">VSTR_SECTS_DECL()</a>
-<li><a href="#VSTR_SECTS_EXTERN_DECL%28%29">VSTR_SECTS_EXTERN_DECL()</a>
-<li><a href="#VSTR_SECTS_DECL_INIT%28%29">VSTR_SECTS_DECL_INIT()</a>
-<li><a href="#VSTR_SECTS_INIT%28%29">VSTR_SECTS_INIT()</a>
-<li><a href="#VSTR_SECTS_NUM%28%29">VSTR_SECTS_NUM()</a>
-<li><a href="#vstr_sects_make%28%29">vstr_sects_make()</a>
-<li><a href="#vstr_sects_free%28%29">vstr_sects_free()</a>
-<li><a href="#vstr_sects_add%28%29">vstr_sects_add()</a>
-<li><a href="#vstr_sects_del%28%29">vstr_sects_del()</a>
-<li><a href="#vstr_sects_foreach%28%29">vstr_sects_foreach()</a>
-<li><a href="#vstr_sects_update_add%28%29">vstr_sects_update_add()</a>
-<li><a href="#vstr_sects_update_del%28%29">vstr_sects_update_del()</a>
-<li><a href="#vstr_sects_srch%28%29">vstr_sects_srch()</a>
+<li class="obj"><a href="#VSTR_SECTS_DECL%28%29">VSTR_SECTS_DECL()</a>
+<li class="obj"><a href="#VSTR_SECTS_EXTERN_DECL%28%29">VSTR_SECTS_EXTERN_DECL()</a>
+<li class="obj"><a href="#VSTR_SECTS_DECL_INIT%28%29">VSTR_SECTS_DECL_INIT()</a>
+<li class="obj"><a href="#VSTR_SECTS_INIT%28%29">VSTR_SECTS_INIT()</a>
+<li class="obj"><a href="#VSTR_SECTS_NUM%28%29">VSTR_SECTS_NUM()</a>
+<li class="obj"><a href="#vstr_sects_make%28%29">vstr_sects_make()</a>
+<li class="obj"><a href="#vstr_sects_free%28%29">vstr_sects_free()</a>
+<li class="obj"><a href="#vstr_sects_add%28%29">vstr_sects_add()</a>
+<li class="obj"><a href="#vstr_sects_del%28%29">vstr_sects_del()</a>
+<li class="obj"><a href="#vstr_sects_foreach%28%29">vstr_sects_foreach()</a>
+<li class="obj"><a href="#vstr_sects_update_add%28%29">vstr_sects_update_add()</a>
+<li class="obj"><a href="#vstr_sects_update_del%28%29">vstr_sects_update_del()</a>
+<li class="obj"><a href="#vstr_sects_srch%28%29">vstr_sects_srch()</a>
 </ul><li><a href="#Functions%20for%20splitting%20data%20in%20a%20Vstr%20into%20sections">Functions for splitting data in a Vstr into sections</a>
 <ul>
-<li><a href="#vstr_split_buf%28%29">vstr_split_buf()</a>
-<li><a href="#vstr_split_chrs%28%29">vstr_split_chrs()</a>
-<li><a href="#vstr_split_cstr_buf%28%29">vstr_split_cstr_buf()</a>
-<li><a href="#vstr_split_cstr_chrs%28%29">vstr_split_cstr_chrs()</a>
-<li><a href="#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>
-<li><a href="#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a>
+<li class="obj"><a href="#vstr_split_buf%28%29">vstr_split_buf()</a>
+<li class="obj"><a href="#vstr_split_chrs%28%29">vstr_split_chrs()</a>
+<li class="obj"><a href="#vstr_split_cstr_buf%28%29">vstr_split_cstr_buf()</a>
+<li class="obj"><a href="#vstr_split_cstr_chrs%28%29">vstr_split_cstr_chrs()</a>
+<li class="obj"><a href="#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>
+<li class="obj"><a href="#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a>
 </ul><li><a href="#Functions%20for%20parsing%20data%20from%20a%20vstr">Functions for parsing data from a vstr</a>
 <ul>
-<li><a href="#vstr_parse_short%28%29">vstr_parse_short()</a>
-<li><a href="#vstr_parse_ushort%28%29">vstr_parse_ushort()</a>
-<li><a href="#vstr_parse_int%28%29">vstr_parse_int()</a>
-<li><a href="#vstr_parse_uint%28%29">vstr_parse_uint()</a>
-<li><a href="#vstr_parse_long%28%29">vstr_parse_long()</a>
-<li><a href="#vstr_parse_ulong%28%29">vstr_parse_ulong()</a>
-<li><a href="#vstr_parse_intmax%28%29">vstr_parse_intmax()</a>
-<li><a href="#vstr_parse_uintmax%28%29">vstr_parse_uintmax()</a>
-<li><a href="#vstr_parse_netstr%28%29">vstr_parse_netstr()</a>
-<li><a href="#vstr_parse_netstr2%28%29">vstr_parse_netstr2()</a>
-<li><a href="#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a>
-<li><a href="#vstr_parse_ipv6%28%29">vstr_parse_ipv6()</a>
+<li class="obj"><a href="#vstr_parse_short%28%29">vstr_parse_short()</a>
+<li class="obj"><a href="#vstr_parse_ushort%28%29">vstr_parse_ushort()</a>
+<li class="obj"><a href="#vstr_parse_int%28%29">vstr_parse_int()</a>
+<li class="obj"><a href="#vstr_parse_uint%28%29">vstr_parse_uint()</a>
+<li class="obj"><a href="#vstr_parse_long%28%29">vstr_parse_long()</a>
+<li class="obj"><a href="#vstr_parse_ulong%28%29">vstr_parse_ulong()</a>
+<li class="obj"><a href="#vstr_parse_intmax%28%29">vstr_parse_intmax()</a>
+<li class="obj"><a href="#vstr_parse_uintmax%28%29">vstr_parse_uintmax()</a>
+<li class="obj"><a href="#vstr_parse_netstr%28%29">vstr_parse_netstr()</a>
+<li class="obj"><a href="#vstr_parse_netstr2%28%29">vstr_parse_netstr2()</a>
+<li class="obj"><a href="#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a>
+<li class="obj"><a href="#vstr_parse_ipv6%28%29">vstr_parse_ipv6()</a>
 </ul><li><a href="#Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string">Functions for hooking into the fmt function for the Vstr string</a>
 <ul>
-<li><a href="#vstr_fmt_add%28%29">vstr_fmt_add()</a>
-<li><a href="#vstr_fmt_del%28%29">vstr_fmt_del()</a>
-<li><a href="#vstr_fmt_srch%28%29">vstr_fmt_srch()</a>
-<li><a href="#VSTR_FMT_CB_ARG_PTR%28%29">VSTR_FMT_CB_ARG_PTR()</a>
-<li><a href="#VSTR_FMT_CB_ARG_VAL%28%29">VSTR_FMT_CB_ARG_VAL()</a>
+<li class="obj"><a href="#vstr_fmt_add%28%29">vstr_fmt_add()</a>
+<li class="obj"><a href="#vstr_fmt_del%28%29">vstr_fmt_del()</a>
+<li class="obj"><a href="#vstr_fmt_srch%28%29">vstr_fmt_srch()</a>
+<li class="obj"><a href="#VSTR_FMT_CB_ARG_PTR%28%29">VSTR_FMT_CB_ARG_PTR()</a>
+<li class="obj"><a href="#VSTR_FMT_CB_ARG_VAL%28%29">VSTR_FMT_CB_ARG_VAL()</a>
 </ul><li><a href="#Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string">Functions for hooking into the cache system for the Vstr string</a>
 <ul>
-<li><a href="#vstr_cache_add%28%29">vstr_cache_add()</a>
-<li><a href="#vstr_cache_get%28%29">vstr_cache_get()</a>
-<li><a href="#vstr_cache_set%28%29">vstr_cache_set()</a>
-<li><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
-<li><a href="#vstr_cache_cb_sub%28%29">vstr_cache_cb_sub()</a>
-<li><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
+<li class="obj"><a href="#vstr_cache_add%28%29">vstr_cache_add()</a>
+<li class="obj"><a href="#vstr_cache_get%28%29">vstr_cache_get()</a>
+<li class="obj"><a href="#vstr_cache_set%28%29">vstr_cache_set()</a>
+<li class="obj"><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
+<li class="obj"><a href="#vstr_cache_cb_sub%28%29">vstr_cache_cb_sub()</a>
+<li class="obj"><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
-<li><a href="#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
-<li><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
-<li><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
-<li><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
-<li><a href="#vstr_sc_dirname%28%29">vstr_sc_dirname()</a>
-<li><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
-<li><a href="#vstr_sc_fmt_cb_end%28%29">vstr_sc_fmt_cb_end()</a>
-<li><a href="#vstr_sc_fmt_add_vstr%28%29">vstr_sc_fmt_add_vstr()</a>
-<li><a href="#vstr_sc_fmt_add_buf%28%29">vstr_sc_fmt_add_buf()</a>
-<li><a href="#vstr_sc_fmt_add_ptr%28%29">vstr_sc_fmt_add_ptr()</a>
-<li><a href="#vstr_sc_fmt_add_non%28%29">vstr_sc_fmt_add_non()</a>
-<li><a href="#vstr_sc_fmt_add_ref%28%29">vstr_sc_fmt_add_ref()</a>
-<li><a href="#vstr_sc_fmt_add_bkmg_Byte_uint%28%29">vstr_sc_fmt_add_bkmg_Byte_uint()</a>
-<li><a href="#vstr_sc_fmt_add_bkmg_Bytes_uint%28%29">vstr_sc_fmt_add_bkmg_Bytes_uint()</a>
-<li><a href="#vstr_sc_fmt_add_bkmg_bit_uint%28%29">vstr_sc_fmt_add_bkmg_bit_uint()</a>
-<li><a href="#vstr_sc_fmt_add_bkmg_bits_uint%28%29">vstr_sc_fmt_add_bkmg_bits_uint()</a>
-<li><a href="#vstr_sc_fmt_add_ipv4_ptr%28%29">vstr_sc_fmt_add_ipv4_ptr()</a>
-<li><a href="#vstr_sc_fmt_add_ipv6_ptr%28%29">vstr_sc_fmt_add_ipv6_ptr()</a>
-<li><a href="#vstr_sc_fmt_add_ipv4_vec%28%29">vstr_sc_fmt_add_ipv4_vec()</a>
-<li><a href="#vstr_sc_fmt_add_ipv6_vec%28%29">vstr_sc_fmt_add_ipv6_vec()</a>
-<li><a href="#vstr_sc_fmt_add_ipv4_vec_cidr%28%29">vstr_sc_fmt_add_ipv4_vec_cidr()</a>
-<li><a href="#vstr_sc_fmt_add_ipv6_vec_cidr%28%29">vstr_sc_fmt_add_ipv6_vec_cidr()</a>
-<li><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
-<li><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
-<li><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
-<li><a href="#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a>
-<li><a href="#vstr_sc_read_len_fd%28%29">vstr_sc_read_len_fd()</a>
-<li><a href="#vstr_sc_read_iov_file%28%29">vstr_sc_read_iov_file()</a>
-<li><a href="#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a>
-<li><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
-<li><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
+<li class="obj"><a href="#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
+<li class="obj"><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
+<li class="obj"><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
+<li class="obj"><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
+<li class="obj"><a href="#vstr_sc_dirname%28%29">vstr_sc_dirname()</a>
+<li class="obj"><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
+<li class="obj"><a href="#vstr_sc_fmt_cb_end%28%29">vstr_sc_fmt_cb_end()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_vstr%28%29">vstr_sc_fmt_add_vstr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_buf%28%29">vstr_sc_fmt_add_buf()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ptr%28%29">vstr_sc_fmt_add_ptr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_non%28%29">vstr_sc_fmt_add_non()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ref%28%29">vstr_sc_fmt_add_ref()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Byte_uint%28%29">vstr_sc_fmt_add_bkmg_Byte_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Bytes_uint%28%29">vstr_sc_fmt_add_bkmg_Bytes_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bit_uint%28%29">vstr_sc_fmt_add_bkmg_bit_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bits_uint%28%29">vstr_sc_fmt_add_bkmg_bits_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv4_ptr%28%29">vstr_sc_fmt_add_ipv4_ptr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv6_ptr%28%29">vstr_sc_fmt_add_ipv6_ptr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv4_vec%28%29">vstr_sc_fmt_add_ipv4_vec()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv6_vec%28%29">vstr_sc_fmt_add_ipv6_vec()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv4_vec_cidr%28%29">vstr_sc_fmt_add_ipv4_vec_cidr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_ipv6_vec_cidr%28%29">vstr_sc_fmt_add_ipv6_vec_cidr()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+<li class="obj"><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
+<li class="obj"><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
+<li class="obj"><a href="#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a>
+<li class="obj"><a href="#vstr_sc_read_len_fd%28%29">vstr_sc_read_len_fd()</a>
+<li class="obj"><a href="#vstr_sc_read_iov_file%28%29">vstr_sc_read_iov_file()</a>
+<li class="obj"><a href="#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a>
+<li class="obj"><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
+<li class="obj"><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
 </ul><li><a href="#Functions%20to%20step%20through%20part%20of%20a%20Vstr%20string%20in%20iterations">Functions to step through part of a Vstr string in iterations</a>
 <ul>
-<li><a href="#vstr_iter_fwd_beg%28%29">vstr_iter_fwd_beg()</a>
-<li><a href="#vstr_iter_fwd_nxt%28%29">vstr_iter_fwd_nxt()</a>
+<li class="obj"><a href="#vstr_iter_fwd_beg%28%29">vstr_iter_fwd_beg()</a>
+<li class="obj"><a href="#vstr_iter_fwd_nxt%28%29">vstr_iter_fwd_nxt()</a>
 </ul></ul>
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Initialization%20function"><h2>Initialization function</h2>
@@ -433,11 +436,14 @@
 </p><p>  If you alter the Vstr in anyway then the returned pointer may point to
  free()'d memory. To get a reference to this data use <a href="functions.html#vstr_export_cstr_ref()">vstr_export_cstr_ref()</a>
  instead.
-</p><p>  If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call <a href="functions.html#vstr_cache_cb_free()">vstr_cache_cb_free()</a> on the cookie from "/vstr__/cstr".
+</p><p>  This data needs to be cached in the Vstr string, and so can only work if the
+ Vstr string has the ability to cache data (see
+ <a href="constants.html#VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE">VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE</a>). If you want to make sure that the cached
+ data is gone from the Vstr string, cache then you can call
+ <a href="functions.html#vstr_cache_cb_free()">vstr_cache_cb_free()</a> on the cookie from "/vstr__/cstr".
 </p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
- than it really is to normal C/POSIX string functions.
+ than it really is to normal C style string functions.
 
 
 <a name="vstr_export_cstr_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3086,6 +3092,10 @@
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will be looked for in the span.
+
 
 <a name="vstr_spn_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_spn_chrs_rev()
@@ -3100,6 +3110,10 @@
  Vstr string that are in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will be looked for in the span.
 
 
 <a name="vstr_cspn_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3119,6 +3133,10 @@
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will not be looked for in the span.
+
 
 <a name="vstr_cspn_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cspn_chrs_rev()
@@ -3133,6 +3151,10 @@
  Vstr string that are in the compliment of those in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
+ will not be looked for in the span.
 
 
 <a name="vstr_spn_cstr_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

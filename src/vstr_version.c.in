@@ -129,7 +129,8 @@ void vstr_version_func(void)
   const char *scan = NULL;
   int len = 0;
 
-#if (!TST_SYSCALL) && (defined(__linux__) && defined(__i386__))
+#if ((!TST_SYSCALL) && defined(USE_SYSCALL_ASM) && \
+     (defined(__linux__) && defined(__i386__)))
  /* this is sick, but works. */
 
  /* write syscall for Linux x86 */
@@ -142,26 +143,35 @@ mov     %3, %%edx\n\t\
 int     $0x80\n\t\
 " : "=a"(ret) : "m"(fd), "m"(msg), "m"(len))
 
-  /* exit syscall for Linux x86 */
-#  define VSTR__SYS_EXIT(ret) do { int num = (ret); \
+  /* SUCCESS exit syscall for Linux x86 */
+#  define VSTR__SYS_EXIT_S() do { \
   __asm__ __volatile__ ("\
 mov     $1, %%eax\n\t\
-mov     %0, %%ebx\n\t\
+mov     $0, %%ebx\n\t\
 int     $0x80\n\t\
-" : : "m"(num)); } while (FALSE)
+" : : ); } while (FALSE)
+  /* FAILURE exit syscall for Linux x86 */
+#  define VSTR__SYS_EXIT_F() do { \
+  __asm__ __volatile__ ("\
+mov     $1, %%eax\n\t\
+mov     $1, %%ebx\n\t\
+int     $0x80\n\t\
+" : : ); } while (FALSE)
 
 #elif TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
  /* syscall code for write/exit */
  /* See above for actual syscall implimentations */
 
 #  define VSTR__SYS_WRITE(ret, fd, msg, len) ret = vstr__sys_write(fd, msg, len)
-#  define VSTR__SYS_EXIT(ret) vstr__sys_exit(ret)
+#  define VSTR__SYS_EXIT_S() vstr__sys_exit(EXIT_SUCCESS)
+#  define VSTR__SYS_EXIT_F() vstr__sys_exit(EXIT_FAILURE)
 
 #else
   /* this is obvious, well apart from the fact that it doesn't work unless
    * run via. ld.so */
 #  define VSTR__SYS_WRITE(ret, fd, msg, len) ret = write(fd, msg, len)
-#  define VSTR__SYS_EXIT(ret) _exit(ret)
+#  define VSTR__SYS_EXIT_S() _exit(EXIT_SUCCESS)
+#  define VSTR__SYS_EXIT_F() _exit(EXIT_FAILURE)
 #endif
 
   scan = msg;
@@ -176,10 +186,11 @@ int     $0x80\n\t\
     VSTR__SYS_WRITE(ret, fd, scan, len);
 
     if (ret < 0)
-      VSTR__SYS_EXIT(EXIT_FAILURE);
+      VSTR__SYS_EXIT_F();
 
-    len -= ret;
+    scan += ret;
+    len  -= ret;
   }
 
-  VSTR__SYS_EXIT(EXIT_SUCCESS);
+  VSTR__SYS_EXIT_S();
 }

@@ -93,6 +93,17 @@ static void die(void)
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
 
+#ifndef NDEBUG
+# define MFAIL_NUM_OK 1
+#else
+# define MFAIL_NUM_OK 0
+#endif
+
+static int __attribute__((unused)) tst_mfail_num(unsigned long val)
+{
+  return (vstr_cntl_opt(666, val));
+}
+
 int main(void)
 {
   int ret = 0;
@@ -170,7 +181,20 @@ int main(void)
   vstr_free_conf(conf1);
   vstr_free_conf(conf2);
   vstr_free_conf(conf3);
+  
+  {
+    int tmp = 0;
+    ASSERT(!!vstr_cntl_base(s1, VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE, &tmp) &&
+           tmp == TRUE);
+    ASSERT(!!vstr_cntl_base(s2, VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE, &tmp) &&
+           tmp == TRUE);
+    ASSERT(!!vstr_cntl_base(s3, VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE, &tmp) &&
+           tmp == TRUE);
+    ASSERT(!!vstr_cntl_base(s4, VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE, &tmp) &&
+           tmp == FALSE);
 
+  }
+  
   if ((ret = tst()) && (ret != EXIT_FAILED_OK))
     fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
 

@@ -15,25 +15,9 @@ tst_add = \
     add/tst_add_netstr \
     add/tst_add_netstr2
 
-tst_fmt = \
-    fmt/tst_fmt_char \
-    fmt/tst_fmt_short \
-    fmt/tst_fmt_int \
-    fmt/tst_fmt_long \
-    fmt/tst_fmt_intmax_t \
-    fmt/tst_fmt_double \
-    fmt/tst_fmt_long_double \
-    fmt/tst_fmt_ptrdiff_t \
-    fmt/tst_fmt_size_t \
-    fmt/tst_fmt_m \
-    fmt/tst_fmt_n \
-    fmt/tst_fmt_p \
-    fmt/tst_fmt_str_norm \
-    fmt/tst_fmt_num \
-    fmt/tst_fmt_bkmg \
-    fmt/tst_fmt_ip \
-    fmt/tst_fmt_i18n \
-    fmt/tst_fmt_usr
+xfail_tst_add = \
+    add/xfail_tst_add_buf_pos \
+    add/xfail_tst_add_buf_NULL
 
 tst_cache = \
     cache/tst_cache_usr \
@@ -84,6 +68,30 @@ tst_export = \
     export/tst_export_buf \
     export/tst_export_chr \
     export/tst_export_ref
+
+tst_fmt = \
+    fmt/tst_fmt_char \
+    fmt/tst_fmt_short \
+    fmt/tst_fmt_int \
+    fmt/tst_fmt_long \
+    fmt/tst_fmt_intmax_t \
+    fmt/tst_fmt_double \
+    fmt/tst_fmt_long_double \
+    fmt/tst_fmt_ptrdiff_t \
+    fmt/tst_fmt_size_t \
+    fmt/tst_fmt_m \
+    fmt/tst_fmt_n \
+    fmt/tst_fmt_p \
+    fmt/tst_fmt_str_norm \
+    fmt/tst_fmt_num \
+    fmt/tst_fmt_bkmg \
+    fmt/tst_fmt_ip \
+    fmt/tst_fmt_i18n \
+    fmt/tst_fmt_usr
+
+xfail_tst_fmt = \
+    fmt/xfail_tst_fmt_invalid_sysfmt \
+    fmt/xfail_tst_fmt_invalid_fmt
 
 tst_loc = \
     loc/tst_loc_num
@@ -148,12 +156,12 @@ tst_x = \
     x/tst_x_make \
     x/tst_x_misc \
     x/tst_x_ref \
-    x/tst_x_swap_conf
+    x/tst_x_swap_conf \
+    x/tst_x_version
 
 
 tst = \
   $(tst_add) \
-  $(tst_fmt) \
   $(tst_cache) \
   $(tst_cmp) \
   $(tst_cntl) \
@@ -161,6 +169,7 @@ tst = \
   $(tst_del) \
   $(tst_dup) \
   $(tst_export) \
+  $(tst_fmt) \
   $(tst_loc) \
   $(tst_mov) \
   $(tst_parse) \
@@ -172,9 +181,21 @@ tst = \
   $(tst_sub) \
   $(tst_x)
 
-check_PROGRAMS = $(tst)
+xfail_tst = \
+  $(xfail_tst_add) \
+  $(xfail_tst_fmt)
 
-TESTS = $(tst)
+check_PROGRAMS = $(tst) $(xfail_tst)
+
+if !USE_ASSERT_LOOP
+if !NDEBUG
+XF_TST = $(xfail_tst)
+endif
+endif
+
+TESTS = $(tst) $(XF_TST)
+
+XFAIL_TESTS = $(xfail_tst)
 
 CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
 LDADD = -L../src/ -lvstr

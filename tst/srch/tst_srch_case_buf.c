@@ -60,5 +60,44 @@ int tst(void)
   tst_srch_buf(s3, 8);
   tst_srch_buf(s4, 16);
   
+  TST_B_TST(ret, 29,
+            vstr_srch_case_buf_rev(s1, 4, 8, NULL, 1) != 0);
+
+  vstr_add_non(s1, 7, 12);
+  vstr_add_non(s3, 7, 12);
+  vstr_add_non(s4, 7, 12);
+
+  TST_B_TST(ret, 25,
+            vstr_srch_case_buf_fwd(s1, 1, s1->len, NULL, 4) != 8);
+  TST_B_TST(ret, 25,
+            vstr_srch_case_buf_fwd(s3, 1, s3->len, NULL, 4) != 8);
+  TST_B_TST(ret, 25,
+            vstr_srch_case_buf_fwd(s4, 1, s4->len, NULL, 4) != 8);
+
+  TST_B_TST(ret, 26,
+            vstr_srch_case_buf_rev(s1, 1, s1->len, NULL, 4) != 16);
+  TST_B_TST(ret, 26,
+            vstr_srch_case_buf_rev(s3, 1, s3->len, NULL, 4) != 16);
+  TST_B_TST(ret, 26,
+            vstr_srch_case_buf_rev(s4, 1, s4->len, NULL, 4) != 16);
+
+  TST_B_TST(ret, 27,
+            vstr_srch_case_buf_fwd(s1, 1, s1->len, NULL, 12) != 8);
+  TST_B_TST(ret, 27,
+            vstr_srch_case_buf_fwd(s3, 1, s3->len, NULL, 12) != 8);
+  TST_B_TST(ret, 27,
+            vstr_srch_case_buf_fwd(s4, 1, s4->len, NULL, 12) != 8);
+
+  TST_B_TST(ret, 28,
+            vstr_srch_case_buf_rev(s1, 1, s1->len, NULL, 12) != 8);
+  TST_B_TST(ret, 28,
+            vstr_srch_case_buf_rev(s3, 1, s3->len, NULL, 12) != 8);
+  TST_B_TST(ret, 28,
+            vstr_srch_case_buf_rev(s4, 1, s4->len, NULL, 12) != 8);
+
+  TST_B_TST(ret, 29,
+            vstr_srch_case_buf_rev(s1, 4, 8, "", 0) != 11);
+  
+  
   return (TST_B_RET(ret));
 }

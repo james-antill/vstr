@@ -1,4 +1,4 @@
-.TH vstr_const 3 "21-Feb-2003" "Vstr 1.0.2" "Vstr String Library"
+.TH vstr_const 3 "04-Mar-2003" "Vstr 1.0.3" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -523,6 +523,9 @@
 .br
 .ti \w'  'u
 \fBVSTR_CNTL_BASE_SET_CONF\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE\fR
 .sp
 .br
 .ti \w'  'u
@@ -2190,6 +2193,7 @@ Type\fB[1]\fR: struct Vstr_conf **
 
 .br
   This option will get the Vstr configuration for the Vstr string
+
 .br
 \fBConstant: \fR VSTR_CNTL_BASE_SET_CONF
 
@@ -2210,6 +2214,21 @@ Type\fB[1]\fR: struct Vstr_conf *
   This will only return successfully if either the Vstr string is empty, or the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
 .br
   If the Vstr configuration (Parameter[1]) is NULL, then the default Vstr configuration will be used.
+
+.br
+\fBConstant: \fR VSTR_CNTL_BASE_GET_FLAG_HAVE_CACHE
+
+.br
+Parameter\fB[1]\fR: Returns value of flag
+.br
+Type\fB[1]\fR: int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This option lets you know if the Vstr string can cache data, this can only be controlled using the VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE flag.
+
 .SH Constants passed to vstr_cntl_conf()
 
 .br

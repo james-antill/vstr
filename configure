@@ -1005,6 +1005,8 @@ Optional Features:
   --enable-tst-noinline   turn off use of inline [default=no]
   --enable-tst-noattr-visibility turn off use of attribute visibility [default=no]
   --enable-tst-noattr-alias turn off use of attribute alias [default=no]
+  --enable-tst-nosyscall-asm turn off use of asm syscalls in version [default=no]
+  --enable-tst-noassert-loop changes asserts from looping to raise SIGABRT [default=no]
   --enable-wrap-memcpy    turn on wrapper memcpy [default=no]
   --enable-wrap-memcmp    turn on wrapper for memcmp [default=no]
   --enable-wrap-memchr    turn on wrapper for memchr [default=no]
@@ -1421,9 +1423,9 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=2
-VSTR_INTERFACE_AGE=2
-VSTR_BINARY_AGE=2
+VSTR_MICRO_VERSION=3
+VSTR_INTERFACE_AGE=3
+VSTR_BINARY_AGE=3
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -4981,7 +4983,7 @@ test "x$enable_libtool_lock" != xno && enable_libtool_lock=yes
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4984 "configure"' > conftest.$ac_ext
+  echo '#line 4986 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5517,7 +5519,7 @@ chmod -w .
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
 compiler_c_o=no
-if { (eval echo configure:5520: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
+if { (eval echo configure:5522: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
   # The compiler can only warn and ignore the option if not recognized
   # So say no if there are warnings
   if test -s out/conftest.err; then
@@ -7310,7 +7312,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 7313 "configure"
+#line 7315 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -7408,7 +7410,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 7411 "configure"
+#line 7413 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8611,11 +8613,29 @@ WARNS=""
 # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
-  WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3"
+   WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3";
+
+if false; then
+  NDEBUG_TRUE=
+  NDEBUG_FALSE='#'
 else
-  cat >>confdefs.h <<\_ACEOF
+  NDEBUG_TRUE='#'
+  NDEBUG_FALSE=
+fi
+
+else
+   cat >>confdefs.h <<\_ACEOF
 #define NDEBUG 1
 _ACEOF
+
+
+if true; then
+  NDEBUG_TRUE=
+  NDEBUG_FALSE='#'
+else
+  NDEBUG_TRUE='#'
+  NDEBUG_FALSE=
+fi
 
 fi;
 # Check whether --enable-ansi or --disable-ansi was given.
@@ -8700,6 +8720,45 @@ if test "${enable_tst_noattr_alias+set}" = set; then
 else
   local_cv_have_tst_noattr_alias=false
 fi;
+# Check whether --enable-tst-nosyscall-asm or --disable-tst-nosyscall-asm was given.
+if test "${enable_tst_nosyscall_asm+set}" = set; then
+  enableval="$enable_tst_nosyscall_asm"
+
+else
+  cat >>confdefs.h <<\_ACEOF
+#define USE_SYSCALL_ASM 1
+_ACEOF
+
+fi;
+# Check whether --enable-tst-noassert-loop or --disable-tst-noassert-loop was given.
+if test "${enable_tst_noassert_loop+set}" = set; then
+  enableval="$enable_tst_noassert_loop"
+
+
+if false; then
+  USE_ASSERT_LOOP_TRUE=
+  USE_ASSERT_LOOP_FALSE='#'
+else
+  USE_ASSERT_LOOP_TRUE='#'
+  USE_ASSERT_LOOP_FALSE=
+fi
+
+else
+   cat >>confdefs.h <<\_ACEOF
+#define USE_ASSERT_LOOP 1
+_ACEOF
+
+
+if true; then
+  USE_ASSERT_LOOP_TRUE=
+  USE_ASSERT_LOOP_FALSE='#'
+else
+  USE_ASSERT_LOOP_TRUE='#'
+  USE_ASSERT_LOOP_FALSE=
+fi
+
+fi;
+
 
 
 # Check whether --enable-wrap-memcpy or --disable-wrap-memcpy was given.
@@ -17430,6 +17489,20 @@ echo "$as_me: error: conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${NDEBUG_TRUE}" && test -z "${NDEBUG_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"NDEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"NDEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${NDEBUG_TRUE}" && test -z "${NDEBUG_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"NDEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"NDEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${HAVE_POSIX_HOST_TRUE}" && test -z "${HAVE_POSIX_HOST_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"HAVE_POSIX_HOST\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -17441,6 +17514,20 @@ if test -z "${HAVE_LINKER_VERSION_SCRIPT_TRUE}" && test -z "${HAVE_LINKER_VERSIO
   { { echo "$as_me:$LINENO: error: conditional \"HAVE_LINKER_VERSION_SCRIPT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"HAVE_LINKER_VERSION_SCRIPT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_ASSERT_LOOP_TRUE}" && test -z "${USE_ASSERT_LOOP_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_ASSERT_LOOP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_ASSERT_LOOP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_ASSERT_LOOP_TRUE}" && test -z "${USE_ASSERT_LOOP_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_ASSERT_LOOP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_ASSERT_LOOP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -18117,11 +18204,15 @@ s,@PERL_PATH@,$PERL_PATH,;t t
 s,@TAR_PATH@,$TAR_PATH,;t t
 s,@CHMOD_PATH@,$CHMOD_PATH,;t t
 s,@PKG_CONFIG@,$PKG_CONFIG,;t t
+s,@NDEBUG_TRUE@,$NDEBUG_TRUE,;t t
+s,@NDEBUG_FALSE@,$NDEBUG_FALSE,;t t
 s,@WARNS@,$WARNS,;t t
 s,@HAVE_POSIX_HOST_TRUE@,$HAVE_POSIX_HOST_TRUE,;t t
 s,@HAVE_POSIX_HOST_FALSE@,$HAVE_POSIX_HOST_FALSE,;t t
 s,@HAVE_LINKER_VERSION_SCRIPT_TRUE@,$HAVE_LINKER_VERSION_SCRIPT_TRUE,;t t
 s,@HAVE_LINKER_VERSION_SCRIPT_FALSE@,$HAVE_LINKER_VERSION_SCRIPT_FALSE,;t t
+s,@USE_ASSERT_LOOP_TRUE@,$USE_ASSERT_LOOP_TRUE,;t t
+s,@USE_ASSERT_LOOP_FALSE@,$USE_ASSERT_LOOP_FALSE,;t t
 s,@USE_WRAP_MEMCPY_TRUE@,$USE_WRAP_MEMCPY_TRUE,;t t
 s,@USE_WRAP_MEMCPY_FALSE@,$USE_WRAP_MEMCPY_FALSE,;t t
 s,@USE_WRAP_MEMCMP_TRUE@,$USE_WRAP_MEMCMP_TRUE,;t t

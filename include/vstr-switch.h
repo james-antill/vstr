@@ -82,8 +82,9 @@
 # define VSTR__COMPILE_ATTR_FMT(x, y) /* nothing */
 #endif
 
-#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_NONNULL) && \
-    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && \
+    defined(VSTR_AUTOCONF_HAVE_ATTRIB_NONNULL) && \
+   !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_NONNULL_A() \
  __attribute__ ((__nonnull__))
 # define VSTR__COMPILE_ATTR_NONNULL_L(x) \
@@ -93,28 +94,37 @@
 # define VSTR__COMPILE_ATTR_NONNULL_L(x) /* nothing */
 #endif
 
-#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_PURE) && \
-    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && \
+    defined(VSTR_AUTOCONF_HAVE_ATTRIB_PURE) && \
+   !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_PURE() \
  __attribute__ ((__pure__))
 #else
 # define VSTR__COMPILE_ATTR_PURE() /* nothing */
 #endif
 
-#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_CONST) && \
-    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && \
+    defined(VSTR_AUTOCONF_HAVE_ATTRIB_CONST) && \
+   !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_CONST() \
  __attribute__ ((__const__))
 #else
 # define VSTR__COMPILE_ATTR_CONST() VSTR__COMPILE_ATTR_PURE()
 #endif
 
-#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_MALLOC) && \
-    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && \
+    defined(VSTR_AUTOCONF_HAVE_ATTRIB_MALLOC) && \
+   !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_MALLOC() \
  __attribute__ ((__malloc__))
 #else
 # define VSTR__COMPILE_ATTR_MALLOC() /* nothing */
+#endif
+
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+# define VSTR__BULTIN_CONST_P(x) __builtin_constant_p (x)
+#else
+# define VSTR__BULTIN_CONST_P(x) (0)
 #endif
 
 #ifdef VSTR_AUTOCONF_NDEBUG

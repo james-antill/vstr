@@ -13,14 +13,6 @@ else
   exit 1;
 fi
 
-$s/b/COVERAGE.sh
-# ./src/.libs/libvstr-*.so.*
-
 cd src
 
-if $doln; then
- lndir ../$s/../src
-fi
-
-../$s/ggcov.sh
-
+ggcov

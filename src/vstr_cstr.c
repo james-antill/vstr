@@ -47,8 +47,10 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   Vstr__cache_data_cstr *data = NULL;
   unsigned int off = base->conf->cache_pos_cb_cstr;
   
-  assert(base && pos && ((pos + len - 1) <= base->len) && ret_off);
-  assert(len || (!base->len && (pos == 1)));
+  ASSERT(base && pos && ((pos + len - 1) <= base->len) && ret_off);
+  ASSERT(len || (!base->len && (pos == 1)));
+
+  ASSERT(off == 3);
   
   if (!(data = vstr_cache_get(base, off)))
   {
@@ -61,32 +63,48 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
       return (NULL);
     }
     data->ref = NULL;
-    
+
     vstr_cache_set(base, off, data);
   }
  
   if (data->ref)
   {
-    assert(((Vstr__buf_ref *)data->ref)->buf == data->ref->ptr);
+    ASSERT(data->sz);
+    ASSERT(((Vstr__buf_ref *)data->ref)->buf == data->ref->ptr);
 
+    *ret_off = data->off;
+    
     if (pos >= data->pos)
     {
       size_t tmp = (pos - data->pos);
       if ((data->len - tmp) == len)
       {
-        *ret_off = tmp;
+        *ret_off += tmp;
         return (data);
       }
     }
-    
-    vstr_ref_del(data->ref);
-    data->ref = NULL;
+
+    if ((data->sz <= len) || (data->ref->ref != 1))
+    {
+      vstr_ref_del(data->ref);
+      data->ref = NULL;
+    }
+    else
+    { /* can overwrite previous cache entry */
+      ref = data->ref;
+      vstr_export_cstr_buf(base, pos, len, ref->ptr, len + 1);
+
+      goto export_new_cstr;
+    }
   }
 
   if (!(ref = vstr__export_cstr_ref(base, pos, len)))
     return (NULL);
+  data->sz = len + 1;
   
+ export_new_cstr:
   data->ref = ref;
+  data->off = 0;
   data->pos = pos;
   data->len = len;
   
@@ -101,6 +119,8 @@ char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
   
   if (!(data = vstr__export_cstr_cache(base, pos, len, &off)))
     return (NULL);
+
+  ASSERT(vstr__check_real_nodes(base));
   
   return (((char *)data->ref->ptr) + off);
 }
@@ -108,7 +128,7 @@ char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
 char *vstr_export_cstr_malloc(const Vstr_base *base, size_t pos, size_t len)
 {
   void *ptr = malloc(len + 1);
-
+  
   if (!ptr)
   {
     base->conf->malloc_bad = TRUE;
@@ -124,6 +144,8 @@ Vstr_ref *vstr_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
                                size_t *ret_off)
 {
   Vstr__cache_data_cstr *data = NULL;
+
+  ASSERT(ret_off);
   
   if (!base->cache_available)
   {

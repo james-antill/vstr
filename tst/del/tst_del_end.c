@@ -24,7 +24,7 @@ static void tst_del(Vstr_base *t1, size_t len)
   assert(vstr_sc_posdiff(2, t1->len) == VSTR_SC_POSDIFF(2, t1->len));
   
   ASSERT( vstr_del(t1, t1->len + 1, 0));
-  ASSERT(!vstr_del(t1, t1->len + 1, 1)); /* non assert, due to inline */
+  /* FAIL: ASSERT(!vstr_del(t1, t1->len + 1, 1)); */
   
   while (--len)
     vstr_sc_reduce(t1, 1, t1->len, 1);
@@ -35,7 +35,8 @@ static void tst_del(Vstr_base *t1, size_t len)
   assert(vstr_sc_reduce(t1, 1, 1, 0) == 1);
   assert(vstr_sc_reduce(t1, 1, 0, 0) == 1);
   assert(vstr_sc_posdiff(1, t1->len) == 1);
-  vstr_sc_reduce(t1, 1, 1, 2);
+  vstr_sc_reduce(t1, 1, 1, 1);
+  /* FAIL: vstr_sc_reduce(t1, 1, 1, 2); */
 }
 
 int tst(void)
@@ -55,5 +56,35 @@ int tst(void)
   tst_del(s3, (len * 4) + 8);
   tst_del(s4, (len * 4) + 8);
 
-  return (s1->len || s2->len || s3->len);
+  if (s1->len || s2->len || s3->len || s4->len)
+    return (s1->len + s2->len + s3->len + s4->len);
+
+  ADD(s1);
+  ADD(s2);
+  ADD(s3);
+  ADD(s4);
+
+  
+  vstr_export_cstr_ptr(s1, 4, s1->len - 3);
+  vstr_export_iovec_ptr_all(s1, NULL, NULL);
+
+  vstr_export_cstr_ptr(s2, 4, s2->len - 3);
+  vstr_export_iovec_ptr_all(s2,NULL,NULL);
+
+  vstr_export_cstr_ptr(s3, 4, s3->len - 3);
+  vstr_export_iovec_ptr_all(s3,NULL,NULL);
+
+  vstr_export_cstr_ptr(s4, 4, s4->len - 3);
+  vstr_export_iovec_ptr_all(s4,NULL,NULL);
+
+  
+  tst_del(s1, (len * 4) + 8);
+  tst_del(s2, (len * 4) + 8);
+  tst_del(s3, (len * 4) + 8);
+  tst_del(s4, (len * 4) + 8);
+
+  if (s1->len || s2->len || s3->len || s4->len)
+    return (s1->len + s2->len + s3->len + s4->len);
+  
+  return (EXIT_SUCCESS);
 }

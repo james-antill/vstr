@@ -422,6 +422,9 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	tags uninstall uninstall-am uninstall-info-am \
 	uninstall-libLTLIBRARIES
 
+
+# Rebuild the extern inline functions, when the inline's are changed.
+vstr_inline.lo: ../include/vstr-inline.h ../include/vstr-nx-inline.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

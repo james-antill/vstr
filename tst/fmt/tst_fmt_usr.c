@@ -97,13 +97,91 @@ static int tst_usr_all_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   char              *arg14 = VSTR_FMT_CB_ARG_PTR(spec, 13);
   int                arg15 = VSTR_FMT_CB_ARG_VAL(spec, int, 14);
 
+  ASSERT(spec->fmt_I);
+  
   if (vstr_add_fmt(st, pos,
-                   "%f|%Lf|%d|%jd|%ld|%lld|%td|%ls|%zu|%zd|%ju|%lu|%llu|%s|%c",
+                   "%f|%Lf|%8d|%8jd|%8ld|%8lld|%8td|%ls|%8zu|%8zd|%8ju|%8lu|%8llu|%s|%c",
                    arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10,
                    arg11, arg12, arg13, arg14, arg15))
     return (TRUE);
 
   return (FALSE);
+}
+
+static void tst_fmt(int ret, Vstr_base *t1)
+{
+  int succeeded = FALSE;
+  const char *t_fmt = "$I{TST_ALL}";
+  const char *correct = ("1.000000|2.000000|"
+                         "       3|       4|"
+                         "       5|       6|"
+                         "       7|"
+                         "eight|"
+                         "       9|      10|"
+                         "      11|      12|"
+                         "      13|"
+                         "fourteen|");
+  
+#ifdef FMT_DBL_none
+  correct = ("0.000000|0.000000|"
+             "       3|       4|"
+             "       5|       6|"
+             "       7|"
+             "eight|"
+             "       9|      10|"
+             "      11|      12|"
+             "      13|"
+             "fourteen|");
+#endif
+
+  vstr_del(t1, 1, t1->len);
+  
+  if (!MFAIL_NUM_OK)
+  {
+    succeeded = vstr_add_fmt(t1, t1->len, t_fmt,
+                             1.0, (long double)2.0,
+                             3, (intmax_t)4,
+                             5L, 6LL,
+                             (ptrdiff_t)7,
+                             L"eight",
+                             (size_t)9, (ssize_t)10, (uintmax_t)11,
+                             12UL, 13ULL, "fourteen", 0);
+    ASSERT(succeeded);
+  }
+  else
+  {
+    unsigned long mfail_count = 1;
+    
+    vstr_free_spare_nodes(t1->conf,     VSTR_TYPE_NODE_BUF, 1000);
+    
+    TST_B_TST(ret, 26, !tst_mfail_num(1));
+    TST_B_TST(ret, 27,  vstr_add_fmt(t1, t1->len, t_fmt,
+                                     1.0, (long double)2.0,
+                                     3, (intmax_t)4,
+                                     5L, 6LL,
+                                     (ptrdiff_t)7,
+                                     L"eight",
+                                     (size_t)9, (ssize_t)10, (uintmax_t)11,
+                                     12UL, 13ULL, "fourteen", 0));
+
+    while (!succeeded) /* keep trying until we succeed now */
+    {
+      vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+      succeeded = vstr_add_fmt(t1, t1->len, t_fmt,
+                               1.0, (long double)2.0,
+                               3, (intmax_t)4,
+                               5L, 6LL,
+                               (ptrdiff_t)7,
+                               L"eight",
+                               (size_t)9, (ssize_t)10, (uintmax_t)11,
+                               12UL, 13ULL, "fourteen", 0);
+    }
+    tst_mfail_num(0);
+  }
+  
+  TST_B_TST(ret, 28, !VSTR_CMP_BUF_EQ(t1, 1, t1->len,
+                                      correct, strlen(correct) + 1));
 }
 
 int tst(void)
@@ -131,6 +209,23 @@ int tst(void)
   ASSERT(s1->conf->fmt_usr_curly_braces);
 
   vstr_fmt_add(s1->conf, "{TST_ALL}", tst_usr_all_cb,
+               VSTR_TYPE_FMT_DOUBLE,
+               VSTR_TYPE_FMT_DOUBLE_LONG,
+               VSTR_TYPE_FMT_INT,
+               VSTR_TYPE_FMT_INTMAX_T,
+               VSTR_TYPE_FMT_LONG,
+               VSTR_TYPE_FMT_LONG_LONG,
+               VSTR_TYPE_FMT_PTRDIFF_T,
+               VSTR_TYPE_FMT_PTR_WCHAR_T,
+               VSTR_TYPE_FMT_SIZE_T,
+               VSTR_TYPE_FMT_SSIZE_T,
+               VSTR_TYPE_FMT_UINTMAX_T,
+               VSTR_TYPE_FMT_ULONG,
+               VSTR_TYPE_FMT_ULONG_LONG,
+               VSTR_TYPE_FMT_PTR_CHAR,
+               VSTR_TYPE_FMT_INT,
+               VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s3->conf, "{TST_ALL}", tst_usr_all_cb,
                VSTR_TYPE_FMT_DOUBLE,
                VSTR_TYPE_FMT_DOUBLE_LONG,
                VSTR_TYPE_FMT_INT,
@@ -245,35 +340,10 @@ int tst(void)
   vstr_fmt_del(s3->conf, "{vstr:%p%zu%zu%u}");
   assert(!vstr_fmt_srch(s3->conf, "{Vstr:%p%zu%zu%u}"));
   
-  {
-    const char *t_fmt = "${TST_ALL}";
-    const char *correct = ("1.000000|2.000000|"
-                           "3|4|5|6|7|"
-                           "eight|"
-                           "9|10|11|12|13|"
-                           "fourteen|");
-
-#ifdef FMT_DBL_none
-    correct = ("0.000000|0.000000|"
-               "3|4|5|6|7|"
-               "eight|"
-               "9|10|11|12|13|"
-               "fourteen|");
-#endif
-      
-    vstr_del(s1, 1, s1->len);
-    vstr_add_fmt(s1, s1->len, t_fmt,
-                 1.0, (long double)2.0,
-                 3, (intmax_t)4,
-                 5L, 6LL,
-                 (ptrdiff_t)7,
-                 L"eight",
-                 (size_t)9, (ssize_t)10, (uintmax_t)11,
-                 12UL, 13ULL, "fourteen", 0);
-    
-    TST_B_TST(ret, 28, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len - 1, correct));
-    TST_B_TST(ret, 29, !VSTR_CMP_BUF_EQ(s1, s1->len, 1, "", 1));
-  }
+  tst_fmt(ret, s1);
+  tst_fmt(ret, s3);
+  
+  TST_B_TST(ret, 29, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
   
   return (TST_B_RET(ret));
 }
