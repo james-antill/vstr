@@ -28,16 +28,16 @@
 
 #include "evnt.h"
 
-#define EX_UTILS_NO_USE_OPEN 1
-#define EX_UTILS_NO_USE_INIT 1
-#define EX_UTILS_NO_USE_EXIT 1
+#define EX_UTILS_NO_USE_OPEN  1
+#define EX_UTILS_NO_USE_INIT  1
+#define EX_UTILS_NO_USE_EXIT  1
 #define EX_UTILS_NO_USE_BLOCK 1
 #define EX_UTILS_NO_USE_LIMIT 1
-#define EX_UTILS_NO_USE_PUT 1
+#define EX_UTILS_NO_USE_PUT   1
 #include "ex_utils.h"
 
 #define CONF_SERV_DEF_ADDR NULL
-#define CONF_SERV_DEF_PORT 8008
+#define CONF_SERV_DEF_PORT   80
 
 #define CONF_SERV_NAME "jhttpd/0.1.1 (Vstr)"
 
@@ -140,7 +140,12 @@ static void serv_init(void)
 {
   if (!vstr_init()) /* init the library */
     errno = ENOMEM, err(EXIT_FAILURE, "init");
-  
+
+  /* no passing of con'f to evnt */
+  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
+      !vstr_sc_fmt_add_all(NULL))
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
+    
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
@@ -166,7 +171,7 @@ static void req_split(Vstr_sects *sects,
   if (!len)
     goto fail_req;
 
-  if (vstr_export_chr(s1, pos) != '/') /* Allow http://.../... for proxies */
+  if (vstr_export_chr(s1, pos) != '/') /* Allow http://.../... for proxies? */
     goto fail_req;
   
   if (!(el = vstr_srch_chr_fwd(s1, pos, len, ' ')))
@@ -253,6 +258,15 @@ static void add_header_cstr(Vstr_base *out, size_t len,
   vstr_add_fmt(out, len, "%s: %s\r\n", hdr, data);
 }
 
+static void add_header_vstr(Vstr_base *out, size_t len,
+                            const char *hdr,
+                            Vstr_base *s1, size_t vpos, size_t vlen,
+                            unsigned int type)
+{
+  vstr_add_fmt(out, len, "%s: ${vstr:%p%zu%zu%u}\r\n", hdr,
+               s1, vpos, vlen, type);
+}
+
 static void add_header_uintmax(Vstr_base *out, size_t len,
                                const char *hdr, uintmax_t data)
 {
@@ -277,7 +291,15 @@ static int serv_recv(struct con *con)
   Vstr_sects *sects = NULL;
   char *req_head_if_mod_since = NULL;
   int ver_0_9 = FALSE;
+  int redirect_loc = FALSE;
+  int redirect_http_error_msg = FALSE;
 
+  if (!ret && !data->len && (out->len || (con->f_fd != -1)))
+  { /* untested */
+    SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
+    return (TRUE);
+  }
+  
   if (ret)
   {
     if (!(h_end = vstr_srch_cstr_buf_fwd(data, 1, data->len, "\r\n\r\n")))
@@ -374,7 +396,7 @@ static int serv_recv(struct con *con)
       {
         HTTPD_ERR(400, head_op);
         goto con_fin_error_code;
-        }
+      }
       
       /* req_split() will give 400 otherwise */
       assert(vstr_export_chr(data, 1) == '/');
@@ -407,12 +429,13 @@ static int serv_recv(struct con *con)
              http_req_content_type, fname);
       fflush(NULL);
       
-      if ((con->f_fd = open64(fname, O_RDONLY | O_NOCTTY)) == -1)
+      if ((con->f_fd = EX_UTILS_OPEN(fname, O_RDONLY | O_NOCTTY)) == -1)
       {
         if (0) { }
         else if (errno == EISDIR)
         {
-          vstr_add_cstr_ptr(data, data->len, "/index.html");
+          HTTP_REQ_CHK_DIR(data, con_fin_error_code);
+          vstr_add_cstr_ptr(data, data->len, "index.html");
           goto retry_req;
         }
         else if (errno == EACCES)
@@ -443,12 +466,14 @@ static int serv_recv(struct con *con)
         HTTPD_ERR(403, head_op);
         goto con_close_fin_error_code;
       }
-      
+
       if (S_ISDIR(f_stat.st_mode))
       {
+        HTTP_REQ_CHK_DIR(data, con_close_fin_error_code);
+
         close(con->f_fd);
         con->f_fd = -1;
-        vstr_add_cstr_ptr(data, data->len, "/index.html");
+        vstr_add_cstr_ptr(data, data->len, "index.html");
         goto retry_req;
       }
       
@@ -515,21 +540,38 @@ static int serv_recv(struct con *con)
   ASSERT_NOT_REACHED();
   
  con_fin_error_code:
-  vstr_del(data, 1, data->len);
   if (!ver_0_9)
   {
     vstr_add_fmt(out, out->len, "%s %03u %s\r\n\r\r",
                  "HTTP/1.0", http_error_code, "BAD");
     add_def_headers(out);
+    if (redirect_loc)
+      add_header_vstr(out, out->len, "Location", data, 1, data->len, 0);
     add_header_cstr(out, out->len, "Last-Modified", serv_date_rfc1123(0));
     add_header_cstr(out, out->len, "Content-Type", "text/html");
-    add_header_uintmax(out, out->len, "Content-Length",
-                       strlen(http_error_msg));
+    if (redirect_loc)
+      add_header_uintmax(out, out->len, "Content-Length",
+                         CONF_MSG_LEN_301(data, 1, data->len));
+    else
+      add_header_uintmax(out, out->len, "Content-Length",
+                         strlen(http_error_msg));
     vstr_add_cstr_ptr(out, out->len, "\r\n\r\r");
   }
   
-  vstr_add_cstr_ptr(out, out->len, http_error_msg);
+  if (redirect_loc)
+  {
+    if (redirect_http_error_msg)
+      vstr_add_fmt(out, out->len, CONF_MSG_FMT_301,
+                   CONF_MSG__FMT_301_BEG,
+                   data, 1, data->len, 0,
+                   CONF_MSG__FMT_301_END);
+  }
+  else
+    vstr_add_cstr_ptr(out, out->len, http_error_msg);
 
+  /* Only here as redirect_loc uses it */
+  vstr_del(data, 1, data->len);
+  
  con_do_write:
   if (evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND))
   {
@@ -714,7 +756,7 @@ int main(int argc, char *argv[])
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   
   if (!evnt_make_bind_ipv4(acpt_evnt, addr, port))
-    err(EXIT_FAILURE, "bind(%s:%hu)", addr, port);
+    err(EXIT_FAILURE, "bind(%s:%hu)", addr ? addr : "any", port);
 
   SOCKET_POLL_INDICATOR(acpt_evnt->ind)->events |= POLLIN;
 

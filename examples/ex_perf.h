@@ -37,7 +37,8 @@
 		 \
 		while (tst_count < test_for) \
 		{ \
-			unsigned char buf_out[x]
+                  unsigned char buf_out[x];     \
+                  buf_out[0] = tv_beg.tv_usec
 
 
 #define TST__END() \

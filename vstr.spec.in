@@ -18,7 +18,7 @@
 
 %define devdoco %{_datadir}/doc/%{name}-devel-%{ver}
 
-Summary: String library, safe, quick and easy to use.
+Summary: String library, safe, easy to use and fast.
 Name: %{name}
 Version: %ver
 Release: %rel
@@ -26,7 +26,7 @@ Copyright: LGPL
 Group: Development/Libraries
 Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
-BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool, gcc
+BuildRequires: pkgconfig >= 0.8, gcc, make, glibc-devel
 URL: http://www.and.org/%{name}/
 
 %description
@@ -43,14 +43,21 @@ and includes support for i18n parameter position modifiers).
 %package examples
 Summary: String library, examples.
 Group: Development/Tools
-Requires: pkgconfig >= 0.8
-Requires: %{name} = %{ver}
+Requires: %{name} >= %{ver}
 
 %description examples
  Compiled example programs in %{_libdir}/%{name}-%{ver}/examples
 
+%package initd
+Summary: String library, init.d files for daemon examples.
+Group: Development/Tools
+Requires: %{name}-examples = %{ver}
+
+%description initd
+ init.d start files for example programs in %{_libdir}/%{name}-%{ver}/examples
+
 %package devel
-Summary: String library, safe, quick and easy to use. Specilizes in IO.
+Summary: String library, safe, easy to use and fast. Specilizes in IO.
 Group: Development/Libraries
 Requires: pkgconfig >= 0.8
 Requires: %{name} = %{ver}
@@ -71,6 +78,9 @@ the Vstr string library
  Also includes a %{name}-debug.pc file for pkg-config development.
 
 %changelog
+* Sun Aug 29 2004 James Antill <james@and.org>
+- Added initd subpackage
+
 * Tue Aug 24 2004 James Antill <james@and.org>
 - Add -examples and -debug sub packages
 
@@ -91,7 +101,7 @@ the Vstr string library
 - Added chk option for doing a "make check"
 
 * Mon Jan 13 2003 James Antill <james@and.org>
-- Moved the includedir to /usr/include/%%{name}-*
+- Moved the includedir to /usr/include/%{name}-*
 
 * Sat Nov 16 2002 James Antill <james@and.org>
 - Added wrap memcpy/memset to the default configure options.
@@ -139,7 +149,7 @@ mkdir dbg opt
 cd dbg
 
 ../configure --prefix=%{prefix} --mandir=%{_mandir} \
-  --datadir=%{_datadir}  --libdir=%{_libdir} \
+  --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-debug \
   %{fmtfloatopt}
@@ -147,7 +157,7 @@ build
 
 cd ../opt
 ../configure  --prefix=%{prefix} --mandir=%{_mandir} \
-  --datadir=%{_datadir}  --libdir=%{_libdir} \
+  --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt}
@@ -180,6 +190,27 @@ rm -rf $RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
 
+%post initd
+
+if [ $1 = 1 ]; then
+    /sbin/chkconfig --add jhttpd
+    /sbin/chkconfig --add jechod
+fi
+if [ $1 = 2 ]; then
+    /sbin/service jechod condrestart >/dev/null 2>&1
+    /sbin/service jhttpd condrestart >/dev/null 2>&1
+fi
+
+%preun initd
+
+if [ $1 = 1 ]; then
+    /sbin/service jechod stop > /dev/null 2>&1
+    /sbin/chkconfig --del jechod
+
+    /sbin/service jhttpd stop > /dev/null 2>&1
+    /sbin/chkconfig --del jhttpd
+fi
+
 %postun -p /sbin/ldconfig
 
 %files
@@ -211,3 +242,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 
 %{_libdir}/%{name}-%{ver}/examples
+
+%files initd
+%defattr(-, root, root)
+
+%{_sysconfdir}/init.d

@@ -71,11 +71,11 @@ Self contained namespace of "vstr_" on everything but members of structs, intern
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
 IO is easy anywhere into or out of a string, appending and writing from the begining are O(1) operations. Non-blocking IO functions are provided. Deals with any binary data. Has <a href="http://cr.yp.to/proto/netstrings.txt">netstring</a> functions.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
-<!-- sloccount ../src/*.c ../include/vstr-*inline.h ../src/vstr_dbl/vstr_add_fmt_dbl_host.c src/vstr_version.c  -->
-<!-- sloccount ../tst/**/*.c -->
- Small amount of user testing. Testsuite <b>tests all functions and constants</b> ... over 99% coverage of lines of code of implementation (76% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>, with host sprintf for doubles).
+<!-- sloccount ../src/*.c ../include/vstr-*inline.h ../src/vstr_dbl/vstr_add_fmt_dbl_host.c src/vstr_version.c = 13,333  -->
+<!-- sloccount ../tst/**/*.c = 11,106 -->
+ Small amount of user testing. Testsuite <b>tests all functions and constants</b>, and every line of code in the default build. 100% coverage. (83% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>).
  </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
-1.0.12
+1.0.13
 </td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
 Heavily recommended for IO,
  is as good as it gets when talking to many network connections with
@@ -1292,7 +1292,7 @@ now and again when I might have looked at them.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Fri Jul 23 01:06:27 EDT 2004
+Last modified: Sun Aug 29 19:53:57 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

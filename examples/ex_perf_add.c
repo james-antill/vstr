@@ -76,8 +76,8 @@ static void hand_inline(Vstr_base *tst, unsigned int num)
       tst->end->len += len;
       if (tst->iovec_upto_date)
       {
-        unsigned int num = tst->num + VSTR__CACHE(tst)->vec->off - 1;
-        VSTR__CACHE(tst)->vec->v[num].iov_len += len;
+        unsigned int num_off = tst->num + VSTR__CACHE(tst)->vec->off - 1;
+        VSTR__CACHE(tst)->vec->v[num_off].iov_len += len;
       }
     }
     
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
   if (HAVE_IOV)
   {
     vstr_add_rep_chr(tst, 0, '-', strlen(STUFF) * num);
-    vstr_export_iovec_ptr(tst, NULL, NULL);
+    vstr_export_iovec_ptr_all(tst, NULL, NULL);
   }
   vstr_del(tst, 1, tst->len);
   vstr_free_spare_nodes(tst->conf, VSTR_TYPE_NODE_BUF, 1000 * 1000 * 1000);

@@ -1,3 +1,10 @@
+2004-08-29: Version 1.0.13 ... Nore testing, now at 100% code coverage.
+Some functions were added for working with binary data, using iterators,
+doing user friend byte output with large numbers, and working with things
+like gmp. Build is now much nicer, with the examples being built by default
+compiling on FreeBSD working by default and LFS support being more developer
+friendly.
+
 2004-01-25: Version 1.0.12 ... More testing, now at over 99% code coverage.
 One largish bug was found, and regression tests added for it. A couple of
 smaller bugs were also found and fixed. A couple of new functions for storing

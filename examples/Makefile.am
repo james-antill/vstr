@@ -32,6 +32,12 @@ ex_hello_world_x_LDADD  = $(GEN_LDLIBS)
 ex_hexdump_DEPENDENCIES = ex_utils.h
 ex_hexdump_CFLAGS = $(GEN_CFLAGS)
 ex_hexdump_LDADD  = $(GEN_LDLIBS)
+ex_html_dir_list_DEPENDENCIES = ex_utils.h
+ex_html_dir_list_CFLAGS = $(GEN_CFLAGS)
+ex_html_dir_list_LDADD  = $(GEN_LDLIBS)
+ex_dir_list_DEPENDENCIES = ex_utils.h
+ex_dir_list_CFLAGS = $(GEN_CFLAGS)
+ex_dir_list_LDADD  = $(GEN_LDLIBS)
 ex_nl_DEPENDENCIES = ex_utils.h
 ex_nl_CFLAGS = $(GEN_CFLAGS)
 ex_nl_LDADD  = $(GEN_LDLIBS)
@@ -85,6 +91,11 @@ ex_echod_DEPENDENCIES = evnt.h
 ex_echod_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_echod_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
+ex_ypservd_SOURCES = ex_ypservd.c # evnt.c
+#ex_ypservd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h
+ex_ypservd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
+ex_ypservd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
+
 # BEG: Not a Vstr app.
 ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
 ex_tdns_LDADD    = $(GEN_LDLIBS)
@@ -96,7 +107,7 @@ ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
 ex_zcat_LDADD  = $(GEN_LDLIBS) $(ZLIB_LDLIBS) $(BZ2_LDLIBS)
 
 ex_perf_sgopenssl_DEPENDENCIES = ex_perf.h
-ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS)
+ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
 ex_perf_sgopenssl_LDADD  = $(GEN_LDLIBS) $(OPENSSL_LDLIBS)
 
 ex_gmp_factorials_DEPENDENCIES = ex_utils.h
@@ -113,19 +124,23 @@ ex_gmp_num_words_CFLAGS = $(GEN_CFLAGS) $(GMP_CFLAGS)
 ex_gmp_num_words_LDADD  = $(GEN_LDLIBS) $(GMP_LDLIBS)
 
 ex_perf_nodesize_foreach_DEPENDENCIES = ex_perf.h
-ex_perf_nodesize_foreach_CFLAGS = $(GEN_CFLAGS) $(GLIB20_CFLAGS)
+ex_perf_nodesize_foreach_CFLAGS = $(GEN_CFLAGS) $(GLIB20_CFLAGS) -Wno-aggregate-return
 ex_perf_nodesize_foreach_LDADD  = $(GEN_LDLIBS) $(GLIB20_LDLIBS)
 
 ex_netstr_DEPENDENCIES = ex_perf.h
 ex_netstr_CFLAGS = $(GEN_CFLAGS)
 ex_netstr_LDADD  = $(GEN_LDLIBS)
 ex_perf_nodesize_DEPENDENCIES = ex_perf.h
-ex_perf_nodesize_CFLAGS = $(GEN_CFLAGS)
+ex_perf_nodesize_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_nodesize_LDADD  = $(GEN_LDLIBS)
 ex_perf_add_DEPENDENCIES = ex_perf.h
-ex_perf_add_CFLAGS = $(GEN_CFLAGS)
+ex_perf_add_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_add_LDADD  = $(GEN_LDLIBS)
 
+
+examplesdir = $(EX_INST_DIR)
+examples_PROGRAMS = \
+  ex_netstr ex_perf_nodesize ex_perf_add
 
 # Turn on Programs we can compile...
 
@@ -135,26 +150,28 @@ hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
 
 
-pthread_APP = ex_tdns
+examples_PROGRAMS += ex_tdns
 
-norm_APPS = \
+examples_PROGRAMS += \
   ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
-  ex_hexdump ex_nl ex_phone_names ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
-  ex_csv $(hi_DEP) ex_ssi ex_rainbow ex_changelog_diff ex_ccount
+  ex_hexdump ex_html_dir_list ex_dir_list ex_nl ex_phone_names ex_rot13 \
+  ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
+  ex_ssi ex_rainbow ex_changelog_diff ex_ccount
 
 if TIMER_Q_AVAIL
-timer_q_APPS = ex_slowcat
+examples_PROGRAMS += ex_slowcat
 
 if SOCKET_POLL_AVAIL
-poll_APP   = ex_dns ex_echod ex_httpd
+examples_PROGRAMS += ex_dns ex_echod ex_httpd
+#examples_PROGRAMS += ex_ypservd
 endif
 # Timer_q
 endif
 
 if BZ2_AVAIL
 if ZLIB_AVAIL
-zcat_APPS = ex_zcat
+examples_PROGRAMS += ex_zcat
 endif
 endif
 
@@ -169,28 +186,17 @@ hi_APP = jhighlight
 endif
 
 if OPENSSL_AVAIL
-openssl_APPS = ex_perf_sgopenssl
+examples_PROGRAMS += ex_perf_sgopenssl
 endif
 
 if GMP_AVAIL
-gmp_APPS = ex_gmp_factorials ex_gmp_nums ex_gmp_num_roman ex_gmp_num_words
+examples_PROGRAMS += \
+  ex_gmp_factorials ex_gmp_nums ex_gmp_num_roman ex_gmp_num_words
 endif
 
 if GLIB20_AVAIL
-glib_APPS = ex_perf_nodesize_foreach
+examples_PROGRAMS += ex_perf_nodesize_foreach
 endif
-
-examplesdir = $(EX_INST_DIR)
-examples_PROGRAMS = \
-  ex_netstr ex_perf_nodesize ex_perf_add \
-  $(norm_APPS) \
-  $(timer_q_APPS) \
-  $(zcat_APPS) \
-  $(openssl_APPS) \
-  $(gmp_APPS) \
-  $(glib_APPS) \
-  $(poll_APP) \
-  $(pthread_APP)
 
 
 otherdir   = $(EX_INST_DIR)
@@ -208,6 +214,7 @@ html_DATA = \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
   html/ex_csv.c.html \
+  html/ex_dir_list.c.html \
   html/ex_dns.c.html \
   html/ex_echod.c.html \
   html/ex_gmp_factorials.c.html \
@@ -221,8 +228,8 @@ html_DATA = \
   html/ex_hello_world_x.c.html \
   html/ex_hexdump.c.html \
   html/ex_highlight.c.html \
+  html/ex_html_dir_list.c.html \
   html/ex_httpd.c.html \
-  html/ex_limited_cat.c.html \
   html/ex_lookup_ip.c.html \
   html/ex_mon_cp.c.html \
   html/ex_netstr.c.html \
@@ -239,8 +246,15 @@ html_DATA = \
   html/ex_ssi.c.html \
   html/ex_utils.h.html \
   html/ex_yes.c.html \
+  html/ex_ypservd.c.html \
   html/ex_zcat.c.html
 #  html/ex_tdns.c.html 
+
+initddir = $(sysconfdir)/init.d
+initd_DATA = \
+  init.d/jechod \
+  init.d/jhttpd
+
 
 CLEANFILES=$(html_DATA) html
 

@@ -1,0 +1,66 @@
+#! /bin/bash
+#
+# jechod          Start/Stop a echo daemon.
+#
+# chkconfig: 345 90 60
+# description: jechod is a simple echo server
+# processname: ex_echod
+# pidfile: /var/run/jechod.pid
+ 
+# Source function library.
+. /etc/init.d/functions
+
+prog_name=jechod
+prog_exe=ex_echod
+ex_dir=@@libdir@@/vstr-@@VERSION@@/examples
+
+function start()
+{
+        echo -n $"Starting $prog: "
+        daemon --check $prog_name $ex_dir/$prog_exe
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name
+        return $RETVAL
+}
+
+function stop()
+{
+        echo -n $"Shutting down $prog_name: "
+        killproc $prog_name
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog_name
+        return $RETVAL
+}
+
+function restart()
+{
+        stop; start;
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  reload)
+        restart
+        ;;
+  status)
+        status $prog_name
+        ;;
+  condrestart)
+        [ -f /var/lock/subsys/$prog_name ] && restart || :
+        ;;
+  *)
+	echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+        exit 1
+esac
+                                                                             
+exit $?

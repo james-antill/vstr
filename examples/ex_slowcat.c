@@ -2,6 +2,11 @@
  * how often they are written.
  * Does stdin if no args are given */
 
+#define EX_UTILS_NO_USE_INIT   1
+#define EX_UTILS_NO_USE_EXIT   1
+#define EX_UTILS_NO_USE_LIMIT  1
+#define EX_UTILS_NO_USE_PUT    1
+#define EX_UTILS_NO_USE_PUTALL 1
 #include "ex_utils.h"
 
 #include <timer_q.h>
@@ -61,7 +66,7 @@ static void ex_slowcat_timer_func(int type, void *data)
 
        v->finished_reading_file = FALSE;
 
-       v->fd = open(v->argv[v->arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
+       v->fd = io_open(v->argv[v->arg_count]);
 
        if (v->fd == -1)
          err(EXIT_FAILURE, "open(%s)", v->argv[v->arg_count]);

@@ -43,13 +43,28 @@ int tst(void)
     ASSERT(!vstr_sc_mmap_file(s1, SSIZE_MAX, __FILE__, 0,    0, &ern));
     ASSERT(ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE);
     
+    ASSERT(!vstr_sc_read_len_file(s1,   s1->len, __FILE__, 0,    0, &ern));
+    ASSERT(ern == VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE);
+    ASSERT(!vstr_sc_read_len_file(s1,         0, __FILE__, 0,    0, &ern));
+    ASSERT(ern == VSTR_TYPE_SC_READ_FD_ERR_TOO_LARGE);
+    ASSERT(!vstr_sc_read_len_file(s1, SSIZE_MAX, __FILE__, 0,    0, &ern));
+    ASSERT(ern == VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE);
+    
     vstr_sc_reduce(s1, 1, s1->len, 1);
     ++count;
   }
+
+  ASSERT(vstr_sc_mmap_file(s1, s1->len, __FILE__, 0, 0, &ern));
+  ASSERT(s1->len == SIZE_MAX);
+  ASSERT(vstr_cmp_buf_eq(s1, 1, (SIZE_MAX - count), NULL, (SIZE_MAX - count)));
+  ASSERT(vstr_cmp_cstr_eq(s1, (SIZE_MAX - count) + 1, tlen,
+                          "/* TEST: abcd */\n"));
+
+  /* What the while loop above does */
+  vstr_sc_reduce(s1, 1, s1->len, fsize);
   
-  TST_B_TST(ret, 6,
-            !vstr_sc_mmap_file(s1, s1->len, __FILE__, 0, 0, &ern));
-  TST_B_TST(ret, 7, s1->len != SIZE_MAX);
+  ASSERT(vstr_sc_read_len_file(s1, s1->len, __FILE__, 0, 0, &ern));
+  ASSERT(s1->len == SIZE_MAX);
   ASSERT(vstr_cmp_buf_eq(s1, 1, (SIZE_MAX - count), NULL, (SIZE_MAX - count)));
   ASSERT(vstr_cmp_cstr_eq(s1, (SIZE_MAX - count) + 1, tlen,
                           "/* TEST: abcd */\n"));

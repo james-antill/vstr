@@ -1,3 +1,7 @@
+2004-08-29  James Antill  <james@and.org>
+
+	* NEWS (2004-08-29): Release 1.0.13
+	
 2004-08-20  James Antill  <james@and.org>
 
 	* include/vstr-inline.h (vstr_sc_add_b_uint16): Added function.

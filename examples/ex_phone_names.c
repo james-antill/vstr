@@ -63,7 +63,7 @@ static int prnt_phone_name(Vstr_base *s1,
 
   cpos = VSTR_SECTS_NUM(sects, off)->pos;
   chr = vstr_export_chr(s2, cpos);
-  nxt_chr = phone_state[chr];
+  nxt_chr = phone_state[(unsigned char) chr];
   
   vstr_sub_rep_chr(s2, cpos, 1, nxt_chr, 1);
   if (xisdigit(nxt_chr))

@@ -4,16 +4,22 @@ Some are pretty high priority for the next stable version.
  I need a better priority ... but so far I've mainly been concerned with what
 was needed for vstr-1.0.0
 
- During 1.0.x
- ------------
+ Maybe During 1.0.x
+ ------------------
 
-. Cleanup examples to use new core functions (vstr_parse_num .. vstr_sc_add_b_*)
+. evnt groups .. epoll?
 
-. Fedora init.d files for httpd/echod?
+. examples/ex_relay
 
-. examples/ypserv
+. examples/ex_httpd 1.1
 
 . examples/chatserv
+
+. examples/ex_dnsd
+
+. examples/conf
+
+. Allow '-' filename, for stdin
 
 . restrict  (speed)
 

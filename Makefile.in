@@ -221,7 +221,8 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
-CONFIG_CLEAN_FILES = vstr.pc vstr-debug.pc vstr.spec VERSION
+CONFIG_CLEAN_FILES = vstr.pc vstr-debug.pc examples/init.d/jechod \
+	examples/init.d/jhttpd vstr.spec VERSION
 depcomp =
 am__depfiles_maybe =
 DIST_SOURCES =
@@ -261,6 +262,10 @@ $(ACLOCAL_M4):  configure.in
 vstr.pc: $(top_builddir)/config.status vstr.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 vstr-debug.pc: $(top_builddir)/config.status vstr-debug.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+examples/init.d/jechod: $(top_builddir)/config.status $(top_srcdir)/examples/init.d/jechod.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+examples/init.d/jhttpd: $(top_builddir)/config.status $(top_srcdir)/examples/init.d/jhttpd.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 vstr.spec: $(top_builddir)/config.status vstr.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -435,7 +440,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/. $(distdir)/src
+	$(mkinstalldirs) $(distdir)/. $(distdir)/examples/init.d $(distdir)/src
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

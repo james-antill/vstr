@@ -154,6 +154,7 @@ static int io_put(Vstr_base *io_w, int fd)
 #endif
 
 #ifndef EX_UTILS_NO_USE_BLOCK
+#ifndef EX_UTILS_NO_USE_PUTALL
 /* loop outputting data until empty, blocking when needed */
 static void io_put_all(Vstr_base *io_w, int fd)
 {
@@ -165,6 +166,7 @@ static void io_put_all(Vstr_base *io_w, int fd)
       io_block(-1, fd);
   }
 }
+#endif
 #endif
 
 #ifndef EX_UTILS_NO_USE_INPUT
@@ -226,13 +228,20 @@ static int io_fd_set_o_nonblock(int fd)
   return (TRUE);
 }
 
+
+#ifdef VSTR_AUTOCONF_HAVE_OPEN64
+# define EX_UTILS_OPEN open64
+#else
+# define EX_UTILS_OPEN open
+#endif
+
 #ifndef EX_UTILS_NO_USE_OPEN
 # ifndef VSTR_AUTOCONF_HAVE_OPEN64
 #  define open64 open
 # endif
 static int io_open(const char *filename)
 {
-  int fd = open64(filename, O_RDONLY | O_NOCTTY);
+  int fd = EX_UTILS_OPEN(filename, O_RDONLY | O_NOCTTY);
 
   if (fd == -1)
     err(EXIT_FAILURE, "open(%s)", filename);
