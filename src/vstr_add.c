@@ -456,6 +456,77 @@ int vstr_nx_add_ref(Vstr_base *base, size_t pos,
  return (TRUE);
 }
 
+#ifndef VSTR__CONF_REF_LINKED_SZ /* FIXME: */
+# ifdef NDEBUG
+#define VSTR__CONF_REF_LINKED_SZ INT_MAX
+# else /* when debugging do small ammounts so problems show up */
+#define VSTR__CONF_REF_LINKED_SZ 2
+# endif
+#endif
+
+struct Vstr__conf_ref_linked
+{
+ Vstr_conf *conf;
+ unsigned int l_ref;
+};
+
+/* put node on reference list */
+static int vstr__convert_buf_ref_add(Vstr_conf *conf, Vstr_node *node)
+{
+  struct Vstr__conf_ref_linked *ln_ref;
+
+  if (!(ln_ref = conf->ref_link))
+  {
+    if (!(ln_ref = malloc(sizeof(struct Vstr__conf_ref_linked))))
+      return (FALSE);
+
+    ln_ref->conf = conf;
+    ln_ref->l_ref = 0;
+
+    conf->ref_link = ln_ref;
+    ++conf->ref;
+  }
+  ASSERT(ln_ref->l_ref < VSTR__CONF_REF_LINKED_SZ);
+
+  ++ln_ref->l_ref;
+  node->next = (Vstr_node *)ln_ref;
+  
+  if (ln_ref->l_ref >= VSTR__CONF_REF_LINKED_SZ)
+    conf->ref_link = NULL;
+
+  return (TRUE);
+}
+
+/* call back ... relink */
+static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
+{
+  if (ref)
+  {
+    char *tmp = ref->ptr;
+    Vstr_node_buf *node = NULL;
+    struct Vstr__conf_ref_linked *ln_ref = NULL;
+    
+    tmp -= offsetof(Vstr_node_buf, buf);
+    node = (Vstr_node_buf *)tmp;
+    ln_ref = (struct Vstr__conf_ref_linked *)node->s.next;
+
+    node->s.next = (Vstr_node *)ln_ref->conf->spare_buf_beg;
+    ln_ref->conf->spare_buf_beg = node;
+    ++ln_ref->conf->spare_buf_num;
+  
+    if (!--ln_ref->l_ref)
+    {
+      if (ln_ref->conf->ref_link == ln_ref)
+        ln_ref->conf->ref_link = NULL;
+      
+      vstr__del_conf(ln_ref->conf);
+      free(ln_ref);
+    }
+
+    free(ref);
+  }
+}
+
 /* replace all buf nodes with ref nodes, we don't need to change the
  * vectors if they are there */
 static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
@@ -478,27 +549,26 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
     ++num;
   }
   len += pos - 1;
-    
+  len -= base->used;
+  
   while (*scan)
   {
     if ((*scan)->type == VSTR_TYPE_NODE_BUF)
     {
       Vstr__cache_data_pos *data = NULL;
-
+      Vstr_node *tmp = (*scan)->next;
+      
       if (base->conf->spare_ref_num < 1)
       {
         if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
-          return (FALSE);
+          goto fail_malloc_nodes;
       }
       
-      if (!(ref = malloc(sizeof(Vstr_ref))))
-      {
-        base->conf->malloc_bad = TRUE;
-        return (FALSE);
-      }
-      ref->func = vstr__ref_cb_free_bufnode_ref;
-      ref->ptr = ((Vstr_node_buf *)(*scan))->buf;
-      ref->ref = 0;
+      if (!(ref = vstr_nx_ref_make_ptr(((Vstr_node_buf *)(*scan))->buf,
+                                       vstr__ref_cb_relink_bufnode_ref)))
+          goto fail_malloc_ref;
+      if (!vstr__convert_buf_ref_add(base->conf, *scan))
+          goto fail_malloc_conv_buf;
       
       --base->conf->spare_ref_num;
       ref_node = (Vstr_node *)base->conf->spare_ref_beg;
@@ -507,12 +577,18 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
       base->node_ref_used = TRUE;
       
       ref_node->len = (*scan)->len;
-      ((Vstr_node_ref *)ref_node)->ref = vstr_nx_ref_add(ref);
+      ((Vstr_node_ref *)ref_node)->ref = ref;
       ((Vstr_node_ref *)ref_node)->off = 0;
+      if ((base->beg == *scan) && base->used)
+      {
+        ref_node->len -= base->used;
+        ((Vstr_node_ref *)ref_node)->off = base->used;
+        base->used = 0;
+      }
       
-      if (!(ref_node->next = (*scan)->next))
+      if (!(ref_node->next = tmp))
         base->end = ref_node;
-
+        
       /* FIXME: hack alteration of type of node in cache */
       if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)) &&
           (data->node == *scan))
@@ -536,10 +612,17 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
   assert(!len || (*scan && ((*scan)->len >= len)));
   
   return (TRUE);
+
+ fail_malloc_conv_buf:
+  vstr_nx_ref_del(ref);
+ fail_malloc_ref:
+  base->conf->malloc_bad = TRUE;
+ fail_malloc_nodes:
+  return (FALSE);
 }
 
-static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
-                             Vstr_base *from_base, size_t from_pos)
+static int vstr__add_all_ref(Vstr_base *base, size_t pos,
+                             Vstr_base *from_base, size_t from_pos, size_t len)
 {
   Vstr_ref *ref = NULL;
   size_t off = 0;
@@ -706,7 +789,7 @@ int vstr_nx_add_vstr(Vstr_base *base, size_t pos,
    * from_base in certain cases */
   if (add_type == VSTR_TYPE_ADD_ALL_REF)
   {
-    if (!vstr__add_all_ref(base, pos, len, (Vstr_base *)from_base, from_pos))
+    if (!vstr__add_all_ref(base, pos, (Vstr_base *)from_base, from_pos, len))
     {
       DO_VALID_CHK();
       
@@ -938,8 +1021,12 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
     if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
     {
       size_t first_iov_len = 0;
-      
-      assert((base->conf->buf_sz - scan->len) == iovs[0].iov_len);
+
+      /* normally the first case is true ... but it's possible the user could
+       * lowered the value for some reason -- As in vstr__sc_read_len_fd() */
+      assert(((base->conf->buf_sz - scan->len) == iovs[0].iov_len) ||
+             (((base->conf->buf_sz - scan->len) >  iovs[0].iov_len) &&
+              (bytes <= iovs[0].iov_len)));
       assert((((Vstr_node_buf *)scan)->buf + scan->len) == iovs[0].iov_base);
 
       first_iov_len = iovs[0].iov_len;

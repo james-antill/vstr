@@ -116,32 +116,45 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_read \
       tst_write \
-      tst_mmap
+      tst_mmap \
+      tst_basename \
+      tst_dirname
 
 
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
 subdir = tst/sc
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = tst_read$(EXEEXT) tst_write$(EXEEXT) tst_mmap$(EXEEXT)
+check_PROGRAMS = tst_read$(EXEEXT) tst_write$(EXEEXT) tst_mmap$(EXEEXT) \
+	tst_basename$(EXEEXT) tst_dirname$(EXEEXT)
+tst_basename_SOURCES = tst_basename.c
+tst_basename_OBJECTS = tst_basename.$(OBJEXT)
+tst_basename_LDADD = $(LDADD)
+tst_basename_DEPENDENCIES =
+tst_basename_LDFLAGS =
+tst_dirname_SOURCES = tst_dirname.c
+tst_dirname_OBJECTS = tst_dirname.$(OBJEXT)
+tst_dirname_LDADD = $(LDADD)
+tst_dirname_DEPENDENCIES =
+tst_dirname_LDFLAGS =
 tst_mmap_SOURCES = tst_mmap.c
 tst_mmap_OBJECTS = tst_mmap.$(OBJEXT)
 tst_mmap_LDADD = $(LDADD)
-tst_mmap_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_mmap_DEPENDENCIES =
 tst_mmap_LDFLAGS =
 tst_read_SOURCES = tst_read.c
 tst_read_OBJECTS = tst_read.$(OBJEXT)
 tst_read_LDADD = $(LDADD)
-tst_read_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_read_DEPENDENCIES =
 tst_read_LDFLAGS =
 tst_write_SOURCES = tst_write.c
 tst_write_OBJECTS = tst_write.$(OBJEXT)
 tst_write_LDADD = $(LDADD)
-tst_write_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_write_DEPENDENCIES =
 tst_write_LDFLAGS =
 
 DEFS = @DEFS@
@@ -155,9 +168,10 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_mmap.c tst_read.c tst_write.c
+DIST_SOURCES = tst_basename.c tst_dirname.c tst_mmap.c tst_read.c \
+	tst_write.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_mmap.c tst_read.c tst_write.c
+SOURCES = tst_basename.c tst_dirname.c tst_mmap.c tst_read.c tst_write.c
 
 all: all-am
 
@@ -175,6 +189,12 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+tst_basename$(EXEEXT): $(tst_basename_OBJECTS) $(tst_basename_DEPENDENCIES) 
+	@rm -f tst_basename$(EXEEXT)
+	$(LINK) $(tst_basename_LDFLAGS) $(tst_basename_OBJECTS) $(tst_basename_LDADD) $(LIBS)
+tst_dirname$(EXEEXT): $(tst_dirname_OBJECTS) $(tst_dirname_DEPENDENCIES) 
+	@rm -f tst_dirname$(EXEEXT)
+	$(LINK) $(tst_dirname_LDFLAGS) $(tst_dirname_OBJECTS) $(tst_dirname_LDADD) $(LIBS)
 tst_mmap$(EXEEXT): $(tst_mmap_OBJECTS) $(tst_mmap_DEPENDENCIES) 
 	@rm -f tst_mmap$(EXEEXT)
 	$(LINK) $(tst_mmap_LDFLAGS) $(tst_mmap_OBJECTS) $(tst_mmap_LDADD) $(LIBS)

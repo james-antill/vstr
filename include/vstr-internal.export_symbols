@@ -2,8 +2,8 @@ ref_cb_free_nothing
 ref_cb_free_ref
 ref_cb_free_ptr
 ref_cb_free_ptr_ref
-make_ref_ptr
-make_ref_malloc
+ref_make_ptr
+ref_make_malloc
 init
 exit
 make_conf
@@ -22,6 +22,7 @@ dup_ptr
 dup_non
 dup_ref
 dup_vstr
+dup_rep_chr
 add_vfmt
 add_fmt
 add_vsysfmt
@@ -132,6 +133,8 @@ sc_read_iov_file
 sc_read_len_file
 sc_write_fd
 sc_write_file
+sc_basename
+sc_dirname
 extern_inline_add_buf
 extern_inline_add_rep_chr
 extern_inline_del

@@ -45,7 +45,10 @@
 /* NOTE: This file includes assembler, works for ia32 atm. */
 /* Note that this file is #include'd */
 
-#include <ieee754.h>
+
+#include "glibc/include/endian.h"
+
+#include "glibc/sysdeps/ieee754/ieee754.h"
 
 /* Pretend the world's a (FILE *) brain damage for glibc */
 struct vstr__FILE_wrap
@@ -132,8 +135,6 @@ struct vstr__fmt_printf_info
 
 #include "glibc/stdlib/gmp-impl.h"
 
-#include <endian.h>
-
 /* can have different byte order for floats */
 #ifndef __FLOAT_WORD_ORDER
 # define __FLOAT_WORD_ORDER BYTE_ORDER
@@ -145,7 +146,7 @@ struct vstr__fmt_printf_info
 # error "No arch specific code for add_ssaaaa etc."
 #endif
 
-#include <float.h> /* LDBL_MIN_EXP FLT_MANT_DIG */ 
+#include <float.h> /* from compiler ... LDBL_MIN_EXP FLT_MANT_DIG */ 
 
 /* 128 bit long double */
 #ifdef VSTR__LDOUBLE_BITS_128
@@ -178,10 +179,8 @@ struct vstr__fmt_printf_info
 # include "glibc/sysdeps/ieee754/ldbl-96/ldbl2mpn.c"
 #endif
 
-#undef   signbitl
 #undef __signbitl
 #define __signbitl vstr__fmt_dbl_signbitl
-#define   signbitl vstr__fmt_dbl_signbitl
 #include "glibc/sysdeps/ieee754/ldbl-96/s_signbitl.c"
 
 #endif
@@ -197,14 +196,20 @@ struct vstr__fmt_printf_info
 
 #undef    signbit
 #undef  __signbit
-#define   signbit vstr__fmt_dbl_signbit
 #define __signbit vstr__fmt_dbl_signbit
 #include "glibc/sysdeps/ieee754/dbl-64/s_signbit.c"
 
+/* magic for signbit ... */
+#  define signbit(x) \
+     (sizeof (x) == sizeof (float)                                            \
+      ? __signbitf (x)                                                        \
+      : sizeof (x) == sizeof (double)                                         \
+      ? __signbit (x) : __signbitl (x))
+
 /* write the number backwards ... */
-static inline char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
-                                            unsigned int base,
-                                            int upper_case)
+static char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
+                                     unsigned int base,
+                                     int upper_case)
 {
   const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -231,21 +236,26 @@ static inline char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
   return (buflim);
 }
 
-static inline wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
-                                                wchar_t *buflim,
-                                                unsigned int base,
-                                                int upper_case __attribute__((unused)))
+static wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
+                                         wchar_t *buflim,
+                                         unsigned int base,
+                                         int upper_case)
 {
+  const wchar_t *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
+  
+  if (upper_case)
+    digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
   switch (base)
   {
     case 16:
       do
-        --buflim;
+        *--buflim = digits[value % 16];
       while (value /= 16);
       break;
     case 10:
       do
-        --buflim;
+        *--buflim = digits[value % 10];
       while (value /= 10);
       break;
       
@@ -261,8 +271,8 @@ static inline wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
 #undef _itowa_word
 #define _itowa_word(a, b, c, d) vstr__fmt_dbl_itowa_word(a, b, c, d)
 
-static inline char *vstr__fmt_dbl_itoa(unsigned long long value, char *buflim,
-                                       unsigned int base, int upper_case)
+static char *vstr__fmt_dbl_itoa(unsigned long long value, char *buflim,
+                                unsigned int base, int upper_case)
 {
   const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -289,28 +299,33 @@ static inline char *vstr__fmt_dbl_itoa(unsigned long long value, char *buflim,
   return (buflim);
 }
 
-static inline wchar_t *vstr__fmt_dbl_itowa(unsigned long long value,
-                                           wchar_t *buflim,
-                                           unsigned int base,
-                                           int upper_case __attribute__((unused)))
+static wchar_t *vstr__fmt_dbl_itowa(unsigned long long value,
+                                    wchar_t *buflim,
+                                    unsigned int base,
+                                    int upper_case)
 {
+  const wchar_t *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
+  
+  if (upper_case)
+    digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
   switch (base)
   {
     case 16:
       do
-        --buflim;
+        *--buflim = digits[value % 16];
       while (value /= 16);
       break;
     case 10:
       do
-        --buflim;
+        *--buflim = digits[value % 10];
       while (value /= 10);
       break;
       
     default:
       assert(FALSE);
   }
-  
+ 
   return (buflim);
 }
 
@@ -422,10 +437,8 @@ vstr__fmt_dbl_mpn_rshift (register mp_ptr wp,
   do									      \
     {									      \
       register size_t outlen = (len);					      \
-      if (wide)								      \
-	while (outlen-- > 0)						      \
-	  outchar (*wptr++);						      \
-      else								      \
+      assert(!wide && wptr);						      \
+      (void)wptr;							      \
 	while (outlen-- > 0)						      \
 	  outchar (*ptr++);						      \
     } while (0)

@@ -1,3 +1,55 @@
+2002-10-12  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.18
+
+2002-10-11  James Antill  <james@and.org>
+
+	* src/vstr_sect.c (vstr_sects_srch): Fixed off by one bug.
+
+	* src/vstr_dbl/glibc/sysdeps/generic/printf_fphex.c (__printf_fphex): 
+	Fixed an amazingly subtle bug in the glibc implementation of %a/%A ...
+	forwarded the fix to the glibc maintainers.
+
+2002-10-10  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr__convert_buf_ref): Fixed data bug when adding 
+	vstr to a vstr with VSTR_TYPE_ADD_BUF_REF.
+	(vstr__convert_buf_ref): Fixup VSTR_TYPE_ADD_BUF_REF so it relinks the
+	node instead of free'ing it.
+
+	* src/vstr_ref.c (vstr_ref_make_ptr): Renamed API.
+	(vstr_ref_make_malloc): Renamed API.
+
+2002-10-06  James Antill  <james@and.org>
+
+	* src/vstr_srch.c (vstr__srch_chr_rev_slow): Fix bug where the last
+	character could be missed.
+	(vstr__srch_buf_rev_slow): Same bug as for _chr_rev_slow.
+	(vstr__srch_vstr_rev_slow): Same bug as for _chr_rev_slow.
+
+	* src/vstr_sc.c (vstr_sc_basename): Added function.
+	(vstr_sc_dirname): Added function.
+
+	* src/vstr_cstr.c (vstr__export_cstr_cache): Fast path was never reached
+	for export_ref/export_cstr etc. when you moved forward and exported.
+
+	* src/vstr_export.c (vstr_export_ref): Fixed bugs where the wrong data 
+	would be exported.
+
+2002-10-05  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_CMP_EQ): Fix bug where the positions had 
+	to be the same in both Vstr strings, as only the first was used.
+
+	* src/vstr_dup.c (vstr_dup_rep_chr): Added function.
+
+	* scripts/tst_diff.sh: Added function to test "make check" coverage of
+	functions.
+
+	* src/vstr_dbl/vstr_add_fmt_dbl_glibc.c: Resync with latest glibc,
+	include endian.h and ieee754 locally ... hopefully can build on non
+	glibc platforms now. Also fixed signbit().
+
 2002-10-03  James Antill  <james@and.org>
 
 	* NEWS: Released 0.9.17

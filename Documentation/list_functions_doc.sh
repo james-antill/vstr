@@ -1,3 +1,1 @@
-#! /bin/sh
-
-egrep "^Function" functions.txt | awk '{ print $2 }'
+../scripts/list_functions_doc.sh

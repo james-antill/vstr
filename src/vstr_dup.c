@@ -119,3 +119,22 @@ Vstr_base *vstr_nx_dup_vstr(Vstr_conf *conf,
   
   return (NULL);
 }
+
+Vstr_base *vstr_nx_dup_rep_chr(Vstr_conf *conf, char chr, size_t len)
+{
+  Vstr_base *ret = vstr_nx_make_base(conf);
+  
+  if (!ret)
+    goto make_base_fail;
+  
+  if (len && !vstr_nx_add_rep_chr(ret, 0, chr, len))
+    goto add_vstr_fail;
+  
+  return (ret);
+  
+ add_vstr_fail:
+  vstr_nx_free_base(ret);
+ make_base_fail:
+  
+  return (NULL);
+}

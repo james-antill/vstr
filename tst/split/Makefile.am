@@ -12,4 +12,5 @@ check_PROGRAMS = $(tst)
 TESTS = $(tst)
 
 CFLAGS = -I../../../include -I- @CFLAGS@ @WARNS@
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
+

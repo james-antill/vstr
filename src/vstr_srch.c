@@ -59,11 +59,13 @@ static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
   size_t scan_pos = pos;
   size_t scan_len = len;
   
-  while ((scan_pos < (pos + len - 1)) &&
-         scan_len)
+  while (scan_len)
   {
-    size_t tmp = vstr_nx_srch_chr_fwd(base, scan_pos, scan_len, srch);
-    if (!tmp)
+    size_t tmp = 0;
+    
+    assert(scan_pos < (pos + len));
+    
+    if (!(tmp = vstr_nx_srch_chr_fwd(base, scan_pos, scan_len, srch)))
       break;
 
     ret = tmp;
@@ -251,11 +253,13 @@ static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
   size_t scan_pos = pos;
   size_t scan_len = len;
   
-  while ((scan_pos < (pos + len - 1)) &&
-         (scan_len >= str_len))
+  while (scan_len >= str_len)
   {
-    size_t tmp = vstr_nx_srch_buf_fwd(base, scan_pos, scan_len, str, str_len);
-    if (!tmp)
+    size_t tmp = 0;
+    
+    assert(scan_pos < (pos + len));
+    
+    if (!(tmp = vstr_nx_srch_buf_fwd(base, scan_pos, scan_len, str, str_len)))
       break;
 
     ret = tmp;
@@ -462,12 +466,14 @@ static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
   size_t scan_pos = pos;
   size_t scan_len = len;
   
-  while ((scan_pos < (pos + len - 1)) &&
-         (scan_len >= ndl_len))
+  while (scan_len >= ndl_len)
   {
-    size_t tmp = vstr_nx_srch_vstr_fwd(base, scan_pos, scan_len,
-                                       ndl_base, ndl_pos, ndl_len);
-    if (!tmp)
+    size_t tmp = 0;
+    
+    assert(scan_pos < (pos + len));
+    
+    if (!(tmp = vstr_nx_srch_vstr_fwd(base, scan_pos, scan_len,
+                                      ndl_base, ndl_pos, ndl_len)))
       break;
 
     ret = tmp;

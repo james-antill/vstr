@@ -79,14 +79,13 @@ int main(int argc, char *argv[])
     /* find the program name ...
      * putting it at the begining of the Vstr string */
     VSTR_ADD_CSTR_PTR(s1, 0, argc ? argv[0] : "lookup_ip");
-    if ((pos = vstr_srch_chr_rev(s1, 1, s1->len, '/')))
-      vstr_del(s1, 1, pos);
+    vstr_sc_basename(s1, 1, s1->len, &pos, &len);
 
     /* add a format line to the Vstr string, including the program name
      * which is at the begining of this Vstr string itself */
     len = vstr_add_fmt(s1, s1->len, " %s ${Vstr:%p%zu%zu%u} %s\n",
                        "Format:",
-                       s1, 1, s1->len, 0,
+                       s1, pos, len, 0,
                        "<hostname>");
     
     vstr_del(s1, 1, s1->len - len); /* delete the original program name */

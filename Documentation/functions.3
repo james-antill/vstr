@@ -168,6 +168,10 @@ struct Vstr_base *\fBvstr_dup_ref\fR(struct Vstr_conf *, struct Vstr_ref *, size
 .ti \w'  'u
 struct Vstr_base *\fBvstr_dup_vstr\fR(struct Vstr_conf *, const struct Vstr_base *, size_t, size_t, unsigned int);
 .br
+.in \w'  struct Vstr_base *\fBvstr_dup_rep_chr\fR('u
+.ti \w'  'u
+struct Vstr_base *\fBvstr_dup_rep_chr\fR(struct Vstr_conf *, char, size_t);
+.br
 .in \w'  struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR('u
 .ti \w'  'u
 struct Vstr_base *\fBVSTR_DUP_CSTR_BUF\fR(struct Vstr_conf *, const char *);
@@ -180,13 +184,13 @@ struct Vstr_base *\fBVSTR_DUP_CSTR_PTR\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 int \fBVSTR_DUP_CSTR_REF\fR(struct Vstr_base *, struct Vstr_ref *, size_t);
 .br
-.in \w'  struct Vstr_ref *\fBvstr_make_ref_malloc\fR('u
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_malloc\fR('u
 .ti \w'  'u
-struct Vstr_ref *\fBvstr_make_ref_malloc\fR(size_t);
+struct Vstr_ref *\fBvstr_ref_make_malloc\fR(size_t);
 .br
-.in \w'  struct Vstr_ref *\fBvstr_make_ref_ptr\fR('u
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_ptr\fR('u
 .ti \w'  'u
-struct Vstr_ref *\fBvstr_make_ref_ptr\fR(void *, void (*)(struct Vstr_ref *));
+struct Vstr_ref *\fBvstr_ref_make_ptr\fR(void *, void (*)(struct Vstr_ref *));
 .br
 .in \w'  unsigned int \fBvstr_make_spare_nodes\fR('u
 .ti \w'  'u
@@ -713,6 +717,14 @@ void \fBvstr_cache_cb_sub\fR(const struct Vstr_base *, size_t, size_t);
 .ti \w'  'u
 void \fBvstr_cache_cb_free\fR(const struct Vstr_base *, unsigned int);
 .sp
+.br
+.in \w'  void \fBvstr_sc_basename\fR('u
+.ti \w'  'u
+void \fBvstr_sc_basename\fR(const struct Vstr_base *, size_t, size_t, size_t *, size_t *);
+.br
+.in \w'  void \fBvstr_sc_dirname\fR('u
+.ti \w'  'u
+void \fBvstr_sc_dirname\fR(const struct Vstr_base *, size_t, size_t, size_t *);
 .br
 .in \w'  int \fBvstr_sc_fmt_cb_beg\fR('u
 .ti \w'  'u
@@ -2213,6 +2225,35 @@ Type\fB[6]\fR: unsigned int
 
 .ti -2
 .br
+\fBFunction: \fR vstr_dup_rep_chr()
+.br
+Returns: Vstr string
+.br
+Type: struct Vstr_base *
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Character to repeat
+.br
+Type\fB[2]\fR: char
+
+.br
+Parameter\fB[3]\fR: Number of times to repeat characnter (Parameter[2])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is equivilent to calling vstr_make_base() and then vstr_add_rep_chr().
+
+.ti -2
+.br
 \fBFunction: \fR VSTR_DUP_CSTR_BUF()
 .br
 Returns: Vstr string
@@ -2291,7 +2332,7 @@ Type\fB[3]\fR: size_t
 
 .ti -2
 .br
-\fBFunction: \fR vstr_make_ref_malloc()
+\fBFunction: \fR vstr_ref_make_malloc()
 .br
 Returns: Vstr memory reference
 .br
@@ -2310,7 +2351,7 @@ Type\fB[1]\fR: size_t
 
 .ti -2
 .br
-\fBFunction: \fR vstr_make_ref_ptr()
+\fBFunction: \fR vstr_ref_make_ptr()
 .br
 Returns: Vstr memory reference
 .br
@@ -7291,6 +7332,89 @@ Type\fB[2]\fR: unsigned int
   A Cookie reference of "zero" means tell all cache functions to free cached data. Note that this can cause severe performance degradation if overly used.
 
 .SH Short cut helper functions
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_basename()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length from position in the Vstr
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Position of basename (Return)
+.br
+Type\fB[4]\fR: size_t *
+
+.br
+Parameter\fB[5]\fR: Length of basename (Return)
+.br
+Type\fB[5]\fR: size_t *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to return the basename of a path. Unlike other implementations of this function nothing is allocated and altered in the original string
+.sp
+\fBNote:\fR
+
+.br
+  This function, with vstr_sc_dirname(), always returns values that can be combined to generate the original path. This means that this function will return an empty length for the path "/".
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_dirname()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length from position in the Vstr
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Length of dirname (Return)
+.br
+Type\fB[4]\fR: size_t *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to return the directory of a path, excluding the basename. Unlike other implementations of this function nothing is allocated and nothing is altered in the original string.
+.sp
+\fBNote:\fR
+
+.br
+  This function, with vstr_sc_basename(), always returns values that can be combined to generate the original path. This means that this function will return an empty length for a relative filename in the current cirectory.
 
 .ti -2
 .br

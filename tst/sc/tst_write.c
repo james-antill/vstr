@@ -7,7 +7,9 @@ static const char *fn = "make_check_tst_sc_tst_write.tmp";
 #ifndef HAVE_POSIX_HOST
 extern        int unlink(const char *);
 
+# define O_RDONLY (-1)
 # define O_WRONLY (-1)
+# define O_EXCL (-1)
 # define O_CREAT (-1)
 # define O_APPEND (-1)
 #endif
@@ -27,6 +29,7 @@ int tst(void)
 {
   int ret = 0;
   size_t tmp = 0;
+  unsigned int err = 0;
   
 #ifndef HAVE_POSIX_HOST
   return (EXIT_FAILED_OK);
@@ -90,7 +93,7 @@ int tst(void)
   }
 
   read_file_s2(s2->len);
-  VSTR_ADD_CSTR_BUF(s1, 0, buf);  
+  VSTR_ADD_CSTR_BUF(s1, 0, buf);
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
   
   unlink(fn);
@@ -121,6 +124,32 @@ int tst(void)
 
   /* end -- get rid of file */
   unlink(fn);
+
+  VSTR_ADD_CSTR_BUF(s1, 0, buf);  
+
+  /* O_RD0NLY == 0, which means default flags ... as RDONLY isn't valid
+   * (which is what we are testing for ... so hack it by including O_EXCL as
+   * well, then it's non zero and hence won't use default */
   
+  TST_B_TST(ret, 7, !!vstr_sc_write_file(s1, 1, s1->len, "/blah/.nothere",
+                                         O_RDONLY | O_EXCL, 0666, 0, &err));
+
+  TST_B_TST(ret, 8, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO));
+
+  TST_B_TST(ret, 9, !!vstr_sc_write_file(s1, 1, s1->len, "/dev/stdin",
+                                         O_RDONLY | O_EXCL, 0666, 1, &err));
+  
+  TST_B_TST(ret, 10, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_SEEK_ERRNO));
+  
+  TST_B_TST(ret, 11, !!vstr_sc_write_file(s1, 1, s1->len, rf,
+                                          O_RDONLY | O_EXCL, 0666, 1, &err));
+  
+  TST_B_TST(ret, 12, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO));
+            
+
+  TST_B_TST(ret, 13, !!vstr_sc_write_fd(s1, 1, s1->len, 1024, &err));
+  
+  TST_B_TST(ret, 14, (err != VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO));
+
   return (TST_B_RET(ret));
 }

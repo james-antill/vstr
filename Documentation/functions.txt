@@ -973,6 +973,25 @@ Function: vstr_dup_vstr()
  vstr_add_vstr().
 
 
+Function: vstr_dup_rep_chr()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Character to repeat
+ Type[2]: char
+
+ Parameter[3]: Number of times to repeat characnter (Parameter[2])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_rep_chr().
+
+
 Function: VSTR_DUP_CSTR_BUF()
  Returns: Vstr string
  Type: struct Vstr_base *
@@ -1026,7 +1045,7 @@ Function: VSTR_DUP_CSTR_REF()
  at the offset (Parameter[4]).
 
 
-Function: vstr_make_ref_malloc()
+Function: vstr_ref_make_malloc()
  Returns: Vstr memory reference
  Type: struct Vstr_ref *
 
@@ -1040,7 +1059,7 @@ Function: vstr_make_ref_malloc()
  reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
 
 
-Function: vstr_make_ref_ptr()
+Function: vstr_ref_make_ptr()
  Returns: Vstr memory reference
  Type: struct Vstr_ref *
 
@@ -4475,6 +4494,67 @@ Function: vstr_cache_cb_free()
 
 
 Section: Short cut helper functions
+
+Function: vstr_sc_basename()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Length from position in the Vstr
+ Type[3]: size_t
+
+ Parameter[4]: Position of basename (Return)
+ Type[4]: size_t *
+
+ Parameter[5]: Length of basename (Return)
+ Type[5]: size_t *
+
+ Explanation:
+
+  This function is a helper function to return the basename of a path. Unlike
+ other implementations of this function nothing is allocated and altered in the
+ original string
+
+ Note:
+
+  This function, with vstr_sc_dirname(), always returns values that can be
+ combined to generate the original path. This means that this function will
+ return an empty length for the path "/".
+
+
+Function: vstr_sc_dirname()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Length from position in the Vstr
+ Type[3]: size_t
+
+ Parameter[4]: Length of dirname (Return)
+ Type[4]: size_t *
+
+ Explanation:
+
+  This function is a helper function to return the directory of a path,
+ excluding the basename. Unlike other implementations of this function nothing
+ is allocated and nothing is altered in the original string.
+
+ Note:
+
+  This function, with vstr_sc_basename(), always returns values that can be
+ combined to generate the original path. This means that this function will
+ return an empty length for a relative filename in the current cirectory.
+
 
 Function: vstr_sc_fmt_cb_beg()
  Returns: TRUE on success and FALSE on failure

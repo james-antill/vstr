@@ -48,20 +48,18 @@
 
 
 static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
-                              const void *buf, size_t buf_len)
+                              const void *buf)
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
-
-  assert(len == buf_len);
-  
-  assert(vstr__check_real_nodes(base));
+  size_t buf_len = len;
 
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
   if (!scan)
     return (FALSE);
+  
   do
   {
     const size_t tmp = scan_len;
@@ -74,8 +72,6 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
                                            scan, &scan_str, &scan_len)));
 
   vstr_nx_cache_cb_sub(base, pos, buf_len);
-
-  assert(vstr__check_real_nodes(base));
 
   return (TRUE);
 }
@@ -97,7 +93,7 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
-  
+
   if (len > buf_len)
   {
     del_len = len - buf_len;
@@ -170,7 +166,7 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   
   if (!sub_add_len) /* length we are replacing is _just_ _BUF nodes */
   {
-    vstr__sub_buf_fast(base, real_pos, len, buf, len);
+    vstr__sub_buf_fast(base, real_pos, len, buf);
 
     real_pos += len;
     buf_len -= len;
@@ -302,7 +298,7 @@ int vstr_nx_sub_buf(Vstr_base *base, size_t pos, size_t len,
       !base->node_non_used &&
       !base->node_ptr_used &&
       !base->node_ref_used)
-    return (vstr__sub_buf_fast(base, pos, len, buf, buf_len));
+    return (vstr__sub_buf_fast(base, pos, len, buf));
   
   return (vstr__sub_buf_slow(base, pos, len, buf, buf_len));
 }

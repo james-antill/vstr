@@ -134,12 +134,10 @@ unsigned int vstr_nx_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
   if (!sects->sz)
     return (0);
   
-  while (count < sects->num)
+  while (count++ < sects->num)
   {
     size_t scan_pos = VSTR_SECTS_NUM(sects, count)->pos;
     size_t scan_len = VSTR_SECTS_NUM(sects, count)->len;
-
-    ++count;
     
     if ((scan_pos == pos) && (scan_len == len))
       return (count);

@@ -4,8 +4,8 @@ CC=gcc
 #CC=diet gcc
 #CC=diet gcc3
 
-# VSTR_LIBS_DIR=../j/src/.libs
-VSTR_LIBS_DIR=../src/.libs
+VSTR_LIBS_DIR=../j/src/.libs
+# VSTR_LIBS_DIR=../src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 

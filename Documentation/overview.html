@@ -58,10 +58,12 @@
 	  As well as having features directly related to doing IO well
 	  it contains functions for:
 	  <ul>
+	    <li> a printf like function that is fully ISO C 9899:1999 (C99)
+	      compliant, also having %m as standard and POSIX i18n parameter
+	      number modifiers. It also allows gcc warning compatible customer
+	      format specifiers (and includes pre-written custom format
+	      specifiers for ipv4 and ipv6 addresses, Vstr strings and more)
 	    <li> splitting of strings into parameter/record chunks (ala. perl).
-	    <li> has custom printf format specifiers (and includes 
-	      pre-written custom format specifiers for ipv4 and ipv6 addresses,
-	      Vstr strings and more).
 	    <li> substituting data in a Vstr string
 	    <li> moving data from one Vstr string to another (or within a Vstr
 	      string).
@@ -154,7 +156,7 @@ paste into your programs/libraries).
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu Oct  3 18:29:53 EDT 2002
+Last modified: Thu Oct  3 19:54:07 EDT 2002
 <!-- hhmts end -->
   </body>
 </html>

@@ -72,11 +72,12 @@
 <li><a href="#vstr_dup_non%28%29">vstr_dup_non()</a>
 <li><a href="#vstr_dup_ref%28%29">vstr_dup_ref()</a>
 <li><a href="#vstr_dup_vstr%28%29">vstr_dup_vstr()</a>
+<li><a href="#vstr_dup_rep_chr%28%29">vstr_dup_rep_chr()</a>
 <li><a href="#VSTR_DUP_CSTR_BUF%28%29">VSTR_DUP_CSTR_BUF()</a>
 <li><a href="#VSTR_DUP_CSTR_PTR%28%29">VSTR_DUP_CSTR_PTR()</a>
 <li><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
-<li><a href="#vstr_make_ref_malloc%28%29">vstr_make_ref_malloc()</a>
-<li><a href="#vstr_make_ref_ptr%28%29">vstr_make_ref_ptr()</a>
+<li><a href="#vstr_ref_make_malloc%28%29">vstr_ref_make_malloc()</a>
+<li><a href="#vstr_ref_make_ptr%28%29">vstr_ref_make_ptr()</a>
 <li><a href="#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a>
 <li><a href="#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>
 </ul><li><a href="#Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string">Functions to add and delete data to a Vstr string</a>
@@ -233,6 +234,8 @@
 <li><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
+<li><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
+<li><a href="#vstr_sc_dirname%28%29">vstr_sc_dirname()</a>
 <li><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
 <li><a href="#vstr_sc_fmt_cb_end%28%29">vstr_sc_fmt_cb_end()</a>
 <li><a href="#vstr_sc_fmt_add_vstr%28%29">vstr_sc_fmt_add_vstr()</a>
@@ -867,6 +870,17 @@
  vstr_add_vstr().
 
 
+<a name="vstr_dup_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_rep_chr()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Character to repeat<br>Type<strong>[2]</strong>: char
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number of times to repeat characnter (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_rep_chr().
+
+
 <a name="VSTR_DUP_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_BUF()
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
@@ -900,8 +914,8 @@
  at the offset (Parameter[4]).
 
 
-<a name="vstr_make_ref_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_make_ref_malloc()
+<a name="vstr_ref_make_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_malloc()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Size of malloc'd area to create in the memory reference<br>Type<strong>[1]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -910,8 +924,8 @@
  reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
 
 
-<a name="vstr_make_ref_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_make_ref_ptr()
+<a name="vstr_ref_make_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_ptr()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to memory<br>Type<strong>[1]</strong>: void *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Function callback for Vstr memory reference<br>Type<strong>[1]</strong>: void (*)(struct Vstr_ref *)
@@ -2949,6 +2963,43 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>
 </a>
+<a name="vstr_sc_basename%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_basename()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Position of basename (Return)<br>Type<strong>[4]</strong>: size_t *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of basename (Return)<br>Type<strong>[5]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to return the basename of a path. Unlike
+ other implementations of this function nothing is allocated and altered in the
+ original string
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function, with vstr_sc_dirname(), always returns values that can be
+ combined to generate the original path. This means that this function will
+ return an empty length for the path "/".
+
+
+<a name="vstr_sc_dirname%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_dirname()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of dirname (Return)<br>Type<strong>[4]</strong>: size_t *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to return the directory of a path,
+ excluding the basename. Unlike other implementations of this function nothing
+ is allocated and nothing is altered in the original string.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function, with vstr_sc_basename(), always returns values that can be
+ combined to generate the original path. This means that this function will
+ return an empty length for a relative filename in the current cirectory.
+
+
 <a name="vstr_sc_fmt_cb_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_fmt_cb_beg()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int

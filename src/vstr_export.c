@@ -195,25 +195,23 @@ char vstr_nx_export_chr(const Vstr_base *base, size_t pos)
  return (buf[0]);
 }
 
-static Vstr__buf_ref *vstr__export_buf_ref(const Vstr_base *base,
-                                           size_t pos, size_t len)
+static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,
+                                      size_t pos, size_t len)
 {
-  struct Vstr__buf_ref *ref = NULL;
+  Vstr_ref *ref = NULL;
 
   if (!len)
     return (NULL);
   
-  if (!(ref = malloc(sizeof(Vstr__buf_ref) + len)))
+  if (!(ref = vstr_nx_ref_make_malloc(len)))
   {
     base->conf->malloc_bad = TRUE;
     return (NULL);
   }
+
+  assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
   
-  ref->ref.func = vstr_nx_ref_cb_free_ref;
-  ref->ref.ptr = ref->buf;
-  ref->ref.ref = 1;
-  
-  vstr_nx_export_buf(base, pos, len, ref->buf, len);
+  vstr_nx_export_buf(base, pos, len, ref->ptr, len);
   
   return (ref);
 }
@@ -223,16 +221,17 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;
-  Vstr__buf_ref *buf_ref = NULL;
   Vstr_ref *ref = NULL;
-
+  size_t orig_pos = pos;
+  
   assert(base && pos && len && ((pos + len - 1) <= base->len));
   assert(ret_off);
   
   scan = vstr__base_pos(base, &pos, &num, TRUE);
   if (!scan)
     return (0);
-
+  --pos;
+  
   if (0)
   { /* do nothing */; }
   else if (scan->type == VSTR_TYPE_NODE_REF)
@@ -247,18 +246,17 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
   {
     if ((scan->len - pos) >= len)
     {
-      if (!(ref = malloc(sizeof(Vstr_ref))))
+      void *ptr = ((char *)((Vstr_node_ptr *)scan)->ptr) + pos;
+      
+      if (!(ref = vstr_nx_ref_make_ptr(ptr, vstr_nx_ref_cb_free_ref)))
       {
         base->conf->malloc_bad = TRUE;
         return (NULL);
       }
       
       *ret_off = 0;
-      ref->func = vstr_nx_ref_cb_free_ref;
-      ref->ptr = ((char *)((Vstr_node_ptr *)scan)->ptr) + pos;
-      ref->ref = 0;
       
-      return (vstr_nx_ref_add(ref));
+      return (ref);
     }
   }
 
@@ -282,9 +280,8 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
   }
 
   *ret_off = 0;
-  if (!(buf_ref = vstr__export_buf_ref(base, pos, len)))
+  if (!(ref = vstr__export_buf_ref(base, orig_pos, len)))
     return (NULL);
 
-  assert((Vstr_ref *)buf_ref == &buf_ref->ref);
-  return (&buf_ref->ref);
+  return (ref);
 }

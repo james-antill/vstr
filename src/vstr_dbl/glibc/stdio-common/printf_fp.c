@@ -218,8 +218,7 @@ __printf_fp (FILE *fp,
       else if (scalesize == 0)
 	{
 	  hi = frac[fracsize - 1];
-	  cy = __mpn_mul_1 (frac, frac, fracsize - 1, 10);
-	  frac[fracsize - 1] = cy;
+	  frac[fracsize - 1] = __mpn_mul_1 (frac, frac, fracsize - 1, 10);
 	}
       else
 	{
@@ -243,10 +242,10 @@ __printf_fp (FILE *fp,
 		}
 	    }
 
-	  cy = __mpn_mul_1 (frac, frac, fracsize, 10);
-	  if (cy != 0)
-	    frac[fracsize++] = cy;
-	}
+{	  mp_limb_t _cy = __mpn_mul_1 (frac, frac, fracsize, 10);
+	  if (_cy != 0)
+	    frac[fracsize++] = _cy;
+}	}
 
       return L'0' + hi;
     }
@@ -324,7 +323,7 @@ __printf_fp (FILE *fp,
       fpnum.ldbl = *(const long double *) args[0];
 
       /* Check for special values: not a number or infinity.  */
-      if (INTUSE(__isnanl) (fpnum.ldbl))
+      if (__isnanl (fpnum.ldbl))
 	{
 	  if (isupper (info->spec))
 	    {
@@ -338,7 +337,7 @@ __printf_fp (FILE *fp,
 	      }
 	  is_neg = 0;
 	}
-      else if (INTUSE(__isinfl) (fpnum.ldbl))
+      else if (__isinfl (fpnum.ldbl))
 	{
 	  if (isupper (info->spec))
 	    {
@@ -368,8 +367,9 @@ __printf_fp (FILE *fp,
       fpnum.dbl = *(const double *) args[0];
 
       /* Check for special values: not a number or infinity.  */
-      if (INTUSE(__isnan) (fpnum.dbl))
+      if (__isnan (fpnum.dbl))
 	{
+	  is_neg = 0;
 	  if (isupper (info->spec))
 	    {
 	      special = "NAN";
@@ -380,10 +380,10 @@ __printf_fp (FILE *fp,
 	      special = "nan";
 	      wspecial = L"nan";
 	    }
-	  is_neg = 0;
 	}
-      else if (INTUSE(__isinf) (fpnum.dbl))
+      else if (__isinf (fpnum.dbl))
 	{
+	  is_neg = fpnum.dbl < 0;
 	  if (isupper (info->spec))
 	    {
 	      special = "INF";
@@ -394,7 +394,6 @@ __printf_fp (FILE *fp,
 	      special = "inf";
 	      wspecial = L"inf";
 	    }
-	  is_neg = fpnum.dbl < 0;
 	}
       else
 	{
@@ -820,6 +819,8 @@ __printf_fp (FILE *fp,
       {
 	type = 'f';
 	fracdig_min = fracdig_max = info->prec < 0 ? 6 : info->prec;
+	dig_max = INT_MAX;		/* Unlimited.  */
+	significant = 1;		/* Does not matter here.  */
 	if (expsign == 0)
 	  {
 	    intdig_max = exponent + 1;
@@ -831,8 +832,6 @@ __printf_fp (FILE *fp,
 	    intdig_max = 1;
 	    chars_needed = 1 + 1 + fracdig_max;
 	  }
-	dig_max = INT_MAX;		/* Unlimited.  */
-	significant = 1;		/* Does not matter here.  */
       }
     else
       {
@@ -917,9 +916,8 @@ __printf_fp (FILE *fp,
 	   || (fracdig_no < fracdig_max && (fracsize > 1 || frac[0] != 0)))
       {
 	++fracdig_no;
-        /* FIXME: volatile to work around a bug in gcc 3.2 */
-	*(volatile wchar_t *)wcp = hack_digit ();
-	if (*wcp != L'0')
+	*wcp = hack_digit ();
+	if (*wcp++ != L'0')
 	  significant = 1;
 	else if (significant == 0)
 	  {
@@ -927,7 +925,6 @@ __printf_fp (FILE *fp,
 	    if (fracdig_min > 0)
 	      ++fracdig_min;
 	  }
-	++wcp;
       }
 
     /* Do rounding.  */

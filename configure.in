@@ -65,7 +65,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=17
+VSTR_MICRO_VERSION=18
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -1374,11 +1374,13 @@ AC_OUTPUT([Makefile
            tst/cmp/Makefile
            tst/conv/Makefile
            tst/del/Makefile
+           tst/dup/Makefile
            tst/export/Makefile
            tst/loc/Makefile
            tst/mov/Makefile
            tst/parse/Makefile
            tst/sc/Makefile
+           tst/sects/Makefile
            tst/split/Makefile
            tst/spn/Makefile
            tst/srch/Makefile

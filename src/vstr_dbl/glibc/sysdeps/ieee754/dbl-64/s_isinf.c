@@ -29,11 +29,10 @@ __isinf (double x)
 	return ~(lx >> 31) & (hx >> 30);
 }
 #if 0 /* vstr */
-INTDEF(__isinf)
+hidden_def (__isinf)
 weak_alias (__isinf, isinf)
 #ifdef NO_LONG_DOUBLE
 strong_alias (__isinf, __isinfl)
-INTDEF(__isinfl)
 weak_alias (__isinf, isinfl)
 #endif
 #endif /* vstr */

@@ -228,6 +228,8 @@ Vstr_conf *vstr_nx_make_conf(void)
   conf->fmt_usr_escape = 0;
   
   conf->ref = 1;
+
+  conf->ref_link = NULL;
   
   conf->free_do = TRUE;
   conf->malloc_bad = FALSE;
@@ -266,6 +268,9 @@ void vstr__add_user_conf(Vstr_conf *conf)
   vstr__add_conf(conf);
 }
 
+/* NOTE: magic also exists in vstr_add..c (vstr__convert_buf_ref_add)
+ * for linked references */
+
 void vstr__add_base_conf(Vstr_base *base, Vstr_conf *conf)
 {
   assert(conf->user_ref <= conf->ref);
@@ -280,6 +285,8 @@ void vstr__del_conf(Vstr_conf *conf)
  
  if (!--conf->ref)
  {
+   assert(!conf->ref_link);
+   
   vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_BUF, conf->spare_buf_num);
   vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, conf->spare_non_num);
   vstr_nx_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);

@@ -4,5 +4,33 @@ static const char *rf = __FILE__;
 
 int tst(void)
 {
-  return (0); /* just calls spn function */
+  int ret = 0;
+  
+  VSTR_ADD_CSTR_BUF(s1, 0, "abcd xyz");
+  
+  TST_B_TST(ret,  1, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 1, s1->len, "acd xyz") != 2);
+  TST_B_TST(ret,  2, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 2, 7, "acd xyz") != 2);
+  TST_B_TST(ret,  3, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 2, 1, "acd xyz") != 2);
+
+  TST_B_TST(ret,  4, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 1, 8, "abcd xy") != 8);
+  TST_B_TST(ret,  5, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 2, 7, "abcd xy") != 8);
+  TST_B_TST(ret,  6, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 8, 1, "abcd xy") != 8);
+
+  TST_B_TST(ret,  7, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 4, 3, "dx") != 5);
+  TST_B_TST(ret,  8, VSTR_CSRCH_CSTR_CHRS_FWD(s1, 5, 1, "dx") != 5);
+
+  /* rev */
+     
+  TST_B_TST(ret, 11, VSTR_CSRCH_CSTR_CHRS_REV(s1, 1, s1->len, "acd xyz") != 2);
+  TST_B_TST(ret, 12, VSTR_CSRCH_CSTR_CHRS_REV(s1, 2, 7, "acd xyz") != 2);
+  TST_B_TST(ret, 13, VSTR_CSRCH_CSTR_CHRS_REV(s1, 2, 1, "acd xyz") != 2);
+
+  TST_B_TST(ret, 14, VSTR_CSRCH_CSTR_CHRS_REV(s1, 1, 8, "abcd xy") != 8);
+  TST_B_TST(ret, 15, VSTR_CSRCH_CSTR_CHRS_REV(s1, 2, 7, "abcd xy") != 8);
+  TST_B_TST(ret, 16, VSTR_CSRCH_CSTR_CHRS_REV(s1, 8, 1, "abcd xy") != 8);
+
+  TST_B_TST(ret, 17, VSTR_CSRCH_CSTR_CHRS_REV(s1, 4, 3, "dx") != 5);
+  TST_B_TST(ret, 18, VSTR_CSRCH_CSTR_CHRS_REV(s1, 5, 1, "dx") != 5);
+
+  return (TST_B_RET(ret));
 }

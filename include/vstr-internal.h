@@ -147,9 +147,6 @@ extern void vstr__del_conf(Vstr_conf *) VSTR__ATTR_I();
 extern Vstr_node *vstr__add_setup_pos(Vstr_base *, size_t *, unsigned int *,
                                       size_t *) VSTR__ATTR_I();
 
-extern void vstr__ref_cb_free_bufnode(struct Vstr_ref *) VSTR__ATTR_H();
-extern void vstr__ref_cb_free_bufnode_ref(struct Vstr_ref *) VSTR__ATTR_H();
-
 extern char *vstr__export_node_ptr(const Vstr_node *) VSTR__ATTR_I();
 
 extern void vstr__base_zero_used(Vstr_base *base) VSTR__ATTR_I();

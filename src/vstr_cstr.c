@@ -21,22 +21,20 @@
 /* Functions to allow export of a "C string" like interface */
 #include "main.h"
 
-static Vstr__buf_ref *vstr__export_cstr_ref(const Vstr_base *base,
-                                            size_t pos, size_t len)
+static Vstr_ref *vstr__export_cstr_ref(const Vstr_base *base,
+                                       size_t pos, size_t len)
 {
-  struct Vstr__buf_ref *ref = NULL;
+  Vstr_ref *ref = NULL;
   
-  if (!(ref = malloc(sizeof(Vstr__buf_ref) + len + 1)))
+  if (!(ref = vstr_nx_ref_make_malloc(len + 1)))
   {
     base->conf->malloc_bad = TRUE;
     return (NULL);
   }
-  
-  ref->ref.func = vstr_nx_ref_cb_free_ref;
-  ref->ref.ptr = ref->buf;
-  ref->ref.ref = 1;
 
-  vstr_nx_export_cstr_buf(base, pos, len, ref->buf, len + 1);
+  assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
+  
+  vstr_nx_export_cstr_buf(base, pos, len, ref->ptr, len + 1);
 
   return (ref);
 }
@@ -45,7 +43,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
                                                       size_t pos, size_t len,
                                                       size_t *ret_off)
 {
-  struct Vstr__buf_ref *ref = NULL;
+  Vstr_ref *ref = NULL;
   Vstr__cache_data_cstr *data = NULL;
   unsigned int off = base->conf->cache_pos_cb_cstr;
   
@@ -74,7 +72,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     if (pos >= data->pos)
     {
       size_t tmp = (pos - data->pos);
-      if (data->len == (len - tmp))
+      if ((data->len - tmp) == len)
       {
         *ret_off = tmp;
         return (data);
@@ -88,7 +86,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   if (!(ref = vstr__export_cstr_ref(base, pos, len)))
     return (NULL);
   
-  data->ref = &ref->ref;
+  data->ref = ref;
   data->pos = pos;
   data->len = len;
   
@@ -129,13 +127,13 @@ Vstr_ref *vstr_nx_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
   
   if (!base->cache_available)
   {
-    struct Vstr__buf_ref *buf_ref = vstr__export_cstr_ref(base, pos, len);
+    Vstr_ref *ref = vstr__export_cstr_ref(base, pos, len);
     
-    if (!buf_ref)
+    if (!ref)
       return (NULL);
 
     *ret_off = 0;
-    return (&buf_ref->ref);
+    return (ref);
   }
   
   if (!(data = vstr__export_cstr_cache(base, pos, len, ret_off)))

@@ -1414,7 +1414,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=17
+VSTR_MICRO_VERSION=18
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -16887,7 +16887,7 @@ echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 VSTR_LIBS="$LIBS"
 
 
-ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
+ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/dup/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/sects/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -17473,11 +17473,13 @@ do
   "tst/cmp/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cmp/Makefile" ;;
   "tst/conv/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/conv/Makefile" ;;
   "tst/del/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/del/Makefile" ;;
+  "tst/dup/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/dup/Makefile" ;;
   "tst/export/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/export/Makefile" ;;
   "tst/loc/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/loc/Makefile" ;;
   "tst/mov/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/mov/Makefile" ;;
   "tst/parse/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/parse/Makefile" ;;
   "tst/sc/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/sc/Makefile" ;;
+  "tst/sects/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/sects/Makefile" ;;
   "tst/split/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/split/Makefile" ;;
   "tst/spn/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/spn/Makefile" ;;
   "tst/srch/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/srch/Makefile" ;;

@@ -317,12 +317,20 @@ Constant: VSTR_TYPE_FMT_ERRNO
 
 Section: Constants used with vstr_sc_fmt_cb_beg()
 
-Constant: VSTR_FLAG_SC_FMT_CB_BEG_NONE
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_DEF
 
  Explanation:
 
-  This flag is 0, and is generally only used as programmer documentation to mean
- no flags are applied to this function.
+  This flag is the same as just specifying VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
+
+ Explanation:
+
+  This flag is 0, and is only used as programmer documentation to mean no
+ flags are applied to this function ... and hence the object isn't a number,
+ and is therefore treated as a string object.
 
 
 Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM

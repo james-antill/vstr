@@ -2,76 +2,55 @@
 
 static const char *rf = __FILE__;
 
+static int ret = 0;
+
+static void tst_vstr_i(unsigned int num, Vstr_base *t1,
+                       Vstr_base *t_from, size_t pos, size_t len,
+                       unsigned int flags)
+{
+  vstr_del(t_from, 1, t_from->len); /* setup each time for _BUF converters */
+  VSTR_ADD_CSTR_BUF(t_from, t_from->len, buf);
+  VSTR_ADD_CSTR_PTR(t_from, t_from->len, buf);
+  VSTR_ADD_CSTR_PTR(t_from, t_from->len, " xy");
+  vstr_del(t_from, 1, strlen(" xy"));
+  
+  vstr_del(t1, 1, t1->len);
+
+  vstr_add_vstr(t1, t1->len, t_from, 1, 0, flags);
+  vstr_add_vstr(t1, t1->len, t_from, pos, len, flags);
+  vstr_add_vstr(t1, t1->len, t_from, 2, 0, flags);
+
+  TST_B_TST(ret, num, !VSTR_CMP_EQ(t1, 1, t1->len, t_from, pos, len));
+}
+
+static void tst_vstr_a(unsigned int num,
+                       size_t pos, size_t len, unsigned int flags)
+{
+  tst_vstr_i(num, s2, s1, pos, len, flags);
+  tst_vstr_i(num, s3, s1, pos, len, flags);
+}
+
 int tst(void)
 {
-  int ret = 0;
-  
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
-  VSTR_ADD_CSTR_BUF(s1, 0, buf);
-  VSTR_ADD_CSTR_PTR(s1, 0, buf);
-
-  /* test s2 */
-  vstr_add_vstr(s2, s2->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 1, s1->len, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 1, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  vstr_del(s2, 1, s2->len);
+  tst_vstr_a( 1, 1, s1->len, VSTR_TYPE_ADD_DEF);
+  tst_vstr_a( 2, 1, s1->len, VSTR_TYPE_ADD_BUF_PTR);
+  tst_vstr_a( 3, 1, s1->len, VSTR_TYPE_ADD_ALL_REF);
+  tst_vstr_a( 4, 1, s1->len, VSTR_TYPE_ADD_ALL_BUF);
+  tst_vstr_a( 5, 1, s1->len, VSTR_TYPE_ADD_BUF_REF);
   
-  vstr_add_vstr(s2, s2->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 1, s1->len, VSTR_TYPE_ADD_BUF_PTR);
-  vstr_add_vstr(s2, s2->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 2, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  vstr_del(s2, 1, s2->len);
+  tst_vstr_a( 6, 4, 16, VSTR_TYPE_ADD_DEF);
+  tst_vstr_a( 7, 4, 16, VSTR_TYPE_ADD_BUF_PTR);
+  tst_vstr_a( 8, 4, 16, VSTR_TYPE_ADD_ALL_REF);
+  tst_vstr_a( 9, 4, 16, VSTR_TYPE_ADD_ALL_BUF);
+  tst_vstr_a(10, 4, 16, VSTR_TYPE_ADD_BUF_REF);
   
-  vstr_add_vstr(s2, s2->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 1, s1->len, VSTR_TYPE_ADD_BUF_REF);
-  vstr_add_vstr(s2, s2->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 3, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  vstr_del(s2, 1, s2->len);
-  
-  vstr_add_vstr(s2, s2->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 1, s1->len, VSTR_TYPE_ADD_ALL_REF);
-  vstr_add_vstr(s2, s2->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 4, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  vstr_del(s2, 1, s2->len);
-  
-  vstr_add_vstr(s2, s2->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s2, s2->len, s1, 1, s1->len, VSTR_TYPE_ADD_ALL_BUF);
-  vstr_add_vstr(s2, s2->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 5, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
-  vstr_del(s2, 1, s2->len);
-  
-  /* test s3 */
-  vstr_add_vstr(s3, s3->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 1, s1->len, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 6, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
-  vstr_del(s3, 1, s3->len);
-  
-  vstr_add_vstr(s3, s3->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 1, s1->len, VSTR_TYPE_ADD_BUF_PTR);
-  vstr_add_vstr(s3, s3->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 7, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
-  vstr_del(s3, 1, s3->len);
-  
-  vstr_add_vstr(s3, s3->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 1, s1->len, VSTR_TYPE_ADD_BUF_REF);
-  vstr_add_vstr(s3, s3->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 8, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
-  vstr_del(s3, 1, s3->len);
-  
-  vstr_add_vstr(s3, s3->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 1, s1->len, VSTR_TYPE_ADD_ALL_REF);
-  vstr_add_vstr(s3, s3->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret, 9, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
-  vstr_del(s3, 1, s3->len);
-  
-  vstr_add_vstr(s3, s3->len, s1, 1, 0, VSTR_TYPE_ADD_DEF);
-  vstr_add_vstr(s3, s3->len, s1, 1, s1->len, VSTR_TYPE_ADD_ALL_BUF);
-  vstr_add_vstr(s3, s3->len, s1, 2, 0, VSTR_TYPE_ADD_DEF);
-  TST_B_TST(ret,10, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
-  vstr_del(s3, 1, s3->len);
+  tst_vstr_a(11, 16, 32, VSTR_TYPE_ADD_DEF);
+  tst_vstr_a(12, 16, 32, VSTR_TYPE_ADD_BUF_PTR);
+  tst_vstr_a(13, 16, 32, VSTR_TYPE_ADD_ALL_REF);
+  tst_vstr_a(14, 16, 32, VSTR_TYPE_ADD_ALL_BUF);
+  tst_vstr_a(15, 16, 32, VSTR_TYPE_ADD_BUF_REF);
   
   return (TST_B_RET(ret));
 }

@@ -6,6 +6,11 @@
 
 . Allow non-atomic ops.
 
+. Way to delete from a section and have section pos/len updates ... use cache ?
+
+. _conv_sub_buf_buf() ? ...
+   Ie. vstr_conv_sub_buf_buf(s1, 1, s1->len, "\t", 1, "    ", 4)
+
 . parse_ipv6
  *   1. hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh
  *   2. any number of 0000 may be abbreviated as "::", but only once
@@ -14,12 +19,30 @@
 
 . VSTR_FLAG_PARSE_NUM_LOC_SEP
 
-. Document how to rm non cstr caches cache.
-
 . Man page equiv. for constants.html
+
+. http://burtleburtle.net/bob/hash/doobs.html .. vstr_hash ?
+
+. $*.*{blah:%u} ... gives a gcc warning
+  $*.*{blah:%*.*u} .. is ok, but that requires 4 string entries instead of 1.
 
  Not needed for 1.0
  ------------------
+
+. join ... ??
+
+. fast sub for ptr/ref when you can just update the ptr in the node
+
+. Document how to rm cache data other than cstr cache data.
+
+. _Bool ?
+
+. {S...:%s} for precision strings with ... at the end.
+
+. _conv_tr_buf_buf() ? ...
+   Ie. vstr_conv_tr_buf_buf(s1, 1, s1->len, "\t\r", 2, " ?", 2)
+
+. strftime() ?
 
 . Configure option to have alternate malloc conf->malloc(x) etc.
 
@@ -32,8 +55,6 @@
 . vstr_add_fmt() internal cleanup to use struct blah {Vstr_fmt ... }
 
 . ASN.1 (International Standard 8824)
-
-. Way to delete from a section and have section pos/len updates.
 
 . _SEF type ... like a _REF but you can do substitution on it ?
    Will do "strange" things on mmap() read/write areas on _conv_ functions

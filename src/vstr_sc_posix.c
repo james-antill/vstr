@@ -181,7 +181,7 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
     goto mem_fail;
   pos = orig_pos;
   
-  if (!(ref = vstr_nx_make_ref_malloc(len)))
+  if (!(ref = vstr_nx_ref_make_malloc(len)))
     goto mem_fail;
   
   if (!base->conf->spare_ref_num &&
@@ -594,7 +594,7 @@ static int vstr__sc_fmt_add_cb_ipv4_ptr(Vstr_base *base, size_t pos,
   obj_len = strlen(ptr);
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
 
   if (!vstr_nx_add_buf(base, pos, ptr, obj_len))
@@ -623,7 +623,7 @@ static int vstr__sc_fmt_add_cb_ipv6_ptr(Vstr_base *base, size_t pos,
   obj_len = strlen(ptr);
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
 
   if (!vstr_nx_add_buf(base, pos, ptr, obj_len))

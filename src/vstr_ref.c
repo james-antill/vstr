@@ -34,14 +34,15 @@ void vstr_nx_ref_cb_free_ref(Vstr_ref *ref)
 #ifndef NDEBUG
 void vstr__ref_cb_free_buf_ref(Vstr_ref *ref)
 {
-  assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
+  assert(!ref || (((Vstr__buf_ref *)ref)->buf == ref->ptr));
   vstr_nx_ref_cb_free_ref(ref);
 }
 #endif
 
 void vstr_nx_ref_cb_free_ptr(Vstr_ref *ref)
 {
- free(ref->ptr);
+  if (ref)
+    free(ref->ptr);
 }
 
 void vstr_nx_ref_cb_free_ptr_ref(Vstr_ref *ref)
@@ -50,21 +51,7 @@ void vstr_nx_ref_cb_free_ptr_ref(Vstr_ref *ref)
  free(ref);
 }
 
-void vstr__ref_cb_free_bufnode(Vstr_ref *ref)
-{
- char *ptr = ref->ptr;
- ptr -= offsetof(Vstr_node_buf, buf);
- free(ptr);
-}
-
-void vstr__ref_cb_free_bufnode_ref(Vstr_ref *ref)
-{
- vstr__ref_cb_free_bufnode(ref);
- free(ref);
-}
-
-
-Vstr_ref *vstr_nx_make_ref_ptr(void *ptr, void (*func)(struct Vstr_ref *))
+Vstr_ref *vstr_nx_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
 {
   Vstr_ref *ref = malloc(sizeof(Vstr_ref));
   
@@ -78,19 +65,18 @@ Vstr_ref *vstr_nx_make_ref_ptr(void *ptr, void (*func)(struct Vstr_ref *))
   return (ref);
 }
 
-Vstr_ref *vstr_nx_make_ref_malloc(size_t len)
+Vstr_ref *vstr_nx_ref_make_malloc(size_t len)
 {
-  char *buf = malloc(len);
-  Vstr_ref *ref = NULL;
+  struct Vstr__buf_ref *ref = malloc(sizeof(Vstr__buf_ref) + len);
   
-  if (!buf)
+  if (!ref)
     return (NULL);
 
-  if (!(ref = vstr_nx_make_ref_ptr(buf, vstr_nx_ref_cb_free_ptr_ref)))
-  {
-    free(buf);
-    return (NULL);
-  }
+  ref->ref.ref = 1;
+  ref->ref.ptr = ref->buf;
+  ref->ref.func = vstr_nx_ref_cb_free_ref;
+
+  assert(&ref->ref == (Vstr_ref *)ref);
   
-  return (ref);
+  return (&ref->ref);
 }

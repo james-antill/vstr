@@ -69,7 +69,8 @@
 <li><a href="#VSTR_TYPE_FMT_ERRNO">VSTR_TYPE_FMT_ERRNO</a>
 </ul><li><a href="#Constants%20used%20with%20vstr_sc_fmt_cb_beg%28%29">Constants used with vstr_sc_fmt_cb_beg()</a>
 <ul>
-<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_NONE">VSTR_FLAG_SC_FMT_CB_BEG_NONE</a>
+<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_DEF">VSTR_FLAG_SC_FMT_CB_BEG_DEF</a>
+<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR</a>
 <li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a>
 <li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29">Constants passed to vstr_conv_unprintable_*()</a>
@@ -551,12 +552,20 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sc_fmt_cb_beg%28%29"><h2>Constants used with vstr_sc_fmt_cb_beg()</h2>
 </a>
-<a name="VSTR_FLAG_SC_FMT_CB_BEG_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_NONE
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag is 0, and is generally only used as programmer documentation to mean
- no flags are applied to this function.
+</p><p>  This flag is the same as just specifying VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag is 0, and is only used as programmer documentation to mean no
+ flags are applied to this function ... and hence the object isn't a number,
+ and is therefore treated as a string object.
 
 
 <a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

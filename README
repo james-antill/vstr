@@ -57,8 +57,15 @@ wchar_t *tmp = L"";
 
 ...gets a warning.
 
- -------------- Compiling against gcc3-3.1-5 on Red Hat Linux --------------
+ -------------- Checking the testing coverage --------------
 
- Note that gcc3-3.1-5 has a bug which will SEGV on vstr_inline.c without the
-workaround in that file.
+ If you do a build with inline'd functions turned off, then you can run the
+script ./script/tst_coverage_diff.sh ... this will show all the constants and
+functions that are defined in the library but not in the make check test suite.
+ Note that even if/when this is empty, this doesn't mean that the library is
+guaranteed to be bug free. For example there are distinct code paths for some
+functions depending on if the Vstr string has a _BUF node at the begining and
+deleted some data from the begining.
+
+
 

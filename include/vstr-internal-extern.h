@@ -89,7 +89,7 @@
  (*(T *)((spec)->data_ptr[(size_t) (num)]))
 
 #define VSTR_CMP_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
- !vstr_nx_cmp(x, p1, l1, y, p1, l2))
+ !vstr_nx_cmp(x, p1, l1, y, p2, l1))
 #define VSTR_CMP_CSTR(x, p1, l1, y) \
   vstr_nx_cmp_buf(x, p1, l1, y, strlen(y))
 #define VSTR_CMP_BUF_EQ(x, p1, l1, y, l2) (((l1) == (l2)) && \
@@ -179,18 +179,16 @@
 /* not really vectored string functions ... just stuff needed */
 extern void vstr_nx_ref_cb_free_nothing(struct Vstr_ref *) VSTR__ATTR_H() ;
 extern void vstr_nx_ref_cb_free_ref(struct Vstr_ref *) VSTR__ATTR_H() ;
-extern void vstr_nx_ref_cb_free_ptr(struct Vstr_ref *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
-extern void vstr_nx_ref_cb_free_ptr_ref(struct Vstr_ref *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern void vstr_nx_ref_cb_free_ptr(struct Vstr_ref *) VSTR__ATTR_H() ;
+extern void vstr_nx_ref_cb_free_ptr_ref(struct Vstr_ref *) VSTR__ATTR_H() ;
 
 extern struct Vstr_ref *vstr_nx_ref_add(struct Vstr_ref *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern void vstr_nx_ref_del(struct Vstr_ref *) VSTR__ATTR_H() ;
-extern struct Vstr_ref *vstr_nx_make_ref_ptr(void *,
+extern struct Vstr_ref *vstr_nx_ref_make_ptr(void *,
                                           void (*)(struct Vstr_ref *))
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
-extern struct Vstr_ref *vstr_nx_make_ref_malloc(size_t)
+extern struct Vstr_ref *vstr_nx_ref_make_malloc(size_t)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
 
 /* real start of vector string functions */
@@ -246,6 +244,8 @@ extern struct Vstr_base *vstr_nx_dup_ref(struct Vstr_conf *,
 extern struct Vstr_base *vstr_nx_dup_vstr(struct Vstr_conf *,
                                        const struct Vstr_base *, size_t, size_t,
                                        unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+extern struct Vstr_base *vstr_nx_dup_rep_chr(struct Vstr_conf *, char, size_t)
     VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
 
 extern size_t vstr_nx_add_vfmt(struct Vstr_base *, size_t, const char *, va_list)
@@ -632,6 +632,14 @@ extern int vstr_nx_sc_write_file(struct Vstr_base *, size_t, size_t,
                               const char *, int, VSTR_AUTOCONF_mode_t,
                               VSTR_AUTOCONF_off64_t, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) VSTR__ATTR_H() ;
+
+extern void vstr_nx_sc_basename(const struct Vstr_base *, size_t, size_t,
+                             size_t *, size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern void vstr_nx_sc_dirname(const struct Vstr_base *, size_t, size_t,
+                            size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+
 
 /* == inline helper functions == */
 /* indented because they aren't documented */

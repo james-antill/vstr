@@ -1,13 +1,12 @@
 #! /bin/sh
 
-if [ ! -r VERSION ]; then
- echo "No VERSION file"
+if [ ! -r VERSION -o ! -r vstr.spec -o ! -r configure ]; then
+ echo "No VERSION, vstr.spec or configure file."
  exit 1
 fi
 
-s="`pwd`"
 v="`cat VERSION`"
-
+s="`pwd`"
 cd ../build/vstr
 
 rm -rf vstr-$v

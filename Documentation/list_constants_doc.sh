@@ -1,3 +1,1 @@
-#! /bin/sh
-
-egrep "^Constant" constants.txt | awk '{ print $2 }'
+../scripts/list_constants_doc.sh

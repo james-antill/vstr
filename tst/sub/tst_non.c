@@ -13,6 +13,7 @@ int tst(void)
   vstr_sub_non(s1, 2, s1->len - 2, 2);
 
   TST_B_TST(ret, 1, !VSTR_CMP_BUF_EQ(s1, 2, s1->len - 2, NULL, 2));
+  
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s1, 1, 1, s2, 1, 1));
   TST_B_TST(ret, 3, !VSTR_CMP_EQ(s1, s1->len, 1, s2, s2->len, 1));
     
@@ -21,5 +22,5 @@ int tst(void)
 
   TST_B_TST(ret, 4, !VSTR_CMP_BUF_EQ(s1, 1, s1->len, NULL, 4));
   
-  return (!TST_B_RET(ret));
+  return (TST_B_RET(ret));
 }

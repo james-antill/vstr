@@ -5,6 +5,7 @@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_cstr_buf \
+    tst_cstr_malloc \
     tst_cstr_ptr \
     tst_cstr_ref \
     tst_iovec_ptr_all \
@@ -19,5 +20,6 @@ check_PROGRAMS = $(tst)
 TESTS = $(tst)
 
 CFLAGS = -I../../../include -I- @CFLAGS@ @WARNS@
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
+
 

@@ -7,6 +7,7 @@ int tst(void)
 {
   int ret = 0;
   size_t tlen = strlen("/* TEST: abcd */\n");
+  unsigned int err = 0;
   
 #ifndef HAVE_POSIX_HOST
   return (EXIT_FAILED_OK);
@@ -91,6 +92,19 @@ int tst(void)
     vstr_del(s4, tlen + 1, s4->len - tlen);
   
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, "/* TEST: abcd */\n"));
+
+  TST_B_TST(ret, 13, !!vstr_sc_read_len_fd(s1, s1->len, 1024, 0, &err));
+  
+  TST_B_TST(ret, 14, (err != VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO));
+
+  TST_B_TST(ret, 15, !!vstr_sc_read_iov_fd(s1, s1->len, 1024, 1, 2, &err));
+  
+  TST_B_TST(ret, 16, (err != VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO));
+
+  TST_B_TST(ret, 17, !!vstr_sc_read_len_file(s1, s1->len, "/dev/null", 0,
+                                             20, &err));
+  
+  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
 
   return (TST_B_RET(ret));
 }

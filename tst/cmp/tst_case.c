@@ -4,8 +4,10 @@ static const char *rf = __FILE__;
 
 #include "tst-cmp.h"
 
-#define TEST_CMP_VSTR_FUNC vstr_cmp_case
-#define TEST_CMP_CSTR_FUNC VSTR_CMP_CASE_CSTR
+#define TEST_CMP_VSTR_FUNC(x1, x2, x3, y1, y2, y3) \
+        vstr_cmp_case(x1, x2, x3, y1, y2, y3)
+#define TEST_CMP_CSTR_FUNC(x1, x2, x3, y1) \
+        VSTR_CMP_CASE_CSTR(x1, x2, x3, y1)
 
 int tst(void)
 {

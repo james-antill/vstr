@@ -32,7 +32,7 @@
 #define SIZE	S2+PTR_SIZE
 
 	.text
-ENTRY (BP_SYM (_mpn_add_n))
+ENTRY (BP_SYM (__mpn_add_n))
 	ENTER
 
 	pushl	%edi

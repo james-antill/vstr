@@ -115,6 +115,7 @@ install_sh = @install_sh@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_cstr_buf \
+    tst_cstr_malloc \
     tst_cstr_ptr \
     tst_cstr_ref \
     tst_iovec_ptr_all \
@@ -128,59 +129,65 @@ tst = tst_cstr_buf \
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
 subdir = tst/export
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = tst_cstr_buf$(EXEEXT) tst_cstr_ptr$(EXEEXT) \
-	tst_cstr_ref$(EXEEXT) tst_iovec_ptr_all$(EXEEXT) \
-	tst_iovec_cpy_buf$(EXEEXT) tst_iovec_cpy_ptr$(EXEEXT) \
-	tst_buf$(EXEEXT) tst_chr$(EXEEXT) tst_ref$(EXEEXT)
+check_PROGRAMS = tst_cstr_buf$(EXEEXT) tst_cstr_malloc$(EXEEXT) \
+	tst_cstr_ptr$(EXEEXT) tst_cstr_ref$(EXEEXT) \
+	tst_iovec_ptr_all$(EXEEXT) tst_iovec_cpy_buf$(EXEEXT) \
+	tst_iovec_cpy_ptr$(EXEEXT) tst_buf$(EXEEXT) tst_chr$(EXEEXT) \
+	tst_ref$(EXEEXT)
 tst_buf_SOURCES = tst_buf.c
 tst_buf_OBJECTS = tst_buf.$(OBJEXT)
 tst_buf_LDADD = $(LDADD)
-tst_buf_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_buf_DEPENDENCIES =
 tst_buf_LDFLAGS =
 tst_chr_SOURCES = tst_chr.c
 tst_chr_OBJECTS = tst_chr.$(OBJEXT)
 tst_chr_LDADD = $(LDADD)
-tst_chr_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_chr_DEPENDENCIES =
 tst_chr_LDFLAGS =
 tst_cstr_buf_SOURCES = tst_cstr_buf.c
 tst_cstr_buf_OBJECTS = tst_cstr_buf.$(OBJEXT)
 tst_cstr_buf_LDADD = $(LDADD)
-tst_cstr_buf_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_cstr_buf_DEPENDENCIES =
 tst_cstr_buf_LDFLAGS =
+tst_cstr_malloc_SOURCES = tst_cstr_malloc.c
+tst_cstr_malloc_OBJECTS = tst_cstr_malloc.$(OBJEXT)
+tst_cstr_malloc_LDADD = $(LDADD)
+tst_cstr_malloc_DEPENDENCIES =
+tst_cstr_malloc_LDFLAGS =
 tst_cstr_ptr_SOURCES = tst_cstr_ptr.c
 tst_cstr_ptr_OBJECTS = tst_cstr_ptr.$(OBJEXT)
 tst_cstr_ptr_LDADD = $(LDADD)
-tst_cstr_ptr_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_cstr_ptr_DEPENDENCIES =
 tst_cstr_ptr_LDFLAGS =
 tst_cstr_ref_SOURCES = tst_cstr_ref.c
 tst_cstr_ref_OBJECTS = tst_cstr_ref.$(OBJEXT)
 tst_cstr_ref_LDADD = $(LDADD)
-tst_cstr_ref_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_cstr_ref_DEPENDENCIES =
 tst_cstr_ref_LDFLAGS =
 tst_iovec_cpy_buf_SOURCES = tst_iovec_cpy_buf.c
 tst_iovec_cpy_buf_OBJECTS = tst_iovec_cpy_buf.$(OBJEXT)
 tst_iovec_cpy_buf_LDADD = $(LDADD)
-tst_iovec_cpy_buf_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_iovec_cpy_buf_DEPENDENCIES =
 tst_iovec_cpy_buf_LDFLAGS =
 tst_iovec_cpy_ptr_SOURCES = tst_iovec_cpy_ptr.c
 tst_iovec_cpy_ptr_OBJECTS = tst_iovec_cpy_ptr.$(OBJEXT)
 tst_iovec_cpy_ptr_LDADD = $(LDADD)
-tst_iovec_cpy_ptr_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_iovec_cpy_ptr_DEPENDENCIES =
 tst_iovec_cpy_ptr_LDFLAGS =
 tst_iovec_ptr_all_SOURCES = tst_iovec_ptr_all.c
 tst_iovec_ptr_all_OBJECTS = tst_iovec_ptr_all.$(OBJEXT)
 tst_iovec_ptr_all_LDADD = $(LDADD)
-tst_iovec_ptr_all_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_iovec_ptr_all_DEPENDENCIES =
 tst_iovec_ptr_all_LDFLAGS =
 tst_ref_SOURCES = tst_ref.c
 tst_ref_OBJECTS = tst_ref.$(OBJEXT)
 tst_ref_LDADD = $(LDADD)
-tst_ref_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_ref_DEPENDENCIES =
 tst_ref_LDFLAGS =
 
 DEFS = @DEFS@
@@ -194,11 +201,11 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_buf.c tst_chr.c tst_cstr_buf.c tst_cstr_ptr.c \
-	tst_cstr_ref.c tst_iovec_cpy_buf.c tst_iovec_cpy_ptr.c \
-	tst_iovec_ptr_all.c tst_ref.c
+DIST_SOURCES = tst_buf.c tst_chr.c tst_cstr_buf.c tst_cstr_malloc.c \
+	tst_cstr_ptr.c tst_cstr_ref.c tst_iovec_cpy_buf.c \
+	tst_iovec_cpy_ptr.c tst_iovec_ptr_all.c tst_ref.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_buf.c tst_chr.c tst_cstr_buf.c tst_cstr_ptr.c tst_cstr_ref.c tst_iovec_cpy_buf.c tst_iovec_cpy_ptr.c tst_iovec_ptr_all.c tst_ref.c
+SOURCES = tst_buf.c tst_chr.c tst_cstr_buf.c tst_cstr_malloc.c tst_cstr_ptr.c tst_cstr_ref.c tst_iovec_cpy_buf.c tst_iovec_cpy_ptr.c tst_iovec_ptr_all.c tst_ref.c
 
 all: all-am
 
@@ -225,6 +232,9 @@ tst_chr$(EXEEXT): $(tst_chr_OBJECTS) $(tst_chr_DEPENDENCIES)
 tst_cstr_buf$(EXEEXT): $(tst_cstr_buf_OBJECTS) $(tst_cstr_buf_DEPENDENCIES) 
 	@rm -f tst_cstr_buf$(EXEEXT)
 	$(LINK) $(tst_cstr_buf_LDFLAGS) $(tst_cstr_buf_OBJECTS) $(tst_cstr_buf_LDADD) $(LIBS)
+tst_cstr_malloc$(EXEEXT): $(tst_cstr_malloc_OBJECTS) $(tst_cstr_malloc_DEPENDENCIES) 
+	@rm -f tst_cstr_malloc$(EXEEXT)
+	$(LINK) $(tst_cstr_malloc_LDFLAGS) $(tst_cstr_malloc_OBJECTS) $(tst_cstr_malloc_LDADD) $(LIBS)
 tst_cstr_ptr$(EXEEXT): $(tst_cstr_ptr_OBJECTS) $(tst_cstr_ptr_DEPENDENCIES) 
 	@rm -f tst_cstr_ptr$(EXEEXT)
 	$(LINK) $(tst_cstr_ptr_LDFLAGS) $(tst_cstr_ptr_OBJECTS) $(tst_cstr_ptr_LDADD) $(LIBS)

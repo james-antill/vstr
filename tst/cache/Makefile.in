@@ -121,7 +121,7 @@ tst = tst_usr \
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
 subdir = tst/cache
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
@@ -130,12 +130,12 @@ check_PROGRAMS = tst_usr$(EXEEXT) tst_srch$(EXEEXT)
 tst_srch_SOURCES = tst_srch.c
 tst_srch_OBJECTS = tst_srch.$(OBJEXT)
 tst_srch_LDADD = $(LDADD)
-tst_srch_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_srch_DEPENDENCIES =
 tst_srch_LDFLAGS =
 tst_usr_SOURCES = tst_usr.c
 tst_usr_OBJECTS = tst_usr.$(OBJEXT)
 tst_usr_LDADD = $(LDADD)
-tst_usr_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_usr_DEPENDENCIES =
 tst_usr_LDFLAGS =
 
 DEFS = @DEFS@

@@ -112,7 +112,7 @@ static int vstr__sc_fmt_add_cb_vstr(Vstr_base *base, size_t pos,
   unsigned int sf_flags  = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 3);
 
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
   if (!vstr_nx_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
@@ -148,7 +148,7 @@ static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
   }
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
   if (!vstr_nx_add_buf(base, pos, buf, sf_len))
@@ -182,7 +182,7 @@ static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
   }
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_DEF))
     return (FALSE);
   
   if (!vstr_nx_add_ptr(base, pos, ptr, sf_len))
@@ -208,7 +208,7 @@ static int vstr__sc_fmt_add_cb_non(Vstr_base *base, size_t pos,
   size_t sf_len   = VSTR_FMT_CB_ARG_VAL(spec, size_t, 0);
 
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
   if (!vstr_nx_add_non(base, pos, sf_len))
@@ -237,7 +237,7 @@ static int vstr__sc_fmt_add_cb_ref(Vstr_base *base, size_t pos,
   assert(ref);
   
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
+                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
   if (!vstr_nx_add_ref(base, pos, ref, sf_off, sf_len))
@@ -415,4 +415,62 @@ int vstr_nx_sc_fmt_add_bkmg_bits_uint(Vstr_conf *conf, const char *name)
   return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bits_uint,
                           VSTR_TYPE_FMT_UINT,
                           VSTR_TYPE_FMT_END));
+}
+
+void vstr_nx_sc_basename(const Vstr_base *base, size_t pos, size_t len,
+                         size_t *ret_pos, size_t *ret_len)
+{
+  size_t ls = vstr_nx_srch_chr_rev(base, pos, len, '/');
+  size_t end_pos = (pos + len) - 1;
+  
+  if (!ls)
+  {
+    *ret_pos = pos;
+    *ret_len = len;
+  }
+  else if (ls == pos)
+  {
+    *ret_pos = pos;
+    *ret_len = 0;
+  }
+  else if (ls == end_pos)
+  {
+    char buf[1] = {'/'};
+
+    ls = vstr_nx_spn_chrs_rev(base, pos, len, buf, 1);
+    vstr_nx_sc_basename(base, pos, len - ls, ret_pos, ret_len);
+  }
+  else
+  {
+    ++ls;
+    *ret_pos = ls;
+    *ret_len = len - (ls - pos);
+  }
+}
+
+void vstr_nx_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
+                        size_t *ret_len)
+{
+  size_t ls = vstr_nx_srch_chr_rev(base, pos, len, '/');
+  size_t end_pos = (pos + len) - 1;
+  const char buf[1] = {'/'};
+
+ 
+  if (!ls)
+    *ret_len = 0;
+  else if (ls == end_pos)
+  {
+    ls = vstr_nx_spn_chrs_rev(base, pos, len, buf, 1);
+    len -= ls;
+    if (!len)
+      *ret_len = 1;
+    else
+      vstr_nx_sc_dirname(base, pos, len, ret_len);
+  }
+  else
+  {
+    len = (ls - pos) + 1;
+    ls = vstr_nx_spn_chrs_rev(base, pos, len - 1, buf, 1);
+    *ret_len = len - ls;
+  }
 }

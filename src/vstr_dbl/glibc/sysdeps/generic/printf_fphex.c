@@ -174,7 +174,7 @@ __printf_fphex (FILE *fp,
       fpnum.ldbl.d = *(const long double *) args[0];
 
       /* Check for special values: not a number or infinity.  */
-      if (INTUSE(__isnanl) (fpnum.ldbl.d))
+      if (__isnanl (fpnum.ldbl.d))
 	{
 	  if (isupper (info->spec))
 	    {
@@ -190,7 +190,7 @@ __printf_fphex (FILE *fp,
 	}
       else
 	{
-	  if (INTUSE(__isinfl) (fpnum.ldbl.d))
+	  if (__isinfl (fpnum.ldbl.d))
 	    {
 	      if (isupper (info->spec))
 		{
@@ -204,7 +204,7 @@ __printf_fphex (FILE *fp,
 		}
 	    }
 
-	  negative = signbitl (fpnum.ldbl.d);
+	  negative = signbit (fpnum.ldbl.d);
 	}
     }
   else
@@ -213,7 +213,7 @@ __printf_fphex (FILE *fp,
       fpnum.dbl.d = *(const double *) args[0];
 
       /* Check for special values: not a number or infinity.  */
-      if (INTUSE(__isnan) (fpnum.dbl.d))
+      if (__isnan (fpnum.dbl.d))
 	{
 	  if (isupper (info->spec))
 	    {
@@ -229,7 +229,7 @@ __printf_fphex (FILE *fp,
 	}
       else
 	{
-	  if (INTUSE(__isinf) (fpnum.dbl.d))
+	  if (__isinf (fpnum.dbl.d))
 	    {
 	      if (isupper (info->spec))
 		{
@@ -342,7 +342,7 @@ __printf_fphex (FILE *fp,
   /* Look for trailing zeroes.  */
   if (! zero_mantissa)
     {
-      wnumend = wnumbuf + sizeof wnumbuf;
+      wnumend = wnumbuf + (sizeof wnumbuf / sizeof wnumbuf[0]);
       numend = numbuf + sizeof numbuf;
       while (wnumend[-1] == L'0')
 	{

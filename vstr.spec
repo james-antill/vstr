@@ -1,4 +1,4 @@
-%define ver      0.9.17
+%define ver      0.9.18
 %define libver  0.9
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -55,7 +55,7 @@ Requires: %{name} = %{version}
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
-* Mon Sep 30 2002 James Antill <james@and.org> 0.9.17-%{real_release_num}
+* Mon Sep 30 2002 James Antill <james@and.org> 0.9.18-%{real_release_num}
 - Remove files for check-files 8.0 rpm check.
 
 * Mon Sep 30 2002 James Antill <james@and.org>

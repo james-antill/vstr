@@ -4,7 +4,12 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_typedef
+tst = tst_typedef \
+      tst_inline \
+      tst_misc \
+      tst_swap_conf \
+      tst_cntl_base \
+      tst_cntl_opt
 
 
 check_PROGRAMS = $(tst)
@@ -12,5 +17,6 @@ check_PROGRAMS = $(tst)
 TESTS = $(tst)
 
 CFLAGS = -I../../../include -I- @CFLAGS@ @WARNS@
-LDADD = ../../src/.libs/libvstr.a
+LDADD = -L../../src/ -lvstr
+
 

@@ -105,7 +105,7 @@ extern inline int @@@@vstr_del(struct Vstr_base *base, size_t pos, size_t len)
   if (pos > base->len)
     return (0);
 
-  if ((pos == 1) && ((base->used + len) < base->beg->len) &&
+  if ((pos == 1) && ((len + base->used) < base->beg->len) &&
       (!base->cache_available || base->cache_internal))
   {
     struct Vstr_node *scan = base->beg;

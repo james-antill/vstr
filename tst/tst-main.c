@@ -13,8 +13,6 @@
 
 #include <float.h>
 
-#include <assert.h>
-
 #include "../../include/fix.h"
 
 /* not from system ... just from here */
@@ -39,6 +37,11 @@
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
 # include "../../include/vstr-inline.h"
 #endif
+
+/* use system assert, so we get abort()s which fail tests */
+#undef NDEBUG /* always use assert */
+#include <assert.h>
+#define ASSERT(x) assert(x)
 
 
 
@@ -137,14 +140,17 @@ int main(void)
 " You can install the en_US locale on your system by doing:\n"
 "\n"
 "Debian: \"dpkg-reconfigure locales\" (choose 54 and 55)\n"
-"Red Hat: Choose the locale in the installer.\n" /* FIXME: */
+"Red Hat:\n"
+"  Either choose the en_US locale in the installer,\n"
+" or find your glibc-common rpm and run...\n\n"
+" . /etc/sysconfig/i18n\n"
+" rpm --define \"_install_langs en_US:$SUPPORTED\" -Uvh --force glibc-common*\n"
 "\n"
 " You can check that it is installed by running \"locale -a\"\n"
 "\n"
 "\n"
             );
     exit (EXIT_FAILURE);
-    /* FIXME: # warning "rpm thing for redhat" */
   }
 #endif
   

@@ -40,11 +40,10 @@ static
 	return (int)(((u_int32_t)hx)>>31);
 }
 #if 0 /* vstr */
-INTDEF(__isnan)
+hidden_def (__isnan)
 weak_alias (__isnan, isnan)
 #ifdef NO_LONG_DOUBLE
 strong_alias (__isnan, __isnanl)
-INTDEF(__isnanl)
 weak_alias (__isnan, isnanl)
 #endif
 #endif /* vstr */

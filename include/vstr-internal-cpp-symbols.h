@@ -2,8 +2,8 @@
 #define vstr_nx_ref_cb_free_ref vstr_ref_cb_free_ref
 #define vstr_nx_ref_cb_free_ptr vstr_ref_cb_free_ptr
 #define vstr_nx_ref_cb_free_ptr_ref vstr_ref_cb_free_ptr_ref
-#define vstr_nx_make_ref_ptr vstr_make_ref_ptr
-#define vstr_nx_make_ref_malloc vstr_make_ref_malloc
+#define vstr_nx_ref_make_ptr vstr_ref_make_ptr
+#define vstr_nx_ref_make_malloc vstr_ref_make_malloc
 #define vstr_nx_init vstr_init
 #define vstr_nx_exit vstr_exit
 #define vstr_nx_make_conf vstr_make_conf
@@ -22,6 +22,7 @@
 #define vstr_nx_dup_non vstr_dup_non
 #define vstr_nx_dup_ref vstr_dup_ref
 #define vstr_nx_dup_vstr vstr_dup_vstr
+#define vstr_nx_dup_rep_chr vstr_dup_rep_chr
 #define vstr_nx_add_vfmt vstr_add_vfmt
 #define vstr_nx_add_fmt vstr_add_fmt
 #define vstr_nx_add_vsysfmt vstr_add_vsysfmt
@@ -132,6 +133,8 @@
 #define vstr_nx_sc_read_len_file vstr_sc_read_len_file
 #define vstr_nx_sc_write_fd vstr_sc_write_fd
 #define vstr_nx_sc_write_file vstr_sc_write_file
+#define vstr_nx_sc_basename vstr_sc_basename
+#define vstr_nx_sc_dirname vstr_sc_dirname
 #define vstr_nx_extern_inline_add_buf vstr_extern_inline_add_buf
 #define vstr_nx_extern_inline_add_rep_chr vstr_extern_inline_add_rep_chr
 #define vstr_nx_extern_inline_del vstr_extern_inline_del

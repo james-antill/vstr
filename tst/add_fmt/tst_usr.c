@@ -34,6 +34,8 @@ static int tst_usr_pid_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
                                    Vstr_fmt_spec *spec)
 {
+  size_t sf_len = 0;
+  
   assert(st && !pos);
   assert(!strcmp(spec->name, "{BLANK_ERRNO1}"));
 
@@ -42,6 +44,14 @@ static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
   tst_errno = 0;
   errno = 0;
 
+  if (!vstr_sc_fmt_cb_beg(st, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_DEF))
+    return (FALSE);
+  
+  if (!vstr_sc_fmt_cb_end(st, pos, spec, sf_len))
+    return (FALSE);
+
+  
   return (TRUE);
 }
 
@@ -110,11 +120,11 @@ static int tst_setup_inet_buf(const struct in_addr  *ipv4,
 
 #endif
 
-#define ASSERT assert
 int tst(void)
 {
   int ret = 0;
-
+  Vstr_ref *ref = NULL;
+  
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   vstr_add_fmt(s2, s2->len, "$ %s -- %lu $", buf, (unsigned long)getpid());
 
@@ -136,6 +146,10 @@ int tst(void)
   ASSERT(vstr_fmt_srch(s3->conf, "{buf:%s%zu}"));
   vstr_sc_fmt_add_ptr(s3->conf, "{ptr:%s%zu}");
   ASSERT(vstr_fmt_srch(s3->conf, "{ptr:%s%zu}"));
+  vstr_sc_fmt_add_non(s3->conf, "{non:%zu}");
+  ASSERT(vstr_fmt_srch(s3->conf, "{non:%zu}"));
+  vstr_sc_fmt_add_ref(s3->conf, "{ref:%p%u%zu}");
+  ASSERT(vstr_fmt_srch(s3->conf, "{ref:%p%u%zu}"));
   vstr_fmt_add(s3->conf, "{PID}", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
   vstr_fmt_add(s3->conf, "{BLANK_ERRNO1}", tst_usr_blank_errno1_cb,
                VSTR_TYPE_FMT_ERRNO, VSTR_TYPE_FMT_END);
@@ -166,6 +180,23 @@ int tst(void)
                buf, strlen(buf));
   
   TST_B_TST(ret, 4, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
+
+  vstr_del(s3, 1, s3->len);
+  vstr_del(s1, 1, s1->len);
+  vstr_add_fmt(s3, 0, " ${non:%zu} ", strlen(buf));
+  vstr_add_rep_chr(s1, s1->len, ' ', 1);
+  vstr_add_non(s1, 1, strlen(buf));
+  vstr_add_rep_chr(s1, s1->len, ' ', 1);
+  
+  TST_B_TST(ret, 5, !VSTR_CMP_EQ(s3, 1, s3->len, s1, 1, s1->len));
+
+  vstr_del(s3, 1, s3->len);
+  ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ref);
+  vstr_add_fmt(s3, 0, "$$ ${ref:%p%u%zu} -- ${PID} $$",
+               ref, 0, strlen(buf));
+  vstr_ref_del(ref);
+  
+  TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
 #ifdef HAVE_POSIX_HOST
   do

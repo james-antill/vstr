@@ -152,6 +152,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  
  int ref; /* private */
  int user_ref; /* private */
+
+ void *ref_link; /* private */
  
  unsigned int free_do : 1; /* private */
  unsigned int malloc_bad : 1; /* public/read|write */
