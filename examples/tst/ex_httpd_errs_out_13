@@ -1,6 +1,6 @@
 HTTP/1.1 505 Version not supported
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes

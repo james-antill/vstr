@@ -1,6 +1,6 @@
 HTTP/1.1 404 Not Found
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -10,7 +10,7 @@ Content-Length: 339
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -20,7 +20,7 @@ Content-Length: 159
 
 HTTP/1.1 301 Moved Permanently
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -31,7 +31,7 @@ Location: http://X/default/
 
 HTTP/1.1 301 Moved Permanently
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -42,7 +42,7 @@ Location: http://default/default/
 
 HTTP/1.1 403 Forbidden
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -52,7 +52,7 @@ Content-Length: 327
 
 HTTP/1.1 403 Forbidden
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
@@ -62,7 +62,7 @@ Content-Length: 327
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Wed, 13 Oct 2004 07:02:24 GMT
 Connection: close
 Accept-Ranges: bytes

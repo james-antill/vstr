@@ -63,7 +63,7 @@
 #define CONF_SERV_DEF_ADDR NULL
 #define CONF_SERV_DEF_PORT   80
 
-#define CONF_SERV_VERSION "0.9.4"
+#define CONF_SERV_VERSION "0.9.5"
 
 /* **** compile time conf **** */
 
@@ -372,9 +372,47 @@ static void usage(const char *program_name, int ret, const char *prefix)
   exit (ret);
 }
 
+#define SERV__SIG_OR_ERR(x)                     \
+    if (sigaction(x, &sa, NULL) == -1)          \
+      err(EXIT_FAILURE, "signal(" #x ")")
+
 static void serv__sig_crash(int s_ig_num)
+{ /* strsignal() is _GNU_SOURCE */
+  vlg_abort(vlg, "SIG[%d]: %s\n", s_ig_num, "");
+}
+
+static void serv__sig_raise_cont(int s_ig_num)
 {
-  vlg_abort(vlg, "SIG: %d\n", s_ig_num);
+  struct sigaction sa;
+  
+  if (sigemptyset(&sa.sa_mask) == -1)
+    err(EXIT_FAILURE, "signal init");
+
+  sa.sa_flags   = SA_RESTART;
+  sa.sa_handler = SIG_DFL;
+  SERV__SIG_OR_ERR(s_ig_num);
+
+  /* strsignal() is _GNU_SOURCE */
+  vlg_info(vlg, "SIG[%d]: %s\n", s_ig_num, "");
+  raise(s_ig_num);
+}
+
+static void serv__sig_cont(int s_ig_num)
+{
+  if (s_ig_num == SIGCONT)
+  {
+    struct sigaction sa;
+  
+    if (sigemptyset(&sa.sa_mask) == -1)
+      err(EXIT_FAILURE, "signal init");
+
+    sa.sa_flags   = SA_RESTART;
+    sa.sa_handler = serv__sig_raise_cont;
+    SERV__SIG_OR_ERR(SIGTSTP);
+  }
+  
+  /* strsignal() is _GNU_SOURCE */
+  vlg_info(vlg, "SIG[%d]: %s\n", s_ig_num, "");
 }
 
 static volatile sig_atomic_t child_exited = FALSE;
@@ -396,26 +434,28 @@ static void serv_signals(void)
   /* ignore it... we don't have a use for it */
   sa.sa_handler = SIG_IGN;
   
-  if (sigaction(SIGPIPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
+  SERV__SIG_OR_ERR(SIGPIPE);
 
   sa.sa_handler = serv__sig_crash;
   
-  if (sigaction(SIGSEGV, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGBUS, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGILL, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGFPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGXFSZ, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
+  SERV__SIG_OR_ERR(SIGSEGV);
+  SERV__SIG_OR_ERR(SIGBUS);
+  SERV__SIG_OR_ERR(SIGILL);
+  SERV__SIG_OR_ERR(SIGFPE);
+  SERV__SIG_OR_ERR(SIGXFSZ);
 
   sa.sa_flags   = SA_RESTART;
   sa.sa_handler = serv__sig_child;
-  if (sigaction(SIGCHLD, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
+  SERV__SIG_OR_ERR(SIGCHLD);
+  
+  sa.sa_handler = serv__sig_cont; /* print, and do nothing */
+  
+  SERV__SIG_OR_ERR(SIGHUP);
+  SERV__SIG_OR_ERR(SIGCONT);
+  
+  sa.sa_handler = serv__sig_raise_cont; /* queue print, and re-raise */
+  
+  SERV__SIG_OR_ERR(SIGTSTP);
   
   /*
   sa.sa_handler = ex_http__sig_shutdown;
@@ -423,6 +463,7 @@ static void serv_signals(void)
     err(EXIT_FAILURE, "signal init");
   */
 }
+#undef SERV__SIG_OR_ERR
 
 
 /* HTTP crack -- Implied linear whitespace between tokens, note that it
@@ -2591,15 +2632,16 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   if (!http__req_content_type(req))
     return (http_fin_err_req(con, req));
 
-  /* change "///foo" into "foo", in case no chroot ... this is done now
-   * as mime_type is done on full path name */
+  /* change "///foo" into "foo" ... this is done now
+   * as req_content_type is done on a full path name */
   vstr_del(fname, 1, vstr_spn_cstr_chrs_fwd(fname, 1, fname->len, "/"));
 
   fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
   
   if (fname->conf->malloc_bad)
     goto mem_err;
-  
+
+  ASSERT(con->f_fd == -1);
   if ((con->f_fd = io_open_nonblock(fname_cstr)) == -1)
   {
     if (0) { }
@@ -2657,7 +2699,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
            http_ret_code, http_ret_line, con->f_len, con->f_len);
   http_vlg_def(con, req);
   
-  if (req->head_op || req->use_mmap)
+  if (req->head_op || req->use_mmap || !con->f_len)
     serv_fd_close(con);
   
   return (http_fin_req(con, req));
@@ -2941,15 +2983,15 @@ static int serv_send(struct Con *con)
   unsigned int num = CONF_FS_READ_CALL_LIMIT;
   
   ASSERT(!out->conf->malloc_bad);
-
-  if (out->len)
-    SERV__SEND("beg");
     
   if ((con->f_fd == -1) && con->f_len)
     return (FALSE);
 
   ASSERT((con->f_fd == -1) == !con->f_len);
   
+  if (out->len)
+    SERV__SEND("beg");
+
   if (!con->f_len)
   {
     while (out->len)

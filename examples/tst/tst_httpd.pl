@@ -330,6 +330,9 @@ make_html(9, "welcome", "$root/default/welcome.txt");
 make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
 
+open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
+munge_mtime(44, "$root/foo.example.com/empty");
+
 system("$ENV{SRCDIR}/gzip-r.pl $root");
 munge_mtime(0, "$root/index.html.gz");
 munge_mtime(0, "$root/default/index.html.gz");

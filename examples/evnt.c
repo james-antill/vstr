@@ -840,8 +840,39 @@ int evnt_shutdown_r(struct Evnt *evnt, int got_eof)
   return (TRUE);
 }
 
+static void evnt__send_fin(struct Evnt *evnt)
+{
+  if (0)
+  { /* nothing */ }
+  else if ( evnt->flag_q_send_recv && !evnt->io_w->len)
+  {
+    evnt_del(&q_send_recv, evnt);
+    if (evnt->flag_q_pkt_move && (evnt->acct.req_put == evnt->acct.req_got))
+      evnt_add(&q_none, evnt), evnt->flag_q_none = TRUE;
+    else
+      evnt_add(&q_recv, evnt), evnt->flag_q_recv = TRUE;
+    evnt_wait_cntl_del(evnt, POLLOUT);
+    evnt->flag_q_send_recv = FALSE;
+  }
+  else if (!evnt->flag_q_send_recv &&  evnt->io_w->len)
+  {
+    ASSERT(evnt->flag_q_none || evnt->flag_q_recv);
+    if (evnt->flag_q_none)
+      evnt_del(&q_none, evnt), evnt->flag_q_none = FALSE;
+    else
+      evnt_del(&q_recv, evnt), evnt->flag_q_recv = FALSE;
+    evnt_add(&q_send_recv, evnt);
+    evnt_wait_cntl_add(evnt, POLLOUT);
+    evnt->flag_q_send_recv = TRUE;
+  }
+}
+
 int evnt_shutdown_w(struct Evnt *evnt)
 {
+  Vstr_base *out = evnt->io_w;
+  
+  ASSERT(evnt__valid(evnt));
+
   vlg_dbg3(vlg, "shutdown(SHUT_WR) from[$<sa:%p>]\n", evnt->sa);
   
   if (shutdown(evnt_fd(evnt), SHUT_WR) == -1)
@@ -852,6 +883,12 @@ int evnt_shutdown_w(struct Evnt *evnt)
   }
   evnt_wait_cntl_del(evnt, POLLOUT);
   evnt->io_w_shutdown = TRUE;
+
+  vstr_del(out, 1, out->len);
+  
+  evnt__send_fin(evnt);
+  
+  ASSERT(evnt__valid(evnt));
 
   return (TRUE);
 }
@@ -864,7 +901,7 @@ int evnt_recv(struct Evnt *evnt, unsigned int *ern)
   unsigned int num_min = 2;
   unsigned int num_max = 6; /* ave. browser reqs are 500ish, ab is much less */
   
-  ASSERT(evnt__valid(evnt));
+  ASSERT(evnt__valid(evnt) && ern);
 
   /* FIXME: this is set for HTTPD's default buf sizes of 120 (128 - 8) */
   if (evnt->prev_bytes_r > (120 * 3))
@@ -911,30 +948,8 @@ int evnt_send(struct Evnt *evnt)
     return (FALSE);
 
   gettimeofday(&evnt->mtime, NULL);
-  
-  if (0)
-  { /* nothing */ }
-  else if ( evnt->flag_q_send_recv && !evnt->io_w->len)
-  {
-    evnt_del(&q_send_recv, evnt);
-    if (evnt->flag_q_pkt_move && (evnt->acct.req_put == evnt->acct.req_got))
-      evnt_add(&q_none, evnt), evnt->flag_q_none = TRUE;
-    else
-      evnt_add(&q_recv, evnt), evnt->flag_q_recv = TRUE;
-    evnt_wait_cntl_del(evnt, POLLOUT);
-    evnt->flag_q_send_recv = FALSE;
-  }
-  else if (!evnt->flag_q_send_recv &&  evnt->io_w->len)
-  {
-    ASSERT(evnt->flag_q_none || evnt->flag_q_recv);
-    if (evnt->flag_q_none)
-      evnt_del(&q_none, evnt), evnt->flag_q_none = FALSE;
-    else
-      evnt_del(&q_recv, evnt), evnt->flag_q_recv = FALSE;
-    evnt_add(&q_send_recv, evnt);
-    evnt_wait_cntl_add(evnt, POLLOUT);
-    evnt->flag_q_send_recv = TRUE;
-  }
+
+  evnt__send_fin(evnt);
   
   ASSERT(evnt__valid(evnt));
   
@@ -1207,7 +1222,8 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
     if (!done && (SOCKET_POLL_INDICATOR(scan->ind)->revents & bad_poll_flags))
     {
       done = TRUE;
-      if (scan->io_r_shutdown || !scan->cbs->cb_func_shutdown_r(scan))
+      if (scan->io_r_shutdown || scan->io_w_shutdown ||
+          !scan->cbs->cb_func_shutdown_r(scan))
         evnt__close_now(scan);
     }
 

@@ -1,6 +1,6 @@
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -10,7 +10,7 @@ Content-Length: 136
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -20,7 +20,7 @@ Content-Length: 136
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Thu, 14 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -29,7 +29,7 @@ Content-Length: 136
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -38,7 +38,7 @@ Content-Length: 165
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -49,7 +49,7 @@ Content-Range: bytes 1-135/136
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -58,7 +58,7 @@ Content-Length: 165
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -67,7 +67,7 @@ Content-Length: 165
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -76,7 +76,7 @@ Content-Length: 165
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -87,7 +87,7 @@ Content-Range: bytes 0-4/136
 
 HTTP/1.1 206 Partial content
 Date:
-Server: jhttpd/0.9.4 (Vstr)
+Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Connection: close
 Accept-Ranges: bytes

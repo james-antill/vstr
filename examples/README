@@ -25,7 +25,7 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
-	Child dies in --procs, when sent C-z (it's in an "orphaned process group").
+	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
 	public/symlinks path checking
 	 fd cache
 	 stat cache
@@ -39,21 +39,23 @@ http://www.sans.org/top20/#u2
               Accept-Language: en-us,en;q=0.5
 	 Per file temp/perm directs (301/path or 307/path FS trees? -- and 302?)
 	  Allow 410 also? [w3/chips]
+	  Allow 404 etc.
 	 Per file mime_type ... allow "cool URIs" [w3/chips]
 	 Per file extra headers: Content-Location; Content-Md5; 
                                  Cache-Control; etc. [w3/chips]
-	 404 pages (and other return codes)
          Vary: accept-language,...
-         Type map support?
+         Allow custom error code pages, start with 404
 	man page
 	mime_types speed, by having explicit filename/ext matches
+        limiting IO
+	  easyish to do globally, not possible other wise until conf. done
+	    not to easy to do multi proc. ... need to pass data/connections
 	max timeout for keep-alive
 	max requests for keep-alive?
 	Check config, Ie. --dir-filename="foo bar"
 	jhttpd -> vstr-httpd?
         mmap cache?
 	408 - request timeout?
-        limiting IO
 	ipv6
 	native syslog
 	edge triggered events
