@@ -23,6 +23,7 @@
 #define DNS_TYPE_IN_TXT    16
 /* ... */
 #define DNS_TYPE_IN_AAAA   28
+#define DNS_TYPE_IN_SRV    33
 /* ... */
 /* #define DNS_TYPE_IN_A6     38 -- experimental again */
 /* ... */

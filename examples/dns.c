@@ -1,6 +1,6 @@
 #define DNS_C
 /*
- *  Copyright (C) 2004  James Antill
+ *  Copyright (C) 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -78,7 +78,9 @@ static const char *dns_map_type_in2name[DNS_TYPE_ALL + 1] = {
  MAP_MAKE_ENTRY(MX),
  MAP_MAKE_ENTRY(TXT),
  MAP_MAKE_ENTRY(AAAA),
+ MAP_MAKE_ENTRY(SRV),
  MAP_MAKE_ENTRY(AXFR),
+ MAP_MAKE_ENTRY(IXFR),
  [DNS_TYPE_ALL] = "*"
 };
 #undef MAP_MAKE_ENTRY
@@ -357,13 +359,11 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       num  = get_b_uint16(pkt, pos); pos += 2;
       if (OUT_EQ_VLOG()) app_cstr_buf(out, " A: ");
       if (out) app_fmt(out, " %u", num);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_CH_TXT)
     {
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  TXT: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else
       return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
@@ -382,19 +382,16 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       vstr_export_buf(pkt, pos, 4, buf, sizeof(buf)); pos += 4;
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  A: ");
       if (out) app_fmt(out, "%u.%u.%u.%u", buf[0], buf[1], buf[2], buf[3]);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_NS)
     {
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  NS: ");
       pos = dns_app_name(base, out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_CNAME)
     {
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  CNAME: ");
       pos = dns_app_name(base, out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_SOA)
     {
@@ -428,7 +425,7 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       num_min     = get_b_uint32(pkt, pos); pos += 4;
       if (OUT_EQ_VLOG())
         app_fmt(out, "    SERIAL: %u REFRESH: %u"
-                " RETRY: %u EXPIRE: %u MIN: %u\n",
+                " RETRY: %u EXPIRE: %u MIN: %u",
                 num_serial, num_refresh, num_retry, num_expire, num_min);
       else if (out)
         app_fmt(out, " %u %u %u %u %u",
@@ -438,7 +435,6 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
     {
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  PTR: ");
       pos = dns_app_name(base, out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_HINFO)
     {
@@ -447,7 +443,6 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       if (out) app_cstr_buf(out, " ");
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "OS: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_MX)
     {
@@ -461,13 +456,33 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       if (out) app_fmt(out, "%u ", num);
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "NAME: ");
       pos = dns_app_name(base, out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_TXT)
     {
       if (OUT_EQ_VLOG()) app_cstr_buf(out, "  TXT: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (OUT_EQ_VLOG()) app_cstr_buf(out, "\n");
+    }
+    else if (dns_type == DNS_TYPE_IN_SRV)
+    {
+      unsigned int num_pri = 0;
+      unsigned int num_weight = 0;
+      unsigned int num_port = 0;
+
+      if (len < 8)
+        return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
+      
+      num_pri    = get_b_uint16(pkt, pos); pos += 2;
+      num_weight = get_b_uint16(pkt, pos); pos += 2;
+      num_port   = get_b_uint16(pkt, pos); pos += 2;
+      
+      if (OUT_EQ_VLOG())
+        app_fmt(out, "    PRI: %u WEIGHT: %u PORT: %u NAME: ",
+                num_pri, num_weight, num_port);
+      else if (out)
+        app_fmt(out, " %u %u %u ",
+                num_pri, num_weight, num_port);
+      
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
     }
     else
       return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
@@ -487,9 +502,12 @@ void dns_dbg_prnt_pkt(Dns_base *base, Vstr_base *pkt)
   unsigned int arc = 0;
   unsigned int scan= 0;
   const size_t msg_len = pkt->len;
+  int prefix = FALSE;
   
   if (!base->io_dbg->out_dbg)
     return;
+
+  prefix = vlg_prefix_set(base->io_dbg, FALSE);
   
   if (12 <= msg_len)
   {
@@ -500,9 +518,9 @@ void dns_dbg_prnt_pkt(Dns_base *base, Vstr_base *pkt)
     nsc   = get_b_uint16(pkt, pos); pos += 2;
     arc   = get_b_uint16(pkt, pos); pos += 2;
     
-    vlg_dbg1(base->io_dbg, " id=%u\n %*s: op=%u |%s|%s|%s|%s| z=%d ret=%d ->"
+    vlg_dbg1(base->io_dbg, " id=%u\n", id);
+    vlg_dbg1(base->io_dbg, " %*s: op=%u |%s|%s|%s|%s| z=%d ret=%d ->"
              " qd=%u an=%u ns=%u ar=%u\n",
-             id,
              (int)strlen("Response"),
              ((flags & DNS_HDR_QR) ? "Response" : "Query"),
              ((flags & DNS_HDR_OPCMASK) >> DNS_HDR_OPCOFF),
@@ -549,7 +567,10 @@ void dns_dbg_prnt_pkt(Dns_base *base, Vstr_base *pkt)
     vlg_dbg1(base->io_dbg, "\n");
     pos = dns_app_rr_data(base, base->io_dbg->out_vstr, pkt, pos, msg_len,
                           dns_class, dns_type);
+    vlg_dbg1(base->io_dbg, "\n");
   }
+  
+  vlg_prefix_set(base->io_dbg, prefix);
 }
 
 void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
@@ -666,13 +687,13 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
   sub_b_uint16(io_w, pos1, len1 - 2);
   
   vlg_dbg1(base->io_dbg,
-           "${rep_chr:%c%zu} send ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
+           "\n${rep_chr:%c%zu} send ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
            '=', 33, len1 - 2, '=', 33);
   if (base->io_dbg->out_dbg >= 1)
     vstr_sub_vstr(s1, 1, s1->len,
                   io_w, pos1 + 2, len1 - 2, VSTR_TYPE_ADD_BUF_PTR);
   dns_dbg_prnt_pkt(base, s1);
-  vlg_dbg1(base->io_dbg, "${rep_chr:%c%zu}\n", '-', 79);
+  vlg_dbg1(base->io_dbg, "\n${rep_chr:%c%zu}\n", '-', 79);
 
   vstr_free_base(s1);
   io_w->conf->malloc_bad = FALSE;

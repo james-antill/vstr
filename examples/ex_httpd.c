@@ -1,3 +1,23 @@
+/*
+ *  Copyright (C) 2004, 2005  James Antill
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  email: james@and.org
+ */
+/* conditionally compliant HTTP/1.1 server. */
 #include <vstr.h>
 
 #include <socket_poll.h>
@@ -159,9 +179,6 @@ struct Http_hdrs
  Vstr_sect_node hdr_ua[1];
  Vstr_sect_node hdr_referer[1]; /* NOTE: referrer */
 
- Vstr_sect_node hdr_accept[1];
- Vstr_sect_node hdr_accept_encoding[1];
- Vstr_sect_node hdr_accept_language[1];
  Vstr_sect_node hdr_connection[1];
  Vstr_sect_node hdr_expect[1];
  Vstr_sect_node hdr_host[1];
@@ -170,11 +187,20 @@ struct Http_hdrs
  Vstr_sect_node hdr_if_none_match[1];
  Vstr_sect_node hdr_if_range[1];
  Vstr_sect_node hdr_if_unmodified_since[1];
- Vstr_sect_node hdr_range[1];
+
+ /* can have multiple headers... */
+ struct Http_hdrs__multi {
+  Vstr_base *combiner;
+  Vstr_sect_node hdr_accept[1];
+  Vstr_sect_node hdr_accept_encoding[1];
+  Vstr_sect_node hdr_accept_language[1];
+  Vstr_sect_node hdr_range[1];
+ } multi[1];
 };
 
 struct Http_req_data
 {
+ struct Http_hdrs http_hdrs[1];
  Vstr_base *fname;
  size_t len;
  size_t path_pos;
@@ -216,18 +242,20 @@ struct Con
  unsigned int parsed_method_ver_1_0 : 1;
  unsigned int keep_alive : 3;
  
- unsigned int use_sendfile : 1;
- 
- struct Http_hdrs http_hdrs[1];
+ unsigned int use_sendfile : 1; 
 };
 
 #define HTTP_NIL_KEEP_ALIVE 0
 #define HTTP_1_0_KEEP_ALIVE 1
 #define HTTP_1_1_KEEP_ALIVE 2
 
-#define CON_HDR_SET(con, h, p, l) do {                      \
-      (con)-> http_hdrs -> hdr_ ## h ->pos = (p);           \
-      (con)-> http_hdrs -> hdr_ ## h ->len = (l);           \
+#define HTTP__REQ_HDR_SET(con, h, p, l) do {               \
+      (con)-> http_hdrs -> hdr_ ## h ->pos = (p);          \
+      (con)-> http_hdrs -> hdr_ ## h ->len = (l);          \
+    } while (FALSE)
+#define HTTP__REQ_HDR_MULTI_SET(con, h, p, l) do {         \
+      (con)-> http_hdrs -> multi -> hdr_ ## h ->pos = (p); \
+      (con)-> http_hdrs -> multi -> hdr_ ## h ->len = (l); \
     } while (FALSE)
 
 static Timer_q_base *cl_timeout_base = NULL;
@@ -983,12 +1011,12 @@ static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
 {
   Vstr_base *hdrs = con->ev->io_r;
   time_t mtime = req->f_stat->st_mtime;
-  Vstr_sect_node *h_im   = con->http_hdrs->hdr_if_match;
-  Vstr_sect_node *h_ims  = con->http_hdrs->hdr_if_modified_since;
-  Vstr_sect_node *h_inm  = con->http_hdrs->hdr_if_none_match;
-  Vstr_sect_node *h_ir   = con->http_hdrs->hdr_if_range;
-  Vstr_sect_node *h_iums = con->http_hdrs->hdr_if_unmodified_since;
-  Vstr_sect_node *h_r    = con->http_hdrs->hdr_range;
+  Vstr_sect_node *h_im   = req->http_hdrs->hdr_if_match;
+  Vstr_sect_node *h_ims  = req->http_hdrs->hdr_if_modified_since;
+  Vstr_sect_node *h_inm  = req->http_hdrs->hdr_if_none_match;
+  Vstr_sect_node *h_ir   = req->http_hdrs->hdr_if_range;
+  Vstr_sect_node *h_iums = req->http_hdrs->hdr_if_unmodified_since;
+  Vstr_sect_node *h_r    = req->http_hdrs->multi->hdr_range;
   int h_ir_tst      = FALSE;
   int h_iums_tst    = FALSE;
   int req_if_range  = FALSE;
@@ -1065,38 +1093,78 @@ static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
+static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
+                               Vstr_sect_node *hdr, size_t pos, size_t len)
+{
+  Vstr_base *comb = hdrs->multi->combiner;
+  
+  ASSERT(comb);
+  
+  ASSERT((hdr == hdrs->multi->hdr_accept) ||
+         (hdr == hdrs->multi->hdr_accept_encoding) ||
+         (hdr == hdrs->multi->hdr_accept_language) ||
+         (hdr == hdrs->multi->hdr_range));
+  
+  if (!hdr->pos)
+  {
+    hdr->pos = comb->len + 1;
+    hdr->len = len;
+    return (vstr_add_vstr(comb, comb->len,
+                          data, pos, len, VSTR_TYPE_ADD_BUF_PTR));
+  }
+
+  /* reverses the order, but that doesn't matter */
+  if (!vstr_add_cstr_ptr(comb, hdr->pos - 1, ","))
+    return (FALSE);
+  
+  hdr->len += len + 1;
+  return (vstr_add_vstr(comb, hdr->pos - 1,
+                        data, pos, len, VSTR_TYPE_ADD_BUF_PTR));
+}
+
 /* vprefix, with local knowledge */
 #define HDR__EQ(x)                                                      \
     ((len >= (name_len = strlen(x ":"))) &&                             \
      vstr_cmp_case_buf_eq(data, pos, name_len, x ":", name_len))
 /* remove LWS from front and end... what a craptastic std. */
-#define HDR__SET(h) do {                                                \
+#define HDR__BEG_SET() do {                                             \
       len -= name_len; pos += name_len;                                 \
                                                                         \
       HTTP_SKIP_LWS(data, pos, len);                                    \
       len -= vstr_spn_cstr_chrs_rev(data, pos, len, HTTP_LWS);          \
       if (VSUFFIX(data, pos, len, HTTP_EOL))                            \
         len -= strlen(HTTP_EOL);                                        \
-                                                                        \
-      http_hdrs -> hdr_ ## h ->pos = pos;                               \
-      http_hdrs -> hdr_ ## h ->len = len;                               \
     } while (FALSE)
-static int parse_hdrs(Vstr_base *data, struct Http_hdrs *http_hdrs,
-                      Vstr_sects *sects, unsigned int num)
+#define HDR__SET(h) do {                                                \
+      HDR__BEG_SET();                                                   \
+      http_hdrs-> hdr_ ## h ->pos = pos;                                \
+      http_hdrs-> hdr_ ## h ->len = len;                                \
+    } while (FALSE)
+#define HDR__MULTI_SET(h) do {                                          \
+      HDR__BEG_SET();                                                   \
+      if (!http__app_multi_hdr(data, http_hdrs, \
+                               http_hdrs->multi-> hdr_ ## h, pos, len)) \
+        HTTPD_ERR_RET(req, 500, FALSE);                                 \
+    } while (FALSE)
+
+static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
 {
-  while (++num <= sects->num)
+  Vstr_base *data = con->ev->io_r;
+  struct Http_hdrs *http_hdrs = req->http_hdrs;
+  unsigned int num = 3; /* skip "method URI version" */
+  
+  while (++num <= req->sects->num)
   {
-    size_t pos = VSTR_SECTS_NUM(sects, num)->pos;
-    size_t len = VSTR_SECTS_NUM(sects, num)->len;
+    size_t pos = VSTR_SECTS_NUM(req->sects, num)->pos;
+    size_t len = VSTR_SECTS_NUM(req->sects, num)->len;
     size_t name_len = 0;
 
     if (0) { /* nothing */ }
+    /* single headers, isn't allowed ... we do last one wins */
+    /* nothing headers ... use for logging only */
     else if (HDR__EQ("User-Agent"))          HDR__SET(ua);
     else if (HDR__EQ("Referer"))             HDR__SET(referer);
-    
-    else if (HDR__EQ("Accept"))              HDR__SET(accept);
-    else if (HDR__EQ("Accept-Encoding"))     HDR__SET(accept_encoding);
-    else if (HDR__EQ("Accept-Language"))     HDR__SET(accept_language);
+
     else if (HDR__EQ("Connection"))          HDR__SET(connection);
     else if (HDR__EQ("Expect"))              HDR__SET(expect);
     else if (HDR__EQ("Host"))                HDR__SET(host);
@@ -1105,36 +1173,50 @@ static int parse_hdrs(Vstr_base *data, struct Http_hdrs *http_hdrs,
     else if (HDR__EQ("If-None-Match"))       HDR__SET(if_none_match);
     else if (HDR__EQ("If-Range"))            HDR__SET(if_range);
     else if (HDR__EQ("If-Unmodified-Since")) HDR__SET(if_unmodified_since);
-    else if (HDR__EQ("Range"))               HDR__SET(range);
+
+    /* allow continuations over multiple headers... *sigh* */
+    else if (HDR__EQ("Accept"))              HDR__MULTI_SET(accept);
+    else if (HDR__EQ("Accept-Encoding"))     HDR__MULTI_SET(accept_encoding);
+    else if (HDR__EQ("Accept-Language"))     HDR__MULTI_SET(accept_language);
+    else if (HDR__EQ("Range"))               HDR__MULTI_SET(range);
 
     /* in theory 0 bytes is ok ... who cares */
-    else if (HDR__EQ("Content-Length"))      return (FALSE);
+    else if (HDR__EQ("Content-Length"))      HTTPD_ERR_RET(req, 413, FALSE);
+
     /* in theory identity is ok? ... who cares */
-    else if (HDR__EQ("Transfer-Encoding"))   return (FALSE);
+    else if (HDR__EQ("Transfer-Encoding"))   HTTPD_ERR_RET(req, 413, FALSE);
   }
 
   return (TRUE);
 }
 #undef HDR__EQ
+#undef HDR__BEG_SET
 #undef HDR__SET
+#undef HDR__MUTLI_SET
 
-static void serv_clear_hdrs(struct Con *con)
+static void http__clear_hdrs(struct Http_req_data *req)
 {
-  CON_HDR_SET(con, ua, 0, 0);
-  CON_HDR_SET(con, referer, 0, 0);
+  Vstr_base *tmp = req->http_hdrs->multi->combiner;
 
-  CON_HDR_SET(con, accept, 0, 0);
-  CON_HDR_SET(con, accept_encoding, 0, 0);
-  CON_HDR_SET(con, accept_language, 0, 0);
-  CON_HDR_SET(con, connection, 0, 0);
-  CON_HDR_SET(con, expect, 0, 0);
-  CON_HDR_SET(con, host, 0, 0);
-  CON_HDR_SET(con, if_match, 0, 0);
-  CON_HDR_SET(con, if_modified_since, 0, 0);
-  CON_HDR_SET(con, if_none_match, 0, 0);
-  CON_HDR_SET(con, if_range, 0, 0);
-  CON_HDR_SET(con, if_unmodified_since, 0, 0);
-  CON_HDR_SET(con, range, 0, 0);
+  ASSERT(tmp);
+  
+  HTTP__REQ_HDR_SET(req, ua, 0, 0);
+  HTTP__REQ_HDR_SET(req, referer, 0, 0);
+
+  HTTP__REQ_HDR_SET(req, connection, 0, 0);
+  HTTP__REQ_HDR_SET(req, expect, 0, 0);
+  HTTP__REQ_HDR_SET(req, host, 0, 0);
+  HTTP__REQ_HDR_SET(req, if_match, 0, 0);
+  HTTP__REQ_HDR_SET(req, if_modified_since, 0, 0);
+  HTTP__REQ_HDR_SET(req, if_none_match, 0, 0);
+  HTTP__REQ_HDR_SET(req, if_range, 0, 0);
+  HTTP__REQ_HDR_SET(req, if_unmodified_since, 0, 0);
+
+  vstr_del(tmp, 1, tmp->len);
+  HTTP__REQ_HDR_MULTI_SET(req, accept, 0, 0);
+  HTTP__REQ_HDR_MULTI_SET(req, accept_encoding, 0, 0);
+  HTTP__REQ_HDR_MULTI_SET(req, accept_language, 0, 0);
+  HTTP__REQ_HDR_MULTI_SET(req, range, 0, 0);
 }
 
 /* might have been able to do it with string matches, but getting...
@@ -1197,7 +1279,7 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
 static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
-  Vstr_sect_node *h_c = con->http_hdrs->hdr_connection;
+  Vstr_sect_node *h_c = req->http_hdrs->hdr_connection;
   size_t op_pos = VSTR_SECTS_NUM(req->sects, 3)->pos;
   size_t op_len = VSTR_SECTS_NUM(req->sects, 3)->len;
 
@@ -1206,8 +1288,8 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
   if (!http_req_parse_version(con, req, op_pos, op_len))
     return (FALSE);
   
-  if (!parse_hdrs(data, con->http_hdrs, req->sects, 3))
-    HTTPD_ERR_RET(req, 413, FALSE); /* don't allow a request entity */
+  if (!http__parse_hdrs(con, req))
+    return (FALSE);
 
   if (!serv->use_keep_alive)
     return (TRUE);
@@ -1237,7 +1319,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     tmp = vstr_srch_chr_fwd(data, op_pos, op_len, '/');
     if (!tmp)
     {
-      CON_HDR_SET(con, host, op_pos, op_len);
+      HTTP__REQ_HDR_SET(req, host, op_pos, op_len);
       op_len = 1;
       --op_pos;
     }
@@ -1245,20 +1327,20 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     { /* found end of host ... */
       size_t host_len = tmp - op_pos;
       
-      CON_HDR_SET(con, host, op_pos, host_len);
+      HTTP__REQ_HDR_SET(req, host, op_pos, host_len);
       op_len -= host_len; op_pos += host_len;
     }
     assert(VPREFIX(data, op_pos, op_len, "/"));
   }
 
   /* HTTP/1.1 requires a host -- allow blank hostnames */
-  if (req->ver_1_1 && !con->http_hdrs->hdr_host->pos)
+  if (req->ver_1_1 && !req->http_hdrs->hdr_host->pos)
     return (FALSE);
   
-  if (con->http_hdrs->hdr_host->len)
+  if (req->http_hdrs->hdr_host->len)
   { /* check host looks valid ... header must exist, but can be empty */
-    size_t pos = con->http_hdrs->hdr_host->pos;
-    size_t len = con->http_hdrs->hdr_host->len;
+    size_t pos = req->http_hdrs->hdr_host->pos;
+    size_t len = req->http_hdrs->hdr_host->len;
     size_t tmp = 0;
 
     /* leaving out most checks for ".." or invalid chars in hostnames etc.
@@ -1288,7 +1370,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
       /* if it's port 80, pretend it's not there */
       if (vstr_cmp_cstr_eq(data, pos, len, ":80") ||
           vstr_cmp_cstr_eq(data, pos, len, ":"))
-        con->http_hdrs->hdr_host->len -= len;
+        req->http_hdrs->hdr_host->len -= len;
       else
       {
         len -= 1; pos += 1; /* skip the ':' */
@@ -1339,12 +1421,12 @@ static void http__parse_skip_blanks(Vstr_base *data,
    ...not allowing multiple ranges at once though, as multipart/byteranges
    is too much crack, I think this is stds. compliant.
  */
-static int http_parse_range(struct Con *con, struct Http_req_data *req,
+static int http_parse_range(struct Http_req_data *req,
                             VSTR_AUTOCONF_uintmax_t *range_beg,
                             VSTR_AUTOCONF_uintmax_t *range_end)
 {
-  Vstr_base *data = con->ev->io_r;
-  Vstr_sect_node *h_r = con->http_hdrs->hdr_range;
+  Vstr_base *data     = req->http_hdrs->multi->combiner;
+  Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
   size_t pos = h_r->pos;
   size_t len = h_r->len;
   VSTR_AUTOCONF_uintmax_t fsize = req->f_stat->st_size;
@@ -1504,7 +1586,7 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
     vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
              req->fname, 1, req->fname->len, f_off);
     /* req->advertise_accept_ranges = FALSE; - turn off? */
-    con->http_hdrs->hdr_range->pos = 0;
+    req->http_hdrs->multi->hdr_range->pos = 0;
     *http_ret_code = 200;
     *http_ret_line = "OK - Range Failed";
     return (FALSE);
@@ -1598,10 +1680,9 @@ static int http_parse_quality(Vstr_base *data,
 }
 #undef HTTP__PARSE_CHECK_RET_OK
 
-static int http_parse_accept_encoding_gzip(struct Con *con,
-                                           struct Http_req_data *req)
+static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
 {
-  Vstr_base *data = con->ev->io_r;
+  Vstr_base *data = req->http_hdrs->multi->combiner;
   size_t pos = 0;
   size_t len = 0;
   unsigned int gzip_val     = 1001;
@@ -1611,8 +1692,8 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
   if (!serv->use_gzip_content_replacement)
     return (FALSE);
 
-  pos = con->http_hdrs->hdr_accept_encoding->pos;
-  len = con->http_hdrs->hdr_accept_encoding->len;
+  pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
+  len = req->http_hdrs->multi->hdr_accept_encoding->len;
 
   if (!len)
     return (FALSE);
@@ -1789,9 +1870,9 @@ static int http__skip_parameters(Vstr_base *data, size_t *pos, size_t *len)
 
 /* returns TRUE if we can use the content-type,
 * this does mean that if we fail to parse the "Accept:" line, we return TRUE */
-static int http_parse_accept(struct Con *con, struct Http_req_data *req)
+static int http_parse_accept(struct Http_req_data *req)
 {
-  Vstr_base *data = con->ev->io_r;
+  Vstr_base *data = req->http_hdrs->multi->combiner;
   size_t pos = 0;
   size_t len = 0;
   unsigned int val = 0;
@@ -1801,8 +1882,8 @@ static int http_parse_accept(struct Con *con, struct Http_req_data *req)
   size_t ct_len = req->content_type_len;
   size_t ct_sub_len = 0;
   
-  pos = con->http_hdrs->hdr_accept->pos;
-  len = con->http_hdrs->hdr_accept->len;
+  pos = req->http_hdrs->multi->hdr_accept->pos;
+  len = req->http_hdrs->multi->hdr_accept->len;
   
   if (!serv->use_err_406 || !len)
     return (TRUE);
@@ -1869,16 +1950,16 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
   VSTR_AUTOCONF_uintmax_t range_end = 0;
   VSTR_AUTOCONF_uintmax_t f_len     = 0;
   time_t now = time(NULL);
-  Vstr_sect_node *h_r = con->http_hdrs->hdr_range;
+  Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
   
-  if (req->ver_1_1 && con->http_hdrs->hdr_expect->len)
+  if (req->ver_1_1 && req->http_hdrs->hdr_expect->len)
     /* I'm pretty sure we can ignore 100-continue, as no request will
      * have a body */
     HTTPD_ERR_RET(req, 417, FALSE);
           
   /* Might normally add "!req->head_op && ..." but
    * http://www.w3.org/TR/chips/#gl6 says that's bad */
-  if (http_parse_accept_encoding_gzip(con, req))
+  if (http_parse_accept_encoding_gzip(req))
     http__try_gzip_content(con, req);
   
   if (h_r->pos)
@@ -1887,12 +1968,12 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
 
     if (!(serv->use_range && (req->ver_1_1 || serv->use_range_1_0)))
       h_r->pos = 0;
-    else if (!(ret_code = http_parse_range(con, req, &range_beg, &range_end)))
+    else if (!(ret_code = http_parse_range(req, &range_beg, &range_end)))
       h_r->pos = 0;
     ASSERT(!ret_code || (ret_code == 200) || (ret_code == 416));
     if (ret_code == 416)
     {
-      if (!con->http_hdrs->hdr_if_range->pos)
+      if (!req->http_hdrs->hdr_if_range->pos)
         HTTPD_ERR_RET(req, 416, FALSE);
       h_r->pos = 0;
     }
@@ -1934,9 +2015,9 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
 static void http_vlg_def(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
-  Vstr_sect_node *h_h  = con->http_hdrs->hdr_host;
-  Vstr_sect_node *h_ua = con->http_hdrs->hdr_ua;
-  Vstr_sect_node *h_r  = con->http_hdrs->hdr_referer;
+  Vstr_sect_node *h_h  = req->http_hdrs->hdr_host;
+  Vstr_sect_node *h_ua = req->http_hdrs->hdr_ua;
+  Vstr_sect_node *h_r  = req->http_hdrs->hdr_referer;
 
   vlg_info(vlg, (" host[\"$<http-esc.vstr:%p%zu%zu>\"]"
                  " UA[\"$<http-esc.vstr:%p%zu%zu>\"]"
@@ -2000,9 +2081,9 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
    * maybe when have stat() cache */
 
   
-  if (serv->use_vhosts && con->http_hdrs->hdr_host->len)
+  if (serv->use_vhosts && req->http_hdrs->hdr_host->len)
   { /* add as buf's, for lowercase op */
-    Vstr_sect_node *h_h = con->http_hdrs->hdr_host;
+    Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
     
     if (vstr_add_vstr(fname, 0, data, h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
       vstr_conv_lowercase(fname, 1, h_h->len);
@@ -2062,9 +2143,12 @@ static struct Http_req_data *http_make_req(struct Con *con)
       conf = con->ev->io_w->conf;
       
     if (!(req->fname = vstr_make_base(conf)) ||
+        !(req->http_hdrs->multi->combiner = vstr_make_base(conf)) ||
         !(req->sects = vstr_sects_make(8)))
       return (NULL);
   }
+  
+  http__clear_hdrs(req);
   
   vstr_del(req->fname, 1, req->fname->len);
   req->len = 0;
@@ -2116,6 +2200,7 @@ static void http_req_free(struct Http_req_data *req)
 
   /* we do vstr deletes here to return the nodes back to the pool */
   vstr_del(req->fname, 1, req->fname->len);
+  ASSERT(!req->http_hdrs->multi->combiner->len);
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
   
@@ -2132,6 +2217,8 @@ static void http_req_exit(void)
     return;
   
   vstr_free_base(req->fname);  req->fname  = NULL;
+  vstr_free_base(req->http_hdrs->multi->combiner);
+                               req->http_hdrs->multi->combiner = NULL;
   vstr_free_base(req->f_mmap); req->f_mmap = NULL;
   vstr_sects_free(req->sects); req->sects  = NULL;
   
@@ -2143,6 +2230,8 @@ static int http_con_cleanup(struct Con *con, struct Http_req_data *req)
 {
   con->ev->io_r->conf->malloc_bad = FALSE;
   con->ev->io_w->conf->malloc_bad = FALSE;
+  
+  http__clear_hdrs(req);
   http_req_free(req);
     
   return (FALSE);
@@ -2153,7 +2242,7 @@ static int http_fin_req(struct Con *con, struct Http_req_data *req)
   Vstr_base *out = con->ev->io_w;
   
   ASSERT(!out->conf->malloc_bad);
-  serv_clear_hdrs(con);
+  http__clear_hdrs(req);
 
   /* Note: Not resetting con->parsed_method_ver_1_0,
    * if it's non-0.9 now it should continue to be */
@@ -2271,7 +2360,7 @@ static int http_fin_errmem_close_req(struct Con *con, struct Http_req_data *req)
 static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
-  Vstr_sect_node *h_h = con->http_hdrs->hdr_host;
+  Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
   Vstr_base *lfn = req->fname;
 
   vstr_del(lfn, 1, lfn->len);
@@ -2320,7 +2409,7 @@ static int http__req_chk_dir(struct Con *con, struct Http_req_data *req)
  * the default content-type. So we just have to determine if we want to use
  * it or not. Can also return "content-types" like /404/ which returns a 404
  * error for the request */
-static int http__req_content_type(struct Con *con, struct Http_req_data *req)
+static int http__req_content_type(struct Http_req_data *req)
 {
   Vstr_base *vs1 = NULL;
   size_t     pos = 0;
@@ -2355,7 +2444,7 @@ static int http__req_content_type(struct Con *con, struct Http_req_data *req)
   req->content_type_pos = pos;
   req->content_type_len = len;
 
-  if (!http_parse_accept(con, req))
+  if (!http_parse_accept(req))
     HTTPD_ERR_RET(req, 406, FALSE);
   
   return (TRUE);
@@ -2373,7 +2462,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   if (fname->conf->malloc_bad)
     VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(FN): %m\n"));
 
-  if (!http__req_content_type(con, req))
+  if (!http__req_content_type(req))
     return (http_fin_err_req(con, req));
 
   /* change "///foo" into "foo", in case no chroot ... this is done now
@@ -2527,8 +2616,12 @@ static int http_parse_req(struct Con *con)
     req->path_len = VSTR_SECTS_NUM(req->sects, 2)->len;
 
     if (!req->ver_0_9 && !http_req_parse_1_x(con, req))
+    {
+      if (req->error_code == 500)
+        return (http_fin_errmem_req(con, req));
       return (http_fin_err_req(con, req));
-      
+    }
+    
     if (!http_absolute_uri(con, req))
       HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
 
@@ -2819,8 +2912,6 @@ static struct Evnt *serv_cb_func_accept(int fd,
   con->parsed_method_ver_1_0 = FALSE;
   con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   con->use_sendfile  = serv->use_sendfile;
-  
-  serv_clear_hdrs(con);
   
   if (!(con->ev->tm_o = timer_q_add_node(cl_timeout_base, con, &tv,
                                          TIMER_Q_FLAG_NODE_DEFAULT)))
@@ -3121,7 +3212,7 @@ static void cl_cmd_line(int argc, char *argv[])
     unsigned int num = serv->num_procs;
     int pfds[2];
 
-    vlg->log_pid_stdout = TRUE;
+    vlg_pid_set(vlg, TRUE);
     
     if (pipe(pfds) == -1)
       vlg_err(vlg, EXIT_FAILURE, "pipe(): %m\n");

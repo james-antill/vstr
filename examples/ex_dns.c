@@ -109,10 +109,10 @@ static void cl_parse(struct con *con, size_t msg_len)
   if (!pkt)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
-  vlg_dbg1(vlg, "${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
+  vlg_dbg1(vlg, "\n${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
            '=', 33, msg_len, '=', 33);
   dns_dbg_prnt_pkt(con->d1, pkt);
-  vlg_dbg1(vlg, "${rep_chr:%c%zu}\n", '-', 79);
+  vlg_dbg1(vlg, "\n${rep_chr:%c%zu}\n", '-', 79);
   
   ui_out(con->d1, pkt);
   vstr_free_base(pkt);
@@ -218,6 +218,7 @@ static void ui_parse(void)
     UI_CMD("in.ns",    DNS_CLASS_IN, DNS_TYPE_IN_NS);
     UI_CMD("in.ptr",   DNS_CLASS_IN, DNS_TYPE_IN_PTR);
     UI_CMD("in.soa",   DNS_CLASS_IN, DNS_TYPE_IN_SOA);
+    UI_CMD("in.srv",   DNS_CLASS_IN, DNS_TYPE_IN_SRV);
     UI_CMD("in.txt",   DNS_CLASS_IN, DNS_TYPE_IN_TXT);
     
     UI_CMD("ch.*",     DNS_CLASS_CH, DNS_TYPE_ALL);

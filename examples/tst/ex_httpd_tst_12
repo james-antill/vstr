@@ -1,0 +1,12 @@
+GET / HTTP/1.1
+Host: default
+Accept: text/foo
+Accept: text/bar
+
+GET / HTTP/1.1
+Host: default
+Accept: text/foo
+Accept: text/html
+Accept: text/bar
+Connection: close
+

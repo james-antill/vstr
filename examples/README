@@ -30,7 +30,6 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
-	Multiple headers with same name.
 	condrestart doesn't work?
 	man page
         syslog2apache, do merge/catchup
@@ -42,6 +41,7 @@ http://www.sans.org/top20/#u2
 	max requests for keep-alive?
 	getopt conf. for gzip-r, syslog2apache and make_index
 	conf
+         Type map support?
 	 Support accept/accept-language per file [w3/chips]
            GALEON
               Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,image/jpeg,image/gif;q=0.2,*/*;q=0.1
@@ -91,4 +91,8 @@ http://www.sans.org/top20/#u2
 	sendfile failure
 	mem failure
 
+ ex_dns
+
+
  ex_nc
+

@@ -10,7 +10,8 @@ typedef struct Vlg
  struct Vstr_base *out_vstr;
  unsigned int out_dbg : 2;
  unsigned int daemon_mode : 1;
- unsigned int log_pid_stdout : 1;
+ unsigned int log_pid_console : 1;
+ unsigned int log_prefix_console : 1;
 } Vlg;
 
 extern void vlg_init(void);
@@ -21,6 +22,9 @@ extern void vlg_free(Vlg *);
 
 extern void vlg_daemon(Vlg *, const char *);
 extern void vlg_debug(Vlg *);
+
+extern int vlg_pid_set(Vlg *, int);
+extern int vlg_prefix_set(Vlg *, int);
 
 extern void vlg_vabort(Vlg *, const char *fmt, va_list )
    VSTR__COMPILE_ATTR_FMT(2, 0);

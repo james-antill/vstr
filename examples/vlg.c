@@ -68,33 +68,37 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
   else
   {
     int fd = out_err ? STDERR_FILENO : STDOUT_FILENO;
-    const char *tm = date_syslog(time(NULL));
-
-    /* Note: we add the begining backwards, it's easier that way */
-    if (!vlg->log_pid_stdout)
-    {
-      if (!vstr_add_cstr_ptr(dlg, 0, "]: "))
-        errno = ENOMEM, err(EXIT_FAILURE, "prefix");
-    }
-    else
-    {
-      pid_t pid = getpid();
     
-      if (!vstr_add_fmt(dlg, 0, "] %lu: ", (unsigned long)pid))
+    if (vlg->log_prefix_console)
+    {
+      const char *tm = date_syslog(time(NULL));
+
+      /* Note: we add the begining backwards, it's easier that way */
+      if (!vlg->log_pid_console)
+      {
+        if (!vstr_add_cstr_ptr(dlg, 0, "]: "))
+          errno = ENOMEM, err(EXIT_FAILURE, "prefix");
+      }
+      else
+      {
+        pid_t pid = getpid();
+        
+        if (!vstr_add_fmt(dlg, 0, "] %lu: ", (unsigned long)pid))
+          errno = ENOMEM, err(EXIT_FAILURE, "prefix");
+      }
+      
+      if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
+          !vstr_add_cstr_ptr(dlg, 0, "["))
         errno = ENOMEM, err(EXIT_FAILURE, "prefix");
+      
+      if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "warn");
+      if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "err");
+      if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
     }
     
-    if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
-        !vstr_add_cstr_ptr(dlg, 0, "["))
-      errno = ENOMEM, err(EXIT_FAILURE, "prefix");
-
-    if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "warn");
-    if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "err");
-    if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
-
     while (dlg->len)
       if (!vstr_sc_write_fd(dlg, 1, dlg->len, fd, NULL) && (errno != EAGAIN))
         err(EXIT_FAILURE, "vlg__flush");
@@ -327,9 +331,10 @@ Vlg *vlg_make(void)
   if (!(vlg->out_vstr = vstr_make_base(vlg__conf)))
     goto malloc_err_vstr_base;
   
-  vlg->out_dbg        = 0;
-  vlg->daemon_mode    = FALSE;
-  vlg->log_pid_stdout = FALSE;
+  vlg->out_dbg            = 0;
+  vlg->daemon_mode        = FALSE;
+  vlg->log_pid_console    = FALSE;
+  vlg->log_prefix_console = TRUE;
   
   return (vlg);
 
@@ -362,6 +367,24 @@ void vlg_debug(Vlg *vlg)
     return;
 
   ++vlg->out_dbg;
+}
+
+int vlg_pid_set(Vlg *vlg, int pid)
+{
+  int old = vlg->log_pid_console;
+
+  vlg->log_pid_console = pid;
+
+  return (old);
+}
+
+int vlg_prefix_set(Vlg *vlg, int prefix)
+{
+  int old = vlg->log_prefix_console;
+
+  vlg->log_prefix_console = prefix;
+
+  return (old);
 }
 
 /* ================== actual logging functions ================== */
