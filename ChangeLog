@@ -1,3 +1,19 @@
+2001-11-19  James Antill  <james@and.org>
+
+	* src/vstr_srch.c (vstr_srch_buf_fwd): Fixup for the no below API 
+	change.
+
+	* src/vstr_cmp.c (vstr_cmp_vers): 
+	(vstr_cmp_case): 
+	(vstr_cmp_buf): 
+	(vstr_cmp): Don't special case the second cmp being zero to mean
+	use the length of the first string, as that means you can't cmp against
+	the empty string.
+
+	* src/vstr_srch.c (vstr__srch_chr_rev_slow): Made the function much 
+	simpler by just calling vstr_srch_chr_fwd.
+	(vstr_srch_buf_rev): Added function.
+
 2001-05-02  James Antill  <james@and.org>
 
 	* src/vstr_add.c (vstr__convert_buf_ref): Add code for 

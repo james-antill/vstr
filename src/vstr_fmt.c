@@ -102,12 +102,12 @@ static int vstr__add_spaces(Vstr_base *base, size_t pos_diff, size_t len)
 
  while (tmp < len)
  {
-  VSTR__FMT_ADD(base, tmp, VSTR__CONST_STR_SPACE);
+  VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, tmp);
   len -= tmp;
  }
 
  if (len)
-   VSTR__FMT_ADD(base, len, VSTR__CONST_STR_SPACE);
+   VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, len);
  
  return (TRUE);
 }
@@ -130,12 +130,12 @@ static int vstr__add_zeros(Vstr_base *base, size_t pos_diff, size_t len)
 
  while (tmp < len)
  {
-  VSTR__FMT_ADD(base, tmp, VSTR__CONST_STR_ZERO);
+  VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, tmp);
   len -= tmp;
  }
 
  if (len)
-   VSTR__FMT_ADD(base, len, VSTR__CONST_STR_ZERO);
+   VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, len);
  return (TRUE);
 }
 
@@ -284,7 +284,7 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
    size -= precision;
 
  if (sign)
-   if (!VSTR__FMT_ADD(base, 1, &sign))
+   if (!VSTR__FMT_ADD(base, &sign, 1))
      goto failed_alloc;
  
  if (flags & SPECIAL)
@@ -293,7 +293,7 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
     case 16:
       if (!vstr__add_zeros(base, pos_diff, 1))
         goto failed_alloc;
-      if (!VSTR__FMT_ADD(base, 1, (digits + 33)))
+      if (!VSTR__FMT_ADD(base, (digits + 33), 1))
         goto failed_alloc;
       break;
      
@@ -352,7 +352,7 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
      goto failed_alloc_post_buf;
  
  while (i-- > 0) /* output number */
-   if (!VSTR__FMT_ADD(base, 1, buf + i))
+   if (!VSTR__FMT_ADD(base, buf + i, 1))
      goto failed_alloc_post_buf;
 
  if (size > 0) /* left justify number */
@@ -489,7 +489,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
             spec->field_width = 0;
           }
         
-        if (!VSTR__FMT_ADD(base, 1, &spec->u.data_c))
+        if (!VSTR__FMT_ADD(base, &spec->u.data_c, 1))
           goto failed_alloc;
         
         if (spec->field_width > 0)
@@ -527,7 +527,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
             spec->field_width = 0;
           }
         
-        if (!VSTR__FMT_ADD(base, len_mbs, buf_mbs))
+        if (!VSTR__FMT_ADD(base, buf_mbs, len_mbs))
           goto C_failed_alloc_free_buf_mbs;
         
         if (spec->field_width > 0)
@@ -564,7 +564,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
         if (len)
         {
-          if (!VSTR__FMT_ADD(base, len, spec->u.data_ptr))
+          if (!VSTR__FMT_ADD(base, spec->u.data_ptr, len))
             goto failed_alloc;
         }
         
@@ -621,7 +621,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
             spec->field_width = len_mbs;
           }
         
-        if (!VSTR__FMT_ADD(base, len_mbs, buf_mbs))
+        if (!VSTR__FMT_ADD(base, buf_mbs, len_mbs))
           goto S_failed_alloc_free_buf_mbs;
         
         if (spec->field_width > len_mbs)
@@ -779,7 +779,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
                            spec->u.data_d);
         }
         
-        if ((ret > 0) || !VSTR__FMT_ADD(base, ret, float_buffer))
+        if ((ret > 0) || !VSTR__FMT_ADD(base, float_buffer, ret))
         {
           free(float_buffer);
           goto failed_alloc;

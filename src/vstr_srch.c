@@ -51,52 +51,38 @@ size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
  return (0);
 }
 
-/* inifficient, keep search forward until you don't find one
- * ... then use the last find */
 static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
                                       size_t pos, size_t len,
                                       int srch)
 {
- Vstr_node *scan = NULL;
- unsigned int num = 0;
- char *scan_str = NULL;
- size_t scan_len = 0;
- char *found = NULL;
- size_t orig_len = 0;
- size_t ret = 0;
- 
- scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
- if (!scan)
-   return (0);
-
- orig_len = len + scan_len;
-
- do
- {
-  if (scan->type != VSTR_TYPE_NODE_NON)
+  size_t ret = 0;
+  size_t scan_pos = pos;
+  size_t scan_len = len;
+  
+  while ((scan_pos < (pos + len - 1)) &&
+         scan_len)
   {
-   size_t off = 0;
-   
-   while ((off < scan_len) &&
-          (found = memchr(scan_str + off, srch, scan_len - off)))
-   {
-    ret = (pos + ((orig_len - len) - scan_len) + (found - scan_str));
-    off = (found - scan_str) + 1;
-   }
+    size_t tmp = vstr_srch_chr_fwd(base, scan_pos, scan_len, srch);
+    if (!tmp)
+      break;
+
+    ret = tmp;
+    
+    scan_pos = ret + 1;
+    scan_len = len - ((ret - pos) + 1);
   }
- } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                          scan, &scan_str, &scan_len)));
- 
- return (ret);
+
+  return (ret);
 }
 
 size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
                          int srch)
 { /* FIXME: this needs to use iovec to walk backwards */
- if (!vstr__base_iovec_valid((Vstr_base *)base))
-   return (vstr__srch_chr_rev_slow(base, pos, len, srch));
 
- return (vstr__srch_chr_rev_slow(base, pos, len, srch));
+  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+   *   return (vstr__srch_chr_rev_fast(base, pos, len, srch)); */
+  
+  return (vstr__srch_chr_rev_slow(base, pos, len, srch));
 }
 
 size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
@@ -112,7 +98,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  if (!str_len)
    return (0);
 
- if (str_len > base->len)
+ if (str_len > len)
    return (0);
 
  if ((pos + str_len - 1) > base->len)
@@ -128,7 +114,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  {
   if ((scan->type == VSTR_TYPE_NODE_NON) && !str)
   {
-   if (!vstr_cmp_buf(base, pos + (ret - len), str_len, NULL, 0))
+   if (!vstr_cmp_buf(base, pos + (ret - len), str_len, NULL, str_len))
      return (pos + (ret - len));
    goto next_loop;
   }
@@ -148,8 +134,9 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
    if (tmp > str_len)
      tmp = str_len;
    
-   if (!memcmp(scan_str, str, scan_len) &&
-       !vstr_cmp_buf(base, pos + ((ret - len) - scan_len), str_len, str, 0))
+   if (!memcmp(scan_str, str, tmp) &&
+       !vstr_cmp_buf(base, pos + ((ret - len) - scan_len), str_len,
+                     str, str_len))
      return (pos + ((ret - len) - scan_len));
    
    ++scan_str;
@@ -163,3 +150,97 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  
  return (0);
 }
+
+static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
+                                      size_t pos, size_t len,
+                                      const void *const str,
+                                      const size_t str_len)
+{
+  size_t ret = 0;
+  size_t scan_pos = pos;
+  size_t scan_len = len;
+  
+  while ((scan_pos < (pos + len - 1)) &&
+         (scan_len >= str_len))
+  {
+    size_t tmp = vstr_srch_buf_fwd(base, scan_pos, scan_len, str, str_len);
+    if (!tmp)
+      break;
+
+    ret = tmp;
+    
+    scan_pos = ret + 1;
+    scan_len = len - ((ret - pos) + 1);
+  }
+
+  return (ret);
+}
+
+size_t vstr_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
+                         const void *const str, const size_t str_len)
+{
+  /* FIXME: this needs to use iovec to walk backwards */
+  
+  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+   *   return (vstr__srch_buf_rev_fast(base, pos, len, str, str_len)); */
+  
+  return (vstr__srch_buf_rev_slow(base, pos, len, str, str_len));
+}
+
+size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
+                          const Vstr_base *ndl_base,
+                          size_t ndl_pos, size_t ndl_len)
+{ /* FIXME: this could be faster, esp. with NON nodes */
+  size_t scan_pos = pos;
+  size_t scan_len = len;
+  
+  if (ndl_len > len)
+    return (0);
+
+  while ((scan_pos < (pos + len - 1)) &&
+         (scan_len >= ndl_len))
+  {
+    if (!vstr_cmp(base, scan_pos, scan_len, ndl_base, ndl_pos, ndl_len))
+      return (pos);
+    
+    --scan_len;
+    ++scan_pos;
+  }
+  
+  return (0);
+}
+
+static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
+                                       size_t pos, size_t len,
+                                       const Vstr_base *ndl_base,
+                                       size_t ndl_pos, size_t ndl_len)
+{
+  size_t ret = 0;
+  size_t scan_pos = pos;
+  size_t scan_len = len;
+  
+  while ((scan_pos < (pos + len - 1)) &&
+         (scan_len >= ndl_len))
+  {
+    size_t tmp = vstr_srch_vstr_fwd(base, scan_pos, scan_len,
+                                    ndl_base, ndl_pos, ndl_len);
+    if (!tmp)
+      break;
+
+    ret = tmp;
+    
+    scan_pos = ret + 1;
+    scan_len = len - ((ret - pos) + 1);
+  }
+
+  return (ret);
+}
+
+size_t vstr_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
+                          const Vstr_base *ndl_base,
+                          size_t ndl_pos, size_t ndl_len)
+{ 
+  return (vstr__srch_vstr_rev_slow(base, pos, len, ndl_base, ndl_pos, ndl_len));
+}
+
+

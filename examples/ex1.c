@@ -75,12 +75,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)
@@ -115,7 +115,7 @@ static void ex1_cpy_write(Vstr_base *base, int fd)
  if ((!cpy && !(cpy = vstr_make_base(NULL))) || cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- vstr_add_vstr(cpy, 0, base->len, base, 1, VSTR_TYPE_ADD_BUF_PTR);
+ vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
  if (cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_add_vstr:");
  
@@ -176,8 +176,9 @@ int main(int argc, char *argv[])
  
  ex1_cpy_write(str1, 1);
 
- vstr_add_ptr(str1, str1->len, strlen("Hello this is a constant message.\n"),
-              (char *)"Hello this is a constant message.\n");
+ vstr_add_ptr(str1, str1->len,
+              (char *)"Hello this is a constant message.\n\n",
+              strlen("Hello this is a constant message.\n\n"));
 
  vstr_add_fmt(str1, str1->len, "\n\nLocale information:\n"
               "name: %s\n"
@@ -199,9 +200,6 @@ int main(int argc, char *argv[])
  vstr_del(str1, strlen("Hello "), strlen(" vstr,"));
 
  ex1_cpy_write(str1, 1);
- 
- vstr_del(str1, str1->len - strlen("Hello this is a constant message.\n"),
-              strlen("Hello this is a constant message.\n"));
  
  while (str1->len)
  {
@@ -257,7 +255,7 @@ int main(int argc, char *argv[])
   if (offsetof(ex1_mmap_ref, ref))
     PROBLEM("assert");
   
-  if (!vstr_add_ref(str2, str2->len, ref->len, &ref->ref, 0))
+  if (!vstr_add_ref(str2, str2->len, &ref->ref, ref->len, 0))
     errno = ENOMEM, PROBLEM("vstr_add_ref:");
 
   have_mmaped_file = 1;
@@ -267,8 +265,8 @@ int main(int argc, char *argv[])
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
  
  if (!vstr_add_ptr(str2, str2->len,
-                   strlen("Hello this is a constant message.\n"),
-                   (char *)"Hello this is a constant message.\n"))
+                   (char *)"Hello this is a constant message.\n\n",
+                   strlen("Hello this is a constant message.\n\n")))
    errno = ENOMEM, PROBLEM("vstr_add_ptr:");
  
  { /* gcc doesn't understand %'d */
@@ -361,7 +359,7 @@ int main(int argc, char *argv[])
  if (!vstr_add_netstr2_end(str2, netstr_beg2))
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
 
- if (!vstr_add_buf(str2, str2->len, 1, "\n"))
+ if (!vstr_add_buf(str2, str2->len, "\n", 1))
    errno = ENOMEM, PROBLEM("vstr_add_buf:");
 
  while (str2->len)

@@ -54,12 +54,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)

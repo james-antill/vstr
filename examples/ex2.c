@@ -68,12 +68,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)
@@ -108,7 +108,7 @@ static void ex2_cpy_write(Vstr_base *base, int fd)
  if ((!cpy && !(cpy = vstr_make_base(NULL))) || cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- vstr_add_vstr(cpy, 0, base->len, base, 1, VSTR_TYPE_ADD_BUF_PTR);
+ vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
  if (cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_add_vstr:");
  
@@ -147,7 +147,7 @@ int main(void /* int argc, char *argv[] */)
    errno = ENOMEM, PROBLEM("vstr_make_conf:");
  
  /* have only 1 character per _buf node */
- vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 1);
+ vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
  vstr_cntl_opt(VSTR_CNTL_OPT_SET_CONF, conf);
  
  str1 = vstr_make_base(NULL);
@@ -182,12 +182,11 @@ int main(void /* int argc, char *argv[] */)
 
  vstr_add_fmt(str2, str2->len, "Using string "
               "(where 'X' is a non character)...\n\n");
- vstr_add_vstr(str2, str2->len, strlen("Test cmp Y "), str1, 1,
+ vstr_add_vstr(str2, str2->len, str1, 1, strlen("Test cmp Y "),
                VSTR_TYPE_ADD_BUF_PTR);
- vstr_add_buf(str2, str2->len, 1, "X");
- vstr_add_vstr(str2, str2->len,
-               str1->len - strlen("Test cmp Y X"), str1,
-               strlen("Test cmp Y Xa"), VSTR_TYPE_ADD_BUF_PTR);
+ vstr_add_buf(str2, str2->len, "X", 1);
+ vstr_add_vstr(str2, str2->len, str1, strlen("Test cmp Y Xa"),
+               str1->len - strlen("Test cmp Y X"), VSTR_TYPE_ADD_BUF_PTR);
  vstr_add_fmt(str2, str2->len, "\n");
  
  vstr_add_fmt(str2, str2->len, "Testing vstr_srch_*\n");
@@ -195,60 +194,71 @@ int main(void /* int argc, char *argv[] */)
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "chr(1,len,\\n): %d %d %d\n",
+ vstr_add_fmt(str2, str2->len, "chr(%d,%zu,%s): %zu %zu %zu\n",
+              1, str1->len, "\\n",
               str1->len,
-              (int)vstr_srch_chr_fwd(str1, 1, str1->len, '\n'),
-              (int)vstr_srch_chr_rev(str1, 1, str1->len, '\n'));
+              vstr_srch_chr_fwd(str1, 1, str1->len, '\n'),
+              vstr_srch_chr_rev(str1, 1, str1->len, '\n'));
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "chr(1,len,T): %d %d %d\n",
+ vstr_add_fmt(str2, str2->len, "chr(%d,%zu,%c): %d %zu %zu\n",
+              1, str1->len, 'T',
               1,
-              (int)vstr_srch_chr_fwd(str1, 1, str1->len, 'T'),
-              (int)vstr_srch_chr_rev(str1, 1, str1->len, 'T'));
+              vstr_srch_chr_fwd(str1, 1, str1->len, 'T'),
+              vstr_srch_chr_rev(str1, 1, str1->len, 'T'));
 
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "chr(1,len,X): %d %d %d\n",
+ vstr_add_fmt(str2, str2->len, "chr(%d,%zu,%c): %d %zu %zu\n",
+              1, str1->len, 'Z',
               0,
-              (int)vstr_srch_chr_fwd(str1, 1, str1->len, 'X'),
-              (int)vstr_srch_chr_rev(str1, 1, str1->len, 'X'));
+              vstr_srch_chr_fwd(str1, 1, str1->len, 'Z'),
+              vstr_srch_chr_rev(str1, 1, str1->len, 'Z'));
 
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "chr(1,len,Y): (%d,%d) (%d,%d)\n",
-              (int)strlen("Test cmp Y"), str1->len - 1,
-              (int)vstr_srch_chr_fwd(str1, 1, str1->len, 'Y'),
-              (int)vstr_srch_chr_rev(str1, 1, str1->len, 'Y'));
+ vstr_add_fmt(str2, str2->len, "chr(%d,%zu,%c): (%zu,%zu) (%zu,%zu)\n",
+              1, str1->len, 'Y',
+              strlen("Test cmp Y"), str1->len - 1,
+              vstr_srch_chr_fwd(str1, 1, str1->len, 'Y'),
+              vstr_srch_chr_rev(str1, 1, str1->len, 'Y'));
 
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "buf(1,len,Test): %d %d\n",
+ vstr_add_fmt(str2, str2->len, "buf(%d,%zu,%s): %d %zu %zu\n",
+              1, str1->len, "Test",
               1,
-              (int)vstr_srch_buf_fwd(str1, 1, str1->len, "Test", strlen("Test")));
+              vstr_srch_buf_fwd(str1, 1, str1->len, "Test", strlen("Test")),
+              vstr_srch_buf_rev(str1, 1, str1->len, "Test", strlen("Test")));
+
+ ex2_cpy_write(str2, 1);
+ vstr_del(str2, 1, str2->len);
+
+ vstr_add_fmt(str2, str2->len, "buf(%d,%zu,%s): %zu %zu %zu\n",
+              1, str1->len, "aaaa",
+              strlen("Test cmp Y Xa"),
+              vstr_srch_buf_fwd(str1, 1, str1->len, "aaaa", strlen("aaaa")),
+              vstr_srch_buf_rev(str1, 1, str1->len, "aaaa", strlen("aaaa")));
 
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "buf(1,len,a): %d %d\n",
-              (int)strlen("Test cmp Y Xa"),
-              (int)vstr_srch_buf_fwd(str1, 1, str1->len, "a", strlen("a")));
+ vstr_add_fmt(str2, str2->len, "buf(%d,%zu,%s): %zu %zu %zu\n",
+              1, str1->len, "a4",
+              strlen("Test cmp Y Xaaaa"),
+              vstr_srch_buf_fwd(str1, 1, str1->len, "a4", strlen("a4")),
+              vstr_srch_buf_rev(str1, 1, str1->len, "a4", strlen("a4")));
 
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "buf(1,len,a4): %d %d\n",
-              (int)strlen("Test cmp Y Xaaaa"),
-              (int)vstr_srch_buf_fwd(str1, 1, str1->len, "a4", strlen("a4")));
-
- ex2_cpy_write(str2, 1);
- vstr_del(str2, 1, str2->len);
- 
- vstr_add_fmt(str2, str2->len, "spn(1,len,a): %d %d %d\n",
+ vstr_add_fmt(str2, str2->len, "spn(%d,%zu,%s): %d %zu %zu\n",
+              1, str1->len, "a",
               0,
               vstr_spn_buf_fwd(str1, 1, str1->len, "a", 1),
               vstr_spn_buf_rev(str1, 1, str1->len, "a", 1)); 
@@ -256,8 +266,8 @@ int main(void /* int argc, char *argv[] */)
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "spn(%d,%d,a): %d %d %d\n",
-              (int)strlen("Test cmp Y X"), str1->len - strlen("Test cmp Y "),
+ vstr_add_fmt(str2, str2->len, "spn(%zu,%zu,%s): %d %zu %zu\n",
+              strlen("Test cmp Y X"), str1->len - strlen("Test cmp Y "), "a",
               0,
               vstr_spn_buf_fwd(str1, strlen("Test cmp Y "),
                                str1->len - strlen("Test cmp Y "), "a", 1),
@@ -266,63 +276,65 @@ int main(void /* int argc, char *argv[] */)
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "spn(%d,%d,a): %d %d %d\n",
-              (int)strlen("Test cmp Y Xa"),
-              (int)str1->len - (int)strlen("Test cmp Y Xa"),
+ vstr_add_fmt(str2, str2->len, "spn(%zu,%zu,%s): %d %zu %zu\n",
+              strlen("Test cmp Y Xa"),
+              str1->len - strlen("Test cmp Y Xa"), "a",
               4,
-              (int)vstr_spn_buf_fwd(str1, strlen("Test cmp Y Xa"),
-                                    str1->len - strlen("Test cmp Y Xa"), "a", 1),
-              (int)vstr_spn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa"), "a", 1));
+              vstr_spn_buf_fwd(str1, strlen("Test cmp Y Xa"),
+                               str1->len - strlen("Test cmp Y Xa"), "a", 1),
+              vstr_spn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa"), "a", 1));
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "spn(%d,%d,a1234567890): %d %d %d\n",
-              (int)strlen("Test cmp Y Xa"),
-              (int)str1->len - (int)strlen("Test cmp Y Xa"),
+ vstr_add_fmt(str2, str2->len, "spn(%zu,%zu,%s): %d %zu %zu\n",
+              strlen("Test cmp Y Xa"),
+              str1->len - (int)strlen("Test cmp Y Xa"), "a1234567890",
               14,
-              (int)vstr_spn_buf_fwd(str1, strlen("Test cmp Y Xa"),
-                                    str1->len - strlen("Test cmp Y Xa"),
-                                    "a1234567890", 11),
-              (int)vstr_spn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa1111111111"),
-                                    "a1234567890", 11));
+              vstr_spn_buf_fwd(str1, strlen("Test cmp Y Xa"),
+                               str1->len - strlen("Test cmp Y Xa"),
+                               "a1234567890", 11),
+              vstr_spn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa1111111111"),
+                               "a1234567890", 11));
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- vstr_add_fmt(str2, str2->len, "cspn(1,len,\\nT): %d %d %d\n",
+ vstr_add_fmt(str2, str2->len, "cspn(%d,%zu,%s): %d %zu %zu\n",
+              1, str1->len, "\\nT",
               0,
-              (int)vstr_cspn_buf_fwd(str1, 1, str1->len, "\nT", 2),
-              (int)vstr_cspn_buf_rev(str1, 1, str1->len, "\nT", 2)); 
+              vstr_cspn_buf_fwd(str1, 1, str1->len, "\nT", 2),
+              vstr_cspn_buf_rev(str1, 1, str1->len, "\nT", 2)); 
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "cspn(1,len,Z): %d %d %d\n",
-              (int)str1->len,
-              (int)vstr_cspn_buf_fwd(str1, 1, str1->len, "Z", 1),
-              (int)vstr_cspn_buf_rev(str1, 1, str1->len, "Z", 1)); 
+ vstr_add_fmt(str2, str2->len, "cspn(%d,%zu,%s): %zu %zu %zu\n",
+              1, str1->len, "Z",
+              str1->len,
+              vstr_cspn_buf_fwd(str1, 1, str1->len, "Z", 1),
+              vstr_cspn_buf_rev(str1, 1, str1->len, "Z", 1)); 
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "cspn(1,len,a): %d %d %d\n",
-              (int)strlen("Test cmp Y X"),
-              (int)vstr_cspn_buf_fwd(str1, 1, str1->len, "a", 1),
-              (int)vstr_cspn_buf_rev(str1, 1, strlen("Test cmp Y X"), "a", 1)); 
+ vstr_add_fmt(str2, str2->len, "cspn(%d,%zu,%s): %zu %zu %zu\n",
+              1, str1->len, "a",
+              strlen("Test cmp Y X"),
+              vstr_cspn_buf_fwd(str1, 1, str1->len, "a", 1),
+              vstr_cspn_buf_rev(str1, 1, strlen("Test cmp Y X"), "a", 1)); 
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);
 
- vstr_add_fmt(str2, str2->len, "cspn(%d,%d,1234567890): %d %d %d\n",
-              (int)strlen("Test cmp Y Xa"),
-              (int)str1->len - (int)strlen("Test cmp Y Xa"),
+ vstr_add_fmt(str2, str2->len, "cspn(%zu,%zu,%s): %d %zu %zu\n",
+              strlen("Test cmp Y Xa"),
+              str1->len - strlen("Test cmp Y Xa"), "1234567890",
               4,
-              (int)vstr_cspn_buf_fwd(str1, strlen("Test cmp Y Xa"),
-                                     str1->len - strlen("Test cmp Y Xa"),
-                                     "1234567890", 10),
-              (int)vstr_cspn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa"),
-                                     NULL, 1));
+              vstr_cspn_buf_fwd(str1, strlen("Test cmp Y Xa"),
+                                str1->len - strlen("Test cmp Y Xa"),
+                                "1234567890", 10),
+              vstr_cspn_buf_rev(str1, 1, strlen("Test cmp Y Xaaaa"), NULL, 1));
  
  ex2_cpy_write(str2, 1);
  vstr_del(str2, 1, str2->len);

@@ -110,12 +110,12 @@ static int vstr__netstr_end_start(Vstr_base *base,
 
   if (scan->type == VSTR_TYPE_NODE_BUF)
   {
-   if (!vstr_add_buf(base, base->len, 1, ","))
+   if (!vstr_add_buf(base, base->len, ",", 1))
      return (FALSE);
   }
   else
   {
-   if (!vstr_add_ptr(base, base->len, 1, ","))
+   if (!vstr_add_ptr(base, base->len, ",", 1))
      return (FALSE);
   }
  }

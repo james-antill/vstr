@@ -82,12 +82,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)
@@ -212,7 +212,7 @@ static void ex_cat_mmap_file(Vstr_base *str1, int fd, size_t len)
  if (offsetof(ex_cat_mmap_ref, ref))
    PROBLEM("assert");
  
- if (!vstr_add_ref(str1, str1->len, ref->len, &ref->ref, 0))
+ if (!vstr_add_ref(str1, str1->len, &ref->ref, 0, ref->len))
    errno = ENOMEM, PROBLEM("vstr_add_ref:");
 
  ++have_mmaped_file;

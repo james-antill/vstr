@@ -30,6 +30,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_spn.c \
                         vstr_srch.c \
                         vstr_srch_netstr.c \
+                        vstr_sub.c \
                         vstr_version.c \
                         vstr_fmt.c
 

@@ -50,9 +50,9 @@ void vstr__version_func(void)
  vstr_add_fmt(str, str->len, 
               "Vstr library release version %s, by James Antill.\n",
               "@VERSION@");
- vstr_add_ptr(str, str->len, sizeof(msg1) - 1, msg1);
+ vstr_add_ptr(str, str->len, msg1, sizeof(msg1) - 1);
  vstr_add_fmt(str, str->len, " Compiled on %s at %s.\n", __DATE__, __TIME__);
- vstr_add_ptr(str, str->len, sizeof(msg2) - 1, msg2);
+ vstr_add_ptr(str, str->len, msg2, sizeof(msg2) - 1);
  
  len = vstr_export_iovec_ptr_all(str, &vec, &num);
 

@@ -68,12 +68,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)
@@ -108,7 +108,7 @@ static void ex3_cpy_write(Vstr_base *base, int fd)
  if ((!cpy && !(cpy = vstr_make_base(NULL))) || cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- vstr_add_vstr(cpy, 0, base->len, base, 1, VSTR_TYPE_ADD_BUF_PTR);
+ vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
  if (cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_add_vstr:");
  
@@ -167,9 +167,9 @@ int main(void /* int argc, char *argv[] */)
 
  /* this is a bit sick so ... don't try this at home. but it works */
 #define TEST_CMP_BEG(x, y) do { \
- x_str = vstr_dup_buf(NULL, (sizeof(x) - 1), (x)); \
+ x_str = vstr_dup_buf(NULL, (x), (sizeof(x) - 1)); \
  if (!x_str) errno = ENOMEM, PROBLEM("vstr_dup_buf x_str:"); \
- y_str = vstr_dup_ptr(NULL, (sizeof(y) - 1), (y)); \
+ y_str = vstr_dup_ptr(NULL, (y), (sizeof(y) - 1)); \
  if (!y_str) errno = ENOMEM, PROBLEM("vstr_dup_ptr y_str:"); \
  vstr_add_fmt(str2, str2->len, "  Strings: 1=(%s) 2=(%s)\n", x, y); \
  ex3_cpy_write(str2, 1); vstr_del(str2, 1, str2->len); \

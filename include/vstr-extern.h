@@ -47,16 +47,16 @@ extern unsigned int vstr_del_spare_nodes(struct Vstr_conf *,
                                          unsigned int,
                                          unsigned int);
 
-extern int vstr_add_buf(struct Vstr_base *, size_t, size_t, const void *);
-extern int vstr_add_ptr(struct Vstr_base *, size_t, size_t, const void *);
+extern int vstr_add_buf(struct Vstr_base *, size_t, const void *, size_t);
+extern int vstr_add_ptr(struct Vstr_base *, size_t, const void *, size_t);
 extern int vstr_add_non(struct Vstr_base *, size_t, size_t);
-extern int vstr_add_ref(struct Vstr_base *, size_t, size_t,
-                        struct Vstr_ref *, size_t);
-extern int vstr_add_vstr(struct Vstr_base *, size_t, size_t,
-                         struct Vstr_base *, size_t, unsigned int);
+extern int vstr_add_ref(struct Vstr_base *, size_t,
+                        struct Vstr_ref *, size_t, size_t);
+extern int vstr_add_vstr(struct Vstr_base *, size_t,
+                         struct Vstr_base *, size_t, size_t, unsigned int);
 
-extern struct Vstr_base *vstr_dup_buf(struct Vstr_conf *, size_t, const void *);
-extern struct Vstr_base *vstr_dup_ptr(struct Vstr_conf *, size_t, const void *);
+extern struct Vstr_base *vstr_dup_buf(struct Vstr_conf *, const void *, size_t);
+extern struct Vstr_base *vstr_dup_ptr(struct Vstr_conf *, const void *, size_t);
 extern struct Vstr_base *vstr_dup_non(struct Vstr_conf *, size_t);
 extern struct Vstr_base *vstr_dup_vstr(struct Vstr_conf *,
                                        struct Vstr_base *, size_t, size_t,
@@ -84,6 +84,16 @@ extern int vstr_add_netstr2_end(struct Vstr_base *, size_t);
 
 extern int vstr_del(struct Vstr_base *, size_t, size_t);
 
+extern int vstr_sub_buf(struct Vstr_base *, size_t, size_t,
+                        const void *, size_t);
+extern int vstr_sub_ptr(struct Vstr_base *, size_t, size_t,
+                        const void *, size_t);
+extern int vstr_sub_non(struct Vstr_base *, size_t, size_t, size_t);
+extern int vstr_sub_ref(struct Vstr_base *, size_t, size_t,
+                        struct Vstr_ref *, size_t, size_t);
+extern int vstr_sub_vstr(struct Vstr_base *, size_t, size_t,
+                         struct Vstr_base *, size_t, size_t, unsigned int);
+
 /* Control misc stuff ... */
 extern int vstr_cntl_opt(int option, ...);
 extern int vstr_cntl_base(struct Vstr_base *, int option, ...);
@@ -107,6 +117,13 @@ extern size_t vstr_srch_chr_rev(const struct Vstr_base *, size_t, size_t, int);
 
 extern size_t vstr_srch_buf_fwd(const struct Vstr_base *, size_t, size_t,
                                 const void *, size_t);
+extern size_t vstr_srch_buf_rev(const struct Vstr_base *, size_t, size_t,
+                                const void *, size_t);
+
+extern size_t vstr_srch_vstr_fwd(const struct Vstr_base *, size_t, size_t,
+                                 const struct Vstr_base *, size_t, size_t);
+extern size_t vstr_srch_vstr_rev(const struct Vstr_base *, size_t, size_t,
+                                 const struct Vstr_base *, size_t, size_t);
 
 extern size_t vstr_spn_buf_fwd(const struct Vstr_base *, size_t, size_t,
                                const char *, size_t);

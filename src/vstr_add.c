@@ -116,7 +116,8 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  assert(vstr__check_real_nodes(base));
 }
 
-int vstr_add_buf(Vstr_base *base, size_t pos, size_t len, const void *buffer)
+int vstr_add_buf(Vstr_base *base, size_t pos,
+                 const void *buffer, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -134,7 +135,8 @@ int vstr_add_buf(Vstr_base *base, size_t pos, size_t len, const void *buffer)
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 
- num = (len / base->conf->buf_sz) + 1;
+ /* add 2: one for setup_pos -> split_node ; one for rouding error in divide */
+ num = (len / base->conf->buf_sz) + 2;
  if (base->conf->spare_buf_num < num)
  {
   num -= base->conf->spare_buf_num;
@@ -155,7 +157,7 @@ int vstr_add_buf(Vstr_base *base, size_t pos, size_t len, const void *buffer)
   if ((scan->type == VSTR_TYPE_NODE_BUF) && (pos == scan->len) &&
       (base->conf->buf_sz > scan->len))
   {
-   size_t tmp = (base->conf->buf_sz - base->end->len);
+   size_t tmp = (base->conf->buf_sz - scan->len);
    
    assert(base->len);
    
@@ -237,7 +239,8 @@ int vstr_add_buf(Vstr_base *base, size_t pos, size_t len, const void *buffer)
  return (TRUE);
 }
 
-int vstr_add_ptr(Vstr_base *base, size_t pos, size_t len, const void *pass_ptr)
+int vstr_add_ptr(Vstr_base *base, size_t pos,
+                 const void *pass_ptr, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -254,9 +257,9 @@ int vstr_add_ptr(Vstr_base *base, size_t pos, size_t len, const void *pass_ptr)
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 
- if (base->conf->spare_ptr_num < 1)
- {
-  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, 1) != 1)
+ if (base->conf->spare_ptr_num < 2)
+ { /* add 2: one for setup_pos -> split_node ; one added node */
+  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, 2) != 2)
     return (FALSE);
  }
  
@@ -327,9 +330,9 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 
- if (base->conf->spare_non_num < 1)
- {
-  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_NON, 1) != 1)
+ if (base->conf->spare_non_num < 2)
+ { /* add 2: one for setup_pos -> split_node ; one added node */
+  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_NON, 2) != 2)
     return (FALSE);
  }
 
@@ -352,10 +355,10 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  }
  
  scan = (Vstr_node *)base->conf->spare_non_beg;
- if (base->end)
+ if (pos_scan)
  {
   assert(base->len);
-  base->end->next = scan;
+  pos_scan->next = scan;
  }
  else
    base->beg = scan;
@@ -392,8 +395,8 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  return (TRUE);
 }
 
-int vstr_add_ref(Vstr_base *base, size_t pos, size_t len,
-                 Vstr_ref *ref, size_t off)
+int vstr_add_ref(Vstr_base *base, size_t pos, 
+                 Vstr_ref *ref, size_t off, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -410,9 +413,9 @@ int vstr_add_ref(Vstr_base *base, size_t pos, size_t len,
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 
- if (base->conf->spare_ref_num < 1)
- {
-  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
+ if (base->conf->spare_ref_num < 2)
+ { /* add 2: one for setup_pos -> split_node ; one added node */
+  if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 2) != 2)
     return (FALSE);
  }
  
@@ -561,7 +564,7 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
    goto add_all_ref_fail;
   }
 
-  if (!vstr_add_ref(base, pos, len, ref, 0))   
+  if (!vstr_add_ref(base, pos, ref, 0, len))
     goto add_all_ref_fail;
 
   if (cpy.ref)
@@ -576,8 +579,8 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
   return (FALSE);
 }
 
-int vstr_add_vstr(Vstr_base *base, size_t pos, size_t len,
-                  Vstr_base *from_base, size_t from_pos,
+int vstr_add_vstr(Vstr_base *base, size_t pos, 
+                  Vstr_base *from_base, size_t from_pos, size_t len,
                   unsigned int type)
 {
  size_t orig_pos = pos;
@@ -607,8 +610,11 @@ int vstr_add_vstr(Vstr_base *base, size_t pos, size_t len,
  /* make sure there are no buf nodes */
  if (type == VSTR_TYPE_ADD_BUF_REF)
  {
-  if (!vstr__convert_buf_ref(from_base, from_pos, len))
-    return (FALSE);
+   if (!vstr__convert_buf_ref(from_base, from_pos, len))
+   {
+     base->conf->malloc_bad = TRUE;
+     return (FALSE);
+   }
  }
  
  /* do the real copying */
@@ -631,11 +637,11 @@ int vstr_add_vstr(Vstr_base *base, size_t pos, size_t len,
     
     if (type == VSTR_TYPE_ADD_BUF_PTR)
     {
-     if (!vstr_add_ptr(base, pos, tmp, ((Vstr_node_buf *)scan)->buf + off))
+     if (!vstr_add_ptr(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
        goto fail;
      break;
     }
-    if (!vstr_add_buf(base, pos, tmp, ((Vstr_node_buf *)scan)->buf + off))
+    if (!vstr_add_buf(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
       goto fail;
     break;
   case VSTR_TYPE_NODE_NON:
@@ -643,12 +649,12 @@ int vstr_add_vstr(Vstr_base *base, size_t pos, size_t len,
       goto fail;
     break;
   case VSTR_TYPE_NODE_PTR:
-    if (!vstr_add_ptr(base, pos, tmp,
-                      ((char *)((Vstr_node_ptr *)scan)->ptr) + off))
+    if (!vstr_add_ptr(base, pos,
+                      ((char *)((Vstr_node_ptr *)scan)->ptr) + off, tmp))
       goto fail;
     break;
   case VSTR_TYPE_NODE_REF:
-    if (!vstr_add_ref(base, pos, tmp, ((Vstr_node_ref *)scan)->ref, off))
+    if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, tmp))
       goto fail;
     break;
    default:

@@ -52,6 +52,7 @@ typedef struct ex6_mmap_ref
 
 static int have_mmaped_file = 0;
 
+#if 0
 static void ex6_ref_munmap(Vstr_ref *passed_ref)
 {
  ex6_mmap_ref *ref = (ex6_mmap_ref *)passed_ref;
@@ -60,7 +61,7 @@ static void ex6_ref_munmap(Vstr_ref *passed_ref)
 
  have_mmaped_file = 0;
 }
-
+#endif
 
 static void problem(const char *msg)
 {
@@ -74,12 +75,12 @@ static void problem(const char *msg)
  str = vstr_make_base(NULL);
  if (str)
  {
-  vstr_add_buf(str, str->len, strlen(msg), msg);
+  vstr_add_buf(str, str->len, msg, strlen(msg));
 
   if (vstr_export_chr(str, strlen(msg)) == ':')
     vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
 
-  vstr_add_buf(str, str->len, 1, "\n");
+  vstr_add_buf(str, str->len, "\n", 1);
 
   len = vstr_export_iovec_ptr_all(str, &vec, &num);
   if (!len)
@@ -114,7 +115,7 @@ static void ex6_cpy_write(Vstr_base *base, int fd)
  if ((!cpy && !(cpy = vstr_make_base(NULL))) || cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- vstr_add_vstr(cpy, 0, base->len, base, 1, VSTR_TYPE_ADD_BUF_PTR);
+ vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
  if (cpy->conf->malloc_bad)
    errno = ENOMEM, PROBLEM("vstr_add_vstr:");
  
@@ -139,13 +140,11 @@ static void ex6_cpy_write(Vstr_base *base, int fd)
 }
 
 
-int main(int argc, char *argv[])
+int main(void)
 {
  Vstr_conf *conf = NULL;
  Vstr_base *str1 = NULL;
  Vstr_base *str2 = NULL;
- size_t netstr_beg1 = 0;
- size_t netstr_beg2 = 0;
  
  if (!vstr_init())
    errno = ENOMEM, PROBLEM("vstr_init:");
@@ -153,7 +152,7 @@ int main(int argc, char *argv[])
  if (!(conf = vstr_make_conf()))
    errno = ENOMEM, PROBLEM("vstr_make_conf:");
 
- vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 1);
+ vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 4);
  
  str1 = vstr_make_base(conf);
  if (!str1)
@@ -172,31 +171,23 @@ int main(int argc, char *argv[])
 
  ex6_cpy_write(str1, 1);
 
- vstr_add_ptr(str1, str1->len, strlen("Hello this is a constant message.\n"),
-              (char *)"Hello this is a constant message.\n");
+ vstr_add_ptr(str1, str1->len, (char *)"Hello this is a constant message.\n\n",
+              strlen("Hello this is a constant message.\n\n"));
 
  ex6_cpy_write(str1, 1);
  
  vstr_del(str1, strlen("Hello vstr, World "), strlen(" is"));
- vstr_del(str1, strlen("Hello "), strlen(" vstr,"));
+ vstr_sub_buf(str1, strlen("Hello "), strlen(" vstr,"),
+              " ** Vstr subed **", strlen(" ** Vstr subed **"));
 
  ex6_cpy_write(str1, 1);
  
- vstr_del(str1, str1->len - strlen("Hello this is a constant message.\n"),
-              strlen("Hello this is a constant message.\n"));
+ vstr_del(str1, str1->len - strlen("ello this is a constant message.\n\n"),
+              strlen("Hello this is a constant message.\n\n"));
  
- while (str1->len)
- {
-  ex6_cpy_write(str1, 1);
-  vstr_del(str1, 1, 1);
- }
-
+ ex6_cpy_write(str1, 1);
+ 
  /* str2 */
-
- /* this shows explicit memory checking ...
-  *  this is nicer in some cases/styles and you can tell what failed.
-  *
-  * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
 
  if (str1->conf->malloc_bad)
    PROBLEM("Bad malloc_bad flag\n");
@@ -205,126 +196,13 @@ int main(int argc, char *argv[])
  if (!str2)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
+ vstr_add_vstr(str2, 0, str1, 1, str1->len, 0);
+
+ vstr_sub_buf(str2, strlen("Hello "), strlen(" ** Vstr subed **"), " new", 4);
+ vstr_sub_buf(str2, str2->len - strlen(".\n"), 1, "2", 1);
+
+ ex6_cpy_write(str2, 1);
  
- if (argc > 1)
- {
-  int fd = open(argv[1], O_RDONLY);
-  ex6_mmap_ref *ref = malloc(sizeof(ex6_mmap_ref));
-  caddr_t addr = NULL;
-  struct stat stat_buf;
-
-  if (!ref)
-    errno = ENOMEM, PROBLEM("malloc ex6_mmap:");
-
-  if (fd == -1)
-    PROBLEM("open:");
-
-  if (fstat(fd, &stat_buf) == -1)
-    PROBLEM("fstat:");
-  ref->len = stat_buf.st_size;
-
-  addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
-  if (addr == (caddr_t)-1)
-    PROBLEM("mmap:");
-  
-  if (close(fd) == -1)
-    PROBLEM("close:");
-  
-  ref->ref.func = ex6_ref_munmap;
-  ref->ref.ptr = (char *)addr;
-  ref->ref.ref = 0;
-
-  if (offsetof(ex6_mmap_ref, ref))
-    PROBLEM("assert");
-  
-  if (!vstr_add_ref(str2, str2->len, ref->len, &ref->ref, 0))
-    errno = ENOMEM, PROBLEM("vstr_add_ref:");
-
-  have_mmaped_file = 1;
- }
-
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
- 
- if (!vstr_add_ptr(str2, str2->len,
-                   strlen("Hello this is a constant message.\n"),
-                   (char *)"Hello this is a constant message.\n"))
-   errno = ENOMEM, PROBLEM("vstr_add_ptr:");
- 
- { /* gcc doesn't understand %'d */
-  const char *fool_gcc_fmt = (" Testing numbers...\n"
-                              "0=%d\n"
-                              "SCHAR_MIN=%'+hhd\n"
-                              "SCHAR_MAX=%'+hhd\n"
-                              "UCHAR_MAX=%'hhu\n"
-                              "SHRT_MIN=%'+hd\n"
-                              "SHRT_MAX=%'+hd\n"
-                              "USHRT_MAX=%'hu\n"
-                              "INT_MIN=%'+d\n"
-                              "INT_MAX=%'+d\n"
-                              "UINT_MAX=%'u\n"
-                              "LONG_MIN=%'+ld\n"
-                              "LONG_MAX=%'+ld\n"
-                              "ULONG_MAX=%'lu\n"
-                              "LONG_LONG_MIN=%'+Ld\n"
-                              "LONG_LONG_MAX=%'+Ld\n"
-                              "ULONG_LONG_MAX=%'Lu\n");
-  
-  if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt,
-                    0,
-                    SCHAR_MIN,
-                    SCHAR_MAX,
-                    UCHAR_MAX,
-                    SHRT_MIN,
-                    SHRT_MAX,
-                    USHRT_MAX,
-                    INT_MIN,
-                    INT_MAX,
-                    UINT_MAX,
-                    LONG_MIN,
-                    LONG_MAX,
-                    ULONG_MAX,
-                    LONG_LONG_MIN,
-                    LONG_LONG_MAX,
-                    ULONG_LONG_MAX
-                    ))
-    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
-
-  /* gcc doesn't understand i18n param numbers */
-  fool_gcc_fmt = (" Testing i18n explicit param numbers...\n"
-                  " 1=%1$*1$.*1$d\n"
-                  " 2=%2$*2$.*2$d\n"
-                  " 2=%2$*4$.*1$d\n"
-                  " 3=%3$*1$.*2$jd\n"
-                  " 4=%4$*4$.*4$d\n"
-                  " 1=%1$*2$.*4$d\n");
-  if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt, 1, 2, (intmax_t)3, 4))
-    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
- }
- 
- if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", str2))
-   errno = ENOMEM, PROBLEM("vstr_add_fmt:");
- 
- if (!vstr_add_netstr2_end(str2, netstr_beg2))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
- if (!vstr_add_netstr_end(str2, netstr_beg1))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
- 
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
- if (!vstr_add_netstr_end(str2, netstr_beg1))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
- 
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
- if (!vstr_add_netstr2_end(str2, netstr_beg2))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
-
- if (!vstr_add_buf(str2, str2->len, 1, "\n"))
-   errno = ENOMEM, PROBLEM("vstr_add_buf:");
-
  vstr_del(str2, 1, str2->len);
 
  if (have_mmaped_file)

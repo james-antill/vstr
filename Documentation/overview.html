@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Vstr documentation -- overview</title>
+
+    <style>
+      A:visited { color: #ff4040; }
+      A:hover { color: #20b2aa; }
+
+      P { text-indent: 1cm; }
+
+      body { background: #FFFFFF; }
+
+      td.heading { background: #DDDDDD; }
+    </style>
+
+  </head>
+
+  <body bgcolor="#FFFFFF">
+    <h1>Vstr documentation -- overview</h1>
+
+<!-- this is basically copy and paste from the .txt file... */ ... errr -->
+
+<table width="90%"><tr><td bgcolor="#DDDDFF">
+	  <h2>About</h2>
+	</td></tr></table>
+
+<table width="80%"><tr><td><p>
+
+ This is a string library, it's designed so you can work optimally
+with readv()/writev() for input/output.
+
+</p></td></tr>
+
+</table>
+
+<table width="90%"><tr><td bgcolor="#DDDDFF">
+	  <h2>Intro</h2>
+	</td></tr></table>
+
+<table width="80%"><tr><td><p>
+
+ All functions are documented in <a href="functions.html">functions.html</a>, all constants are
+in <a href="constants.html">constants.html</a> and the namespace rules are in <a href="namespace.html">namespace.html</a> (fancy that).
+
+</p></td></tr><tr><td><p>
+
+Basically you should be able to get an overview of a function by looking at
+the functions.html file, and be able to get a deeper understanding by looking
+in the constants.html file (Ie. all constants should be passed to a function
+listed, so the more detailed information is listed with the constants -- not
+the functions).
+
+</p></td></tr>
+
+</table>
+
+<table width="90%"><tr><td bgcolor="#DDDDFF">
+	  <h2>A very simple overview</h2>
+	</td></tr></table>
+
+<table width="80%"><tr><td><p>
+
+ A very simple overview is that you call vstr_init() at the start of your
+program then you can create a (Vstr_base *) by calling vstr_make_base().
+ You can then add/delete data from this string, using the provided functions,
+if you need to use all or part of the string with a "C string" interface
+then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
+ To delete the entire vstr you call vstr_free_base() on the (Vstr_base *).
+
+</p></td></tr><tr><td><p>
+
+ Also note that you might want to have a look at the examples/ directory.
+
+
+</p></td></tr>
+
+</table>
+
+    <hr>
+    <address><a href="mailto:james@and.org">James Antill</a></address>
+<!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
+<!-- hhmts start -->
+Last modified: Sun Oct 14 20:57:48 EDT 2001
+<!-- hhmts end -->
+  </body>
+</html>

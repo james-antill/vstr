@@ -23,6 +23,15 @@
 
 #define VSTR_INIT_REF { vstr_ref_cb_free_nothing, NULL, 0 }
 
+#define VSTR_INIT_IOVEC { NULL, 0, 0 }
+
+#define VSTR_INIT_BASE { NULL, NULL, 0, 0, VSTR_INIT_IOVEC, NULL, NULL, 0, \
+ 0, 0, 0, 0 \
+ 0,0,0,0 \
+ 0,0,0,0,0,0,0,0 \
+ 0,0,0,0,0,0,0,0 \
+ 0,0,0,0,0,0,0,0 }
+
 #define VSTR_TYPE_NODE_BUF 1
 #define VSTR_TYPE_NODE_NON 2
 #define VSTR_TYPE_NODE_PTR 3

@@ -2,3 +2,10 @@
  vstr_add_fmt()
   floating point relies on the underlying implimentation -- this is very bad.
 
+ bunch of the _rev functions don't have a fast path.
+
+ doco.
+
+ vstr_mov_* (moves data from one vstr to another) ?
+
+ pkg-config as well/instead of gnome-config

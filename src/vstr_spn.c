@@ -66,6 +66,7 @@ size_t vstr_spn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  return (ret);
 }
 
+/* go through fwd, reset everytime it fails then start doing it again */
 static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
                                      size_t pos, size_t len,
                                      const char *spn_buf, size_t spn_len)
@@ -128,10 +129,11 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
 size_t vstr_spn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                         const char *spn_buf, size_t spn_len)
 { /* FIXME: this needs to use iovec to walk backwards */
- if (!vstr__base_iovec_valid((Vstr_base *)base))
-   return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
 
- return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
+  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+   *   return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len)); */
+  
+  return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
 }
 
 size_t vstr_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
@@ -180,10 +182,11 @@ size_t vstr_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  return (ret);
 }
 
+/* go through fwd, reset everytime it fails then start doing it again */
 static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
                                       size_t pos, size_t len,
                                       const char *cspn_buf, size_t cspn_len)
-{
+{  
  Vstr_node *scan = NULL;
  unsigned int num = 0;
  size_t ret = 0;
@@ -237,8 +240,9 @@ static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
 size_t vstr_cspn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                          const char *cspn_buf, size_t cspn_len)
 { /* FIXME: this needs to use iovec to walk backwards */
- if (!vstr__base_iovec_valid((Vstr_base *)base))
-   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));
-
- return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));
+  
+  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
+   *   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len)); */
+  
+  return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));
 }

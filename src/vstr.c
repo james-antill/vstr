@@ -668,7 +668,7 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
  {
   scan = base->cache->pos.node;
   *num = base->cache->pos.num;
-  *pos = orig_pos - base->cache->pos.pos;
+  *pos = (orig_pos - base->cache->pos.pos) + 1;
  }
  
  while (*pos > scan->len)
@@ -681,7 +681,7 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
  }
 
  if (cache && (*num > 1))
-   vstr__base_cache_pos(base, scan, orig_pos - *pos + 1, *num);
+   vstr__base_cache_pos(base, scan, (orig_pos - *pos) + 1, *num);
  
  return (scan);
 }

@@ -34,8 +34,6 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  size_t scan_len_1 = 0;
  size_t scan_len_2 = 0;
 
- if (!len_2)
-   len_2 = len_1;
  scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
                                   &scan_str_1, &scan_len_1);
  scan_2 = vstr__base_scan_fwd_beg(base_2, pos_2, &len_2, &num_2,
@@ -95,7 +93,6 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
  unsigned int num = 0;
  char *scan_str = NULL;
  size_t scan_len = 0;
- size_t orig_len = len;
  
  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
  if (!scan && !str_len)
@@ -103,7 +100,7 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
  if (!scan)
    return (-1);
  if (!str_len)
-   str_len = orig_len;
+   return (1);
  
  do
  {
@@ -181,8 +178,6 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  size_t scan_len_1 = 0;
  size_t scan_len_2 = 0;
  
- if (!len_2)
-   len_2 = len_1;
  scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
                                   &scan_str_1, &scan_len_1);
  scan_2 = vstr__base_scan_fwd_beg(base_2, pos_2, &len_2, &num_2,
@@ -381,8 +376,6 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  int state = VSTR__CMP_NORM;
  int diff = 0;
  
- if (!len_2)
-   len_2 = len_1;
  scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
                                   &scan_str_1, &scan_len_1);
  scan_2 = vstr__base_scan_fwd_beg(base_2, pos_2, &len_2, &num_2,
