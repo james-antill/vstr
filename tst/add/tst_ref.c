@@ -11,7 +11,7 @@ int tst(void)
   ref.ptr = buf;
   ref.func = vstr_ref_cb_free_nothing;
   ref.ref = 0;
-  vstr_add_ref(s1, 0, &ref, 0, strlen(buf));
+  VSTR_ADD_CSTR_REF(s1, 0, &ref, 0);
 
   return (!VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
 }

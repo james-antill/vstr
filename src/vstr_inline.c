@@ -28,5 +28,5 @@
 # undef inline
 # define inline /* nothing */
 
-# include "vstr-internal-inc-inline.h"
+# include "vstr-internal-inline.h"
 

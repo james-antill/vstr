@@ -149,6 +149,7 @@ int vstr_nx_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
   return (FALSE);
 }
 
+/* is it a printable ASCII character */
 #define VSTR__IS_ASCII_PRINTABLE(x, flags) ( \
  (VSTR__UC(x) == 0x00) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL)  : \
  (VSTR__UC(x) == 0x07) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL)  : \
@@ -159,9 +160,14 @@ int vstr_nx_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
  (VSTR__UC(x) == 0x0C) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF)   : \
  (VSTR__UC(x) == 0x0D) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR)   : \
  (VSTR__UC(x) == 0x1B) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC)  : \
+ (VSTR__UC(x) == 0x20) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP)   : \
+ (VSTR__UC(x) == 0x2C) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA): \
+ (VSTR__UC(x) == 0x2E) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT)  : \
+ (VSTR__UC(x) == 0x5F) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__)    : \
  (VSTR__UC(x) == 0x7F) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL)  : \
- (VSTR__UC(x) >  0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
- (unsigned int)((VSTR__UC(x) >= 0x20) && (VSTR__UC(x) <= 0x7E)))
+ (VSTR__UC(x) == 0xA0) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP)  : \
+ (VSTR__UC(x) >= 0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
+ (unsigned int)((VSTR__UC(x) >= 0x21) && (VSTR__UC(x) <= 0x7E)))
 
 int vstr_nx_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
                                  unsigned int flags, char swp)
@@ -293,23 +299,26 @@ int vstr_nx_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
   {
     char tmp = vstr_nx_export_chr(base, pos);
 
-    if (VSTR__IS_ASCII_PRINTABLE(tmp, flags))
+    if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags))
     {
-      if (del_pos && !vstr_nx_del(base, del_pos, pos - del_pos))
-      {
-        assert(FALSE);
-        return (FALSE);
-      }
+      if (!del_pos)
+        del_pos = pos;
       
+      assert(pos >= del_pos);
+    }
+    else if (del_pos)
+    {
+      vstr_nx_del(base, del_pos, pos - del_pos);
       pos = del_pos;
       del_pos = 0;
     }
-    else if (!del_pos)
-      del_pos = pos;
     
     ++pos;
     --len;
   }
+
+  if (del_pos)
+    vstr_nx_del(base, del_pos, pos - del_pos);
 
   return (TRUE);
 
@@ -334,7 +343,7 @@ int vstr_nx_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   Vstr_sects *sects = vstr_nx_sects_make(8);
   size_t count = 0;
   /* from section 2.4.3. of rfc2396 */
-  char buf_disallowed[] = {
+  char chrs_disallowed[] = {
    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
    0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
@@ -370,8 +379,8 @@ int vstr_nx_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   
   while (len)
   {
-    count = vstr_nx_cspn_buf_fwd(base, pos, len,
-                                 buf_disallowed, sizeof(buf_disallowed));
+    count = vstr_nx_cspn_chrs_fwd(base, pos, len,
+                                  chrs_disallowed, sizeof(chrs_disallowed));
     pos += count;
     len -= count;
 

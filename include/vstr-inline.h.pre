@@ -64,8 +64,21 @@ extern inline int @@@@vstr_add_buf(struct Vstr_base *base, size_t pos,
       (!base->cache_available || base->cache_internal))
   {
     Vstr_node *scan = base->end;
+    const char *buf = buffer;
 
-    memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, len);
+    switch (len)
+    { /* Don't do a memcpy() on small values */
+      case 7:  ((Vstr_node_buf *)scan)->buf[scan->len + 6] = buf[6];
+      case 6:  ((Vstr_node_buf *)scan)->buf[scan->len + 5] = buf[5];
+      case 5:  ((Vstr_node_buf *)scan)->buf[scan->len + 4] = buf[4];
+      case 4:  ((Vstr_node_buf *)scan)->buf[scan->len + 3] = buf[3];
+      case 3:  ((Vstr_node_buf *)scan)->buf[scan->len + 2] = buf[2];
+      case 2:  ((Vstr_node_buf *)scan)->buf[scan->len + 1] = buf[1];
+      case 1:  ((Vstr_node_buf *)scan)->buf[scan->len + 0] = buf[0];
+               break;
+      default: memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, len);
+               break;
+    }
     scan->len += len;
     base->len += len;
 
@@ -83,13 +96,13 @@ extern inline int @@@@vstr_add_buf(struct Vstr_base *base, size_t pos,
 
 extern inline int @@@@vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 {
-  if (!len && !base->len)
+  if (!len)
     return (1);
 
   if (pos > base->len)
     return (0);
 
-  if ((pos <= 1) && ((base->used + len) < base->beg->len) &&
+  if ((pos == 1) && ((base->used + len) < base->beg->len) &&
       (!base->cache_available || base->cache_internal))
   {
     struct Vstr_node *scan = base->beg;

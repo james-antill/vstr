@@ -93,20 +93,29 @@
 #define VSTR_CMP_CASE_CSTR_EQ(x, p1, l1, y) (((l1) == strlen(y)) && \
  !vstr_cmp_case_buf(x, p1, l1, y, l1))
 
+
 #define VSTR_ADD_CSTR_BUF(x, y, buf) vstr_add_buf(x, y, buf, strlen(buf))
 #define VSTR_ADD_CSTR_PTR(x, y, ptr) vstr_add_ptr(x, y, ptr, strlen(ptr))
+#define VSTR_ADD_CSTR_REF(x, y, ref, off) \
+ vstr_add_ref(x, y, ref, off, strlen(((const char *)(ref)->ptr) + (off)))
+
 
 #define VSTR_DUP_CSTR_BUF(x, buf) vstr_dup_buf(x, buf, strlen(buf))
 #define VSTR_DUP_CSTR_PTR(x, ptr) vstr_dup_ptr(x, ptr, strlen(ptr))
+#define VSTR_DUP_CSTR_REF(x, ref, off) \
+ vstr_dup_ref(x, ref, off, strlen(((const char *)(ref)->ptr) + (off)))
+
 
 #define VSTR_SUB_CSTR_BUF(x, y, z, buf) \
  vstr_sub_buf(x, y, z, buf, strlen(buf))
 #define VSTR_SUB_CSTR_PTR(x, y, z, ptr) \
  vstr_sub_ptr(x, y, z, ptr, strlen(ptr))
+#define VSTR_SUB_CSTR_REF(x, y, z, ref, off) \
+ vstr_sub_ref(x, y, z, ref, off, strlen(((const char *)(ref)->ptr) + (off)))
+
 
 #define VSTR_SRCH_CSTR_BUF_FWD(x, y, z, buf) \
  vstr_srch_buf_fwd(x, y, z, buf, strlen(buf))
-
 #define VSTR_SRCH_CSTR_BUF_REV(x, y, z, buf) \
  vstr_srch_buf_rev(x, y, z, buf, strlen(buf))
 
@@ -114,20 +123,24 @@
  vstr_srch_sects_add_buf_fwd(x, y, z, S, buf, strlen(buf))
 
 
-#define VSTR_SPN_CSTR_BUF_FWD(x, y, z, buf) \
- vstr_spn_buf_fwd(x, y, z, buf, strlen(buf))
+#define VSTR_SPN_CSTR_CHRS_FWD(x, y, z, chrs) \
+ vstr_spn_chrs_fwd(x, y, z, chrs, strlen(chrs))
+#define VSTR_SPN_CSTR_CHRS_REV(x, y, z, chrs) \
+ vstr_spn_chrs_rev(x, y, z, chrs, strlen(chrs))
 
-#define VSTR_SPN_CSTR_BUF_REV(x, y, z, buf) \
- vstr_spn_buf_rev(x, y, z, buf, strlen(buf))
+#define VSTR_CSPN_CSTR_CHRS_FWD(x, y, z, chrs) \
+ vstr_cspn_chrs_fwd(x, y, z, chrs, strlen(chrs))
+#define VSTR_CSPN_CSTR_CHRS_REV(x, y, z, chrs) \
+ vstr_cspn_chrs_rev(x, y, z, chrs, strlen(chrs))
 
-#define VSTR_CSPN_CSTR_BUF_FWD(x, y, z, buf) \
- vstr_cspn_buf_fwd(x, y, z, buf, strlen(buf))
 
-#define VSTR_CSPN_CSTR_BUF_REV(x, y, z, buf) \
- vstr_cspn_buf_rev(x, y, z, buf, strlen(buf))
+#define VSTR_SPLIT_CSTR_BUF(x, y, z, buf, sect, lim, flags) \
+ vstr_split_buf(x, y, z, buf, strlen(buf), sect, lim, flags)
+#define VSTR_SPLIT_CSTR_CHRS(x, y, z, chrs, sect, lim, flags) \
+ vstr_split_chrs(x, y, z, chrs, strlen(chrs), sect, lim, flags)
+
 
 #define VSTR__CACHE(x) ((struct Vstr__base_cache *)(x))->cache
-
 
 /* == real functions == */
 
@@ -144,10 +157,10 @@ extern void vstr_ref_cb_free_ptr_ref(struct Vstr_ref *)
 extern struct Vstr_ref *vstr_ref_add(struct Vstr_ref *)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 extern void vstr_ref_del(struct Vstr_ref *) ;
-extern struct Vstr_ref *vstr_ref_make_ptr(void *,
+extern struct Vstr_ref *vstr_make_ref_ptr(void *,
                                           void (*)(struct Vstr_ref *))
     VSTR__COMPILE_ATTR_NONNULL_L((2)) ;
-extern struct Vstr_ref *vstr_ref_make_malloc(size_t) ;
+extern struct Vstr_ref *vstr_make_ref_malloc(size_t) ;
 
 /* real start of vector string functions */
 
@@ -190,6 +203,9 @@ extern struct Vstr_base *vstr_dup_ptr(struct Vstr_conf *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 extern struct Vstr_base *vstr_dup_non(struct Vstr_conf *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern struct Vstr_base *vstr_dup_ref(struct Vstr_conf *,
+                                      struct Vstr_ref *ref, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) ;
 extern struct Vstr_base *vstr_dup_vstr(struct Vstr_conf *,
                                        const struct Vstr_base *, size_t, size_t,
                                        unsigned int)
@@ -332,17 +348,17 @@ extern unsigned int vstr_srch_sects_add_buf_fwd(const struct Vstr_base *,
     VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) ;
 
 /* spanning and compliment spanning */
-extern size_t vstr_spn_buf_fwd(const struct Vstr_base *, size_t, size_t,
-                               const char *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() ;
-extern size_t vstr_spn_buf_rev(const struct Vstr_base *, size_t, size_t,
-                               const char *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() ;
-extern size_t vstr_cspn_buf_fwd(const struct Vstr_base *, size_t, size_t,
+extern size_t vstr_spn_chrs_fwd(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
-extern size_t vstr_cspn_buf_rev(const struct Vstr_base *, size_t, size_t,
+extern size_t vstr_spn_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern size_t vstr_cspn_chrs_fwd(const struct Vstr_base *, size_t, size_t,
+                                 const char *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() ;
+extern size_t vstr_cspn_chrs_rev(const struct Vstr_base *, size_t, size_t,
+                                 const char *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() ;
 
 

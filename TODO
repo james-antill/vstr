@@ -15,8 +15,6 @@
 . Finish glibc dbl
 		Add vstr_parse_double()/long_double()
 
-. vstr__base_scan_fwd_* use iovec for a fast case.
-
  Not needed for 1.0
  ------------------
 
@@ -40,6 +38,4 @@
 . vstr_x_* for external usage, 
 	Ie. vstr_x_pcre_*
 	vstr_x_hash_md5 vstr_x_hash_sha1
-
-. depreciated attribute (only supported in gcc-3.x).
 

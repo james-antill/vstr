@@ -21,8 +21,11 @@
 /* STUBS for - functions which are POSIX shortcuts */
 #include "main.h"
 
-int vstr_nx_sc_add_fd(Vstr_base *base, size_t pos, int fd,
-                      off_t off, size_t len,
+int vstr_nx_sc_add_fd(Vstr_base *base __attribute__((unused)),
+                      size_t pos __attribute__((unused)),
+                      int fd __attribute__((unused)),
+                      off_t off __attribute__((unused)),
+                      size_t len __attribute__((unused)),
                       unsigned int *err)
 {
   if (err)
@@ -34,7 +37,9 @@ int vstr_nx_sc_add_fd(Vstr_base *base, size_t pos, int fd,
   return (FALSE);
 }
 
-int vstr_nx_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
+int vstr_nx_sc_add_file(Vstr_base *base __attribute__((unused)),
+                        size_t pos __attribute__((unused)),
+                        const char *filename __attribute__((unused)),
                         unsigned int *err)
 {
   if (err)
@@ -46,8 +51,11 @@ int vstr_nx_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
   return (FALSE);
 }
 
-int vstr_nx_sc_read_fd(Vstr_base *base, size_t pos, int fd,
-                       unsigned int min, unsigned int max,
+int vstr_nx_sc_read_fd(Vstr_base *base __attribute__((unused)),
+                       size_t pos __attribute__((unused)),
+                       int fd __attribute__((unused)),
+                       unsigned int min __attribute__((unused)),
+                       unsigned int max __attribute__((unused)),
                        unsigned int *err)
 {
   if (err)
@@ -59,7 +67,10 @@ int vstr_nx_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   return (FALSE);
 }
 
-int vstr_nx_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
+int vstr_nx_sc_write_fd(Vstr_base *base __attribute__((unused)),
+                        size_t pos __attribute__((unused)),
+                        size_t len __attribute__((unused)),
+                        int fd __attribute__((unused)),
                         unsigned int *err)
 {
   if (err)
@@ -71,8 +82,12 @@ int vstr_nx_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
   return (FALSE);
 }
 
-int vstr_nx_sc_write_file(Vstr_base *base, size_t pos, size_t len,
-                          const char *filename, int open_flags, int mode,
+int vstr_nx_sc_write_file(Vstr_base *base __attribute__((unused)),
+                          size_t pos __attribute__((unused)),
+                          size_t len __attribute__((unused)),
+                          const char *filename __attribute__((unused)),
+                          int open_flags __attribute__((unused)),
+                          int mode __attribute__((unused)),
                           unsigned int *err)
 {
   if (err)

@@ -101,14 +101,16 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_ip tst_int
+tst = tst_ip \
+      tst_int \
+      tst_netstr \
+      tst_netstr2
+
 
 # FIXME
 #   tst_short
 #   tst_long
 #   tst_intmax_t
-#   tst_netstr
-#   tst_netstr2
 
 check_PROGRAMS = $(tst)
 
@@ -116,23 +118,33 @@ TESTS = $(tst)
 
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
-
-tst_ip_SOURCES = tst_ip.c
-tst_int_SOURCES = tst_int.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_ip$(EXEEXT) tst_int$(EXEEXT)
+check_PROGRAMS =  tst_ip$(EXEEXT) tst_int$(EXEEXT) tst_netstr$(EXEEXT) \
+tst_netstr2$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
+tst_ip_SOURCES = tst_ip.c
 tst_ip_OBJECTS =  tst_ip.$(OBJEXT)
 tst_ip_LDADD = $(LDADD)
 tst_ip_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_ip_LDFLAGS = 
+tst_int_SOURCES = tst_int.c
 tst_int_OBJECTS =  tst_int.$(OBJEXT)
 tst_int_LDADD = $(LDADD)
 tst_int_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_int_LDFLAGS = 
+tst_netstr_SOURCES = tst_netstr.c
+tst_netstr_OBJECTS =  tst_netstr.$(OBJEXT)
+tst_netstr_LDADD = $(LDADD)
+tst_netstr_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_netstr_LDFLAGS = 
+tst_netstr2_SOURCES = tst_netstr2.c
+tst_netstr2_OBJECTS =  tst_netstr2.$(OBJEXT)
+tst_netstr2_LDADD = $(LDADD)
+tst_netstr2_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_netstr2_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -144,8 +156,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(tst_ip_SOURCES) $(tst_int_SOURCES)
-OBJECTS = $(tst_ip_OBJECTS) $(tst_int_OBJECTS)
+SOURCES = tst_ip.c tst_int.c tst_netstr.c tst_netstr2.c
+OBJECTS = tst_ip.$(OBJEXT) tst_int.$(OBJEXT) tst_netstr.$(OBJEXT) tst_netstr2.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -218,6 +230,14 @@ tst_ip$(EXEEXT): $(tst_ip_OBJECTS) $(tst_ip_DEPENDENCIES)
 tst_int$(EXEEXT): $(tst_int_OBJECTS) $(tst_int_DEPENDENCIES)
 	@rm -f tst_int$(EXEEXT)
 	$(LINK) $(tst_int_LDFLAGS) $(tst_int_OBJECTS) $(tst_int_LDADD) $(LIBS)
+
+tst_netstr$(EXEEXT): $(tst_netstr_OBJECTS) $(tst_netstr_DEPENDENCIES)
+	@rm -f tst_netstr$(EXEEXT)
+	$(LINK) $(tst_netstr_LDFLAGS) $(tst_netstr_OBJECTS) $(tst_netstr_LDADD) $(LIBS)
+
+tst_netstr2$(EXEEXT): $(tst_netstr2_OBJECTS) $(tst_netstr2_DEPENDENCIES)
+	@rm -f tst_netstr2$(EXEEXT)
+	$(LINK) $(tst_netstr2_LDFLAGS) $(tst_netstr2_OBJECTS) $(tst_netstr2_LDADD) $(LIBS)
 
 tags: TAGS
 

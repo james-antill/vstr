@@ -1,9 +1,10 @@
 CC=gcc
-WARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
+OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
 LOCAL=1
 PROFILE=0
-STATIC=0
+STATIC=1
+FAST=0
 
 ifeq ($(PROFILE),1)
 PROF=-pg
@@ -22,11 +23,15 @@ ifeq ($(STATIC),2)
 ST=-static
 endif
 
+ifeq ($(FAST),1)
+OPTWARNS=-O2 -march=i386 -mcpu=i686
+endif
+
 ifeq ($(LOCAL),1)
-CFLAGS=-I../include $(WARNS) $(PROF)
+CFLAGS=-I../include $(OPTWARNS) $(PROF)
 LDFLAGS=$(ST) $(LOCAL_LIBS) $(PROF)
 else
-CFLAGS=`pkg-config --cflags vstr` -O2 $(PROF)
+CFLAGS=`pkg-config --cflags vstr` $(OPTWARNS) $(PROF)
 LDFLAGS=$(ST) `pkg-config --libs vstr` $(PROF)
 endif
 

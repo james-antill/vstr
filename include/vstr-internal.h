@@ -172,12 +172,12 @@ extern Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *, size_t, size_t *,
 extern Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *, size_t *,
                                           unsigned int *, Vstr_node *,
                                           char **, size_t *) VSTR__ATTR_I();
-extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
-                                   unsigned int *, unsigned int *,
-                                   char **, size_t *) VSTR__ATTR_I();
-extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
-                                   unsigned int *, unsigned int *,
-                                   char **, size_t *) VSTR__ATTR_I();
+extern int        vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
+                                          unsigned int *, unsigned int *,
+                                          char **, size_t *) VSTR__ATTR_I();
+extern int        vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
+                                          unsigned int *, unsigned int *,
+                                          char **, size_t *) VSTR__ATTR_I();
 
 extern int vstr__cache_iovec_alloc(const Vstr_base *, unsigned int)
     VSTR__ATTR_I();
@@ -220,7 +220,7 @@ extern void vstr_version_func(void);
 # include "vstr-internal-alias-symbols.h"
 
 # if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
-#  include "vstr-internal-inc-inline.h"
+#  include "vstr-internal-inline.h"
 # endif
 
 # include "vstr-internal-alias-inline-symbols.h"

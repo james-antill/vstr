@@ -48,7 +48,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
     return (0);
   
   if (ret_pos)
-    *ret_pos = pos + num_len;
+    *ret_pos = pos + num_len + 1;
   if (ret_data_len)
     *ret_data_len = ret_len;
 

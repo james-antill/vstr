@@ -21,8 +21,8 @@
 /* functionss for counting a "spanning" of chars within a vstr */
 #include "main.h"
 
-size_t vstr_nx_spn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
-                           const char *spn_buf, size_t spn_len)
+size_t vstr_nx_spn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                            const char *spn_chrs, size_t spn_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -38,21 +38,21 @@ size_t vstr_nx_spn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
  {
   size_t count = 0;
   
-  if ((scan->type == VSTR_TYPE_NODE_NON) && spn_buf)
+  if ((scan->type == VSTR_TYPE_NODE_NON) && spn_chrs)
     return (ret);
 
   if (scan->type == VSTR_TYPE_NODE_NON)
   {
-   assert(!spn_buf);
+   assert(!spn_chrs);
    goto next_loop;
   }
   
-  if (!spn_buf)
+  if (!spn_chrs)
     return (ret);
   
   while (count < scan_len)
   {
-   if (!memchr(spn_buf, scan_str[count], spn_len))
+   if (!memchr(spn_chrs, scan_str[count], spn_len))
      return (ret + count);
    ++count; 
   }
@@ -67,13 +67,15 @@ size_t vstr_nx_spn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 }
 
 /* go through fwd, reset everytime it fails then start doing it again */
-static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
-                                     size_t pos, size_t len,
-                                     const char *spn_buf, size_t spn_len)
+#if 0
+static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
+                                      size_t pos, size_t len,
+                                      const char *spn_chrs, size_t spn_len)
     VSTR__ATTR_I();
-static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
-                                     size_t pos, size_t len,
-                                     const char *spn_buf, size_t spn_len)
+#endif
+static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
+                                      size_t pos, size_t len,
+                                      const char *spn_chrs, size_t spn_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -89,7 +91,7 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
  {
   size_t count = 0;
   
-  if ((scan->type == VSTR_TYPE_NODE_NON) && spn_buf)
+  if ((scan->type == VSTR_TYPE_NODE_NON) && spn_chrs)
   {
    ret = 0;
    continue;
@@ -97,11 +99,11 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
     
   if (scan->type == VSTR_TYPE_NODE_NON)
   {
-   assert(!spn_buf);
+   assert(!spn_chrs);
    goto next_loop_all_good;
   }
   
-  if (!spn_buf)
+  if (!spn_chrs)
   {
    ret = 0;
    continue;
@@ -111,7 +113,7 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
   while (count > 0)
   {
    --count;
-   if (!memchr(spn_buf, scan_str[count], spn_len))
+   if (!memchr(spn_chrs, scan_str[count], spn_len))
    {
     ret = ((scan_len - count) - 1);
     if (!len)
@@ -131,13 +133,9 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
  return (ret);
 }
 
-static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
-                                     size_t pos, size_t len,
-                                     const char *spn_buf, size_t spn_len)
-    VSTR__ATTR_I() ;
-static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
-                                     size_t pos, size_t len,
-                                     const char *spn_buf, size_t spn_len)
+static size_t vstr__spn_chrs_rev_fast(const Vstr_base *base,
+                                      size_t pos, size_t len,
+                                      const char *spn_chrs, size_t spn_len)
 {
   unsigned int num = 0;
   unsigned int type = 0;
@@ -153,21 +151,21 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
   {
     size_t count = 0;
     
-    if ((type == VSTR_TYPE_NODE_NON) && spn_buf)
+    if ((type == VSTR_TYPE_NODE_NON) && spn_chrs)
       return (ret);
     
     if (type == VSTR_TYPE_NODE_NON)
     {
-      assert(!spn_buf);
+      assert(!spn_chrs);
       goto next_loop;
     }
     
-    if (!spn_buf)
+    if (!spn_chrs)
       return (ret);
     
     while (count < scan_len)
     {
-      if (!memchr(spn_buf, scan_str[scan_len - count], spn_len))
+      if (!memchr(spn_chrs, scan_str[scan_len - count], spn_len))
         return (ret + count);
       ++count;
     }
@@ -181,17 +179,17 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
   return (ret);
 }
 
-size_t vstr_nx_spn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
-                           const char *spn_buf, size_t spn_len)
+size_t vstr_nx_spn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                            const char *spn_chrs, size_t spn_len)
 {
   if (base->iovec_upto_date)
-    return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len));
+    return (vstr__spn_chrs_rev_fast(base, pos, len, spn_chrs, spn_len));
   
-  return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
+  return (vstr__spn_chrs_rev_slow(base, pos, len, spn_chrs, spn_len));
 }
 
-size_t vstr_nx_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
-                            const char *cspn_buf, size_t cspn_len)
+size_t vstr_nx_cspn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                             const char *cspn_chrs, size_t cspn_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -205,16 +203,16 @@ size_t vstr_nx_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 
  do
  {
-  if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_buf)
+  if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_chrs)
     goto next_loop;
 
   if (scan->type == VSTR_TYPE_NODE_NON)
   {
-   assert(!cspn_buf);
+   assert(!cspn_chrs);
    return (ret);
   }
   
-  if (!cspn_buf)
+  if (!cspn_chrs)
     goto next_loop;
   
   if (scan->type != VSTR_TYPE_NODE_NON)
@@ -222,7 +220,7 @@ size_t vstr_nx_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
    size_t count = 0;
    while (count < scan_len)
    {
-    if (memchr(cspn_buf, scan_str[count], cspn_len))
+    if (memchr(cspn_chrs, scan_str[count], cspn_len))
       return (ret + count);
     ++count;
    }
@@ -237,9 +235,9 @@ size_t vstr_nx_cspn_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 }
 
 /* go through fwd, reset everytime it fails then start doing it again */
-static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
-                                      size_t pos, size_t len,
-                                      const char *cspn_buf, size_t cspn_len)
+static size_t vstr__cspn_chrs_rev_slow(const Vstr_base *base,
+                                       size_t pos, size_t len,
+                                       const char *cspn_chrs, size_t cspn_len)
 {  
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -255,24 +253,24 @@ static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
  {
   size_t count = 0;
   
-  if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_buf)
+  if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_chrs)
     goto next_loop_all_good;
     
   if (scan->type == VSTR_TYPE_NODE_NON)
   {
-   assert(!cspn_buf);
+   assert(!cspn_chrs);
    ret = 0;
    continue;
   }
   
-  if (!cspn_buf)
+  if (!cspn_chrs)
     goto next_loop_all_good;
 
   count = scan_len;
   while (count > 0)
   {
    --count;
-   if (memchr(cspn_buf, scan_str[count], cspn_len))
+   if (memchr(cspn_chrs, scan_str[count], cspn_len))
    {
     ret = ((scan_len - count) - 1);
     if (!len)
@@ -292,9 +290,9 @@ static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
  return (ret);
 }
 
-static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
-                                      size_t pos, size_t len,
-                                      const char *spn_buf, size_t spn_len)
+static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
+                                       size_t pos, size_t len,
+                                       const char *spn_chrs, size_t spn_len)
 {
   unsigned int num = 0;
   unsigned int type = 0;
@@ -310,21 +308,21 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
   {
     size_t count = 0;
     
-    if ((type == VSTR_TYPE_NODE_NON) && spn_buf)
+    if ((type == VSTR_TYPE_NODE_NON) && spn_chrs)
       return (ret);
     
     if (type == VSTR_TYPE_NODE_NON)
     {
-      assert(!spn_buf);
+      assert(!spn_chrs);
       goto next_loop;
     }
     
-    if (!spn_buf)
+    if (!spn_chrs)
       return (ret);
     
     while (count < scan_len)
     {
-      if (memchr(spn_buf, scan_str[scan_len - count], spn_len))
+      if (memchr(spn_chrs, scan_str[scan_len - count], spn_len))
         return (ret + count);
       ++count;
     }
@@ -338,11 +336,11 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
   return (ret);
 }
 
-size_t vstr_nx_cspn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
-                            const char *cspn_buf, size_t cspn_len)
+size_t vstr_nx_cspn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                            const char *cspn_chrs, size_t cspn_len)
 {  
   if (base->iovec_upto_date)
-    return (vstr__cspn_buf_rev_fast(base, pos, len, cspn_buf, cspn_len));
+    return (vstr__cspn_chrs_rev_fast(base, pos, len, cspn_chrs, cspn_len));
   
-  return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));
+  return (vstr__cspn_chrs_rev_slow(base, pos, len, cspn_chrs, cspn_len));
 }

@@ -939,9 +939,6 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
  size_t orig_pos = *pos;
  Vstr_node *scan = base->beg;
  Vstr__cache_data_pos *data = NULL;
-
- // fprintf(stderr, "pos = %zu\tlen=%zu\tbeglen=%zu\n", *pos, base->len,
- //         base->beg ? base->beg->len : 0);
  
  *pos += base->used;
  *num = 1;
@@ -968,8 +965,6 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
   *pos = (orig_pos - data->pos) + 1;
  }
 
- // fprintf(stderr, "** miss num = %u\t", *num);
-
  while (*pos > scan->len)
  {
   *pos -= scan->len;
@@ -981,70 +976,68 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
 
  if (cache && (*num > 1))
    vstr__base_cache_pos(base, scan, (orig_pos - *pos) + 1, *num);
-
- // fprintf(stderr, "%u\n", *num);
  
  return (scan);
 }
 
-Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
-                                   size_t pos, size_t *len,
-                                   unsigned int *num, 
-                                   char **scan_str, size_t *scan_len)
+Vstr_node * vstr__base_scan_fwd_beg(const Vstr_base *base,
+                                    size_t pos, size_t *len,
+                                    unsigned int *num, 
+                                    char **scan_str, size_t *scan_len)
 {
- Vstr_node *scan = NULL;
-
- assert(base && pos && len && (((pos <= base->len) &&
-                                ((pos + *len - 1) <= base->len)) || !*len));
- 
- if ((pos > base->len) || !*len)
-   return (NULL);
- 
- if ((pos + *len - 1) > base->len)
-   *len = base->len - (pos - 1);
- 
- scan = vstr__base_pos(base, &pos, num, TRUE);
- assert(scan);
-
- --pos;
- 
- *scan_len = scan->len - pos;
- if (*scan_len > *len)
-   *scan_len = *len;
- *len -= *scan_len;
-
- *scan_str = NULL;
- if (scan->type != VSTR_TYPE_NODE_NON)
-   *scan_str = vstr__export_node_ptr(scan) + pos;
- 
- return (scan);
+  Vstr_node *scan = NULL;
+  
+  assert(base && num && len);
+  
+  assert(pos && (((pos <= base->len) &&
+                  ((pos + *len - 1) <= base->len)) || !*len));
+  
+  if ((pos > base->len) || !*len)
+    return (NULL);
+  
+  if ((pos + *len - 1) > base->len)
+    *len = base->len - (pos - 1);
+  
+  scan = vstr__base_pos(base, &pos, num, TRUE);
+  assert(scan);
+  
+  --pos;
+  
+  *scan_len = scan->len - pos;
+  if (*scan_len > *len)
+    *scan_len = *len;
+  *len -= *scan_len;
+  
+  *scan_str = NULL;
+  if (scan->type != VSTR_TYPE_NODE_NON)
+    *scan_str = vstr__export_node_ptr(scan) + pos;
+  
+  return (scan);
 }
 
 Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *base, size_t *len,
                                    unsigned int *num, Vstr_node *scan,
                                    char **scan_str, size_t *scan_len)
 {
- assert(scan);
-
- (void)base; /* not needed */
- 
- if (!*len || !scan || !(scan = scan->next))
-   return (NULL); 
- ++*num;
- 
- *scan_len = scan->len;
- 
- if (*scan_len > *len)
-   *scan_len = *len; 
- *len -= *scan_len;
-
- *scan_str = NULL;
- if (scan->type != VSTR_TYPE_NODE_NON)
-   *scan_str = vstr__export_node_ptr(scan);
-
- return (scan);
+  assert(base && num && len);
+  assert(scan);
+  
+  if (!*len || !scan || !(scan = scan->next))
+    return (NULL); 
+  ++*num;
+  
+  *scan_len = scan->len;
+  
+  if (*scan_len > *len)
+    *scan_len = *len; 
+  *len -= *scan_len;
+  
+  *scan_str = NULL;
+  if (scan->type != VSTR_TYPE_NODE_NON)
+    *scan_str = vstr__export_node_ptr(scan);
+  
+  return (scan);
 }
-
 
 int vstr__base_scan_rev_beg(const Vstr_base *base,
                             size_t pos, size_t *len,
@@ -1053,9 +1046,11 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
 {
   Vstr_node *scan = NULL;
 
-  assert(base->iovec_upto_date);
+  assert(base && num && len && type);
   
-  assert(base && pos && len && *len && ((pos + *len - 1) <= base->len));
+  assert(*len && ((pos + *len - 1) <= base->len));
+  
+  assert(base->iovec_upto_date);
   
   if ((pos > base->len) || !*len)
     return (FALSE);
@@ -1090,6 +1085,10 @@ int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   struct iovec *iovs = NULL;
   unsigned char *types = NULL;
   size_t pos = 0;
+  
+  assert(base && num && len && type);
+  
+  assert(base->iovec_upto_date);
   
   assert(num);
   

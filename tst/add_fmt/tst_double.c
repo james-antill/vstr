@@ -19,6 +19,7 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
 
 #ifdef FMT_DBL_glibc /* only has %a implemented atm. */
+  if (ret) return (ret);
   return (EXIT_FAILED_OK);
 #endif
   

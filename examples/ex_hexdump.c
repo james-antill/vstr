@@ -10,6 +10,12 @@
 
 #include "ex_utils.h"
 
+/* hexdump in "readable" format ... note this is a bit more fleshed out than
+ * some of the other examples mainly because I actually use it */
+
+#define MAX_R_DATA_INCORE (1024 * 1024)
+#define MAX_W_DATA_INCORE (1024 * 8)
+
 static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
 {
   static unsigned int addr = 0;
@@ -18,7 +24,7 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
   {
     unsigned char buf[16];
     
-    vstr_export_buf(str2, 1, 16, buf);
+    vstr_export_buf(str2, 1, 16, buf, sizeof(buf));
     
     vstr_add_fmt(str1, str1->len, "%08X:", addr);
     vstr_add_fmt(str1, str1->len,
@@ -35,9 +41,12 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     vstr_conv_unprintable_chr(str2, 1, 16, VSTR_FLAG_CONV_UNPRINTABLE_DEF, '.');
     vstr_add_vstr(str1, str1->len, str2, 1, 16, VSTR_TYPE_ADD_ALL_BUF);
     VSTR_ADD_CSTR_BUF(str1, str1->len, "\n");
+    vstr_del(str2, 1, 16);
     
     addr += 0x10;
-    vstr_del(str2, 1, 16);
+
+    if (str1->len > MAX_W_DATA_INCORE)
+      return;
   }
 
   if (last && str2->len)
@@ -48,7 +57,7 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     const char *ptr = buf;
 
     missing -= (missing % 2);
-    vstr_export_buf(str2, 1, str2->len, buf);
+    vstr_export_buf(str2, 1, str2->len, buf, sizeof(buf));
 
     vstr_add_fmt(str1, str1->len, "%08X:", addr);
     
@@ -72,10 +81,26 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
     vstr_add_vstr(str1, str1->len, str2, 1, str2->len, VSTR_TYPE_ADD_ALL_BUF);
 
     VSTR_ADD_CSTR_BUF(str1, str1->len, "\n");
+
+    vstr_del(str2, 1, 16);
   }
 
   if (str1->conf->malloc_bad)
     errno = ENOMEM, DIE("adding data:");
+}
+
+int ex_hexdump_set_o_nonblock(int fd)
+{
+  int flags = 0;
+
+  if ((flags = fcntl(fd, F_GETFL)) == -1)
+    return (0);
+
+  if (!(flags & O_NONBLOCK) &&
+      (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
+    return (0);
+
+  return (1);
 }
 
 static void ex_hexdump_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2,
@@ -85,12 +110,15 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2,
   
   while (TRUE)
   {
-    vstr_sc_read_fd(str2, str2->len, fd, 2, 32, &err);
-    if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-      break;
-    if (err)
-      DIE("read:");
-
+    if (str2->len < MAX_R_DATA_INCORE)
+    {
+      vstr_sc_read_fd(str2, str2->len, fd, 2, 32, &err);
+      if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
+        break;
+      if (err)
+        DIE("read:");
+    }
+    
     ex_hexdump_process(str1, str2, FALSE);
 
     if (!vstr_sc_write_fd(str1, 1, str1->len, 1, &err))
@@ -143,10 +171,15 @@ int main(int argc, char *argv[])
     errno = ENOMEM, DIE("vstr_make_base:");
 
   vstr_free_conf(conf);
+
+  ex_hexdump_set_o_nonblock(1);
   
   if (count == argc)  /* use stdin */
+  {
+    ex_hexdump_set_o_nonblock(0);
     ex_hexdump_read_fd_write_stdout(str1, str2, 0);
-
+  }
+  
   while (count < argc)
   {
     unsigned int err = 0;
@@ -159,7 +192,7 @@ int main(int argc, char *argv[])
       
       if (fd == -1)
         DIE("open:");
-      
+
       ex_hexdump_read_fd_write_stdout(str1, str2, fd);
       
       close(fd);
@@ -170,12 +203,50 @@ int main(int argc, char *argv[])
       ex_hexdump_process(str1, str2, FALSE);
 
     if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-      DIE("write:");
+    { /* should really use socket_poll ...
+       * but can't be bothered requireing other library */
+      struct pollfd one;
+      
+      if (errno != EAGAIN)
+        DIE("write:");
+
+      one.fd = 1;
+      one.events = POLLOUT;
+      one.revents = 0;
+
+      while (poll(&one, 1, -1) == -1) /* can't timeout */
+      {
+        if (errno != EINTR)
+          DIE("poll:");
+      }
+    }
     
     ++count;
   }
 
-  ex_hexdump_process(str1, str2, TRUE);
+  while (str2->len)
+  {
+    ex_hexdump_process(str1, str2, TRUE);
+
+    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
+    { /* should really use socket_poll ...
+       * but can't be bothered requireing other library */
+      struct pollfd one;
+      
+      if (errno != EAGAIN)
+        DIE("write:");
+
+      one.fd = 1;
+      one.events = POLLOUT;
+      one.revents = 0;
+
+      while (poll(&one, 1, -1) == -1) /* can't timeout */
+      {
+        if (errno != EINTR)
+          DIE("poll:");
+      }
+    }
+  }
   
   vstr_free_base(str2);
 

@@ -30,7 +30,18 @@ static struct Vstr__fmt_spec *vstr__fmt_spec_list_beg = NULL;
 static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 
 
-#define vstr__fmt_isdigit(x) (strchr("0123456789", (x)) != NULL)
+#define VSTR__ADD_FMT_ISDIGIT(x) (((x) >= '0') && ((x) <= '9'))
+
+#define VSTR__ADD_FMT_CHAR2INT_1(x) ((x) - '0')
+#define VSTR__ADD_FMT_CHAR2INT_2(x, y) ((((x) - '0') * 10) + \
+                                         ((y) - '0'))
+
+/* a very small number of digits is _by far_ the norm */
+#define VSTR__ADD_FMT_STRTOL(x) \
+ (VSTR__ADD_FMT_ISDIGIT((x)[1]) ? \
+  VSTR__ADD_FMT_ISDIGIT((x)[2]) ? strtol(x, (char **) (x), 10) : \
+  ((x) += 2, VSTR__ADD_FMT_CHAR2INT_2((x)[-2], (x)[-1])) : \
+  ((x) += 1, VSTR__ADD_FMT_CHAR2INT_1((x)[-1])))
 
 /* Increasingly misnamed "simple" fprintf like code... */
 
@@ -985,7 +996,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
        case 'p':
        {
         void *tmp = va_arg(ap, void *);
-        u.data_m = (uintmax_t) tmp; /* warning ... *sigh* */
+        u.data_m = (unsigned long) tmp; /* FIXME: uintmax_t .. but warns */
        }
        break;
          
@@ -1133,9 +1144,9 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
  got_flags:
 
   /* get i18n param number */   
-  if (vstr__fmt_isdigit(*fmt))
+  if (VSTR__ADD_FMT_ISDIGIT(*fmt))
   {
-   tmp_num = strtol(fmt, (char **) &fmt, 10);
+   tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
    
    if (*fmt != '$')
      goto use_field_width;
@@ -1146,11 +1157,11 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
   }
   
   /* get field width */   
-  if (vstr__fmt_isdigit(*fmt))
+  if (VSTR__ADD_FMT_ISDIGIT(*fmt))
   {
     spec->field_width_usr = TRUE;
     
-    tmp_num = strtol(fmt, (char **) &fmt, 10);
+    tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
     
    use_field_width:
     if (tmp_num < 0)
@@ -1171,8 +1182,8 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
 
     ++fmt;
     tmp_num = 0;
-    if (vstr__fmt_isdigit(*fmt))
-      tmp_num = strtol(fmt, (char **) &fmt, 10);
+    if (VSTR__ADD_FMT_ISDIGIT(*fmt))
+      tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
       
     if (*fmt != '$')
     {
@@ -1192,9 +1203,9 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
     spec->flags |= PREC_USR;
     
     ++fmt;
-    if (vstr__fmt_isdigit(*fmt))
+    if (VSTR__ADD_FMT_ISDIGIT(*fmt))
     {
-      tmp_num = strtol(fmt, (char**) &fmt, 10); /* warning */
+      tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
       if (tmp_num < 0) /* check to make sure things go nicely */
         tmp_num = 0;
       
@@ -1206,8 +1217,8 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
       ++fmt;
 
       tmp_num = 0;
-      if (vstr__fmt_isdigit(*fmt))
-        tmp_num = strtol(fmt, (char **) &fmt, 10);
+      if (VSTR__ADD_FMT_ISDIGIT(*fmt))
+        tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
         
       if (*fmt != '$')
       {
@@ -1306,7 +1317,7 @@ size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
       
     case 'p':
       spec->num_base = 16;
-      spec->int_type = INTMAX_T_TYPE;
+      spec->int_type = LONG_TYPE;
       spec->fmt_code = 'p';
       spec->flags |= SPECIAL;
       spec->precision = numb_precision; /* ok ? */

@@ -284,6 +284,7 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
   *ret_off = 0;
   if (!(buf_ref = vstr__export_buf_ref(base, pos, len)))
     return (NULL);
-    
+
+  assert((Vstr_ref *)buf_ref == &buf_ref->ref);
   return (&buf_ref->ref);
 }

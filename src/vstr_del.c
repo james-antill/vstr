@@ -142,6 +142,12 @@ static void vstr__del_beg_cleanup(Vstr_base *base, unsigned int type,
  }
 }
 
+static void vstr__del_node(Vstr_node *node)
+{ /* free resources of a node ... just ref atm. */
+  if (node->type == VSTR_TYPE_NODE_REF)
+    vstr_nx_ref_del(((Vstr_node_ref *)node)->ref);
+}
+
 static void vstr__del_all(Vstr_base *base)
 {
   size_t orig_len = base->len;
@@ -171,9 +177,8 @@ static void vstr__del_all(Vstr_base *base)
   }
   
   ++num;
-  
-  if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_nx_ref_del(((Vstr_node_ref *)*scan)->ref);
+
+  vstr__del_node(*scan);
   
   scan = &(*scan)->next;
  }
@@ -286,8 +291,8 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
   
   ++num;
   len -= (*scan)->len;
-  if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_nx_ref_del(((Vstr_node_ref *)(*scan))->ref);
+  
+  vstr__del_node(*scan);
   
   scan = &(*scan)->next;
  }
@@ -366,10 +371,10 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
 
  assert(base && pos && ((pos + len - 1) <= base->len));
  
- if (!len && !base->len)
+ if (!len)
    return (TRUE);
  
- assert(pos && len);
+ assert(pos);
 
  if (pos > base->len)
    return (FALSE);
@@ -473,12 +478,12 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
  len -= scan->len;
  type = scan->type;
  beg = scan;
+ vstr__del_node(scan);
  pscan = &scan->next;
  num = 1;
  while (*pscan && (len >= (*pscan)->len))
  {
-  if ((*pscan)->type == VSTR_TYPE_NODE_REF)
-    vstr_nx_ref_del(((Vstr_node_ref *)(*pscan))->ref);
+   vstr__del_node(*pscan);
   
   len -= (*pscan)->len;
   

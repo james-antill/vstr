@@ -164,13 +164,18 @@ Constant: VSTR_TYPE_SUB_ALL_BUF
 
 Section: Constants passed to vstr_conv_unprintable_*()
 
-Constant: VSTR_FLAG_CONV_UNPRINTABLE_DEF
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE
 
  Explanation:
 
   This flag is 0, and is generally only used as programmer documentation to mean
  no flags are applied to this function.
 
+ Note:
+
+  Because it is sometimes are to notice certain characters, they are clasified
+ as "unprintable" in by default, the value VSTR_FLAG_CONV_UNPRINTABLE_DEF is
+ a default that is what most people would expect.
 
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL
 
@@ -236,6 +241,38 @@ Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR
  "printable" character.
 
 
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP
+
+ Explanation:
+
+  This flag allows the ASCII 0x20 byte, aka. space, through as a
+ "printable" character.
+
+
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA
+
+ Explanation:
+
+  This flag allows the ASCII 0x2C byte, aka. comma, through as a
+ "printable" character.
+
+
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT
+
+ Explanation:
+
+  This flag allows the ASCII 0x2E byte, aka. dot, through as a
+ "printable" character.
+
+
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__
+
+ Explanation:
+
+  This flag allows the ASCII 0x5F byte, aka. underbar, through as a
+ "printable" character.
+
+
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC
 
  Explanation:
@@ -252,12 +289,38 @@ Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL
  "printable" character.
 
 
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP
+
+ Explanation:
+
+  This flag allows the ASCII 0xA0 byte through as a "printable" character.
+
+ Note:
+
+  The value 0xA0 is 0x20 with the high bit set, and this character it often
+ printed as space when in an ASCII like encoding.
+
+
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH
 
  Explanation:
 
-  This flag allows the all ASCII bytes greater than 0xA1 through as
+  This flag allows the all ASCII bytes greater than or equal to 0xA1 through as
  "printable" characters.
+
+ Note:
+
+  This includes all the extra characters like not, degree, copyright and micro
+ when in an ASCII like encoding.
+
+
+Constant: VSTR_FLAG_CONV_UNPRINTABLE_DEF
+
+ Explanation:
+
+  This flag is the same as using the flags for space, comma, dot and underbar.
+ Using just this flag is probably what you'd expect an "unprintable" function
+ to do.
 
 
 Section: Constants used with vstr_parse_[u](short|int|long|intmax)()

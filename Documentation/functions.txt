@@ -30,6 +30,320 @@ Function: vstr_exit()
  used with a memory checker.
 
 
+Section: Functions to choose multiple VSTR_FLAG_* constants
+
+Function: VSTR_FLAG10()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Parameter[7]: Name of a flag in given flag type
+ Type[7]: <symbol>
+
+ Parameter[8]: Name of a flag in given flag type
+ Type[8]: <symbol>
+
+ Parameter[9]: Name of a flag in given flag type
+ Type[9]: <symbol>
+
+ Parameter[10]: Name of a flag in given flag type
+ Type[10]: <symbol>
+
+ Parameter[11]: Name of a flag in given flag type
+ Type[11]: <symbol>
+
+ Explanation:
+
+  This macro function combines 10 flags. So instead of having to say...
+
+    (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA)
+
+ ...you can now say...
+
+    VSTR_FLAG10(CONV_UNPRINTABLE_ALLOW, 
+                NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA)
+
+ ...this becomes a lot more readable as the number of flags increases.
+
+
+Function: VSTR_FLAG09()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Parameter[7]: Name of a flag in given flag type
+ Type[7]: <symbol>
+
+ Parameter[8]: Name of a flag in given flag type
+ Type[8]: <symbol>
+
+ Parameter[9]: Name of a flag in given flag type
+ Type[9]: <symbol>
+
+ Parameter[10]: Name of a flag in given flag type
+ Type[10]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 9 flags.
+
+
+Function: VSTR_FLAG08()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Parameter[7]: Name of a flag in given flag type
+ Type[7]: <symbol>
+
+ Parameter[8]: Name of a flag in given flag type
+ Type[8]: <symbol>
+
+ Parameter[9]: Name of a flag in given flag type
+ Type[9]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 8 flags.
+
+
+Function: VSTR_FLAG07()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Parameter[7]: Name of a flag in given flag type
+ Type[7]: <symbol>
+
+ Parameter[8]: Name of a flag in given flag type
+ Type[8]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 7 flags.
+
+
+Function: VSTR_FLAG06()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Parameter[7]: Name of a flag in given flag type
+ Type[7]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 6 flags.
+
+
+Function: VSTR_FLAG05()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Parameter[6]: Name of a flag in given flag type
+ Type[6]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 5 flags.
+
+
+Function: VSTR_FLAG04()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Parameter[5]: Name of a flag in given flag type
+ Type[5]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 4 flags.
+
+
+Function: VSTR_FLAG03()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Parameter[4]: Name of a flag in given flag type
+ Type[4]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 3 flags.
+
+
+Function: VSTR_FLAG02()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Parameter[3]: Name of a flag in given flag type
+ Type[3]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 2 flags.
+
+
+Function: VSTR_FLAG01()
+ Returns: The value of the flag
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[2]: Name of a flag in given flag type
+ Type[2]: <symbol>
+
+ Explanation:
+
+  This macro function acts the same as VSTR_FLAG10() except it only combines
+ 1 flag with 0, this is here mainly for compatability.
+
+
 Section: Functions to get specific data about the vstr
 
 Function: vstr_num()
@@ -295,7 +609,7 @@ Function: vstr_export_buf()
  data array.
   Think of this function as doing a read() from a Vstr string. However the
  data will be limited to the minimum of the length of the vstr (Parameter[3])
- and the length of thedata (Parameter[5]).
+ and the length of the data (Parameter[5]).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
@@ -424,7 +738,7 @@ Function: vstr_ref_add()
 
 
 Function: vstr_ref_del()
- Returns: nothing
+ Returns: 
  Type: void
 
  Parameter[1]: Vstr memory reference
@@ -487,6 +801,37 @@ Function: vstr_free_base()
  Explanation:
 
   This function will free a Vstr string, allocated by vstr_make_base().
+
+
+Function: vstr_make_ref_malloc()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Size of malloc'd area to create in the memory reference
+ Type[1]: size_t
+
+ Explanation:
+
+  This function will create an area of memory, using malloc, and create a Vstr
+ memory reference to that memory. The Vstr memory reference will have a
+ reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
+
+
+Function: vstr_make_ref_ptr()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to memory
+ Type[1]: void *
+
+ Parameter[1]: Function callback for Vstr memory reference
+ Type[1]: void (*)(struct Vstr_ref *)
+
+ Explanation:
+
+  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of pointer passed
+ (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
 
 
 Function: vstr_make_spare_nodes()
@@ -734,6 +1079,30 @@ Function: VSTR_ADD_CSTR_PTR()
  strlen() on the data parameter (Parameter[3]).
 
 
+Function: VSTR_ADD_CSTR_REF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Vstr memory reference
+ Type[3]: struct Vstr_ref *
+
+ Parameter[4]: Offset of Vstr memory refernce (Parameter[3])
+ Type[4]: size_t
+
+
+ Explanation:
+
+  This macro function calls vstr_add_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 Function: vstr_dup_buf()
  Returns: Vstr string
  Type: struct Vstr_base *
@@ -786,6 +1155,28 @@ Function: vstr_dup_non()
 
   This function is equivilent to calling vstr_make_base() and then
  vstr_add_non().
+
+
+Function: vstr_dup_ref()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Vstr memory reference
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Offset of Vstr memory refernce (Parameter[2])
+ Type[3]: size_t
+
+ Parameter[4]: Length of Vstr memory refernce (Parameter[2])
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_ref().
 
 
 Function: vstr_dup_vstr()
@@ -845,6 +1236,27 @@ Function: VSTR_DUP_CSTR_PTR()
  strlen() on the data parameter (Parameter[2]).
 
 
+Function: VSTR_DUP_CSTR_REF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Vstr memory reference
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Offset of Vstr memory refernce (Parameter[3])
+ Type[3]: size_t
+
+
+ Explanation:
+
+  This macro function calls vstr_dup_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 Function: vstr_add_vfmt()
  Returns: Number of bytes added
  Type: size_t
@@ -889,10 +1301,10 @@ Function: vstr_add_fmt()
  Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
 
- Parameter[3]: 
+ Parameter[3]: Format string, that complies with rules similar to C99 printf
  Type[3]: const char *
 
- Parameter[4]: 
+ Parameter[4]: Options depending on value of Parameter[3]
  Type[4]: ...
 
  Explanation:
@@ -1354,6 +1766,32 @@ Function: VSTR_SUB_CSTR_PTR()
  strlen() on the data parameter (Parameter[4]).
 
 
+Function: VSTR_SUB_CSTR_REF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr memory reference
+ Type[4]: struct Vstr_ref *
+
+ Parameter[5]: Offset of Vstr memory refernce (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This macro function calls vstr_sub_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 Section: Functions to move data from a Vstr string to another Vstr string
 
 Function: vstr_mov()
@@ -1395,7 +1833,7 @@ Function: vstr_cntl_opt()
  Parameter[1]: Option type starting VSTR_CNTL_OPT_
  Type[1]: int
 
- Parameter[ ... ]: options depending on value of Parameter[1]
+ Parameter[ ... ]: Options depending on value of Parameter[1]
  Type[ ... ]: ...
 
 Function: vstr_cntl_base()
@@ -1408,7 +1846,7 @@ Function: vstr_cntl_base()
  Parameter[2]: Option type starting VSTR_CNTL_BASE_
  Type[2]: int
 
- Parameter[ ... ]: options depending on value of Parameter[2]
+ Parameter[ ... ]: Options depending on value of Parameter[2]
  Type[ ... ]: ...
 
 
@@ -1422,7 +1860,7 @@ Function: vstr_cntl_conf()
  Parameter[2]: Option type starting VSTR_CNTL_CONF_
  Type[2]: int
 
- Parameter[ ... ]: options depending on value of Parameter[2]
+ Parameter[ ... ]: Options depending on value of Parameter[2]
  Type[ ... ]: ...
 
 
@@ -2131,7 +2569,7 @@ Function: VSTR_SRCH_CSTR_BUF_REV()
 
 Section: Functions to calculate spanning in a Vstr string
 
-Function: vstr_spn_buf_fwd()
+Function: vstr_spn_chrs_fwd()
  Returns: Number of characters in the span
  Type: size_t
 
@@ -2144,10 +2582,10 @@ Function: vstr_spn_buf_fwd()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
- Parameter[5]: Length of spanning data (Parameter[4])
+ Parameter[5]: Length of spanning characters (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2161,7 +2599,7 @@ Function: vstr_spn_buf_fwd()
  function will return 0 to indicate an error.
 
 
-Function: vstr_spn_buf_rev()
+Function: vstr_spn_chrs_rev()
  Returns: Number of characters in the span
  Type: size_t
 
@@ -2174,10 +2612,10 @@ Function: vstr_spn_buf_rev()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
- Parameter[5]: Length of spanning data (Parameter[4])
+ Parameter[5]: Length of spanning characters (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2188,7 +2626,7 @@ Function: vstr_spn_buf_rev()
  function will return 0 to indicate an error.
 
 
-Function: vstr_cspn_buf_fwd()
+Function: vstr_cspn_chrs_fwd()
  Returns: Number of characters in the compliment span
  Type: size_t
 
@@ -2201,10 +2639,10 @@ Function: vstr_cspn_buf_fwd()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
- Parameter[5]: Length of spanning data (Parameter[4])
+ Parameter[5]: Length of spanning characters (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2218,7 +2656,7 @@ Function: vstr_cspn_buf_fwd()
  function will return 0 to indicate an error.
 
 
-Function: vstr_cspn_buf_rev()
+Function: vstr_cspn_chrs_rev()
  Returns: Number of characters in the compliment span
  Type: size_t
 
@@ -2231,10 +2669,10 @@ Function: vstr_cspn_buf_rev()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
- Parameter[5]: Length of spanning data (Parameter[4])
+ Parameter[5]: Length of spanning characters (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2245,7 +2683,7 @@ Function: vstr_cspn_buf_rev()
  function will return 0 to indicate an error.
 
 
-Function: VSTR_SPN_CSTR_BUF_FWD()
+Function: VSTR_SPN_CSTR_CHRS_FWD()
  Returns: Number of characters in the span
  Type: size_t
 
@@ -2258,16 +2696,16 @@ Function: VSTR_SPN_CSTR_BUF_FWD()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
  Explanation:
 
-  This macro function calls vstr_spn_buf_fwd() with the length being the
+  This macro function calls vstr_spn_chrs_fwd() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Function: VSTR_SPN_CSTR_BUF_REV()
+Function: VSTR_SPN_CSTR_CHRS_REV()
  Returns: Number of characters in the span
  Type: size_t
 
@@ -2280,16 +2718,16 @@ Function: VSTR_SPN_CSTR_BUF_REV()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
  Explanation:
 
-  This macro function calls vstr_spn_buf_rev() with the length being the
+  This macro function calls vstr_spn_chrs_rev() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Function: VSTR_CSPN_CSTR_BUF_FWD()
+Function: VSTR_CSPN_CSTR_CHRS_FWD()
  Returns: Number of characters in the compliment span
  Type: size_t
 
@@ -2302,16 +2740,16 @@ Function: VSTR_CSPN_CSTR_BUF_FWD()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
  Explanation:
 
-  This macro function calls vstr_cspn_buf_fwd() with the length being the
+  This macro function calls vstr_cspn_chrs_fwd() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Function: VSTR_CSPN_CSTR_BUF_REV()
+Function: VSTR_CSPN_CSTR_CHRS_REV()
  Returns: Number of characters in the compliment span
  Type: size_t
 
@@ -2324,12 +2762,12 @@ Function: VSTR_CSPN_CSTR_BUF_REV()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to spanning data
+ Parameter[4]: Pointer to spanning characters
  Type[4]: const char *
 
  Explanation:
 
-  This macro function calls vstr_cspn_buf_rev() with the length being the
+  This macro function calls vstr_cspn_chrs_rev() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2467,8 +2905,8 @@ Function: VSTR_SECTS_DECL()
  Returns: Declaration of a Vstr sections
  Type: struct Vstr_sects *
 
- Parameter[1]: Vstr sections
- Type[1]: struct Vstr_sects *
+ Parameter[1]: Name of variable to declare
+ Type[1]: <symbol>
 
  Parameter[2]: Maximum size of the Vstr sections (Parameter[1])
  Type[2]: unsigned int
@@ -2488,8 +2926,8 @@ Function: VSTR_SECTS_EXTERN_DECL()
  Returns: Extern declaration of a Vstr sections
  Type: struct Vstr_sects *
 
- Parameter[1]: Vstr sections
- Type[1]: struct Vstr_sects *
+ Parameter[1]: Name of variable to declare
+ Type[1]: <symbol>
 
  Parameter[2]: Maximum size of the Vstr sections
  Type[2]: unsigned int
@@ -2527,7 +2965,7 @@ Function: VSTR_SECTS_INIT()
  Parameter[3]: Array of Vstr section nodes
  Type[3]: struct Vstr_sect_node *
 
- Parameter[4]: non-zero if the nodes (Parameter[3]) can be passed to free()
+ Parameter[4]: Non-zero if the nodes (Parameter[3]) can be passed to free()
  Type[4]: int
 
  Explanation:
@@ -2737,9 +3175,74 @@ Function: vstr_split_chrs()
 
  Explanation:
 
-  Thsi function works like vstr_split_buf() except that instead of having to
+  This function works like vstr_split_buf() except that instead of having to
  match all the data in the data buffer it matches any of the characters in the
  character buffer (Parameter[4]).
+
+
+Function: VSTR_SPLIT_CSTR_BUF()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data to split on
+ Type[4]: const char *
+
+ Parameter[5]: Vstr sections
+ Type[5]: struct Vstr_sects *
+
+ Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[6]: unsigned int
+
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_
+ Type[7]: unsigned int
+
+ Explanation:
+
+  This macro function calls vstr_split_buf() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_SPLIT_CSTR_CHRS()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to characters to split on
+ Type[4]: const char *
+
+ Parameter[5]: Length of characters (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Vstr sections
+ Type[6]: struct Vstr_sects *
+
+ Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[7]: unsigned int
+
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Type[8]: unsigned int
+
+ Explanation:
+
+  This macro function calls vstr_split_chrs() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
 
 
 Section: Functions for parsing data from a vstr

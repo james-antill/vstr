@@ -144,10 +144,8 @@ static int vstr__sc_read_slow_fd(Vstr_base *base, size_t pos, int fd,
     goto mem_fail;
   pos = orig_pos;
   
-  if (!(ref = vstr_nx_ref_make_malloc(len)))
+  if (!(ref = vstr_nx_make_ref_malloc(len)))
     goto mem_fail;
-  
-  vstr_nx_ref_add(ref);
   
   if (!base->conf->spare_ref_num &&
       !vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1))

@@ -1,4 +1,112 @@
+2002-08-10  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.10
+
+2002-08-09  James Antill  <james@and.org>
+
+	* src/vstr_ref.c (vstr_make_ref_malloc): Added function.
+	(vstr_make_ref_ptr): Added function.
+
+	* src/vstr_split.c (vstr_split_chrs): Fixed infinite loop when REMAIN
+	wasn't specified and you had a null addition as your last section.
+	(vstr_split_buf): Fixed infinite loop when REMAIN wasn't specified 
+	and you had a null addition as your last section.
+	(vstr_split_buf): Fixed meaning of the NO_RET flage, as it was
+	reversed.
+	(vstr_split_chrs): Fixed meaning of the NO_RET flage, as it was
+	reversed.
+
+	* src/vstr_parse_netstr.c (vstr__parse_netstr): Fix the return position
+	from the netstr functions from pointing to the ':' to the first piece
+	of data.
+
+	* include/vstr-extern.h (VSTR_SPLIT_CSTR_BUF): Added macro function.
+	(VSTR_SPLIT_CSTR_CHRS): Added macro function.
+
+	* src/vstr_mov.c (vstr_mov): Fixed bug, internal state got corrupted if
+	you tried to move the last node of a Vstr_base to another node, and it
+	could be done fast.
+
+2002-08-08  James Antill  <james@and.org>
+
+	* src/vstr_sub.c (VSTR__SUB_BUF): Add small copy calls outside of
+	memcpy() for speed.
+
+	* src/vstr_srch.c (vstr_nx_srch_buf_fwd): Fix return value when
+	searching for _NON data.
+	(vstr_nx_srch_buf_fwd): Fix test for is there enough room left.
+
+	* include/vstr-const.h (VSTR_FLAG01): Added macro function.
+	(VSTR_FLAG02): Added macro function.
+	(VSTR_FLAG03): Added macro function.
+	(VSTR_FLAG04): Added macro function.
+	(VSTR_FLAG05): Added macro function.
+	(VSTR_FLAG06): Added macro function.
+	(VSTR_FLAG07): Added macro function.
+	(VSTR_FLAG08): Added macro function.
+	(VSTR_FLAG09): Added macro function.
+	(VSTR_FLAG10): Added macro function.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP): Allow space.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA): Allow commas.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT): Allow full stops.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__): Allow Underbar.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP): Allow space with high bit set.
+	(VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE): Allow nothing.
+	(VSTR_FLAG_CONV_UNPRINTABLE_DEF): Due to above additions changed
+	default to be what most people would expect.
+
+	* src/vstr_del.c (vstr_extern_inline_del): Fix non decrement of 
+	reference for ref nodes at the begining of a deleteion.
+
+2002-08-07  James Antill  <james@and.org>
+
+	* src/vstr_spn.c (vstr_spn_chrs_fwd): Rename function from
+	buf to chrs, as the parameter isn't treated as a buf.
+	(vstr_spn_chrs_rev): Rename function from buf to chrs, as the
+	parameter isn't treated as a buf.
+	(vstr_cspn_chrs_fwd): Rename function from buf to chrs, as the
+	parameter isn't treated as a buf.
+	(vstr_cspn_chrs_rev): Rename function from buf to chrs, as the
+	parameter isn't treated as a buf.
+
+2002-08-04  James Antill  <james@and.org>
+
+	* src/vstr_sub.c (vstr_nx_sub_buf): Allowed Vstr to be empty.
+	(vstr_nx_sub_ptr): Allowed Vstr to be empty.
+	(vstr_nx_sub_non): Allowed Vstr to be empty.
+	(vstr_nx_sub_ref): Allowed Vstr to be empty.
+	(vstr_nx_sub_vstr): Allowed both Vstrs to be empty.
+
+	* src/vstr_dup.c (vstr_dup_ref): Added function.
+
+	* include/vstr-extern.h.pre (VSTR_ADD_CSTR_REF): Added macro function.
+	(VSTR_DUP_CSTR_REF): Added macro function.
+	(VSTR_SUB_CSTR_REF): Added macro function.
+
 2002-07-30  James Antill  <james@and.org>
+
+	* examples/ex_hexdump.c (main): Fixed a couple of semi-bugs.
+
+	* src/vstr_conv.c (vstr_nx_conv_unprintable_del): Fixed bugs found by
+	test.
+
+	* tst/conv/tst_unprintable.c (tst): Added test.
+
+	* include/vstr-inline.h.pre (vstr_add_buf): Add small copy calls 
+	outside memcpy() so for speed.
+
+	* src/vstr_add_fmt.c (VSTR__ADD_FMT_STRTOL): Add small length nums
+	inline.
+
+	* src/vstr_add_fmt.c (VSTR__ADD_FMT_ISDIGIT): Stop being so paranoid
+	about digits, digits are always next to each other ... just alphas
+	that are weird.
+
+	* examples/ex_hexdump.c (ex_hexdump_process): Fixup the 
+	vstr_export_buf() calls.
+
+	* src/vstr_add_fmt_dbl_glibc.c (PRINT_FPHEX_LONG_DOUBLE): Add long
+	double support for dbl-fmt=glibc (still only %a style works though).
 
 	* NEWS: Release 0.9.9
 

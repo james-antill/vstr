@@ -21,6 +21,63 @@
  *  email: james@and.org
  */
 
+/* macro functions to make flags readable ... don't forget that expantion
+ * happens on second macro call */
+#define VSTR__FLAG01(B, x1) \
+   B ## x1
+#define VSTR__FLAG02(B, x1, x2) ( \
+ ( B ## x1 ) | \
+ ( B ## x2 ) | \
+ 0)
+#define VSTR__FLAG04(B, x1, x2, x3, x4) ( \
+ ( B ## x1 ) | \
+ ( B ## x2 ) | \
+ ( B ## x3 ) | \
+ ( B ## x4 ) | \
+ 0)
+
+#define VSTR_FLAG01(T, x1) ( \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x1 ) | \
+ 0)
+#define VSTR_FLAG02(T, x1, x2) ( \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 ) | \
+ 0)
+#define VSTR_FLAG03(T, x1, x2, x3) ( \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x3 ) | \
+ 0)
+#define VSTR_FLAG04(T, x1, x2, x3, x4) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ 0)
+#define VSTR_FLAG05(T, x1, x2, x3, x4, x5) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x5 ) | \
+ 0)
+#define VSTR_FLAG06(T, x1, x2, x3, x4, x5, x6) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 ) | \
+ 0)
+#define VSTR_FLAG07(T, x1, x2, x3, x4, x5, x6, x7) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x7 ) | \
+ 0)
+#define VSTR_FLAG08(T, x1, x2, x3, x4, x5, x6, x7, x8) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ 0)
+#define VSTR_FLAG09(T, x1, x2, x3, x4, x5, x6, x7, x8, x9) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x9 ) | \
+ 0)
+#define VSTR_FLAG10(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA ) | \
+ 0)
+
+/* start of constants ... */
 #define VSTR_TYPE_NODE_BUF 1
 #define VSTR_TYPE_NODE_NON 2
 #define VSTR_TYPE_NODE_PTR 3
@@ -39,18 +96,25 @@
 #define VSTR_TYPE_SUB_ALL_REF VSTR_TYPE_ADD_ALL_REF
 #define VSTR_TYPE_SUB_ALL_BUF VSTR_TYPE_ADD_ALL_BUF
 
-#define VSTR_FLAG_CONV_UNPRINTABLE_DEF 0
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL (1<<0)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL (1<<1)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS (1<<2)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT (1<<3)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF (1<<4)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT (1<<5)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF (1<<6)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR (1<<7)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC (1<<8)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL (1<<9)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH (1<<10)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE   0
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL   (1<<0)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL   (1<<1)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS    (1<<2)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT    (1<<3)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF    (1<<4)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT    (1<<5)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF    (1<<6)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR    (1<<7)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP    (1<<8)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA (1<<9)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT   (1<<9)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__     (1<<10)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC   (1<<11)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL   (1<<12)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP   (1<<13)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH  (1<<14)
+#define VSTR_FLAG_CONV_UNPRINTABLE_DEF \
+ VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW, SP, COMMA, DOT, _)
 
 #define VSTR_TYPE_PARSE_NUM_ERR_NONE 0
 #define VSTR_TYPE_PARSE_NUM_ERR_ONLY_S 1

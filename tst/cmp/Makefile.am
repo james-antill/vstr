@@ -9,6 +9,15 @@ tst = tst_vstr \
     tst_vstr_vers \
     tst_vstr_non
 
+# FIXME:
+#
+# tst_buf
+# tst_case_buf
+# tst_non_buf
+# tst_case_non_buf
+#
+#
+
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)

@@ -102,14 +102,13 @@ WARNS = @WARNS@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_encode \
-    tst_decode
+      tst_decode \
+      tst_unprintable
 
 
 # FIXME
 # 	tst_lowercase
 # 	tst_uppercase
-# 	tst_unprintable_chr
-# 	tst_unprintable_del
 
 check_PROGRAMS = $(tst)
 
@@ -120,7 +119,8 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_encode$(EXEEXT) tst_decode$(EXEEXT)
+check_PROGRAMS =  tst_encode$(EXEEXT) tst_decode$(EXEEXT) \
+tst_unprintable$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
 tst_encode_SOURCES = tst_encode.c
@@ -133,6 +133,11 @@ tst_decode_OBJECTS =  tst_decode.$(OBJEXT)
 tst_decode_LDADD = $(LDADD)
 tst_decode_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_decode_LDFLAGS = 
+tst_unprintable_SOURCES = tst_unprintable.c
+tst_unprintable_OBJECTS =  tst_unprintable.$(OBJEXT)
+tst_unprintable_LDADD = $(LDADD)
+tst_unprintable_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_unprintable_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -144,8 +149,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_encode.c tst_decode.c
-OBJECTS = tst_encode.$(OBJEXT) tst_decode.$(OBJEXT)
+SOURCES = tst_encode.c tst_decode.c tst_unprintable.c
+OBJECTS = tst_encode.$(OBJEXT) tst_decode.$(OBJEXT) tst_unprintable.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -218,6 +223,10 @@ tst_encode$(EXEEXT): $(tst_encode_OBJECTS) $(tst_encode_DEPENDENCIES)
 tst_decode$(EXEEXT): $(tst_decode_OBJECTS) $(tst_decode_DEPENDENCIES)
 	@rm -f tst_decode$(EXEEXT)
 	$(LINK) $(tst_decode_LDFLAGS) $(tst_decode_OBJECTS) $(tst_decode_LDADD) $(LIBS)
+
+tst_unprintable$(EXEEXT): $(tst_unprintable_OBJECTS) $(tst_unprintable_DEPENDENCIES)
+	@rm -f tst_unprintable$(EXEEXT)
+	$(LINK) $(tst_unprintable_LDFLAGS) $(tst_unprintable_OBJECTS) $(tst_unprintable_LDADD) $(LIBS)
 
 tags: TAGS
 

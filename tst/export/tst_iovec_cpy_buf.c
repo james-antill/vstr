@@ -21,12 +21,11 @@ int tst(void)
   memset(buf, 'X', sizeof(buf));
   len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, iov, 1, &num);
 
-  ret |= (1 << 0) * (len != s1->len);
-  ret |= (1 << 1) * (num != 1);
-
-  ret |= (1 << 2) * !!memcmp(buf, iov[0].iov_base, len);
+  TST_B_TST(ret, 1, (len != s1->len));
+  TST_B_TST(ret, 2, (num != 1));
+  TST_B_TST(ret, 3, !!memcmp(buf, iov[0].iov_base, len));
 
   free(ptr);
   
-  return (ret);
+  return (TST_B_RET(ret));
 }

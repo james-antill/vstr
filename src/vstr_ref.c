@@ -64,21 +64,21 @@ void vstr__ref_cb_free_bufnode_ref(Vstr_ref *ref)
 }
 
 
-Vstr_ref *vstr_nx_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
+Vstr_ref *vstr_nx_make_ref_ptr(void *ptr, void (*func)(struct Vstr_ref *))
 {
-  Vstr_ref *ref = calloc(1, sizeof(Vstr_ref));
+  Vstr_ref *ref = malloc(sizeof(Vstr_ref));
   
   if (!ref)
     return (NULL);
 
-  /* ref->ref = 0; */
+  ref->ref = 1;
   ref->ptr = ptr;
   ref->func = func;
 
   return (ref);
 }
 
-Vstr_ref *vstr_nx_ref_make_malloc(size_t len)
+Vstr_ref *vstr_nx_make_ref_malloc(size_t len)
 {
   char *buf = malloc(len);
   Vstr_ref *ref = NULL;
@@ -86,7 +86,7 @@ Vstr_ref *vstr_nx_ref_make_malloc(size_t len)
   if (!buf)
     return (NULL);
 
-  if (!(ref = vstr_nx_ref_make_ptr(buf, vstr_nx_ref_cb_free_ptr_ref)))
+  if (!(ref = vstr_nx_make_ref_ptr(buf, vstr_nx_ref_cb_free_ptr_ref)))
   {
     free(buf);
     return (NULL);

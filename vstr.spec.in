@@ -53,7 +53,7 @@ Also includes a vstr.pc file for pkg-config.
 %build
 # For devel releases
 if [ ! -f configure ]; then
-  ./autogen.sh
+  ./scripts/autogen.sh
 fi
 
 %configure --prefix=%{prefix} \

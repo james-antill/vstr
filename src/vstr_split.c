@@ -61,7 +61,7 @@ static int vstr__split_buf_null_end(const Vstr_base *base,
  \
  assert(!sects->can_add_sz); \
  assert(sects->num == sects->sz); \
- if (!(flags & VSTR_FLAG_SPLIT_NO_RET)) \
+ if (flags & VSTR_FLAG_SPLIT_NO_RET) \
    return (1); \
 } while (FALSE)
 
@@ -73,9 +73,13 @@ static unsigned int vstr__split_hdl_null_beg(size_t *pos, size_t *len,
                                              unsigned int limit,
                                              unsigned int added)
 {
+  const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
+
   if (limit && (count >= (limit - added)))
-    count = (limit - 1) - added;
-  
+    count = (limit - is_remain) - added;
+
+  assert(count);
+
   while (count)
   {
     if (flags & VSTR_FLAG_SPLIT_BEG_NULL)
@@ -102,8 +106,12 @@ static unsigned int vstr__split_hdl_null_mid(size_t *pos, size_t *len,
                                              unsigned int limit,
                                              unsigned int added)
 {
+  const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
+
   if (limit && (count >= (limit - added)))
-    count = (limit - 1) - added;
+    count = (limit - is_remain) - added;
+
+  assert(count);
   
   while (count)
   {
@@ -269,7 +277,7 @@ unsigned int vstr_nx_split_chrs(const Vstr_base *base, size_t pos, size_t len,
       
       assert(orig_pos == pos);
 
-      if ((count = vstr_nx_spn_buf_fwd(base, pos, len, chrs, chrs_len)) == len)
+      if ((count = vstr_nx_spn_chrs_fwd(base, pos, len, chrs, chrs_len)) == len)
       {
         if (!(flags & VSTR_FLAG_SPLIT_BEG_NULL))
           return (0);
@@ -284,7 +292,7 @@ unsigned int vstr_nx_split_chrs(const Vstr_base *base, size_t pos, size_t len,
     {
       unsigned int count = 0;
 
-      if ((count = vstr_nx_spn_buf_fwd(base, pos, len, chrs, chrs_len)) == len)
+      if ((count = vstr_nx_spn_chrs_fwd(base, pos, len, chrs, chrs_len)) == len)
         return (vstr__split_hdl_null_end(pos, len, 1, sects, flags,
                                          count, limit, added));
 

@@ -232,6 +232,9 @@ typedef union
 
 #endif
 
+/* generic ldbl == 128 bits */
+
+
 #define GET_LDOUBLE_WORDS64(ix0,ix1,d)                          \
 do {                                                            \
   ieee854_long_double_shape_type qw_u;                          \
@@ -258,6 +261,92 @@ static inline int vstr__fmt_dbl_isnanl(long double x)
   hx = 0x7fff000000000000LL - hx;
   return (int)((u_int64_t)hx>>63);
 }
+
+#define PRINT_FPHEX_LONG_DOUBLE \
+do {                                                                          \
+      /* We have 112 bits of mantissa plus one implicit digit.  Since         \
+         112 bits are representable without rest using hexadecimal            \
+         digits we use only the implicit digits for the number before         \
+         the decimal point.  */                                               \
+      unsigned long long int num0, num1;                                      \
+                                                                              \
+      assert (sizeof (long double) == 16);                                    \
+                                                                              \
+      num0 = (((unsigned long long int) fpnum.ldbl.ieee.mantissa0) << 32      \
+             | fpnum.ldbl.ieee.mantissa1);                                    \
+      num1 = (((unsigned long long int) fpnum.ldbl.ieee.mantissa2) << 32      \
+             | fpnum.ldbl.ieee.mantissa3);                                    \
+                                                                              \
+      zero_mantissa = (num0|num1) == 0;                                       \
+                                                                              \
+      if (sizeof (unsigned long int) > 6)                                     \
+        {                                                                     \
+          numstr = _itoa_word (num1, numbuf + sizeof numbuf, 16,              \
+                               info->spec == 'A');                            \
+          wnumstr = _itowa_word (num1,                                        \
+                                 wnumbuf + sizeof (wnumbuf) / sizeof (wchar_t),\
+                                 16, info->spec == 'A');                      \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          numstr = _itoa (num1, numbuf + sizeof numbuf, 16,                   \
+                          info->spec == 'A');                                 \
+          wnumstr = _itowa (num1,                                             \
+                            wnumbuf + sizeof (wnumbuf) / sizeof (wchar_t),    \
+                            16, info->spec == 'A');                           \
+        }                                                                     \
+                                                                              \
+      while (numstr > numbuf + (sizeof numbuf - 64 / 4))                      \
+        {                                                                     \
+          *--numstr = '0';                                                    \
+          *--wnumstr = L'0';                                                  \
+        }                                                                     \
+                                                                              \
+      if (sizeof (unsigned long int) > 6)                                     \
+        {                                                                     \
+          numstr = _itoa_word (num0, numstr, 16, info->spec == 'A');          \
+          wnumstr = _itowa_word (num0, wnumstr, 16, info->spec == 'A');       \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          numstr = _itoa (num0, numstr, 16, info->spec == 'A');               \
+          wnumstr = _itowa (num0, wnumstr, 16, info->spec == 'A');            \
+        }                                                                     \
+                                                                              \
+      /* Fill with zeroes.  */                                                \
+      while (numstr > numbuf + (sizeof numbuf - 112 / 4))                     \
+        {                                                                     \
+          *--numstr = '0';                                                    \
+          *--wnumstr = L'0';                                                  \
+        }                                                                     \
+                                                                              \
+      leading = fpnum.ldbl.ieee.exponent == 0 ? '0' : '1';                    \
+                                                                              \
+      exponent = fpnum.ldbl.ieee.exponent;                                    \
+                                                                              \
+      if (exponent == 0)                                                      \
+        {                                                                     \
+          if (zero_mantissa)                                                  \
+            expnegative = 0;                                                  \
+          else                                                                \
+            {                                                                 \
+              /* This is a denormalized number.  */                           \
+              expnegative = 1;                                                \
+              exponent = IEEE854_LONG_DOUBLE_BIAS - 1;                        \
+            }                                                                 \
+        }                                                                     \
+      else if (exponent >= IEEE854_LONG_DOUBLE_BIAS)                          \
+        {                                                                     \
+          expnegative = 0;                                                    \
+          exponent -= IEEE854_LONG_DOUBLE_BIAS;                               \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          expnegative = 1;                                                    \
+          exponent = -(exponent - IEEE854_LONG_DOUBLE_BIAS);                  \
+        }                                                                     \
+} while (0)
+
 
 #endif
 
@@ -296,6 +385,10 @@ typedef union
 
 #endif
 
+/* generic ldbl == 96 bits */
+
+
+
 #define GET_LDOUBLE_WORDS(exp,ix0,ix1,d)                        \
 do {                                                            \
   ieee_long_double_shape_type ew_u;                             \
@@ -330,6 +423,80 @@ static inline int vstr__fmt_dbl_isnanl(long double x)
   se = 0xfffe - se;
   return (int)((u_int32_t)(se))>>16;
 }
+
+#ifndef LONG_DOUBLE_DENORM_BIAS
+# define LONG_DOUBLE_DENORM_BIAS (IEEE854_LONG_DOUBLE_BIAS - 1)
+#endif
+
+#define PRINT_FPHEX_LONG_DOUBLE \
+do {                                                                          \
+      /* The "strange" 80 bit format on ix86 and m68k has an explicit         \
+         leading digit in the 64 bit mantissa.  */                            \
+      unsigned long long int num;                                             \
+                                                                              \
+      assert (sizeof (long double) == 12);                                    \
+                                                                              \
+      num = (((unsigned long long int) fpnum.ldbl.ieee.mantissa0) << 32       \
+             | fpnum.ldbl.ieee.mantissa1);                                    \
+                                                                              \
+      zero_mantissa = num == 0;                                               \
+                                                                              \
+      if (sizeof (unsigned long int) > 6)                                     \
+        {                                                                     \
+          numstr = _itoa_word (num, numbuf + sizeof numbuf, 16,               \
+                               info->spec == 'A');                            \
+          wnumstr = _itowa_word (num,                                         \
+                                 wnumbuf + sizeof (wnumbuf) / sizeof (wchar_t),\
+                                 16, info->spec == 'A');                      \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          numstr = _itoa (num, numbuf + sizeof numbuf, 16, info->spec == 'A');\
+          wnumstr = _itowa (num,                                              \
+                            wnumbuf + sizeof (wnumbuf) / sizeof (wchar_t),    \
+                            16, info->spec == 'A');                           \
+        }                                                                     \
+                                                                              \
+      /* Fill with zeroes.  */                                                \
+      while (numstr > numbuf + (sizeof numbuf - 64 / 4))                      \
+        {                                                                     \
+          *--numstr = '0';                                                    \
+          *--wnumstr = L'0';                                                  \
+        }                                                                     \
+                                                                              \
+      /* We use a full nibble for the leading digit.  */                      \
+      leading = *numstr++;                                                    \
+                                                                              \
+      /* We have 3 bits from the mantissa in the leading nibble.              \
+         Therefore we are here using `IEEE854_LONG_DOUBLE_BIAS + 3'.  */      \
+      exponent = fpnum.ldbl.ieee.exponent;                                    \
+                                                                              \
+      if (exponent == 0)                                                      \
+        {                                                                     \
+          if (zero_mantissa)                                                  \
+            expnegative = 0;                                                  \
+          else                                                                \
+            {                                                                 \
+              /* This is a denormalized number.  */                           \
+              expnegative = 1;                                                \
+              /* This is a hook for the m68k long double format, where the    \
+                 exponent bias is the same for normalized and denormalized    \
+                 numbers.  */                                                 \
+              exponent = LONG_DOUBLE_DENORM_BIAS + 3;                         \
+            }                                                                 \
+        }                                                                     \
+      else if (exponent >= IEEE854_LONG_DOUBLE_BIAS + 3)                      \
+        {                                                                     \
+          expnegative = 0;                                                    \
+          exponent -= IEEE854_LONG_DOUBLE_BIAS + 3;                           \
+        }                                                                     \
+      else                                                                    \
+        {                                                                     \
+          expnegative = 1;                                                    \
+          exponent = -(exponent - (IEEE854_LONG_DOUBLE_BIAS + 3));            \
+        }                                                                     \
+} while (0)
+
 
 #endif
 
@@ -377,7 +544,8 @@ static inline int vstr__fmt_dbl_signbit(double x)
 
 /* write the number backwards ... */
 static inline char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
-                                            unsigned int base, int upper_case)
+                                            unsigned int base,
+                                            int upper_case)
 {
   const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -407,7 +575,7 @@ static inline char *vstr__fmt_dbl_itoa_word(unsigned long value, char *buflim,
 static inline wchar_t *vstr__fmt_dbl_itowa_word(unsigned long value,
                                                 wchar_t *buflim,
                                                 unsigned int base,
-                                                int upper_case)
+                                                int upper_case __attribute__((unused)))
 {
   switch (base)
   {
@@ -464,7 +632,8 @@ static inline char *vstr__fmt_dbl_itoa(unsigned long long value, char *buflim,
 
 static inline wchar_t *vstr__fmt_dbl_itowa(unsigned long long value,
                                            wchar_t *buflim,
-                                           unsigned int base, int upper_case)
+                                           unsigned int base,
+                                           int upper_case __attribute__((unused)))
 {
   switch (base)
   {
@@ -681,7 +850,7 @@ vstr__fmt_printf_fphex (FILE *fp,
 
   if (special)
     {
-      int width = info->width;
+      width = info->width;
 
       if (negative || info->showsign || info->space)
 	--width;
@@ -766,10 +935,10 @@ vstr__fmt_printf_fphex (FILE *fp,
 	  exponent = -(exponent - IEEE754_DOUBLE_BIAS);
 	}
     }
-#ifdef PRINT_FPHEX_LONG_DOUBLE
-  else
+  /* #ifdef PRINT_FPHEX_LONG_DOUBLE */
+ else
     PRINT_FPHEX_LONG_DOUBLE;
-#endif
+  /* #endif */
 
   /* Look for trailing zeroes.  */
   if (! zero_mantissa)

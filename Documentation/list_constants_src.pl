@@ -10,9 +10,12 @@ if (!open(IN, "< ../include/vstr-const.h"))
 $/ = undef;
 
 $_ = <IN>;
-while (/^#define\s+(VSTR_[0-9a-zA-Z][0-9a-zA-Z_]*)\s/gm)
+while (/^#define\s+(VSTR_[0-9a-zA-Z][0-9a-zA-Z_]*)(\s|\()/gm)
   {
-    print "$1\n";
+    if ($2 eq '(')
+     { print "$1()\n"; }
+    else
+     { print "$1\n"; }
   }
 
 if (!open(IN, "< ../include/vstr-switch.h"))

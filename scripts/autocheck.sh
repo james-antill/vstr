@@ -1,12 +1,5 @@
 #! /bin/sh
 
-# Configure this...
-GCC3=/opt/gcc-3.1.1/bin/gcc
-
-
-RPM_CF="-O2 -march=i386 -mcpu=i686" # Generic fast option...
-OPD_CF="-O2 -g3"
-
 C_ls=--enable-linker-script
 C_dbg=--enable-debug
 C_np=--enable-noposix-host
@@ -55,31 +48,20 @@ function do_conf()
  conf $1 $2 $C_nin $C_dbl_n
  conf $1 $2 $C_nin $C_dbl_g $C_np
 }
-rm -f autocheck1.log
+
+if [ "x$1" = "x" ]; then
+  rm -f autocheck1.log
+  rm -f autocheck2.log
+fi
+
 touch autocheck1.log
-rm -f autocheck2.log
 touch autocheck2.log
 
-unset CC
-unset CFLAGS
 
+do_conf $C_ls
 do_conf $C_ls $C_dbg
 
 export CFLAGS=$OPD_CF
-do_conf $C_ls $C_dbg
-do_conf $C_ls
-
-export CFLAGS=$RPM_CF
-do_conf $C_ls
-
-unset CC
-unset CFLAGS
-
-export CC=$GCC3
-do_conf $C_ls $C_dbg
-
-export CFLAGS=$OPD_CF
-do_conf $C_ls $C_dbg
 do_conf $C_ls
 
 export CFLAGS=$RPM_CF

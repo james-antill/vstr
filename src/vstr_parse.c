@@ -60,7 +60,7 @@ static int vstr__parse_num(const Vstr_base *base,
      
   if (flags & VSTR_FLAG_PARSE_NUM_SPACE)
   {
-    tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_space, 1);
+    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_space, 1);
     if (tmp >= len)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_ONLY_S;
@@ -73,7 +73,7 @@ static int vstr__parse_num(const Vstr_base *base,
   
   if (!(flags & VSTR_FLAG_PARSE_NUM_NO_BEG_PM))
   {
-    tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_minus, 1);
+    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_minus, 1);
     if (tmp > 1)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -81,7 +81,7 @@ static int vstr__parse_num(const Vstr_base *base,
     }
     else if (!tmp)
     {
-      tmp = vstr_nx_spn_buf_fwd(base, pos, len, &sym_plus, 1);
+      tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_plus, 1);
       if (tmp > 1)
       {
         *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -101,7 +101,7 @@ static int vstr__parse_num(const Vstr_base *base,
     return (0);
   }
   
-  tmp = vstr_nx_spn_buf_fwd(base, pos, len, &num_0, 1);
+  tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &num_0, 1);
   if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
   {
     *passed_len = len - 1;
@@ -126,7 +126,7 @@ static int vstr__parse_num(const Vstr_base *base,
 
     xX[0] = let_x_low;
     xX[1] = let_X_high;
-    tmp = vstr_nx_spn_buf_fwd(base, pos, len, xX, 2);
+    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, xX, 2);
 
     if (tmp > 1)
     { /* It's a 0 */
@@ -150,7 +150,7 @@ static int vstr__parse_num(const Vstr_base *base,
         return (0);
       }
       
-      tmp = vstr_nx_spn_buf_fwd(base, pos, len, &num_0, 1);
+      tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &num_0, 1);
     }
     else if (auto_base)
       num_base = 8;

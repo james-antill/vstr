@@ -25,7 +25,7 @@ unsigned int vstr_nx_join_buf(Vstr_base *base, size_t pos,
                               const void *buf, size_t buf_len,
                               const Vstr_base *from_base, Vstr_sects *sects,
                               unsigned int sect_beg, unsigned int sect_end,
-                              unsigned int flags)
+                              unsigned int __attribute__((unused))flags)
 {
   size_t start_pos = pos + 1;
   size_t orig_len = base->len;

@@ -2,8 +2,8 @@
 #define vstr_nx_ref_cb_free_ref vstr_ref_cb_free_ref
 #define vstr_nx_ref_cb_free_ptr vstr_ref_cb_free_ptr
 #define vstr_nx_ref_cb_free_ptr_ref vstr_ref_cb_free_ptr_ref
-#define vstr_nx_ref_make_ptr vstr_ref_make_ptr
-#define vstr_nx_ref_make_malloc vstr_ref_make_malloc
+#define vstr_nx_make_ref_ptr vstr_make_ref_ptr
+#define vstr_nx_make_ref_malloc vstr_make_ref_malloc
 #define vstr_nx_init vstr_init
 #define vstr_nx_exit vstr_exit
 #define vstr_nx_make_conf vstr_make_conf
@@ -19,6 +19,7 @@
 #define vstr_nx_dup_buf vstr_dup_buf
 #define vstr_nx_dup_ptr vstr_dup_ptr
 #define vstr_nx_dup_non vstr_dup_non
+#define vstr_nx_dup_ref vstr_dup_ref
 #define vstr_nx_dup_vstr vstr_dup_vstr
 #define vstr_nx_add_vfmt vstr_add_vfmt
 #define vstr_nx_add_fmt vstr_add_fmt
@@ -60,10 +61,10 @@
 #define vstr_nx_srch_vstr_fwd vstr_srch_vstr_fwd
 #define vstr_nx_srch_vstr_rev vstr_srch_vstr_rev
 #define vstr_nx_srch_sects_add_buf_fwd vstr_srch_sects_add_buf_fwd
-#define vstr_nx_spn_buf_fwd vstr_spn_buf_fwd
-#define vstr_nx_spn_buf_rev vstr_spn_buf_rev
-#define vstr_nx_cspn_buf_fwd vstr_cspn_buf_fwd
-#define vstr_nx_cspn_buf_rev vstr_cspn_buf_rev
+#define vstr_nx_spn_chrs_fwd vstr_spn_chrs_fwd
+#define vstr_nx_spn_chrs_rev vstr_spn_chrs_rev
+#define vstr_nx_cspn_chrs_fwd vstr_cspn_chrs_fwd
+#define vstr_nx_cspn_chrs_rev vstr_cspn_chrs_rev
 #define vstr_nx_export_iovec_ptr_all vstr_export_iovec_ptr_all
 #define vstr_nx_export_iovec_cpy_buf vstr_export_iovec_cpy_buf
 #define vstr_nx_export_iovec_cpy_ptr vstr_export_iovec_cpy_ptr

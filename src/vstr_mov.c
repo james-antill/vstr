@@ -46,16 +46,17 @@ static int vstr__mov_slow(Vstr_base *base, size_t pos,
 
 /* *ret == start of data */
 static Vstr_node **vstr__mov_setup_beg(Vstr_base *base, size_t pos,
-                                       unsigned int *num)
+                                       unsigned int *num, Vstr_node **prev)
 {
   Vstr_node *scan = NULL;
 
-  assert(num && pos);
+  assert(num && pos && prev);
   --pos;
   if (!pos)
   {
     *num = 1;
     vstr__base_zero_used(base);
+    *prev = NULL;
     return (&base->beg);
   }
   
@@ -66,6 +67,7 @@ static Vstr_node **vstr__mov_setup_beg(Vstr_base *base, size_t pos,
 
   ++*num;
   
+  *prev = scan;
   return (&scan->next);
 }
 
@@ -108,6 +110,7 @@ static void vstr__mov_iovec_kill(Vstr_base *base)
 int vstr_nx_mov(Vstr_base *base, size_t pos,
                 Vstr_base *from_base, size_t from_pos, size_t len)
 {
+  Vstr_node *from_prev = NULL;
   Vstr_node **beg = NULL;
   Vstr_node **end = NULL;
   Vstr_node **con = NULL;
@@ -119,6 +122,9 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   if (!len)
     return (TRUE);
   
+  assert(!(!base || (pos > base->len) ||
+           !from_base || (from_pos > from_base->len)));
+  
   if (base->conf->buf_sz != from_base->conf->buf_sz)
     return (vstr__mov_slow(base, pos, from_base, from_pos, len));
 
@@ -128,7 +134,7 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   assert(vstr__check_real_nodes(base));
   assert((from_base == base) || vstr__check_real_nodes(from_base));
 
-  if (!(beg = vstr__mov_setup_beg(from_base, from_pos, &beg_num)))
+  if (!(beg = vstr__mov_setup_beg(from_base, from_pos, &beg_num, &from_prev)))
     return (FALSE);
   
   if (!(end = vstr__mov_setup_end(from_base, from_pos + len - 1, &end_num)))
@@ -142,7 +148,8 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   num = end_num - beg_num + 1;
   
   tmp = *beg;
-  *beg = *end;
+  if (!(*beg = *end))
+    from_base->end = from_prev;
 
   if (from_base->beg && !from_base->end)
     from_base->end = VSTR__CONV_PTR_NEXT_PREV(beg);

@@ -16,18 +16,18 @@ int tst(void)
 
   len = vstr_export_iovec_ptr_all(s1, &iov, &num);
 
-  ret |= (1 << 0) * (len != s1->len);
-  ret |= (1 << 1) * (num != s1->num);
+  TST_B_TST(ret, 1, (len != s1->len));
+  TST_B_TST(ret, 2, (num != s1->num));
 
   len = 0;
   while (len < s1->len)
   {
-    ret |= (1 << 2) * !!memcmp(buf + len,
-                               iov[count].iov_base, iov[count].iov_len);
+    TST_B_TST(ret, 3, !!memcmp(buf + len,
+                               iov[count].iov_base, iov[count].iov_len));
     len += iov[count].iov_len;
     ++count;
   }
-  ret |= (1 << 3) * (len != s1->len);
+  TST_B_TST(ret, 4, (len != s1->len));
   
-  return (ret);
+  return (TST_B_RET(ret));
 }

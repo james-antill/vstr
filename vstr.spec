@@ -1,6 +1,6 @@
 # This is hacked from glib
 # Note that this is NOT a relocatable package
-%define ver      0.9.9
+%define ver      0.9.10
 %define libver  0.9
 %define  RELEASE 1
 %define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
@@ -53,7 +53,7 @@ Also includes a vstr.pc file for pkg-config.
 %build
 # For devel releases
 if [ ! -f configure ]; then
-  ./autogen.sh
+  ./scripts/autogen.sh
 fi
 
 %configure --prefix=%{prefix} \

@@ -14,6 +14,11 @@ tst = tst_char \
     tst_str_norm \
     tst_num 
 
+# FIXME:
+# 	ptrdiff_t
+#	size_t
+#	%n
+
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)

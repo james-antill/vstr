@@ -16,7 +16,7 @@
 
 
 /* die with error */
-void ex_utils_die(const char *msg, ...)
+void ex_utils_die(const char *err, const char *msg, ...)
 {
   int saved_errno = errno;
   Vstr_base *str = NULL;
@@ -33,8 +33,10 @@ void ex_utils_die(const char *msg, ...)
     va_start(ap, msg);
     vstr_add_vfmt(str, str->len, msg, ap);
     va_end(ap);
+
+    VSTR_ADD_CSTR_BUF(str, str->len, err);
     
-    if (msg[strlen(msg) - 1] == ':')
+    if (msg[strlen(err) - 1] == ':')
       vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
     
     vstr_add_buf(str, str->len, "\n", 1);

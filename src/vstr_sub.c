@@ -25,7 +25,19 @@
   if (tmp > buf_len) \
     tmp = buf_len; \
   \
-  memcpy(((Vstr_node_buf *)scan)->buf + pos, buf, tmp); \
+  switch (tmp) \
+  { /* Don't do a memcpy() on small values */ \
+    case 7:  ((Vstr_node_buf *)scan)->buf[pos + 6] = ((const char *)buf)[6]; \
+    case 6:  ((Vstr_node_buf *)scan)->buf[pos + 5] = ((const char *)buf)[5]; \
+    case 5:  ((Vstr_node_buf *)scan)->buf[pos + 4] = ((const char *)buf)[4]; \
+    case 4:  ((Vstr_node_buf *)scan)->buf[pos + 3] = ((const char *)buf)[3]; \
+    case 3:  ((Vstr_node_buf *)scan)->buf[pos + 2] = ((const char *)buf)[2]; \
+    case 2:  ((Vstr_node_buf *)scan)->buf[pos + 1] = ((const char *)buf)[1]; \
+    case 1:  ((Vstr_node_buf *)scan)->buf[pos + 0] = ((const char *)buf)[0]; \
+             break; \
+    default: memcpy(((Vstr_node_buf *)scan)->buf + pos, buf, tmp); \
+             break; \
+  } \
   buf_len -= tmp; \
   buf = ((char *)buf) + tmp; \
 } while (FALSE)
@@ -48,6 +60,9 @@ int vstr_nx_sub_buf(Vstr_base *base, size_t pos, size_t len,
   size_t rm_len = 0;
   size_t real_pos = 0;
 
+  if (!len)
+    return (vstr_nx_add_buf(base, pos - 1, buf, buf_len));
+  
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
   
@@ -229,6 +244,9 @@ int vstr_nx_sub_ptr(Vstr_base *base, size_t pos, size_t len,
                     const void *ptr, size_t ptr_len)
 {
   int ret = vstr_nx_add_ptr(base, pos - 1, ptr, ptr_len);
+
+  if (!len)
+    return (ret);
   
   if (!ret)
     return (FALSE);
@@ -248,6 +266,9 @@ int vstr_nx_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
 {
   int ret = vstr_nx_add_non(base, pos - 1, non_len);
 
+  if (!len)
+    return (ret);
+  
   if (!ret)
     return (FALSE);
 
@@ -267,6 +288,9 @@ int vstr_nx_sub_ref(Vstr_base *base, size_t pos, size_t len,
 {
   int ret = vstr_nx_add_ref(base, pos - 1, ref, off, ref_len);
 
+  if (!len)
+    return (ret);
+  
   if (!ret)
     return (FALSE);
   
@@ -286,9 +310,17 @@ int vstr_nx_sub_vstr(Vstr_base *base, size_t pos, size_t len,
                      size_t from_pos, size_t from_len, unsigned int type)
 { /* this is inefficient compared to vstr_sub_buf() because of atomic
    * guarantees - could be made to work with _ALL_BUF */
-  int ret = vstr_nx_add_vstr(base, pos - 1, from_base, from_pos, from_len,
-                             type);
+  int ret = TRUE;
 
+  assert(pos && from_pos);
+  
+  if (from_len)
+    ret = vstr_nx_add_vstr(base, pos - 1, from_base, from_pos, from_len,
+                           type);
+
+  if (!len)
+    return (ret);
+  
   if (!ret)
     return (FALSE);
 

@@ -33,12 +33,19 @@ static void die(void)
   abort();
 }
 
-#define PRNT_CSTR(s) fprintf(stderr, "cstr(%s):%zu%*s = %s\n", #s , strlen(s), \
-                             ((4 - strlen(#s)) > 0) ? (4 - strlen(#s)) : 0,"",s)
-#define PRNT_VSTR(s) fprintf(stderr, "vstr(%s):%zu%*s = %s\n", #s , (s)->len, \
-                             ((4 - strlen(#s)) > 0) ? (4 - strlen(#s)) : 0,"", \
-                             vstr_export_cstr_ptr((s), 1, (s)->len))
+#define PRNT_CSTR(s) \
+ fprintf(stderr, "cstr(%s):%zu%*s = %s\n", #s , strlen(s), \
+         ((4 - strlen(#s)) > 0) ? (4 - (int)strlen(#s)) : 0,"",s)
+#define PRNT_VSTR(s) \
+ fprintf(stderr, "vstr(%s):%zu%*s = %s\n", #s , (s)->len, \
+         ((4 - strlen(#s)) > 0) ? (4 - (int)strlen(#s)) : 0,"", \
+         vstr_export_cstr_ptr((s), 1, (s)->len))
 #define EXIT_FAILED_OK 77
+
+#define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * (tst))
+ /* make sure it isn't FAILED_OK */
+#define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
+
 
 int main(void)
 {
@@ -76,13 +83,18 @@ int main(void)
   vstr_free_conf(conf2);
   
   if ((ret = tst()))
-    fprintf(stderr, "Error(%s) value = %d\n", rf, ret);
+    fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
 
   vstr_free_base(s1);
   vstr_free_base(s2);
   vstr_free_base(s3);
   
   vstr_exit();
-  
-  exit (ret);
+
+  switch (ret)
+  {
+    case EXIT_FAILED_OK: exit (EXIT_FAILED_OK);
+    case EXIT_SUCCESS:   exit (EXIT_SUCCESS);
+    default:             exit (EXIT_FAILURE);
+  }
 }

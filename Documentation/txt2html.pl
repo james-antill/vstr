@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
 
 use strict;
+use FileHandle;
 
 my $name = "Vstr documentation";
 
@@ -22,6 +23,27 @@ my $html_body = <<EOF;
 EOF
 
 my $html_footer = "\n</td></tr></table>\n</body></html>";
+
+sub convert_index()
+  {
+    my $in_pre_tag = "";
+
+    OUT->print("</td></tr></table><table width=\"90%\"><tr><td>\n");
+    OUT->print("<h3>Index of sections</h3>\n");
+
+    while (<IN>)
+      {
+        if (/^Section:\s*(.*)$/)
+        {
+          my $section = $1;
+          my $uri = $1;
+          $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+
+          $_ = "<a href=\"#$uri\">$section</a><br>";
+          print OUT;
+        }
+      }
+  }
 
 sub convert()
   {
@@ -47,10 +69,35 @@ EOL
 	    s!^Section:\s*(.*)$!</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>$1</h2>! ||
 	    0)
 	  {
-	    if (defined ($1) && ($1 eq "Constant"))
+	    if (defined ($1))
+            {
+              if ($1 eq "Constant")
 	      {
+                my $uri = $2;
+                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+
 		$next_in_const = 1;
+
+                $_ = "<a name=\"$uri\">" . $_ . "</a>";
 	      }
+              elsif ($1 eq "Function")
+              {
+                my $uri = $2;
+                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+
+                $_ = "<a name=\"$uri\">" . $_ . "</a>";
+              }
+              elsif ($1 eq "Member")
+              { }
+              else
+              { # Section...
+                my $uri = $1;
+                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+
+                s/<h2>/<a name="$uri"><h2>/;
+                $_ .= "</a>";
+              }
+            }
 	  }
 	elsif (m!^ ([A-Z][a-z]+)(\[\d\]|\[ \.\.\. \])?: (.*)$!)
 	  {
@@ -106,11 +153,6 @@ EOL
       }
   }
 
-if (!open (IN, "<functions.txt"))
-  {
-    die "Open (read): $@";
-  }
-
 if (!open (OUT, ">functions.html"))
   {
     die "Open (write): $@";
@@ -122,14 +164,18 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
   "<h1>", "$name -- functions", "</h1>", "\n";
 
-convert();
-
-print OUT $html_footer;
-
-if (!open (IN, "<constants.txt"))
+if (!open (IN, "<functions.txt"))
   {
     die "Open (read): $@";
   }
+convert_index();
+if (!open (IN, "<functions.txt"))
+  {
+    die "Open (read): $@";
+  }
+convert();
+
+print OUT $html_footer;
 
 if (!open (OUT, ">constants.html"))
   {
@@ -142,17 +188,21 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
   "<h1>", "$name -- constants", "</h1>", "\n";
 
+if (!open (IN, "<constants.txt"))
+  {
+    die "Open (read): $@";
+  }
+convert_index();
+if (!open (IN, "<constants.txt"))
+  {
+    die "Open (read): $@";
+  }
 convert();
 
 print OUT $html_footer;
 
 if (-r "structs.txt")
   {
-    if (!open (IN, "<structs.txt"))
-      {
-	die "Open (read): $@";
-      }
-    
     if (!open (OUT, ">structs.html"))
       {
 	die "Open (write): $@";
@@ -164,6 +214,15 @@ if (-r "structs.txt")
     print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
       "<h1>", "$name -- structs", "</h1>", "\n";
     
+    if (!open (IN, "<structs.txt"))
+      {
+	die "Open (read): $@";
+      }
+    convert_index();
+    if (!open (IN, "<structs.txt"))
+      {
+	die "Open (read): $@";
+      }
     convert();
     
     print OUT $html_footer;
