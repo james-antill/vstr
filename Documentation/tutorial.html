@@ -56,8 +56,13 @@ application.
 <li><a href="#hw_m">Hello World - With multiple points of data</a>: This still outputs Hello World, but is now a little more real by having multiple sources for the data. </li>
 <li><a href="#hw_x">Hello World - Complicated</a>: This still outputs Hello World, but uses copies of data; substitution of one set of data for another; and Vstr_references. </li>
 <li><a href="#ex_h">Example Header</a>: The original header from Hello World, with the extra simple functions needed for working with simple non-blocking IO both reading and writing. </li>
-<li><a href="#ex_cat">Unix cat</a>: A Simple Unix cat command example. </li>
-<li><a href="#ex_nl">Unix nl</a>: A Simple Unix nl command example. </li>
+<li><a href="#ex_cat">Unix cat</a>: An example of a simple Unix cat command. </li>
+<li><a href="#ex_nl">Unix nl</a>: A example of a simple Unix nl command. </li>
+<li><a href="#ex_hexdump">Unix hexdump</a>: An example of a simple Unix hexdump command. </li>
+<li><a href="#ex_lookup_ip">Unix lookup_ip</a>: An example of a simple program to lookup an ip address (simple custom formatter example). </li>
+<li><a href="#ex_gmp_factorials">factorials</a>: Using GMP and custom
+formatters, a real life example of creating your own custom formatters and
+the benifits of doing so. </li>
 <li><a href="overview.html#examples">Other examples</a>: Other examples. </li>
 <li><a href="#cstrvstr">Convertion table</a>: From std. C functions to Vstr functions. </li>
 <li><a href="#cppstrvstr">Convertion table</a>: From std. C++ std::string functions to Vstr functions. </li>
@@ -73,29 +78,29 @@ that prints "Hello World" on a single line in a POSIX environment...</p>
 <span class="comment">/* hello world - Self contained, using a single piece of data at
  *               initialisation time (no data copying) */</span> 
 
-#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1
-#<span class="include">include</span> &lt;vstr.h&gt;
-#<span class="include">include</span> &lt;errno.h&gt;  <span class="comment">/* errno variable */</span>
-#<span class="include">include</span> &lt;err.h&gt;    <span class="comment">/* BSD/Linux header see: man errx */</span>
-#<span class="include">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
+#<span class="cppdefine">define</span> VSTR_COMPILE_INCLUDE 1
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
+#<span class="cppinclude">include</span> &lt;errno.h&gt;  <span class="comment">/* errno variable */</span>
+#<span class="cppinclude">include</span> &lt;err.h&gt;    <span class="comment">/* BSD/Linux header see: man errx */</span>
+#<span class="cppinclude">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
 
 <span class="int">int</span> main(void)
 {
-  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s1 = <span class="null">NULL</span>;
 
   <span class="if">if</span> (!vstr_init()) <span class="comment">/* initialize the library */</span>
-    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"init"</span>);
 
   <span class="comment">/* create a string with data */</span>
-  <span class="if">if</span> (!(s1 = vstr_dup_cstr_buf(NULL, <span class="str">"Hello World\n"</span>)))
-    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
+  <span class="if">if</span> (!(s1 = vstr_dup_cstr_buf(<span class="null">NULL</span>, <span class="str">"Hello World\n"</span>)))
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Create string"</span>);
 
   <span class="comment">/* output the data to the user -- assumes POSIX */</span>
   <span class="while">while</span> (s1-&gt;len)
-    <span class="if">if</span> (!vstr_sc_write_fd(s1, 1, s1-&gt;len, STDOUT_FILENO, NULL))
+    <span class="if">if</span> (!vstr_sc_write_fd(s1, 1, s1-&gt;len, <span class="stdout">STDOUT_FILENO</span>, <span class="null">NULL</span>))
     {
       <span class="if">if</span> ((errno != EAGAIN) &amp;&amp; (errno != EINTR))
-        <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+        <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
     }
 
   <span class="comment">/* cleanup allocated resources */</span>
@@ -103,11 +108,11 @@ that prints "Hello World" on a single line in a POSIX environment...</p>
 
   vstr_exit();
 
-  <span class="exit">exit</span> (EXIT_SUCCESS);
+  <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
 }
 </pre>
 <!-- C to html convertion of ex_hello_world.c -->
-<!--   done on Mon Sep 22 19:20:08 2003
+<!--   done on Sat Sep 27 18:01:52 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -133,41 +138,40 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <li><b>hw_exit</b>: This does cleanup on the resources aquired in hw_init.</li>
 </ul>
 
-
 <pre class="c2html">
 <span class="comment">/* *****************************************************************************
    Beg of hello_world.h header file which will be used in the following examples
    ****************************************************************************/</span>
-#<span class="ifndef">ifndef</span> HELLO_WORLD_H
-#<span class="define">define</span> HELLO_WORLD_H
+#<span class="cppifndef">ifndef</span> HELLO_WORLD_H
+#<span class="cppdefine">define</span> HELLO_WORLD_H
 
 <span class="comment">/* ************************************************************************** */</span>
 <span class="comment">/* headers: Vstr (and all supporting system headers), plus extra ones we need */</span>
 <span class="comment">/* ************************************************************************** */</span>
 
-#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
-#<span class="include">include</span> &lt;vstr.h&gt;
-#<span class="include">include</span> &lt;errno.h&gt;
-#<span class="include">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
-#<span class="include">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
+#<span class="cppdefine">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
+#<span class="cppinclude">include</span> &lt;errno.h&gt;
+#<span class="cppinclude">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
+#<span class="cppinclude">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
 
 <span class="comment">/* ********************************* */</span>
 <span class="comment">/* generic POSIX IO helper functions */</span>
 <span class="comment">/* ********************************* */</span>
 
-#<span class="define">define</span> IO_OK    0
+#<span class="cppdefine">define</span> IO_OK    0
 <span class="comment">/* the missing values will be explained later in the tutorial... */</span>
-#<span class="define">define</span> IO_NONE  3
+#<span class="cppdefine">define</span> IO_NONE  3
 
 <span class="static">static</span> <span class="int">int</span> io_put(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
 { <span class="comment">/* assumes POSIX */</span>
   <span class="if">if</span> (!io_w-&gt;len)
     <span class="return">return</span> (IO_NONE);
   
-  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, NULL))
+  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, <span class="null">NULL</span>))
   {
     <span class="if">if</span> (errno != EINTR)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
   }
 
   <span class="return">return</span> (IO_OK);
@@ -180,13 +184,13 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <span class="comment">/* hello world init function, init library and create a string */</span>
 <span class="static">static</span> <span class="vstrbase">Vstr_base</span> *hw_init(void)
 {
-  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s1 = <span class="null">NULL</span>;
 
   <span class="if">if</span> (!vstr_init())
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"init"</span>);
 
-  <span class="if">if</span> (!(s1 = vstr_make_base(NULL))) <span class="comment">/* create an empty string */</span>
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
+  <span class="if">if</span> (!(s1 = vstr_make_base(<span class="null">NULL</span>))) <span class="comment">/* create an empty string */</span>
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Create string"</span>);
 
   <span class="return">return</span> (s1);
 }
@@ -198,16 +202,16 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 
   vstr_exit();
 
-  <span class="return">return</span> (EXIT_SUCCESS);
+  <span class="return">return</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
 }
 
-#<span class="endif">endif</span>
+#<span class="cppendif">endif</span>
 <span class="comment">/* *****************************************************************************
    End of hello_world.h header file which will be used in the following examples
    ****************************************************************************/</span>
 </pre>
 <!-- C to html convertion of ex_hello_world.h -->
-<!--   done on Mon Sep 22 19:21:08 2003
+<!--   done on Sat Sep 27 18:02:27 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -223,7 +227,7 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <pre class="c2html">
 <span class="comment">/* hello world - Using a single piece of data (no data copying) */</span>
 
-#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
 
 <span class="int">int</span> main(void)
 {
@@ -232,15 +236,15 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
   vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"Hello World\n"</span>);
 
   <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
 
-  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+  <span class="while">while</span> (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) != IO_NONE) {}
 
   <span class="exit">exit</span> (hw_exit(s1));
 }
 </pre>
 <!-- C to html convertion of ex_hello_world_s.c -->
-<!--   done on Mon Sep 22 19:21:34 2003
+<!--   done on Sat Sep 27 18:02:52 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -261,7 +265,7 @@ representative of what a networked application looks like...
 <pre class="c2html">
 <span class="comment">/* hello world - multiple sources of data (still no data copying) */</span>
 
-#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
 
 <span class="int">int</span> main(void)
 {
@@ -273,16 +277,16 @@ representative of what a networked application looks like...
 
   <span class="comment">/* we are checking whether any of the above three functions failed here */</span>
   <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
 
   <span class="comment">/* loop until all data is output... */</span>
-  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+  <span class="while">while</span> (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) != IO_NONE) {}
 
   <span class="exit">exit</span> (hw_exit(s1));
 }
 </pre>
 <!-- C to html convertion of ex_hello_world_m.c -->
-<!--   done on Mon Sep 22 19:21:50 2003
+<!--   done on Sat Sep 27 18:03:03 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -323,30 +327,30 @@ searching etc.).
 <span class="comment">/* hello world - multiple pieces of data, includes substitution and
  *               inserting data into the middle of a string */</span>
 
-#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
 
 <span class="int">int</span> main(void)
 {
   <span class="vstrbase">Vstr_base</span> *s1 = hw_init();
-  Vstr_ref *ref = NULL;
+  Vstr_ref *ref = <span class="null">NULL</span>;
 
   vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"Hello"</span>);
 
   vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'W'</span>, 5); <span class="comment">/* add "WWWWWW" */</span>
 
   <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
 
   <span class="comment">/* substitute an 'o' for a 'W' */</span>
   <span class="if">if</span> (!vstr_sub_rep_chr(s1, strlen(<span class="str">"HelloWW"</span>), 1, <span class="chr">'o'</span>, 1))
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Substitute string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Substitute string data"</span>);
 
   <span class="comment">/* substitute "WWW" for a "rld\n" -- */</span>
   <span class="if">if</span> (!vstr_sub_cstr_buf(s1, strlen(<span class="str">"HelloWoW"</span>), strlen(<span class="str">"WWW"</span>), <span class="str">"rld\n"</span>))
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Substitute string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Substitute string data"</span>);
 
   <span class="if">if</span> (!(ref = vstr_ref_make_ptr((<span class="char">char</span> *)<span class="str">"XYZ "</span>, vstr_ref_cb_free_ref)))
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create data reference"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Create data reference"</span>);
   <span class="comment">/* now ref-&gt;ptr is "XYZ " */</span>
 
   <span class="comment">/* add space after "Hello", by skipping "XYZ" in reference */</span>
@@ -355,15 +359,15 @@ searching etc.).
   vstr_ref_del(ref); <span class="comment">/* delete our reference to the Vstr_ref */</span>
 
   <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
 
-  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+  <span class="while">while</span> (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) != IO_NONE) {}
 
   <span class="exit">exit</span> (hw_exit(s1));
 }
 </pre>
 <!-- C to html convertion of ex_hello_world_x.c -->
-<!--   done on Mon Sep 22 20:12:33 2003
+<!--   done on Sat Sep 27 18:03:08 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -404,87 +408,47 @@ objects.</li>
 <li><b>io_limit</b>: This is calls io_block if the return values from both io_get and io_put are IO_BLOCK or either one is in the IO_BLOCK state and must be dealt with now.</li>
 <li><b>io_fd_set_o_nonblock</b>: This is a simple function to set the O_NONBLOCK flag on a file descriptor.</li>
 <li><b>io_open</b>: This is a simple function to open a file, and set the O_NONBLOCK flag on it (note that although real files tend not to honour the O_NONBLOCK flag, file system objects might not be files).</li>
-<li><b>EX_UTILS_GETOPT_CSTR</b>: A simple getopt to get a C-style string.</li>
-<li><b>EX_UTILS_GETOPT_NUM</b>: A simple getopt to get a number.</li>
 </ul>
 
 <pre class="c2html">
-#<span class="ifndef">ifndef</span> EX_UTILS_H
-#<span class="define">define</span> EX_UTILS_H 1
+#<span class="cppifndef">ifndef</span> EX_UTILS_H
+#<span class="cppdefine">define</span> EX_UTILS_H 1
 
 <span class="comment">/* ************************************************************************** */</span>
 <span class="comment">/* headers: Vstr (and all supporting system headers), plus extra ones we need */</span>
 <span class="comment">/* ************************************************************************** */</span>
 
-#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
-#<span class="include">include</span> &lt;vstr.h&gt;
+#<span class="cppdefine">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
 
-#<span class="include">include</span> &lt;errno.h&gt;
+#<span class="cppinclude">include</span> &lt;errno.h&gt;
 
-#<span class="include">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
+#<span class="cppinclude">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
 
-#<span class="include">include</span> &lt;sys/poll.h&gt;
+#<span class="cppinclude">include</span> &lt;sys/poll.h&gt;
 
-#<span class="include">include</span> &lt;sys/types.h&gt; <span class="comment">/* stat + open + STDXXX_FILENO */</span>
-#<span class="include">include</span> &lt;sys/stat.h&gt;
-#<span class="include">include</span> &lt;unistd.h&gt;
-#<span class="include">include</span> &lt;fcntl.h&gt;
+#<span class="cppinclude">include</span> &lt;sys/types.h&gt; <span class="comment">/* stat + open + STDXXX_FILENO */</span>
+#<span class="cppinclude">include</span> &lt;sys/stat.h&gt;
+#<span class="cppinclude">include</span> &lt;unistd.h&gt;
+#<span class="cppinclude">include</span> &lt;fcntl.h&gt;
 
-#<span class="include">include</span> &lt;string.h&gt; <span class="comment">/* strncmp() etc. in GETOPT macros */</span>
+#<span class="cppinclude">include</span> &lt;string.h&gt;
 
-<span class="comment">/* **************************************************************** */</span>
-<span class="comment">/* defines: TRUE/FALSE and assert(), Note that GETOPT is used later */</span>
-<span class="comment">/* **************************************************************** */</span>
+<span class="comment">/* ******************************** */</span>
+<span class="comment">/* defines: TRUE/FALSE and assert() */</span>
+<span class="comment">/* ******************************** */</span>
 
-#<span class="ifndef">ifndef</span> FALSE
-# <span class="define">define</span> FALSE 0
-#<span class="endif">endif</span>
+#<span class="cppifndef">ifndef</span> <span class="false">FALSE</span>
+# <span class="cppdefine">define</span> <span class="false">FALSE</span> 0
+#<span class="cppendif">endif</span>
 
-#<span class="ifndef">ifndef</span> TRUE
-# <span class="define">define</span> TRUE 1
-#<span class="endif">endif</span>
-
-<span class="comment">/* Simple getopt code... */</span>
-#<span class="define">define</span> EX_UTILS_GETOPT_NUM(name, var) \
-    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
-    { \
-      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
-        (var) = strtol(argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>), NULL, 0); \
-      <span class="else">else</span> \
-      { \
-        (var) = 0; \
-        \
-        ++count; \
-        <span class="if">if</span> (count &gt;= argc) \
-          break; \
-        \
-        (var) = strtol(argv[count], NULL, 0); \
-      } \
-    } \
-    <span class="else">else</span> <span class="if">if</span> (0) ASSERT(FALSE)
-
-#<span class="define">define</span> EX_UTILS_GETOPT_CSTR(name, var) \
-    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
-    { \
-      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
-        (var) = argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>); \
-      <span class="else">else</span> \
-      { \
-        (var) = NULL; \
-        \
-        ++count; \
-        <span class="if">if</span> (count &gt;= argc) \
-          break; \
-        \
-        (var) = argv[count]; \
-      } \
-    } \
-    <span class="else">else</span> <span class="if">if</span> (0) ASSERT(FALSE)
+#<span class="cppifndef">ifndef</span> <span class="true">TRUE</span>
+# <span class="cppdefine">define</span> <span class="true">TRUE</span> 1
+#<span class="cppendif">endif</span>
 
 
-
-#<span class="define">define</span> assert(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(EXIT_FAILURE, <span class="str">"Assert=\""</span> #x <span class="str">"\""</span>); } <span class="while">while</span> (FALSE)
-#<span class="define">define</span> ASSERT(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(EXIT_FAILURE, <span class="str">"Assert=\""</span> #x <span class="str">"\""</span>); } <span class="while">while</span> (FALSE)
+#<span class="cppdefine">define</span> <span class="assert">assert</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Assert=\""</span> #x <span class="str">"\", FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
+#<span class="cppdefine">define</span> <span class="assert">ASSERT</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Assert=\""</span> #x <span class="str">"\", FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
 
 
 
@@ -494,17 +458,17 @@ objects.</li>
 
 <span class="comment">/* limits on amount of data we keep in core -- can be overridden */</span>
 <span class="comment">/* Note that EX_UTILS_NO_USE_INPUT should be defined if Input IO isn't needed */</span>
-#<span class="ifndef">ifndef</span> EX_MAX_R_DATA_INCORE
-#<span class="define">define</span> EX_MAX_R_DATA_INCORE (8 * 1024)
-#<span class="endif">endif</span>
-#<span class="ifndef">ifndef</span> EX_MAX_W_DATA_INCORE
-#<span class="define">define</span> EX_MAX_W_DATA_INCORE (8 * 1024)
-#<span class="endif">endif</span>
+#<span class="cppifndef">ifndef</span> EX_MAX_R_DATA_INCORE
+# <span class="cppdefine">define</span> EX_MAX_R_DATA_INCORE (8 * 1024)
+#<span class="cppendif">endif</span>
+#<span class="cppifndef">ifndef</span> EX_MAX_W_DATA_INCORE
+# <span class="cppdefine">define</span> EX_MAX_W_DATA_INCORE (8 * 1024)
+#<span class="cppendif">endif</span>
 
-#<span class="define">define</span> IO_OK    0
-#<span class="define">define</span> IO_BLOCK 1
-#<span class="define">define</span> IO_EOF   2
-#<span class="define">define</span> IO_NONE  3
+#<span class="cppdefine">define</span> IO_OK    0
+#<span class="cppdefine">define</span> IO_BLOCK 1
+#<span class="cppdefine">define</span> IO_EOF   2
+#<span class="cppdefine">define</span> IO_NONE  3
 
 <span class="comment">/* block waiting for IO read, write or both... */</span>
 <span class="static">static</span> <span class="void">void</span> io_block(<span class="int">int</span> io_r_fd, <span class="int">int</span> io_w_fd)
@@ -521,7 +485,7 @@ objects.</li>
     ios[0].events = POLLIN | POLLOUT;
     ios[0].fd     = io_w_fd;
   }
-  else
+  <span class="else">else</span>
   { <span class="comment">/* block on read or write or both */</span>
     <span class="if">if</span> (io_r_fd != -1)
     {
@@ -540,7 +504,7 @@ objects.</li>
   <span class="while">while</span> (poll(ios_beg, num, -1) == -1) <span class="comment">/* can't timeout */</span>
   {
     <span class="if">if</span> (errno != EINTR)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"poll"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"poll"</span>);
   }
 }
 
@@ -550,19 +514,18 @@ objects.</li>
   <span class="if">if</span> (!io_w-&gt;len)
     <span class="return">return</span> (IO_NONE);
 
-  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, NULL))
+  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, <span class="null">NULL</span>))
   {
     <span class="if">if</span> (errno == EAGAIN)
       <span class="return">return</span> (IO_BLOCK);
     
-    <span class="if">if</span> (errno != EINTR)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
   }
 
   <span class="return">return</span> (IO_OK);
 }
 
-<span class="comment">/* loop outputting data, blocking when needed */</span>
+<span class="comment">/* loop outputting data until empty, blocking when needed */</span>
 <span class="static">static</span> <span class="void">void</span> io_put_all(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
 {
   <span class="int">int</span> state = IO_NONE;
@@ -574,7 +537,7 @@ objects.</li>
   }
 }
     
-#<span class="ifndef">ifndef</span> EX_UTILS_NO_USE_INPUT
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_INPUT
 <span class="comment">/* Try and move some data from fd to Vstr string */</span>
 <span class="static">static</span> <span class="int">int</span> io_get(<span class="vstrbase">Vstr_base</span> *io_r, <span class="int">int</span> fd)
 {
@@ -588,10 +551,8 @@ objects.</li>
       <span class="return">return</span> (IO_EOF);
     <span class="else">else</span> <span class="if">if</span> ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &amp;&amp; (errno == EAGAIN))
       <span class="return">return</span> (IO_BLOCK);
-    <span class="else">else</span> <span class="if">if</span> ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &amp;&amp; (errno == EINTR))
-      <span class="return">return</span> (IO_OK); <span class="comment">/* ignore this */</span>
     <span class="else">else</span> <span class="if">if</span> (ern)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"read"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"read"</span>);
   }
 
   <span class="return">return</span> (IO_OK);
@@ -611,7 +572,7 @@ objects.</li>
   <span class="else">else</span> <span class="if">if</span> ((io_w_state == IO_NONE) &amp;&amp; (io_r_state == IO_BLOCK))
     io_block(io_r_fd, -1); <span class="comment">/* block to get more data */</span>
 }
-#<span class="endif">endif</span>
+#<span class="cppendif">endif</span>
 
 <span class="comment">/* generic POSIX IO functions that _don't_ call Vstr functions */</span>
 
@@ -621,25 +582,25 @@ objects.</li>
 
   <span class="comment">/* see if the NONBLOCK flag is set... */</span>
   <span class="if">if</span> ((flags = fcntl(fd, F_GETFL)) == -1)
-    <span class="return">return</span> (FALSE);
+    <span class="return">return</span> (<span class="false">FALSE</span>);
 
   <span class="comment">/* if it isn't try and add it to the current flags */</span>
   <span class="if">if</span> (!(flags &amp; O_NONBLOCK) &amp;&amp;
       (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
-    <span class="return">return</span> (FALSE);
+    <span class="return">return</span> (<span class="false">FALSE</span>);
 
-  <span class="return">return</span> (TRUE);
+  <span class="return">return</span> (<span class="true">TRUE</span>);
 }
 
-#<span class="ifndef">ifndef</span> VSTR_AUTOCONF_HAVE_OPEN64
-# <span class="define">define</span> open64 open
-#<span class="endif">endif</span>
+#<span class="cppifndef">ifndef</span> VSTR_AUTOCONF_HAVE_OPEN64
+# <span class="cppdefine">define</span> open64 open
+#<span class="cppendif">endif</span>
 <span class="static">static</span> <span class="int">int</span> io_open(<span class="const">const</span> <span class="char">char</span> *filename)
 {
   <span class="int">int</span> fd = open64(filename, O_RDONLY | O_NOCTTY);
 
   <span class="if">if</span> (fd == -1)
-    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"open(%s)"</span>, filename);
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"open(%s)"</span>, filename);
 
   <span class="comment">/* When doing IO, it should always be non-blocking */</span>
   io_fd_set_o_nonblock(fd);
@@ -647,43 +608,43 @@ objects.</li>
   <span class="return">return</span> (fd);
 }
 
-<span class="comment">/* ********************************* */</span>
+<span class="comment">/* ************************ */</span>
 <span class="comment">/* generic helper functions */</span>
-<span class="comment">/* ********************************* */</span>
+<span class="comment">/* ************************ */</span>
 
 <span class="comment">/* Example init function */</span>
 <span class="static">static</span> <span class="vstrbase">Vstr_base</span> *ex_init(<span class="vstrbase">Vstr_base</span> **s2)
 {
-  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s1 = <span class="null">NULL</span>;
   struct stat stat_buf;
 
   <span class="if">if</span> (!vstr_init()) <span class="comment">/* init the library */</span>
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"init"</span>);
 
   
   <span class="comment">/* alter the node buffer size to be whatever the stdout block size is */</span>
   <span class="if">if</span> (fstat(1, &amp;stat_buf) == -1)
     <span class="warn">warn</span>(<span class="str">"fstat(STDOUT)"</span>);
-  else
+  <span class="else">else</span>
   {
     <span class="if">if</span> (!stat_buf.st_blksize) <span class="comment">/* this is allowed to be Zero */</span>
       stat_buf.st_blksize = 4096;
 
-    <span class="if">if</span> (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
+    <span class="if">if</span> (!vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
                         stat_buf.st_blksize / 8))
       <span class="warn">warnx</span>(<span class="str">"Couldn't alter node size to match block size"</span>);
   }
 
   <span class="comment">/* create strings... */</span>  
-  <span class="if">if</span> (!(s1 = vstr_make_base(NULL)) ||
-      (s2 &amp;&amp; !(*s2 = vstr_make_base(NULL))))
-    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
+  <span class="if">if</span> (!(s1 = vstr_make_base(<span class="null">NULL</span>)) ||
+      (s2 &amp;&amp; !(*s2 = vstr_make_base(<span class="null">NULL</span>))))
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Create string"</span>);
 
   <span class="comment">/* create some data storage for _both_ of the above strings */</span>
-  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
+  vstr_make_spare_nodes(<span class="null">NULL</span>, VSTR_TYPE_NODE_BUF, 32);
   
   <span class="comment">/* Try and make stdout non-blocking, if it is a file this won't do anything */</span>
-  io_fd_set_o_nonblock(STDOUT_FILENO);
+  io_fd_set_o_nonblock(<span class="stdout">STDOUT_FILENO</span>);
 
   <span class="return">return</span> (s1);
 }
@@ -707,15 +668,16 @@ objects.</li>
    */</span>
   vstr_exit();
 
-  <span class="return">return</span> (EXIT_SUCCESS);
+  <span class="return">return</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
 }
 
-#<span class="endif">endif</span>
+#<span class="cppendif">endif</span>
 </pre>
 <!-- C to html convertion of ex_utils.h -->
-<!--   done on Mon Sep 22 19:37:12 2003
+<!--   done on Sat Sep 27 18:03:57 2003
  -->
 <!--   done by ex_highlight -->
+
 
 <hr>
 
@@ -764,22 +726,26 @@ ex_cat.c and ex_utils.h combined.
 <span class="comment">/* This is a _simple_ cat program, no command line options. And no use of mmap.
  * Reads from stdin if no args are given.
  *
+ * This shows how to use the Vstr library at it's simpelest,
+ * for easy and fast IO. Note however that all needed error detection is
+ * included.
+ *
  * This file is more commented than normal code, so as to make it easy to follow
  * while knowing almost nothing about Vstr or Linux IO programming.
  */</span>
-#<span class="include">include</span> <span class="str">"ex_utils.h"</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
 
 <span class="comment">/*  Keep reading on the file descriptor until there is no more data (ERR_EOF)
  * abort if there is an error reading or writing */</span>
 <span class="static">static</span> <span class="void">void</span> ex_cat_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="int">int</span> fd)
 {
-  <span class="while">while</span> (TRUE)
+  <span class="while">while</span> (<span class="true">TRUE</span>)
   {
     <span class="int">int</span> io_w_state = IO_OK;
     <span class="int">int</span> io_r_state = io_get(s1, fd);
 
     <span class="if">if</span> (io_r_state == IO_EOF)
-      break;
+      <span class="break">break</span>;
     
     io_w_state = io_put(s1, 1);
 
@@ -790,14 +756,14 @@ ex_cat.c and ex_utils.h combined.
 <span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
 { <span class="comment">/* This is "cat", without any command line options */</span>
   
-  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(NULL); <span class="comment">/* init the library etc. */</span>
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>); <span class="comment">/* init the library etc. */</span>
   <span class="int">int</span> count = 1; <span class="comment">/* skip the program name */</span>
 
   <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
   <span class="if">if</span> (count &gt;= argc)
   {
-    io_fd_set_o_nonblock(STDIN_FILENO);
-    ex_cat_read_fd_write_stdout(s1, STDIN_FILENO);
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_cat_read_fd_write_stdout(s1, <span class="stdin">STDIN_FILENO</span>);
   }
 
   
@@ -816,15 +782,16 @@ ex_cat.c and ex_utils.h combined.
   }
 
   <span class="comment">/* output all remaining data */</span>
-  io_put_all(s1, STDOUT_FILENO);
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
 
-  <span class="exit">exit</span> (ex_exit(s1, NULL));
+  <span class="exit">exit</span> (ex_exit(s1, <span class="null">NULL</span>));
 }
 </pre>
 <!-- C to html convertion of ex_cat.c -->
-<!--   done on Mon Sep 22 19:23:21 2003
+<!--   done on Sat Sep 27 18:04:47 2003
  -->
 <!--   done by ex_highlight -->
+
 
 <hr>
 
@@ -833,17 +800,18 @@ ex_cat.c and ex_utils.h combined.
 </a>
 
 <p>
- This si somewhat like the "nl" unix command, this is implemented in much the
+ This is somewhat like the "nl" unix command, this is implemented in much the
 same way as the cat command. However the data has to have something added to
 the start of each line before it can be output, so we now have two string
-objects: One for iunput and one for output. <b>Note</b> that as the data is
-"moved" from the input to the output, it isn't copied instead a reference is
-created and shared between the two strings.
+objects: One for input and one for output. <b>Note</b> that as the data is
+"moved" from the input to the output string object, it isn't copied instead
+a reference is created and shared between the two strings.
 </p>
 
 <pre class="c2html">
 <span class="comment">/* Unix nl command -- no arguments */</span>
-#<span class="include">include</span> <span class="str">"ex_utils.h"</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
 
 <span class="static">static</span> <span class="int">int</span> ex_nl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
 {
@@ -852,10 +820,10 @@ created and shared between the two strings.
 
   <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
   <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
-    <span class="return">return</span> (FALSE);
+    <span class="return">return</span> (<span class="false">FALSE</span>);
 
   <span class="if">if</span> (!s2-&gt;len)
-    <span class="return">return</span> (TRUE);
+    <span class="return">return</span> (<span class="true">TRUE</span>);
 
   <span class="while">while</span> ((pos = vstr_srch_chr_fwd(s2, 1, s2-&gt;len, <span class="chr">'\n'</span>)))
   {
@@ -866,7 +834,7 @@ created and shared between the two strings.
     vstr_del(s2, 1, pos);
     
     <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
-      <span class="return">return</span> (TRUE);
+      <span class="return">return</span> (<span class="true">TRUE</span>);
   }
 
   <span class="if">if</span> (s2-&gt;len &amp;&amp; last)
@@ -877,22 +845,21 @@ created and shared between the two strings.
     vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
   }
 
-  <span class="return">return</span> (TRUE);
+  <span class="return">return</span> (<span class="true">TRUE</span>);
 }
-#<span class="endif">endif</span>
 
 <span class="comment">/* files are merged */</span>
 <span class="static">static</span> <span class="void">void</span> ex_nl_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> fd)
 {
-  <span class="while">while</span> (TRUE)
+  <span class="while">while</span> (<span class="true">TRUE</span>)
   {
     <span class="int">int</span> io_w_state = IO_OK;
     <span class="int">int</span> io_r_state = io_get(s2, fd);
 
     <span class="if">if</span> (io_r_state == IO_EOF)
-      break;
+      <span class="break">break</span>;
 
-    ex_nl_process(s1, s2, FALSE);
+    ex_nl_process(s1, s2, <span class="false">FALSE</span>);
 
     io_w_state = io_put(s1, 1);
 
@@ -905,23 +872,23 @@ created and shared between the two strings.
   <span class="while">while</span> (s2-&gt;len &gt; lim)
   {
     <span class="int">int</span> proc_data = ex_nl_process(s1, s2, !lim);
-    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
-      io_block(-1, STDOUT_FILENO);
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(-1, <span class="stdout">STDOUT_FILENO</span>);
   }
 }
 
 
 <span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
 {
-  <span class="vstrbase">Vstr_base</span> *s2 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
   <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2);
   <span class="int">int</span> count = 1;
 
   <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
   <span class="if">if</span> (count &gt;= argc)
   {
-    io_fd_set_o_nonblock(STDIN_FILENO);
-    ex_nl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_nl_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
   }
 
   <span class="comment">/* loop through all arguments, open the file specified
@@ -945,8 +912,8 @@ created and shared between the two strings.
         <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
     }
     <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"add"</span>);
-    else
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add"</span>);
+    <span class="else">else</span>
       ex_nl_process_limit(s1, s2, EX_MAX_R_DATA_INCORE);
     
     ++count;
@@ -954,13 +921,767 @@ created and shared between the two strings.
 
   ex_nl_process_limit(s1, s2, 0);
 
-  io_put_all(s1, STDOUT_FILENO);
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
 
   <span class="exit">exit</span> (ex_exit(s1, s2));
 }
 </pre>
 <!-- C to html convertion of ex_nl.c -->
-<!--   done on Mon Sep 22 19:59:14 2003
+<!--   done on Sat Sep 27 18:05:04 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<hr>
+
+
+<a id="ex_hexdump">
+<h2> Unix simple hexdump command </h2>
+</a>
+
+<p>
+ This is somewhat like the "hexdump" unix command, it also uses the same simple
+IO model used in the cat and nl commands. However the data is now output twice
+once as hex values, and a second time as characters (converting unprintable
+characters into '.' characters). So again we have two string
+objects: One for input and one for output. To get two copies of the data, we
+initially export the data to a buffer and then convert that to hex via
+vstr_add_fmt() (the printf like function). We then convert the data that is
+still in the string object so it is printable and move it from the input to the
+output string objcet. <b>Note</b> that as the data is
+"moved" from the input to the output string object, it is always copied even
+if it was a reference on input (Ie. mmap()ed).
+</p>
+<p>
+ One other thing that is new in the hexdump command is the use of the
+<a href="functions.html#VSTR_FLAGXX()">VSTR_FLAGXX()</a> macro fucntion, this
+is a convienience feature for when you need to specify multiple flags at once.
+</p>
+
+<pre class="c2html">
+<span class="comment">/* This is a fairly simple hexdump program, it has command line options to
+ * enable printing of high latin symbols, and/or use mmap() to load the input
+ * data.
+ *
+ * Reads from stdin if no args are given.
+ *
+ * This shows how to use the Vstr library for simple data convertion.
+ *
+ * This file is more commented than normal code, so as to make it easy to follow
+ * while knowing almost nothing about Vstr or Linux IO programming.
+ */</span>
+
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+<span class="comment">/* hexdump in "readable" format ... note this is a bit more fleshed out than
+ * some of the other examples mainly because I actually use it */</span>
+
+<span class="comment">/* this is roughly equiv. to the Linux hexdump command...
+% rpm -qf /usr/bin/hexdump
+util-linux-2.11r-10
+% hexdump -e '"%08_ax:"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"'
+        -e '"  " 16 "%_p" "\n"'
+
+ * ...except that it prints the address in big hex digits, and it doesn't take
+ * you 30 minutes to remember how to type it out.
+ *  It also acts differently in that seperate files aren't merged
+ * into one output line (Ie. in this version each file starts on a new line,
+ * however the addresses are continuious).
+ */</span>
+
+#<span class="cppdefine">define</span> PRNT_NONE 0
+#<span class="cppdefine">define</span> PRNT_SPAC 1
+#<span class="cppdefine">define</span> PRNT_HIGH 2
+
+
+<span class="comment">/* number of characters we output per line (assumes 80 char width screen)... */</span>
+#<span class="cppdefine">define</span> EX_HEXDUMP_CHRS_PER_LINE 16
+
+<span class="comment">/* configure what ASCII characters we print */</span>
+<span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> prnt_high_chars = PRNT_NONE;
+
+<span class="comment">/* simple print of a number */</span>
+
+<span class="comment">/* print the address */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X8(s1, num) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">"0x%08X:"</span>, (num))
+<span class="comment">/* print a set of two bytes */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2X2(s1, num1, num2) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">" %02X%02X"</span>, (num1), (num2))
+<span class="comment">/* print a byte and spaces for the missing byte */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2__(s1, num1) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">" %02X  "</span>,   (num1))
+
+
+<span class="static">static</span> <span class="int">int</span> ex_hexdump_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> addr = 0;
+  <span class="comment">/* normal ASCII chars, just allow COMMA and DOT flags */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags = VSTR_FLAG02(CONV_UNPRINTABLE_ALLOW, COMMA, DOT);
+  <span class="comment">/* allow spaces, allow COMMA, DOT, underbar _, and space */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags_sp = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
+                                      COMMA, DOT, _, SP);
+  <span class="comment">/* high ascii too, allow
+   * COMMA, DOT, underbar _, space, high space and other high characters */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW,
+                                       COMMA, DOT, _, SP, HSP, HIGH);
+  <span class="unsigned">unsigned</span> <span class="char">char</span> buf[EX_HEXDUMP_CHRS_PER_LINE];
+
+  <span class="switch">switch</span> (prnt_high_chars)
+  {
+    <span class="case">case</span> PRNT_HIGH: flags = flags_hsp; <span class="break">break</span>;
+    <span class="case">case</span> PRNT_SPAC: flags = flags_sp;  <span class="break">break</span>;
+    <span class="case">case</span> PRNT_NONE:                    <span class="break">break</span>;
+    <span class="default">default</span>: <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);            <span class="break">break</span>;
+  }
+
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="comment">/* while we have a hexdump line ... */</span>
+  <span class="while">while</span> (s2-&gt;len &gt;= EX_HEXDUMP_CHRS_PER_LINE)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> count = 0;
+    
+    <span class="comment">/* get a hexdump line from the vstr */</span>
+    vstr_export_buf(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, buf, sizeof(buf));
+
+    <span class="comment">/* write out a hexdump line address */</span>
+    EX_HEXDUMP_X8(s1, addr);
+
+    <span class="comment">/* write out hex values */</span>
+    <span class="while">while</span> (count &lt; EX_HEXDUMP_CHRS_PER_LINE)
+    {
+      EX_HEXDUMP_X2X2(s1, buf[count], buf[count + 1]);
+      count += 2;
+    }
+
+    vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"  "</span>);
+
+    <span class="comment">/* convert unprintable characters to the '.' character */</span>
+    vstr_conv_unprintable_chr(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, flags, <span class="chr">'.'</span>);
+
+    <span class="comment">/* write out characters, converting reference and pointer nodes to
+     * _BUF nodes */</span>
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, EX_HEXDUMP_CHRS_PER_LINE,
+                  VSTR_TYPE_ADD_ALL_BUF);
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\n'</span>, 1);
+
+    addr += EX_HEXDUMP_CHRS_PER_LINE;
+    
+    <span class="comment">/* delete the line just processed */</span>
+    vstr_del(s2, 1, EX_HEXDUMP_CHRS_PER_LINE);
+
+    <span class="comment">/* note that we don't want to create data indefinitely, so stop
+     * according to in core configuration */</span>
+    <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      <span class="return">return</span> (<span class="true">TRUE</span>);
+  }
+
+  <span class="if">if</span> (last &amp;&amp; s2-&gt;len)
+  { <span class="comment">/* do the same as above, but print the partial line for
+     * the end of files */</span>
+    size_t got = s2-&gt;len;
+    size_t missing = EX_HEXDUMP_CHRS_PER_LINE - s2-&gt;len;
+    <span class="const">const</span> <span class="char">char</span> *ptr = buf;
+
+    missing -= (missing % 2);
+    vstr_export_buf(s2, 1, s2-&gt;len, buf, sizeof(buf));
+
+    EX_HEXDUMP_X8(s1, addr);
+
+    <span class="while">while</span> (got &gt;= 2)
+    {
+      EX_HEXDUMP_X2X2(s1, ptr[0], ptr[1]);
+      got -= 2;
+      ptr += 2;
+    }
+    <span class="if">if</span> (got)
+    {
+      EX_HEXDUMP_X2__(s1, ptr[0]);
+      got -= 2;
+    }
+
+    <span class="comment">/* easy way to add X amount of ' ' characters */</span>
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">' '</span>, (missing * 2) + (missing / 2) + 2);
+
+    vstr_conv_unprintable_chr(s2, 1, s2-&gt;len, flags, <span class="chr">'.'</span>);
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, s2-&gt;len, VSTR_TYPE_ADD_ALL_BUF);
+
+    vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
+
+    addr += s2-&gt;len;
+    vstr_del(s2, 1, s2-&gt;len);
+
+    <span class="return">return</span> (<span class="true">TRUE</span>);
+  }
+
+  <span class="comment">/* if any of the above memory mgmt failed, error */</span>
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data:"</span>);
+
+  <span class="return">return</span> (<span class="false">FALSE</span>);
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_hexdump_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2,
+                                     <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  { <span class="comment">/* Finish processing read data (try writing if we need memory) */</span>
+    <span class="int">int</span> proc_data = ex_hexdump_process(s1, s2, !lim);
+
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(-1, <span class="stdout">STDOUT_FILENO</span>);
+  }
+}
+
+<span class="comment">/* we process an entire file at a time... */</span>
+<span class="static">static</span> <span class="void">void</span> ex_hexdump_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2,
+                                            <span class="int">int</span> fd)
+{
+  <span class="comment">/* read/process/write loop */</span>
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+    
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+    
+    ex_hexdump_process(s1, s2, <span class="false">FALSE</span>);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+
+  <span class="comment">/* write out all of the end of the file,
+   * so the next file starts on a new line */</span>
+  ex_hexdump_process_limit(s1, s2, 0);
+}
+
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{ <span class="comment">/* This is "hexdump", as it should be by default */</span>
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2); <span class="comment">/* init the library, and create two strings */</span>
+  <span class="int">int</span> count = 1; <span class="comment">/* skip the program name */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> use_mmap = <span class="false">FALSE</span>;
+
+  <span class="comment">/* parse command line arguments... */</span>
+  <span class="while">while</span> (count &lt; argc)
+  { <span class="comment">/* quick hack getopt_long */</span>
+    <span class="if">if</span> (!strcmp(<span class="str">"--"</span>, argv[count]))
+    {
+      ++count;
+      <span class="break">break</span>;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--mmap"</span>, argv[count])) <span class="comment">/* toggle use of mmap */</span>
+      use_mmap = !use_mmap;
+    
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--none"</span>, argv[count])) <span class="comment">/* choose what is displayed */</span>
+      prnt_high_chars = PRNT_NONE; <span class="comment">/* just simple 7 bit ASCII, no spaces */</span>
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--space"</span>, argv[count]))
+      prnt_high_chars = PRNT_SPAC; <span class="comment">/* allow spaces */</span>
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--high"</span>, argv[count]))
+      prnt_high_chars = PRNT_HIGH; <span class="comment">/* allow high bit characters */</span>
+    
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--version"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, 0, <span class="str">"%s"</span>, <span class="str">"\
+jhexdump 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--help"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, 0, <span class="str">"%s"</span>, <span class="str">"\
+Usage: jhexdump [STRING]...\n\
+   or: jhexdump OPTION\n\
+Repeatedly output a line with all specified STRING(s), or `y'.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --high     Allow space and high characters in ASCII output\n\
+      --none     Allow only small amount of characters ASCII output (default)\n\
+      --space    Allow space characters in ASCII output\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill &lt;james@and.org&gt;.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span>
+      <span class="break">break</span>;
+    ++count;
+  }
+
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_hexdump_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
+  }
+
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = 0;
+
+    <span class="assert">ASSERT</span>(!s2-&gt;len); <span class="comment">/* all input is fully processed before each new file */</span>
+    
+    <span class="comment">/* try to mmap the file */</span>
+    <span class="if">if</span> (use_mmap)
+      vstr_sc_mmap_file(s2, s2-&gt;len, argv[count], 0, 0, &amp;ern);
+
+    <span class="if">if</span> (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    { <span class="comment">/* if mmap didn't work ... do a read/alter/write loop */</span>
+      <span class="int">int</span> fd = io_open(argv[count]);
+      
+      ex_hexdump_read_fd_write_stdout(s1, s2, fd);
+
+      <span class="if">if</span> (close(fd) == -1)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+    }
+    <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add"</span>);
+    <span class="else">else</span> <span class="comment">/* mmap worked so processes the entire file at once */</span>
+      ex_hexdump_process_limit(s1, s2, 0);
+    
+    ++count;
+  }
+  <span class="assert">ASSERT</span>(!s2-&gt;len); <span class="comment">/* all input is fully processed before each new file */</span>
+  
+  <span class="comment">/* Cleanup... */</span>
+ out:
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+  
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_hexdump.c -->
+<!--   done on Sat Sep 27 18:05:43 2003
+ -->
+<!--   done by ex_highlight -->
+
+<hr>
+
+<a id="cust-fmt">
+<a id="ex_lookup_ip">
+<h2> Lookup a hostname and print the IP, a simple custom formatter example </h2>
+</a>
+
+<p>
+ <a href="overview.html#cust-fmt">Custom formatters</a> are an exteremly useful
+feature of the Vstr string library, allowing you to safely implement one or
+more methods of printing a pointer to an arbitrary object. The most
+simple uses are to use the builtin custom formatters.
+This examples shows how you enable the IPv4 and Vstr custom formatters and
+then use how you can use them.
+</p>
+
+<p>
+ This example also includes
+<a href="functions.html#vstr_sc_basename()">vstr_sc_basename()</a> which acts
+in a similar way to the POSIX basename function.
+</p>
+
+<pre class="c2html">
+<span class="comment">/* This is a _simple_ program to lookup a hostname via. gethostbyname().
+ *
+ * This shows how easy it is to use custom format specifiers, to make your code
+ * easier to write and maintain.
+ *
+ * This file is more commented than normal code, so as to make it easy to follow
+ * while knowning almost nothing about Vstr or Linux IO programming.
+ */</span>
+
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppinclude">include</span> &lt;sys/socket.h&gt;
+#<span class="cppinclude">include</span> &lt;netdb.h&gt;
+
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>); <span class="comment">/* init the library, and create a string */</span>
+  struct hostent *hp = <span class="null">NULL</span>; <span class="comment">/* data from the resolver library */</span>
+
+  <span class="comment">/* setup the pre-written custom format specifier for IPv4 addresses,
+   */</span>
+  vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_sc_fmt_add_ipv4_ptr(s1-&gt;conf, <span class="str">"{IPv4:%p}"</span>);
+
+
+  <span class="if">if</span> (argc != 2) <span class="comment">/* if a hostname isn't given output an message to stderr */</span>
+  {
+    size_t pos = 0;
+    size_t len = 0;
+
+    <span class="comment">/* add another format specifier for printing Vstr strings */</span>
+    vstr_sc_fmt_add_vstr(s1-&gt;conf, <span class="str">"{Vstr:%p%zu%zu%u}"</span>);
+
+    <span class="comment">/* find the program name ...
+     * putting it at the begining of the Vstr string */</span>
+    vstr_add_cstr_ptr(s1, 0, argc ? argv[0] : <span class="str">"lookup_ip"</span>);
+    vstr_sc_basename(s1, 1, s1-&gt;len, &amp;pos, &amp;len);
+
+    <span class="comment">/* add a format line to the Vstr string, including the program name
+     * which is at the begining of this Vstr string itself */</span>
+    len = vstr_add_fmt(s1, s1-&gt;len, <span class="str">" %s ${Vstr:%p%zu%zu%u} %s\n"</span>,
+                       <span class="str">"Format:"</span>,
+                       s1, pos, len, 0,
+                       <span class="str">"&lt;hostname&gt;"</span>);
+
+    vstr_del(s1, 1, s1-&gt;len - len); <span class="comment">/* delete the original program name */</span>
+
+    io_put_all(s1, <span class="stderr">STDERR_FILENO</span>);
+
+    <span class="exit">exit</span> (<span class="exitfail">EXIT_FAILURE</span>);
+  }
+
+
+  <span class="comment">/* call libc to lookup the hostname */</span>
+  hp = gethostbyname(argv[1]);
+
+
+  <span class="comment">/* just print the relevant data.... Note that nothing complicated needs to
+   * be done to print the IPv4 address, the custom formatter takes care of
+   * it */</span>
+  <span class="if">if</span> (!hp)
+    vstr_add_fmt(s1, 0, <span class="str">" Error retrieving hostname '%s': %s.\n"</span>,
+                 argv[1], hstrerror(h_errno));
+  <span class="else">else</span> <span class="if">if</span> (hp-&gt;h_addrtype == AF_INET)
+    vstr_add_fmt(s1, 0, <span class="str">" The hostname '%s' has an "</span>
+                 <span class="str">"IPv4 address of \"${IPv4:%p}\".\n"</span>, hp-&gt;h_name,
+                 hp-&gt;h_addr_list[0]);
+  <span class="else">else</span>
+    vstr_add_fmt(s1, 0, <span class="str">" The hostname '%s' has an address type that "</span>
+                 <span class="str">"isn't an IPv4 address.\n"</span>,
+                 hp-&gt;h_name);
+
+
+  <span class="comment">/* Cleanup... */</span>
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, <span class="null">NULL</span>));
+}
+</pre>
+<!-- C to html convertion of ex_lookup_ip.c -->
+<!--   done on Sat Sep 27 18:21:10 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<hr>
+
+<a id="ex_gmp_factorials">
+<h2> Factorials, GMP MPZ variables with custom formatters  </h2>
+</a>
+
+<p>
+  So, printing ipv4 address is nice ... but the big benifit, with custom
+formatters, come with using them on types that you have to deal with a lot. This
+usually means types that you've defined yourself, or are defined in a library
+you are using.
+So this example will show you how to create your own custom formatters.
+ I'll use the
+ <a href="http://www.gnu.org/manual/gmp/">GNU multiple precision arithmetic library</a>
+which is a well used library for creating arbitrary precision numbers
+(Ie. numbers that can represent any value). One of the annoying features of
+using this library is that it is non-trivial to easily turn these numbers into
+strings and/or output them as you would with a normal
+int/long/size_t/intmax_t/etc.
+</p>
+
+<p>
+  The GMP library has a set of
+<a href="http://www.gnu.org/manual/gmp/html_mono/gmp.html#Formatted%20Output%20Strings">printf like functions</a>,
+ and while you can create a limited length string, newly allocated string or
+create output to a file using these functions they fail the "Easy" test for a
+number of reasons...
+</p>
+
+<ul>
+<li><p>It is not possible to use the grouping format specifier with
+the GNU MP variables. This means that when running under Linux/glibc, while...
+</p>
+<pre class="c2html">
+<span class="int">int</span> d;
+<span class="char">char</span> *ret = <span class="null">NULL</span>;
+<span class="comment">/* ... */</span>
+gmp_asprintf(&amp;ret, <span class="str">"%s is an num %'d.\n"</span>, <span class="str">"int"</span>, d);
+</pre>
+<p>
+...creates a C style string for the number in a readable format for the locale,
+the GNU MP variable equvilent...
+</p>
+<pre class="c2html">
+mpz_t z;
+<span class="char">char</span> *ret = <span class="null">NULL</span>;
+<span class="comment">/* ... */</span>
+gmp_asprintf(&amp;ret, <span class="str">"%s is an bignum %'Zd.\n"</span>, <span class="str">"mpz_t"</span>, z);
+</pre>
+<p>
+...doesn't do anything other than create the number.
+</p>
+ </li>
+
+<li><p>Any <b>static printf</b> like function format specifier
+<b>checking has to be disabled</b> for these functions due to the way
+the hard coded custom formaters are implemented. This means that although
+if you do...
+</p>
+
+<pre class="c2html">
+<span class="int">int</span> d;
+<span class="char">char</span> *ret = <span class="null">NULL</span>;
+<span class="comment">/* ... */</span>
+asprintf(&amp;ret, <span class="str">"%.*s is an num %d.\n"</span>, <span class="str">"int"</span>, d);
+</pre>
+
+<p>
+...gcc will tell you there is an error, when you do...
+</p>
+
+<pre class="c2html">
+mpz_t z;
+<span class="char">char</span> *ret = <span class="null">NULL</span>;
+<span class="comment">/* ... */</span>
+gmp_asprintf(&amp;ret, <span class="str">"%.*s is an bignum %Zd.\n"</span>, <span class="str">"mpz_t"</span>, z);
+</pre>
+
+<p>
+...the code will happily compile, and then almost certainly crash when you
+run it.
+</p>
+ </li>
+
+<li><p>You also lose all of the great benifits of using
+<b>vstr_add_fmt()</b>, the biggest problem here is that the gmp printf like
+functions pass all non gmp types directly to the underlying snprintf/etc.
+call. Although the extra speed/memory benifits of Vstr are nice too :).</p></li>
+
+<li><p>Even <b>if</b> all of these problems were fixed in some future version,
+this still only solves the problem for GMP types. So if you have one or more
+other custom types that you need to format, you'd need yet another function.</p></li>
+</ul>
+
+<p>
+  The custom formatter for mpz_t is about 23 lines of code in this example,
+it could possibly be a little less if you removed some features
+(Ie. supporting positive or negative values) or if some other GMP functions
+made things a little easier. However this not only fully implements everything
+that gmp_printf() can do for that variable, but
+<b>also implements grouping</b> (with an overhead of a single if test and
+function call).
+</p>
+
+<pre class="c2html">
+<span class="comment">/* Simple usage of the gmp library, see...
+
+http://www.gnu.org/manual/gmp/html_mono/gmp.html#Formatted%20Output%20Strings
+
+...it prints the factorial of the first argument, you can check the output
+against...
+
+http://www.newdream.net/~sage/old/numbers/fact.htm
+*/</span>
+
+<span class="comment">/* we only need output here, so turn off other IO functions */</span>
+#<span class="cppdefine">define</span> EX_UTILS_NO_USE_INPUT 1
+#<span class="cppdefine">define</span> EX_UTILS_NO_USE_OPEN 1
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span> <span class="comment">/* helper functions */</span>
+
+#<span class="cppinclude">include</span> &lt;limits.h&gt;
+#<span class="cppinclude">include</span> &lt;gmp.h&gt;
+#<span class="cppinclude">include</span> &lt;locale.h&gt;
+
+<span class="comment">/* if this is enabled we go through the factorials twice, which means we do
+ * almost twice as much work ... the output is more readable for small values
+ * though */</span>
+#<span class="cppdefine">define</span> EX_GMP_FACT_USE_FIELDWIDTH 1
+
+<span class="comment">/* This is the custom formatter.
+ * Note that this deals with fmt_quote unlike the gmp_*printf() calls */</span>
+<span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, size_t pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
+                          <span class="comment">/* gmp args, need to be in paramter list */</span>
+                          <span class="const">const</span> mpz_t val)
+{
+  <span class="char">char</span> *buf = <span class="null">NULL</span>;
+  <span class="char">char</span> *out_buf = <span class="null">NULL</span>;
+  <span class="int">int</span> flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; <span class="comment">/* it's a number */</span>
+  size_t len = 0;
+  <span class="int">int</span> ret = <span class="false">FALSE</span>;
+
+  <span class="comment">/* This is the simplist way of converting the bignum to a string,
+   * we could do extra work to avoid allocations for smaller values */</span>
+  
+  len = gmp_asprintf(&amp;buf, <span class="str">"%Zd"</span>, val); <span class="comment">/* dies on error */</span>
+
+  out_buf = buf; <span class="comment">/* need pointer to the begining */</span>
+  
+  <span class="if">if</span> (mpz_cmp_ui(val, 0) &lt; 0)
+  { <span class="comment">/* if it's a negative number, "remove" the '-' as
+     * vstr_sc_fmt_cb_beg will add it in the correct place */</span>
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
+    ++out_buf;
+    --len;
+  }
+  
+  <span class="comment">/* this deals with things like having the the zero flag (Ie. %0d), or the
+   * plus flag (Ie. %+d) or right shifted field widths */</span>
+  <span class="if">if</span> (!vstr_sc_fmt_cb_beg(base, &amp;pos, spec, &amp;len, flags))
+    <span class="goto">goto</span> mem_fail;
+ 
+  <span class="if">if</span> (spec-&gt;fmt_quote) <span class="comment">/* add number including thousands seperators */</span>
+    ret = vstr_sc_add_grpnum_buf(base, pos, out_buf, len);
+  <span class="else">else</span> <span class="comment">/* just add the number */</span>
+    ret = vstr_add_buf(base, pos, out_buf, len);
+  
+  <span class="comment">/* this deals with left shifted field widths */</span>
+  <span class="if">if</span> (!ret || !vstr_sc_fmt_cb_end(base, pos, spec, len))
+    <span class="goto">goto</span> mem_fail;
+
+  free(buf);
+  
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+
+ mem_fail:
+  free(buf);
+  <span class="return">return</span> (<span class="false">FALSE</span>);
+}
+
+<span class="comment">/* we need to jump though an extra function due to the way GMP defines the
+ * mpz_t type */</span>
+<span class="static">static</span> <span class="int">int</span> ex_usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, size_t pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, 0);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, mpz));
+}
+
+<span class="comment">/* The code to calculate the factorial... */</span>
+<span class="static">static</span> <span class="void">void</span> ex_gmp_fact(mpz_t bignum_ret, mpz_t bignum_cnt, mpz_t bignum_for,
+                        <span class="int">int</span> out, <span class="vstrbase">Vstr_base</span> *s1, <span class="int">int</span> ret_max_sz, <span class="int">int</span> cnt_max_sz)
+{
+  <span class="while">while</span> (mpz_cmp(bignum_cnt, bignum_for) &lt;= 0)
+  {
+    <span class="int">int</span> w_state = IO_OK;
+    
+    mpz_mul(bignum_ret, bignum_ret, bignum_cnt);
+
+    <span class="if">if</span> (out)
+    { <span class="comment">/* output the current values */</span>
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">"$'*&lt;MPZ:%*p&gt;%s %c $'*&lt;MPZ:%*p&gt;\n"</span>,
+                   cnt_max_sz, (<span class="void">void</span> *)bignum_cnt, <span class="str">"!"</span>, <span class="chr">'='</span>,
+                   ret_max_sz, (<span class="void">void</span> *)bignum_ret);
+    
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+        errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
+
+      w_state = io_put(s1, <span class="stdout">STDOUT_FILENO</span>);
+    
+      <span class="if">if</span> ((w_state == IO_BLOCK) &amp;&amp; (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE))
+        io_block(-1, <span class="stdout">STDOUT_FILENO</span>);
+    }
+    
+    mpz_add_ui(bignum_cnt, bignum_cnt, 1);
+  }
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>);
+  mpz_t bignum_ret;
+  mpz_t bignum_for;
+  mpz_t bignum_cnt;
+  <span class="int">int</span> cnt_max_sz = 1;
+  <span class="int">int</span> ret_max_sz = 1;
+  <span class="const">const</span> <span class="char">char</span> *loc_num_name = <span class="null">NULL</span>;
+  
+  <span class="if">if</span> (argc &lt; 2)
+    <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"No count specified"</span>);
+
+  <span class="comment">/* setup the custom format specifier for GMP ... see above
+   */</span>
+  vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;MPZ:%p&gt;"</span>, ex_usr_mpz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  <span class="comment">/* second version so we can give a field width */</span>
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;MPZ:%*p&gt;"</span>, ex_usr_mpz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+
+  <span class="comment">/* get the numeric locale name... */</span>
+  setlocale(LC_ALL, <span class="str">""</span>);
+  loc_num_name = setlocale(LC_NUMERIC, <span class="null">NULL</span>);
+  
+  <span class="comment">/* change thousands grouping to make numbers more readable, got from locale */</span>
+  <span class="if">if</span> (!vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
+                      loc_num_name))
+    <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Couldn't change numeric locale info"</span>);
+  
+  mpz_init_set_str (bignum_for, argv[1], 0);
+  mpz_init_set_str (bignum_ret,     <span class="str">"1"</span>, 0);
+  mpz_init_set_str (bignum_cnt,     <span class="str">"1"</span>, 0);
+
+  <span class="if">if</span> (EX_GMP_FACT_USE_FIELDWIDTH)
+  { <span class="comment">/* find out the max length of the for values... */</span>
+
+    <span class="comment">/* value of the count... */</span>
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"$'&lt;MPZ:%p&gt;"</span>, (<span class="void">void</span> *)bignum_for);
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad) <span class="comment">/* this checks a bunch of things above */</span>
+      errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
+  
+    cnt_max_sz = s1-&gt;len; vstr_del(s1, 1, s1-&gt;len);
+
+    <span class="comment">/* work out the result */</span>
+    ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for, <span class="false">FALSE</span>, <span class="null">NULL</span>, 0, 0);
+
+    <span class="comment">/* value of the result... */</span>
+    <span class="if">if</span> (!vstr_add_fmt(s1, s1-&gt;len, <span class="str">"$'&lt;MPZ:%p&gt;"</span>, (<span class="void">void</span> *)bignum_ret))
+      errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
+  
+    ret_max_sz = s1-&gt;len; vstr_del(s1, 1, s1-&gt;len);
+
+    <span class="comment">/* reinit, so we can print everything...  */</span>
+    mpz_init_set_str (bignum_ret,     <span class="str">"1"</span>, 0);
+    mpz_init_set_str (bignum_cnt,     <span class="str">"1"</span>, 0);
+  }
+  
+  <span class="comment">/* do the calculations... */</span>
+  <span class="if">if</span> (mpz_cmp_ui(bignum_for, 0) &gt;= 0) <span class="comment">/* special case 0! */</span>
+    <span class="if">if</span> (!vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%*u%s %c %*u\n\n"</span>,
+                      cnt_max_sz, 0, <span class="str">"!"</span>, <span class="chr">'='</span>, ret_max_sz, 1))
+      errno = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
+
+  ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for,
+              <span class="true">TRUE</span>, s1, ret_max_sz, cnt_max_sz);
+  
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, <span class="null">NULL</span>));
+}
+</pre>
+<!-- C to html convertion of ex_gmp_factorials.c -->
+<!--   done on Mon Sep 29 12:06:17 2003
  -->
 <!--   done by ex_highlight -->
 
@@ -1066,7 +1787,7 @@ Vstr string functions...
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sat Aug  3 15:35:00 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 22 20:55:20 EDT 2003
+Last modified: Mon Sep 29 15:52:52 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

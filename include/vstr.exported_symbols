@@ -158,7 +158,17 @@ ref_make_ptr
 ref_make_vstr_base
 ref_make_vstr_conf
 ref_make_vstr_sects
+sc_add_cstr_grpnum_buf
+sc_add_grpnum_buf
 sc_basename
+sc_conv_num_uint
+sc_conv_num10_uint
+sc_conv_num_ulong
+sc_conv_num10_ulong
+sc_conv_num_size
+sc_conv_num10_size
+sc_conv_num_uintmax
+sc_conv_num10_uintmax
 sc_dirname
 sc_fmt_add_all
 sc_fmt_add_bkmg_bits_uint

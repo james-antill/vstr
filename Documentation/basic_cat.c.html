@@ -1,14 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>basic_cat.c</title>
+ <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+
+  <body>
+    <h1>basic_cat.c</h1>
+
 <pre class="c2html">
 <span class="comment">/* cat.c -- simple version of cat, a "fixed" version of...
    http://people.redhat.com/johnsonm/lad/src/cat.c.html */</span>
 
-#<span class="define">define</span> _LARGEFILE64_SOURCE 1 <span class="comment">/* open64 */</span>
-#<span class="include">include</span> &lt;stdlib.h&gt;
-#<span class="include">include</span> &lt;stdio.h&gt;
-#<span class="include">include</span> &lt;unistd.h&gt;
-#<span class="include">include</span> &lt;fcntl.h&gt;
-#<span class="include">include</span> &lt;errno.h&gt;
-#<span class="include">include</span> &lt;err.h&gt;
+#<span class="cppdefine">define</span> _LARGEFILE64_SOURCE 1 <span class="comment">/* open64 */</span>
+#<span class="cppinclude">include</span> &lt;stdlib.h&gt;
+#<span class="cppinclude">include</span> &lt;stdio.h&gt;
+#<span class="cppinclude">include</span> &lt;unistd.h&gt;
+#<span class="cppinclude">include</span> &lt;fcntl.h&gt;
+#<span class="cppinclude">include</span> &lt;errno.h&gt;
+#<span class="cppinclude">include</span> &lt;err.h&gt;
 
 <span class="static">static</span> <span class="void">void</span> io_fd_unset_o_nonblock(<span class="int">int</span> fd)
 {
@@ -16,12 +26,12 @@
 
   <span class="comment">/* see if the NONBLOCK flag is set... */</span>
   <span class="if">if</span> ((flags = fcntl(fd, F_GETFL)) == -1)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"fcntl(F_GETFL)"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fcntl(F_GETFL)"</span>);
 
   <span class="comment">/* if it is remove it, or err() out */</span>
   <span class="if">if</span> (flags &amp; O_NONBLOCK)
     <span class="if">if</span> (fcntl(fd, F_SETFL, flags &amp; ~O_NONBLOCK) == -1)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"fcntl(F_SETFL, ~O_NONBLOCK)"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fcntl(F_SETFL, ~O_NONBLOCK)"</span>);
 }
 
 <span class="static">static</span> <span class="void">void</span> full_write(<span class="int">int</span> fd, <span class="const">const</span> <span class="void">void</span> *buf, size_t len)
@@ -31,7 +41,7 @@
     ssize_t ret = write(fd, buf, len);
     
     <span class="if">if</span> ((ret == -1) &amp;&amp; (errno != EINTR))
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
 
     buf += (size_t)ret;
     len -= (size_t)ret;
@@ -46,9 +56,9 @@
   <span class="while">while</span> ((ret = read(fd, buf, sizeof(buf))) != 0)
   { <span class="comment">/* read a bit, then write that bit */</span>
     <span class="if">if</span> ((ret == -1) &amp;&amp; (errno != EINTR))
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"read"</span>);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"read"</span>);
       
-    full_write(STDOUT_FILENO, buf, ret);
+    full_write(<span class="stdout">STDOUT_FILENO</span>, buf, ret);
   }
 }
 
@@ -56,13 +66,13 @@
 {
   <span class="int">int</span> count = 1;
   
-  io_fd_unset_o_nonblock(STDOUT_FILENO);
-  io_fd_unset_o_nonblock(STDERR_FILENO);
+  io_fd_unset_o_nonblock(<span class="stdout">STDOUT_FILENO</span>);
+  io_fd_unset_o_nonblock(<span class="stderr">STDERR_FILENO</span>);
 
   <span class="if">if</span> (count &gt;= argc)
   {
-    io_fd_unset_o_nonblock(STDIN_FILENO);
-    ex_cat_read_fd_write_stdout(STDIN_FILENO);
+    io_fd_unset_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_cat_read_fd_write_stdout(<span class="stdin">STDIN_FILENO</span>);
   }
 
   <span class="while">while</span> (count &lt; argc)
@@ -70,7 +80,7 @@
     <span class="int">int</span> fd = open64(argv[count], O_RDONLY);
 
     <span class="if">if</span> (fd == -1)
-      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"open(%s)"</span>, argv[count]);
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"open(%s)"</span>, argv[count]);
 
     <span class="comment">/* assumes open() produces a blocking fd */</span>
     ex_cat_read_fd_write_stdout(fd);
@@ -81,10 +91,14 @@
     ++count;
   }
   
-  <span class="exit">exit</span> (EXIT_SUCCESS);
+  <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
 }
 </pre>
 <!-- C to html convertion of basic_cat.c -->
-<!--   done on Mon Sep 22 21:03:25 2003
+<!--   done on Sat Sep 27 18:00:47 2003
  -->
 <!--   done by ex_highlight -->
+
+
+  </body>
+</html>

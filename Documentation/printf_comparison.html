@@ -53,13 +53,15 @@
 	<dt>User extensions:</dt> <dd>Can register single letter customer
 	format specifiers, can't be done in warning compatible way for static
 	format checkers.
-	<dt>Version:</dt> <dd>2.3.1</dd>
+	<dt>Version:</dt> <dd>2.3.2</dd>
       </dd>
 	</dl>
 
 	<p>
 	  Looks like a conformaing implementation, I reported a couple of
-          corner case bugs that were fixed for 2.3.x.
+          corner case bugs that were fixed for 2.3.x. However there is an
+          "issue" where if you pass an invalid multibyte string to the printf
+          like functions then it fails <b>only if</b> you give it a precision.
 	</p>
 	<p>
           There is a 'I' flag extension, which is pretty much zero availability
@@ -102,31 +104,27 @@
       <dt>Allocation policy:</dt> <dd>Automatic</dd>
       <dt>Format parsing:</dt> <dd>Native</dd>
       <dt>Double printing:</dt> <dd>Native</dd>
-      <dt>Problems:</dt> <dd>'A' and 'a' are mapped to 'G' and 'g'
-	respectively, 'lld' and 'hhd' aren't available. No thousands seperator
-	support for floating point values, assert() fails for thousands
-	seperator support for non base 10 integer printing.</dd>
+      <dt>Problems:</dt> <dd>Fails for thousands
+	seperator support for non base 10 integer printing (this is std.
+	  compliant).</dd>
       <dt>User extensions:</dt> <dd>Can register single letter customer
 	format specifiers, can't be done in warning compatible way for static
-	format checkers. Also has a hard limit on the number of
+	format checkers. Has problems with zero argument custom formatters.
+	  Also has a hard limit on the number of
 	custom formatters.</dd>
-      <dt>Version:</dt> <dd>cvs (2003-02-24)</dd>
+      <dt>Version:</dt> <dd>cvs (2003-09-24)</dd>
     </dl>
 
     <p>
-      Very close to a conformaing implementation,
-      'A' and 'a' map to 'G' and 'g' ... and 'lld' and 'hhd' aren't available,
-      this shouldn't be hard to fix. Thousands seperator support is always off
-      for floating point arguments, which is harder ... but planned.
-      An assert call fails for thousands seperator support for non base 10
-      integer printing, however the code seems correct if the assert() call is
-      removed.
+      This looks like a conforming implementation.
     </p>
     <p>
       Supports a bunch of common extentions, like 'm', 'q', 'I'. Has
       register_printf_function() which is an API copy from GNU libc, and works
       the same way .. however it has a hard limit on the number of formatters
-      you can add.
+      you can add. Currently has a bug where using a i18n positional
+	precision/width will error out of the printf function, <b>if the custom
+    format is defined to not take any arguments</b>.
     </p>
   </li> <hr width="80%" />
 
@@ -197,7 +195,7 @@
     build time options)</dd>
 	<dt>Problems:</dt> <dd>None</dd>
 	<dt>User extensions:</dt> <dd>Yes</dd>
-	<dt>Version:</dt> <dd>1.0.8</dd>
+	<dt>Version:</dt> <dd>1.0.9</dd>
 	</dl>
 
       <p>
@@ -522,7 +520,7 @@ Note that before 2003-02-25 the failure path was broken, and would crash.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Tue Feb 25 12:03:25 EST 2003 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 22 22:22:22 EDT 2003
+Last modified: Mon Sep 29 15:47:36 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

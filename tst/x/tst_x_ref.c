@@ -2,6 +2,14 @@
 
 static const char *rf = __FILE__;
 
+static void tst_cb_free_ref_ref(Vstr_ref *ref)
+{
+  Vstr_ref *ptr = ref->ptr;
+  
+  vstr_ref_del(ptr);
+  vstr_ref_cb_free_ref(ref);
+}
+
 int tst(void)
 {
   Vstr_ref *ref = NULL;
@@ -21,10 +29,9 @@ int tst(void)
   ref = vstr_ref_make_ptr(malloc(1), vstr_ref_cb_free_ptr_ref);
   vstr_ref_add(ref);
   vstr_ref_del(ref);
-  ref = vstr_ref_make_memdup(&ref, sizeof(Vstr_ref *));
+  ref = vstr_ref_make_ptr(ref, tst_cb_free_ref_ref);
   vstr_ref_add(ref);
   vstr_ref_del(ref);
-  vstr_ref_del(*(Vstr_ref **)(ref->ptr));
   vstr_ref_del(ref);
 
   ref = vstr_ref_make_ptr(malloc(1), vstr_ref_cb_free_ptr);
@@ -42,11 +49,14 @@ int tst(void)
   vstr_ref_del(ref);
   vstr_ref_del(ref);
 
-  tst_mfail_num(1); /* test no check error */
-  ref = vstr_ref_make_strdup("abcd");
-  ASSERT(!ref);
-  tst_mfail_num(0);
-
+  if (MFAIL_NUM_OK)
+  {
+    tst_mfail_num(1); /* test no check error */
+    ref = vstr_ref_make_strdup("abcd");
+    ASSERT(!ref);
+    tst_mfail_num(0);
+  }
+  
   ref = VSTR_REF_MAKE_STRDUP("abcd");
   vstr_ref_add(ref);
   if (strcmp("abcd", ref->ptr))

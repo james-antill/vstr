@@ -243,7 +243,6 @@ extern inline void vstr__relink_nodes(Vstr_conf *conf,
       conf->spare_ref_num += num;
 
       conf->spare_ref_beg = (Vstr_node_ref *)beg;
-      break;
 
       ASSERT_NO_SWITCH_DEF();
   }
@@ -262,7 +261,7 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
   unsigned int dummy_num = 0;
   size_t end_pos = 0;
 
-  assert(base && num && len && type);
+  ASSERT(base && num && len && type && scan_str && scan_len);
 
   ASSERT_RET(*len && ((pos + *len - 1) <= base->len), FALSE);
 
@@ -310,7 +309,7 @@ extern inline int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   unsigned char *types = NULL;
   size_t pos = 0;
 
-  assert(base && num && len && type);
+  ASSERT(base && num && len && type && scan_str && scan_len);
 
   assert(base->iovec_upto_date);
 
@@ -338,3 +337,24 @@ extern inline int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
 
   return (TRUE);
 }
+
+#ifndef NDEBUG
+extern inline void vstr__ref_cb_free_ref(Vstr_ref *ref)
+{
+  VSTR__F(ref);
+}
+
+extern inline Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *))
+{
+  Vstr_ref *ref = VSTR__MK(sizeof(Vstr_ref));
+
+  if (!ref)
+    return (NULL);
+
+  ref->ref = 1;
+  ref->ptr = (void *)ptr;
+  ref->func = func;
+
+  return (ref);
+}
+#endif

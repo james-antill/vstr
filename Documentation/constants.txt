@@ -377,6 +377,33 @@ Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
  VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as an uppercase hexadecimal number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as a lowercase hexadecimal number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as octal number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+
 Section: Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()
 
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE

@@ -3,7 +3,7 @@
   <head>
     <title>Security with string APIs</title>
 
-
+ <link rel="stylesheet" type="text/css" href="f_c.css">
     <style>
       A:hover { color: #20b2aa; }
       P { text-indent: 2em; }
@@ -115,13 +115,13 @@ that you can <i>always</i> have problems like...
 </p>
 
 <a id="alloc-ex1"></a>
-<pre>
-/* broken example when using a limiting string type API */
+<pre class="c2html">
+<span class="comment">/* broken example when using a limiting string type API */</span>
 API_TYPE s1;
 ...
-API_add(s1, "abcd ");
+API_add(s1, <span class="str">"abcd "</span>);
 API_add(s1, external_data);
-API_add(s1, " xyz");
+API_add(s1, <span class="str">" xyz"</span>);
 </pre>
 
 <p>
@@ -133,14 +133,15 @@ the functions separately, this creates some great code like...
 </p>
 
 <a id="alloc-ex2"></a>
-<pre>
-/* broken example */
-char  *s1;
+
+<pre class="c2html">
+<span class="comment">/* broken example */</span>
+<span class="char">char</span>  *s1;
 size_t l1;
 ...
-API_add(s1, l1, "abcd ");       l1 -= strlen("abcd ");
+API_add(s1, l1, <span class="str">"abcd "</span>);       l1 -= strlen(<span class="str">"abcd "</span>);
 API_add(s1, l1, external_data); l1 -= strlen(external_data);
-API_add(s1, l1, " xyz");        l1 -= strlen(" xyz");
+API_add(s1, l1, <span class="str">" xyz"</span>);        l1 -= strlen(<span class="str">" xyz"</span>);
 </pre>
 
 <p>
@@ -155,37 +156,41 @@ no limit at all.
 </p>
 
 <a id="alloc-ex3"></a>
-<pre>
-/* broken example ...
+<pre class="c2html">
+<span class="comment">/* broken example ...
  * code supposedly OK because the input and the output are the same
- * maximum size */
-char buf1[X];
-char buf2[X];
-char buf3[X];
-char  *s1 = buf1;
-char  *s2 = buf2;
-char  *s3 = buf3;
-char  *last = s2;
+ * maximum size */</span>
+<span class="char">char</span> buf1[X];
+<span class="char">char</span> buf2[X];
+<span class="char">char</span> buf3[X];
+<span class="char">char</span>  *s1 = buf1;
+<span class="char">char</span>  *s2 = buf2;
+<span class="char">char</span>  *s3 = buf3;
+<span class="char">char</span>  *last = s2;
 ...
-/* find biggest shared prefix, and skip that */
-while (*s1 && (*s1 == *s2))
+<span class="comment">/* find biggest shared prefix, and skip that */</span>
+while (*s1 &amp;&amp; (*s1 == *s2))
 {
-  if (*s2++ == '/')
+  <span class="if">if</span> (*s2++ == <span class="chr">'/'</span>)
     last = s2;
   ++s1;
 }
 
-/* relative point to shared part of path */
+<span class="comment">/* relative point to shared part of path */</span>
 while (*s1)
 {
-  if (*s1++ == '/')
+  <span class="if">if</span> (*s1++ == <span class="chr">'/'</span>)
   {
-     memcpy(s3, "../", strlen("../"));
-     s3             += strlen("../");
+     memcpy(s3, <span class="str">"../"</span>, strlen(<span class="str">"../"</span>));
+     s3             += strlen(<span class="str">"../"</span>);
   }
 }
 strcpy(s3, last);
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 18:57:48 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>. And even looks
@@ -200,25 +205,25 @@ in the destination than in the source.
 </p>
 
 <a id="alloc-ex4"></a>
-<pre>
-/* broken example ...
- * code supposedly OK due to count */
-int func(char *dst, size_t len, const char *src)
+<pre class="c2html">
+<span class="comment">/* broken example ...
+ * code supposedly OK due to count */</span>
+<span class="int">int</span> func(<span class="char">char</span> *dst, size_t len, <span class="const">const</span> <span class="char">char</span> *src)
 {
-  while (*src)
+  <span class="while">while</span> (*src)
   {
-    const char *tmp = NULL;
+    <span class="const">const</span> <span class="char">char</span> *tmp = <span class="null">NULL</span>;
 
-    if ((src[0] == '$') && (src[1] == '{') && (tmp = strchr(src, '}')))
-    { /* sub a variable */
+    <span class="if">if</span> ((src[0] == <span class="chr">'$'</span>) &amp;&amp; (src[1] == <span class="chr">'{'</span>) &amp;&amp; (tmp = strchr(src, <span class="chr">'}'</span>)))
+    { <span class="comment">/* sub a variable */</span>
       size_t var_len = (tmp - (src + 2));
       size_t sub_len = 0;
 
-      src += strlen("${");
+      src += strlen(<span class="str">"${"</span>);
 
-      if ((tmp = lookup(src, var_len)) && (sub_len = strlen(tmp)))
+      <span class="if">if</span> ((tmp = lookup(src, var_len)) &amp;&amp; (sub_len = strlen(tmp)))
       {
-        if (sub_len &gt; len)
+        <span class="if">if</span> (sub_len &gt; len)
           sub_len = len;
 
         memcpy(dst, tmp, sub_len);
@@ -228,19 +233,23 @@ int func(char *dst, size_t len, const char *src)
 
       src += var_len + 1;
     }
-    else /* no substitution */
+    <span class="else">else</span> <span class="comment">/* no substitution */</span>
       *dst++ = *src++;
   }
 
-  if (len)
+  <span class="if">if</span> (len)
   {
     *dst = 0;
-    return (1);
+    <span class="return">return</span> (1);
   }
 
-  return (0);
+  <span class="return">return</span> (0);
 }
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 18:58:55 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>, until somone sees that
@@ -252,37 +261,41 @@ the length isn't shortened on non-substitutions.
 </p>
 
 <a id="alloc-ex5"></a>
-<pre>
-/* broken example ...
+<pre class="c2html">
+<span class="comment">/* broken example ...
  * code supposedly OK because the input and the output are the same
- * maximum size */
+ * maximum size */</span>
 
-int func(const char *src)
+<span class="int">int</span> func(<span class="const">const</span> <span class="char">char</span> *src)
 {
-  char buf[X];
-  unsigned int count = 1;
+  <span class="char">char</span> buf[X];
+  <span class="unsigned">unsigned</span> <span class="int">int</span> count = 1;
 
   strcpy(buf, src);
 
-  strtok(buf, ",");
-  while (strtok(NULL, ","))
+  strtok(buf, <span class="str">","</span>);
+  <span class="while">while</span> (strtok(<span class="null">NULL</span>, <span class="str">","</span>))
   {
     ++count;
   }
 
-  return (count);
+  <span class="return">return</span> (count);
 }
 
-/* callsite 1... */
-char buf[X];
+<span class="comment">/* callsite 1... */</span>
+<span class="char">char</span> buf[X];
 func(buf);
 
-/* callsite 2... */
-func("a,b,c");
+<span class="comment">/* callsite 2... */</span>
+func(<span class="str">"a,b,c"</span>);
 
-/* callsite N... */
+<span class="comment">/* callsite N... */</span>
 func(tmp);
-</pre>   
+</pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 18:59:17 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>, until someone sees
@@ -419,14 +432,19 @@ string APIs type. Eg.
 </p>
 
 <a id="sprintf-ex1"></a>
-<pre>
+<pre class="c2html">
 APT_string *s1;
 APT_string *s2;
 ...
 API_add(s1, data);
 
-API_fmt(s2, "%s %d %{API_string}", "abcd", 4, s1);
+API_fmt(s2, <span class="str">"%s %d %{API_string}"</span>, <span class="str">"abcd"</span>, 4, s1);
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 18:59:43 2003
+ -->
+<!--   done by ex_highlight -->
+
 
 <p>
 However extensions for printing IP addresses or other types of data can be
@@ -502,24 +520,32 @@ overlapping objects. So the following code is broken...
 </p>
 
 <a id="strcpy-ex1"></a>
-<pre>
-/* broken example ... common mistake */
-char *s1;
+<pre class="c2html">
+<span class="comment">/* broken example ... common mistake */</span>
+<span class="char">char</span> *s1;
 ...
-strcpy(s1, s1 + 1); /* chop the first character from the C string */
+strcpy(s1, s1 + 1); <span class="comment">/* chop the first character from the C string */</span>
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:00:17 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
 ...as is the following...
 </p>
 
-<pre>
-/* broken example ... fairly common mistake */
-char *s1;
-int X;
+<pre class="c2html">
+<span class="comment">/* broken example ... fairly common mistake */</span>
+<span class="char">char</span> *s1;
+<span class="int">int</span> X;
 ...
-sprintf(s1, "%s:%d", s1, X); /* append a number */
+sprintf(s1, <span class="str">"%s:%d"</span>, s1, X); <span class="comment">/* append a number */</span>
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:01:00 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
 ...it also means that <b>there is no way to
@@ -535,14 +561,18 @@ but useless in all conditions. Consider...
 </p>
 
 <a id="strncpy-ex1"></a>
-<pre>
-#define SZ 4
-char s1[SZ];
+<pre class="c2html">
+#<span class="cppdefine">define</span> SZ 4
+<span class="char">char</span> s1[SZ];
 
-strncpy(s1, "abcd",   SZ); /* 1 */
-strncpy(s1, "abc",    SZ); /* 2 */
-strncpy(s1, "a",      SZ); /* 3 */
+strncpy(s1, <span class="str">"abcd"</span>,   SZ); <span class="comment">/* 1 */</span>
+strncpy(s1, <span class="str">"abc"</span>,    SZ); <span class="comment">/* 2 */</span>
+strncpy(s1, <span class="str">"a"</span>,      SZ); <span class="comment">/* 3 */</span>
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:01:24 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
 ...in case 1 strncpy() copies {'a', 'b', 'c', 'd'}, which means that the
@@ -561,36 +591,47 @@ strncpy() do either...
 </p>
 
 <a id="strncpy-ex2"></a>
-<pre>
-char s1[SZ];
+<pre class="c2html">
+<span class="char">char</span> s1[SZ];
 ...
-strncpy(s1, external_data, SZ);
+strncpy(s1, external_data, SZ - 1);
 s1[SZ - 1] = 0;
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:01:45 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
 ...or...
 </p>
 
 <a id="strncpy-ex3"></a>
-<pre>
-char s1[SZ];
+<pre class="c2html">
+<span class="char">char</span> s1[SZ + 1];
 ...
-strncpy(s1, external_data, SZ - 1);
-s1[SZ - 1] = 0;
+strncpy(s1, external_data, SZ);
+s1[SZ] = 0;
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:02:00 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
 ...or...
 </p>
 
 <a id="strncpy-ex4"></a>
-<pre>
-char s1[SZ + 1];
+<pre class="c2html">
+<span class="static">static</span> <span class="char">char</span> s1[SZ + 1];
 ...
 strncpy(s1, external_data, SZ);
-s1[SZ] = 0;
 </pre>
+<!-- C to html convertion of /tmp/abcd -->
+<!--   done on Mon Sep 29 19:02:30 2003
+ -->
+<!--   done by ex_highlight -->
 
 <p>
       All of which are a source of bugs, when one of the values is even
@@ -602,8 +643,8 @@ way is to improve performance (using an interface that can cause over
 do...
 </p>
 <a id="strncpy-ex5"></a>
-<pre>
-static char s1[SZ + 1];
+<pre class="c2html">
+<span class="static">static</span> <span class="char">char</span> s1[SZ + 1];
 ...
 strncpy(s1, external_data, SZ);
 </pre>
@@ -615,9 +656,9 @@ overwriting that. However this is a very big trap for those that don't
 intimately know what is happening, for instance...
 </p>
 <a id="strncpy-ex6"></a>
-<pre>
-/* broken example */
-char s1[SZ + 1];
+<pre class="c2html">
+<span class="comment">/* broken example */</span>
+<span class="char">char</span> s1[SZ + 1];
 ...
 strncpy(s1, external_data, SZ);
 </pre>
@@ -627,9 +668,9 @@ strncpy(s1, external_data, SZ);
 </p>
 
 <a id="strncpy-ex7"></a>
-<pre>
-/* broken example */
-char *s1 = malloc(SZ + 1);
+<pre class="c2html">
+<span class="comment">/* broken example */</span>
+<span class="char">char</span> *s1 = malloc(SZ + 1);
 ...
 strncpy(s1, external_data, SZ);
 </pre>
@@ -649,7 +690,7 @@ implementation in an <a href="http://www.oreillynet.com/pub/a/network/2003/05/20
 
 <a id="sprintf2"></a>
 <a id="libcsprintf"></a>
- <h3>Problem 2: sprintf()</h3>
+ <h3>Problem 2: sprintf() and snprintf() etc.</h3>
 <p>
  The original specification for the C run time only specified the
 function sprintf() as an easy way to put formatted data into a C-style string.
@@ -664,8 +705,11 @@ sprintf() would return if it is smaller than the limit, and -1 if it is not.
  All of these different return values have to be dealt with by a portable
 program, or you can have buffer overflows (esp. in the second case). This
 is especially a problem due to the fact that a lot of uses of snprintf() are
-so that people can implement a function that allocates the correct amount of storage for sprintf() and then calls that,
-<a href="#alloc">because doing blanket limiting is a bad idea</a>.
+so that people can implement a function that allocates the correct amount of
+storage for sprintf() and then call that,
+<a href="#alloc">because doing blanket limiting is a bad idea</a>. The
+ISO 9899:199 standard chose the first choice (the value sprintf() would return),
+so now we just wait 5 years for most systems to have the standard semantics.
 </p><p>
       This led to implementations offering an extension called "asprintf()"
 which will allocate the correct amount of space and sprintf() into it. However
@@ -680,12 +724,12 @@ but on glibc based Linux systems, where it is a security problem...
 </p>
 
 <a id="asprintf-ex1"></a>
-<pre>
-/* broken code, on Linux only */
-char *s1;
+<pre class="c2html">
+<span class="comment">/* broken code, on Linux only */</span>
+<span class="char">char</span> *s1;
 int off;
 
-asprintf(&s1, "%d:%n%s,", strlen(data), &off, data);
+asprintf(&amp;s1, <span class="str">"%d:%n%s,"</span>, strlen(data), &amp;off, data);
 if (!s1) goto error;
 
 ...
@@ -694,13 +738,51 @@ if (strlen(other_data) == strlen(data))
 else
 {
   free(s1);
-  asprintf(&s1, "%d:%s,", strlen(other_data), other_data);
+  asprintf(&amp;s1, <span class="str">"%d:%s,"</span>, strlen(other_data), other_data);
 }
 </pre>
 
 <p>
 ...due to the strcpy() buffer overflow and the invalid value passed to free().
-</p><p>
+</p>
+
+<a id="sprintf-i18n"></a>
+<h3>i18n causes more joy with sprintf()</h3>
+<p>
+  So here's a quick quiz, what does "ret" contain in the following code...
+</p>
+
+<a id="sprintf-ex2"></a>
+<pre class="c2html">
+<span class="char">char</span> buf[4];
+<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
+</pre>
+
+<p>
+...of course after the discussion about
+<a href="#libcsprintf">what the return value should be for overflow</a>
+you'll have said depends on the implementation. But let's assume that in the
+following code "ret" is 9 (Nine)...
+</p>
+
+<a id="sprintf-ex3"></a>
+<pre class="c2html">
+<span class="char">char</span> buf[4];
+<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, <span class="str">"123456789"</span>);
+</pre>
+
+<p>
+  Ah, you say "it follows the ISO 9899:199 behaviour" so the value of ret
+will be 14 (Fourteen). However, you'd be wrong, the value returned is
+-1 (Minus one) on Linux if you are in a UTF-8 locale due to the
+ <a href="printf_comparison.html#glibc">multibyte "issue"</a>. More generally
+there are standard defined reasons why snprintf() can return -1 (Minus one), and
+mixing use and non use of i18n parameter numbers is "undefined" in std. C ...
+which is great for the libc developers, but not so much fun from a security
+point of view.
+</p>
+
+<p>
       You also have to remember that there is no way to tell what version of
 a sprintf() routine you are going to be using, or if it is as bad a quality as
 say the <a href="printf_comparison.html#dietlibc">dietlibc implementation</a>.
@@ -713,7 +795,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Wed Aug 20 13:54:48 EDT 2003
+Last modified: Mon Sep 29 19:08:23 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

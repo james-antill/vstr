@@ -42,8 +42,8 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
                       VSTR_TYPE_ADD_BUF_REF);
       vstr_add_cstr_buf(s1, s1->len, "\n");
 
-      if (s1->conf->malloc_bad)
-        errno = ENOMEM, err(EXIT_FAILURE, "adding data:");
+      if (s1->conf->malloc_bad) /* checks all three above */
+        errno = ENOMEM, err(EXIT_FAILURE, "adding data");
     }
 
     if (sects->num != sects->sz)
@@ -87,6 +87,9 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
       vstr_del(s2, 1, pos);
     }
     
+    if (s1->conf->malloc_bad) /* checks all three above */
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
+    
     if (s1->len > EX_MAX_W_DATA_INCORE)
       return (TRUE);
   }
@@ -97,6 +100,9 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
     if (s2->len)
       vstr_mov(s1, s1->len, s2, 1, s2->len);
     vstr_add_cstr_buf(s1, s1->len, "\n");
+
+    if (s1->conf->malloc_bad) /* checks all three above */
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
   }
 
   return (TRUE);

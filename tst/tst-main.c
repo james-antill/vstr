@@ -63,7 +63,7 @@ static void die(void)
  fprintf(stderr, "vstr(%s):%lu%n", #s , (unsigned long)(s)->len, &pad); \
  if (pad > 12) pad = 0; else pad = 12 - pad; \
  fprintf(stderr, "%*s = %s\n", pad, "", \
-         vstr_export_cstr_ptr((s), 1, (s)->len)); \
+         vstr_export_cstr_malloc((s), 1, (s)->len)); \
  } while (FALSE)
 
 #define PRNT_DEBUG_VSTR(s) do { \

@@ -159,7 +159,17 @@
 #undef vstr_ref_make_vstr_base
 #undef vstr_ref_make_vstr_conf
 #undef vstr_ref_make_vstr_sects
+#undef vstr_sc_add_cstr_grpnum_buf
+#undef vstr_sc_add_grpnum_buf
 #undef vstr_sc_basename
+#undef vstr_sc_conv_num_uint
+#undef vstr_sc_conv_num10_uint
+#undef vstr_sc_conv_num_ulong
+#undef vstr_sc_conv_num10_ulong
+#undef vstr_sc_conv_num_size
+#undef vstr_sc_conv_num10_size
+#undef vstr_sc_conv_num_uintmax
+#undef vstr_sc_conv_num10_uintmax
 #undef vstr_sc_dirname
 #undef vstr_sc_fmt_add_all
 #undef vstr_sc_fmt_add_bkmg_bits_uint

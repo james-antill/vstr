@@ -225,8 +225,9 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
     goto mem_ref_fail;
   }
 
-  vstr_add_ref(base, pos, ref, 0, bytes); /* must work */
-
+  num = vstr_add_ref(base, pos, ref, 0, bytes); /* must work */
+  ASSERT(num);
+  
   vstr_ref_del(ref);
 
   return (TRUE);
@@ -234,12 +235,14 @@ static int vstr__sc_read_slow_len_fd(Vstr_base *base, size_t pos, int fd,
  mem_ref_fail:
   assert(ref);
   vstr_ref_del(ref);
+  
  mem_fail:
   if (!*err)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_MEM;
     errno = ENOMEM;
   }
+  
   return (FALSE);
 }
 
@@ -475,7 +478,6 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     err = &dummy_err;
   *err = 0;
 
-  assert(len || (pos == 1));
   if (!len)
     return (TRUE);
 
@@ -484,28 +486,33 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     struct iovec cpy_vec[32];
     struct iovec *vec;
     unsigned int num = 0;
+    size_t  clen  = 0;
     ssize_t bytes = 0;
 
     if ((pos == 1) && (len == base->len) && base->cache_available)
-      len = vstr_export_iovec_ptr_all(base, &vec, &num);
+    {
+      if (!(clen = vstr_export_iovec_ptr_all(base, &vec, &num)))
+      {
+        *err = VSTR_TYPE_SC_WRITE_FD_ERR_MEM;
+        errno = ENOMEM;
+        return (FALSE);
+      }
+    }
     else
     {
       vec = cpy_vec;
-      bytes = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
-      assert(bytes);
+      clen = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
+      ASSERT_RET(clen, (*err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO,
+                        errno = EINVAL,
+                        FALSE));
     }
-
-    if (!len)
-    {
-      *err = VSTR_TYPE_SC_WRITE_FD_ERR_MEM;
-      errno = ENOMEM;
-      return (FALSE);
-    }
-    assert(len == base->len);
 
     if (num > UIO_MAXIOV)
+    {
+      clen = 0; /* try again anyway */
       num = UIO_MAXIOV;
-
+    }
+    
     do
     {
       bytes = writev(fd, vec, num);
@@ -519,8 +526,12 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
 
     assert((size_t)bytes <= len);
 
-    vstr_del(base, pos, (size_t)bytes);
-    len -= (size_t)bytes;
+    vstr_del(base, pos, bytes);
+    
+    if (clen && (clen != (size_t)bytes))
+      break;
+    
+    len -= bytes;
   }
 
   return (TRUE);
@@ -540,7 +551,7 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
     err = &dummy_err;
 
   if (!open_flags) /* O_RDONLY isn't valid, for obvious reasons */
-    open_flags = (O_CREAT | O_EXCL);
+    open_flags = (O_WRONLY | O_CREAT | O_EXCL);
 
   fd = open64(filename, open_flags, mode);
   if (fd == -1)

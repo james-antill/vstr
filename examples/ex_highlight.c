@@ -23,7 +23,8 @@ static struct
    foo;if (bar)
 
    ...will be seen as an if statement, as there is no space before and after
-   the if. This is a feature, as the style should be the same.
+   the if. And using TABs instead of spaces will make it not work.
+   These are all features, as the style should be the same.
 */
 #define EX_HL_SEQ_T(x, y) \
    x, " "  y " ", 1, 1, 0 }, \
@@ -31,14 +32,26 @@ static struct
  { x, "*"  y " ", 1, 1, 0 }, \
  { x, "\n" y " ", 1, 1, 0
 #define EX_HL_SEQ_WS(x, y) \
-   x, " " y " ", 1, 1, 0
-/* custom for default */
+   x, " " y " ",  1, 1, 0 }, \
+ { x, " " y "\n", 1, 1, 0
+/* custom for default and break */
 #define EX_HL_SEQ_DEF(x, y) \
-   x, " " y ":\n", 1, 2, 0
+   x, " " y ": ", 1, 2, 0 }, \
+ { x, " " y ":\n", 1, 2, 0
+#define EX_HL_SEQ_BRK(x, y) \
+   x, " " y ";\n", 1, 2, 0
 #define EX_HL_SEQ_SB(x, y) \
    x, " " y " (", 1, 2, 0
 #define EX_HL_SEQ_B(x, y)  \
    x, " " y "(", 1, 1, 0
+#define EX_HL_SEQ_VAL(x, y) \
+   x, " "  y " ",  1, 1, 0 }, \
+ { x, " "  y "\n", 1, 1, 0 }, \
+ { x, " "  y ";",  1, 1, 0 }, \
+ { x, " "  y ",",  1, 1, 0 }, \
+ { x, " "  y ")",  1, 1, 0 }, \
+ { x, "("  y ")",  1, 1, 0 }, \
+ { x, "("  y ",",  1, 1, 0
 #define EX_HL_SEQ_CPP(x, y) \
    x, "#"     y " ",  1, 1, 0 }, \
  { x, "#"     y "\n", 1, 1, 0 }, \
@@ -53,17 +66,20 @@ static struct
 {
  /* order matters */
  { EX_HL_SEQ_T("vstrbase", "Vstr_base") },
+ { EX_HL_SEQ_T("vstrsects", "Vstr_sects") },
+ { EX_HL_SEQ_T("vstrfmt", "Vstr_fmt_spec") },
  { EX_HL_SEQ_T("pollfd", "struct pollfd") },
  
- { EX_HL_SEQ_CPP("if", "if") },
- { EX_HL_SEQ_CPP("ifndef", "ifndef") },
- { EX_HL_SEQ_CPP("ifdef", "ifdef") },
- { EX_HL_SEQ_CPP("endif", "endif") },
- { EX_HL_SEQ_CPP("define", "define") },
- { EX_HL_SEQ_CPP("include", "include") },
- { EX_HL_SEQ_CPP("elif", "elif") },
- { EX_HL_SEQ_SB("defined", "defined") },
- { EX_HL_SEQ_B("defined", "defined") },
+ { EX_HL_SEQ_CPP("cppif", "if") },
+ { EX_HL_SEQ_CPP("cppifndef", "ifndef") },
+ { EX_HL_SEQ_CPP("cppifdef", "ifdef") },
+ { EX_HL_SEQ_CPP("cppelse", "else") },
+ { EX_HL_SEQ_CPP("cppendif", "endif") },
+ { EX_HL_SEQ_CPP("cppdefine", "define") },
+ { EX_HL_SEQ_CPP("cppinclude", "include") },
+ { EX_HL_SEQ_CPP("cppelif", "elif") },
+ { EX_HL_SEQ_SB("cppdefined", "defined") },
+ { EX_HL_SEQ_B("cppdefined", "defined") },
  
  { EX_HL_SEQ_SB("if", "if") },
  { EX_HL_SEQ_WS("else", "else") },
@@ -72,10 +88,14 @@ static struct
  { EX_HL_SEQ_WS("return", "return") },
  { EX_HL_SEQ_WS("switch", "switch") },
  { EX_HL_SEQ_WS("case", "case") },
- { EX_HL_SEQ_DEF("defalt", "default") },
+ { EX_HL_SEQ_DEF("default", "default") },
+ { EX_HL_SEQ_BRK("break", "break") },
  { EX_HL_SEQ_WS("goto", "goto") },
+ { EX_HL_SEQ_T("extern", "extern") },
  { EX_HL_SEQ_T("static", "static") },
  { EX_HL_SEQ_T("const", "const") },
+ { EX_HL_SEQ_T("restrict", "restrict") },
+ { EX_HL_SEQ_T("inline", "inline") },
  { EX_HL_SEQ_T("void", "void") },
  { EX_HL_SEQ_T("unsigned", "unsigned") },
  { EX_HL_SEQ_T("int", "int") },
@@ -88,7 +108,25 @@ static struct
  { EX_HL_SEQ_B("err", "errx") },
  { EX_HL_SEQ_B("warn", "warn") },
  { EX_HL_SEQ_B("warn", "warnx") },
+ { EX_HL_SEQ_B("assert", "assert") },
+ { EX_HL_SEQ_B("assert", "ASSERT") },
 
+ { EX_HL_SEQ_VAL("compdate", "__DATE__") },
+ { EX_HL_SEQ_VAL("compversion", "__VERSION__") },
+ { EX_HL_SEQ_VAL("compfile", "__FILE__") },
+ { EX_HL_SEQ_VAL("compline", "__LINE__") },
+ { EX_HL_SEQ_VAL("stdin", "stdin") },
+ { EX_HL_SEQ_VAL("stdout", "stdout") },
+ { EX_HL_SEQ_VAL("stderr", "stderr") },
+ { EX_HL_SEQ_VAL("stdin", "STDIN_FILENO") },
+ { EX_HL_SEQ_VAL("stdout", "STDOUT_FILENO") },
+ { EX_HL_SEQ_VAL("stderr", "STDERR_FILENO") },
+ { EX_HL_SEQ_VAL("exitsucs", "EXIT_SUCCESS") },
+ { EX_HL_SEQ_VAL("exitfail", "EXIT_FAILURE") },
+ { EX_HL_SEQ_VAL("true", "TRUE") },
+ { EX_HL_SEQ_VAL("false", "FALSE") },
+ { EX_HL_SEQ_VAL("null", "NULL") },
+ 
  {NULL, NULL, 0, 0, 0},
 };
 static size_t ex_hl_max_seq_len = 0;
@@ -335,6 +373,16 @@ static int ex_hl_process(Vstr_base *s1, Vstr_base *s2, int last)
   return (TRUE);
 }
 
+static void ex_hl_process_limit(Vstr_base *s1, Vstr_base *s2, unsigned int lim)
+{
+  while (s2->len > lim)
+  {
+    int proc_data = ex_hl_process(s1, s2, !lim);
+    if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
+      io_block(-1, STDOUT_FILENO);
+  }
+}
+
 static void ex_hl_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 {
   while (TRUE)
@@ -351,18 +399,9 @@ static void ex_hl_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 
     io_limit(io_r_state, fd, io_w_state, 1, s1);
   }
-}
 
-static void ex_hl_process_limit(Vstr_base *s1, Vstr_base *s2, unsigned int lim)
-{
-  while (s2->len > lim)
-  {
-    int proc_data = ex_hl_process(s1, s2, !lim);
-    if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
-      io_block(-1, STDOUT_FILENO);
-  }
+  ex_hl_process_limit(s1, s2, 0);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -391,7 +430,15 @@ int main(int argc, char *argv[])
   if (count >= argc)
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
+    
+    vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
     ex_hl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
+    vstr_add_fmt(s1, s1->len,
+                 "</pre>\n"
+                 "<!-- C to html convertion of %s -->\n"
+                 "<!--   done on %s -->\n"
+                 "<!--   done by ex_highlight -->\n",
+                 argv[count], ctime(&now));
   }
 
   /* loop through all arguments, open the file specified
@@ -430,8 +477,6 @@ int main(int argc, char *argv[])
     
     ++count;
   }
-
-  ex_hl_process_limit(s1, s2, 0);
 
   io_put_all(s1, STDOUT_FILENO);
 

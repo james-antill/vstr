@@ -27,7 +27,7 @@
  * anything */
 #define VSTR__BUF_NEEDED(test, val_count) do { \
   if (!vstr_iter_fwd_beg(base, pos, len, iter)) \
-    goto iter_fwd_beg_fail; \
+    return (FALSE); \
   \
   if (base->node_ptr_used || base->node_ref_used) { do \
   { \
@@ -92,9 +92,6 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
   }
 
   return (TRUE);
-
- iter_fwd_beg_fail:
-  return (FALSE);
 }
 
 int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
@@ -129,9 +126,6 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
   }
 
   return (TRUE);
-
- iter_fwd_beg_fail:
-  return (FALSE);
 }
 
 /* is it a printable ASCII character */
@@ -193,9 +187,6 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
   }
 
   return (TRUE);
-
- iter_fwd_beg_fail:
-  return (FALSE);
 }
 
 int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
@@ -404,7 +395,6 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
 {
   Vstr_sects *sects = vstr_sects_make(VSTR__SECTS_SZ);
   size_t srch_pos = 0;
-  char buf_percent[1] = {0x25};
   unsigned int err = 0;
   size_t hex_len = 0;
   unsigned int extra_nodes = 0;
@@ -413,7 +403,7 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
   if (!sects)
     goto malloc_bad;
 
-  while ((srch_pos = vstr_srch_buf_fwd(base, pos, len, buf_percent, 1)))
+  while ((srch_pos = vstr_srch_chr_fwd(base, pos, len, 0x25)))
   {
     size_t left = len - (srch_pos - pos);
     unsigned char sub = 0;

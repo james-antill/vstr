@@ -138,7 +138,13 @@ tst_sc = \
     sc/tst_sc_write \
     sc/tst_sc_mmap \
     sc/tst_sc_basename \
-    sc/tst_sc_dirname
+    sc/tst_sc_dirname \
+    sc/tst_sc_grpnum \
+    sc/tst_sc_conv
+
+xfail_tst_sc = \
+    sc/xfail_tst_sc_conv_uint_NULL \
+    sc/xfail_tst_sc_conv_uint_len
 
 tst_sects = \
     sects/tst_sects_add \
@@ -219,6 +225,7 @@ xfail_tst = \
   $(xfail_tst_add) \
   $(xfail_tst_del) \
   $(xfail_tst_fmt) \
+  $(xfail_tst_sc) \
   $(xfail_tst_sects) \
   $(xfail_tst_x)
 

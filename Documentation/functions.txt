@@ -179,7 +179,7 @@ Function: vstr_export_cstr_buf()
  Parameter[3]: Length from position in the Vstr
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Data array to export to
  Type[4]: void *
 
  Parameter[5]: Length of data (Parameter[4])
@@ -458,6 +458,7 @@ Function: vstr_ref_cb_free_nothing()
 
   This function does nothing.
 
+
 Function: vstr_ref_cb_free_ref()
  Returns: Nothing
  Type: void
@@ -469,6 +470,7 @@ Function: vstr_ref_cb_free_ref()
 
   This will call free() on the Vstr_ref (Parameter[1]).
 
+
 Function: vstr_ref_cb_free_ptr()
  Returns: Nothing
  Type: void
@@ -479,6 +481,7 @@ Function: vstr_ref_cb_free_ptr()
  Explanation:
 
   This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
+
 
 Function: vstr_ref_cb_free_ptr_ref()
  Returns: Nothing
@@ -906,7 +909,8 @@ Function: vstr_ref_make_malloc()
 
   This function will create an area of memory, using malloc, and create a Vstr
  memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref().
+ reference count of 1 and the cleanup function will point to a function to
+ free both the reference and the copy of memory.
 
 
 Function: vstr_ref_make_ptr()
@@ -921,9 +925,10 @@ Function: vstr_ref_make_ptr()
 
  Explanation:
 
-  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1, a pointer value of pointer passed
- (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+  This function will call malloc() to create a Vstr memory reference. The Vstr
+ memory reference will have a reference count of 1, a pointer value of pointer
+ passed (Parameter[1]) and a cleanup function of the function
+ passed (Parameter[2]).
 
 
 Function: vstr_ref_make_memdup()
@@ -955,7 +960,7 @@ Function: vstr_ref_make_strdup()
  Explanation:
 
   This function calls vstr_ref_make_memdup() with the length being the value of
- strlen() on the data parameter (Parameter[1]).
+ (strlen() + 1) on the data parameter (Parameter[1]).
 
 
 Function: VSTR_REF_MAKE_STRDUP()
@@ -968,7 +973,7 @@ Function: VSTR_REF_MAKE_STRDUP()
  Explanation:
 
   This macro function calls vstr_ref_make_memdup() with the length being the
- value of strlen() on the data parameter (Parameter[1]).
+ value of (strlen() + 1) on the data parameter (Parameter[1]).
 
 
 Function: vstr_ref_make_vstr_base()
@@ -6321,6 +6326,246 @@ Function: vstr_sc_basename()
   This function, with vstr_sc_dirname(), always returns values that can be
  combined to generate the original path. This means that this function will
  return an empty length for the path "/".
+
+
+Function: vstr_sc_add_grpnum_buf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const void *
+
+ Parameter[4]: Length of data (Parameter[3])
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is a helper function to output a number with the Vstr strings
+ locale grouping characters.
+
+
+Function: vstr_sc_add_cstr_grpnum_buf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This function calls vstr_sc_add_grpnum_buf() with the length being the value
+ of strlen() on the data parameter (Parameter[3]).
+
+
+Function: VSTR_SC_ADD_CSTR_GRPNUM_BUF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_sc_add_grpnum_buf() with the length being
+ the value of strlen() on the data parameter (Parameter[3]).
+
+
+Function: vstr_sc_conv_num_uint()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: unsigned int
+
+ Parameter[4]: Pointer to array of numbers in the current base
+ Type[4]: const char *
+
+ Parameter[5]: Base to convert number in
+ Type[5]: unsigned int
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+Function: vstr_sc_conv_num10_uint()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: unsigned int
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+Function: vstr_sc_conv_num_ulong()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: unsigned int
+
+ Parameter[4]: Pointer to array of numbers in the current base
+ Type[4]: const char *
+
+ Parameter[5]: Base to convert number in
+ Type[5]: unsigned long
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+Function: vstr_sc_conv_num10_ulong()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: unsigned long
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+Function: vstr_sc_conv_num_size()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to array of numbers in the current base
+ Type[4]: const char *
+
+ Parameter[5]: Base to convert number in
+ Type[5]: unsigned int
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+Function: vstr_sc_conv_num10_size()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: size_t
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+Function: vstr_sc_conv_num_uintmax()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: uintmax_t
+
+ Parameter[4]: Pointer to array of numbers in the current base
+ Type[4]: const char *
+
+ Parameter[5]: Base to convert number in
+ Type[5]: unsigned int
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+Function: vstr_sc_conv_num10_uintmax()
+ Returns: Number of bytes written to (Parameter[1])
+ Type: size_t
+
+ Parameter[1]: Data array to export to
+ Type[1]: char *
+
+ Parameter[2]: Length of data (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Number to output
+ Type[3]: uintmax_t
+
+ Explanation:
+
+  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
 
 
 Function: vstr_sc_dirname()

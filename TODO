@@ -7,19 +7,22 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
-. do the warn_unused_result thing in gcc-3.4 if it's needed on malloc's.
+. No vstr_sc_add_grpnum_ref / vstr_sc_add_grpnum_ptr ... need ref locale,
+  could then share it, which would be nice. (feature/speed)
+
+. Allow people to store data that doesn't change as the data changes,
+  Ie. vstr_cache_* but just a callback on free. Could be used for some cute
+  custom formatters with different data in different strings (think strftime
+  outside the library). (feature)
+
+. Allow people to store data in the configuration, same as above but you can
+  share it over many strings. (feature)
 
 . Another page for showing how to do IO over internet ...
   everyone fucks it up, Ie. gtetrinet/bomberman (docs)
 
-. tutorial show how csv was made? ... or hexdump. (docs)
-
 . %s, NULL - win32 aparently prints "" not "(null)" ... should probably allow
-  that to be configured (feature)
-
-. strspn() with one char ... needs speed up (speed)
-
-. inter-operation with POSIX APIs etc. (docs)
+  that to be configured. (feature)
 
 . security ... more info. on testing. (docs)
 . security ... formal verification methods? (docs)
@@ -40,14 +43,10 @@ was needed for vstr-1.0.0
 
 . Get rid of inet_ntop() ? (functionality/portability)
 
-. Try to find a way to test malloc() failure cases in testsuite (testing)
-
 . wcrtomb() doesn't exist on FreeBSD ... relies on LC_CTYPE (portability)
 
 . del() inline kills cache too easily ... make cb's extern inline and call
    directly. (speed)
-
-. No cache adding types? (maybe/feature)
 
  1.2.x
  -----
@@ -59,9 +58,23 @@ was needed for vstr-1.0.0
 
 . Vstr_ref->ptr non const. but possibly never altered, *sigh*
 
-. _diamond ... al. la. perl
-
+# This is all one feature, I think... vstr_ref* API needs a new external home.
 . Allocator - seperate library
+. _SEF type ... like a _REF but you can do substitution on it when ref == 1,
+  splitting the node changes behaviour here so probably not worth it *sigh*.
+  Could do a copy when you move it to a different Vstr string, but that doesn't
+ really do much more then _BUF nodes. Although you could convert _BUF nodes to
+ it on a copy, which might be worth it.
+  Could put a double indirect _ref in there ... with the _ref for the Vstr
+ string and the second for all strings ... then allow subs if the second == 1.
+   Will do "strange" things on mmap() read/write areas on _conv_ functions
+  as it's not obvious what it should/could do on expansion.
+. Vstr_lref which has a length? So we can implement...
+   vstr_lref_*_malloc()
+   vstr_lref_*_realloc()
+  ...which will do the right thing if ref->ref == 1 ? (feature)
+  This also implies some memory pool like semantics? (feature)
+  Memory pools can kind of be done using a Vstr and adding the _REF nodes.
 
 . VSTR_FLAG_PARSE_NUM_LOC_SEP
 
@@ -91,16 +104,6 @@ was needed for vstr-1.0.0
 . Fast inline parsing of ints when using certain flags.
 
 . Add --with-libc=diet,host,klibc -- put into test framework.
-
-. _SEF type ... like a _REF but you can do substitution on it when ref == 1,
-  splitting the node changes behaviour here so probably not worth it *sigh*.
-  Could do a copy when you move it to a different Vstr string, but that doesn't
- really do much more then _BUF nodes. Although you could convert _BUF nodes to
- it on a copy, which might be worth it.
-  Could put a double indirect _ref in there ... with the _ref for the Vstr
- string and the second for all strings ... then allow subs if the second == 1.
-   Will do "strange" things on mmap() read/write areas on _conv_ functions
-  as it's not obvious what it should/could do on expantion.
 
 . vstr_split_csv() ?
 

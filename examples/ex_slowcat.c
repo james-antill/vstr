@@ -1,33 +1,14 @@
-#define _GNU_SOURCE 1
-
 /* This is a slowcat program, you can limit the number of bytes written and
  * how often they are written.
  * Does stdin if no args are given */
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <time.h>
-#include <sys/time.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/fcntl.h>
-#include <sys/uio.h>
-#include <sys/mman.h>
-#include <sys/poll.h>
-
-#include <timer_q.h>
-
-#include <vstr.h>
-
 #include "ex_utils.h"
 
-#define MAX_R_DATA_INCORE (1024 * 1024)
-#define MAX_W_DATA_INCORE (1024 * 8)
+#include <timer_q.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define EX_SLOWCAT_WRITE_BYTES 80
 #define EX_SLOWCAT_WRITE_WAIT_SEC 1
@@ -52,89 +33,84 @@ typedef struct ex_slowcat_vars
  unsigned int finished_reading_file : 1;
 } ex_slowcat_vars;
 
+#undef MIN
+#define MIN(x, y, z) ((((z) (x)) < ((z) (y))) ? ((z) (x)) : ((z) (y)))
+
 static void ex_slowcat_timer_func(int type, void *data)
 {
  ex_slowcat_vars *v = data;
  struct timeval s_tv;
  int fin_data = v->finished_reading_data;
-
+ size_t len = 0;
+ 
  if (type == TIMER_Q_TYPE_CALL_DEL)
    return;
 
  if (!v->finished_reading_data && (v->str1->len < v->opt_write_bytes))
- { /* do a read of the right ammount ... */
-  if (!v->argc && !v->arg_count)
-  {
-   v->finished_reading_file = FALSE;
-   v->fd = 0; /* use stdin -- do read on already open file */
-  }
-  else
-  {
-   if (v->finished_reading_file)
+ {
+   if (!v->argc && !v->arg_count)
    {
-    assert(v->arg_count < v->argc);
-
-    v->finished_reading_file = FALSE;
-
-    v->fd = open(v->argv[v->arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-
-    if (v->fd == -1)
-      DIE("open(%s):", v->argv[v->arg_count]);
-
-    ++v->arg_count;
-
-    if (vstr_sc_mmap_fd(v->str1, v->str1->len, v->fd, 0, 0, NULL))
-    {
-      if (v->arg_count >= v->argc)
-        v->finished_reading_data = TRUE;
-      v->finished_reading_file = TRUE;
-    }
-    else
-    {
-     int tmp_fcntl_flags = 0;
-
-     if ((tmp_fcntl_flags = fcntl(v->fd, F_GETFL)) == -1)
-       DIE("fcntl(GET NONBLOCK):");
-     if (!(tmp_fcntl_flags & O_NONBLOCK) &&
-         (fcntl(v->fd, F_SETFL, tmp_fcntl_flags | O_NONBLOCK) == -1))
-       DIE("fcntl(SET NONBLOCK):");
-    }
+     v->finished_reading_file = FALSE;
+     v->fd = 0; /* use stdin -- do read on already open file */
    }
-  }
+   else
+   {
+     if (v->finished_reading_file)
+     {
+       assert(v->arg_count < v->argc);
 
-  if (!v->finished_reading_file)
-  {
-    unsigned int err = 0;
-    int keep_going = TRUE;
+       v->finished_reading_file = FALSE;
 
-    EX_UTILS_LIMBLOCK_READ_ALL(v->str1, v->fd, keep_going);
+       v->fd = open(v->argv[v->arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
 
-    if (!keep_going)
-    {
-      if (close(v->fd) == -1)
-        DIE("close:");
+       if (v->fd == -1)
+         err(EXIT_FAILURE, "open(%s)", v->argv[v->arg_count]);
 
-      if (v->arg_count >= v->argc)
-        v->finished_reading_data = TRUE;
-      v->finished_reading_file = TRUE;
-    }
-  }
+       ++v->arg_count;
+
+       if (vstr_sc_mmap_fd(v->str1, v->str1->len, v->fd, 0, 0, NULL))
+       {
+         if (v->arg_count >= v->argc)
+           v->finished_reading_data = TRUE;
+         v->finished_reading_file = TRUE;
+       }
+       else
+         io_fd_set_o_nonblock(v->fd);
+     }
+   }
+
+   if (!v->finished_reading_file)
+     do
+     {
+       int state = io_get(v->str1, v->fd);
+
+       if (state == IO_EOF)
+       {
+         if (close(v->fd) == -1)
+           err(EXIT_FAILURE, "close");
+       
+         if (v->arg_count >= v->argc)
+           v->finished_reading_data = TRUE;
+         v->finished_reading_file = TRUE;
+       }
+     } while (v->opt_write_bytes > v->str1->len);
  }
 
  if (!fin_data && v->finished_reading_data)
  { /* we've just finished */
   if (v->str1->len) /* set it back to blocking, to be nice */
     if (fcntl(1, F_SETFL, v->fcntl_flags & ~O_NONBLOCK) == -1)
-      DIE("fcntl(SET BLOCK):");
+      err(EXIT_FAILURE, "fcntl(SET BLOCK)");
  }
 
+ len = MIN(v->opt_write_bytes, v->str1->len, size_t);
  /* do a write of the right ammount */
- if (!vstr_sc_write_fd(v->str1, 1, v->opt_write_bytes, v->fd, NULL))
+ if (!vstr_sc_write_fd(v->str1, 1, len, STDOUT_FILENO, NULL))
  {
-   if ((errno != EAGAIN) && (errno != EINTR))
-     DIE("write:");
-   if (v->str1->len > MAX_W_DATA_INCORE)
-     ex_utils_poll_stdout();
+   if (errno != EAGAIN)
+     err(EXIT_FAILURE, "write");
+   if (v->str1->len > EX_MAX_W_DATA_INCORE)
+     io_block(-1, STDOUT_FILENO);
  }
 
  if (v->finished_reading_data && !v->str1->len)
@@ -148,7 +124,7 @@ static void ex_slowcat_timer_func(int type, void *data)
 
  v->node = timer_q_add_node(v->base, v, &s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
  if (!v->node)
-   errno = ENOMEM, DIE("timer_q_add_node:");
+   errno = ENOMEM, err(EXIT_FAILURE, "timer_q_add_node");
 }
 
 static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
@@ -243,7 +219,7 @@ int main(int argc, char *argv[])
  v.finished_reading_file = TRUE;
 
  if (!vstr_init())
-   errno = ENOMEM, DIE("vstr_init:");
+   errno = ENOMEM, err(EXIT_FAILURE, "vstr_init");
 
  /* setup code... */
 
@@ -254,24 +230,24 @@ int main(int argc, char *argv[])
 
  v.base = timer_q_add_base(ex_slowcat_timer_func, TIMER_Q_FLAG_BASE_DEFAULT);
  if (!v.base)
-   errno = ENOMEM, DIE("timer_q_add_base:");
+   errno = ENOMEM, err(EXIT_FAILURE, "timer_q_add_base");
 
  gettimeofday(&s_tv, NULL);
  TIMER_Q_TIMEVAL_ADD_SECS(&s_tv, 1, 500000); /* 1.5 seconds */
 
  v.node = timer_q_add_node(v.base, &v, &s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
  if (!v.node)
-   errno = ENOMEM, DIE("timer_q_add_node:");
+   errno = ENOMEM, err(EXIT_FAILURE, "timer_q_add_node");
 
  v.str1 = vstr_make_base(NULL);
  if (!v.str1)
-   errno = ENOMEM, DIE("vstr_make_base:");
+   errno = ENOMEM, err(EXIT_FAILURE, "vstr_make_base");
 
  if ((v.fcntl_flags = fcntl(1, F_GETFL)) == -1)
-   DIE("fcntl(GET NONBLOCK):");
+   err(EXIT_FAILURE, "fcntl(GET NONBLOCK)");
  if (!(v.fcntl_flags & O_NONBLOCK) &&
      (fcntl(1, F_SETFL, v.fcntl_flags | O_NONBLOCK) == -1))
-   DIE("fcntl(SET NONBLOCK):");
+   err(EXIT_FAILURE, "fcntl(SET NONBLOCK)");
 
  while ((tv = timer_q_first_timeval()))
  {

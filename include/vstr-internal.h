@@ -95,6 +95,22 @@
     (((iter)->len == (size_t)((iter)->node->len - (base)->used)) && \
      ((iter)->ptr == (vstr_export__node_ptr((iter)->node) + (base)->used)))))
 
+/* print a number backwards (any base)... */
+/* chrs_base, buf_beg, buf all need to exist */
+#define VSTR__ADD_FMT_NUM(type, passed_num, num_base) do { \
+ type num = passed_num; \
+ \
+ while (num) \
+ { \
+  unsigned int chr_offset = (num % num_base); \
+  \
+  ASSERT(buf > buf_beg); \
+  \
+  num /= num_base; \
+  *--buf = chrs_base[chr_offset]; \
+ } \
+} while (FALSE)
+
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
 typedef struct Vstr__options
@@ -141,6 +157,22 @@ typedef struct Vstr__fmt_usr_name_node
  unsigned int VSTR__STRUCT_HACK_ARRAY(types);
 } Vstr__fmt_usr_name_node;
 
+#ifdef HAVE_LONG_LONG
+typedef unsigned long long Vstr__unsigned_long_long;
+typedef          long long Vstr__long_long;
+#else
+typedef unsigned      long Vstr__unsigned_long_long;
+typedef               long Vstr__long_long;
+#endif
+
+#ifdef USE_RESTRICTED_HEADERS /* always use C locale */
+# define setlocale(x, y) NULL
+# define localeconv()    NULL
+# define SYS_LOC(x) ""
+#else
+# define SYS_LOC(x) ((sys_loc)->x)
+#endif
+
 extern Vstr__options VSTR__ATTR_H() vstr__options;
 
 /* the size of ULONG_MAX converted to a string */
@@ -154,8 +186,12 @@ extern size_t vstr__netstr2_ULONG_MAX_len;
 #endif
 
 #ifndef NDEBUG
-extern int vstr__check_real_nodes(const Vstr_base *) VSTR__ATTR_I();
-extern int vstr__check_spare_nodes(const Vstr_conf *) VSTR__ATTR_I();
+extern int vstr__check_real_nodes(const Vstr_base *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
+extern int vstr__check_spare_nodes(const Vstr_conf *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 #endif
 
 extern void vstr__add_user_conf(Vstr_conf *) VSTR__ATTR_I();
@@ -164,21 +200,30 @@ extern void vstr__add_base_conf(Vstr_base *, Vstr_conf *) VSTR__ATTR_I();
 extern void vstr__del_conf(Vstr_conf *) VSTR__ATTR_I();
 
 extern Vstr_node *vstr__add_setup_pos(Vstr_base *, size_t *, unsigned int *,
-                                      size_t *) VSTR__ATTR_I();
+                                      size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1, 2, 3)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 
 extern void vstr__base_zero_used(Vstr_base *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern Vstr_node *vstr__base_split_node(Vstr_base *, Vstr_node *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 
 extern Vstr_node **vstr__base_ptr_pos(const Vstr_base *, size_t *,
-                                      unsigned int *) VSTR__ATTR_I();
+                                      unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
                                    unsigned int *, unsigned int *,
-                                   char **, size_t *) VSTR__ATTR_I();
+                                   char **, size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
                                    unsigned int *, unsigned int *,
-                                   char **, size_t *) VSTR__ATTR_I();
+                                   char **, size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 
 extern void vstr__relink_nodes(Vstr_conf *, Vstr_node *, Vstr_node **,
                                unsigned int)
@@ -190,7 +235,8 @@ extern void vstr__swap_node_X_X(const Vstr_base *, size_t, Vstr_node *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
 extern int vstr__cache_iovec_alloc(const Vstr_base *, unsigned int)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 extern void vstr__cache_iovec_add_node_end(Vstr_base *, unsigned int,
                                            unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
@@ -198,7 +244,8 @@ extern void vstr__cache_iovec_reset_node(const Vstr_base *base, Vstr_node *node,
                                         unsigned int num)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern int vstr__cache_iovec_valid(Vstr_base *) /* makes it valid */
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 
 extern void vstr__cache_free_cstr(const Vstr_base *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
@@ -211,11 +258,20 @@ extern int  vstr__make_cache(const Vstr_base *)
 extern void vstr__free_cache(const Vstr_base *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern int  vstr__cache_conf_init(Vstr_conf *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 extern int  vstr__cache_subset_cbs(Vstr_conf *, Vstr_conf *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 extern int  vstr__cache_dup_cbs(Vstr_conf *, Vstr_conf *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+
+extern unsigned int vstr__add_fmt_grouping_mod(const char *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
+extern size_t vstr__add_fmt_grouping_num_sz(Vstr_base *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
 
 extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
@@ -231,6 +287,8 @@ extern void *vstr_wrap_memrchr(const void *, int, size_t)
 # define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)
 # define VSTR__SECTS_SZ 8
 # define VSTR__STACK_BUF_SZ 64
+# define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
+# define vstr__ref_make_ptr vstr_ref_make_ptr
 #else
 #define VSTR__DEBUG_MALLOC_TST() \
   (!vstr__options.mem_fail_num)
@@ -248,6 +306,8 @@ extern void vstr__debug_free(void *)
 # define VSTR__CONF_REF_LINKED_SZ 2
 # define VSTR__SECTS_SZ 2
 # define VSTR__STACK_BUF_SZ 2
+extern void vstr__ref_cb_free_ref(Vstr_ref *);
+extern Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *));
 #endif
 
 extern size_t vstr__loc_thou_grp_strlen(const char *)

@@ -275,7 +275,6 @@ extern inline char *vstr_export__node_ptr(const struct Vstr_node *node)
       return (((char *)((const struct Vstr_node_ref *)node)->ref->ptr) +
               ((const struct Vstr_node_ref *)node)->off);
     case VSTR_TYPE_NODE_NON:
-      break;
       VSTR__ASSERT_NO_SWITCH_DEF();
   }
 
@@ -1018,6 +1017,11 @@ extern inline int vstr_cmp_vers_eod_cstr_eq(const struct Vstr_base *s1,
 /* ref */
 extern inline struct Vstr_ref *vstr_ref_make_strdup(const char *val)
 { return (vstr_ref_make_memdup(val, strlen(val) + 1)); }
+
+/* sc */
+extern inline int vstr_sc_add_cstr_grpnum_buf(struct Vstr_base *s1, size_t p1,
+                                              const char *val)
+{ return (vstr_sc_add_grpnum_buf(s1, p1, val, strlen(val))); }
 
 #undef VSTR__ASSERT
 #undef VSTR__ASSERT_RET

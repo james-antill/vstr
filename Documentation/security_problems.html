@@ -57,7 +57,7 @@ to the
      <a href="#summary-range">summary of the range</a> of the vulnerabilities.
 <table width="100%"><tr class="rh"><td>Red Hat Package</td><td>Types of Vulnerability</td><td>Range of Vulnerability</td><td>Range, if Vstr was used</td><td>Range, if any dynamic string API was used</td></tr>
 <tr class="r10"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-256.html">perl</a></td><td>Privilage Escalation (can break out of safe.pm sandboxes)<br>Cross Site Scripting<br></td><td>Remote vulnerability</td><td>Remote vulnerability</td><td>Remote vulnerability</td></tr>
-<tr class="r20"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-243.html">apache httpd</a></td><td><strong class="sapi">Integer Overflow</strong><br>Double Free<br></td><td>Remote vulnerability</td><td>Remote vulnerability</td><td>Remote vulnerability</td></tr>
+<tr class="r20"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-243.html">apache httpd</a></td><td>Input Validation (Cipher restrictions ignored on renegotiation)<br>Denial of Service (infinite loop handling internal redirects and nested subrequests)<br>Denial of Service (temporarily, if using multiple ports)<br>Denial of Service (ftp proxy and IPV6 only)<br></td><td>Remote vulnerability</td><td>Remote vulnerability</td><td>Remote vulnerability</td></tr>
 <tr class="r11"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-279.html"><strong class="sapi">openssh</strong></a></td><td><strong class="sapi">Integer Overflow</strong><br></td><td>Remote vulnerability</td><td><strong class="sapi">Not applicable</strong></td><td><strong class="sapi">Not applicable</strong></td></tr>
 <tr class="r21"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-283.html"><strong class="sapi">sendmail</strong></a></td><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td><td>Remote vulnerability</td><td><strong class="sapi">Not applicable</strong></td><td><strong class="sapi">Not applicable</strong></td></tr>
 <tr class="r10"><td><a href="http://rhn.redhat.com/errata/RHSA-2003-269.html">KDE</a></td><td>Privilage Escalation (bad session credentials)<br></td><td>Local vulnerability</td><td>Local vulnerability</td><td>Local vulnerability</td></tr>
@@ -166,20 +166,20 @@ to the
 <tr class="rh"><td> Type of Vulnerability </td><td> Number of Vulnerabilities </td></tr>
 
 <tr><td><a href="http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO.html#BUFFER-OVERFLOW"><strong class="sapi">Buffer Overflow</strong></a><br></td><td>31</td></tr>
-<tr><td>Input Validation<br></td><td>27</td></tr>
+<tr><td>Input Validation<br></td><td>28</td></tr>
+<tr><td>Denial of Service (All)<br></td><td>16</td></tr>
 <tr><td>Privilage Escalation (All)<br></td><td>15</td></tr>
-<tr><td><strong class="sapi">Integer Overflow</strong><br></td><td>13</td></tr>
-<tr><td>Denial of Service (All)<br></td><td>13</td></tr>
+<tr><td><strong class="sapi">Integer Overflow</strong><br></td><td>12</td></tr>
 <tr><td>Cross Site Scripting<br></td><td>7</td></tr>
 <tr><td>Information Leak<br></td><td>7</td></tr>
 <tr><td>Temporary File Creation<br></td><td>5</td></tr>
 <tr><td>Broken Packaging (All)<br></td><td>4</td></tr>
 <tr><td><strong class="msapi">Input Validation</strong><br></td><td>3</td></tr>
 <tr><td>Improper Encoding (All)<br></td><td>3</td></tr>
-<tr><td>Double Free<br></td><td>2</td></tr>
 <tr><td><strong class="sapi">Off By One</strong><br></td><td>2</td></tr>
 <tr><td>Authenticated Privilage Escalation (All)<br></td><td>2</td></tr>
 <tr><td>Free uninitialized memory location<br></td><td>1</td></tr>
+<tr><td>Double Free<br></td><td>1</td></tr>
 <tr><td><strong class="msapi">Free memory that is in use</strong><br></td><td>1</td></tr>
 <tr><td>Man in the Middle<br></td><td>1</td></tr>
 </table>

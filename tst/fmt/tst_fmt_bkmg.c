@@ -6,6 +6,8 @@ static int ret = 0;
 
 static void tst_bkmg(Vstr_base *t1, unsigned int off)
 {
+  int mfail_count = 0;
+  
   vstr_del(t1, 1, t1->len);
   vstr_add_fmt(t1, 0, "$06{BKMG.u:%u}", 10 + 2);
 
@@ -15,7 +17,7 @@ static void tst_bkmg(Vstr_base *t1, unsigned int off)
   vstr_add_fmt(t1, 0, "$+{BKMG.u:%u}", 10 * 1000 + 4321);
 
   TST_B_TST(ret, off +  2, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "+14.32KB"));
-
+  
   vstr_del(t1, 1, t1->len);
   vstr_add_fmt(t1, 0, "$ .{BKMG.u:%u}", 10 * 1000 + 4321);
 
@@ -32,7 +34,16 @@ static void tst_bkmg(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off +  5, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "17.6543Mb"));
 
   vstr_del(t1, 1, t1->len);
-  vstr_add_fmt(t1, 0, "$08{BKMG.u:%u}", 1 * 1000 * 1000 * 1000 + 7654321);
+  
+  mfail_count = 0;
+  do
+  {
+    ASSERT(!t1->len);
+    vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_fmt(t1, 0, "$08{BKMG.u:%u}",
+                         1 * 1000 * 1000 * 1000 + 7654321));
+  tst_mfail_num(0);
 
   TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "001.00GB"));
 
@@ -42,15 +53,32 @@ static void tst_bkmg(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "||  1.00Gb"));
 
   vstr_del(t1, 1, t1->len);
-  vstr_add_fmt(t1, 0, "$-8.{BKMG.u:%u}||", 2 * 1000 * 1000 * 1000 + 7654321);
 
-  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "2GB     ||"));
+  mfail_count = 0;
+  do
+  {
+    ASSERT(!t1->len);
+    vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_fmt(t1, 0, "$-8.{BKMG.u:%u}||",
+                         2 * 100 * 1000 * 1000));
+  tst_mfail_num(0);
+
+  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "200MB   ||"));
 
   vstr_del(t1, 1, t1->len);
-  vstr_add_fmt(t1, 0, "$.3{BKMG/s.u:%u}ec",
-               (4U * 1000U * 1000U * 1000U) +
-               187654321U +
-               0U);
+  
+  mfail_count = 0;
+  do
+  {
+    ASSERT(!t1->len);
+    vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_fmt(t1, 0, "$.3{BKMG/s.u:%u}ec",
+                         (4U * 1000U * 1000U * 1000U) +
+                         187654321U +
+                         0U));
+  tst_mfail_num(0);
 
   TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "4.187GB/sec"));
 

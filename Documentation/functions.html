@@ -314,6 +314,17 @@
 <li class="obj"><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
 <li class="obj"><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
 <li class="obj"><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
+<li class="obj"><a href="#vstr_sc_add_grpnum_buf%28%29">vstr_sc_add_grpnum_buf()</a>
+<li class="obj"><a href="#vstr_sc_add_cstr_grpnum_buf%28%29">vstr_sc_add_cstr_grpnum_buf()</a>
+<li class="obj"><a href="#VSTR_SC_ADD_CSTR_GRPNUM_BUF%28%29">VSTR_SC_ADD_CSTR_GRPNUM_BUF()</a>
+<li class="obj"><a href="#vstr_sc_conv_num_uint%28%29">vstr_sc_conv_num_uint()</a>
+<li class="obj"><a href="#vstr_sc_conv_num10_uint%28%29">vstr_sc_conv_num10_uint()</a>
+<li class="obj"><a href="#vstr_sc_conv_num_ulong%28%29">vstr_sc_conv_num_ulong()</a>
+<li class="obj"><a href="#vstr_sc_conv_num10_ulong%28%29">vstr_sc_conv_num10_ulong()</a>
+<li class="obj"><a href="#vstr_sc_conv_num_size%28%29">vstr_sc_conv_num_size()</a>
+<li class="obj"><a href="#vstr_sc_conv_num10_size%28%29">vstr_sc_conv_num10_size()</a>
+<li class="obj"><a href="#vstr_sc_conv_num_uintmax%28%29">vstr_sc_conv_num_uintmax()</a>
+<li class="obj"><a href="#vstr_sc_conv_num10_uintmax%28%29">vstr_sc_conv_num10_uintmax()</a>
 <li class="obj"><a href="#vstr_sc_dirname%28%29">vstr_sc_dirname()</a>
 <li class="obj"><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
 <li class="obj"><a href="#vstr_sc_fmt_cb_end%28%29">vstr_sc_fmt_cb_end()</a>
@@ -479,7 +490,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Data array to export to<br>Type<strong>[4]</strong>: void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a copy of the data in the Vstr string to a
@@ -667,6 +678,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function does nothing.
 
+
 <a name="vstr_ref_cb_free_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ref()
 </a><br>Returns: Nothing<br>Type: void
@@ -674,12 +686,14 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the Vstr_ref (Parameter[1]).
 
+
 <a name="vstr_ref_cb_free_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr()
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])-&gt;ptr.
+
 
 <a name="vstr_ref_cb_free_ptr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr_ref()
@@ -964,7 +978,8 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create an area of memory, using malloc, and create a Vstr
  memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and a cleanup function of <a href="functions.html#vstr_ref_cb_free_ptr_ref()">vstr_ref_cb_free_ptr_ref()</a>.
+ reference count of 1 and the cleanup function will point to a function to
+ free both the reference and the copy of memory.
 
 
 <a name="vstr_ref_make_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -973,9 +988,10 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to memory<br>Type<strong>[1]</strong>: void *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Function callback for Vstr memory reference<br>Type<strong>[2]</strong>: void (*)(struct Vstr_ref *)
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1, a pointer value of pointer passed
- (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+</p><p>  This function will call malloc() to create a Vstr memory reference. The Vstr
+ memory reference will have a reference count of 1, a pointer value of pointer
+ passed (Parameter[1]) and a cleanup function of the function
+ passed (Parameter[2]).
 
 
 <a name="vstr_ref_make_memdup%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -997,7 +1013,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to data<br>Type<strong>[1]</strong>: char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function calls <a href="functions.html#vstr_ref_make_memdup()">vstr_ref_make_memdup()</a> with the length being the value of
- strlen() on the data parameter (Parameter[1]).
+ (strlen() + 1) on the data parameter (Parameter[1]).
 
 
 <a name="VSTR_REF_MAKE_STRDUP%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1006,7 +1022,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to data<br>Type<strong>[1]</strong>: char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls <a href="functions.html#vstr_ref_make_memdup()">vstr_ref_make_memdup()</a> with the length being the
- value of strlen() on the data parameter (Parameter[1]).
+ value of (strlen() + 1) on the data parameter (Parameter[1]).
 
 
 <a name="vstr_ref_make_vstr_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -4098,6 +4114,140 @@
 </p><p>  This function, with <a href="functions.html#vstr_sc_dirname()">vstr_sc_dirname()</a>, always returns values that can be
  combined to generate the original path. This means that this function will
  return an empty length for the path "/".
+
+
+<a name="vstr_sc_add_grpnum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_grpnum_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to output a number with the Vstr strings
+ locale grouping characters.
+
+
+<a name="vstr_sc_add_cstr_grpnum_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_add_cstr_grpnum_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions.html#vstr_sc_add_grpnum_buf()">vstr_sc_add_grpnum_buf()</a> with the length being the value
+ of strlen() on the data parameter (Parameter[3]).
+
+
+<a name="VSTR_SC_ADD_CSTR_GRPNUM_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_ADD_CSTR_GRPNUM_BUF()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls <a href="functions.html#vstr_sc_add_grpnum_buf()">vstr_sc_add_grpnum_buf()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[3]).
+
+
+<a name="vstr_sc_conv_num_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num_uint()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of numbers in the current base<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Base to convert number in<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+<a name="vstr_sc_conv_num10_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num10_uint()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+<a name="vstr_sc_conv_num_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num_ulong()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of numbers in the current base<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Base to convert number in<br>Type<strong>[5]</strong>: unsigned long
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+<a name="vstr_sc_conv_num10_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num10_ulong()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: unsigned long
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+<a name="vstr_sc_conv_num_size%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num_size()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of numbers in the current base<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Base to convert number in<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+<a name="vstr_sc_conv_num10_size%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num10_size()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
+
+
+<a name="vstr_sc_conv_num_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num_uintmax()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: uintmax_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of numbers in the current base<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Base to convert number in<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of
+ bytes, the number is converted by using the byte at the offset in the
+ array of numbers (Parameter[4]).
+
+
+<a name="vstr_sc_conv_num10_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_conv_num10_uintmax()
+</a><br>Returns: Number of bytes written to (Parameter[1])<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Data array to export to<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of data (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number to output<br>Type<strong>[3]</strong>: uintmax_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will convert a number (Parameter[3]) into an array of numbers,
+ in base 10, return value is the number of numbers written.
 
 
 <a name="vstr_sc_dirname%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

@@ -56,7 +56,7 @@
   abort(); } } \
  while (FALSE)
 # endif
-# define VSTR__ASSERT_NO_SWITCH_DEF() default: VSTR__ASSERT(FALSE)
+# define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(FALSE)
 #endif
 
 # include "vstr-inline.h"

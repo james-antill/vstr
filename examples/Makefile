@@ -14,11 +14,12 @@ HAVE_TIMER_Q=0
 HAVE_SSL=1
 HAVE_LIBZ=1
 HAVE_LIBBZ2=1
+HAVE_GMP=1
 
-LOCAL=0
+LOCAL=1
 PROFILE=0
 # 1 == Static with libvstr, 2 == really static
-STATIC=0
+STATIC=1
 FAST=0
 
 ifeq ($(PROFILE),1)
@@ -62,6 +63,9 @@ SSL_LDFLAGS=-lssl $(EX_LDFLAGS)
 ZCAT_CFLAGS=$(EX_CFLAGS)
 ZCAT_LDFLAGS=-lz -lbz2 $(EX_LDFLAGS)
 
+GMP_CFLAGS=$(EX_CFLAGS)
+GMP_LDFLAGS=-lgmp $(EX_LDFLAGS)
+
 ifeq ($(HAVE_TIMER_Q),1)
 TIMER_Q_PROGS=ex_slowcat
 endif
@@ -76,11 +80,16 @@ ZCAT=ex_zcat
 endif
 endif
 
+ifeq ($(HAVE_GMP),1)
+GMP_APPS= ex_gmp_factorials
+endif
+
 FILES= ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
   ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip ex_csv ex_highlight \
   ex_perf_nodesize \
   ex_perf_nodesize_foreach \
+  $(GMP_APPS) \
   $(ZCAT) \
   $(TIMER_Q_PROGS) \
   $(SSL_PROGS)
@@ -120,6 +129,15 @@ ex_slowcat: ex_slowcat.c
 		@$(CC) $(TQ_CFLAGS) -o $@.o -c $<
 		@echo "Linking $@"
 		@$(CC) -o $@ $@.o $(TQ_LDFLAGS)
+
+ex_gmp_factorials.o: ex_gmp_factorials.c
+		@echo "Compiling $<"
+		@$(CC) $(GMP_CFLAGS) -o $@ -c $<
+
+ex_gmp_factorials: ex_gmp_factorials.o
+		@echo "Linking $@"
+		@$(CC) -o $@ $< $(GMP_LDFLAGS)
+		@echo ""
 
 clean:
 		rm -f *.o $(FILES) gmon.out

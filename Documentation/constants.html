@@ -80,6 +80,9 @@
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM</a>
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a>
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG</a>
+<li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H</a>
+<li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L</a>
+<li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_del%28%29%20and%20vstr_conv_unprintable_chr%28%29">Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()</a>
 <ul>
 <li class="obj"><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE</a>
@@ -662,6 +665,33 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as negative number. This flag has no meaning if
+ <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as an uppercase hexadecimal number. This flag has no meaning if
+ <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as a lowercase hexadecimal number. This flag has no meaning if
+ <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as octal number. This flag has no meaning if
  <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 

@@ -174,7 +174,9 @@
 #define VSTR_SPLIT_CSTR_CHRS(x, y, z, chrs, sect, lim, flags) \
  vstr_split_chrs(x, y, z, chrs, strlen(chrs), sect, lim, flags)
 
-#define VSTR_REF_MAKE_STRDUP(x) vstr_ref_make_memdup((x), strlen(x))
+#define VSTR_REF_MAKE_STRDUP(x) vstr_ref_make_memdup((x), strlen(x) + 1)
+
+#define VSTR_SC_ADD_CSTR_GRPNUM_BUF(x, y, buf) vstr_sc_add_grpnum_buf(x, y, buf, strlen(buf))
 
 #endif
 
@@ -916,6 +918,38 @@ extern void vstr_sc_basename(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern void vstr_sc_dirname(const struct Vstr_base *, size_t, size_t,
                             size_t *)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+
+extern int vstr_sc_add_grpnum_buf(struct Vstr_base *, size_t,
+                                  const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_cstr_grpnum_buf(struct Vstr_base *, size_t,
+                                       const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+
+/* these should be somewhere else ... but where ?
+ * needed for number based custom formatters */
+extern size_t vstr_sc_conv_num_uint(char *, size_t, unsigned int,
+                                    const char *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num10_uint(char *, size_t, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num_ulong(char *, size_t, unsigned long,
+                                     const char *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num10_ulong(char *, size_t, unsigned long)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num_size(char *, size_t, size_t,
+                                    const char *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num10_size(char *, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num_uintmax(char *, size_t,
+                                       VSTR_AUTOCONF_uintmax_t,
+                                       const char *, unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern size_t vstr_sc_conv_num10_uintmax(char *, size_t,
+                                         VSTR_AUTOCONF_uintmax_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
 

@@ -131,8 +131,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     num_end = num_beg;
     num_end += strspn(num_end, "0123456789");
 
-    if (!vstr__grouping_add_num(base, pos_diff,
-                                num_beg, num_end - num_beg))
+    if (!VSTR__FMT_ADD_GRPNUM(base, num_beg, num_end - num_beg))
     {
       free(float_buffer);
       return (FALSE);

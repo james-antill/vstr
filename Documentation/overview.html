@@ -109,7 +109,7 @@
 	</td></tr></table>
 
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.8</h2>
+	  <h2>Current version is 1.0.9</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -254,7 +254,7 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    suite).
 	  </p><p>
 	    Using the coverage analysis available with gcc the test suite has
-	  <emp>coverage of over 95% of the source</emp>.
+	  <emp>coverage of over 96% of the source</emp>.
 	</p><p>
 	    Note that even if the library had 100% coverage, that still
 	    doesn't mean that there are no bugs in the code (as you need a
@@ -517,7 +517,7 @@ struct in_addr ipv4;
 	  change the order. However if you try the above, you'll note that all
 	  of the calls to <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>
 	  will produce warnings with gcc, because "%{" isn't the start of a
-	  valid formatting character under gcc's static printf() rules.
+	  valid formatting character under gcc's static printf() parsing rules.
 	  This makes custom formatters mostly useless, as you
 	  have to either turn warnings off or see at least one warning for every
 	  usage of a custom formatter.
@@ -544,13 +544,11 @@ struct in_addr ipv4;
 	  formatters will not crash, provides complete protection for
 	  non-custom formatters and doesn't produce spurious warnings.
 	  <b>One final note</b> is that in all sane environments you don't
-	  need the cast to (void *).
+	  need the cast to (void *), however it is in theory required in
+	  standard ISO 9899:1999 C.
 	  </p><p>
-	    You should also look at the functions:
-	    <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>,
-	    <a href="functions.html#vstr_sc_fmt_cb_beg()">vstr_sc_fmt_cb_beg()</a> and
-	    <a href="functions.html#vstr_sc_fmt_cb_end()">vstr_sc_fmt_cb_end()</a>
-	    if you want to create your own custom formatters.
+	    You may also want to look at the tutorial section on
+ <a href="tutorial.html#cust-fmt">creating custom formatters</a>.
 </p></td></tr>
 
 </table>
@@ -575,6 +573,11 @@ that just does a "Hello World".
 transfers information from stdin to stdout ... mmap() is never used.
 </li>
 <li>
+<a href="vstr-latest/vstr/examples/ex_nl.c.html">nl</a> - This does something
+similar to the Unix "nl" program. Each input line is printed along with a
+number. This uses the split functions to get each line.
+</li>
+<li>
 <a href="vstr-latest/vstr/examples/ex_hexdump.c.html">hexdump</a> - An ASCII
 hexdump utility, it prints in the "programmer" format of 16 bytes per line
 with Hex first, and then ASCII. High ASCII characters are printed, or not
@@ -584,7 +587,13 @@ uses mmap() on the input files, if possible.
 <li>
 <a href="vstr-latest/vstr/examples/ex_lookup_ip.c.html">lookup_ip</a> -
 A program that will change a DNS domain name (Ie. www.and.org) into an IPv4
-address (or print an error).
+address (or print an error). This uses the std. custom formatter for printing
+IPv4 addresses.
+</li>
+<li>
+<a href="vstr-latest/vstr/examples/ex_gmp_factorials.c.html">gmp_factorials</a> -
+A program that will output each factorial leading upto a number supplied on
+the cmd line. This creates a custom formatter for printing GMP mpz_t variables.
 </li>
 </ul>
 
@@ -594,11 +603,6 @@ aren't as heavily commented but should show how you can solve certain
 problems. They are:</p>
 
 <ul>
-<li>
-<a href="vstr-latest/vstr/examples/ex_nl.c.html">nl</a> - This does something
-similar to the Unix "nl" program. Each input line is printed along with a
-number. This uses the split functions to get each line.
-</li>
 <li>
 <a href="vstr-latest/vstr/examples/ex_rot13.c.html">rot13</a> - This does a
 rot13 transform (or Caesar cipher) on the input, and then outputs it. This shows
@@ -620,7 +624,7 @@ turn into a library function at some point, but for now it's useful on it's own.
 <li>
 <a href="vstr-latest/vstr/examples/ex_mon_cp.c.html">monitor copy</a> - This
 program will monitor a file as it gets bigger, and report Bytes per second etc.
-statistics. This is done through Vstr string customer formatter API calls, and
+statistics. This is done through Vstr string custom formatter API calls, and
 should show how much simpler you can make your code using those features.
 </li>
 <li>
@@ -666,7 +670,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 22 14:46:39 EDT 2003
+Last modified: Mon Sep 29 19:35:29 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

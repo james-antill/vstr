@@ -1,4 +1,4 @@
-.TH vstr_const 3 "21-Sep-2003" "Vstr 1.0.7" "Vstr String Library"
+.TH vstr_const 3 "29-Sep-2003" "Vstr 1.0.9" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -142,6 +142,15 @@
 .br
 .ti \w'  'u
 \fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM\fR
 .sp
 .br
 .ti \w'  'u
@@ -1054,6 +1063,33 @@
 
 .br
   This flag indicates that the number object you are printing should be treated as negative number. This flag has no meaning if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+.br
+\fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag indicates that the number object you are printing should be treated as an uppercase hexadecimal number. This flag has no meaning if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+.br
+\fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag indicates that the number object you are printing should be treated as a lowercase hexadecimal number. This flag has no meaning if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
+
+.br
+\fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag indicates that the number object you are printing should be treated as octal number. This flag has no meaning if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 .SH Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()
 

@@ -76,14 +76,6 @@ static int vstr__make_conf_loc_def_numeric(Vstr_conf *conf, Vstr_locale *loc)
   return (FALSE);
 }
 
-#ifdef USE_RESTRICTED_HEADERS /* always use C locale */
-# define setlocale(x, y) NULL
-# define localeconv()    NULL
-# define SYS_LOC(x) ""
-#else
-# define SYS_LOC(x) ((sys_loc)->x)
-#endif
-
 int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
 {
   struct lconv *sys_loc = NULL;
@@ -499,6 +491,112 @@ static void vstr__cache_cstr_check(const Vstr_base *base)
     } while (vstr_iter_fwd_nxt(iter));
   }
 }
+
+int vstr__check_real_nodes(const Vstr_base *base)
+{
+  size_t len = 0;
+  size_t num = 0;
+  unsigned int node_buf_used = FALSE;
+  unsigned int node_non_used = FALSE;
+  unsigned int node_ptr_used = FALSE;
+  unsigned int node_ref_used = FALSE;
+  Vstr_node *scan = base->beg;
+
+  assert(!base->used || (base->used < base->beg->len));
+  assert(!base->used || (base->beg->type == VSTR_TYPE_NODE_BUF));
+
+  while (scan)
+  {
+    ASSERT(scan->len);
+
+    switch (scan->type)
+    {
+      case VSTR_TYPE_NODE_BUF: node_buf_used = TRUE; break;
+      case VSTR_TYPE_NODE_NON: node_non_used = TRUE; break;
+      case VSTR_TYPE_NODE_PTR: node_ptr_used = TRUE; break;
+      case VSTR_TYPE_NODE_REF: node_ref_used = TRUE; break;
+      default:
+        assert(FALSE);
+        break;
+    }
+
+    len += scan->len;
+
+    ++num;
+
+    scan = scan->next;
+  }
+
+  /* it can be TRUE in the base and FALSE in reallity */
+  assert(!node_buf_used || base->node_buf_used);
+  assert(!node_non_used || base->node_non_used);
+  assert(!node_ptr_used || base->node_ptr_used);
+  assert(!node_ref_used || base->node_ref_used);
+
+  assert(!!base->beg == !!base->end);
+  assert(((len - base->used) == base->len) && (num == base->num));
+
+  vstr__cache_iovec_check(base);
+  vstr__cache_cstr_check(base);
+
+  return (TRUE);
+}
+
+int vstr__check_spare_nodes(const Vstr_conf *conf)
+{
+  unsigned int num = 0;
+  Vstr_node *scan = NULL;
+
+  num = 0;
+  scan = (Vstr_node *)conf->spare_buf_beg;
+  while (scan)
+  {
+    ++num;
+
+    assert(scan->type == VSTR_TYPE_NODE_BUF);
+
+    scan = scan->next;
+  }
+  assert(conf->spare_buf_num == num);
+
+  num = 0;
+  scan = (Vstr_node *)conf->spare_non_beg;
+  while (scan)
+  {
+    ++num;
+
+    assert(scan->type == VSTR_TYPE_NODE_NON);
+
+    scan = scan->next;
+  }
+  assert(conf->spare_non_num == num);
+
+  num = 0;
+  scan = (Vstr_node *)conf->spare_ptr_beg;
+  while (scan)
+  {
+    ++num;
+
+    assert(scan->type == VSTR_TYPE_NODE_PTR);
+
+    scan = scan->next;
+  }
+  assert(conf->spare_ptr_num == num);
+
+  num = 0;
+  scan = (Vstr_node *)conf->spare_ref_beg;
+  while (scan)
+  {
+    ++num;
+
+    assert(scan->type == VSTR_TYPE_NODE_REF);
+
+    scan = scan->next;
+  }
+  assert(conf->spare_ref_num == num);
+
+  return (TRUE);
+}
 #endif
 
 static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
@@ -854,119 +952,13 @@ unsigned int vstr_free_spare_nodes(Vstr_conf *passed_conf, unsigned int type,
   return (count);
 }
 
-#ifndef NDEBUG
-int vstr__check_real_nodes(const Vstr_base *base)
-{
-  size_t len = 0;
-  size_t num = 0;
-  unsigned int node_buf_used = FALSE;
-  unsigned int node_non_used = FALSE;
-  unsigned int node_ptr_used = FALSE;
-  unsigned int node_ref_used = FALSE;
-  Vstr_node *scan = base->beg;
-
-  assert(!base->used || (base->used < base->beg->len));
-  assert(!base->used || (base->beg->type == VSTR_TYPE_NODE_BUF));
-
-  while (scan)
-  {
-    ASSERT(scan->len);
-
-    switch (scan->type)
-    {
-      case VSTR_TYPE_NODE_BUF: node_buf_used = TRUE; break;
-      case VSTR_TYPE_NODE_NON: node_non_used = TRUE; break;
-      case VSTR_TYPE_NODE_PTR: node_ptr_used = TRUE; break;
-      case VSTR_TYPE_NODE_REF: node_ref_used = TRUE; break;
-      default:
-        assert(FALSE);
-        break;
-    }
-
-    len += scan->len;
-
-    ++num;
-
-    scan = scan->next;
-  }
-
-  /* it can be TRUE in the base and FALSE in reallity */
-  assert(!node_buf_used || base->node_buf_used);
-  assert(!node_non_used || base->node_non_used);
-  assert(!node_ptr_used || base->node_ptr_used);
-  assert(!node_ref_used || base->node_ref_used);
-
-  assert(!!base->beg == !!base->end);
-  assert(((len - base->used) == base->len) && (num == base->num));
-
-  vstr__cache_iovec_check(base);
-  vstr__cache_cstr_check(base);
-
-  return (TRUE);
-}
-
-int vstr__check_spare_nodes(const Vstr_conf *conf)
-{
-  unsigned int num = 0;
-  Vstr_node *scan = NULL;
-
-  num = 0;
-  scan = (Vstr_node *)conf->spare_buf_beg;
-  while (scan)
-  {
-    ++num;
-
-    assert(scan->type == VSTR_TYPE_NODE_BUF);
-
-    scan = scan->next;
-  }
-  assert(conf->spare_buf_num == num);
-
-  num = 0;
-  scan = (Vstr_node *)conf->spare_non_beg;
-  while (scan)
-  {
-    ++num;
-
-    assert(scan->type == VSTR_TYPE_NODE_NON);
-
-    scan = scan->next;
-  }
-  assert(conf->spare_non_num == num);
-
-  num = 0;
-  scan = (Vstr_node *)conf->spare_ptr_beg;
-  while (scan)
-  {
-    ++num;
-
-    assert(scan->type == VSTR_TYPE_NODE_PTR);
-
-    scan = scan->next;
-  }
-  assert(conf->spare_ptr_num == num);
-
-  num = 0;
-  scan = (Vstr_node *)conf->spare_ref_beg;
-  while (scan)
-  {
-    ++num;
-
-    assert(scan->type == VSTR_TYPE_NODE_REF);
-
-    scan = scan->next;
-  }
-  assert(conf->spare_ref_num == num);
-
-  return (TRUE);
-}
-#endif
-
 Vstr_node **vstr__base_ptr_pos(const Vstr_base *base, size_t *pos,
                                unsigned int *num)
 {
   Vstr_node *const *scan = &base->beg;
 
+  ASSERT(base && pos && num);
+  
   *pos += base->used;
   *num = 1;
 
@@ -1039,8 +1031,6 @@ static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
     ln_ref->conf->spare_buf_beg = node;
     ++ln_ref->conf->spare_buf_num;
 
-    free(ref); /* make_ptr()'d reference */
-
     if (!--ln_ref->l_ref)
     {
       if (ln_ref->conf->ref_link == ln_ref)
@@ -1050,6 +1040,8 @@ static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
       vstr__del_conf(conf);
     }
   }
+  
+  VSTR__F(ref); /* make_ptr()'d reference */
 }
 
 void vstr__swap_node_X_X(const Vstr_base *base, size_t pos,
@@ -1112,8 +1104,8 @@ int vstr__chg_node_buf_ref(const Vstr_base *base,
                       1, UINT_MAX))
     goto fail_malloc_nodes;
 
-  if (!(ref = vstr_ref_make_ptr(((Vstr_node_buf *)(*scan))->buf,
-                                vstr__ref_cb_relink_bufnode_ref)))
+  if (!(ref = vstr__ref_make_ptr(((Vstr_node_buf *)(*scan))->buf,
+                                 vstr__ref_cb_relink_bufnode_ref)))
     goto fail_malloc_ref;
   if (!vstr__convert_buf_ref_add(base->conf, *scan))
     goto fail_malloc_conv_buf;

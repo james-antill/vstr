@@ -7,9 +7,13 @@ Range: R
 
 Name: apache httpd
 RH-ref: RHSA-2003:243-01
-Type: IO
+Type: IV ( (Cipher restrictions ignored on renegotiation))
 Range: R
-Type: DF
+Type: DOS (infinite loop handling internal redirects and nested subrequests)
+Range: R
+Type: DOS (temporarily, if using multiple ports)
+Range: R
+Type: DOS (ftp proxy and IPV6 only)
 Range: R
 
 Name: openssh

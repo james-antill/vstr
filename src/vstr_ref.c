@@ -43,28 +43,9 @@ void vstr_ref_cb_free_ptr_ref(Vstr_ref *ref)
   vstr_ref_cb_free_ref(ref);
 }
 
-#ifdef NDEBUG
-# define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
-#else
-static void vstr__ref_cb_free_ref(Vstr_ref *ref)
-{
-  VSTR__F(ref);
-}
-#endif
-
 Vstr_ref *vstr_ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *))
 {
-  Vstr_ref *ref = NULL;
-
-#ifndef NDEBUG
-  if (func == vstr_ref_cb_free_ref)
-  {
-    ref = VSTR__MK(sizeof(Vstr_ref));
-    func = vstr__ref_cb_free_ref;
-  }
-  else
-#endif
-    ref = malloc(sizeof(Vstr_ref));
+  Vstr_ref *ref = malloc(sizeof(Vstr_ref));
 
   if (!ref)
     return (NULL);
@@ -105,32 +86,32 @@ Vstr_ref *vstr_ref_make_memdup(const void *ptr, size_t len)
 static void vstr__ref_cb_free_vstr_base(Vstr_ref *ref)
 {
   vstr_free_base(ref->ptr);
-  free(ref);
+  VSTR__F(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_base(Vstr_base *base)
 {
-  return (vstr_ref_make_ptr(base, vstr__ref_cb_free_vstr_base));
+  return (vstr__ref_make_ptr(base, vstr__ref_cb_free_vstr_base));
 }
 
 static void vstr__ref_cb_free_vstr_conf(Vstr_ref *ref)
 {
   vstr_free_conf(ref->ptr);
-  free(ref);
+  VSTR__F(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_conf(Vstr_conf *conf)
 {
-  return (vstr_ref_make_ptr(conf, vstr__ref_cb_free_vstr_conf));
+  return (vstr__ref_make_ptr(conf, vstr__ref_cb_free_vstr_conf));
 }
 
 static void vstr__ref_cb_free_vstr_sects(Vstr_ref *ref)
 {
   vstr_sects_free(ref->ptr);
-  free(ref);
+  VSTR__F(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_sects(Vstr_sects *sects)
 {
-  return (vstr_ref_make_ptr(sects, vstr__ref_cb_free_vstr_sects));
+  return (vstr__ref_make_ptr(sects, vstr__ref_cb_free_vstr_sects));
 }

@@ -1,5 +1,7 @@
-/* This is a fairly simple hexdump program, no command line options. mmap()
- * is used if it can be.
+/* This is a fairly simple hexdump program, it has command line options to
+ * enable printing of high latin symbols, and/or use mmap() to load the input
+ * data.
+ *
  * Reads from stdin if no args are given.
  *
  * This shows how to use the Vstr library for simple data convertion.
@@ -13,7 +15,7 @@
 /* hexdump in "readable" format ... note this is a bit more fleshed out than
  * some of the other examples mainly because I actually use it */
 
-/* this is roughly equiv. to the second command...
+/* this is roughly equiv. to the Linux hexdump command...
 % rpm -qf /usr/bin/hexdump
 util-linux-2.11r-10
 % hexdump -e '"%08_ax:"
@@ -29,23 +31,32 @@ util-linux-2.11r-10
 
  * ...except that it prints the address in big hex digits, and it doesn't take
  * you 30 minutes to remember how to type it out.
- *  It also probably acts differently in that seperate files aren't merged
- * into one output line
+ *  It also acts differently in that seperate files aren't merged
+ * into one output line (Ie. in this version each file starts on a new line,
+ * however the addresses are continuious).
  */
 
 #define PRNT_NONE 0
 #define PRNT_SPAC 1
 #define PRNT_HIGH 2
 
+
+/* number of characters we output per line (assumes 80 char width screen)... */
+#define EX_HEXDUMP_CHRS_PER_LINE 16
+
 /* configure what ASCII characters we print */
 static unsigned int prnt_high_chars = PRNT_NONE;
 
 #if 0
-/* simple print of a number ... not used */
+/* simple print of a number */
+
+/* print the address */
 # define EX_HEXDUMP_X8(s1, num) \
   vstr_add_fmt(s1, (s1)->len, "0x%08X:", (num))
+/* print a set of two bytes */
 # define EX_HEXDUMP_X2X2(s1, num1, num2) \
   vstr_add_fmt(s1, (s1)->len, " %02X%02X", (num1), (num2))
+/* print a byte and spaces for the missing byte */
 # define EX_HEXDUMP_X2__(s1, num1) \
   vstr_add_fmt(s1, (s1)->len, " %02X  ",   (num1))
 #else
@@ -65,41 +76,47 @@ static const char *hexnums = "0123456789ABCDEF";
   EX_HEXDUMP_BYTE((buf) + 0, (i) >> 24); \
  } while (FALSE)
 
+/* print the address */
 # define EX_HEXDUMP_X8(s1, num) do { unsigned char xbuf[9]; \
   xbuf[8] = ':'; \
   EX_HEXDUMP_UINT(xbuf, num); \
-  vstr_add_buf(s1, (s1)->len, xbuf, 9); } while (FALSE)
+  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
+/* print a set of two bytes */
 # define EX_HEXDUMP_X2X2(s1, num1, num2) do { unsigned char xbuf[5]; \
   xbuf[0] = ' '; \
   EX_HEXDUMP_BYTE(xbuf + 3, num2); \
   EX_HEXDUMP_BYTE(xbuf + 1, num1); \
-  vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
+  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
+/* print a byte and spaces for the missing byte */
 # define EX_HEXDUMP_X2__(s1, num1) do { unsigned char xbuf[5]; \
   xbuf[4] = ' '; \
   xbuf[3] = ' '; \
   EX_HEXDUMP_BYTE(xbuf + 1, num1); \
   xbuf[0] = ' '; \
-  vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
+  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
 #endif
 
 
 static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 {
   static unsigned int addr = 0;
-  /* normal ASCII chars */
+  /* normal ASCII chars, just allow COMMA and DOT flags */
   unsigned int flags = VSTR_FLAG02(CONV_UNPRINTABLE_ALLOW, COMMA, DOT);
-  /* allow spaces */
+  /* allow spaces, allow COMMA, DOT, underbar _, and space */
   unsigned int flags_sp = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
                                       COMMA, DOT, _, SP);
-  /* high ascii too */
+  /* high ascii too, allow
+   * COMMA, DOT, underbar _, space, high space and other high characters */
   unsigned int flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW,
                                        COMMA, DOT, _, SP, HSP, HIGH);
+  unsigned char buf[EX_HEXDUMP_CHRS_PER_LINE];
 
   switch (prnt_high_chars)
   {
     case PRNT_HIGH: flags = flags_hsp; break;
     case PRNT_SPAC: flags = flags_sp;  break;
     case PRNT_NONE:                    break;
+    default: ASSERT(FALSE);            break;
   }
 
   /* we don't want to create more data, if we are over our limit */
@@ -107,35 +124,42 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     return (FALSE);
 
   /* while we have a hexdump line ... */
-  while (s2->len >= 16)
+  while (s2->len >= EX_HEXDUMP_CHRS_PER_LINE)
   {
-    unsigned char buf[16];
-
+    unsigned int count = 0;
+    
     /* get a hexdump line from the vstr */
-    vstr_export_buf(s2, 1, 16, buf, sizeof(buf));
+    vstr_export_buf(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, buf, sizeof(buf));
 
     /* write out a hexdump line address */
     EX_HEXDUMP_X8(s1, addr);
 
     /* write out hex values */
-    EX_HEXDUMP_X2X2(s1, buf[ 0], buf[ 1]);
-    EX_HEXDUMP_X2X2(s1, buf[ 2], buf[ 3]);
-    EX_HEXDUMP_X2X2(s1, buf[ 4], buf[ 5]);
-    EX_HEXDUMP_X2X2(s1, buf[ 6], buf[ 7]);
-    EX_HEXDUMP_X2X2(s1, buf[ 8], buf[ 9]);
-    EX_HEXDUMP_X2X2(s1, buf[10], buf[11]);
-    EX_HEXDUMP_X2X2(s1, buf[12], buf[13]);
-    EX_HEXDUMP_X2X2(s1, buf[14], buf[15]);
+    while (count < EX_HEXDUMP_CHRS_PER_LINE)
+    {
+      EX_HEXDUMP_X2X2(s1, buf[count], buf[count + 1]);
+      count += 2;
+    }
 
-    VSTR_ADD_CSTR_BUF(s1, s1->len, "  ");
+    vstr_add_rep_chr(s1, s1->len, ' ', 2);
 
-    /* write out characters */
-    vstr_conv_unprintable_chr(s2, 1, 16, flags, '.');
-    vstr_add_vstr(s1, s1->len, s2, 1, 16, VSTR_TYPE_ADD_ALL_BUF);
+    /* convert unprintable characters to the '.' character */
+    vstr_conv_unprintable_chr(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, flags, '.');
+
+    /* write out characters, converting reference and pointer nodes to
+     * _BUF nodes */
+    vstr_add_vstr(s1, s1->len, s2, 1, EX_HEXDUMP_CHRS_PER_LINE,
+                  VSTR_TYPE_ADD_ALL_BUF);
     vstr_add_rep_chr(s1, s1->len, '\n', 1);
 
-    addr += 16;
-    vstr_del(s2, 1, 16); /* delete the line just processed */
+    addr += EX_HEXDUMP_CHRS_PER_LINE;
+    
+    /* delete the set of characters just processed */
+    vstr_del(s2, 1, EX_HEXDUMP_CHRS_PER_LINE);
+
+    /* if any of the above memory mgmt failed, error */
+    if (s1->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
 
     /* note that we don't want to create data indefinitely, so stop
      * according to in core configuration */
@@ -145,10 +169,9 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 
   if (last && s2->len)
   { /* do the same as above, but print the partial line for
-     * the end of files */
-    unsigned char buf[16];
+     * the end of a file */
     size_t got = s2->len;
-    size_t missing = 16 - s2->len;
+    size_t missing = EX_HEXDUMP_CHRS_PER_LINE - s2->len;
     const char *ptr = buf;
 
     missing -= (missing % 2);
@@ -168,23 +191,23 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
       got -= 2;
     }
 
-    /* easy way to add X amount of ' ' characters */
+    /* Add spaces until the point where the characters should start */
     vstr_add_rep_chr(s1, s1->len, ' ', (missing * 2) + (missing / 2) + 2);
 
     vstr_conv_unprintable_chr(s2, 1, s2->len, flags, '.');
     vstr_add_vstr(s1, s1->len, s2, 1, s2->len, VSTR_TYPE_ADD_ALL_BUF);
 
-    VSTR_ADD_CSTR_BUF(s1, s1->len, "\n");
+    vstr_add_cstr_buf(s1, s1->len, "\n");
 
     addr += s2->len;
     vstr_del(s2, 1, s2->len);
 
+    /* if any of the above memory mgmt failed, error */
+    if (s1->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
+
     return (TRUE);
   }
-
-  /* if any of the above memory mgmt failed, error */
-  if (s1->conf->malloc_bad)
-    errno = ENOMEM, err(EXIT_FAILURE, "adding data:");
 
   return (FALSE);
 }
@@ -221,6 +244,8 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     io_limit(io_r_state, fd, io_w_state, 1, s1);
   }
 
+  /* write out all of the end of the file,
+   * so the next file starts on a new line */
   ex_hexdump_process_limit(s1, s2, 0);
 }
 
@@ -240,16 +265,18 @@ int main(int argc, char *argv[])
       ++count;
       break;
     }
-    else if (!strcmp("--mmap", argv[count]))
+    else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
       use_mmap = !use_mmap;
-    else if (!strcmp("--none", argv[count]))
-      prnt_high_chars = PRNT_NONE;
+    
+    else if (!strcmp("--none", argv[count])) /* choose what is displayed */
+      prnt_high_chars = PRNT_NONE; /* just simple 7 bit ASCII, no spaces */
     else if (!strcmp("--space", argv[count]))
-      prnt_high_chars = PRNT_SPAC;
+      prnt_high_chars = PRNT_SPAC; /* allow spaces */
     else if (!strcmp("--high", argv[count]))
-      prnt_high_chars = PRNT_HIGH;
+      prnt_high_chars = PRNT_HIGH; /* allow high bit characters */
+    
     else if (!strcmp("--version", argv[count]))
-    {
+    { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
 jhexdump 1.0.0\n\
 Written by James Antill\n\
@@ -259,7 +286,7 @@ Uses Vstr string library.\n\
       goto out;
     }
     else if (!strcmp("--help", argv[count]))
-    {
+    { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
 Usage: jhexdump [STRING]...\n\
    or: jhexdump OPTION\n\
@@ -267,11 +294,11 @@ Repeatedly output a line with all specified STRING(s), or `y'.\n\
 \n\
       --help     Display this help and exit\n\
       --version  Output version information and exit\n\
-      --space    Allow space characters in ASCII output\n\
       --high     Allow space and high characters in ASCII output\n\
-      --none     Allow only small amount of characters ASCII output\n\
-      --mmap     Toggle use of mmap() on files\n\
-      --         Use rest of cmd line input regardless of if it's an option\n\
+      --none     Allow only small amount of characters ASCII output (default)\n\
+      --space    Allow space characters in ASCII output\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --         Treat rest of cmd line as input filenames\n\
 \n\
 Report bugs to James Antill <james@and.org>.\n\
 ");
@@ -295,7 +322,9 @@ Report bugs to James Antill <james@and.org>.\n\
   {
     unsigned int ern = 0;
 
-    /* try to mmap the file, as that is faster ... */
+    ASSERT(!s2->len); /* all input is fully processed before each new file */
+    
+    /* try to mmap the file */
     if (use_mmap)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
@@ -315,13 +344,10 @@ Report bugs to James Antill <james@and.org>.\n\
       err(EXIT_FAILURE, "add");
     else /* mmap worked so processes the entire file at once */
       ex_hexdump_process_limit(s1, s2, 0);
-
-    ASSERT(!s2->len);
     
     ++count;
   }
-
-  ex_hexdump_process_limit(s1, s2, 0);
+  ASSERT(!s2->len); /* all input is fully processed before each new file */
   
   /* Cleanup... */
  out:

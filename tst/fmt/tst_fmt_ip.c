@@ -4,7 +4,7 @@ static const char *rf = __FILE__;
 
 #ifdef HAVE_POSIX_HOST
 static int tst_setup_inet_buf(const struct in_addr  *ipv4,
-                              const struct in6_addr *ipv6)
+                              const struct in6_addr *ipv6, int fwd)
 {
   size_t len = 0;
   const char *ptr = NULL;
@@ -16,8 +16,17 @@ static int tst_setup_inet_buf(const struct in_addr  *ipv4,
   buf[256] = 0;
   buf[257] = (char)0xFF;
 
-  if (!(ptr = inet_ntop(AF_INET,  ipv4, buf, 128)))
-    return (FALSE);
+  if (fwd)
+  {
+    if (!(ptr = inet_ntop(AF_INET,  ipv4, buf, 128)))
+      return (FALSE);
+  }
+  else
+  {
+    if (!(ptr = inet_ntop(AF_INET6, ipv6, buf, 128)))
+      return (FALSE);
+  }
+  
   len = strlen(ptr);
   assert(len < 16);
 
@@ -27,8 +36,17 @@ static int tst_setup_inet_buf(const struct in_addr  *ipv4,
   assert(!buf[len]);
   buf[len] = ' ';
 
-  if (!(ptr = inet_ntop(AF_INET6, ipv6, buf + 128, 128)))
-    return (FALSE);
+  if (fwd)
+  {
+    if (!(ptr = inet_ntop(AF_INET6, ipv6, buf + 128, 128)))
+      return (FALSE);
+  }
+  else
+  {
+    if (!(ptr = inet_ntop(AF_INET,  ipv4, buf + 128, 128)))
+      return (FALSE);
+  }
+  
   len = strlen(ptr);
   assert(len < 40);
 
@@ -58,12 +76,15 @@ int tst(void)
   /* output */
 
 #ifdef HAVE_POSIX_HOST
-  do
+  scan = 2;
+  while (scan--)
   {
     struct in_addr  ipv4;
     struct in6_addr ipv6;
     unsigned int count = 0;
-
+    int fmtret = 0;
+    int mfail_count = 0;
+    
     srand(time(NULL) ^ getpid());
 
     ipv4.s_addr = rand();
@@ -73,10 +94,13 @@ int tst(void)
     ipv6.s6_addr[2] = rand();
     ipv6.s6_addr[3] = rand();
 
-    if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
+    if (!tst_setup_inet_buf(&ipv4, &ipv6, scan)) break;
 
     vstr_del(s3, 1, s3->len);
+    if (scan)
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
+    else
+    vstr_add_fmt(s3, 0, "$-128{ipv6.p:%p}$128{ipv4.p:%p}", &ipv6, &ipv4);
 
     TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
@@ -92,10 +116,20 @@ int tst(void)
       ++count;
     }
 
-    if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
+    if (!tst_setup_inet_buf(&ipv4, &ipv6, scan)) break;
 
     vstr_del(s3, 1, s3->len);
-    vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
+    mfail_count = 0;
+    do
+    {
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+      if (scan)
+      fmtret = vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
+      else
+      fmtret = vstr_add_fmt(s3, 0, "$-128{ipv6.p:%p}$128{ipv4.p:%p}", &ipv6, &ipv4);
+    } while (!fmtret);
+    tst_mfail_num(0);
 
     TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
@@ -108,10 +142,13 @@ int tst(void)
       ++count;
     }
 
-    if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
+    if (!tst_setup_inet_buf(&ipv4, &ipv6, scan)) break;
 
     vstr_del(s3, 1, s3->len);
+    if (scan)
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
+    else
+    vstr_add_fmt(s3, 0, "$-128{ipv6.p:%p}$128{ipv4.p:%p}", &ipv6, &ipv4);
 
     TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
@@ -122,14 +159,18 @@ int tst(void)
       ipv6 = tmp;
     }
 
-    if (!tst_setup_inet_buf(&ipv4, &ipv6)) break;
+    if (!tst_setup_inet_buf(&ipv4, &ipv6, scan)) break;
 
     vstr_del(s3, 1, s3->len);
+    if (scan)
     vstr_add_fmt(s3, 0, "$-128{ipv4.p:%p}$128{ipv6.p:%p}", &ipv4, &ipv6);
+    else
+    vstr_add_fmt(s3, 0, "$-128{ipv6.p:%p}$128{ipv4.p:%p}", &ipv6, &ipv4);
 
     TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+    if (ret) { PRNT_VSTR(s3); PRNT_CSTR(buf); }
 
-  } while (FALSE);
+  }
 #endif
 
   memset(ips, 0, sizeof(ips));

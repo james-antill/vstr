@@ -73,9 +73,9 @@ IO is easy anywhere into or out of a string, appending and writing from the begi
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
 <!-- sloccount ../src/*.c ../include/vstr-*inline.h ../src/vstr_dbl/vstr_add_fmt_dbl_host.c src/vstr_version.c  -->
 <!-- sloccount ../tst/**/*.c -->
- Small amount of user testing. Testsuite <b>tests all functions and constants</b> ... over 95% coverage of lines of code of implementation (57% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>, with host sprintf for doubles).
+ Small amount of user testing. Testsuite <b>tests all functions and constants</b> ... over 96% coverage of lines of code of implementation (57% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>, with host sprintf for doubles).
  </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
-1.0.7
+1.0.9
 </td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
 Heavily recommended for IO,
  is as good as it gets when talking to many network connections with
@@ -606,10 +606,13 @@ Terrible namespace. No IO. Requires pcre to be install to build/run.
 	</p>
 	<p>
 <!-- FIXME: wrong file... -->
-	  By version 1.4.1 there is a printf like function, however it uses the
-	  system asprintf() call if it is available, and if not it just calls
-	  snprintf() with a limit of 256 characters (so data may be truncated
-	  even though the interface doesn't imply that).
+	  By version 1.4.1 there is a printf like function, it uses the
+	  system asprintf() call if it is available and fails the
+ <a href="security.html#asprintf-ex1">Linux test</a>. If asprintf doesn't exist
+ it <a href="security.html#libcsprintf">assumes a snprintf() conforming to the
+ ISO 9899:1999 return value semantics</a> -- also this code path probably
+ won't work on Sparc or other weird platforms.
+
 	  It does declare a
 	  "vector" type that is roughly equivalent to a Vstr_sects type however
 	  it only contains a "ptr" to the data ... so doing a split on a string
@@ -1196,6 +1199,7 @@ It would be better to use the std::string class.
  <!-- OTHERS -->
 
    <!-- http://libh.slashusr.org/ --  -->
+<!-- http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/gift/giFT/lib/fdbuf.c?rev=1.4&content-type=text/vnd.viewcvs-markup -->
    <!-- http://www.robertnz.net/string.htm -- C++ compat. dito ? -->
    <!-- http://open.nit.ca/wvstreams/tutorial/ -- C++ compat. (+ extra functions) -->
    <!-- http://www.rainingdata.com/support/techpubs/0852head.html --
@@ -1211,7 +1215,7 @@ It would be better to use the std::string class.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Mon Sep  8 00:22:25 EDT 2003
+Last modified: Mon Sep 29 19:35:12 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

@@ -31,6 +31,63 @@ static int tst_usr_pid_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   return (TRUE);
 }
 
+static int tst_usr_intptr_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
+{
+  int *passed_num = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t len = 1;
+  unsigned int num = 0;
+  int flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; /* it's a number */
+  int ret = FALSE;
+  
+  assert(!strcmp(spec->name, "{intptr:%n}") ||
+         !strcmp(spec->name, "{intptr:%*n}"));
+
+  ASSERT(passed_num);
+  
+  num = *passed_num; /* find out the "length" of the number */
+  if (*passed_num < 0)
+  {
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
+    num = -num;
+  }
+
+  if (num == 0xff)
+  {
+    spec->fmt_plus = 0;
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyyyyyyyyyyf", 16);
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L;
+  }
+  else if (num == 0xfe)
+  {
+    spec->fmt_plus = 0;
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyyyyyyyyyEF", 16);
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H;
+  }
+  else if (num == 0777)
+  {
+    spec->fmt_plus = 0;
+    if (spec->fmt_hash && spec->fmt_precision)
+      --spec->obj_precision;
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyy7", 8);
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM;
+  }
+  else    
+    len = vstr_sc_conv_num10_uint(buf, sizeof(buf), num);
+  
+  if (!vstr_sc_fmt_cb_beg(st, &pos, spec, &len, flags))
+    return (FALSE);
+
+  if (spec->fmt_quote)
+    ret = vstr_sc_add_grpnum_buf(st, pos, buf, len);
+  else
+    ret = vstr_add_buf(st, pos, buf, len);
+
+  if (!ret || !vstr_sc_fmt_cb_end(st, pos, spec, len))
+    return (FALSE);
+    
+  return (TRUE);
+}
+
 static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
                                    Vstr_fmt_spec *spec)
 {
@@ -191,6 +248,7 @@ int tst(void)
   int ret = 0;
   Vstr_ref *ref = NULL;
   int mfail_count = 0;
+  int num = 0;
   unsigned int ipv4[4];
   unsigned int ipv6[8];
 
@@ -266,6 +324,12 @@ int tst(void)
   ASSERT(s3->conf->fmt_usr_curly_braces);
   vstr_fmt_add(s3->conf, "{BLANK_ERRNO2}", tst_usr_blank_errno2_cb,
                VSTR_TYPE_FMT_ERRNO, VSTR_TYPE_FMT_END);
+  ASSERT(s3->conf->fmt_usr_curly_braces);
+  vstr_fmt_add(s3->conf, "{intptr:%n}", tst_usr_intptr_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s3->conf, "{intptr:%*n}", tst_usr_intptr_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  ASSERT(vstr_fmt_srch(s3->conf, "{intptr:%n}"));
   ASSERT(s3->conf->fmt_usr_curly_braces);
   vstr_fmt_add(s3->conf, "PID", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
   ASSERT(vstr_fmt_srch(s3->conf, "PID"));
@@ -360,10 +424,110 @@ int tst(void)
 
   TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
 
+  num = 5;
+  while (num--)
+  {
+    const char *fmt = NULL;
+    int spaces = 2;  
+    
+#define FMT(x) (fmt = ((num == 0xff) ? "<%" x "x>" : (num == 0xfe) ? "<%" x "X>" : (num == 0777) ? "<%" x "o>" : "<%" x "d>"))
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<${intptr:%n}>", &num);
+    vstr_add_fmt(s4, s4->len, FMT(""), num);
+    
+    TST_B_TST(ret, 13, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$7{intptr:%n}>", &num);
+    vstr_add_fmt(s4, s4->len, FMT("7"), num);
+    
+    TST_B_TST(ret, 14, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+
+    while (spaces < 10)
+    {
+      const char *hfgcc = "<$+0*{intptr:%*n}>";
+      
+      mfail_count = 0;
+      do
+      {
+        vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+        tst_mfail_num(++mfail_count);
+      } while (!vstr_add_fmt(s3, s3->len, hfgcc, spaces, &num));
+      tst_mfail_num(0);
+      FMT("+0*");
+      vstr_add_fmt(s4, s4->len, fmt, spaces, num);
+
+      ++spaces;
+    }
+    
+    TST_B_TST(ret, 15, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$.7{intptr:%n}>", &num);
+    FMT(".7");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+    
+    TST_B_TST(ret, 16, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$#-7{intptr:%n}>", &num);
+    FMT("#-7");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 17, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$-16.8{intptr:%n}>", &num);
+    FMT("-16.8");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 18, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$16.8{intptr:%n}>", &num);
+    FMT("16.8");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 19, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$#8.16{intptr:%n}>", &num);
+    FMT("#8.16");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 20, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    vstr_del(s3, 1, s3->len);
+    vstr_del(s4, 1, s4->len);
+    vstr_add_fmt(s3, s3->len, "<$'-8.16{intptr:%n}>", &num);
+    FMT("'-8.16");
+    vstr_add_fmt(s4, s4->len, fmt, num);
+  
+    TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+
+    switch (num)
+    {
+      case    4: num =    -3; break;
+      case   -4: num = 0x100; break;
+      case 0xff:              break;
+      case 0xfe: num = 01000; break;
+      case 0777: num =     1; break;
+      case    0:              break;
+    }
+  }
+  
   vstr_fmt_del(s1->conf, "{VSTR:%p%u}");
   assert(!vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
-  vstr_fmt_del(s3->conf, "{vstr:%p%zu%zu%u}");
-  assert(!vstr_fmt_srch(s3->conf, "{Vstr:%p%zu%zu%u}"));
 
   tst_fmt(ret, s1);
   tst_fmt(ret, s3);
@@ -380,8 +544,11 @@ int tst(void)
   ASSERT(ref);
   
   vstr_del(s1, 1, s1->len);
+  vstr_del(s2, 1, s2->len);
   vstr_del(s3, 1, s3->len);
 
+  vstr_add_cstr_ref(s2, 0, ref, 0);
+  
   mfail_count = 0;
 
   /* allocate fmt nodes... */
@@ -396,11 +563,16 @@ int tst(void)
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
     tst_mfail_num(++mfail_count);
   } while (!vstr_add_fmt(s3, 0,
+                         "$16{vstr:%p%zu%zu%u}|"
                          "$16{buf:%s%zu}|"
                          "$16{ptr:%s%zu}|"
                          "$16{non:%zu}|"
                          "$16{ref:%p%zu%zu}|"
                          "$16{rep_chr:%c%zu}|"
+
+                         "$76{ipv4.v:%p}|"
+                         "$76{ipv6.v:%p%u}|"
+                         
                          "$76{ipv4.v+C:%p%u}|"
 
                          "$76{ipv6.v+C:%p%u%u}|"
@@ -411,11 +583,14 @@ int tst(void)
                          "$76{ipv6.v+C:%p%u%u}|"
                          "$76{ipv6.v+C:%p%u%u}"
                          "",
+                         s2, 1, s2->len, 0,
                          "--buf--", 7,
                          "--ptr--", 7,
                          7,
                          ref, 0, 7,
                          'x', 8,
+                         ipv4,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED,
                          ipv4, 24,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, 96,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 96,
@@ -425,11 +600,13 @@ int tst(void)
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD, 96));
   tst_mfail_num(0);
 
-  vstr_add_fmt(s1, s1->len, "%s|%s|         ",
-               "         --buf--", "         --ptr--");
+  vstr_add_fmt(s1, s1->len, "%s|%s|%s|         ",
+               "         --ref--", "         --buf--", "         --ptr--");
   vstr_add_non(s1, s1->len, 7);
-  vstr_add_fmt(s1, s1->len, "|%s|%s|%s|%s|%s|%s|%s|%s|%s",
+  vstr_add_fmt(s1, s1->len, "|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
                "         --ref--", "        xxxxxxxx",
+"                                                             111.111.111.111",
+"                                     0022:0022:0022:0000:0000:0222:6F6F:6F6F",
 "                                                          111.111.111.111/24",
 "                                  0022:0022:0022:0000:0000:0222:6F6F:6F6F/96",
 "                                                  22:22:22::222:6F6F:6F6F/96",
@@ -453,26 +630,33 @@ int tst(void)
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
     tst_mfail_num(++mfail_count);
   } while (!vstr_add_fmt(s3, 0,
+                         "$-16{vstr:%p%zu%zu%u}|"
                          "$-16{buf:%s%zu}|"
                          "$-16{ptr:%s%zu}|"
                          "$-16{non:%zu}|"
                          "$-16{ref:%p%zu%zu}|"
                          "$-16{rep_chr:%c%zu}|"
+                         "$-76{ipv4.v:%p}|"
+                         "$-76{ipv6.v:%p%u}|"
+
                          "$-76{ipv4.v+C:%p%u}|"
 
-                         "$-76{ipv6.v+C:%p%u%u}"
-                         "$-76{ipv6.v+C:%p%u%u}"
-                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}|"
+                         "$-76{ipv6.v+C:%p%u%u}|"
+                         "$-76{ipv6.v+C:%p%u%u}|"
 
-                         "$-76{ipv6.v+C:%p%u%u}"
-                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}|"
+                         "$-76{ipv6.v+C:%p%u%u}|"
                          "$-76{ipv6.v+C:%p%u%u}"
                          "",
+                         s2, 1, s2->len, 0,
                          "--buf--", 7,
                          "--ptr--", 7,
                          7,
                          ref, 0, 7,
                          'x', 8,
+                         ipv4,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED,
                          ipv4, 24,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, 96,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 96,
@@ -482,10 +666,13 @@ int tst(void)
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD, 96));
   tst_mfail_num(0);
 
-  vstr_add_fmt(s1, s1->len, "%s|%s|", "--buf--         ", "--ptr--         ");
+  vstr_add_fmt(s1, s1->len, "%s|%s|%s|",
+               "--ref--         ", "--buf--         ", "--ptr--         ");
   vstr_add_non(s1, s1->len, 7);
-  vstr_add_fmt(s1, s1->len, "         |%s|%s|%s|%s%s%s%s%s%s",
+  vstr_add_fmt(s1, s1->len, "         |%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
                "--ref--         ", "xxxxxxxx        ",
+"111.111.111.111                                                             ",
+"0022:0022:0022:0000:0000:0222:6F6F:6F6F                                     ",
 "111.111.111.111/24                                                          ",
 "0022:0022:0022:0000:0000:0222:6F6F:6F6F/96                                  ",
 "22:22:22::222:6F6F:6F6F/96                                                  ",

@@ -233,7 +233,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     {
       void *ptr = ((char *)((Vstr_node_ptr *)*scan)->ptr) + pos;
 
-      if (!(ref = vstr_ref_make_ptr(ptr, vstr_ref_cb_free_ref)))
+      if (!(ref = vstr__ref_make_ptr(ptr, vstr__ref_cb_free_ref)))
       {
         base->conf->malloc_bad = TRUE;
         return (NULL);

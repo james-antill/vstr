@@ -1,4 +1,4 @@
-.TH vstr 3 "21-Sep-2003" "Vstr 1.0.7" "Vstr String Library"
+.TH vstr 3 "29-Sep-2003" "Vstr 1.0.9" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -1018,6 +1018,50 @@ int \fBvstr_sc_reduce\fR(struct Vstr_base *, size_t, size_t, size_t);
 .ti \w'  'u
 void \fBvstr_sc_basename\fR(const struct Vstr_base *, size_t, size_t, size_t *, size_t *);
 .br
+.in \w'  int \fBvstr_sc_add_grpnum_buf\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_grpnum_buf\fR(const struct Vstr_base *, size_t, const void *, size_t);
+.br
+.in \w'  int \fBvstr_sc_add_cstr_grpnum_buf\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_cstr_grpnum_buf\fR(const struct Vstr_base *, size_t, const char *);
+.br
+.in \w'  int \fBVSTR_SC_ADD_CSTR_GRPNUM_BUF\fR('u
+.ti \w'  'u
+int \fBVSTR_SC_ADD_CSTR_GRPNUM_BUF\fR(const struct Vstr_base *, size_t, const char *);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num_uint\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num_uint\fR(char *, size_t, unsigned int, const char *, unsigned int);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num10_uint\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num10_uint\fR(char *, size_t, unsigned int);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num_ulong\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num_ulong\fR(char *, size_t, unsigned int, const char *, unsigned long);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num10_ulong\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num10_ulong\fR(char *, size_t, unsigned long);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num_size\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num_size\fR(char *, size_t, size_t, const char *, unsigned int);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num10_size\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num10_size\fR(char *, size_t, size_t);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num_uintmax\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num_uintmax\fR(char *, size_t, uintmax_t, const char *, unsigned int);
+.br
+.in \w'  size_t \fBvstr_sc_conv_num10_uintmax\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_conv_num10_uintmax\fR(char *, size_t, uintmax_t);
+.br
 .in \w'  void \fBvstr_sc_dirname\fR('u
 .ti \w'  'u
 void \fBvstr_sc_dirname\fR(const struct Vstr_base *, size_t, size_t, size_t *);
@@ -1395,7 +1439,7 @@ Parameter\fB[3]\fR: Length from position in the Vstr
 Type\fB[3]\fR: size_t
 
 .br
-Parameter\fB[4]\fR: Pointer to data
+Parameter\fB[4]\fR: Data array to export to
 .br
 Type\fB[4]\fR: void *
 
@@ -1761,6 +1805,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 
 .br
   This function does nothing.
+
 .ti -2
 .br
 \fBFunction: \fR vstr_ref_cb_free_ref()
@@ -1779,6 +1824,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 
 .br
   This will call free() on the Vstr_ref (Parameter[1]).
+
 .ti -2
 .br
 \fBFunction: \fR vstr_ref_cb_free_ptr()
@@ -1797,6 +1843,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 
 .br
   This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
+
 .ti -2
 .br
 \fBFunction: \fR vstr_ref_cb_free_ptr_ref()
@@ -2396,7 +2443,7 @@ Type\fB[1]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref().
+  This function will create an area of memory, using malloc, and create a Vstr memory reference to that memory. The Vstr memory reference will have a reference count of 1 and the cleanup function will point to a function to free both the reference and the copy of memory.
 
 .ti -2
 .br
@@ -2420,7 +2467,7 @@ Type\fB[2]\fR: void (*)(struct Vstr_ref *)
 \fBExplanation:\fR
 
 .br
-  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of pointer passed (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+  This function will call malloc() to create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of pointer passed (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
 
 .ti -2
 .br
@@ -2463,7 +2510,7 @@ Type\fB[1]\fR: char *
 \fBExplanation:\fR
 
 .br
-  This function calls vstr_ref_make_memdup() with the length being the value of strlen() on the data parameter (Parameter[1]).
+  This function calls vstr_ref_make_memdup() with the length being the value of (strlen() + 1) on the data parameter (Parameter[1]).
 
 .ti -2
 .br
@@ -2482,7 +2529,7 @@ Type\fB[1]\fR: char *
 \fBExplanation:\fR
 
 .br
-  This macro function calls vstr_ref_make_memdup() with the length being the value of strlen() on the data parameter (Parameter[1]).
+  This macro function calls vstr_ref_make_memdup() with the length being the value of (strlen() + 1) on the data parameter (Parameter[1]).
 
 .ti -2
 .br
@@ -10373,6 +10420,370 @@ Type\fB[5]\fR: size_t *
 
 .br
   This function, with vstr_sc_dirname(), always returns values that can be combined to generate the original path. This means that this function will return an empty length for the path "/".
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_grpnum_buf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const void *
+
+.br
+Parameter\fB[4]\fR: Length of data (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a helper function to output a number with the Vstr strings locale grouping characters.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_cstr_grpnum_buf()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function calls vstr_sc_add_grpnum_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SC_ADD_CSTR_GRPNUM_BUF()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Pointer to data
+.br
+Type\fB[3]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_sc_add_grpnum_buf() with the length being the value of strlen() on the data parameter (Parameter[3]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num_uint()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to array of numbers in the current base
+.br
+Type\fB[4]\fR: const char *
+
+.br
+Parameter\fB[5]\fR: Base to convert number in
+.br
+Type\fB[5]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of bytes, the number is converted by using the byte at the offset in the array of numbers (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num10_uint()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of numbers, in base 10, return value is the number of numbers written.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num_ulong()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: unsigned int
+
+.br
+Parameter\fB[4]\fR: Pointer to array of numbers in the current base
+.br
+Type\fB[4]\fR: const char *
+
+.br
+Parameter\fB[5]\fR: Base to convert number in
+.br
+Type\fB[5]\fR: unsigned long
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of bytes, the number is converted by using the byte at the offset in the array of numbers (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num10_ulong()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: unsigned long
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of numbers, in base 10, return value is the number of numbers written.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num_size()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to array of numbers in the current base
+.br
+Type\fB[4]\fR: const char *
+
+.br
+Parameter\fB[5]\fR: Base to convert number in
+.br
+Type\fB[5]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of bytes, the number is converted by using the byte at the offset in the array of numbers (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num10_size()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of numbers, in base 10, return value is the number of numbers written.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num_uintmax()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: uintmax_t
+
+.br
+Parameter\fB[4]\fR: Pointer to array of numbers in the current base
+.br
+Type\fB[4]\fR: const char *
+
+.br
+Parameter\fB[5]\fR: Base to convert number in
+.br
+Type\fB[5]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of bytes, the number is converted by using the byte at the offset in the array of numbers (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_conv_num10_uintmax()
+.br
+Returns: Number of bytes written to (Parameter[1])
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Data array to export to
+.br
+Type\fB[1]\fR: char *
+
+.br
+Parameter\fB[2]\fR: Length of data (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Number to output
+.br
+Type\fB[3]\fR: uintmax_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will convert a number (Parameter[3]) into an array of numbers, in base 10, return value is the number of numbers written.
 
 .ti -2
 .br

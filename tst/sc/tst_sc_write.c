@@ -41,11 +41,23 @@ int tst(void)
   VSTR_ADD_CSTR_BUF(s3, 0, buf);
   VSTR_ADD_CSTR_BUF(s4, 0, buf);
 
+  /* make s3 big enough to overflow UIO_MAXIOV */
+  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
+  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
+  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
+  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
+
   unlink(fn);
   tmp = s1->len;
   while (s1->len)
   {
     size_t off = tmp - s1->len;
+    
+    tst_mfail_num(1);
+    TST_B_TST(ret, 1,
+              !!vstr_sc_write_file(s1, 1, s1->len, fn,
+                                   O_WRONLY | O_CREAT, 0600, off, NULL));
+    tst_mfail_num(0);
     TST_B_TST(ret, 1,
               !vstr_sc_write_file(s1, 1, s1->len, fn,
                                   O_WRONLY | O_CREAT, 0600, off, NULL));
@@ -56,19 +68,14 @@ int tst(void)
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
 
   unlink(fn);
-  tmp = s3->len;
-  while (s3->len)
-  {
-    size_t off = tmp - s3->len;
-    TST_B_TST(ret, 3,
-              !vstr_sc_write_file(s3, 1, s3->len, fn,
-                                  O_WRONLY | O_CREAT, 0600, off, NULL));
-  }
+  TST_B_TST(ret, 3,
+            !vstr_sc_write_file(s3, 2, s3->len - 1, fn, 0, 0600, 0, NULL));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s3, 0, buf);
+  vstr_del(s3, 1, 1);
   TST_B_TST(ret, 4, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
-
+  
   unlink(fn);
   tmp = s4->len;
   while (s4->len)
@@ -107,6 +114,7 @@ int tst(void)
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s3, 0, buf);
+  vstr_mov(s3, s3->len, s3, 1, 1);
   TST_B_TST(ret, 4, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
   unlink(fn);
@@ -157,6 +165,8 @@ int tst(void)
   TST_B_TST(ret, 14, (err != VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO));
 #endif
 
+  TST_B_TST(ret, 15, !vstr_sc_write_fd(s1, 1, 0, 444, NULL));
+  
   return (TST_B_RET(ret));
 }
 /* Crap for tst_coverage constants... None trivial to test.

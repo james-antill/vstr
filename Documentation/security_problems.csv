@@ -1,8 +1,10 @@
 "Advisory count","Red Hat Package","Red Hat Advisory","Type of Vulnerability","Range of Vulnerability"
 1,perl,http://rhn.redhat.com/errata/RHSA-2003-256.html,PE (can break out of safe.pm sandboxes),R
 1,perl,http://rhn.redhat.com/errata/RHSA-2003-256.html,XSS,R
-2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,IO,R
-2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,DF,R
+2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,IV ( (Cipher restrictions ignored on renegotiation)),R
+2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,DOS (infinite loop handling internal redirects and nested subrequests),R
+2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,DOS (temporarily, if using multiple ports),R
+2,apache httpd,http://rhn.redhat.com/errata/RHSA-2003-243.html,DOS (ftp proxy and IPV6 only),R
 3,openssh,http://rhn.redhat.com/errata/RHSA-2003-279.html,IO,R
 4,sendmail,http://rhn.redhat.com/errata/RHSA-2003-283.html,BO,R
 5,KDE,http://rhn.redhat.com/errata/RHSA-2003-269.html,PE (bad session credentials),L

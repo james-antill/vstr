@@ -1,4 +1,9 @@
- Latest stable release is 1.0.8
+ Latest stable release is 1.0.9
+
+2003-09-29: Version 1.0.9 ... Slightly more testing, now at over 96% code
+coverage. Another set of corner cases got fixed. More documentation, including
+a tutorial on custom formatters. Added a bunch of functions to help with
+creating custom formatters for number types.
 
 2003-09-22: Version 1.0.8 ... Slightly more testing, now at almost 96% code
 coverage. Another set of corner cases got fixed. More documentation, including

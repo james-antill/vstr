@@ -1,3 +1,57 @@
+2003-09-29  James Antill  <james@and.org>
+
+	* NEWS (2003-09-29): Relase-1.0.9
+
+2003-09-28  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_sc_add_cstr_grpnum_buf): Added function.
+
+	* include/vstr-extern.h (VSTR_SC_ADD_CSTR_GRPNUM_BUF): Added macro
+	function.
+
+	* src/vstr_sc.c (vstr_sc_fmt_cb_beg): Fix formatting problems with
+	printing numbers.
+	(vstr_sc_add_grpnum_buf): Added function.
+	(vstr_sc_conv_num_uint): Added function.
+	(vstr_sc_conv_num10_uint): Added function.
+	(vstr_sc_conv_num_ulong): Added function.
+	(vstr_sc_conv_num10_ulong): Added function.
+	(vstr_sc_conv_num_size): Added function.
+	(vstr_sc_conv_num10_size): Added function.
+	(vstr_sc_conv_num_uintmax): Added function.
+	(vstr_sc_conv_num10_uintmax): Added function.
+
+	* include/vstr-const.h (VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L): Added
+	flag.
+	(VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H): Added flag.
+	(VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM): Added flag.
+
+	* src/vstr.c (vstr__ref_cb_relink_bufnode_ref): Fix minor memory leak
+	when memory allocation failed in vstr__chg_node_buf_ref.
+
+2003-09-27  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_number): Remove #ifdef and use
+	internal type for long long.
+	(vstr__fmt_write_spec): Remove #ifdef and use internal type for
+	long long.
+	(vstr__fmt_fillin_spec):  Remove #ifdef and use internal type for
+	long long.
+
+	* include/vstr-internal.h: Create internal types for long long.
+
+2003-09-25  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_write_fd): Fix minor issues with doing
+	writes on block sockets, only a real problem when giving invalid
+	parameters.
+
+2003-09-23  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_REF_MAKE_STRDUP): Changed semantics to
+	allocate a NIL terminator, which means it can be used in
+	vstr_add_cstr_ref().
+
 2003-09-22  James Antill  <james@and.org>
 
 	* NEWS: Release-1.0.8

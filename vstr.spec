@@ -1,4 +1,4 @@
-%define ver      1.0.8
+%define ver      1.0.9
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -137,6 +137,7 @@ cp   \
  examples/Makefile \
  examples/ex_cat.c \
  examples/ex_csv.c \
+ examples/ex_gmp_factorials.c \
  examples/ex_hello_world.c \
  examples/ex_hello_world.h \
  examples/ex_hello_world_s.c \
@@ -221,6 +222,7 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/examples/Makefile
 %{devdoco}/examples/ex_cat.c
 %{devdoco}/examples/ex_csv.c
+%{devdoco}/examples/ex_gmp_factorials.c
 %{devdoco}/examples/ex_hello_world.c
 %{devdoco}/examples/ex_hello_world.h
 %{devdoco}/examples/ex_hello_world_s.c

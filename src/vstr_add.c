@@ -91,7 +91,7 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
 {
   Vstr_node *scan = NULL;
 
-  assert(*pos);
+  assert(base && pos && num && *pos);
 
   scan = vstr_base__pos(base, pos, num, TRUE);;
 
@@ -717,7 +717,8 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   if (!vstr__cache_iovec_alloc(base, base->num + sz))
     return (0);
 
-  vstr__cache_iovec_valid(base);
+  if (!vstr__cache_iovec_valid(base))
+    assert(FALSE);
 
   iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;

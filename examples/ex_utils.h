@@ -72,8 +72,8 @@
 
 
 
-#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\""); } while (FALSE)
-#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\""); } while (FALSE)
+#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\", FAILED at line %u", __LINE__); } while (FALSE)
+#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "Assert=\"" #x "\", FAILED at line %u", __LINE__); } while (FALSE)
 
 
 
@@ -144,8 +144,7 @@ static int io_put(Vstr_base *io_w, int fd)
     if (errno == EAGAIN)
       return (IO_BLOCK);
     
-    if (errno != EINTR)
-      err(EXIT_FAILURE, "write");
+    err(EXIT_FAILURE, "write");
   }
 
   return (IO_OK);
@@ -177,8 +176,6 @@ static int io_get(Vstr_base *io_r, int fd)
       return (IO_EOF);
     else if ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) && (errno == EAGAIN))
       return (IO_BLOCK);
-    else if ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) && (errno == EINTR))
-      return (IO_OK); /* ignore this */
     else if (ern)
       err(EXIT_FAILURE, "read");
   }
@@ -220,9 +217,10 @@ static int io_fd_set_o_nonblock(int fd)
   return (TRUE);
 }
 
-#ifndef VSTR_AUTOCONF_HAVE_OPEN64
-# define open64 open
-#endif
+#ifndef EX_UTILS_NO_USE_OPEN
+# ifndef VSTR_AUTOCONF_HAVE_OPEN64
+#  define open64 open
+# endif
 static int io_open(const char *filename)
 {
   int fd = open64(filename, O_RDONLY | O_NOCTTY);
@@ -235,6 +233,7 @@ static int io_open(const char *filename)
 
   return (fd);
 }
+#endif
 
 /* ************************ */
 /* generic helper functions */

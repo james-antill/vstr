@@ -70,21 +70,8 @@
 #define VSTR__FMT_ADD(x, y, z) vstr_add_buf((x), ((x)->len - pos_diff), y, z)
 #define VSTR__FMT_ADD_REP_CHR(x, y, z) \
  vstr_add_rep_chr((x), ((x)->len - pos_diff), y, z)
-
-/* print a number backwards (any base)... */
-#define VSTR__FMT_ADD_NUM(type, passed_num) do { \
- type num = passed_num; \
- \
- while (num) \
- { \
-  unsigned int char_offset = (num % spec->num_base); \
-  \
-  assert(i < sizeof(buf)); \
-  \
-  num /= spec->num_base; \
-  buf[sizeof(buf) - ++i] = digits[char_offset]; \
- } \
-} while (FALSE)
+#define VSTR__FMT_ADD_GRPNUM(x, y, z) \
+ vstr_sc_add_grpnum_buf((x), ((x)->len - pos_diff), y, z)
 
 /* deals well with INT_MIN */
 #define VSTR__FMT_S2U_NUM(unum, snum) do { \
@@ -98,7 +85,9 @@
    unum = snum; \
 } while (FALSE)
 
-static unsigned int vstr__grouping_mod(const char *grouping, unsigned int num)
+
+/* functions for outputing thousands grouping ... */
+unsigned int vstr__add_fmt_grouping_mod(const char *grouping, unsigned int num)
 {
   unsigned int tmp = 0;
 
@@ -116,17 +105,19 @@ static unsigned int vstr__grouping_mod(const char *grouping, unsigned int num)
   return (num - tmp);
 }
 
-static size_t vstr__grouping_num_sz(Vstr_base *base, size_t len)
+size_t vstr__add_fmt_grouping_num_sz(Vstr_base *base, size_t len)
 {
   size_t ret = 0;
   int done = FALSE;
-
+  const char *grouping = base->conf->loc->grouping;
+  size_t sep_len = base->conf->loc->thousands_sep_len;
+  
   while (len)
   {
-    unsigned int num = vstr__grouping_mod(base->conf->loc->grouping, len);
+    unsigned int num = vstr__add_fmt_grouping_mod(grouping, len);
 
     if (done)
-      ret += base->conf->loc->thousands_sep_len;
+      ret += sep_len;
 
     ret += num;
     assert(num <= len);
@@ -138,32 +129,6 @@ static size_t vstr__grouping_num_sz(Vstr_base *base, size_t len)
   return (ret);
 }
 
-static int vstr__grouping_add_num(Vstr_base *base, size_t pos_diff,
-                                  const char *buf, size_t len)
-{
-  int done = FALSE;
-
-  while (len)
-  {
-    unsigned int num = vstr__grouping_mod(base->conf->loc->grouping, len);
-
-    if (done &&
-        !VSTR__FMT_ADD(base, base->conf->loc->thousands_sep_str,
-                       base->conf->loc->thousands_sep_len))
-      return (FALSE);
-
-    if (!VSTR__FMT_ADD(base, buf, num))
-      return (FALSE);
-
-    buf += num;
-    assert(num <= len);
-    len -= num;
-
-    done = TRUE;
-  }
-
-  return (TRUE);
-}
 
 struct Vstr__fmt_spec
 {
@@ -174,9 +139,7 @@ struct Vstr__fmt_spec
   unsigned int data_i;
   wint_t data_wint;
   unsigned long data_l;
-#ifdef HAVE_LONG_LONG
-  unsigned long long data_L;
-#endif
+  Vstr__unsigned_long_long data_L;
   size_t data_sz;
   uintmax_t data_m;
 
@@ -210,195 +173,196 @@ struct Vstr__fmt_spec
 static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
                                 struct Vstr__fmt_spec *spec)
 {
- char sign = 0;
- /* used to hold the actual number */
- char buf[BUF_NUM_TYPE_SZ(uintmax_t)];
- size_t i = 0;
- size_t real_i = 0;
- const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
- const char *grouping = NULL;
- unsigned char grp_num = 0;
- const char *thou = NULL;
- size_t thou_len = 0;
- size_t max_p_i = 0;
- unsigned int field_width = 0;
- unsigned int precision = 1;
- unsigned int wr_hex_0x = FALSE;
+  char sign = 0;
+  /* used to hold the actual number */
+  char buf_beg[BUF_NUM_TYPE_SZ(uintmax_t)];
+  char *buf = buf_beg + sizeof(buf_beg);
+  size_t i = 0;
+  size_t real_i = 0;
+  const char *chrs_base = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const char *grouping = NULL;
+  unsigned char grp_num = 0;
+  const char *thou = NULL;
+  size_t thou_len = 0;
+  size_t max_p_i = 0;
+  unsigned int field_width = 0;
+  unsigned int precision = 1;
+  unsigned int wr_hex_0x = FALSE;
 
- if (spec->flags & PREC_USR)
-   precision = spec->precision;
+  if (spec->flags & PREC_USR)
+    precision = spec->precision;
 
- if (spec->field_width_usr)
-   field_width = spec->field_width;
+  if (spec->field_width_usr)
+    field_width = spec->field_width;
+  
+  /* if the usr specified a precision the '0' flag is ignored */
+  if (spec->flags & PREC_USR)
+    spec->flags &= ~ZEROPAD;
+  
+  if (spec->flags & LARGE)
+    chrs_base = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
- /* if the usr specified a precision the '0' flag is ignored */
- if (spec->flags & PREC_USR)
-   spec->flags &= ~ZEROPAD;
+  if (spec->flags & LEFT)
+    spec->flags &= ~ZEROPAD;
 
- if (spec->flags & LARGE)
-   digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
- if (spec->flags & LEFT)
-   spec->flags &= ~ZEROPAD;
-
- switch (spec->num_base)
- {
-  case 10:
-  case 16:
-  case 8:
-    break;
-
-  default:
-    assert(FALSE);
-    return (TRUE);
- }
-
- if (spec->flags & SIGN)
- {
-  if (spec->flags & NUM_IS_NEGATIVE)
-    sign = '-';
-  else
+  switch (spec->num_base)
   {
-   if (spec->flags & PLUS)
-     sign = '+';
-   else
-     if (spec->flags & SPACE)
-       sign = ' ';
-     else
-       ++field_width;
+    case 10:
+    case 16:
+    case 8:
+      break;
+      
+    default:
+      assert(FALSE);
+      return (TRUE);
+  }
+  
+  if (spec->flags & SIGN)
+  {
+    if (spec->flags & NUM_IS_NEGATIVE)
+      sign = '-';
+    else
+    {
+      if (spec->flags & PLUS)
+        sign = '+';
+      else
+        if (spec->flags & SPACE)
+          sign = ' ';
+        else
+          ++field_width;
+    }
+    
+    if (field_width) --field_width;
   }
 
-  if (field_width) --field_width;
- }
+  grouping = base->conf->loc->grouping;
+  thou_len = base->conf->loc->thousands_sep_len;
+  thou = base->conf->loc->thousands_sep_str;
 
- grouping = base->conf->loc->grouping;
- thou_len = base->conf->loc->thousands_sep_len;
- thou = base->conf->loc->thousands_sep_str;
+  grp_num = *grouping;
+  if (!thou_len || (grp_num >= SCHAR_MAX) || (grp_num <= 0))
+    spec->flags &= ~THOUSAND_SEP; /* don't do it */
 
- grp_num = *grouping;
- if (!thou_len || (grp_num >= SCHAR_MAX) || (grp_num <= 0))
-   spec->flags &= ~THOUSAND_SEP; /* don't do it */
+  switch (spec->int_type)
+  {
+    case VSTR_TYPE_FMT_UCHAR:
+      VSTR__ADD_FMT_NUM(unsigned char, spec->u.data_c, spec->num_base);  break;
+    case VSTR_TYPE_FMT_USHORT:
+      VSTR__ADD_FMT_NUM(unsigned short, spec->u.data_s, spec->num_base); break;
+    case VSTR_TYPE_FMT_UINT:
+      VSTR__ADD_FMT_NUM(unsigned int, spec->u.data_i, spec->num_base);   break;
+    case VSTR_TYPE_FMT_ULONG:
+      VSTR__ADD_FMT_NUM(unsigned long, spec->u.data_l, spec->num_base);  break;
+    case VSTR_TYPE_FMT_ULONG_LONG:
+      VSTR__ADD_FMT_NUM(Vstr__unsigned_long_long, spec->u.data_L,
+                        spec->num_base);                                 break;
+    case VSTR_TYPE_FMT_SIZE_T:
+      VSTR__ADD_FMT_NUM(size_t, spec->u.data_sz, spec->num_base);        break;
+      /* ptrdiff_t is actually promoted to intmax_t so that unsigned works */
+    case VSTR_TYPE_FMT_PTRDIFF_T: assert(FALSE); /* FALLTHROUGH */
+    case VSTR_TYPE_FMT_UINTMAX_T:
+      VSTR__ADD_FMT_NUM(uintmax_t, spec->u.data_m, spec->num_base);      break;
+    default: assert(FALSE); /* only valid types above */
+  }
+  
+  i = sizeof(buf_beg) - (buf - buf_beg);
+  
+  real_i = i;
+  if (spec->flags & THOUSAND_SEP)
+    real_i = vstr__add_fmt_grouping_num_sz(base, i);
 
- switch (spec->int_type)
- {
-   case VSTR_TYPE_FMT_UCHAR:
-     VSTR__FMT_ADD_NUM(unsigned char, spec->u.data_c); break;
-   case VSTR_TYPE_FMT_USHORT:
-     VSTR__FMT_ADD_NUM(unsigned short, spec->u.data_s); break;
-   case VSTR_TYPE_FMT_UINT:
-     VSTR__FMT_ADD_NUM(unsigned int, spec->u.data_i); break;
-   case VSTR_TYPE_FMT_ULONG:
-     VSTR__FMT_ADD_NUM(unsigned long, spec->u.data_l); break;
-#ifdef HAVE_LONG_LONG
-   case VSTR_TYPE_FMT_ULONG_LONG:
-     VSTR__FMT_ADD_NUM(unsigned long long, spec->u.data_L); break;
-#endif
-   case VSTR_TYPE_FMT_SIZE_T:
-     VSTR__FMT_ADD_NUM(size_t, spec->u.data_sz); break;
-     /* ptrdiff_t is actually promoted to intmax_t so that unsigned works */
-   case VSTR_TYPE_FMT_PTRDIFF_T: assert(FALSE); /* FALLTHROUGH */
-   case VSTR_TYPE_FMT_UINTMAX_T:
-     VSTR__FMT_ADD_NUM(uintmax_t, spec->u.data_m); break;
-   default: assert(FALSE); /* only valid types above */
- }
-
- real_i = i;
- if (spec->flags & THOUSAND_SEP)
-   real_i = vstr__grouping_num_sz(base, i);
-
- if (spec->flags & SPECIAL)
- {
-   if ((spec->num_base == 16) && !(spec->flags & NUM_IS_ZERO))
-   { /* only append 0x if it is a non-zero value, but not if precision == 0 */
-     wr_hex_0x = TRUE;
-     if (field_width) --field_width;
-     if (field_width) --field_width;
-   }
-   else
-   { /* hacky spec, if octal then we up the precision so that a 0 is printed as
-      * the first character, if there isn't a 0 there to start with
-      * -- even if num == 0 and precision == 0 */
-     if ((spec->num_base == 8) &&
-         (((spec->flags & NUM_IS_ZERO) && !precision) ||
-          (precision <= real_i)))
-       precision = real_i + 1;
-   }
- }
-
- if (real_i > precision)
-   max_p_i = real_i;
- else
-   max_p_i = precision;
-
- if (field_width < max_p_i)
-   field_width = 0;
- else
-   field_width -= max_p_i;
-
- if (!(spec->flags & (ZEROPAD | LEFT)))
-   if (field_width > 0)
-   { /* right justify number, with spaces -- zeros done after sign/spacials */
-     if (!VSTR__FMT_ADD_REP_CHR(base, ' ', field_width))
-       goto failed_alloc;
-     field_width = 0;
-   }
-
- if (sign)
-   if (!VSTR__FMT_ADD(base, &sign, 1))
-     goto failed_alloc;
-
- if (spec->flags & SPECIAL)
- {
-   if (wr_hex_0x)
-   {
-     if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1))
-       goto failed_alloc;
-     if (!VSTR__FMT_ADD(base, (digits + 33), 1))
-       goto failed_alloc;
-   }
- }
-
- if (!(spec->flags & LEFT))
-   if (field_width > 0)
-   { /* right justify number, with zeros */
-     assert(spec->flags & ZEROPAD);
-     if (!VSTR__FMT_ADD_REP_CHR(base, '0', field_width))
-       goto failed_alloc;
-     field_width = 0;
-   }
-
- if (precision > real_i) /* make number the desired length */
- {
+  if (spec->flags & SPECIAL)
+  {
+    if ((spec->num_base == 16) && !(spec->flags & NUM_IS_ZERO))
+    { /* only append 0x if it is a non-zero value, but not if precision == 0 */
+      wr_hex_0x = TRUE;
+      if (field_width) --field_width;
+      if (field_width) --field_width;
+    }
+    else
+    { /* hacky spec, if octal then we up the precision so that a 0 is printed as
+       * the first character, if there isn't a 0 there to start with
+       * -- even if num == 0 and precision == 0 */
+      if ((spec->num_base == 8) &&
+          (((spec->flags & NUM_IS_ZERO) && !precision) ||
+           (precision <= real_i)))
+        precision = real_i + 1;
+    }
+  }
+  
+  if (real_i > precision)
+    max_p_i = real_i;
+  else
+    max_p_i = precision;
+  
+  if (field_width < max_p_i)
+    field_width = 0;
+  else
+    field_width -= max_p_i;
+  
+  if (!(spec->flags & (ZEROPAD | LEFT)))
+    if (field_width > 0)
+    { /* right justify number, with spaces -- zeros done after sign/spacials */
+      if (!VSTR__FMT_ADD_REP_CHR(base, ' ', field_width))
+        goto failed_alloc;
+      field_width = 0;
+    }
+  
+  if (sign)
+    if (!VSTR__FMT_ADD_REP_CHR(base, sign, 1))
+      goto failed_alloc;
+  
+  if (spec->flags & SPECIAL)
+  {
+    if (wr_hex_0x)
+    {
+      if (!VSTR__FMT_ADD_REP_CHR(base, '0', 1))
+        goto failed_alloc;
+      if (!VSTR__FMT_ADD_REP_CHR(base, chrs_base[33], 1))
+        goto failed_alloc;
+    }
+  }
+  
+  if (!(spec->flags & LEFT))
+    if (field_width > 0)
+    { /* right justify number, with zeros */
+      assert(spec->flags & ZEROPAD);
+      if (!VSTR__FMT_ADD_REP_CHR(base, '0', field_width))
+        goto failed_alloc;
+      field_width = 0;
+    }
+  
+  if (precision > real_i) /* make number the desired length */
+  {
    if (!VSTR__FMT_ADD_REP_CHR(base, '0', precision - real_i))
      goto failed_alloc;
- }
+  }
 
- if (i)
- {
-   /* output number */
-   if (spec->flags & THOUSAND_SEP)
-   {
-     if (!vstr__grouping_add_num(base, pos_diff, buf + sizeof(buf) - i, i))
-       goto failed_alloc;
-   }
-   else
-   {
-     if (!VSTR__FMT_ADD(base, buf + sizeof(buf) - i, i))
-       goto failed_alloc;
-   }
- }
+  if (i)
+  {
+    int ret = FALSE;
+    
+    /* output number */
+    if (spec->flags & THOUSAND_SEP)
+      ret = VSTR__FMT_ADD_GRPNUM(base, buf, i);
+    else
+      ret = VSTR__FMT_ADD(base, buf, i);
+    
+    if (!ret)
+      goto failed_alloc;
+  }
 
- if (field_width > 0)
- {
-   assert(spec->flags & LEFT);
-   if (!VSTR__FMT_ADD_REP_CHR(base, ' ', field_width))
-     goto failed_alloc;
- }
+  if (field_width > 0)
+  {
+    assert(spec->flags & LEFT);
+    if (!VSTR__FMT_ADD_REP_CHR(base, ' ', field_width))
+      goto failed_alloc;
+  }
 
- return (TRUE);
+  return (TRUE);
 
  failed_alloc:
- return (FALSE);
+  return (FALSE);
 }
 
 void vstr__add_fmt_free_conf(Vstr_conf *conf)
@@ -912,9 +876,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);
-#ifdef HAVE_LONG_LONG
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, long long);
-#endif
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, Vstr__long_long);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);
@@ -1104,18 +1066,16 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
               u.data_l = va_arg(ap, unsigned long);
             if (!u.data_l) spec->flags |= NUM_IS_ZERO;
             break;
-#ifdef HAVE_LONG_LONG
           case VSTR_TYPE_FMT_ULONG_LONG:
             if (spec->flags & SIGN)
             {
-             long long tmp = va_arg(ap, long long);
+             Vstr__long_long tmp = va_arg(ap, Vstr__long_long);
              VSTR__FMT_ABS_NUM(u.data_L, tmp);
             }
             else
-              u.data_L = va_arg(ap, unsigned long long);
+              u.data_L = va_arg(ap, Vstr__unsigned_long_long);
             if (!u.data_L) spec->flags |= NUM_IS_ZERO;
             break;
-#endif
           case VSTR_TYPE_FMT_SIZE_T:
             if (spec->flags & SIGN)
             {
@@ -1166,9 +1126,7 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);
-#ifdef HAVE_LONG_LONG
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, long long);
-#endif
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, Vstr__long_long);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);
           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);

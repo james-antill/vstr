@@ -212,6 +212,8 @@ int tst(void)
   TST_B_TST(ret, 29, (err != VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO));
 #endif
 
+  TST_B_TST(ret, 30, !vstr_sc_read_iov_fd(s1, s1->len, -1, 0, 0, NULL));
+
   return (TST_B_RET(ret));
 }
 /* Crap for tst_coverage constants... None trivial to test.
