@@ -66,6 +66,7 @@ int tst(void)
   int ret = 0;
   unsigned int ips[8];
   unsigned int scan = 0;
+  int mfail_count = 0;
 
   vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
 
@@ -83,7 +84,6 @@ int tst(void)
     struct in6_addr ipv6;
     unsigned int count = 0;
     int fmtret = 0;
-    int mfail_count = 0;
     
     srand(time(NULL) ^ getpid());
 
@@ -175,18 +175,17 @@ int tst(void)
 
   memset(ips, 0, sizeof(ips));
 
-#define TST_IPV6N(num, sv, cstr, type) do { \
-  vstr_del((sv), 1, (sv)->len); \
-  strcpy(buf, cstr); \
-  vstr_add_fmt((sv), 0, "${ipv6.v:%p%u}", ips, type); \
-  TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
-  if (ret) { PRNT_VSTR(sv); PRNT_CSTR(buf); } \
+#define TST_IPV6N(num, sv, cstr, type) do {                             \
+    vstr_del((sv), 1, (sv)->len);                                       \
+    vstr_add_fmt((sv), 0, "${ipv6.v:%p%u}", ips, type);                 \
+    TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, cstr)); \
+    if (ret) { PRNT_VSTR(sv); PRNT_CSTR(cstr); }                        \
  } while (FALSE)
-#define TST_IPV6C(num, sv, cstr, type, cidr) do { \
-  vstr_del((sv), 1, (sv)->len); \
-  strcpy(buf, cstr); \
-  vstr_add_fmt((sv), 0, "${ipv6.v+C:%p%u%u}", ips, type, cidr); \
-  TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, buf)); \
+#define TST_IPV6C(num, sv, cstr, type, cidr) do {                       \
+    vstr_del((sv), 1, (sv)->len);                                       \
+    vstr_add_fmt((sv), 0, "${ipv6.v+C:%p%u%u}", ips, type, cidr);       \
+    TST_B_TST(ret, (num), !VSTR_CMP_CSTR_EQ((sv), 1, (sv)->len, cstr)); \
+    if (ret) { PRNT_VSTR(sv); PRNT_CSTR(cstr); }                        \
  } while (FALSE)
 
   TST_IPV6N( 5, s3, "::", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
@@ -251,10 +250,38 @@ int tst(void)
   ips[1] = 0;
   TST_IPV6N(18, s3, "::2:3:4:5:6:7", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT);
   TST_IPV6C(18, s3, "::2:3:4:5:6:7/64", VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 64);
-  TST_IPV6N(18, s3, "::2:3:4:5:0.6.0.7", VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT);
-  TST_IPV6C(18, s3, "::2:3:4:5:0.6.0.7/32",
-            VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 32);
 
+  scan = 0;
+  while (scan < 8)
+  {
+    vstr_del(s3, 1, s3->len);
+    mfail_count = 3;
+    do
+    {
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count / 4);    
+    } while (!vstr_add_fmt(s3, 0, "%*s${ipv6.v:%p%u}", scan, "", ips,
+                           VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT));
+    tst_mfail_num(0);
+    TST_B_TST(ret, 18, !vstr_cmp_cstr_eq(s3, 1 + scan, s3->len - scan,
+                                         "::2:3:4:5:0.6.0.7"));
+    
+    vstr_del(s3, 1, s3->len);
+    mfail_count = 3;
+    do
+    {
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count / 4);
+    }
+    while (!vstr_add_fmt(s3, 0, "%*s${ipv6.v+C:%p%u%u}", scan, "", ips,
+                         VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 32));
+    tst_mfail_num(0);
+    TST_B_TST(ret, 18, !vstr_cmp_cstr_eq(s3, 1 + scan, s3->len - scan,
+                                         "::2:3:4:5:0.6.0.7/32"));
+
+    ++scan;
+  }
+  
   ips[6] = 0xFFFF;
   ips[7] = 0xFFFF;
 

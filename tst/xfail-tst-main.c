@@ -1,3 +1,5 @@
+#define VSTR_COMPILE_INLINE 0
+
 #include "tst-main.c"
 
 char *xfail_dummy_ptr = NULL;
@@ -15,7 +17,6 @@ int tst(void)
   xfail_NULL_ptr = xfail_dummy_ptr;
   
   if ((fd = open("/dev/null", O_WRONLY)) == -1) return (EXIT_SUCCESS);
-  if (dup2(fd, 1) == -1)                        return (EXIT_SUCCESS);
   if (dup2(fd, 2) == -1)                        return (EXIT_SUCCESS);
 #else
   xfail_NULL_ptr = xfail_dummy_ptr;

@@ -243,7 +243,7 @@ Member: fmt_I
  passed to custom specifiers.
 
 
-Section: struct Vstr_iter (aka. Vstr iterator)
+Section: struct Vstr_iter (aka. Vstr iteration)
 
 Member: ptr
 
@@ -273,8 +273,8 @@ Member: num
 
  Explanation:
 
-  This member is the length of the number of the current part of the entire
- iteration of the Vstr string.
+  This member is the number of the current node given an iteration of the
+ entire Vstr string.
 
  Note:
 

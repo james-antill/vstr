@@ -117,7 +117,7 @@
 	</td></tr></table>
 
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.11</h2>
+	  <h2>Current version is 1.0.12</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -133,7 +133,10 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
 	    </li>
             <li> I build RPMs for i386, they are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/rpms/">ftp</a> and
-              <a href="rpms/"><b>http</b></a>. <a href="http://rpm.pbone.net/index.php3/stat/15/pakman/1206/com/James%20Antill%20%3Cjames_and_org%3E.html">Pbone.net</a> seem to generate rpms for other architectures (although they are often older versions).
+              <a href="rpms/"><b>http</b></a>. <br>
+	      <a href="http://rpm.pbone.net/index.php3/stat/15/pakman/1206/com/James%20Antill%20%3Cjames_and_org%3E.html">Pbone.net</a> seem to generate rpms for other architectures (although they are often older versions). <br>
+	      <a href="http://www.freshports.org/devel/vstr/">Freshports</a>
+	      seems to have at least a FreeBSD version.
 	    </li>
             <li> ChangeLog file can be found
               <a href="ChangeLog">here</a>
@@ -251,7 +254,7 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
 	  <p>
 	    The Vstr string
 	    library comes with a "make check" test suite with almost
-	  <emp>ten thousand lines</emp> of code in it.
+	  <emp>twelve thousand lines</emp> of code in it.
 	  This is over a third of the size of the library itself, and more
 	  lines of code than some string library implementations.
 	</p><p>
@@ -263,7 +266,7 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
 	    suite).
 	  </p><p>
 	    Using the coverage analysis available with gcc the test suite has
-	  <emp>coverage of over 96% of the source</emp>.
+	  <a href="coverage/"><b>coverage of over 99.8% of the source</b></a>.
 	</p><p>
 	    Note that even if the library had 100% coverage, that still
 	    doesn't mean that there are no bugs in the code (as you need a
@@ -320,7 +323,7 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
 <!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2><a name="reference"></a>Reference Documentation</h2>
+	  <h2><a name="reference"></a>API Reference Documentation</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td><p>
@@ -359,64 +362,86 @@ there is any).
 <!-- Section -->
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2><a name="APItp"></a>Reference to the layout of the API</h2>
+	  <h2><a name="APItp"></a>Mental model to the layout of the API</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td><p>
 
  At first glace the Vstr API <b>looks huge</b> as there are over
-<b>Two hundred and seventy</b> functions. However the API was designed so
+<b>Two hundred and eighty</b> functions. However the API was designed so
 that you can mentally build functions from an API template ... so
-instead of having to remember 140 functions you just need to remember
+instead of having to remember 280 functions you just need to remember
 10 to 20 pieces of the API template.
 
 </p><p>
- All Vstr functions obey one of the following template rules...<br>
+ Vstr functions try to obey a template where each part alternates between an
+object name and an action like...<br>
  <br>
-"vstr_" &lt;verb&gt; <br>
-"vstr_" &lt;verb&gt;  &lt;noun&gt; <br>
-"vstr_" &lt;verb&gt;  &lt;noun&gt;  &lt;verb&gt; <br>
+&lt;namespace&gt; "_" &lt;verb&gt; <br>
+&lt;namespace&gt; "_" &lt;verb&gt; "_" &lt;noun&gt; <br>
+&lt;namespace&gt; "_" &lt;verb&gt; "_" &lt;noun&gt; "_" &lt;verb&gt; <br>
+ <br>
+...or...<br>
+ <br>
+&lt;namespace&gt; "_" &lt;noun&gt; <br>
+&lt;namespace&gt; "_" &lt;noun&gt; "_" &lt;verb&gt; <br>
+&lt;namespace&gt; "_" &lt;noun&gt; "_" &lt;verb&gt; "_" &lt;noun&gt; <br>
  <br>
 ...a good example is searching for data in a Vstr string, here is a list of the
 functions that you can use to search for data in a vstr...<br>
  <br>
- vstr_srch_chr_fwd() <br>
- vstr_srch_chr_rev() <br>
- vstr_srch_buf_fwd() <br>
- vstr_srch_buf_rev() <br>
- vstr_srch_chrs_fwd() <br>
- vstr_srch_chrs_rev() <br>
- vstr_srch_vstr_fwd() <br>
- vstr_srch_vstr_rev() <br>
- vstr_srch_case_chr_fwd() <br>
- vstr_srch_case_chr_rev() <br>
- vstr_srch_case_buf_fwd() <br>
- vstr_srch_case_buf_rev() <br>
- vstr_srch_case_vstr_fwd() <br>
- vstr_srch_case_vstr_rev() <br>
  vstr_csrch_chrs_fwd() <br>
  vstr_csrch_chrs_rev() <br>
- vstr_spn_chrs_fwd() <br>
- vstr_spn_chrs_rev() <br>
+ vstr_csrch_cstr_chrs_fwd() <br>
+ vstr_csrch_cstr_chrs_rev() <br>
+ vstr_srch_buf_fwd() <br>
+ vstr_srch_buf_rev() <br>
+ vstr_srch_case_buf_fwd() <br>
+ vstr_srch_case_buf_rev() <br>
+ vstr_srch_case_chr_fwd() <br>
+ vstr_srch_case_chr_rev() <br>
+ vstr_srch_case_cstr_buf_fwd() <br>
+ vstr_srch_case_cstr_buf_rev() <br>
+ vstr_srch_case_vstr_fwd() <br>
+ vstr_srch_case_vstr_rev() <br>
+ vstr_srch_chr_fwd() <br>
+ vstr_srch_chr_rev() <br>
+ vstr_srch_chrs_fwd() <br>
+ vstr_srch_chrs_rev() <br>
+ vstr_srch_cstr_buf_fwd() <br>
+ vstr_srch_cstr_buf_rev() <br>
+ vstr_srch_cstr_chrs_fwd() <br>
+ vstr_srch_cstr_chrs_rev() <br>
+ vstr_srch_vstr_fwd() <br>
+ vstr_srch_vstr_rev() <br>
+
  vstr_cspn_chrs_fwd() <br>
  vstr_cspn_chrs_rev() <br>
+ vstr_cspn_cstr_chrs_fwd() <br>
+ vstr_cspn_cstr_chrs_rev() <br>
+ vstr_spn_chrs_fwd() <br>
+ vstr_spn_chrs_rev() <br>
+ vstr_spn_cstr_chrs_fwd() <br>
+ vstr_spn_cstr_chrs_rev() <br>
  <br>
-...which is a <u>lot</u> of functions (and that doesn't even include the
-CSTR macro function variants) just to search for some data. However
-that can be broken up into... <br>
+...which is a <u>lot</u> of functions just to search for
+some data. However that can be broken up into... <br>
 
 <table>
 <tr>
-<td>"vstr_"</td><td>&lt;verb&gt;</td><td>&lt;noun&gt;</td><td>&lt;verb&gt;</td>
+<td>&lt;namespace&gt;</td><td>&lt;verb&gt;</td><td>&lt;noun&gt;</td><td>&lt;verb&gt;</td>
 </tr>
-<tr><td>"vstr_"</td><td> srch      </td><td> chr  </td><td> fwd </td></tr>
-<tr><td>       </td><td> srch_case </td><td> buf  </td><td> rev </td></tr>
-<tr><td>       </td><td> csrch     </td><td> vstr </td><td>     </td></tr>
-<tr><td>       </td><td> spn       </td><td> chrs </td><td>     </td></tr>
-<tr><td>       </td><td> cspn      </td><td>      </td><td>     </td></tr>
+<tr><td>"vstr_"</td><td> cspn      </td><td> buf       </td><td> fwd </td></tr>
+<tr><td>       </td><td> csrch     </td><td> chr       </td><td> rev </td></tr>
+<tr><td>       </td><td> spn       </td><td> chrs      </td><td>     </td></tr>
+<tr><td>       </td><td> srch      </td><td> cstr_buf  </td><td>     </td></tr>
+<tr><td>       </td><td> srch_case </td><td> cstr_chrs </td><td>     </td></tr>
+<tr><td>       </td><td>           </td><td> vstr      </td><td>     </td></tr>
 </table>
  <br>
-...which is much less information to remember.
+...which is much less information to remember. It is also consistent in that
+the same object names are used everywhere and are prefixed by cstr_ when
+they're length is assumed by looking for a NIL terminator.
 
 </p></td></tr>
 
@@ -694,7 +719,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Jan 26 05:42:27 EST 2004
+Last modified: Thu Apr 15 02:31:25 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

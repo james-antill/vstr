@@ -39,6 +39,7 @@
 #undef mode_t
 #undef off_t
 #undef off64_t
+#define HAVE_OFF64_T 0
 #undef pid_t
 #undef size_t
 #undef ssize_t
@@ -47,6 +48,7 @@
 #undef ptrdiff_t
 #undef intmax_t
 #undef uintmax_t
+#undef uintptr_t
 #undef HAVE_LONG_LONG
 
 /* auto macors... */

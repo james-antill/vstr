@@ -18,6 +18,7 @@
 
  pre.c2html  span.if          { color: #44F; }
  pre.c2html  span.else        { color: #44F; }
+ pre.c2html  span.do          { color: #44F; }
  pre.c2html  span.while       { color: #44F; }
  pre.c2html  span.for         { color: #44F; }
  pre.c2html  span.return      { color: #628; }
@@ -54,6 +55,7 @@
  pre.c2html  span.mpzt        { color: #44F; font-weight: bold; }
 
  pre.c2html  span.exit        { color: #628; }
+ pre.c2html  span.abort       { color: #628; font-weight: bold; }
  pre.c2html  span.err         { color: #F22; font-weight: bold; }
  pre.c2html  span.warn        { color: #F22; }
  pre.c2html  span.assert      { color: #F22; }

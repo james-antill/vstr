@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	if (!(s1 = vstr_make_base(NULL))) abort();
 
 	ns_tot = vstr_add_netstr_beg(s1, s1->len);
-	while (scan < argc)
+	while (scan < (unsigned)argc)
 	{
 		unsigned int ns = vstr_add_netstr_beg(s1, s1->len);
 		vstr_add_cstr_ptr(s1, s1->len, argv[scan]);

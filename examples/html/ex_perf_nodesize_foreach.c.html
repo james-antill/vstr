@@ -71,13 +71,13 @@
 
 
  <span class="comment">/* this is M_TRIM_THRESH */</span>
-#<span class="cppdefine">define</span> TST_ALLOC_TRIM() do { \
+#<span class="cppdefine">define</span> TST_ALLOC_TRIM() <span class="do">do</span> { \
   struct mallinfo mal_info = mallinfo(); \
   trig_trim = malloc((128 * 1024) + mal_info.fordblks); \
   <span class="if">if</span> (!trig_trim) <span class="goto">goto</span> failed; \
 } <span class="while">while</span> (<span class="num0">0</span>)
 
-#<span class="cppdefine">define</span> TST_CLEANUP_TRIM(x) do { \
+#<span class="cppdefine">define</span> TST_CLEANUP_TRIM(x) <span class="do">do</span> { \
   <span class="unsigned">unsigned</span> <span class="int">int</span> clean_extra = num; \
   \
   <span class="if">if</span> (extra) \
@@ -294,7 +294,7 @@
 
 </pre>
 <!-- C to html convertion of ex_perf_nodesize_foreach.c -->
-<!--   done on Mon Jan 26 05:27:54 2004
+<!--   done on Sun May  9 02:29:54 2004
  -->
 <!--   done by ex_highlight -->
 

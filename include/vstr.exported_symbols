@@ -126,7 +126,6 @@ export_ref
 extern_inline_add_buf
 extern_inline_add_rep_chr
 extern_inline_del
-extern_inline_make_cache_pos
 extern_inline_sects_add
 fmt_add
 fmt_del
@@ -135,7 +134,11 @@ free_base
 free_conf
 free_spare_nodes
 init
+iter_len
+iter_num
+iter_pos
 iter_fwd_beg
+iter_fwd_chr
 iter_fwd_nxt
 make_base
 make_conf
@@ -149,6 +152,7 @@ parse_ipv6
 parse_long
 parse_netstr
 parse_netstr2
+parse_num
 parse_short
 parse_uint
 parse_uintmax
@@ -187,9 +191,13 @@ sc_conv_num_ulong
 sc_dirname
 sc_fmt_add_all
 sc_fmt_add_bkmg_bits_uint
+sc_fmt_add_bkmg_bits_uintmax
 sc_fmt_add_bkmg_bit_uint
+sc_fmt_add_bkmg_bit_uintmax
 sc_fmt_add_bkmg_Bytes_uint
+sc_fmt_add_bkmg_Bytes_uintmax
 sc_fmt_add_bkmg_Byte_uint
+sc_fmt_add_bkmg_Byte_uintmax
 sc_fmt_add_buf
 sc_fmt_add_ipv4_ptr
 sc_fmt_add_ipv4_vec
@@ -269,7 +277,6 @@ sub_ref
 sub_rep_chr
 sub_vstr
 swap_conf
-version_func
 wrap_memchr(USE_WRAP_MEMCHR)
 wrap_memcmp(USE_WRAP_MEMCMP)
 wrap_memcpy(USE_WRAP_MEMCPY)

@@ -1,6 +1,6 @@
 #define VSTR_DEL_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,18 +24,19 @@
 
 static void vstr__cache_iovec_reset(Vstr_base *base)
 {
-  assert(!base->num);
-  assert(!base->len);
+  ASSERT(!base->num);
+  ASSERT(!base->len);
 
   if (!(base->cache_available && VSTR__CACHE(base) &&
         VSTR__CACHE(base)->vec && VSTR__CACHE(base)->vec->sz))
     return;
 
-  VSTR__CACHE(base)->vec->off = 0;
   base->iovec_upto_date = TRUE;
 
   if (VSTR__CACHE(base)->vec->sz > base->conf->iov_min_offset)
     VSTR__CACHE(base)->vec->off = base->conf->iov_min_offset;
+  else
+    VSTR__CACHE(base)->vec->off = 0;
 }
 
 static void vstr__cache_iovec_del_node_end(Vstr_base *base, unsigned int num,

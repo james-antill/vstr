@@ -7,7 +7,8 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 tst_regression = \
     regression/tst_regression_vec1 \
     regression/tst_regression_cstr1 \
-    regression/tst_regression_cstr2
+    regression/tst_regression_cstr2 \
+    regression/tst_regression_fmt1
 
 xfail_tst_regression =
 
@@ -158,7 +159,8 @@ xfail_tst_fmt = \
     fmt/xfail_tst_fmt_invalid_fmt \
     fmt/xfail_tst_fmt_invalid_fmt2 \
     fmt/xfail_tst_fmt_invalid_fmt3 \
-    fmt/xfail_tst_fmt_invalid_ipv6
+    fmt/xfail_tst_fmt_invalid_ipv6 \
+    fmt/xfail_tst_fmt_invalid_ipv6_cidr
 
 tst_loc = \
     loc/tst_loc_num
@@ -187,9 +189,22 @@ tst_sc = \
     sc/tst_sc_basename \
     sc/tst_sc_dirname \
     sc/tst_sc_grpnum \
-    sc/tst_sc_conv
+    sc/tst_sc_conv \
+    sc/tst_sc_overflow \
+    sc/tst_sc_uio_maxiov \
+    sc/tst_sc_fmt \
+    sc/tst_sc_close
 
 xfail_tst_sc = \
+    sc/xfail_tst_sc_write_fd_oob_pos \
+    sc/xfail_tst_sc_write_fd_oob_len \
+    sc/xfail_tst_sc_write_fd_NULL \
+    sc/xfail_tst_sc_read_iov_file_slow_oob_pos \
+    sc/xfail_tst_sc_read_iov_file_slow_NULL \
+    sc/xfail_tst_sc_read_iov_file_fast_oob_pos \
+    sc/xfail_tst_sc_read_len_file_slow_oob_pos \
+    sc/xfail_tst_sc_read_len_file_slow_NULL \
+    sc/xfail_tst_sc_read_len_file_fast_oob_pos \
     sc/xfail_tst_sc_conv_uint_NULL \
     sc/xfail_tst_sc_conv_uint_len
 
@@ -284,7 +299,8 @@ tst_x = \
     x/tst_x_ref \
     x/tst_x_ref_make_ptr_NULL \
     x/tst_x_swap_conf \
-    x/tst_x_version
+    x/tst_x_version \
+    x/tst_x_iter
 
 xfail_tst_x = \
     x/xfail_tst_x_abi_call1 \

@@ -1,6 +1,6 @@
 #define VSTR_PARSE_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,18 @@
 /* functions for parsing data out of the Vstr */
 #include "main.h"
 
+#ifdef HAVE_ASCII_ALPHA
+# define VSTR__PARSE_NUM_USE_LOCAL 0
+#else
+# define VSTR__PARSE_NUM_USE_LOCAL 1
+#endif
+
 
 /* basically uses: [ ]*[-+](0x|0X|0)[0-9a-z_]+ */
-static int vstr__parse_num(const Vstr_base *base,
-                           size_t *passed_pos, size_t *passed_len,
-                           unsigned int flags, int *is_neg, unsigned int *err)
+static int vstr__parse_num_beg(const Vstr_base *base,
+                               size_t *passed_pos, size_t *passed_len,
+                               unsigned int flags, int *is_neg, int *is_zeroed,
+                               unsigned int *err)
 {
   size_t pos = *passed_pos;
   size_t len = *passed_len;
@@ -106,6 +113,7 @@ static int vstr__parse_num(const Vstr_base *base,
   }
 
   tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
+  *is_zeroed = !!tmp;
   if ((tmp == 1) && (auto_base || (num_base == 16) || (num_base ==  2)))
   {
     char xX[2];
@@ -182,10 +190,14 @@ static int vstr__parse_num(const Vstr_base *base,
     }
   }
   else if (tmp && auto_base)
+  {
     num_base =  8;
+    --tmp;
+  }
   else if (auto_base)
     num_base = 10;
-  else if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
+
+  if (tmp && (flags & VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO))
   {
     *passed_len = len - 1;
     if ((tmp != 1) || (len != 1))
@@ -209,157 +221,198 @@ static int vstr__parse_num(const Vstr_base *base,
   return (num_base);
 }
 
-#define VSTR__PARSE_NUM_BEG_A(num_type) \
-  unsigned int dummy_err; \
-  num_type ret = 0; \
-  unsigned int num_base = 0; \
-  int is_neg = FALSE; \
-  size_t orig_len = len; \
-  unsigned char sym_sep = '_'; \
-  unsigned int ascii_num_end = 0x39; \
-  unsigned int ascii_let_low_end = 0x7A; \
-  unsigned int ascii_let_high_end = 0x5A; \
-  unsigned int local_num_end = '9'; \
-  const char *local_let_low = "abcdefghijklmnopqrstuvwxyz"; \
-  const char *local_let_high = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; \
-  \
-  if (ret_len) *ret_len = 0; \
-  if (!err) err = &dummy_err; \
-  *err = VSTR_TYPE_PARSE_NUM_ERR_NONE; \
-  \
-  if (!(num_base = vstr__parse_num(base, &pos, &len, flags, &is_neg, err))) \
-    return (0); \
-  else if (num_base == 1) goto ret_num_len
+#define VSTR__PARSE_NUM_BEG_A(num_type)                                 \
+    unsigned int dummy_err;                                             \
+    num_type ret = 0;                                                   \
+    unsigned int num_base = 0;                                          \
+    int is_neg = FALSE;                                                 \
+    int is_zeroed = FALSE;                                              \
+    size_t orig_len = len;                                              \
+    unsigned char sym_sep = '_';                                        \
+    unsigned int ascii_num_end = 0x39;                                  \
+    unsigned int ascii_let_low_end = 0x7A;                              \
+    unsigned int ascii_let_high_end = 0x5A;                             \
+    unsigned int local_num_end = '9';                                   \
+    const char *local_let_low  = "abcdefghijklmnopqrstuvwxyz";          \
+    const char *local_let_high = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";          \
+                                                                        \
+    if (ret_len) *ret_len = 0;                                          \
+    if (!err) err = &dummy_err;                                         \
+    *err = VSTR_TYPE_PARSE_NUM_ERR_NONE;                                \
+                                                                        \
+    if (!(num_base = vstr__parse_num_beg(base, &pos, &len, flags,       \
+                                         &is_neg, &is_zeroed, err)))    \
+      return (0);                                                       \
+    else if (num_base == 1) goto ret_num_len
 
-#define VSTR__PARSE_NUM_BEG_S(num_type) \
-  VSTR__PARSE_NUM_BEG_A(num_type)
+#define VSTR__PARSE_NUM_BEG_S(num_type)                         \
+    VSTR__PARSE_NUM_BEG_A(num_type);                            \
+                                                                \
+    if (is_neg && (flags & VSTR_FLAG_PARSE_NUM_NO_NEGATIVE))    \
+    {                                                           \
+      *err = VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE;                  \
+      return (0);                                               \
+    }
+       
+#define VSTR__PARSE_NUM_BEG_U(num_type)         \
+    VSTR__PARSE_NUM_BEG_A(num_type);            \
+                                                \
+    if (is_neg)                                 \
+    {                                           \
+      *err = VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE;  \
+      return (0);                               \
+    }
 
-#define VSTR__PARSE_NUM_BEG_U(num_type) \
-  VSTR__PARSE_NUM_BEG_A(num_type); \
-  \
-  if (is_neg) \
-  { \
-    *err = VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE; \
-    return (0); \
-  }
-
-#define VSTR__PARSE_NUM_ASCII() do { \
-  if (!(flags & VSTR_FLAG_PARSE_NUM_LOCAL)) \
-  { \
-    sym_sep = 0x5F; \
-    \
-    if (num_base <= 10) \
-      ascii_num_end = 0x30 + num_base - 1; \
-    else if (num_base > 10) \
-    { \
-      ascii_let_low_end = 0x61 + (num_base - 11); \
-      ascii_let_high_end = 0x41 + (num_base - 11); \
-    } \
-  } \
-  else if (num_base <= 10) \
-    local_num_end = '0' + num_base - 1; \
+#define VSTR__PARSE_NUM_ASCII() do {                    \
+      if (!(flags & VSTR_FLAG_PARSE_NUM_LOCAL))         \
+      {                                                 \
+        sym_sep = 0x5F;                                 \
+                                                        \
+        if (num_base <= 10)                             \
+          ascii_num_end = 0x30 + num_base - 1;          \
+        else if (num_base > 10)                         \
+        {                                               \
+          ascii_let_low_end = 0x61 + (num_base - 11);   \
+          ascii_let_high_end = 0x41 + (num_base - 11);  \
+        }                                               \
+      }                                                 \
+      else if (num_base <= 10)                          \
+        local_num_end = '0' + num_base - 1;             \
 } while (FALSE)
 
-#define VSTR__PARSE_NUM_LOOP(num_type) do { \
-  while (len) \
-  { \
-    unsigned char scan = vstr_export_chr(base, pos); \
-    const char *end = NULL; \
-    unsigned int add_num = 0; \
-    num_type old_ret = ret; \
-    \
-    if (ret && (scan == sym_sep)) \
-    { \
-      if (!(flags & VSTR_FLAG_PARSE_NUM_SEP)) break; \
-      --len; \
-      ++pos; \
-      continue; \
-    } \
-    else if (flags & VSTR_FLAG_PARSE_NUM_LOCAL) \
-    { \
-      if ((scan >= '0') && (scan <= local_num_end)) \
-        add_num = (scan - '0'); \
-      else if (num_base <= 10) \
-        break; \
-      else if ((end = vstr_wrap_memchr(local_let_low, scan, num_base-10))) \
-        add_num = 10 + (end - local_let_low); \
-      else if ((end = vstr_wrap_memchr(local_let_high, scan, num_base-10))) \
-        add_num = 10 + (end - local_let_high); \
-      else \
-        break; \
-    } \
-    else \
-    { \
-      if (scan < 0x30) break; \
-      \
-      if (scan <= ascii_num_end) \
-        add_num = (scan - 0x30); \
-      else if (num_base <= 10) \
-        break; \
-      else if ((scan >= 0x41) && (scan <= ascii_let_high_end)) \
-        add_num = 10 + (scan - 0x41); \
-      else if ((scan >= 0x61) && (scan <= ascii_let_low_end)) \
-        add_num = 10 + (scan - 0x61); \
-      else \
-        break; \
-    } \
-    \
-    ret = (ret * num_base) + add_num; \
-    if ((flags & VSTR_FLAG_PARSE_NUM_OVERFLOW) && \
-        (((ret - add_num) / num_base) != old_ret)) \
-    { \
-      *err = VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW; \
-      break; \
-    } \
-    \
-    --len; \
-    ++pos; \
-  } \
+#define VSTR__PARSE_NUM_BIN_CALC_NUM(num_type) do {                     \
+      num_type old_ret = ret;                                           \
+                                                                        \
+      ret = (ret * num_base) + add_num;                                 \
+      if ((flags & VSTR_FLAG_PARSE_NUM_OVERFLOW) &&                     \
+          (((ret - add_num) / num_base) != old_ret))                    \
+      {                                                                 \
+        *err = VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW;                        \
+        break;                                                          \
+      }                                                                 \
+    } while (FALSE)                                                     \
+
+#define VSTR__PARSE_NUM_LOOP_BEG() do {                                 \
+      int done_once = is_zeroed;                                        \
+      Vstr_iter iter[1];                                                \
+      int iter_ret = vstr_iter_fwd_beg(base, pos, len, iter);           \
+                                                                        \
+      ASSERT(iter_ret);                                                 \
+      while (len)                                                       \
+      {                                                                 \
+        unsigned char scan = vstr_iter_fwd_chr(iter, NULL);             \
+        const char *end = NULL;                                         \
+        unsigned int add_num = 0;                                       \
+                                                                        \
+        if (done_once && (scan == sym_sep))                             \
+        {                                                               \
+          if (!(flags & VSTR_FLAG_PARSE_NUM_SEP)) break;                \
+          --len;                                                        \
+          continue;                                                     \
+        }                                                               \
+        else if (VSTR__PARSE_NUM_USE_LOCAL &&                           \
+                 (flags & VSTR_FLAG_PARSE_NUM_LOCAL))                   \
+        {                                                               \
+          if ((scan >= '0') && (scan <= local_num_end))                 \
+            add_num = (scan - '0');                                     \
+          else if (num_base <= 10)                                      \
+            break;                                                      \
+          else if ((end = vstr_wrap_memchr(local_let_low,  scan,        \
+                                           num_base - 10)))             \
+            add_num = 10 + (end - local_let_low);                       \
+          else if ((end = vstr_wrap_memchr(local_let_high, scan,        \
+                                           num_base - 10)))             \
+            add_num = 10 + (end - local_let_high);                      \
+          else                                                          \
+            break;                                                      \
+        }                                                               \
+        else                                                            \
+        {                                                               \
+          if (scan < 0x30) break;                                       \
+                                                                        \
+          if (scan <= ascii_num_end)                                    \
+            add_num = (scan - 0x30);                                    \
+          else if (num_base <= 10)                                      \
+            break;                                                      \
+          else if ((scan >= 0x41) && (scan <= ascii_let_high_end))      \
+            add_num = 10 + (scan - 0x41);                               \
+          else if ((scan >= 0x61) && (scan <= ascii_let_low_end))       \
+            add_num = 10 + (scan - 0x61);                               \
+          else                                                          \
+            break;                                                      \
+        }                                                               \
+
+#define VSTR__PARSE_NUM_LOOP_END()                                      \
+        --len;                                                          \
+        done_once = TRUE;                                               \
+      }                                                                 \
 } while (FALSE)
 
 /* assume negative numbers can be one bigger than signed positive numbers */
-#define VSTR__PARSE_NUM_END_S(num_max) do { \
-  if ((flags & VSTR_FLAG_PARSE_NUM_OVERFLOW) && \
-      ((ret - is_neg) > num_max)) \
-  { \
-    *err = VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW; \
-    ret = num_max + is_neg; \
-  } \
-  if (len && !*err) *err = VSTR_TYPE_PARSE_NUM_ERR_OOB; \
-  \
- ret_num_len: \
-  if (ret_len) \
-    *ret_len = (orig_len - len); \
-  \
-  if (is_neg) \
-    return (-ret); \
-  \
-  return (ret); \
-} while (FALSE)
+#define VSTR__PARSE_NUM_END_S(num_max) do {                     \
+      if ((flags & VSTR_FLAG_PARSE_NUM_OVERFLOW) &&             \
+          ((ret - is_neg) > num_max))                           \
+      {                                                         \
+        *err = VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW;                \
+        ret = num_max + is_neg;                                 \
+      }                                                         \
+      if (len && !*err) *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;     \
+                                                                \
+     ret_num_len:                                               \
+      if (ret_len)                                              \
+        *ret_len = (orig_len - len);                            \
+                                                                \
+      if (is_neg)                                               \
+        return (-ret);                                          \
+                                                                \
+      return (ret);                                             \
+    } while (FALSE)
 
-#define VSTR__PARSE_NUM_END_U() do { \
-  if (len && !*err) *err = VSTR_TYPE_PARSE_NUM_ERR_OOB; \
-  \
- ret_num_len: \
-  if (ret_len) \
-    *ret_len = (orig_len - len); \
-  \
-  return (ret); \
-} while (FALSE)
+#define VSTR__PARSE_NUM_END_U() do {                            \
+      if (len && !*err) *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;     \
+                                                                \
+     ret_num_len:                                               \
+      if (ret_len)                                              \
+        *ret_len = (orig_len - len);                            \
+                                                                \
+      return (ret);                                             \
+    } while (FALSE)
 
 #define VSTR__PARSE_NUM_SFUNC(num_type, num_max) do { \
-  VSTR__PARSE_NUM_BEG_S(num_type); \
-  VSTR__PARSE_NUM_ASCII(); \
-  VSTR__PARSE_NUM_LOOP(num_type); \
-  VSTR__PARSE_NUM_END_S(num_max); \
-} while (FALSE)
+      VSTR__PARSE_NUM_BEG_S(num_type);                \
+      VSTR__PARSE_NUM_ASCII();                        \
+      VSTR__PARSE_NUM_LOOP_BEG();                     \
+      VSTR__PARSE_NUM_BIN_CALC_NUM(num_type);         \
+      VSTR__PARSE_NUM_LOOP_END();                     \
+      VSTR__PARSE_NUM_END_S(num_max);                 \
+    } while (FALSE)
 
-#define VSTR__PARSE_NUM_UFUNC(num_type) do { \
-  VSTR__PARSE_NUM_BEG_U(num_type); \
-  VSTR__PARSE_NUM_ASCII(); \
-  VSTR__PARSE_NUM_LOOP(num_type); \
-  VSTR__PARSE_NUM_END_U(); \
-} while (FALSE)
+#define VSTR__PARSE_NUM_UFUNC(num_type) do {  \
+      VSTR__PARSE_NUM_BEG_U(num_type);        \
+      VSTR__PARSE_NUM_ASCII();                \
+      VSTR__PARSE_NUM_LOOP_BEG();             \
+      VSTR__PARSE_NUM_BIN_CALC_NUM(num_type); \
+      VSTR__PARSE_NUM_LOOP_END();             \
+      VSTR__PARSE_NUM_END_U();                \
+    } while (FALSE)
+
+void *vstr_parse_num(const Vstr_base *base, size_t pos, size_t len,
+                     unsigned int flags, size_t *ret_len,
+                     unsigned int *err,
+                     void *(*func)(void *, unsigned int, int),
+                     void *data)
+{
+  VSTR__PARSE_NUM_BEG_S(void *);
+  ret = data;
+  VSTR__PARSE_NUM_ASCII();
+  VSTR__PARSE_NUM_LOOP_BEG();
+  
+  if (!(ret = func(ret, num_base, is_neg ? (0 - add_num) : add_num)))
+    return (NULL); /* mem error */
+  
+  VSTR__PARSE_NUM_LOOP_END();
+  VSTR__PARSE_NUM_END_U();
+}
 
 short vstr_parse_short(const Vstr_base *base, size_t pos, size_t len,
                        unsigned int flags, size_t *ret_len,
@@ -452,7 +505,6 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
             *err = VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_OOB;
             return (FALSE);
 
-          case 255: *cidr += 8; break;
           case 254: *cidr += 7; break;
           case 252: *cidr += 6; break;
           case 248: *cidr += 5; break;

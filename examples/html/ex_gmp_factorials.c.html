@@ -22,6 +22,13 @@ against...
 
 http://www.newdream.net/~sage/old/numbers/fact.htm
 
+...or a POSIX "bc" via. ...
+
+  define f (x) {
+    if (x &lt;= 1) return (1);
+    return (f(x-1) * x);
+  }
+
 */</span>
 
 <span class="comment">/* we only need output here, so turn off other IO functions */</span>
@@ -193,7 +200,10 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
     cnt_max_sz = s1-&gt;len; vstr_del(s1, 1, s1-&gt;len);
 
     <span class="comment">/* work out the result */</span>
-    ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for, <span class="false">FALSE</span>, <span class="null">NULL</span>, <span class="num0">0</span>, <span class="num0">0</span>);
+    <span class="if">if</span> (mpz_fits_ulong_p(bignum_for))
+      mpz_fac_ui(bignum_ret, mpz_get_ui(bignum_for));
+    <span class="else">else</span>
+      ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for, <span class="false">FALSE</span>, <span class="null">NULL</span>, <span class="num0">0</span>, <span class="num0">0</span>);
 
     <span class="comment">/* value of the result... */</span>
     <span class="if">if</span> (!vstr_add_fmt(s1, s1-&gt;len, <span class="str">"$'&lt;MPZ:%p&gt;"</span>, (<span class="void">void</span> *)bignum_ret))
@@ -221,7 +231,7 @@ http://www.newdream.net/~sage/old/numbers/fact.htm
 }
 </pre>
 <!-- C to html convertion of ex_gmp_factorials.c -->
-<!--   done on Mon Jan 26 05:27:53 2004
+<!--   done on Sun May  9 02:29:52 2004
  -->
 <!--   done by ex_highlight -->
 

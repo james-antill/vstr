@@ -1,3 +1,83 @@
+2004-05-04  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_number): Added uintptr_t as the
+	convertion for %p.
+
+2004-04-07  James Antill  <james@and.org>
+
+	* src/vstr_parse.c (vstr_parse_num): Added function.
+
+2004-04-05  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_iter_fwd_chr): Added function.
+	(vstr_iter_pos): Added function.
+	(vstr_iter_len): Added function.
+	(vstr_iter_num): Added function.
+
+	* src/vstr_split.c (vstr__split_hdl_null_mid): Fix null mid splitting
+	return value on malloc error cases.
+	(vstr__split_hdl_null_beg): Fix null beg splitting return value on
+	malloc error cases.
+
+2004-04-01  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_write_file): Fix return when close fails.
+	(vstr_sc_read_len_file): Fix return when close fails.
+	(vstr_sc_read_iov_file): Fix return when close fails.
+	(vstr_sc_mmap_file): Fix return when close fails.
+	(vstr_sc_read_len_file): Fix uninit err variable.
+
+2004-03-19  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_srch_cstr_buf_fwd): Added const to Vstr string
+	(vstr_srch_cstr_buf_rev): Added const to Vstr string
+	(vstr_srch_cstr_chrs_fwd): Added const to Vstr string
+	(vstr_srch_cstr_chrs_rev): Added const to Vstr string
+	(vstr_csrch_cstr_chrs_fwd): Added const to Vstr string
+	(vstr_csrch_cstr_chrs_rev): Added const to Vstr string
+	(vstr_srch_case_cstr_buf_fwd): Added const to Vstr string
+	(vstr_srch_case_cstr_buf_rev): Added const to Vstr string
+	(vstr_spn_cstr_chrs_fwd): Added const to Vstr string
+	(vstr_spn_cstr_chrs_rev): Added const to Vstr string
+	(vstr_cspn_cstr_chrs_fwd): Added const to Vstr string
+	(vstr_cspn_cstr_chrs_rev): Added const to Vstr string
+	(vstr_split_cstr_buf): Added const to Vstr string
+	(vstr_split_cstr_chrs): Added const to Vstr string
+
+2004-03-17  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_wide_cstr): Fixed crash on win32
+	(and other platforms wcsnrtombs doesn't act weird when first arg is
+	NULL).
+
+2004-03-10  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_bkmg_Byte_uintmax): Added function.
+	(vstr_sc_fmt_add_bkmg_Bytes_uintmax): Added function.
+	(vstr_sc_fmt_add_bkmg_bit_uintmax): Added function.
+	(vstr_sc_fmt_add_bkmg_bits_uintmax): Added function.
+
+	* include/vstr-extern.h (VSTR_SC_FMT_ADD): Added macro function.
+
+2004-02-18  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_fmt_cb_beg): Fix bug where base was always
+	taken as 16 for grouping lookups.
+
+2004-02-08  James Antill  <james@and.org>
+
+	* include/vstr-extern.h: Add ability to work out that off64_t isn't
+	going to work at compile time, and skip those functions.
+
+	* include/vstr-arch.h: Move include processing into a seperate file.
+
+2004-01-27  James Antill  <james@and.org>
+
+	* include/vstr.exported_symbols: Removed vstr_version_func from
+	exported list of symbols ... running the library should work again.
+	Removed vstr_extern_inline_make_cache_pos due to not being called
+	from any internal code anymore.
+
 2004-01-25  James Antill  <james@and.org>
 
 	* NEWS (2004-01-25): Release 1.0.12.
@@ -342,6 +422,8 @@
 	* Documentation/security_problems.txt: Added more
 	classifications
 
+2003-08-23  James Antill  <james@and.org>
+
 	* NEWS: Release-1.0.7
 
 2003-08-19  James Antill  <james@and.org>
@@ -522,6 +604,8 @@
 	* Documentation/Makefile.am (confexec_DATA): Added
 	printf_comparison.html, design.html and internal_structure.dia to set
 	of installed documentation.
+
+2003-03-15  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.4
 
@@ -1238,6 +1322,8 @@
 	* src/vstr.c (vstr_exit): Add checks for mmap() counts, when in
 	debugging mode.
 
+2002-09-02  James Antill  <james@and.org>
+
 	* NEWS: Release 0.9.13
 
 	* include/vstr-const.h (VSTR_CNTL_CONF_GET_FMT_CHAR_ESC): Add constant.
@@ -1347,6 +1433,8 @@
 	now requires zsh :(.
 
 	* examples/ex_hexdump.c (EX_HEXDUMP_X2X2): Make hexdump much faster.
+
+2002-08-12  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.11
 
@@ -1483,6 +1571,8 @@
 
 	* src/vstr_add_fmt_dbl_glibc.c (PRINT_FPHEX_LONG_DOUBLE): Add long
 	double support for dbl-fmt=glibc (still only %a style works though).
+
+2002-07-30  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.9
 
@@ -1621,6 +1711,8 @@
 
 	* include/vstr-inline.h (vstr_add_buf): Add inline function.
 	(vstr_sects_add): Add inline function.
+
+2002-06-24  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.6
 
@@ -1975,6 +2067,8 @@
 	* src/vstr_del.c (vstr_del): Allow len == 0, when Vstr_base is empty.
 	This is so you can always do vstr_del(a, 1, a->len); and not get
 	assert() fails.
+
+2001-12-07  James Antill  <james@and.org>
 
 	* src/vstr_fmt.c (vstr__fmt_write_spec): Fix use of thousands sep. in
 	asprintf call.

@@ -1,5 +1,5 @@
 
-Section: Initialization function
+Section: Library initialization and exit functions
 
 Function: vstr_init()
  Returns: TRUE on success and FALSE on failure
@@ -33,69 +33,11 @@ Function: vstr_exit()
  Note:
 
   The function isn't needed but helps make sure there are no memory leaks, when
- used with a memory checker.
+ used with a memory checker (or with the internal memory checker in the debug
+ build).
 
 
-Section: Functions to choose multiple VSTR_FLAG_* constants
-
-Function: VSTR_FLAGXX()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[ ... ]: Names of a flags in the given flag type
- Type[ ... ]: <symbol>
-
- Explanation:
-
-  This isn't one macro function but a group of functions that all do the same
- thing, just with different numbers of arguments. They combine the namespace
- requirements so that you can specify multiple flags in a concise manner. For
- instance VSTR_FLAG06() combines 6 flags. So instead of having to wite...
-
-    (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)
-
- ...you can write...
-
-    VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
-
- ...which is a lot more readable as the number of flags increases.
-  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
- number at the end referring to how many flags are passed to it (not the number
- of parameters, which is one more than that).
-
-
-Section: Functions to get specific data about the vstr
-
-Function: vstr_num()
- Returns: Number of nodes used in the vstr
- Type: unsigned int
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Start position in the Vstr string (Parameter[1])
- Type[2]: size_t
-
- Parameter[3]: Length in the Vstr string (Parameter[1])
- Type[3]: size_t
-
- Explanation:
-
-  This function is used to find out how many nodes are being used for a given
- section of a vstr.
-  If the function can detect that the values of parameters are in error the
- function will return 0 to indicate an error.
-
-
-Section: Functions to export vstr data
+Section: Exporting data functions
 
 
 Function: vstr_export_cstr_ptr()
@@ -444,7 +386,31 @@ Function: vstr_export_ref()
  to by the memory reference.
 
 
-Section: Functions to use as callbacks in a Vstr memory reference
+Section: Memory reference functions
+
+Function: vstr_ref_add()
+ Returns: Vstr memory reference (Parameter[1])
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Vstr memory reference
+ Type[1]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will add a reference count to the Vstr_ref (Parameter[1]).
+
+
+Function: vstr_ref_del()
+ Returns:
+ Type: void
+
+ Parameter[1]: Vstr memory reference
+ Type[1]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will delete a reference count from the Vstr_ref (Parameter[1]),
+ when the reference count reaches zero then the cleanup function will be called.
 
 
 Function: vstr_ref_cb_free_nothing()
@@ -480,7 +446,8 @@ Function: vstr_ref_cb_free_ptr()
 
  Explanation:
 
-  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
+  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr (unless
+ the passed reference is the NULL pointer, then it does nothing).
 
 
 Function: vstr_ref_cb_free_ptr_ref()
@@ -493,34 +460,131 @@ Function: vstr_ref_cb_free_ptr_ref()
  Explanation:
 
   This will call free() on the data in the Vstr_ref (Parameter[1])->ptr and
- then call free() on the Vstr_ref (Parameter[1]).
+ then call free() on the Vstr_ref (Parameter[1]) (unless the passed reference
+ is the NULL pointer, then it does nothing).
 
 
-Section: Functions to reference and dereference a Vstr memory reference
-
-Function: vstr_ref_add()
- Returns: Vstr memory reference (Parameter[1])
+Function: vstr_ref_make_malloc()
+ Returns: Vstr memory reference
  Type: struct Vstr_ref *
 
- Parameter[1]: Vstr memory reference
- Type[1]: struct Vstr_ref *
+ Parameter[1]: Size of malloc'd area to create in the memory reference
+ Type[1]: size_t
 
  Explanation:
 
-  This function will add a reference count to the Vstr_ref (Parameter[1]).
+  This function will create an area of memory, using malloc, and create a Vstr
+ memory reference to that memory. The Vstr memory reference will have a
+ reference count of 1 and the cleanup function will point to a function to
+ free both the reference and the copy of memory.
 
 
-Function: vstr_ref_del()
- Returns:
- Type: void
+Function: vstr_ref_make_ptr()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
 
- Parameter[1]: Vstr memory reference
- Type[1]: struct Vstr_ref *
+ Parameter[1]: Pointer to memory
+ Type[1]: void *
+
+ Parameter[2]: Function callback for Vstr memory reference
+ Type[2]: void (*)(struct Vstr_ref *)
 
  Explanation:
 
-  This function will delete a reference count from the Vstr_ref (Parameter[1]),
- when the reference count reaches zero then the cleanup function will be called.
+  This function will call malloc() to create a Vstr memory reference. The Vstr
+ memory reference will have a reference count of 1, a pointer value of pointer
+ passed (Parameter[1]) and a cleanup function of the function
+ passed (Parameter[2]).
+
+
+Function: vstr_ref_make_memdup()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to memory
+ Type[1]: void *
+
+ Parameter[2]: Length of memory block
+ Type[2]: size_t
+
+ Explanation:
+
+  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1 and a copy of the memory pointed to
+ by (Parameter[1]) of length (Parameter[2]) will be the pointer value. The
+ cleanup function will point to a function to free both the reference and the
+ copy of memory.
+
+
+Function: vstr_ref_make_strdup()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to data
+ Type[1]: char *
+
+ Explanation:
+
+  This function calls vstr_ref_make_memdup() with the length being the value of
+ (strlen() + 1) on the data parameter (Parameter[1]).
+
+
+Function: VSTR_REF_MAKE_STRDUP()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to data
+ Type[1]: char *
+
+ Explanation:
+
+  This macro function calls vstr_ref_make_memdup() with the length being the
+ value of (strlen() + 1) on the data parameter (Parameter[1]).
+
+
+Function: vstr_ref_make_vstr_base()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Explanation:
+
+  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr string (Parameter[1]). The cleanup function will point to a function to
+ free both the reference and the Vstr string.
+
+
+Function: vstr_ref_make_vstr_conf()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Explanation:
+
+  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr configuration (Parameter[1]). The cleanup function will point to a
+ function to free both the reference and the Vstr configuration.
+
+
+Function: vstr_ref_make_vstr_sects()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Explanation:
+
+  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr sections (Parameter[1]). The cleanup function will point to a function to
+ free both the reference and the Vstr sections.
 
 
 Section: Creation/destruction of core objects
@@ -547,40 +611,6 @@ Function: vstr_free_conf()
  Explanation:
 
   This function will free a Vstr configuration, allocated by vstr_make_conf().
-
-
-Function: vstr_swap_conf()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_base *
-
- Parameter[2]: New Vstr configuration; returned old Vstr configuration
- Type[2]: struct Vstr_conf **
-
- Explanation:
-
-  This function will swap a Vstr configuration into a Vstr string possibly
- changing the Vstr configuration to be compatible with the Vstr string. On
- success the Vstr configuration that was being used by the Vstr string is
- returned.
-
- Note:
-
-  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on
- a Vstr that you don't own, by doing...
-
-     if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
-     {
-       vstr_add_fmt(notmy_vstr_string, ... );
-       vstr_swap_conf(notmy_vstr_string, &my_vstr_conf);
-     }
-
- ...note that the last call swaps the configuration back. However if you are
- not using any custom specifiers then you can just call vstr_add_sysfmt()
- instead.
-  The function will return 0 if it needs to allocate memory and cannot do so.
 
 
 Function: vstr_make_base()
@@ -846,129 +876,6 @@ Function: VSTR_DUP_CSTR_REF()
  at the offset (Parameter[4]).
 
 
-Function: vstr_ref_make_malloc()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Size of malloc'd area to create in the memory reference
- Type[1]: size_t
-
- Explanation:
-
-  This function will create an area of memory, using malloc, and create a Vstr
- memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and the cleanup function will point to a function to
- free both the reference and the copy of memory.
-
-
-Function: vstr_ref_make_ptr()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Pointer to memory
- Type[1]: void *
-
- Parameter[2]: Function callback for Vstr memory reference
- Type[2]: void (*)(struct Vstr_ref *)
-
- Explanation:
-
-  This function will call malloc() to create a Vstr memory reference. The Vstr
- memory reference will have a reference count of 1, a pointer value of pointer
- passed (Parameter[1]) and a cleanup function of the function
- passed (Parameter[2]).
-
-
-Function: vstr_ref_make_memdup()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Pointer to memory
- Type[1]: void *
-
- Parameter[2]: Length of memory block
- Type[2]: size_t
-
- Explanation:
-
-  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1 and a copy of the memory pointed to
- by (Parameter[1]) of length (Parameter[2]) will be the pointer value. The
- cleanup function will point to a function to free both the reference and the
- copy of memory.
-
-
-Function: vstr_ref_make_strdup()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Pointer to data
- Type[1]: char *
-
- Explanation:
-
-  This function calls vstr_ref_make_memdup() with the length being the value of
- (strlen() + 1) on the data parameter (Parameter[1]).
-
-
-Function: VSTR_REF_MAKE_STRDUP()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Pointer to data
- Type[1]: char *
-
- Explanation:
-
-  This macro function calls vstr_ref_make_memdup() with the length being the
- value of (strlen() + 1) on the data parameter (Parameter[1]).
-
-
-Function: vstr_ref_make_vstr_base()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_base *
-
- Explanation:
-
-  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1, a pointer value of the
- Vstr string (Parameter[1]). The cleanup function will point to a function to
- free both the reference and the Vstr string.
-
-
-Function: vstr_ref_make_vstr_conf()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Explanation:
-
-  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1, a pointer value of the
- Vstr configuration (Parameter[1]). The cleanup function will point to a
- function to free both the reference and the Vstr configuration.
-
-
-Function: vstr_ref_make_vstr_sects()
- Returns: Vstr memory reference
- Type: struct Vstr_ref *
-
- Parameter[1]: Vstr sections
- Type[1]: struct Vstr_sects *
-
- Explanation:
-
-  This function will create a Vstr memory reference. The Vstr memory reference
- will have a reference count of 1, a pointer value of the
- Vstr sections (Parameter[1]). The cleanup function will point to a function to
- free both the reference and the Vstr sections.
-
-
 Function: vstr_make_spare_nodes()
  Returns: Number of nodes created
  Type: unsigned int
@@ -1023,7 +930,7 @@ Function: vstr_free_spare_nodes()
  used.
 
 
-Section: Functions to add and delete data to a Vstr string
+Section: Adding and deleting of data functions
 
 
 Function: vstr_add_buf()
@@ -1647,7 +1554,37 @@ Function: vstr_del()
  memory and so the return value can be ignored.
 
 
-Section: Functions to substitute data in a Vstr string with other data
+Function: vstr_mov()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Vstr string
+ Type[3]: struct Vstr_base *
+
+ Parameter[4]: Start position in the Vstr string (Parameter[3])
+ Type[4]: size_t
+
+ Parameter[5]: Length in the Vstr string (Parameter[3])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to move data, deleting it from one Vstr string
+ (Parameter[3]) and adding it to another Vstr string (Parameter[1]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+
+Section: Substitution of data functions
 
 
 Function: vstr_sub_buf()
@@ -2027,98 +1964,7 @@ Function: VSTR_SUB_CSTR_REF()
  at the offset (Parameter[4]).
 
 
-Section: Functions to move data from a Vstr string to another Vstr string
-
-Function: vstr_mov()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_base *
-
- Parameter[2]: Append position in the Vstr string (Parameter[1])
- Type[2]: size_t
-
- Parameter[3]: Vstr string
- Type[3]: struct Vstr_base *
-
- Parameter[4]: Start position in the Vstr string (Parameter[3])
- Type[4]: size_t
-
- Parameter[5]: Length in the Vstr string (Parameter[3])
- Type[5]: size_t
-
- Explanation:
-
-  This function is used to move data, deleting it from one Vstr string
- (Parameter[3]) and adding it to another Vstr string (Parameter[1]).
-  If the function can detect that the values of parameters are in error the
- function will return 0 to indicate an error.
-  The function will return 0 if it needs to allocate memory and cannot do so,
- although if it does fail the Vstr string won't have changed (Ie. the function
- is atomic).
-
-
-Section: Functions for miscellaneous control of options
-
-Function: vstr_cntl_opt()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Option type starting VSTR_CNTL_OPT_*
- Type[1]: int
-
- Parameter[ ... ]: Options depending on value of Parameter[1]
- Type[ ... ]: ...
-
- Explanation:
-
-  This function will get or set global options.
-
-
-Function: vstr_cntl_base()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Option type starting VSTR_CNTL_BASE_*
- Type[2]: int
-
- Parameter[ ... ]: Options depending on value of Parameter[2]
- Type[ ... ]: ...
-
- Explanation:
-
-  This function will get or set options for the Vstr string (Parameter[1]).
-
-
-Function: vstr_cntl_conf()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]:
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Option type starting VSTR_CNTL_CONF_*
- Type[2]: int
-
- Parameter[ ... ]: Options depending on value of Parameter[2]
- Type[ ... ]: ...
-
- Explanation:
-
-  This function will get or set options for the
- Vstr configuration (Parameter[1]).
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
-
-Section: Functions to compare with a Vstr string
+Section: Comparison of data functions
 
 Function: vstr_cmp()
  Returns: Less then zero, zero or greater than zero depending on comparison
@@ -3794,7 +3640,7 @@ Function: VSTR_CMP_VERS_CSTR_EQ()
  on the data parameter (Parameter[4]).
 
 
-Section: Functions to search in a Vstr string
+Section: Searching for data functions
 
 Function: vstr_srch_chr_fwd()
  Returns: Position in the Vstr string of the character
@@ -4607,7 +4453,7 @@ Function: VSTR_SRCH_CASE_CSTR_BUF_REV()
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Section: Functions to calculate spanning in a Vstr string
+Section: Span of data calculation functions
 
 Function: vstr_spn_chrs_fwd()
  Returns: Number of characters in the span
@@ -4919,7 +4765,7 @@ Function: VSTR_CSPN_CSTR_CHRS_REV()
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Section: Functions for converting data in a vstr
+Section: Convertion of data functions
 
 Function: vstr_conv_lowercase()
  Returns: TRUE on success and FALSE on failure
@@ -5048,7 +4894,7 @@ Function: vstr_conv_decode_uri()
  the encoded sequence %20 becomes the ASCII space character ' ' etc.
 
 
-Section: Functions for dealing with a section of a vstr
+Section: Section of Vstr string functions
 
 Function: VSTR_SECTS_DECL()
  Returns: Declaration of a Vstr sections
@@ -5251,8 +5097,8 @@ Function: vstr_sects_update_add()
 
   You need to call vstr_sects_update_del(), before you free the
  section (Parameter[2]). However if the next thing you are going to do is call
- vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them
- backward.
+ vstr_free_base() on the Vstr string (Parameter[1]), then nothing bad will
+ happen if you call them in the oposite order.
   This uses the vstr_cache_add() function.
 
 
@@ -5292,7 +5138,7 @@ Function: vstr_sects_srch()
  (Parameter[1]) that matches the position and length.
 
 
-Section: Functions for splitting data in a Vstr into sections
+Section: Splitting data into sections functions
 
 Function: vstr_split_buf()
  Returns: Number of Vstr section nodes added to the Vstr sections
@@ -5500,7 +5346,7 @@ Function: VSTR_SPLIT_CSTR_CHRS()
  value of strlen() on the data parameter (Parameter[4]).
 
 
-Section: Functions for parsing data from a vstr
+Section: Parsing data functions
 
 Function: vstr_parse_short()
  Returns: Number parsed from Vstr string
@@ -5934,7 +5780,7 @@ Function: vstr_parse_ipv6()
  CIDR mask, from the Vstr string.
 
 
-Section: Functions for hooking into the fmt function for the Vstr string
+Section: Custom formatter functions
 
 Function: vstr_fmt_add()
  Returns: TRUE on success and FALSE on failure
@@ -6054,272 +5900,6 @@ Function: VSTR_FMT_CB_ARG_VAL()
 
   This macro function returns the nth (Parameter[3]) parameter passed to a
  callback of vstr_add_vfmt(), by value.
-
-
-Section: Functions for hooking into the cache system for the Vstr string
-
-Function: vstr_cache_add()
- Returns: Cookie reference for cache function
- Type: unsigned int
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Name of cache function
- Type[2]: const char *
-
- Parameter[3]: Function to use as callback from the cache
- Type[3]: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int, void *)
-
- Explanation:
-
-  This function will add the callback function (Parameter[3]) to the
- Vstr configuration for use in all Vstr strings that use the Vstr configuration
- and have a cache. The name of the cache function (Parameter[2]) should be
- unique, the vstr library uses names starting "/vstr__/".
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-  The name of the cache function should be placed in permanent storage, Ie.
- only the pointer to the name will be stored so you cannot malloc() the name
- and then free() it after calling the function.
-  The callback function parameters, are the Vstr string, position, length,
- the type of callback starting VSTR_TYPE_CACHE_ and the data for the cache
- function.
-  The callback function will not be called if the data for the cache function
- is NULL.
-  The inline adding and delete from the Vstr strings is not performed if
- callbacks are registered for the string (because functions will have to be
- called anyway).
-
-
-Function: vstr_cache_get()
- Returns: Data for cache function
- Type: void *
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Cookie reference for cache function
- Type[2]: unsigned int
-
- Explanation:
-
-  This function will get the data for the cache function.
-
-
-Function: vstr_cache_set()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Cookie reference for cache function
- Type[2]: unsigned int
-
- Parameter[3]: Data for cache function
- Type[3]: void *
-
- Explanation:
-
-  This function will set the data for the cache function.
-
- Note:
-
-  The callback function will not be called if the data for the cache function
- is NULL.
-
-
-Function: vstr_cache_srch()
- Returns: Cookie reference for cache functions
- Type: unsigned int
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Name of cache function
- Type[2]: const char *
-
- Explanation:
-
-  This function will find a cache function name (Parameter[2]) and return the
- cookie reference for use in the other cache functions.
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
-
-Function: vstr_cache_cb_sub()
- Returns: Nothing
- Type: void
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Start position in the Vstr string (Parameter[1])
- Type[2]: size_t
-
- Parameter[3]: Length in the Vstr string (Parameter[1])
- Type[3]: size_t
-
- Explanation:
-
-  If you are substituting data in a vstr (from an iovec export, followed by a
- readv for instance or changing the data in a mmap()'d area) then you can use
- this function to notify the vstr caching mechanisms.
-
- Note:
-
-  This is a last resort function, to make the hard things possible, use the
- vstr_sub_*() functions instead.
-
-
-Function: vstr_cache_cb_free()
- Returns: Nothing
- Type: void
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Cookie reference for cache function
- Type[2]: unsigned int
-
- Explanation:
-
-  If you have generated cache data, this function will tell the cache function
- to free that data.
-
- Note:
-
-  A Cookie reference of "zero" means tell all cache functions to free cached
- data. Note that this can cause severe performance degradation if overly used.
-
-
-Section: Functions for hooking into the data system for the Vstr configuration
-
-Function: vstr_data_add()
- Returns: Cookie reference for cache function
- Type: unsigned int
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Name of cache function
- Type[2]: const char *
-
- Parameter[3]: Reference to data to store in the configuration
- Type[3]: struct Vstr_ref *
-
- Explanation:
-
-  This function will add the data reference (Parameter[3]) to the
- Vstr configuration. The name of the data reference (Parameter[2]) should be
- unique, the vstr library will use names starting "/vstr__/".
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-  The name of the cache function should be placed in permanent storage, Ie.
- only the pointer to the name will be stored so you cannot malloc() the name
- and then free() it after calling the function (you can free it after calling
- vstr_data_del()).
-  Storing a reference that is NULL is valid, and will act like storing a
- reference to NULL.
-
-
-Function: vstr_data_srch()
- Returns: Cookie reference for data configuration functions
- Type: unsigned int
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Name of data configuration function
- Type[2]: const char *
-
- Explanation:
-
-  This function will find a configuration data name (Parameter[2]) and return
- the cookie reference for use in the other data functions.
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
-
-Function: vstr_data_del()
- Returns: Nothing
- Type: void
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Cookie reference for configuration data function
- Type[2]: unsigned int
-
- Explanation:
-
-  This function will release the reference on the configuration data, and allow
- the cookie to be reused on a later vstr_data_add() call.
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
-
-Function: vstr_data_get()
- Returns: Data for configuration data function
- Type: void *
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Cookie reference for configuration data function
- Type[2]: unsigned int
-
- Explanation:
-
-  This function will get the data for the configuration data storage function.
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-
-
-Function: vstr_data_set()
- Returns: Nothing
- Type: void
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Cookie reference for configuration data function
- Type[2]: unsigned int
-
- Parameter[3]: Reference to data to store in the configuration
- Type[3]: struct Vstr_ref *
-
- Explanation:
-
-  This function will set the data for the configuration data storage function.
-
- Note:
-
-  If the configuration (Parameter[1]) is NULL, then the global configuration is
- used.
-  Storing a reference that is NULL is valid, and will act like storing a
- reference to NULL.
-  All allocations are done at vstr_data_add() time, so this function can never
- fail.
 
 
 Section: Short cut helper functions
@@ -8006,7 +7586,7 @@ Function: vstr_sc_write_file()
  and open mode (Parameter[6]).
 
 
-Section: Functions to step through part of a Vstr string in iterations
+Section: Interator functions
 
 Function: vstr_iter_fwd_beg()
  Returns: TRUE on success and FALSE on failure
@@ -8030,6 +7610,8 @@ Function: vstr_iter_fwd_beg()
 
  Note:
 
+  The only time this function will return FALSE is if you pass an invalid
+ position and length.
   If you alter the Vstr string (Parameter[1]) while using a iteration, then
  the iteration will be in an undefined state.
 
@@ -8049,5 +7631,415 @@ Function: vstr_iter_fwd_nxt()
 
   If you alter the Vstr string (Parameter[1]) while using a iteration, then
  the iteration will be in an undefined state.
+
+
+Section: Miscellaneous functions
+
+Function: vstr_cntl_opt()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Option type starting VSTR_CNTL_OPT_*
+ Type[1]: int
+
+ Parameter[ ... ]: Options depending on value of Parameter[1]
+ Type[ ... ]: ...
+
+ Explanation:
+
+  This function will get or set global options.
+
+
+Function: vstr_cntl_base()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Option type starting VSTR_CNTL_BASE_*
+ Type[2]: int
+
+ Parameter[ ... ]: Options depending on value of Parameter[2]
+ Type[ ... ]: ...
+
+ Explanation:
+
+  This function will get or set options for the Vstr string (Parameter[1]).
+
+
+Function: vstr_cntl_conf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]:
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Option type starting VSTR_CNTL_CONF_*
+ Type[2]: int
+
+ Parameter[ ... ]: Options depending on value of Parameter[2]
+ Type[ ... ]: ...
+
+ Explanation:
+
+  This function will get or set options for the
+ Vstr configuration (Parameter[1]).
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: VSTR_FLAGXX()
+ Returns: The value of the flags combined
+ Type: unsigned int
+
+ Parameter[1]: Name of flag type to use.
+ Type[1]: <symbol>
+
+ Parameter[ ... ]: Names of a flags in the given flag type
+ Type[ ... ]: <symbol>
+
+ Explanation:
+
+  This isn't one macro function but a group of functions that all do the same
+ thing, just with different numbers of arguments. They combine the namespace
+ requirements so that you can specify multiple flags in a concise manner. For
+ instance VSTR_FLAG06() combines 6 flags. So instead of having to wite...
+
+    (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)
+
+ ...you can write...
+
+    VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
+
+ ...which is a lot more readable as the number of flags increases.
+  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
+ number at the end referring to how many flags are passed to it (not the number
+ of parameters, which is one more than that).
+
+
+Function: vstr_num()
+ Returns: Number of nodes used in the vstr
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used to find out how many nodes are being used for a given
+ section of a vstr.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_cache_add()
+ Returns: Cookie reference for cache function
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Parameter[3]: Function to use as callback from the cache
+ Type[3]: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int, void *)
+
+ Explanation:
+
+  This function will add the callback function (Parameter[3]) to the
+ Vstr configuration for use in all Vstr strings that use the Vstr configuration
+ and have a cache. The name of the cache function (Parameter[2]) should be
+ unique, the vstr library uses names starting "/vstr__/".
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The name of the cache function should be placed in permanent storage, Ie.
+ only the pointer to the name will be stored so you cannot malloc() the name
+ and then free() it after calling the function.
+  The callback function parameters, are the Vstr string, position, length,
+ the type of callback starting VSTR_TYPE_CACHE_ and the data for the cache
+ function.
+  The callback function will not be called if the data for the cache function
+ is NULL.
+  The inline adding and delete from the Vstr strings is not performed if
+ callbacks are registered for the string (because functions will have to be
+ called anyway).
+
+
+Function: vstr_cache_get()
+ Returns: Data for cache function
+ Type: void *
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Cookie reference for cache function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will get the data for the cache function.
+
+
+Function: vstr_cache_set()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Cookie reference for cache function
+ Type[2]: unsigned int
+
+ Parameter[3]: Data for cache function
+ Type[3]: void *
+
+ Explanation:
+
+  This function will set the data for the cache function.
+
+ Note:
+
+  The callback function will not be called if the data for the cache function
+ is NULL.
+
+
+Function: vstr_cache_srch()
+ Returns: Cookie reference for cache functions
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Explanation:
+
+  This function will find a cache function name (Parameter[2]) and return the
+ cookie reference for use in the other cache functions.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_cache_cb_sub()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  If you are substituting data in a vstr (from an iovec export, followed by a
+ readv for instance or changing the data in a mmap()'d area) then you can use
+ this function to notify the vstr caching mechanisms.
+
+ Note:
+
+  This is a last resort function, to make the hard things possible, use the
+ vstr_sub_*() functions instead.
+
+
+Function: vstr_cache_cb_free()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Cookie reference for cache function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  If you have generated cache data, this function will tell the cache function
+ to free that data.
+
+ Note:
+
+  A Cookie reference of "zero" means tell all cache functions to free cached
+ data. Note that this can cause severe performance degradation if overly used.
+
+
+Function: vstr_data_add()
+ Returns: Cookie reference for cache function
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Parameter[3]: Reference to data to store in the configuration
+ Type[3]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will add the data reference (Parameter[3]) to the
+ Vstr configuration. The name of the data reference (Parameter[2]) should be
+ unique, the vstr library will use names starting "/vstr__/".
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The name of the cache function should be placed in permanent storage, Ie.
+ only the pointer to the name will be stored so you cannot malloc() the name
+ and then free() it after calling the function (you can free it after calling
+ vstr_data_del()).
+  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+
+
+Function: vstr_data_srch()
+ Returns: Cookie reference for data configuration functions
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of data configuration function
+ Type[2]: const char *
+
+ Explanation:
+
+  This function will find a configuration data name (Parameter[2]) and return
+ the cookie reference for use in the other data functions.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_del()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will release the reference on the configuration data, and allow
+ the cookie to be reused on a later vstr_data_add() call.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_get()
+ Returns: Data for configuration data function
+ Type: void *
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will get the data for the configuration data storage function.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_set()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Parameter[3]: Reference to data to store in the configuration
+ Type[3]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will set the data for the configuration data storage function.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+  All allocations are done at vstr_data_add() time, so this function can never
+ fail.
+
+
+Function: vstr_swap_conf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: New Vstr configuration; returned old Vstr configuration
+ Type[2]: struct Vstr_conf **
+
+ Explanation:
+
+  This function will swap a Vstr configuration into a Vstr string possibly
+ changing the Vstr configuration to be compatible with the Vstr string. On
+ success the Vstr configuration that was being used by the Vstr string is
+ returned.
+
+ Note:
+
+  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on
+ a Vstr that you don't own, by doing...
+
+     if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
+     {
+       vstr_add_fmt(notmy_vstr_string, ... );
+       vstr_swap_conf(notmy_vstr_string, &my_vstr_conf);
+     }
+
+ ...note that the last call swaps the configuration back. However if you are
+ not using any custom specifiers then you can just call vstr_add_sysfmt()
+ instead.
+  The function will return 0 if it needs to allocate memory and cannot do so.
 
 

@@ -1,7 +1,9 @@
 #! /usr/bin/perl -w
 
-open(CSS,  "< $ARGV[0]") || die "open($ARGV[0]): $!";
-open(HTML, "< $ARGV[1]") || die "open($ARGV[1]): $!";
+if (@ARGV < 2) { die " Format: $0 <HTML> <CSS>"; }
+
+open(HTML, "< $ARGV[0]") || die "open($ARGV[0]): $!";
+open(CSS,  "< $ARGV[1]") || die "open($ARGV[1]): $!";
 
 my %css2style = ();
 

@@ -135,7 +135,7 @@ static void vstr__ref_cb_free_grp_main(Vstr_ref_grp_ptr *parent,
   ref->func = NULL;
 
   ASSERT(parent->free_num <  parent->make_num);
-  ASSERT(parent->make_num <= VSTR__REF_MAKE_PTR_SZ);
+  ASSERT(parent->make_num <= VSTR__REF_GRP_MAKE_SZ);
   
   if (++parent->free_num == parent->make_num)
   {
@@ -187,7 +187,7 @@ Vstr_ref_grp_ptr *vstr__ref_grp_make(void (*func) (Vstr_ref *),
   Vstr_ref_grp_ptr *parent = NULL;
 
   if (!(parent = VSTR__MK(sizeof(Vstr_ref_grp_ptr) +
-                          (VSTR__REF_MAKE_PTR_SZ * sizeof(Vstr_ref)))))
+                          (VSTR__REF_GRP_MAKE_SZ * sizeof(Vstr_ref)))))
     return (NULL);
 
   parent->make_num = 0;
@@ -213,8 +213,8 @@ void vstr__ref_grp_free(Vstr_ref_grp_ptr *parent)
   
   parent->flags &= ~VSTR__FLAG_REF_GRP_REF;
   
-  ASSERT(parent->make_num == VSTR__REF_MAKE_PTR_SZ);
-  ASSERT(parent->free_num <  VSTR__REF_MAKE_PTR_SZ);
+  ASSERT(parent->make_num == VSTR__REF_GRP_MAKE_SZ);
+  ASSERT(parent->free_num <  VSTR__REF_GRP_MAKE_SZ);
 }
 
 /* needs to be reset each time, so we can tell which are free */
@@ -227,7 +227,7 @@ Vstr_ref *vstr__ref_grp_add(Vstr_ref_grp_ptr **parent, const void *ptr)
   
   ASSERT(parent && *parent);
   
-  if ((*parent)->make_num == VSTR__REF_MAKE_PTR_SZ)
+  if ((*parent)->make_num == VSTR__REF_GRP_MAKE_SZ)
   {
     Vstr_ref_grp_ptr *tmp = NULL;
     

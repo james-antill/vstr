@@ -23,8 +23,8 @@
 
 #ifdef __GNUC__
 /* debug call */
-# define D(x, ...) \
-    fprintf(stderr, "DBG: %d:%s <" x ">\n", __LINE__, __FILE__, __VA_ARGS__)
+# define D(x, args...) \
+    fprintf(stderr, "DBG: %d:%s <" x ">\n", __LINE__, __FILE__ , ## args)
 #endif
 
 #if defined(HAVE_ATTRIB_DEPRECATED)
@@ -128,9 +128,14 @@ typedef struct Vstr__debug_malloc
 
 typedef struct Vstr__options
 {
- Vstr_conf *def;
- unsigned int mmap_count;
- unsigned long  mem_sz;
+ Vstr_conf *def; /* define conf */
+
+ unsigned int mmap_count; /* mmap debugging */
+ 
+ unsigned int  fd_count; /* fd debugging */
+ unsigned long fd_close_fail_num;
+ 
+ unsigned long  mem_sz; /* malloc debugging */
  unsigned long  mem_num;
  unsigned long  mem_fail_num;
  Vstr__debug_malloc *mem_vals;
@@ -320,15 +325,33 @@ vstr__loc_num_pnt_len(Vstr_locale *, unsigned int)
 extern void vstr__del_grpalloc(Vstr_conf *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
+extern int vstr__sc_fmt_add_posix(Vstr_conf *conf)
+   VSTR__COMPILE_ATTR_WARN_UNUSED_RET() VSTR__ATTR_I();
 
 extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
-#ifdef NDEBUG
-#define VSTR__DEBUG_MALLOC_CHECK_MEM(x) /* nothing */
-#define VSTR__DEBUG_MALLOC_CHECK_EMPTY() /* nothing */
-#define VSTR__DEBUG_MALLOC_TST() (0)
-#define VSTR__DEBUG_MALLOC_DEC() (0)
+#ifndef USE_MALLOC_CHECK
+# ifdef NDEBUG
+#  define USE_MALLOC_CHECK 0
+# else
+#  define USE_MALLOC_CHECK 1
+# endif
+#endif
+
+#ifndef USE_FD_CLOSE_CHECK
+# ifdef NDEBUG
+#  define USE_FD_CLOSE_CHECK 0
+# else
+#  define USE_FD_CLOSE_CHECK 1
+# endif
+#endif
+
+#if !(USE_MALLOC_CHECK)
+# define VSTR__DEBUG_MALLOC_CHECK_MEM(x) (1)
+# define VSTR__DEBUG_MALLOC_CHECK_EMPTY() /* nothing */
+# define VSTR__DEBUG_MALLOC_TST() (0)
+# define VSTR__DEBUG_MALLOC_DEC() (0)
 
 # define vstr__debug_malloc(x, F, L)     malloc(x)
 # define vstr__debug_calloc(x, y, F, L)  calloc(x, y)
@@ -338,13 +361,14 @@ extern void *vstr_wrap_memrchr(const void *, int, size_t)
 # define VSTR__SECTS_SZ 8
 # define VSTR__STACK_BUF_SZ 64
 # define VSTR__FMT_USR_SZ 8
-# define VSTR__REF_MAKE_PTR_SZ 42 /* makes 512 bytes ia32: 4 + 4 + 12*x */
+# define VSTR__REF_GRP_MAKE_SZ 42 /* makes 512 bytes ia32: 4 + 4 + 12*x */
+# define VSTR__SC_VEC_SZ 32
 #else
-#define VSTR__DEBUG_MALLOC_CHECK_MEM(x) vstr__debug_malloc_check_mem(x)
-#define VSTR__DEBUG_MALLOC_CHECK_EMPTY() vstr__debug_malloc_check_empty()
-#define VSTR__DEBUG_MALLOC_TST() \
+# define VSTR__DEBUG_MALLOC_CHECK_MEM(x) vstr__debug_malloc_check_mem(x)
+# define VSTR__DEBUG_MALLOC_CHECK_EMPTY() vstr__debug_malloc_check_empty()
+# define VSTR__DEBUG_MALLOC_TST() \
   (!vstr__options.mem_fail_num)
-#define VSTR__DEBUG_MALLOC_DEC() \
+# define VSTR__DEBUG_MALLOC_DEC() \
   (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
 
 extern int vstr__debug_malloc_check_mem(const void *)
@@ -363,7 +387,8 @@ extern void vstr__debug_free(void *)
 # define VSTR__SECTS_SZ 2
 # define VSTR__STACK_BUF_SZ 2
 # define VSTR__FMT_USR_SZ 2
-# define VSTR__REF_MAKE_PTR_SZ 2
+# define VSTR__REF_GRP_MAKE_SZ 2
+# define VSTR__SC_VEC_SZ 2
 #endif
 
 #define VSTR__FLAG_REF_GRP_REF (1U<<6)
@@ -393,6 +418,39 @@ extern void vstr_version_func(void);
 #endif
 
 #include "vstr-extern.h"
+
+#ifndef NDEBUG /* inline debugging stuff... */
+# ifdef USE_ASSERT_LOOP
+#  define VSTR__ASSERT(x) do { \
+ if (x) {} else \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
+ while (FALSE)
+#  define VSTR__ASSERT_RET(x, y)  do { \
+ if (x) {} else \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
+ while (FALSE)
+# else
+#  define VSTR__ASSERT(x) do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } } \
+ while (FALSE)
+#  define VSTR__ASSERT_RET(x, y)  do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } } \
+ while (FALSE)
+#  define VSTR__ASSERT_RET_VOID(x)  do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } } \
+ while (FALSE)
+# endif
+# define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(FALSE)
+#endif
 
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
 # include "vstr-inline.h"

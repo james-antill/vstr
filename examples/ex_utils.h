@@ -95,6 +95,7 @@
 #define IO_EOF   2
 #define IO_NONE  3
 
+#ifndef EX_UTILS_NO_USE_BLOCK
 /* block waiting for IO read, write or both... */
 static void io_block(int io_r_fd, int io_w_fd)
 {
@@ -132,6 +133,7 @@ static void io_block(int io_r_fd, int io_w_fd)
       err(EXIT_FAILURE, "poll");
   }
 }
+#endif
 
 /* Try and move some data from Vstr string to fd */
 static int io_put(Vstr_base *io_w, int fd)
@@ -150,6 +152,7 @@ static int io_put(Vstr_base *io_w, int fd)
   return (IO_OK);
 }
 
+#ifndef EX_UTILS_NO_USE_BLOCK
 /* loop outputting data until empty, blocking when needed */
 static void io_put_all(Vstr_base *io_w, int fd)
 {
@@ -161,8 +164,10 @@ static void io_put_all(Vstr_base *io_w, int fd)
       io_block(-1, fd);
   }
 }
-    
+#endif
+
 #ifndef EX_UTILS_NO_USE_INPUT
+#ifndef EX_UTILS_NO_USE_GET
 /* Try and move some data from fd to Vstr string */
 static int io_get(Vstr_base *io_r, int fd)
 {
@@ -182,7 +187,9 @@ static int io_get(Vstr_base *io_r, int fd)
 
   return (IO_OK);
 }
+#endif
 
+#ifndef EX_UTILS_NO_USE_LIMIT
 /* block read or writting, depending on limits */
 static void io_limit(int io_r_state, int io_r_fd,
                      int io_w_state, int io_w_fd, Vstr_base *s_w)
@@ -197,6 +204,7 @@ static void io_limit(int io_r_state, int io_r_fd,
   else if ((io_w_state == IO_NONE) && (io_r_state == IO_BLOCK))
     io_block(io_r_fd, -1); /* block to get more data */
 }
+#endif
 #endif
 
 /* generic POSIX IO functions that _don't_ call Vstr functions */

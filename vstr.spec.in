@@ -36,7 +36,6 @@ Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
 BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool
 URL: http://www.and.org/vstr/
-Packager: James Antill <james@and.org>
 
 %description
  Vstr is a string library designed for network communication, but applicable

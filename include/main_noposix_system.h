@@ -37,12 +37,6 @@
 # include <malloc.h>
 #endif
 
-struct iovec
-{
- void *iov_base;
- size_t iov_len;
-}; /* normally part of <sys/uio.h> ... but that isn't here now */
-
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #else

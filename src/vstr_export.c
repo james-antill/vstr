@@ -127,7 +127,7 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base,
 
   do
   {
-    iovs[ret_num].iov_len  = iter->len;
+    iovs[ret_num].iov_len  =         iter->len;
     iovs[ret_num].iov_base = (void *)iter->ptr;
     ret_len += iter->len;
 

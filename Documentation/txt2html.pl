@@ -29,16 +29,21 @@ my $html_body = <<EOF;
       A:visited { color: #ff4040; }
       A:hover { color: #20b2aa; }
 
-      P { text-indent: 1cm; }
+      P { text-indent: 1em; }
 
-      body { background: #FFFFFF; }
+      body     { background: #FFF; color: #000; }
 
-      td.heading { background: #DDDDDD; }
+      h2.ind   { background: #DDF; }
 
-      li                       { list-style-type: lower-roman; }
-      li       ul li.obj       { display: none; }
-      li:hover ul li.obj       { display: list-item; list-style-type: decimal; }
-      li:hover ul li.obj:hover { display: list-item; list-style-type: square; }
+      td.title { background: #DFD; }
+      td.sect  { background: #DDF; }
+      td.obj   { background: #DDD; }
+
+      ul li                       { list-style-type: lower-roman; }
+      ul li:hover                 { list-style-type: square; }
+      ul:hover li                 { list-style-type: decimal; }
+      ul li:hover ul li.obj       { list-style-type: decimal; }
+      ul li:hover ul li.obj:hover { list-style-type: square; }
     </style>
 
   </head>
@@ -47,14 +52,15 @@ EOF
 
 my $html_footer = "\n</td></tr></table>\n</body></html>";
 
-sub convert_index()
+sub convert_index
   {
+    my $ftype = shift;
     my $in_pre_tag = "";
+    my $txt_indx_ful = "<ul>\n";
+    my $txt_indx_min = "<ul>\n";
 
-    OUT->print("</td></tr></table><table width=\"90%\"><tr><td>\n");
-    OUT->print("<h3>Index of sections</h3>\n");
-    OUT->print("<ul>\n");
-
+    my $mem_count = 0;
+    my $mem_tot   = 0;
     my $done = 0;
 
     while (<IN>)
@@ -65,7 +71,8 @@ sub convert_index()
 	    my $uri = $2;
 	    $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
-	    print OUT "<li class=\"obj\"><a href=\"#$uri\">$name</a>\n";
+	    $txt_indx_ful .= "<li class=\"obj\"><a href=\"#$uri\">$name</a>\n";
+	    ++$mem_count;
 	  }
         elsif (/^Section:\s*(.*)$/)
 	  {
@@ -74,14 +81,27 @@ sub convert_index()
 	    $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
 	    if ($done)
-	      { print OUT "</ul>"; }
+	      {
+		$txt_indx_min .= " ($mem_count)</a>\n";
+		$mem_tot += $mem_count;
+		$mem_count = 0;
+		$txt_indx_ful .= "</ul>";
+	      }
 	    $done = 1;
 
-	    print OUT "<li><a href=\"#$uri\">$section</a>\n<ul>\n";
+	    $txt_indx_min .= "<li><a href=\"#indx-$uri\">$section";
+	    $txt_indx_ful .= "<li><a name=\"indx-$uri\" href=\"#$uri\">$section</a>\n<ul>\n";
 	  }
       }
+    $mem_tot += $mem_count;
 
-    OUT->print("</ul></ul>\n");
+    OUT->print("<h1>", "$name -- $ftype ($mem_tot)", "</h1>", "\n");
+    OUT->print("</td></tr></table><table width=\"90%\"><tr><td>\n");
+    OUT->print("<h2 class=\"ind\">Index of sections</h3>\n");
+
+    OUT->print($txt_indx_min . " ($mem_count)</a></ul>\n");
+    OUT->print("<h2 class=\"ind\">Index of sections, and their contents</h3>\n");
+    OUT->print($txt_indx_ful . "</ul></ul>\n");
   }
 
 sub conv_html
@@ -103,6 +123,15 @@ my $current_function = undef;
 sub conv_A_refs
   {
     my $params = shift;
+
+    s{(\W|^)(Vstr configuration)(\W|$)}
+      {$1<a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">$2</a>$3}g;
+    s{(\W|^)(Vstr string)(\W|$)}
+      {$1<a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">$2</a>$3}g;
+    s{(\W|^)(Vstr sections)(\W|$)}
+      {$1<a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">$2</a>$3}g;
+    s{(\W|^)(Vstr iteration)(\W|$)}
+      {$1<a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">$2</a>$3}g;
 
     s{([^#"_0-9a-z])vstr_([_0-9a-z]+)\(\)}
       {$1<a href="functions.html#vstr_$2()">vstr_$2()</a>}g;
@@ -129,7 +158,7 @@ sub convert()
 	my $next_in_const = 0;
 
 	my $beg_replace = <<EOL;
-</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+</td></tr></table><table width="80%"><tr><td class="obj">
 EOL
 
 	if ($in_const)
@@ -140,7 +169,7 @@ EOL
 	if (s!^(Constant|Function|Member): (.*)$!$beg_replace<strong>$1: </strong> $2! ||
 	    s!^ Explanation:\s*$!</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>! ||
 	    s!^ Note:\s*$!</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>! ||
-	    s!^Section:\s*(.*)$!</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>$1</h2>! ||
+	    s!^Section:\s*(.*)$!</td></tr></table><table width="90%"><tr><td class="sect"><h2>$1</h2>! ||
 	    0)
 	  {
 	    if (defined ($1))
@@ -153,7 +182,7 @@ EOL
 		$next_in_const = 1;
 
 		$uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
-		$_ = "<a name=\"$uri\">" . $_ . "</a>";
+		s!(: </strong> )(.*)!$1<a name="$uri">$2</a>!;
 
 		$current_function = undef;
 	      }
@@ -162,7 +191,7 @@ EOL
                 my $uri = $2;
                 $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
-                $_ = "<a name=\"$uri\">" . $_ . "</a>";
+		s!(: </strong> )(.*)!$1<a name="$uri">$2</a>!;
 
 		$current_function = $uri;
               }
@@ -267,12 +296,11 @@ open (OUT, "> functions.html")    || die "open(functions.html): $!";
 print OUT $html_header;
 print OUT "<title>", "$name -- functions", "</title>", "\n";
 print OUT $html_body;
-print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
-  "<h1>", "$name -- functions", "</h1>", "\n";
+print OUT "<table width=\"100%\"><tr><td class=\"title\">";
 
 open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
 
-convert_index();
+convert_index("functions");
 
 open (IN, "< $docs/functions.txt") || die "open(functions.txt): $!";
 
@@ -285,12 +313,11 @@ open (OUT, "> constants.html")     || die "open(constants.html): $!";
 print OUT $html_header;
 print OUT "<title>", "$name -- constants", "</title>", "\n";
 print OUT $html_body;
-print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
-  "<h1>", "$name -- constants", "</h1>", "\n";
+print OUT "<table width=\"100%\"><tr><td class=\"title\">";
 
 open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
 
-convert_index();
+convert_index("constants");
 
 open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
 
@@ -305,12 +332,11 @@ if (-r "structs.txt")
     print OUT $html_header;
     print OUT "<title>", "$name -- structs", "</title>", "\n";
     print OUT $html_body;
-    print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">",
-      "<h1>", "$name -- structs", "</h1>", "\n";
+    print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">";
 
     open (IN, "< $docs/structs.txt") || die "open(structs.txt): $!";
 
-    convert_index();
+    convert_index("structs");
 
     open (IN, "< $docs/structs.txt") || die "open(structs.txt): $!";
 

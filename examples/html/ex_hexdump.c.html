@@ -76,12 +76,12 @@ util-linux-2.11r-10
  */</span>
 <span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *hexnums = <span class="str">"0123456789ABCDEF"</span>;
 
-# <span class="cppdefine">define</span> EX_HEXDUMP_BYTE(buf, b) do { \
+# <span class="cppdefine">define</span> EX_HEXDUMP_BYTE(buf, b) <span class="do">do</span> { \
   (buf)[1] = hexnums[((b) &gt;&gt; <span class="num0">0</span>) &amp; 0xf]; \
   (buf)[0] = hexnums[((b) &gt;&gt; 4) &amp; 0xf]; \
  } <span class="while">while</span> (<span class="false">FALSE</span>)
 
-# <span class="cppdefine">define</span> EX_HEXDUMP_UINT(buf, i) do { \
+# <span class="cppdefine">define</span> EX_HEXDUMP_UINT(buf, i) <span class="do">do</span> { \
   EX_HEXDUMP_BYTE((buf) + 6, (i) &gt;&gt;  <span class="num0">0</span>); \
   EX_HEXDUMP_BYTE((buf) + 4, (i) &gt;&gt;  8); \
   EX_HEXDUMP_BYTE((buf) + 2, (i) &gt;&gt; 16); \
@@ -89,18 +89,18 @@ util-linux-2.11r-10
  } <span class="while">while</span> (<span class="false">FALSE</span>)
 
 <span class="comment">/* print the address */</span>
-# <span class="cppdefine">define</span> EX_HEXDUMP_X8(s1, num) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[9]; \
+# <span class="cppdefine">define</span> EX_HEXDUMP_X8(s1, num) <span class="do">do</span> { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[9]; \
   xbuf[8] = <span class="chr">':'</span>; \
   EX_HEXDUMP_UINT(xbuf, num); \
   vstr_add_buf(s1, (s1)-&gt;len, xbuf, sizeof(xbuf)); } <span class="while">while</span> (<span class="false">FALSE</span>)
 <span class="comment">/* print a set of two bytes */</span>
-# <span class="cppdefine">define</span> EX_HEXDUMP_X2X2(s1, num1, num2) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2X2(s1, num1, num2) <span class="do">do</span> { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
   xbuf[0] = <span class="chr">' '</span>; \
   EX_HEXDUMP_BYTE(xbuf + 3, num2); \
   EX_HEXDUMP_BYTE(xbuf + 1, num1); \
   vstr_add_buf(s1, (s1)-&gt;len, xbuf, sizeof(xbuf)); } <span class="while">while</span> (<span class="false">FALSE</span>)
 <span class="comment">/* print a byte and spaces for the missing byte */</span>
-# <span class="cppdefine">define</span> EX_HEXDUMP_X2__(s1, num1) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2__(s1, num1) <span class="do">do</span> { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
   xbuf[4] = <span class="chr">' '</span>; \
   xbuf[3] = <span class="chr">' '</span>; \
   EX_HEXDUMP_BYTE(xbuf + 1, num1); \
@@ -369,7 +369,7 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
 }
 </pre>
 <!-- C to html convertion of ex_hexdump.c -->
-<!--   done on Mon Jan 26 05:27:53 2004
+<!--   done on Sun May  9 02:29:53 2004
  -->
 <!--   done by ex_highlight -->
 

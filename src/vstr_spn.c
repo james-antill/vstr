@@ -141,15 +141,12 @@ static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
     }
 
     count = iter->len;
-    while (count > 0)
-    {
-      --count;
+    while (count-- > 0)
       if (!vstr_wrap_memchr(spn_chrs, iter->ptr[count], spn_len))
       {
         ret = ((iter->len - count) - 1);
         goto next_loop_memchr_fail;
       }
-    }
 
    next_loop_all_good:
     ret += iter->len;
@@ -304,15 +301,12 @@ static size_t vstr__cspn_chrs_rev_slow(const Vstr_base *base,
       goto next_loop_all_good;
 
     count = iter->len;
-    while (count > 0)
-    {
-      --count;
+    while (count-- > 0)
       if (vstr_wrap_memchr(cspn_chrs, iter->ptr[count], cspn_len))
       {
         ret = ((iter->len - count) - 1);
         goto next_loop_memchr_fail;
       }
-    }
 
    next_loop_all_good:
     ret += iter->len;

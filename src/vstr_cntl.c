@@ -25,15 +25,18 @@
 Vstr__options vstr__options =
 {
  NULL, /* def */
+
  0, /* mmap count */
 
+ 0, /* fd count */
+ 0, /* fd close fail num */
+ 
  /* BEG: mem */
  0, /* sz */
  0, /* num */
- 0, /* fail on num */
+ 0, /* fail num */
  NULL /* values */
  /* END: mem */
-
 };
 
 int vstr_cntl_opt(int option, ...)
@@ -71,16 +74,21 @@ int vstr_cntl_opt(int option, ...)
       ret = TRUE;
     }
     
-#ifndef NDEBUG
+#if USE_MALLOC_CHECK || USE_FD_CLOSE_CHECK
     break;
     
     case 666:
     {
-      unsigned long val = va_arg(ap, unsigned long);
+      unsigned long valT = va_arg(ap, unsigned long);
+      unsigned long valV = va_arg(ap, unsigned long);
 
-      vstr__options.mem_fail_num = val;
-
-      ret = TRUE;
+      ASSERT((valT == 0x0F0F) || (valT == 0xF0F0));
+      
+      if (0) {}
+      else if (USE_FD_CLOSE_CHECK && (valT == 0x0F0F))
+      { vstr__options.fd_close_fail_num = valV; ret = TRUE; }
+      else if (USE_MALLOC_CHECK   && (valT == 0xF0F0))
+      { vstr__options.mem_fail_num      = valV; ret = TRUE; }
     }
 #endif
 

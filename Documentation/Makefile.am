@@ -19,6 +19,7 @@ docmain_DATA =                         \
                 speed.html \
                 security_problems.html \
 		size_cmp.gnumeric \
+                cost_tutorial.html \
                 tutorial.html
 
 doclicdir := $(datadir)/doc/vstr-devel-$(VERSION)/compare_licenses/
@@ -57,6 +58,9 @@ constants.3: constants.txt
 		$(srcdir)/txt2man.pl
 
 tutorial.html: tutorial.shtml
+		jssi $< > $@
+
+cost_tutorial.html: cost_tutorial.shtml
 		jssi $< > $@
 
 vstr.3: ./functions.3

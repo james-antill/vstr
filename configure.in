@@ -70,9 +70,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=12
+VSTR_MICRO_VERSION=13
 VSTR_INTERFACE_AGE=0
-VSTR_BINARY_AGE=12
+VSTR_BINARY_AGE=13
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -102,7 +102,7 @@ AC_PROG_CC
 AC_EXEEXT
 
 # This could be better...
-CCAS=gcc
+CCAS=$CC
 AC_SUBST(CCAS)
 CCASFLAGS="\$(DEFAULT_INCLUDES) \$(INCLUDES)"
 AC_SUBST(CCASFLAGS)
@@ -185,8 +185,6 @@ AC_ARG_ENABLE(tst-noattr-visibility, [  --enable-tst-noattr-visibility turn off 
 AC_ARG_ENABLE(tst-noattr-alias, [  --enable-tst-noattr-alias turn off use of attribute alias [[default=no]]], local_cv_have_tst_noattr_alias=true,local_cv_have_tst_noattr_alias=false)
 AC_ARG_ENABLE(tst-nosyscall-asm, [  --enable-tst-nosyscall-asm turn off use of asm syscalls in version [[default=no]]],,AC_DEFINE(USE_SYSCALL_ASM))
 AC_ARG_ENABLE(tst-noassert-loop, [  --enable-tst-noassert-loop changes asserts from looping to raise SIGABRT [[default=no]]],AM_CONDITIONAL(USE_ASSERT_LOOP, false),[ AC_DEFINE(USE_ASSERT_LOOP) AM_CONDITIONAL(USE_ASSERT_LOOP, true)])
-
-
 
 AC_ARG_ENABLE(wrap-memcpy, [  --enable-wrap-memcpy    turn on wrapper memcpy [[default=no]]], local_cv_linker_use_wrap_memcpy=true,local_cv_linker_use_wrap_memcpy=false)
 AM_CONDITIONAL(USE_WRAP_MEMCPY, $local_cv_linker_use_wrap_memcpy)
@@ -289,7 +287,7 @@ AC_TYPE_OFF_T
 # New autoconf goodness... or not
 XCFLAGS=$CFLAGS
 CFLAGS="-D_LARGEFILE64_SOURCE $CFLAGS"
-AC_CHECK_TYPE(off64_t, off_t)
+AC_CHECK_TYPE(off64_t, AC_DEFINE(HAVE_OFF64_T), AC_DEFINE_UNQUOTED(off64_t, off_t))
 CFLAGS=$XCFLAGS
 
 AC_TYPE_PID_T
@@ -312,6 +310,7 @@ AC_TYPE_SOCKLEN_T
 # New autoconf goodness
 AC_CHECK_TYPE(intmax_t, long)
 AC_CHECK_TYPE(uintmax_t, unsigned long)
+AC_CHECK_TYPE(uintptr_t, unsigned long)
 
 AC_MSG_CHECKING(for long long)
 AC_CACHE_VAL(local_cv_has_long_long,[

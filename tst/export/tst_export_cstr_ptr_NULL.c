@@ -5,7 +5,7 @@ static const char *rf = __FILE__;
 #ifndef __GLIBC__ /* FIXME: need better test */
 int tst(void)
 {
-  return (EXIT_SUCCESS);
+  return (EXIT_FAILED_OK);
 }
 #else
 static int tst_mall_special_fail = FALSE;

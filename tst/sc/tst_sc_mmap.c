@@ -11,6 +11,14 @@ int tst(void)
   int mfail_count = 0;
 
 #if !defined(VSTR_AUTOCONF_HAVE_MMAP) /* || !defined(HAVE_POSIX_HOST) */
+  ASSERT(!vstr_sc_mmap_fd(s1, 0, -1, 0, 0, &err));
+  ASSERT((err == VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO) &&
+         (errno == ENOSYS));
+  
+  ASSERT(!vstr_sc_mmap_file(s1, 0, __FILE__, 0, 0, &err));
+  ASSERT((err == VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO) &&
+         (errno == ENOSYS));
+  
   return (EXIT_FAILED_OK);
 #endif
 
@@ -61,10 +69,3 @@ int tst(void)
 
   return (TST_B_RET(ret));
 }
-/* Crap for tst_coverage constants... None trivial to test.
- *
- * VSTR_TYPE_SC_MMAP_FD_ERR_TOO_LARGE
- * VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO
- * VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE
- *
- */

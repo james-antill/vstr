@@ -1525,9 +1525,9 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=12
+VSTR_MICRO_VERSION=13
 VSTR_INTERFACE_AGE=0
-VSTR_BINARY_AGE=12
+VSTR_BINARY_AGE=13
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -3845,7 +3845,7 @@ fi
 
 
 # This could be better...
-CCAS=gcc
+CCAS=$CC
 
 CCASFLAGS="\$(DEFAULT_INCLUDES) \$(INCLUDES)"
 
@@ -19981,8 +19981,6 @@ fi
 
 fi;
 
-
-
 # Check whether --enable-wrap-memcpy or --disable-wrap-memcpy was given.
 if test "${enable_wrap_memcpy+set}" = set; then
   enableval="$enable_wrap_memcpy"
@@ -22325,10 +22323,12 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_type_off64_t" >&5
 echo "${ECHO_T}$ac_cv_type_off64_t" >&6
 if test $ac_cv_type_off64_t = yes; then
-  :
-else
+  cat >>confdefs.h <<\_ACEOF
+#define HAVE_OFF64_T 1
+_ACEOF
 
-cat >>confdefs.h <<_ACEOF
+else
+  cat >>confdefs.h <<_ACEOF
 #define off64_t off_t
 _ACEOF
 
@@ -22639,6 +22639,63 @@ else
 
 cat >>confdefs.h <<_ACEOF
 #define uintmax_t unsigned long
+_ACEOF
+
+fi
+
+echo "$as_me:$LINENO: checking for uintptr_t" >&5
+echo $ECHO_N "checking for uintptr_t... $ECHO_C" >&6
+if test "${ac_cv_type_uintptr_t+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+if ((uintptr_t *) 0)
+  return 0;
+if (sizeof (uintptr_t))
+  return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_type_uintptr_t=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_type_uintptr_t=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_type_uintptr_t" >&5
+echo "${ECHO_T}$ac_cv_type_uintptr_t" >&6
+if test $ac_cv_type_uintptr_t = yes; then
+  :
+else
+
+cat >>confdefs.h <<_ACEOF
+#define uintptr_t unsigned long
 _ACEOF
 
 fi

@@ -9,28 +9,56 @@ unsigned int FLAGS = (0 |
                       VSTR_FLAG_PARSE_NUM_SPACE |
                       0);
 
-#define TST_MAKE_TST_FUNC(func_T, real_T) \
-static real_T do_test_ ## func_T (const char *num_str, size_t num_len, \
-                                  size_t *len, unsigned int *err) \
-{ \
-  real_T ret = 0; \
-  Vstr_base *str2 = vstr_dup_ptr(NULL, num_str, num_len); \
-  if (!str2) \
-    die(); \
-  \
-  ret = vstr_parse_ ## func_T (str2, 1, str2->len, FLAGS, len, err); \
-  \
-  vstr_free_base(str2); \
-  \
-  return (ret); \
-}
+#define TST_MAKE_TST_FUNC(func_T, real_T)                               \
+static void *do_test_num_ ## func_T (void *data,                        \
+                                     unsigned int base,                 \
+                                     int calcnum)                       \
+{                                                                       \
+  real_T *tmp = data;                                                   \
+                                                                        \
+  *tmp *= base;                                                         \
+  *tmp += calcnum;                                                      \
+                                                                        \
+  return (tmp);                                                         \
+}                                                                       \
+                                                                        \
+static real_T do_test_ ## func_T (const char *num_str, size_t num_len,  \
+                                  size_t *len, unsigned int *err)       \
+{                                                                       \
+  real_T ret = 0;                                                       \
+  real_T ret_tst = 0;                                                   \
+  Vstr_base *str2 = vstr_dup_ptr(NULL, num_str, num_len);               \
+  if (!str2)                                                            \
+    die();                                                              \
+                                                                        \
+  ret = vstr_parse_ ## func_T (str2, 1, str2->len, FLAGS, len, err);    \
+                                                                        \
+  if (*err != VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW)                         \
+  {                                                                     \
+    size_t tmp_len = 0;                                                 \
+    unsigned int tmp_err = 0;                                           \
+                                                                        \
+    ASSERT(&ret_tst ==                                                  \
+           vstr_parse_num(str2, 1, str2->len, FLAGS, &tmp_len, &tmp_err, \
+                          do_test_num_ ## func_T , &ret_tst));          \
+                                                                        \
+    ASSERT(ret_tst == ret);                                             \
+    ASSERT(tmp_len == *len);                                            \
+    ASSERT(tmp_err == *err);                                            \
+  }                                                                     \
+                                                                        \
+  vstr_free_base(str2);                                                 \
+                                                                        \
+  return (ret);                                                         \
+}                                                                       \
+static const char *rf
 
-TST_MAKE_TST_FUNC(short, short)
-TST_MAKE_TST_FUNC(ushort, unsigned short)
-TST_MAKE_TST_FUNC(int, int)
-TST_MAKE_TST_FUNC(uint, unsigned int)
-TST_MAKE_TST_FUNC(intmax, intmax_t)
-TST_MAKE_TST_FUNC(uintmax, uintmax_t)
+TST_MAKE_TST_FUNC(short, short);
+TST_MAKE_TST_FUNC(ushort, unsigned short);
+TST_MAKE_TST_FUNC(int, int);
+TST_MAKE_TST_FUNC(uint, unsigned int);
+TST_MAKE_TST_FUNC(intmax, intmax_t);
+TST_MAKE_TST_FUNC(uintmax, uintmax_t);
 
 
 #define DO_TEST_BEG() \
@@ -40,7 +68,7 @@ TST_MAKE_TST_FUNC(uintmax, uintmax_t)
   vstr_del(s2, 1, s2->len)
 
 #define DO_TEST_END() \
-  if (!VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len)) do { PRNT_VSTR(s1); PRNT_VSTR(s2); return (1); } while (0)
+   if (!VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len)) do { PRNT_VSTR(s1); PRNT_VSTR(s2); fprintf(stderr, "%d\n", (int)__LINE__); return (1); } while (0)
 
 #define DO_TEST_NUMSTR(x, y, z, T) do { \
   DO_TEST_BEG(); \
@@ -57,6 +85,25 @@ TST_MAKE_TST_FUNC(uintmax, uintmax_t)
   DO_TEST_END(); \
 } while (FALSE)
 
+static void *do_test_snum_NULL(void *data, unsigned int base, int calcnum)
+{
+  ASSERT(data == &FLAGS);
+  
+  ASSERT(base == 2);
+  ASSERT(calcnum == -1);
+  
+  return (NULL);
+}
+static void *do_test_unum_NULL(void *data, unsigned int base, int calcnum)
+{
+  ASSERT(data == &FLAGS);
+  
+  ASSERT(base == 2);
+  ASSERT(calcnum == 1);
+  
+  return (NULL);
+}
+
 int tst(void)
 {
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
@@ -70,9 +117,9 @@ int tst(void)
 
   DO_TEST_NUMSTR("  0x1234", "0x1234", "%#hx", ushort);
   DO_TEST_NUMSTR("0x1__23__4", "0x1234", "%#hx", ushort);
-  DO_TEST_NUMSTR("   0x00001__23__4", "0x1234", "%#hx", ushort);
+  DO_TEST_NUMSTR("   0x0_0001__23__4", "0x1234", "%#hx", ushort);
   DO_TEST_NUMSTR("012_34", "01234", "%#ho", ushort);
-  DO_TEST_NUMSTR("000012_34", "01234", "%#ho", ushort);
+  DO_TEST_NUMSTR("00_0012_34", "01234", "%#ho", ushort);
 
   DO_TEST_NUMSTR("0b10000", "+0b10000", "$#+{b.u:%u}", uint);
   DO_TEST_NUMSTR("+0b10111", "23", "%u", uint);
@@ -299,5 +346,12 @@ int tst(void)
       return (ret); ++ret;
   }
 
+  VSTR_SUB_CSTR_BUF(s2, 1, s2->len, "-0b_1000_1000");
+  ASSERT(!vstr_parse_num(s2, 1, s2->len, FLAGS, NULL, NULL,
+                         do_test_snum_NULL, &FLAGS));
+  ASSERT(!vstr_parse_num(s2, 2, s2->len - 1,
+                         FLAGS | VSTR_FLAG_PARSE_NUM_NO_NEGATIVE, NULL, NULL,
+                         do_test_unum_NULL, &FLAGS));
+  
   return (0);
 }

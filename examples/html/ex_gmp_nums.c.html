@@ -22,6 +22,9 @@
  * which saves doing an extra copy. */</span>
 #<span class="cppdefine">define</span> EX_GMP_NUMS_USE_REFS <span class="num0">0</span>
 
+<span class="comment">/* do we want to test that it works? */</span>
+#<span class="cppdefine">define</span> EX_GMP_NUMS_USE_TST <span class="num0">0</span>
+
 <span class="comment">/* This is the custom formatter.
  * Note that this deals with grouping unlike the gmp_*printf() calls */</span>
 <span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
@@ -129,6 +132,7 @@
   <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>);
   <span class="mpzt">mpz_t</span> bignum;
   <span class="const">const</span> <span class="char">char</span> *loc_num_name = <span class="null">NULL</span>;
+  Vstr_ref *ref = <span class="null">NULL</span>;
   
   <span class="if">if</span> (argc &lt; 2)
     <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"No count specified"</span>);
@@ -152,10 +156,11 @@
   
   mpz_init_set_str(bignum, argv[1], <span class="num0">0</span>);
 
-  mpz_abs(bignum, bignum);
-  mpz_neg(bignum, bignum);
-  
-  do
+  <span class="if">if</span> (EX_GMP_NUMS_USE_TST)
+  {
+    mpz_abs(bignum, bignum);
+    mpz_neg(bignum, bignum);
+  <span class="do">do</span>
   {
     mpz_neg(bignum, bignum);
 
@@ -228,6 +233,37 @@
     vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\n'</span>, 1);
     
   } <span class="while">while</span> (mpz_sgn(bignum) &gt; <span class="num0">0</span>);
+    mpz_abs(bignum, bignum);
+  }
+  
+  <span class="if">if</span> (!(ref = vstr_ref_make_strdup(<span class="str">"_"</span>)))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Ref seperator"</span>);
+
+  <span class="if">if</span> (!vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP,  2, ref, 1) ||
+      !vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP,  8, ref, 1) ||
+      !vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP, 16, ref, 1) ||
+      <span class="false">FALSE</span>)
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add seperator"</span>);
+  vstr_ref_del(ref);
+  
+  <span class="if">if</span> (!(ref = vstr_ref_make_strdup(<span class="str">"\4"</span>)))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Ref grouping"</span>);
+
+  <span class="if">if</span> (!vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP,  2, ref) ||
+      !vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP, 16, ref) ||
+      <span class="false">FALSE</span>)
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add grouping"</span>);
+  vstr_ref_del(ref);
+  
+  vstr_add_fmt(s1, s1-&gt;len, <span class="str">" Input: %s\n"</span>, argv[1]);
+  vstr_add_fmt(s1, s1-&gt;len, <span class="str">"    %%#'x = $#'&lt;xMPZ:%p&gt;\n"</span>,
+               (<span class="void">void</span> *)bignum);
+  vstr_add_fmt(s1, s1-&gt;len, <span class="str">"    %%#'d = $#'&lt;dMPZ:%p&gt;\n"</span>,
+               (<span class="void">void</span> *)bignum);
+  vstr_add_fmt(s1, s1-&gt;len, <span class="str">"    %%#'o = $#'&lt;oMPZ:%p&gt;\n"</span>,
+               (<span class="void">void</span> *)bignum);
+  vstr_add_fmt(s1, s1-&gt;len, <span class="str">"    %%#'b = $#'&lt;bMPZ:%p&gt;\n"</span>,
+               (<span class="void">void</span> *)bignum);
   
   <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
     <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
@@ -238,7 +274,7 @@
 }
 </pre>
 <!-- C to html convertion of ex_gmp_nums.c -->
-<!--   done on Mon Jan 26 05:27:53 2004
+<!--   done on Sun May  9 02:29:53 2004
  -->
 <!--   done by ex_highlight -->
 

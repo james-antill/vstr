@@ -188,7 +188,8 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 tst_regression = \
     regression/tst_regression_vec1 \
     regression/tst_regression_cstr1 \
-    regression/tst_regression_cstr2
+    regression/tst_regression_cstr2 \
+    regression/tst_regression_fmt1
 
 
 xfail_tst_regression = 
@@ -354,7 +355,8 @@ xfail_tst_fmt = \
     fmt/xfail_tst_fmt_invalid_fmt \
     fmt/xfail_tst_fmt_invalid_fmt2 \
     fmt/xfail_tst_fmt_invalid_fmt3 \
-    fmt/xfail_tst_fmt_invalid_ipv6
+    fmt/xfail_tst_fmt_invalid_ipv6 \
+    fmt/xfail_tst_fmt_invalid_ipv6_cidr
 
 
 tst_loc = \
@@ -387,10 +389,23 @@ tst_sc = \
     sc/tst_sc_basename \
     sc/tst_sc_dirname \
     sc/tst_sc_grpnum \
-    sc/tst_sc_conv
+    sc/tst_sc_conv \
+    sc/tst_sc_overflow \
+    sc/tst_sc_uio_maxiov \
+    sc/tst_sc_fmt \
+    sc/tst_sc_close
 
 
 xfail_tst_sc = \
+    sc/xfail_tst_sc_write_fd_oob_pos \
+    sc/xfail_tst_sc_write_fd_oob_len \
+    sc/xfail_tst_sc_write_fd_NULL \
+    sc/xfail_tst_sc_read_iov_file_slow_oob_pos \
+    sc/xfail_tst_sc_read_iov_file_slow_NULL \
+    sc/xfail_tst_sc_read_iov_file_fast_oob_pos \
+    sc/xfail_tst_sc_read_len_file_slow_oob_pos \
+    sc/xfail_tst_sc_read_len_file_slow_NULL \
+    sc/xfail_tst_sc_read_len_file_fast_oob_pos \
     sc/xfail_tst_sc_conv_uint_NULL \
     sc/xfail_tst_sc_conv_uint_len
 
@@ -495,7 +510,8 @@ tst_x = \
     x/tst_x_ref \
     x/tst_x_ref_make_ptr_NULL \
     x/tst_x_swap_conf \
-    x/tst_x_version
+    x/tst_x_version \
+    x/tst_x_iter
 
 
 xfail_tst_x = \
@@ -571,6 +587,7 @@ CONFIG_CLEAN_FILES =
 check_PROGRAMS = regression/tst_regression_vec1$(EXEEXT) \
 	regression/tst_regression_cstr1$(EXEEXT) \
 	regression/tst_regression_cstr2$(EXEEXT) \
+	regression/tst_regression_fmt1$(EXEEXT) \
 	add/tst_add_buf$(EXEEXT) add/tst_add_ptr$(EXEEXT) \
 	add/tst_add_ref$(EXEEXT) add/tst_add_vstr$(EXEEXT) \
 	add/tst_add_non$(EXEEXT) add/tst_add_rep_chr$(EXEEXT) \
@@ -619,6 +636,8 @@ check_PROGRAMS = regression/tst_regression_vec1$(EXEEXT) \
 	sc/tst_sc_write$(EXEEXT) sc/tst_sc_mmap$(EXEEXT) \
 	sc/tst_sc_basename$(EXEEXT) sc/tst_sc_dirname$(EXEEXT) \
 	sc/tst_sc_grpnum$(EXEEXT) sc/tst_sc_conv$(EXEEXT) \
+	sc/tst_sc_overflow$(EXEEXT) sc/tst_sc_uio_maxiov$(EXEEXT) \
+	sc/tst_sc_fmt$(EXEEXT) sc/tst_sc_close$(EXEEXT) \
 	sects/tst_sects_add$(EXEEXT) sects/tst_sects_del$(EXEEXT) \
 	sects/tst_sects_srch$(EXEEXT) sects/tst_sects_foreach$(EXEEXT) \
 	sects/tst_sects_join$(EXEEXT) sects/tst_sects_update$(EXEEXT) \
@@ -636,7 +655,8 @@ check_PROGRAMS = regression/tst_regression_vec1$(EXEEXT) \
 	x/tst_x_macros$(EXEEXT) x/tst_x_make$(EXEEXT) \
 	x/tst_x_misc$(EXEEXT) x/tst_x_num$(EXEEXT) x/tst_x_ref$(EXEEXT) \
 	x/tst_x_ref_make_ptr_NULL$(EXEEXT) x/tst_x_swap_conf$(EXEEXT) \
-	x/tst_x_version$(EXEEXT) add/xfail_tst_add_buf_pos$(EXEEXT) \
+	x/tst_x_version$(EXEEXT) x/tst_x_iter$(EXEEXT) \
+	add/xfail_tst_add_buf_pos$(EXEEXT) \
 	add/xfail_tst_add_buf_NULL$(EXEEXT) \
 	add/xfail_tst_add_ptr_pos$(EXEEXT) \
 	add/xfail_tst_add_ptr_NULL$(EXEEXT) \
@@ -675,6 +695,16 @@ check_PROGRAMS = regression/tst_regression_vec1$(EXEEXT) \
 	fmt/xfail_tst_fmt_invalid_fmt2$(EXEEXT) \
 	fmt/xfail_tst_fmt_invalid_fmt3$(EXEEXT) \
 	fmt/xfail_tst_fmt_invalid_ipv6$(EXEEXT) \
+	fmt/xfail_tst_fmt_invalid_ipv6_cidr$(EXEEXT) \
+	sc/xfail_tst_sc_write_fd_oob_pos$(EXEEXT) \
+	sc/xfail_tst_sc_write_fd_oob_len$(EXEEXT) \
+	sc/xfail_tst_sc_write_fd_NULL$(EXEEXT) \
+	sc/xfail_tst_sc_read_iov_file_slow_oob_pos$(EXEEXT) \
+	sc/xfail_tst_sc_read_iov_file_slow_NULL$(EXEEXT) \
+	sc/xfail_tst_sc_read_iov_file_fast_oob_pos$(EXEEXT) \
+	sc/xfail_tst_sc_read_len_file_slow_oob_pos$(EXEEXT) \
+	sc/xfail_tst_sc_read_len_file_slow_NULL$(EXEEXT) \
+	sc/xfail_tst_sc_read_len_file_fast_oob_pos$(EXEEXT) \
 	sc/xfail_tst_sc_conv_uint_NULL$(EXEEXT) \
 	sc/xfail_tst_sc_conv_uint_len$(EXEEXT) \
 	sects/xfail_tst_sects_update_del$(EXEEXT) \
@@ -1305,6 +1335,13 @@ fmt_xfail_tst_fmt_invalid_ipv6_OBJECTS = \
 fmt_xfail_tst_fmt_invalid_ipv6_LDADD = $(LDADD)
 fmt_xfail_tst_fmt_invalid_ipv6_DEPENDENCIES =
 fmt_xfail_tst_fmt_invalid_ipv6_LDFLAGS =
+fmt_xfail_tst_fmt_invalid_ipv6_cidr_SOURCES = \
+	fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+fmt_xfail_tst_fmt_invalid_ipv6_cidr_OBJECTS = \
+	xfail_tst_fmt_invalid_ipv6_cidr.$(OBJEXT)
+fmt_xfail_tst_fmt_invalid_ipv6_cidr_LDADD = $(LDADD)
+fmt_xfail_tst_fmt_invalid_ipv6_cidr_DEPENDENCIES =
+fmt_xfail_tst_fmt_invalid_ipv6_cidr_LDFLAGS =
 fmt_xfail_tst_fmt_invalid_sysfmt_SOURCES = \
 	fmt/xfail_tst_fmt_invalid_sysfmt.c
 fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS = \
@@ -1364,6 +1401,12 @@ regression_tst_regression_cstr2_OBJECTS = tst_regression_cstr2.$(OBJEXT)
 regression_tst_regression_cstr2_LDADD = $(LDADD)
 regression_tst_regression_cstr2_DEPENDENCIES =
 regression_tst_regression_cstr2_LDFLAGS =
+regression_tst_regression_fmt1_SOURCES = \
+	regression/tst_regression_fmt1.c
+regression_tst_regression_fmt1_OBJECTS = tst_regression_fmt1.$(OBJEXT)
+regression_tst_regression_fmt1_LDADD = $(LDADD)
+regression_tst_regression_fmt1_DEPENDENCIES =
+regression_tst_regression_fmt1_LDFLAGS =
 regression_tst_regression_vec1_SOURCES = \
 	regression/tst_regression_vec1.c
 regression_tst_regression_vec1_OBJECTS = tst_regression_vec1.$(OBJEXT)
@@ -1375,6 +1418,11 @@ sc_tst_sc_basename_OBJECTS = tst_sc_basename.$(OBJEXT)
 sc_tst_sc_basename_LDADD = $(LDADD)
 sc_tst_sc_basename_DEPENDENCIES =
 sc_tst_sc_basename_LDFLAGS =
+sc_tst_sc_close_SOURCES = sc/tst_sc_close.c
+sc_tst_sc_close_OBJECTS = tst_sc_close.$(OBJEXT)
+sc_tst_sc_close_LDADD = $(LDADD)
+sc_tst_sc_close_DEPENDENCIES =
+sc_tst_sc_close_LDFLAGS =
 sc_tst_sc_conv_SOURCES = sc/tst_sc_conv.c
 sc_tst_sc_conv_OBJECTS = tst_sc_conv.$(OBJEXT)
 sc_tst_sc_conv_LDADD = $(LDADD)
@@ -1385,6 +1433,11 @@ sc_tst_sc_dirname_OBJECTS = tst_sc_dirname.$(OBJEXT)
 sc_tst_sc_dirname_LDADD = $(LDADD)
 sc_tst_sc_dirname_DEPENDENCIES =
 sc_tst_sc_dirname_LDFLAGS =
+sc_tst_sc_fmt_SOURCES = sc/tst_sc_fmt.c
+sc_tst_sc_fmt_OBJECTS = tst_sc_fmt.$(OBJEXT)
+sc_tst_sc_fmt_LDADD = $(LDADD)
+sc_tst_sc_fmt_DEPENDENCIES =
+sc_tst_sc_fmt_LDFLAGS =
 sc_tst_sc_grpnum_SOURCES = sc/tst_sc_grpnum.c
 sc_tst_sc_grpnum_OBJECTS = tst_sc_grpnum.$(OBJEXT)
 sc_tst_sc_grpnum_LDADD = $(LDADD)
@@ -1395,11 +1448,21 @@ sc_tst_sc_mmap_OBJECTS = tst_sc_mmap.$(OBJEXT)
 sc_tst_sc_mmap_LDADD = $(LDADD)
 sc_tst_sc_mmap_DEPENDENCIES =
 sc_tst_sc_mmap_LDFLAGS =
+sc_tst_sc_overflow_SOURCES = sc/tst_sc_overflow.c
+sc_tst_sc_overflow_OBJECTS = tst_sc_overflow.$(OBJEXT)
+sc_tst_sc_overflow_LDADD = $(LDADD)
+sc_tst_sc_overflow_DEPENDENCIES =
+sc_tst_sc_overflow_LDFLAGS =
 sc_tst_sc_read_SOURCES = sc/tst_sc_read.c
 sc_tst_sc_read_OBJECTS = tst_sc_read.$(OBJEXT)
 sc_tst_sc_read_LDADD = $(LDADD)
 sc_tst_sc_read_DEPENDENCIES =
 sc_tst_sc_read_LDFLAGS =
+sc_tst_sc_uio_maxiov_SOURCES = sc/tst_sc_uio_maxiov.c
+sc_tst_sc_uio_maxiov_OBJECTS = tst_sc_uio_maxiov.$(OBJEXT)
+sc_tst_sc_uio_maxiov_LDADD = $(LDADD)
+sc_tst_sc_uio_maxiov_DEPENDENCIES =
+sc_tst_sc_uio_maxiov_LDFLAGS =
 sc_tst_sc_write_SOURCES = sc/tst_sc_write.c
 sc_tst_sc_write_OBJECTS = tst_sc_write.$(OBJEXT)
 sc_tst_sc_write_LDADD = $(LDADD)
@@ -1418,6 +1481,68 @@ sc_xfail_tst_sc_conv_uint_len_OBJECTS = \
 sc_xfail_tst_sc_conv_uint_len_LDADD = $(LDADD)
 sc_xfail_tst_sc_conv_uint_len_DEPENDENCIES =
 sc_xfail_tst_sc_conv_uint_len_LDFLAGS =
+sc_xfail_tst_sc_read_iov_file_fast_oob_pos_SOURCES = \
+	sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+sc_xfail_tst_sc_read_iov_file_fast_oob_pos_OBJECTS = \
+	xfail_tst_sc_read_iov_file_fast_oob_pos.$(OBJEXT)
+sc_xfail_tst_sc_read_iov_file_fast_oob_pos_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_iov_file_fast_oob_pos_DEPENDENCIES =
+sc_xfail_tst_sc_read_iov_file_fast_oob_pos_LDFLAGS =
+sc_xfail_tst_sc_read_iov_file_slow_NULL_SOURCES = \
+	sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+sc_xfail_tst_sc_read_iov_file_slow_NULL_OBJECTS = \
+	xfail_tst_sc_read_iov_file_slow_NULL.$(OBJEXT)
+sc_xfail_tst_sc_read_iov_file_slow_NULL_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_iov_file_slow_NULL_DEPENDENCIES =
+sc_xfail_tst_sc_read_iov_file_slow_NULL_LDFLAGS =
+sc_xfail_tst_sc_read_iov_file_slow_oob_pos_SOURCES = \
+	sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+sc_xfail_tst_sc_read_iov_file_slow_oob_pos_OBJECTS = \
+	xfail_tst_sc_read_iov_file_slow_oob_pos.$(OBJEXT)
+sc_xfail_tst_sc_read_iov_file_slow_oob_pos_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_iov_file_slow_oob_pos_DEPENDENCIES =
+sc_xfail_tst_sc_read_iov_file_slow_oob_pos_LDFLAGS =
+sc_xfail_tst_sc_read_len_file_fast_oob_pos_SOURCES = \
+	sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+sc_xfail_tst_sc_read_len_file_fast_oob_pos_OBJECTS = \
+	xfail_tst_sc_read_len_file_fast_oob_pos.$(OBJEXT)
+sc_xfail_tst_sc_read_len_file_fast_oob_pos_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_len_file_fast_oob_pos_DEPENDENCIES =
+sc_xfail_tst_sc_read_len_file_fast_oob_pos_LDFLAGS =
+sc_xfail_tst_sc_read_len_file_slow_NULL_SOURCES = \
+	sc/xfail_tst_sc_read_len_file_slow_NULL.c
+sc_xfail_tst_sc_read_len_file_slow_NULL_OBJECTS = \
+	xfail_tst_sc_read_len_file_slow_NULL.$(OBJEXT)
+sc_xfail_tst_sc_read_len_file_slow_NULL_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_len_file_slow_NULL_DEPENDENCIES =
+sc_xfail_tst_sc_read_len_file_slow_NULL_LDFLAGS =
+sc_xfail_tst_sc_read_len_file_slow_oob_pos_SOURCES = \
+	sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+sc_xfail_tst_sc_read_len_file_slow_oob_pos_OBJECTS = \
+	xfail_tst_sc_read_len_file_slow_oob_pos.$(OBJEXT)
+sc_xfail_tst_sc_read_len_file_slow_oob_pos_LDADD = $(LDADD)
+sc_xfail_tst_sc_read_len_file_slow_oob_pos_DEPENDENCIES =
+sc_xfail_tst_sc_read_len_file_slow_oob_pos_LDFLAGS =
+sc_xfail_tst_sc_write_fd_NULL_SOURCES = sc/xfail_tst_sc_write_fd_NULL.c
+sc_xfail_tst_sc_write_fd_NULL_OBJECTS = \
+	xfail_tst_sc_write_fd_NULL.$(OBJEXT)
+sc_xfail_tst_sc_write_fd_NULL_LDADD = $(LDADD)
+sc_xfail_tst_sc_write_fd_NULL_DEPENDENCIES =
+sc_xfail_tst_sc_write_fd_NULL_LDFLAGS =
+sc_xfail_tst_sc_write_fd_oob_len_SOURCES = \
+	sc/xfail_tst_sc_write_fd_oob_len.c
+sc_xfail_tst_sc_write_fd_oob_len_OBJECTS = \
+	xfail_tst_sc_write_fd_oob_len.$(OBJEXT)
+sc_xfail_tst_sc_write_fd_oob_len_LDADD = $(LDADD)
+sc_xfail_tst_sc_write_fd_oob_len_DEPENDENCIES =
+sc_xfail_tst_sc_write_fd_oob_len_LDFLAGS =
+sc_xfail_tst_sc_write_fd_oob_pos_SOURCES = \
+	sc/xfail_tst_sc_write_fd_oob_pos.c
+sc_xfail_tst_sc_write_fd_oob_pos_OBJECTS = \
+	xfail_tst_sc_write_fd_oob_pos.$(OBJEXT)
+sc_xfail_tst_sc_write_fd_oob_pos_LDADD = $(LDADD)
+sc_xfail_tst_sc_write_fd_oob_pos_DEPENDENCIES =
+sc_xfail_tst_sc_write_fd_oob_pos_LDFLAGS =
 sects_tst_sects_add_SOURCES = sects/tst_sects_add.c
 sects_tst_sects_add_OBJECTS = tst_sects_add.$(OBJEXT)
 sects_tst_sects_add_LDADD = $(LDADD)
@@ -1778,6 +1903,11 @@ x_tst_x_inline_OBJECTS = tst_x_inline.$(OBJEXT)
 x_tst_x_inline_LDADD = $(LDADD)
 x_tst_x_inline_DEPENDENCIES =
 x_tst_x_inline_LDFLAGS =
+x_tst_x_iter_SOURCES = x/tst_x_iter.c
+x_tst_x_iter_OBJECTS = tst_x_iter.$(OBJEXT)
+x_tst_x_iter_LDADD = $(LDADD)
+x_tst_x_iter_DEPENDENCIES =
+x_tst_x_iter_LDFLAGS =
 x_tst_x_macros_SOURCES = x/tst_x_macros.c
 x_tst_x_macros_OBJECTS = tst_x_macros.$(OBJEXT)
 x_tst_x_macros_LDADD = $(LDADD)
@@ -1916,17 +2046,29 @@ DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	fmt/xfail_tst_fmt_invalid_fmt2.c \
 	fmt/xfail_tst_fmt_invalid_fmt3.c \
 	fmt/xfail_tst_fmt_invalid_ipv6.c \
+	fmt/xfail_tst_fmt_invalid_ipv6_cidr.c \
 	fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c \
 	mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c \
 	parse/tst_parse_ipv6.c parse/tst_parse_netstr.c \
 	parse/tst_parse_netstr2.c parse/tst_parse_num.c \
 	regression/tst_regression_cstr1.c \
 	regression/tst_regression_cstr2.c \
+	regression/tst_regression_fmt1.c \
 	regression/tst_regression_vec1.c sc/tst_sc_basename.c \
-	sc/tst_sc_conv.c sc/tst_sc_dirname.c sc/tst_sc_grpnum.c \
-	sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c \
-	sc/xfail_tst_sc_conv_uint_NULL.c \
-	sc/xfail_tst_sc_conv_uint_len.c sects/tst_sects_add.c \
+	sc/tst_sc_close.c sc/tst_sc_conv.c sc/tst_sc_dirname.c \
+	sc/tst_sc_fmt.c sc/tst_sc_grpnum.c sc/tst_sc_mmap.c \
+	sc/tst_sc_overflow.c sc/tst_sc_read.c sc/tst_sc_uio_maxiov.c \
+	sc/tst_sc_write.c sc/xfail_tst_sc_conv_uint_NULL.c \
+	sc/xfail_tst_sc_conv_uint_len.c \
+	sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c \
+	sc/xfail_tst_sc_read_iov_file_slow_NULL.c \
+	sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c \
+	sc/xfail_tst_sc_read_len_file_fast_oob_pos.c \
+	sc/xfail_tst_sc_read_len_file_slow_NULL.c \
+	sc/xfail_tst_sc_read_len_file_slow_oob_pos.c \
+	sc/xfail_tst_sc_write_fd_NULL.c \
+	sc/xfail_tst_sc_write_fd_oob_len.c \
+	sc/xfail_tst_sc_write_fd_oob_pos.c sects/tst_sects_add.c \
 	sects/tst_sects_del.c sects/tst_sects_foreach.c \
 	sects/tst_sects_join.c sects/tst_sects_srch.c \
 	sects/tst_sects_update.c sects/xfail_tst_sects_update_del.c \
@@ -1966,13 +2108,14 @@ DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	sub/xfail_tst_sub_ref_pos.c sub/xfail_tst_sub_rep_chr_NULL.c \
 	sub/xfail_tst_sub_rep_chr_len.c sub/xfail_tst_sub_rep_chr_pos.c \
 	x/tst_x_include.c x/tst_x_init.c x/tst_x_inline.c \
-	x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_num.c \
-	x/tst_x_ref.c x/tst_x_ref_make_ptr_NULL.c x/tst_x_swap_conf.c \
-	x/tst_x_typedef.c x/tst_x_version.c x/xfail_tst_x_abi_call1.c \
-	x/xfail_tst_x_exit.c x/xfail_tst_x_free_bad_node.c \
-	x/xfail_tst_x_make_bad_node.c x/xfail_tst_x_version_bad_fd.c
+	x/tst_x_iter.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c \
+	x/tst_x_num.c x/tst_x_ref.c x/tst_x_ref_make_ptr_NULL.c \
+	x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c \
+	x/xfail_tst_x_abi_call1.c x/xfail_tst_x_exit.c \
+	x/xfail_tst_x_free_bad_node.c x/xfail_tst_x_make_bad_node.c \
+	x/xfail_tst_x_version_bad_fd.c
 DIST_COMMON = $(srcdir)/Makefile.in Makefile.am
-SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c add/xfail_tst_add_buf_pos.c add/xfail_tst_add_netstr_beg_NULL.c add/xfail_tst_add_netstr_beg_pos.c add/xfail_tst_add_netstr_end_NULL.c add/xfail_tst_add_netstr_end_pos.c add/xfail_tst_add_netstr_end_pos2.c add/xfail_tst_add_netstr_end_pos3.c add/xfail_tst_add_netstr_end_pos4.c add/xfail_tst_add_netstr_end_pos5.c add/xfail_tst_add_netstr_end_pos6.c add/xfail_tst_add_non_NULL.c add/xfail_tst_add_non_pos.c add/xfail_tst_add_ptr_NULL.c add/xfail_tst_add_ptr_pos.c add/xfail_tst_add_ref_NULL_ref.c add/xfail_tst_add_ref_NULL_vstr.c add/xfail_tst_add_ref_pos.c add/xfail_tst_add_vstr_NULL_f.c add/xfail_tst_add_vstr_NULL_t.c add/xfail_tst_add_vstr_pos_f.c add/xfail_tst_add_vstr_pos_t.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c data/tst_data_add.c data/tst_data_del.c data/tst_data_get.c data/tst_data_set.c data/tst_data_srch.c data/xfail_tst_data_add_NULL.c data/xfail_tst_data_del_oob.c data/xfail_tst_data_get_oob.c data/xfail_tst_data_srch_NULL.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c del/xfail_tst_del_NULL.c del/xfail_tst_del_oob_len.c del/xfail_tst_del_oob_pos.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ptr_NULL.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c export/xfail_tst_export_buf_NULL.c export/xfail_tst_export_buf_oob_len.c export/xfail_tst_export_buf_oob_pos.c fmt/tst_fmt_b.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c fmt/xfail_tst_fmt_base_NULL.c fmt/xfail_tst_fmt_buf_pos.c fmt/xfail_tst_fmt_invalid_fmt.c fmt/xfail_tst_fmt_invalid_fmt2.c fmt/xfail_tst_fmt_invalid_fmt3.c fmt/xfail_tst_fmt_invalid_ipv6.c fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c regression/tst_regression_cstr1.c regression/tst_regression_cstr2.c regression/tst_regression_vec1.c sc/tst_sc_basename.c sc/tst_sc_conv.c sc/tst_sc_dirname.c sc/tst_sc_grpnum.c sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c sc/xfail_tst_sc_conv_uint_NULL.c sc/xfail_tst_sc_conv_uint_len.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c sects/xfail_tst_sects_update_del.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c spn/xfail_tst_cspn_chrs_fwd_oob_len.c spn/xfail_tst_cspn_chrs_fwd_oob_pos.c spn/xfail_tst_cspn_chrs_rev_fast_oob_len.c spn/xfail_tst_cspn_chrs_rev_fast_oob_pos.c spn/xfail_tst_cspn_chrs_rev_slow_oob_len.c spn/xfail_tst_cspn_chrs_rev_slow_oob_pos.c spn/xfail_tst_spn_chrs_fwd_oob_len.c spn/xfail_tst_spn_chrs_fwd_oob_pos.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c srch/xfail_tst_srch_buf_oob_len.c srch/xfail_tst_srch_buf_oob_pos.c srch/xfail_tst_srch_case_buf_oob_len.c srch/xfail_tst_srch_case_buf_oob_pos.c srch/xfail_tst_srch_case_chr_oob_len.c srch/xfail_tst_srch_case_chr_oob_pos.c srch/xfail_tst_srch_case_vstr_oob_len.c srch/xfail_tst_srch_case_vstr_oob_pos.c srch/xfail_tst_srch_chr_oob_len.c srch/xfail_tst_srch_chr_oob_pos.c srch/xfail_tst_srch_rev_buf_oob_len.c srch/xfail_tst_srch_rev_buf_oob_pos.c srch/xfail_tst_srch_vstr_oob_len.c srch/xfail_tst_srch_vstr_oob_pos.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c sub/xfail_tst_sub_buf_NULL.c sub/xfail_tst_sub_buf_len.c sub/xfail_tst_sub_buf_pos.c sub/xfail_tst_sub_ptr_NULL.c sub/xfail_tst_sub_ptr_len.c sub/xfail_tst_sub_ptr_pos.c sub/xfail_tst_sub_ref_NULL.c sub/xfail_tst_sub_ref_len.c sub/xfail_tst_sub_ref_pos.c sub/xfail_tst_sub_rep_chr_NULL.c sub/xfail_tst_sub_rep_chr_len.c sub/xfail_tst_sub_rep_chr_pos.c x/tst_x_include.c x/tst_x_init.c x/tst_x_inline.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_num.c x/tst_x_ref.c x/tst_x_ref_make_ptr_NULL.c x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c x/xfail_tst_x_abi_call1.c x/xfail_tst_x_exit.c x/xfail_tst_x_free_bad_node.c x/xfail_tst_x_make_bad_node.c x/xfail_tst_x_version_bad_fd.c
+SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c add/xfail_tst_add_buf_pos.c add/xfail_tst_add_netstr_beg_NULL.c add/xfail_tst_add_netstr_beg_pos.c add/xfail_tst_add_netstr_end_NULL.c add/xfail_tst_add_netstr_end_pos.c add/xfail_tst_add_netstr_end_pos2.c add/xfail_tst_add_netstr_end_pos3.c add/xfail_tst_add_netstr_end_pos4.c add/xfail_tst_add_netstr_end_pos5.c add/xfail_tst_add_netstr_end_pos6.c add/xfail_tst_add_non_NULL.c add/xfail_tst_add_non_pos.c add/xfail_tst_add_ptr_NULL.c add/xfail_tst_add_ptr_pos.c add/xfail_tst_add_ref_NULL_ref.c add/xfail_tst_add_ref_NULL_vstr.c add/xfail_tst_add_ref_pos.c add/xfail_tst_add_vstr_NULL_f.c add/xfail_tst_add_vstr_NULL_t.c add/xfail_tst_add_vstr_pos_f.c add/xfail_tst_add_vstr_pos_t.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c data/tst_data_add.c data/tst_data_del.c data/tst_data_get.c data/tst_data_set.c data/tst_data_srch.c data/xfail_tst_data_add_NULL.c data/xfail_tst_data_del_oob.c data/xfail_tst_data_get_oob.c data/xfail_tst_data_srch_NULL.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c del/xfail_tst_del_NULL.c del/xfail_tst_del_oob_len.c del/xfail_tst_del_oob_pos.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ptr_NULL.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c export/xfail_tst_export_buf_NULL.c export/xfail_tst_export_buf_oob_len.c export/xfail_tst_export_buf_oob_pos.c fmt/tst_fmt_b.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c fmt/xfail_tst_fmt_base_NULL.c fmt/xfail_tst_fmt_buf_pos.c fmt/xfail_tst_fmt_invalid_fmt.c fmt/xfail_tst_fmt_invalid_fmt2.c fmt/xfail_tst_fmt_invalid_fmt3.c fmt/xfail_tst_fmt_invalid_ipv6.c fmt/xfail_tst_fmt_invalid_ipv6_cidr.c fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c regression/tst_regression_cstr1.c regression/tst_regression_cstr2.c regression/tst_regression_fmt1.c regression/tst_regression_vec1.c sc/tst_sc_basename.c sc/tst_sc_close.c sc/tst_sc_conv.c sc/tst_sc_dirname.c sc/tst_sc_fmt.c sc/tst_sc_grpnum.c sc/tst_sc_mmap.c sc/tst_sc_overflow.c sc/tst_sc_read.c sc/tst_sc_uio_maxiov.c sc/tst_sc_write.c sc/xfail_tst_sc_conv_uint_NULL.c sc/xfail_tst_sc_conv_uint_len.c sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c sc/xfail_tst_sc_read_iov_file_slow_NULL.c sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c sc/xfail_tst_sc_read_len_file_fast_oob_pos.c sc/xfail_tst_sc_read_len_file_slow_NULL.c sc/xfail_tst_sc_read_len_file_slow_oob_pos.c sc/xfail_tst_sc_write_fd_NULL.c sc/xfail_tst_sc_write_fd_oob_len.c sc/xfail_tst_sc_write_fd_oob_pos.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c sects/xfail_tst_sects_update_del.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c spn/xfail_tst_cspn_chrs_fwd_oob_len.c spn/xfail_tst_cspn_chrs_fwd_oob_pos.c spn/xfail_tst_cspn_chrs_rev_fast_oob_len.c spn/xfail_tst_cspn_chrs_rev_fast_oob_pos.c spn/xfail_tst_cspn_chrs_rev_slow_oob_len.c spn/xfail_tst_cspn_chrs_rev_slow_oob_pos.c spn/xfail_tst_spn_chrs_fwd_oob_len.c spn/xfail_tst_spn_chrs_fwd_oob_pos.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c srch/xfail_tst_srch_buf_oob_len.c srch/xfail_tst_srch_buf_oob_pos.c srch/xfail_tst_srch_case_buf_oob_len.c srch/xfail_tst_srch_case_buf_oob_pos.c srch/xfail_tst_srch_case_chr_oob_len.c srch/xfail_tst_srch_case_chr_oob_pos.c srch/xfail_tst_srch_case_vstr_oob_len.c srch/xfail_tst_srch_case_vstr_oob_pos.c srch/xfail_tst_srch_chr_oob_len.c srch/xfail_tst_srch_chr_oob_pos.c srch/xfail_tst_srch_rev_buf_oob_len.c srch/xfail_tst_srch_rev_buf_oob_pos.c srch/xfail_tst_srch_vstr_oob_len.c srch/xfail_tst_srch_vstr_oob_pos.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c sub/xfail_tst_sub_buf_NULL.c sub/xfail_tst_sub_buf_len.c sub/xfail_tst_sub_buf_pos.c sub/xfail_tst_sub_ptr_NULL.c sub/xfail_tst_sub_ptr_len.c sub/xfail_tst_sub_ptr_pos.c sub/xfail_tst_sub_ref_NULL.c sub/xfail_tst_sub_ref_len.c sub/xfail_tst_sub_ref_pos.c sub/xfail_tst_sub_rep_chr_NULL.c sub/xfail_tst_sub_rep_chr_len.c sub/xfail_tst_sub_rep_chr_pos.c x/tst_x_include.c x/tst_x_init.c x/tst_x_inline.c x/tst_x_iter.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_num.c x/tst_x_ref.c x/tst_x_ref_make_ptr_NULL.c x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c x/xfail_tst_x_abi_call1.c x/xfail_tst_x_exit.c x/xfail_tst_x_free_bad_node.c x/xfail_tst_x_make_bad_node.c x/xfail_tst_x_version_bad_fd.c
 
 all: all-am
 
@@ -2344,6 +2487,9 @@ fmt/xfail_tst_fmt_invalid_fmt3$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_fmt3_OBJECT
 fmt/xfail_tst_fmt_invalid_ipv6$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_ipv6_OBJECTS) $(fmt_xfail_tst_fmt_invalid_ipv6_DEPENDENCIES) fmt/$(am__dirstamp)
 	@rm -f fmt/xfail_tst_fmt_invalid_ipv6$(EXEEXT)
 	$(LINK) $(fmt_xfail_tst_fmt_invalid_ipv6_LDFLAGS) $(fmt_xfail_tst_fmt_invalid_ipv6_OBJECTS) $(fmt_xfail_tst_fmt_invalid_ipv6_LDADD) $(LIBS)
+fmt/xfail_tst_fmt_invalid_ipv6_cidr$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_ipv6_cidr_OBJECTS) $(fmt_xfail_tst_fmt_invalid_ipv6_cidr_DEPENDENCIES) fmt/$(am__dirstamp)
+	@rm -f fmt/xfail_tst_fmt_invalid_ipv6_cidr$(EXEEXT)
+	$(LINK) $(fmt_xfail_tst_fmt_invalid_ipv6_cidr_LDFLAGS) $(fmt_xfail_tst_fmt_invalid_ipv6_cidr_OBJECTS) $(fmt_xfail_tst_fmt_invalid_ipv6_cidr_LDADD) $(LIBS)
 fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT): $(fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_sysfmt_DEPENDENCIES) fmt/$(am__dirstamp)
 	@rm -f fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT)
 	$(LINK) $(fmt_xfail_tst_fmt_invalid_sysfmt_LDFLAGS) $(fmt_xfail_tst_fmt_invalid_sysfmt_OBJECTS) $(fmt_xfail_tst_fmt_invalid_sysfmt_LDADD) $(LIBS)
@@ -2389,6 +2535,9 @@ regression/tst_regression_cstr1$(EXEEXT): $(regression_tst_regression_cstr1_OBJE
 regression/tst_regression_cstr2$(EXEEXT): $(regression_tst_regression_cstr2_OBJECTS) $(regression_tst_regression_cstr2_DEPENDENCIES) regression/$(am__dirstamp)
 	@rm -f regression/tst_regression_cstr2$(EXEEXT)
 	$(LINK) $(regression_tst_regression_cstr2_LDFLAGS) $(regression_tst_regression_cstr2_OBJECTS) $(regression_tst_regression_cstr2_LDADD) $(LIBS)
+regression/tst_regression_fmt1$(EXEEXT): $(regression_tst_regression_fmt1_OBJECTS) $(regression_tst_regression_fmt1_DEPENDENCIES) regression/$(am__dirstamp)
+	@rm -f regression/tst_regression_fmt1$(EXEEXT)
+	$(LINK) $(regression_tst_regression_fmt1_LDFLAGS) $(regression_tst_regression_fmt1_OBJECTS) $(regression_tst_regression_fmt1_LDADD) $(LIBS)
 regression/tst_regression_vec1$(EXEEXT): $(regression_tst_regression_vec1_OBJECTS) $(regression_tst_regression_vec1_DEPENDENCIES) regression/$(am__dirstamp)
 	@rm -f regression/tst_regression_vec1$(EXEEXT)
 	$(LINK) $(regression_tst_regression_vec1_LDFLAGS) $(regression_tst_regression_vec1_OBJECTS) $(regression_tst_regression_vec1_LDADD) $(LIBS)
@@ -2398,21 +2547,33 @@ sc/$(am__dirstamp):
 sc/tst_sc_basename$(EXEEXT): $(sc_tst_sc_basename_OBJECTS) $(sc_tst_sc_basename_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_basename$(EXEEXT)
 	$(LINK) $(sc_tst_sc_basename_LDFLAGS) $(sc_tst_sc_basename_OBJECTS) $(sc_tst_sc_basename_LDADD) $(LIBS)
+sc/tst_sc_close$(EXEEXT): $(sc_tst_sc_close_OBJECTS) $(sc_tst_sc_close_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/tst_sc_close$(EXEEXT)
+	$(LINK) $(sc_tst_sc_close_LDFLAGS) $(sc_tst_sc_close_OBJECTS) $(sc_tst_sc_close_LDADD) $(LIBS)
 sc/tst_sc_conv$(EXEEXT): $(sc_tst_sc_conv_OBJECTS) $(sc_tst_sc_conv_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_conv$(EXEEXT)
 	$(LINK) $(sc_tst_sc_conv_LDFLAGS) $(sc_tst_sc_conv_OBJECTS) $(sc_tst_sc_conv_LDADD) $(LIBS)
 sc/tst_sc_dirname$(EXEEXT): $(sc_tst_sc_dirname_OBJECTS) $(sc_tst_sc_dirname_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_dirname$(EXEEXT)
 	$(LINK) $(sc_tst_sc_dirname_LDFLAGS) $(sc_tst_sc_dirname_OBJECTS) $(sc_tst_sc_dirname_LDADD) $(LIBS)
+sc/tst_sc_fmt$(EXEEXT): $(sc_tst_sc_fmt_OBJECTS) $(sc_tst_sc_fmt_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/tst_sc_fmt$(EXEEXT)
+	$(LINK) $(sc_tst_sc_fmt_LDFLAGS) $(sc_tst_sc_fmt_OBJECTS) $(sc_tst_sc_fmt_LDADD) $(LIBS)
 sc/tst_sc_grpnum$(EXEEXT): $(sc_tst_sc_grpnum_OBJECTS) $(sc_tst_sc_grpnum_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_grpnum$(EXEEXT)
 	$(LINK) $(sc_tst_sc_grpnum_LDFLAGS) $(sc_tst_sc_grpnum_OBJECTS) $(sc_tst_sc_grpnum_LDADD) $(LIBS)
 sc/tst_sc_mmap$(EXEEXT): $(sc_tst_sc_mmap_OBJECTS) $(sc_tst_sc_mmap_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_mmap$(EXEEXT)
 	$(LINK) $(sc_tst_sc_mmap_LDFLAGS) $(sc_tst_sc_mmap_OBJECTS) $(sc_tst_sc_mmap_LDADD) $(LIBS)
+sc/tst_sc_overflow$(EXEEXT): $(sc_tst_sc_overflow_OBJECTS) $(sc_tst_sc_overflow_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/tst_sc_overflow$(EXEEXT)
+	$(LINK) $(sc_tst_sc_overflow_LDFLAGS) $(sc_tst_sc_overflow_OBJECTS) $(sc_tst_sc_overflow_LDADD) $(LIBS)
 sc/tst_sc_read$(EXEEXT): $(sc_tst_sc_read_OBJECTS) $(sc_tst_sc_read_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_read$(EXEEXT)
 	$(LINK) $(sc_tst_sc_read_LDFLAGS) $(sc_tst_sc_read_OBJECTS) $(sc_tst_sc_read_LDADD) $(LIBS)
+sc/tst_sc_uio_maxiov$(EXEEXT): $(sc_tst_sc_uio_maxiov_OBJECTS) $(sc_tst_sc_uio_maxiov_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/tst_sc_uio_maxiov$(EXEEXT)
+	$(LINK) $(sc_tst_sc_uio_maxiov_LDFLAGS) $(sc_tst_sc_uio_maxiov_OBJECTS) $(sc_tst_sc_uio_maxiov_LDADD) $(LIBS)
 sc/tst_sc_write$(EXEEXT): $(sc_tst_sc_write_OBJECTS) $(sc_tst_sc_write_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/tst_sc_write$(EXEEXT)
 	$(LINK) $(sc_tst_sc_write_LDFLAGS) $(sc_tst_sc_write_OBJECTS) $(sc_tst_sc_write_LDADD) $(LIBS)
@@ -2422,6 +2583,33 @@ sc/xfail_tst_sc_conv_uint_NULL$(EXEEXT): $(sc_xfail_tst_sc_conv_uint_NULL_OBJECT
 sc/xfail_tst_sc_conv_uint_len$(EXEEXT): $(sc_xfail_tst_sc_conv_uint_len_OBJECTS) $(sc_xfail_tst_sc_conv_uint_len_DEPENDENCIES) sc/$(am__dirstamp)
 	@rm -f sc/xfail_tst_sc_conv_uint_len$(EXEEXT)
 	$(LINK) $(sc_xfail_tst_sc_conv_uint_len_LDFLAGS) $(sc_xfail_tst_sc_conv_uint_len_OBJECTS) $(sc_xfail_tst_sc_conv_uint_len_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_iov_file_fast_oob_pos$(EXEEXT): $(sc_xfail_tst_sc_read_iov_file_fast_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_fast_oob_pos_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_iov_file_fast_oob_pos$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_iov_file_fast_oob_pos_LDFLAGS) $(sc_xfail_tst_sc_read_iov_file_fast_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_fast_oob_pos_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_iov_file_slow_NULL$(EXEEXT): $(sc_xfail_tst_sc_read_iov_file_slow_NULL_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_slow_NULL_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_iov_file_slow_NULL$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_iov_file_slow_NULL_LDFLAGS) $(sc_xfail_tst_sc_read_iov_file_slow_NULL_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_slow_NULL_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_iov_file_slow_oob_pos$(EXEEXT): $(sc_xfail_tst_sc_read_iov_file_slow_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_slow_oob_pos_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_iov_file_slow_oob_pos$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_iov_file_slow_oob_pos_LDFLAGS) $(sc_xfail_tst_sc_read_iov_file_slow_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_iov_file_slow_oob_pos_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_len_file_fast_oob_pos$(EXEEXT): $(sc_xfail_tst_sc_read_len_file_fast_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_len_file_fast_oob_pos_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_len_file_fast_oob_pos$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_len_file_fast_oob_pos_LDFLAGS) $(sc_xfail_tst_sc_read_len_file_fast_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_len_file_fast_oob_pos_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_len_file_slow_NULL$(EXEEXT): $(sc_xfail_tst_sc_read_len_file_slow_NULL_OBJECTS) $(sc_xfail_tst_sc_read_len_file_slow_NULL_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_len_file_slow_NULL$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_len_file_slow_NULL_LDFLAGS) $(sc_xfail_tst_sc_read_len_file_slow_NULL_OBJECTS) $(sc_xfail_tst_sc_read_len_file_slow_NULL_LDADD) $(LIBS)
+sc/xfail_tst_sc_read_len_file_slow_oob_pos$(EXEEXT): $(sc_xfail_tst_sc_read_len_file_slow_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_len_file_slow_oob_pos_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_read_len_file_slow_oob_pos$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_read_len_file_slow_oob_pos_LDFLAGS) $(sc_xfail_tst_sc_read_len_file_slow_oob_pos_OBJECTS) $(sc_xfail_tst_sc_read_len_file_slow_oob_pos_LDADD) $(LIBS)
+sc/xfail_tst_sc_write_fd_NULL$(EXEEXT): $(sc_xfail_tst_sc_write_fd_NULL_OBJECTS) $(sc_xfail_tst_sc_write_fd_NULL_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_write_fd_NULL$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_write_fd_NULL_LDFLAGS) $(sc_xfail_tst_sc_write_fd_NULL_OBJECTS) $(sc_xfail_tst_sc_write_fd_NULL_LDADD) $(LIBS)
+sc/xfail_tst_sc_write_fd_oob_len$(EXEEXT): $(sc_xfail_tst_sc_write_fd_oob_len_OBJECTS) $(sc_xfail_tst_sc_write_fd_oob_len_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_write_fd_oob_len$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_write_fd_oob_len_LDFLAGS) $(sc_xfail_tst_sc_write_fd_oob_len_OBJECTS) $(sc_xfail_tst_sc_write_fd_oob_len_LDADD) $(LIBS)
+sc/xfail_tst_sc_write_fd_oob_pos$(EXEEXT): $(sc_xfail_tst_sc_write_fd_oob_pos_OBJECTS) $(sc_xfail_tst_sc_write_fd_oob_pos_DEPENDENCIES) sc/$(am__dirstamp)
+	@rm -f sc/xfail_tst_sc_write_fd_oob_pos$(EXEEXT)
+	$(LINK) $(sc_xfail_tst_sc_write_fd_oob_pos_LDFLAGS) $(sc_xfail_tst_sc_write_fd_oob_pos_OBJECTS) $(sc_xfail_tst_sc_write_fd_oob_pos_LDADD) $(LIBS)
 sects/$(am__dirstamp):
 	@$(mkinstalldirs) sects
 	@: > sects/$(am__dirstamp)
@@ -2626,6 +2814,9 @@ x/tst_x_init$(EXEEXT): $(x_tst_x_init_OBJECTS) $(x_tst_x_init_DEPENDENCIES) x/$(
 x/tst_x_inline$(EXEEXT): $(x_tst_x_inline_OBJECTS) $(x_tst_x_inline_DEPENDENCIES) x/$(am__dirstamp)
 	@rm -f x/tst_x_inline$(EXEEXT)
 	$(LINK) $(x_tst_x_inline_LDFLAGS) $(x_tst_x_inline_OBJECTS) $(x_tst_x_inline_LDADD) $(LIBS)
+x/tst_x_iter$(EXEEXT): $(x_tst_x_iter_OBJECTS) $(x_tst_x_iter_DEPENDENCIES) x/$(am__dirstamp)
+	@rm -f x/tst_x_iter$(EXEEXT)
+	$(LINK) $(x_tst_x_iter_LDFLAGS) $(x_tst_x_iter_OBJECTS) $(x_tst_x_iter_LDADD) $(LIBS)
 x/tst_x_macros$(EXEEXT): $(x_tst_x_macros_OBJECTS) $(x_tst_x_macros_DEPENDENCIES) x/$(am__dirstamp)
 	@rm -f x/tst_x_macros$(EXEEXT)
 	$(LINK) $(x_tst_x_macros_LDFLAGS) $(x_tst_x_macros_OBJECTS) $(x_tst_x_macros_LDADD) $(LIBS)
@@ -3656,6 +3847,15 @@ xfail_tst_fmt_invalid_ipv6.obj: fmt/xfail_tst_fmt_invalid_ipv6.c
 xfail_tst_fmt_invalid_ipv6.lo: fmt/xfail_tst_fmt_invalid_ipv6.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_ipv6.lo `test -f 'fmt/xfail_tst_fmt_invalid_ipv6.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_ipv6.c
 
+xfail_tst_fmt_invalid_ipv6_cidr.o: fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_ipv6_cidr.o `test -f 'fmt/xfail_tst_fmt_invalid_ipv6_cidr.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+
+xfail_tst_fmt_invalid_ipv6_cidr.obj: fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_ipv6_cidr.obj `if test -f 'fmt/xfail_tst_fmt_invalid_ipv6_cidr.c'; then $(CYGPATH_W) 'fmt/xfail_tst_fmt_invalid_ipv6_cidr.c'; else $(CYGPATH_W) '$(srcdir)/fmt/xfail_tst_fmt_invalid_ipv6_cidr.c'; fi`
+
+xfail_tst_fmt_invalid_ipv6_cidr.lo: fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_ipv6_cidr.lo `test -f 'fmt/xfail_tst_fmt_invalid_ipv6_cidr.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_ipv6_cidr.c
+
 xfail_tst_fmt_invalid_sysfmt.o: fmt/xfail_tst_fmt_invalid_sysfmt.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_fmt_invalid_sysfmt.o `test -f 'fmt/xfail_tst_fmt_invalid_sysfmt.c' || echo '$(srcdir)/'`fmt/xfail_tst_fmt_invalid_sysfmt.c
 
@@ -3755,6 +3955,15 @@ tst_regression_cstr2.obj: regression/tst_regression_cstr2.c
 tst_regression_cstr2.lo: regression/tst_regression_cstr2.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_regression_cstr2.lo `test -f 'regression/tst_regression_cstr2.c' || echo '$(srcdir)/'`regression/tst_regression_cstr2.c
 
+tst_regression_fmt1.o: regression/tst_regression_fmt1.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_regression_fmt1.o `test -f 'regression/tst_regression_fmt1.c' || echo '$(srcdir)/'`regression/tst_regression_fmt1.c
+
+tst_regression_fmt1.obj: regression/tst_regression_fmt1.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_regression_fmt1.obj `if test -f 'regression/tst_regression_fmt1.c'; then $(CYGPATH_W) 'regression/tst_regression_fmt1.c'; else $(CYGPATH_W) '$(srcdir)/regression/tst_regression_fmt1.c'; fi`
+
+tst_regression_fmt1.lo: regression/tst_regression_fmt1.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_regression_fmt1.lo `test -f 'regression/tst_regression_fmt1.c' || echo '$(srcdir)/'`regression/tst_regression_fmt1.c
+
 tst_regression_vec1.o: regression/tst_regression_vec1.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_regression_vec1.o `test -f 'regression/tst_regression_vec1.c' || echo '$(srcdir)/'`regression/tst_regression_vec1.c
 
@@ -3772,6 +3981,15 @@ tst_sc_basename.obj: sc/tst_sc_basename.c
 
 tst_sc_basename.lo: sc/tst_sc_basename.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_basename.lo `test -f 'sc/tst_sc_basename.c' || echo '$(srcdir)/'`sc/tst_sc_basename.c
+
+tst_sc_close.o: sc/tst_sc_close.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_close.o `test -f 'sc/tst_sc_close.c' || echo '$(srcdir)/'`sc/tst_sc_close.c
+
+tst_sc_close.obj: sc/tst_sc_close.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_close.obj `if test -f 'sc/tst_sc_close.c'; then $(CYGPATH_W) 'sc/tst_sc_close.c'; else $(CYGPATH_W) '$(srcdir)/sc/tst_sc_close.c'; fi`
+
+tst_sc_close.lo: sc/tst_sc_close.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_close.lo `test -f 'sc/tst_sc_close.c' || echo '$(srcdir)/'`sc/tst_sc_close.c
 
 tst_sc_conv.o: sc/tst_sc_conv.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_conv.o `test -f 'sc/tst_sc_conv.c' || echo '$(srcdir)/'`sc/tst_sc_conv.c
@@ -3791,6 +4009,15 @@ tst_sc_dirname.obj: sc/tst_sc_dirname.c
 tst_sc_dirname.lo: sc/tst_sc_dirname.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_dirname.lo `test -f 'sc/tst_sc_dirname.c' || echo '$(srcdir)/'`sc/tst_sc_dirname.c
 
+tst_sc_fmt.o: sc/tst_sc_fmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_fmt.o `test -f 'sc/tst_sc_fmt.c' || echo '$(srcdir)/'`sc/tst_sc_fmt.c
+
+tst_sc_fmt.obj: sc/tst_sc_fmt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_fmt.obj `if test -f 'sc/tst_sc_fmt.c'; then $(CYGPATH_W) 'sc/tst_sc_fmt.c'; else $(CYGPATH_W) '$(srcdir)/sc/tst_sc_fmt.c'; fi`
+
+tst_sc_fmt.lo: sc/tst_sc_fmt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_fmt.lo `test -f 'sc/tst_sc_fmt.c' || echo '$(srcdir)/'`sc/tst_sc_fmt.c
+
 tst_sc_grpnum.o: sc/tst_sc_grpnum.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_grpnum.o `test -f 'sc/tst_sc_grpnum.c' || echo '$(srcdir)/'`sc/tst_sc_grpnum.c
 
@@ -3809,6 +4036,15 @@ tst_sc_mmap.obj: sc/tst_sc_mmap.c
 tst_sc_mmap.lo: sc/tst_sc_mmap.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_mmap.lo `test -f 'sc/tst_sc_mmap.c' || echo '$(srcdir)/'`sc/tst_sc_mmap.c
 
+tst_sc_overflow.o: sc/tst_sc_overflow.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_overflow.o `test -f 'sc/tst_sc_overflow.c' || echo '$(srcdir)/'`sc/tst_sc_overflow.c
+
+tst_sc_overflow.obj: sc/tst_sc_overflow.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_overflow.obj `if test -f 'sc/tst_sc_overflow.c'; then $(CYGPATH_W) 'sc/tst_sc_overflow.c'; else $(CYGPATH_W) '$(srcdir)/sc/tst_sc_overflow.c'; fi`
+
+tst_sc_overflow.lo: sc/tst_sc_overflow.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_overflow.lo `test -f 'sc/tst_sc_overflow.c' || echo '$(srcdir)/'`sc/tst_sc_overflow.c
+
 tst_sc_read.o: sc/tst_sc_read.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_read.o `test -f 'sc/tst_sc_read.c' || echo '$(srcdir)/'`sc/tst_sc_read.c
 
@@ -3817,6 +4053,15 @@ tst_sc_read.obj: sc/tst_sc_read.c
 
 tst_sc_read.lo: sc/tst_sc_read.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_read.lo `test -f 'sc/tst_sc_read.c' || echo '$(srcdir)/'`sc/tst_sc_read.c
+
+tst_sc_uio_maxiov.o: sc/tst_sc_uio_maxiov.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_uio_maxiov.o `test -f 'sc/tst_sc_uio_maxiov.c' || echo '$(srcdir)/'`sc/tst_sc_uio_maxiov.c
+
+tst_sc_uio_maxiov.obj: sc/tst_sc_uio_maxiov.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_uio_maxiov.obj `if test -f 'sc/tst_sc_uio_maxiov.c'; then $(CYGPATH_W) 'sc/tst_sc_uio_maxiov.c'; else $(CYGPATH_W) '$(srcdir)/sc/tst_sc_uio_maxiov.c'; fi`
+
+tst_sc_uio_maxiov.lo: sc/tst_sc_uio_maxiov.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_uio_maxiov.lo `test -f 'sc/tst_sc_uio_maxiov.c' || echo '$(srcdir)/'`sc/tst_sc_uio_maxiov.c
 
 tst_sc_write.o: sc/tst_sc_write.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sc_write.o `test -f 'sc/tst_sc_write.c' || echo '$(srcdir)/'`sc/tst_sc_write.c
@@ -3844,6 +4089,87 @@ xfail_tst_sc_conv_uint_len.obj: sc/xfail_tst_sc_conv_uint_len.c
 
 xfail_tst_sc_conv_uint_len.lo: sc/xfail_tst_sc_conv_uint_len.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_conv_uint_len.lo `test -f 'sc/xfail_tst_sc_conv_uint_len.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_conv_uint_len.c
+
+xfail_tst_sc_read_iov_file_fast_oob_pos.o: sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_fast_oob_pos.o `test -f 'sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+
+xfail_tst_sc_read_iov_file_fast_oob_pos.obj: sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_fast_oob_pos.obj `if test -f 'sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c'; fi`
+
+xfail_tst_sc_read_iov_file_fast_oob_pos.lo: sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_fast_oob_pos.lo `test -f 'sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_fast_oob_pos.c
+
+xfail_tst_sc_read_iov_file_slow_NULL.o: sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_NULL.o `test -f 'sc/xfail_tst_sc_read_iov_file_slow_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+
+xfail_tst_sc_read_iov_file_slow_NULL.obj: sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_NULL.obj `if test -f 'sc/xfail_tst_sc_read_iov_file_slow_NULL.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_iov_file_slow_NULL.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_iov_file_slow_NULL.c'; fi`
+
+xfail_tst_sc_read_iov_file_slow_NULL.lo: sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_NULL.lo `test -f 'sc/xfail_tst_sc_read_iov_file_slow_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_slow_NULL.c
+
+xfail_tst_sc_read_iov_file_slow_oob_pos.o: sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_oob_pos.o `test -f 'sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+
+xfail_tst_sc_read_iov_file_slow_oob_pos.obj: sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_oob_pos.obj `if test -f 'sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c'; fi`
+
+xfail_tst_sc_read_iov_file_slow_oob_pos.lo: sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_iov_file_slow_oob_pos.lo `test -f 'sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_iov_file_slow_oob_pos.c
+
+xfail_tst_sc_read_len_file_fast_oob_pos.o: sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_fast_oob_pos.o `test -f 'sc/xfail_tst_sc_read_len_file_fast_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+
+xfail_tst_sc_read_len_file_fast_oob_pos.obj: sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_fast_oob_pos.obj `if test -f 'sc/xfail_tst_sc_read_len_file_fast_oob_pos.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_len_file_fast_oob_pos.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_len_file_fast_oob_pos.c'; fi`
+
+xfail_tst_sc_read_len_file_fast_oob_pos.lo: sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_fast_oob_pos.lo `test -f 'sc/xfail_tst_sc_read_len_file_fast_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_fast_oob_pos.c
+
+xfail_tst_sc_read_len_file_slow_NULL.o: sc/xfail_tst_sc_read_len_file_slow_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_NULL.o `test -f 'sc/xfail_tst_sc_read_len_file_slow_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_slow_NULL.c
+
+xfail_tst_sc_read_len_file_slow_NULL.obj: sc/xfail_tst_sc_read_len_file_slow_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_NULL.obj `if test -f 'sc/xfail_tst_sc_read_len_file_slow_NULL.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_len_file_slow_NULL.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_len_file_slow_NULL.c'; fi`
+
+xfail_tst_sc_read_len_file_slow_NULL.lo: sc/xfail_tst_sc_read_len_file_slow_NULL.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_NULL.lo `test -f 'sc/xfail_tst_sc_read_len_file_slow_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_slow_NULL.c
+
+xfail_tst_sc_read_len_file_slow_oob_pos.o: sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_oob_pos.o `test -f 'sc/xfail_tst_sc_read_len_file_slow_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+
+xfail_tst_sc_read_len_file_slow_oob_pos.obj: sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_oob_pos.obj `if test -f 'sc/xfail_tst_sc_read_len_file_slow_oob_pos.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_read_len_file_slow_oob_pos.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_read_len_file_slow_oob_pos.c'; fi`
+
+xfail_tst_sc_read_len_file_slow_oob_pos.lo: sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_read_len_file_slow_oob_pos.lo `test -f 'sc/xfail_tst_sc_read_len_file_slow_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_read_len_file_slow_oob_pos.c
+
+xfail_tst_sc_write_fd_NULL.o: sc/xfail_tst_sc_write_fd_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_NULL.o `test -f 'sc/xfail_tst_sc_write_fd_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_NULL.c
+
+xfail_tst_sc_write_fd_NULL.obj: sc/xfail_tst_sc_write_fd_NULL.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_NULL.obj `if test -f 'sc/xfail_tst_sc_write_fd_NULL.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_write_fd_NULL.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_write_fd_NULL.c'; fi`
+
+xfail_tst_sc_write_fd_NULL.lo: sc/xfail_tst_sc_write_fd_NULL.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_NULL.lo `test -f 'sc/xfail_tst_sc_write_fd_NULL.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_NULL.c
+
+xfail_tst_sc_write_fd_oob_len.o: sc/xfail_tst_sc_write_fd_oob_len.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_len.o `test -f 'sc/xfail_tst_sc_write_fd_oob_len.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_oob_len.c
+
+xfail_tst_sc_write_fd_oob_len.obj: sc/xfail_tst_sc_write_fd_oob_len.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_len.obj `if test -f 'sc/xfail_tst_sc_write_fd_oob_len.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_write_fd_oob_len.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_write_fd_oob_len.c'; fi`
+
+xfail_tst_sc_write_fd_oob_len.lo: sc/xfail_tst_sc_write_fd_oob_len.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_len.lo `test -f 'sc/xfail_tst_sc_write_fd_oob_len.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_oob_len.c
+
+xfail_tst_sc_write_fd_oob_pos.o: sc/xfail_tst_sc_write_fd_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_pos.o `test -f 'sc/xfail_tst_sc_write_fd_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_oob_pos.c
+
+xfail_tst_sc_write_fd_oob_pos.obj: sc/xfail_tst_sc_write_fd_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_pos.obj `if test -f 'sc/xfail_tst_sc_write_fd_oob_pos.c'; then $(CYGPATH_W) 'sc/xfail_tst_sc_write_fd_oob_pos.c'; else $(CYGPATH_W) '$(srcdir)/sc/xfail_tst_sc_write_fd_oob_pos.c'; fi`
+
+xfail_tst_sc_write_fd_oob_pos.lo: sc/xfail_tst_sc_write_fd_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_sc_write_fd_oob_pos.lo `test -f 'sc/xfail_tst_sc_write_fd_oob_pos.c' || echo '$(srcdir)/'`sc/xfail_tst_sc_write_fd_oob_pos.c
 
 tst_sects_add.o: sects/tst_sects_add.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_sects_add.o `test -f 'sects/tst_sects_add.c' || echo '$(srcdir)/'`sects/tst_sects_add.c
@@ -4403,6 +4729,15 @@ tst_x_inline.obj: x/tst_x_inline.c
 tst_x_inline.lo: x/tst_x_inline.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_inline.lo `test -f 'x/tst_x_inline.c' || echo '$(srcdir)/'`x/tst_x_inline.c
 
+tst_x_iter.o: x/tst_x_iter.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_iter.o `test -f 'x/tst_x_iter.c' || echo '$(srcdir)/'`x/tst_x_iter.c
+
+tst_x_iter.obj: x/tst_x_iter.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_iter.obj `if test -f 'x/tst_x_iter.c'; then $(CYGPATH_W) 'x/tst_x_iter.c'; else $(CYGPATH_W) '$(srcdir)/x/tst_x_iter.c'; fi`
+
+tst_x_iter.lo: x/tst_x_iter.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_iter.lo `test -f 'x/tst_x_iter.c' || echo '$(srcdir)/'`x/tst_x_iter.c
+
 tst_x_macros.o: x/tst_x_macros.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_macros.o `test -f 'x/tst_x_macros.c' || echo '$(srcdir)/'`x/tst_x_macros.c
 
@@ -4724,27 +5059,27 @@ clean-generic:
 
 distclean-generic:
 	-rm -f $(CONFIG_CLEAN_FILES)
-	-rm -f parse/$(am__dirstamp)
-	-rm -f export/$(am__dirstamp)
-	-rm -f cmp/$(am__dirstamp)
-	-rm -f srch/$(am__dirstamp)
-	-rm -f sc/$(am__dirstamp)
-	-rm -f mov/$(am__dirstamp)
-	-rm -f spn/$(am__dirstamp)
-	-rm -f cache/$(am__dirstamp)
-	-rm -f regression/$(am__dirstamp)
-	-rm -f sects/$(am__dirstamp)
-	-rm -f data/$(am__dirstamp)
-	-rm -f sub/$(am__dirstamp)
 	-rm -f loc/$(am__dirstamp)
+	-rm -f spn/$(am__dirstamp)
+	-rm -f regression/$(am__dirstamp)
+	-rm -f data/$(am__dirstamp)
+	-rm -f del/$(am__dirstamp)
+	-rm -f sub/$(am__dirstamp)
+	-rm -f parse/$(am__dirstamp)
+	-rm -f cache/$(am__dirstamp)
+	-rm -f add/$(am__dirstamp)
+	-rm -f sects/$(am__dirstamp)
+	-rm -f dup/$(am__dirstamp)
+	-rm -f split/$(am__dirstamp)
+	-rm -f srch/$(am__dirstamp)
+	-rm -f conv/$(am__dirstamp)
+	-rm -f mov/$(am__dirstamp)
+	-rm -f cmp/$(am__dirstamp)
+	-rm -f export/$(am__dirstamp)
+	-rm -f fmt/$(am__dirstamp)
+	-rm -f sc/$(am__dirstamp)
 	-rm -f cntl/$(am__dirstamp)
 	-rm -f x/$(am__dirstamp)
-	-rm -f dup/$(am__dirstamp)
-	-rm -f conv/$(am__dirstamp)
-	-rm -f add/$(am__dirstamp)
-	-rm -f split/$(am__dirstamp)
-	-rm -f del/$(am__dirstamp)
-	-rm -f fmt/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"

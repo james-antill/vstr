@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
   }
 
 
+  sethostent(1);
   /* call libc to lookup the hostname */
   hp = gethostbyname(argv[1]);
 

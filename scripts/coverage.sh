@@ -37,41 +37,34 @@ function del()
     Makefile config.log config.status libtool vstr.pc vstr.spec
 }
 
-# debug...
-del
-$s/b/COVERAGE.sh --enable-debug
+function linkup()
+{
+  cd src
 
-cd src
+  if $doln; then
+   lndir ../$s/../src
+  fi
 
-if $doln; then
- lndir ../$s/../src
-fi
+  for i in .libs/*.da; do
+    ln -f $i; rm -f $i
+  done
 
-for i in .libs/*.da; do
-  ln -f $i; rm -f $i
-done
+  cd ..
+}
 
-cd ..
+function cov()
+{
+  type=$1; shift
+  del
+  $s/b/COVERAGE.sh $@
+  linkup
+  $s/lcov.sh $type
+}
 
-$s/lcov.sh dbg
-
-# opt
-del
-$s/b/COVERAGE.sh
-
-cd src
-
-if $doln; then
- lndir ../$s/../src
-fi
-
-for i in .libs/*.da; do
-  ln -f $i; rm -f $i
-done
-
-cd ..
-
-$s/lcov.sh opt
-
-# $s/ggcov.sh
-
+cov dbg --enable-debug
+cov opt
+cov noopt --enable-tst-noopt
+cov ansi --enable-noposix-host \
+         --enable-tst-noattr-visibility \
+         --enable-tst-noattr-alias \
+         --enable-tst-nosyscall-asm

@@ -844,3 +844,9 @@ int tst(void)
 
   return (TST_B_RET(ret));
 }
+/* Crap for tst_coverage constants....
+ *
+ * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
+ * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM
+ *
+ */

@@ -135,6 +135,10 @@ int tst(void)
   TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
          127, 0, 0, 1, 18, strlen("127.0.0.1/255.255.192.0"), 0);
 
+  vstr_sub_cstr_buf(s1, 1, s1->len, "127.0.0.1/255.255.192:80");
+  TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
+         127, 0, 0, 1, 18, strlen("127.0.0.1/255.255.192"), 0);
+
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.0. 0.1 **");
   TST_IP(VSTR_FLAG_PARSE_IPV4_DEF, 127, 0, 0, 0, 32, strlen("127.0."), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV4_FULL,

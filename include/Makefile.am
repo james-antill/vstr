@@ -11,6 +11,7 @@ include_HEADERS = \
                   vstr-extern.h \
                   vstr-inline.h \
                   vstr-switch.h \
+                  vstr-arch.h \
                   vstr.h
 
 noinst_HEADERS = \

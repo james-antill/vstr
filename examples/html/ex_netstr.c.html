@@ -21,7 +21,7 @@
 	if (!(s1 = vstr_make_base(<span class="null">NULL</span>))) abort();
 
 	ns_tot = vstr_add_netstr_beg(s1, s1-&gt;len);
-	while (scan &lt; argc)
+	while (scan &lt; (<span class="unsigned">unsigned</span>)argc)
 	{
 		unsigned <span class="int">int</span> ns = vstr_add_netstr_beg(s1, s1-&gt;len);
 		vstr_add_cstr_ptr(s1, s1-&gt;len, argv[scan]);
@@ -46,7 +46,7 @@
 
 </pre>
 <!-- C to html convertion of ex_netstr.c -->
-<!--   done on Mon Jan 26 05:27:54 2004
+<!--   done on Sun May  9 02:29:53 2004
  -->
 <!--   done by ex_highlight -->
 

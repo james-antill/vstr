@@ -92,6 +92,7 @@ static struct
  
  { EX_HL_SEQ_SB("if", "if") },
  { EX_HL_SEQ_WS("else", "else") },
+ { EX_HL_SEQ_WS("do", "do") },
  { EX_HL_SEQ_SB("while", "while") },
  { EX_HL_SEQ_SB("for", "for") },
  { EX_HL_SEQ_RET("return", "return") },
@@ -121,6 +122,7 @@ static struct
  { EX_HL_SEQ_T("uintmaxt", "uintmax_t") },
  
  { EX_HL_SEQ_SB("exit", "exit") },
+ { EX_HL_SEQ_SB("abort", "abort") },
  { EX_HL_SEQ_B("err", "err") },
  { EX_HL_SEQ_B("err", "errx") },
  { EX_HL_SEQ_B("warn", "warn") },

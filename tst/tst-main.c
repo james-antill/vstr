@@ -20,7 +20,7 @@
 #undef NDEBUG /* always use assert */
 #undef assert
 #undef ASSERT
-/* cpoy and paste from assert loop extern */
+/* copy and paste from assert loop extern */
 #define assert(x) do { \
  if (x) {} else { \
   fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
@@ -42,7 +42,7 @@ static struct Vstr_base *s1 = NULL; /* normal */
 static struct Vstr_base *s2 = NULL; /* locale en_US */
 static struct Vstr_base *s3 = NULL; /* buf size = 4 */
 static struct Vstr_base *s4 = NULL; /* no cache */
-static char buf[TST_BUF_SZ];
+static char buf[TST_BUF_SZ] __attribute__((used));
 
 static const char *rf;
 
@@ -106,16 +106,20 @@ static void die(void)
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
 
-#ifdef VSTR_AUTOCONF_NDEBUG /* must check for VSTR assert() usage */
-# define MFAIL_NUM_OK 0
-#else
-# define MFAIL_NUM_OK 1
-#endif
+static int __attribute__((used)) tst_fd_closefail_num(unsigned long val)
+{
+  const unsigned long magic_off = 0x0F0F;
+  return (vstr_cntl_opt(666, magic_off, val));
+}
 
 static int __attribute__((used)) tst_mfail_num(unsigned long val)
 {
-  return (vstr_cntl_opt(666, val));
+  const unsigned long magic_off = 0xF0F0;
+  return (vstr_cntl_opt(666, magic_off, val));
 }
+
+#define FD_CLOSEFAIL_NUM_OK tst_fd_closefail_num(0)
+#define MFAIL_NUM_OK tst_mfail_num(0)
 
 int main(void)
 {
@@ -123,8 +127,6 @@ int main(void)
   struct Vstr_conf *conf1 = NULL;
   struct Vstr_conf *conf2 = NULL;
   struct Vstr_conf *conf3 = NULL;
-
-  buf[0] = 0; /* make sure the compiler thinks buf is used ... */
 
   if (!vstr_init())
     die();

@@ -32,38 +32,7 @@
 # undef inline
 # define inline /* nothing */
 
-#ifndef NDEBUG
-# ifdef USE_ASSERT_LOOP
-#  define VSTR__ASSERT(x) do { \
- if (x) {} else \
-  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
- while (FALSE)
-#  define VSTR__ASSERT_RET(x, y)  do { \
- if (x) {} else \
-  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
- while (FALSE)
-# else
-#  define VSTR__ASSERT(x) do { \
- if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
-          #x , __func__, __LINE__, __FILE__); \
-  abort(); } } \
- while (FALSE)
-#  define VSTR__ASSERT_RET(x, y)  do { \
- if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
-          #x , __func__, __LINE__, __FILE__); \
-  abort(); } } \
- while (FALSE)
-#  define VSTR__ASSERT_RET_VOID(x)  do { \
- if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
-          #x , __func__, __LINE__, __FILE__); \
-  abort(); } } \
- while (FALSE)
-# endif
-# define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(FALSE)
-#endif
+/* debugging stuff comes from vstr-internal */
 
 # include "vstr-inline.h"
 # include "vstr-nx-inline.h"

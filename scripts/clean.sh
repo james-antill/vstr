@@ -1,5 +1,17 @@
 #! /bin/sh
 
+if false; then
+ echo "Not reached."
+elif [ -f ./configure ]; then
+        r=./
+elif [ -f ../configure ]; then
+        r=../
+else
+  echo "Not in right place, dying."
+  exit 1;
+fi
+
+cd $r
 make distclean 2>&1 > /dev/null
 
 rm -rf tst/*/.libs

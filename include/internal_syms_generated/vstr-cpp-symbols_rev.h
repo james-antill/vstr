@@ -127,7 +127,6 @@
 #undef vstr_extern_inline_add_buf
 #undef vstr_extern_inline_add_rep_chr
 #undef vstr_extern_inline_del
-#undef vstr_extern_inline_make_cache_pos
 #undef vstr_extern_inline_sects_add
 #undef vstr_fmt_add
 #undef vstr_fmt_del
@@ -136,7 +135,11 @@
 #undef vstr_free_conf
 #undef vstr_free_spare_nodes
 #undef vstr_init
+#undef vstr_iter_len
+#undef vstr_iter_num
+#undef vstr_iter_pos
 #undef vstr_iter_fwd_beg
+#undef vstr_iter_fwd_chr
 #undef vstr_iter_fwd_nxt
 #undef vstr_make_base
 #undef vstr_make_conf
@@ -150,6 +153,7 @@
 #undef vstr_parse_long
 #undef vstr_parse_netstr
 #undef vstr_parse_netstr2
+#undef vstr_parse_num
 #undef vstr_parse_short
 #undef vstr_parse_uint
 #undef vstr_parse_uintmax
@@ -188,9 +192,13 @@
 #undef vstr_sc_dirname
 #undef vstr_sc_fmt_add_all
 #undef vstr_sc_fmt_add_bkmg_bits_uint
+#undef vstr_sc_fmt_add_bkmg_bits_uintmax
 #undef vstr_sc_fmt_add_bkmg_bit_uint
+#undef vstr_sc_fmt_add_bkmg_bit_uintmax
 #undef vstr_sc_fmt_add_bkmg_Bytes_uint
+#undef vstr_sc_fmt_add_bkmg_Bytes_uintmax
 #undef vstr_sc_fmt_add_bkmg_Byte_uint
+#undef vstr_sc_fmt_add_bkmg_Byte_uintmax
 #undef vstr_sc_fmt_add_buf
 #undef vstr_sc_fmt_add_ipv4_ptr
 #undef vstr_sc_fmt_add_ipv4_vec
@@ -270,7 +278,6 @@
 #undef vstr_sub_rep_chr
 #undef vstr_sub_vstr
 #undef vstr_swap_conf
-#undef vstr_version_func
 #ifdef USE_WRAP_MEMCHR
 #undef vstr_wrap_memchr
 #endif

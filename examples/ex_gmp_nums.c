@@ -13,6 +13,9 @@
  * which saves doing an extra copy. */
 #define EX_GMP_NUMS_USE_REFS 0
 
+/* do we want to test that it works? */
+#define EX_GMP_NUMS_USE_TST 0
+
 /* This is the custom formatter.
  * Note that this deals with grouping unlike the gmp_*printf() calls */
 static int ex__usr_mpz_cb(Vstr_base *base, size_t pos, Vstr_fmt_spec *spec,
@@ -120,6 +123,7 @@ int main(int argc, char *argv[])
   Vstr_base *s1 = ex_init(NULL);
   mpz_t bignum;
   const char *loc_num_name = NULL;
+  Vstr_ref *ref = NULL;
   
   if (argc < 2)
     errx(EXIT_FAILURE, "No count specified");
@@ -143,9 +147,10 @@ int main(int argc, char *argv[])
   
   mpz_init_set_str(bignum, argv[1], 0);
 
-  mpz_abs(bignum, bignum);
-  mpz_neg(bignum, bignum);
-  
+  if (EX_GMP_NUMS_USE_TST)
+  {
+    mpz_abs(bignum, bignum);
+    mpz_neg(bignum, bignum);
   do
   {
     mpz_neg(bignum, bignum);
@@ -219,6 +224,37 @@ int main(int argc, char *argv[])
     vstr_add_rep_chr(s1, s1->len, '\n', 1);
     
   } while (mpz_sgn(bignum) > 0);
+    mpz_abs(bignum, bignum);
+  }
+  
+  if (!(ref = vstr_ref_make_strdup("_")))
+    errno = ENOMEM, err(EXIT_FAILURE, "Ref seperator");
+
+  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP,  2, ref, 1) ||
+      !vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP,  8, ref, 1) ||
+      !vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_LOC_REF_THOU_SEP, 16, ref, 1) ||
+      FALSE)
+    errno = ENOMEM, err(EXIT_FAILURE, "Add seperator");
+  vstr_ref_del(ref);
+  
+  if (!(ref = vstr_ref_make_strdup("\4")))
+    errno = ENOMEM, err(EXIT_FAILURE, "Ref grouping");
+
+  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP,  2, ref) ||
+      !vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_LOC_REF_THOU_GRP, 16, ref) ||
+      FALSE)
+    errno = ENOMEM, err(EXIT_FAILURE, "Add grouping");
+  vstr_ref_del(ref);
+  
+  vstr_add_fmt(s1, s1->len, " Input: %s\n", argv[1]);
+  vstr_add_fmt(s1, s1->len, "    %%#'x = $#'<xMPZ:%p>\n",
+               (void *)bignum);
+  vstr_add_fmt(s1, s1->len, "    %%#'d = $#'<dMPZ:%p>\n",
+               (void *)bignum);
+  vstr_add_fmt(s1, s1->len, "    %%#'o = $#'<oMPZ:%p>\n",
+               (void *)bignum);
+  vstr_add_fmt(s1, s1->len, "    %%#'b = $#'<bMPZ:%p>\n",
+               (void *)bignum);
   
   if (s1->conf->malloc_bad)
     errno = ENOMEM, err(EXIT_FAILURE, "Add string data");

@@ -127,7 +127,6 @@
 #define vstr_extern_inline_add_buf vstr_nx_extern_inline_add_buf
 #define vstr_extern_inline_add_rep_chr vstr_nx_extern_inline_add_rep_chr
 #define vstr_extern_inline_del vstr_nx_extern_inline_del
-#define vstr_extern_inline_make_cache_pos vstr_nx_extern_inline_make_cache_pos
 #define vstr_extern_inline_sects_add vstr_nx_extern_inline_sects_add
 #define vstr_fmt_add vstr_nx_fmt_add
 #define vstr_fmt_del vstr_nx_fmt_del
@@ -136,7 +135,11 @@
 #define vstr_free_conf vstr_nx_free_conf
 #define vstr_free_spare_nodes vstr_nx_free_spare_nodes
 #define vstr_init vstr_nx_init
+#define vstr_iter_len vstr_nx_iter_len
+#define vstr_iter_num vstr_nx_iter_num
+#define vstr_iter_pos vstr_nx_iter_pos
 #define vstr_iter_fwd_beg vstr_nx_iter_fwd_beg
+#define vstr_iter_fwd_chr vstr_nx_iter_fwd_chr
 #define vstr_iter_fwd_nxt vstr_nx_iter_fwd_nxt
 #define vstr_make_base vstr_nx_make_base
 #define vstr_make_conf vstr_nx_make_conf
@@ -150,6 +153,7 @@
 #define vstr_parse_long vstr_nx_parse_long
 #define vstr_parse_netstr vstr_nx_parse_netstr
 #define vstr_parse_netstr2 vstr_nx_parse_netstr2
+#define vstr_parse_num vstr_nx_parse_num
 #define vstr_parse_short vstr_nx_parse_short
 #define vstr_parse_uint vstr_nx_parse_uint
 #define vstr_parse_uintmax vstr_nx_parse_uintmax
@@ -188,9 +192,13 @@
 #define vstr_sc_dirname vstr_nx_sc_dirname
 #define vstr_sc_fmt_add_all vstr_nx_sc_fmt_add_all
 #define vstr_sc_fmt_add_bkmg_bits_uint vstr_nx_sc_fmt_add_bkmg_bits_uint
+#define vstr_sc_fmt_add_bkmg_bits_uintmax vstr_nx_sc_fmt_add_bkmg_bits_uintmax
 #define vstr_sc_fmt_add_bkmg_bit_uint vstr_nx_sc_fmt_add_bkmg_bit_uint
+#define vstr_sc_fmt_add_bkmg_bit_uintmax vstr_nx_sc_fmt_add_bkmg_bit_uintmax
 #define vstr_sc_fmt_add_bkmg_Bytes_uint vstr_nx_sc_fmt_add_bkmg_Bytes_uint
+#define vstr_sc_fmt_add_bkmg_Bytes_uintmax vstr_nx_sc_fmt_add_bkmg_Bytes_uintmax
 #define vstr_sc_fmt_add_bkmg_Byte_uint vstr_nx_sc_fmt_add_bkmg_Byte_uint
+#define vstr_sc_fmt_add_bkmg_Byte_uintmax vstr_nx_sc_fmt_add_bkmg_Byte_uintmax
 #define vstr_sc_fmt_add_buf vstr_nx_sc_fmt_add_buf
 #define vstr_sc_fmt_add_ipv4_ptr vstr_nx_sc_fmt_add_ipv4_ptr
 #define vstr_sc_fmt_add_ipv4_vec vstr_nx_sc_fmt_add_ipv4_vec
@@ -270,7 +278,6 @@
 #define vstr_sub_rep_chr vstr_nx_sub_rep_chr
 #define vstr_sub_vstr vstr_nx_sub_vstr
 #define vstr_swap_conf vstr_nx_swap_conf
-#define vstr_version_func vstr_nx_version_func
 #ifdef USE_WRAP_MEMCHR
 #define vstr_wrap_memchr vstr_nx_wrap_memchr
 #endif

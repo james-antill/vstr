@@ -408,6 +408,54 @@ extern inline int vstr_iter_fwd_nxt(struct Vstr_iter *iter)
   return (VSTR__TRUE);
 }
 
+extern inline unsigned char vstr_iter_fwd_chr(struct Vstr_iter *iter,
+                                              unsigned int *ern)
+{
+  unsigned int dummy_ern;
+  
+  if (!ern)
+    ern = &dummy_ern;
+  
+  if (!iter->len)
+  {
+    int ret = vstr_iter_fwd_nxt(iter);
+
+    *ern = VSTR_TYPE_ITER_END;
+    
+    VSTR__ASSERT_RET(ret, 0);
+    VSTR__ASSERT(iter->len);
+  }
+
+  --iter->len;
+  
+  if (iter->node->type == VSTR_TYPE_NODE_NON)
+  {
+    *ern = VSTR_TYPE_ITER_NON;
+    return (0);
+  }
+  
+  *ern = VSTR_TYPE_ITER_DEF;
+  return ((unsigned char) *iter->ptr++);
+}
+
+extern inline size_t vstr_iter_pos(struct Vstr_iter *iter,
+                                   size_t pos, size_t len)
+{
+  ASSERT_RET((len >= (iter->len + iter->remaining)), 0);
+    
+  return (pos + (len - (iter->len + iter->remaining)));
+}
+
+extern inline size_t vstr_iter_len(struct Vstr_iter *iter)
+{
+  return (iter->len + iter->remaining);
+}
+
+extern inline unsigned int vstr_iter_num(struct Vstr_iter *iter)
+{
+  return (iter->num);
+}
+
 extern inline unsigned int vstr_num(const struct Vstr_base *base,
                                     size_t pos, size_t len)
 {
@@ -730,7 +778,8 @@ extern inline struct Vstr_base *vstr_dup_cstr_ptr(struct Vstr_conf *conf,
                                                   const char *ptr)
 { return (vstr_dup_ptr(conf, ptr, strlen(ptr))); }
 extern inline struct Vstr_base *vstr_dup_cstr_ref(struct Vstr_conf *conf,
-                                    struct Vstr_ref *ref, size_t off)
+                                                  struct Vstr_ref *ref,
+                                                  size_t off)
 { return (vstr_dup_ref(conf, ref, off,
                        strlen(((const char *)ref->ptr) + off))); }
 
@@ -747,69 +796,69 @@ extern inline int vstr_sub_cstr_ref(struct Vstr_base *s1, size_t p1, size_t l1,
                        strlen(((const char *)ref->ptr) + off))); }
 
 /* srch */
-extern inline size_t vstr_srch_cstr_buf_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_srch_cstr_buf_fwd(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
 { return (vstr_srch_buf_fwd(s1, p1, l1, buf, strlen(buf))); }
-extern inline size_t vstr_srch_cstr_buf_rev(struct Vstr_base *s1,
+extern inline size_t vstr_srch_cstr_buf_rev(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
 { return (vstr_srch_buf_rev(s1, p1, l1, buf, strlen(buf))); }
 
-extern inline size_t vstr_srch_cstr_chrs_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_srch_cstr_chrs_fwd(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
 { return (vstr_srch_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
-extern inline size_t vstr_srch_cstr_chrs_rev(struct Vstr_base *s1,
+extern inline size_t vstr_srch_cstr_chrs_rev(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
 { return (vstr_srch_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
 
-extern inline size_t vstr_csrch_cstr_chrs_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_csrch_cstr_chrs_fwd(const struct Vstr_base *s1,
                                               size_t p1, size_t l1,
                                               const char *chrs)
 { return (vstr_csrch_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
-extern inline size_t vstr_csrch_cstr_chrs_rev(struct Vstr_base *s1,
+extern inline size_t vstr_csrch_cstr_chrs_rev(const struct Vstr_base *s1,
                                               size_t p1, size_t l1,
                                               const char *chrs)
 { return (vstr_csrch_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
 
-extern inline size_t vstr_srch_case_cstr_buf_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_srch_case_cstr_buf_fwd(const struct Vstr_base *s1,
                                                  size_t p1, size_t l1,
                                                  const char *buf)
 { return (vstr_srch_case_buf_fwd(s1, p1, l1, buf, strlen(buf))); }
-extern inline size_t vstr_srch_case_cstr_buf_rev(struct Vstr_base *s1,
+extern inline size_t vstr_srch_case_cstr_buf_rev(const struct Vstr_base *s1,
                                                  size_t p1, size_t l1,
                                                  const char *buf)
 { return (vstr_srch_case_buf_rev(s1, p1, l1, buf, strlen(buf))); }
 
 /* spn */
-extern inline size_t vstr_spn_cstr_chrs_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_spn_cstr_chrs_fwd(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *chrs)
 { return (vstr_spn_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
-extern inline size_t vstr_spn_cstr_chrs_rev(struct Vstr_base *s1,
+extern inline size_t vstr_spn_cstr_chrs_rev(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *chrs)
 { return (vstr_spn_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
 
-extern inline size_t vstr_cspn_cstr_chrs_fwd(struct Vstr_base *s1,
+extern inline size_t vstr_cspn_cstr_chrs_fwd(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
 { return (vstr_cspn_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
-extern inline size_t vstr_cspn_cstr_chrs_rev(struct Vstr_base *s1,
+extern inline size_t vstr_cspn_cstr_chrs_rev(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
 { return (vstr_cspn_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
 
 /* split */
-extern inline size_t vstr_split_cstr_buf(struct Vstr_base *s1,
+extern inline size_t vstr_split_cstr_buf(const struct Vstr_base *s1,
                                          size_t p1, size_t l1,
                                          const char *buf,
                                          struct Vstr_sects *sect,
                                          unsigned int lim, unsigned int flags)
 {  return (vstr_split_buf(s1, p1, l1, buf, strlen(buf), sect, lim, flags)); }
-extern inline size_t vstr_split_cstr_chrs(struct Vstr_base *s1,
+extern inline size_t vstr_split_cstr_chrs(const struct Vstr_base *s1,
                                           size_t p1, size_t l1,
                                           const char *chrs,
                                           struct Vstr_sects *sect,

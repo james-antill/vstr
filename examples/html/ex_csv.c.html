@@ -49,7 +49,7 @@
 
 #<span class="cppdefine">define</span> VCSV__MEMCHR(x) memchr(iter-&gt;ptr, (x), iter-&gt;len)
 
-#<span class="cppdefine">define</span> VCSV__INC(x) do { <span class="sizet">size_t</span> local_inc_tmp = (x); \
+#<span class="cppdefine">define</span> VCSV__INC(x) <span class="do">do</span> { <span class="sizet">size_t</span> local_inc_tmp = (x); \
     <span class="assert">assert</span>(local_inc_tmp &lt;= iter-&gt;len); \
     \
     iter-&gt;ptr += local_inc_tmp; \
@@ -345,7 +345,7 @@ timestamp(<span class="void">void</span>)
   vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
   vstr_sc_fmt_add_all(<span class="null">NULL</span>);
 
-  do
+  <span class="do">do</span>
   {
     <span class="sizet">size_t</span> pos = 1;
     <span class="sizet">size_t</span> len = <span class="num0">0</span>;
@@ -379,7 +379,7 @@ timestamp(<span class="void">void</span>)
 }
 </pre>
 <!-- C to html convertion of ex_csv.c -->
-<!--   done on Mon Jan 26 05:27:53 2004
+<!--   done on Sun May  9 02:29:52 2004
  -->
 <!--   done by ex_highlight -->
 

@@ -84,28 +84,31 @@ static void tst_vstr_m(unsigned int num, Vstr_base *t1, unsigned int flags)
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_NON, 1000);
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_PTR, 1000);
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_REF, 1000);
-
-    if (t1->conf->ref_grp_buf2ref)
-    { /* FIXME: Massive hack */
-      tst_mfail_num(0);
-      
-      if (t1->conf->ref_grp_buf2ref->make_num)
-        t1->conf->ref_grp_buf2ref->flags = 0;
-      else
-      {
-        Vstr_ref *tmp = vstr_ref_make_malloc(4);
-        tmp->func((Vstr_ref *)t1->conf->ref_grp_buf2ref);
-        vstr_ref_del(tmp);
-      }
-      
-      t1->conf->ref_grp_buf2ref = NULL;
-    }
     
     tst_mfail_num(++mfail_count / 4);
   } while (!vstr_add_vstr(t1, t1->len, t_from,   pos,   len, flags));
   tst_mfail_num(0);
 
   TST_B_TST(ret, num, !VSTR_CMP_EQ(t1, 1, t1->len, t_from, pos, len));
+}
+
+static void tst_vstr_hack_grp(Vstr_base *t1)
+{ /* FIXME: Massive hack */
+  Vstr_ref_grp_ptr *grp = t1->conf->ref_grp_buf2ref;
+
+  if (!grp)
+    return;
+      
+  if (grp->make_num)
+    grp->flags &= ~(1U<<6);
+  else
+  {
+    Vstr_ref *tmp = vstr_ref_make_malloc(4);
+    tmp->func((Vstr_ref *)grp);
+    vstr_ref_del(tmp);
+  }
+  
+  t1->conf->ref_grp_buf2ref = NULL;
 }
 
 int tst(void)
@@ -181,6 +184,13 @@ int tst(void)
   tst_vstr_m(27, s4, VSTR_TYPE_ADD_ALL_REF);
   tst_vstr_m(27, s4, VSTR_TYPE_ADD_ALL_BUF);
   tst_vstr_m(27, s4, VSTR_TYPE_ADD_BUF_REF);
+
+  tst_vstr_hack_grp(s1);
+  tst_vstr_m(30, s2, VSTR_TYPE_ADD_BUF_REF);
+  tst_vstr_hack_grp(s1);
+  tst_vstr_m(30, s3, VSTR_TYPE_ADD_BUF_REF);
+  tst_vstr_hack_grp(s1);
+  tst_vstr_m(30, s4, VSTR_TYPE_ADD_BUF_REF);
 
   {
     const char *p1 = vstr_export_cstr_ptr(s1, 1, s1->len);
@@ -443,6 +453,6 @@ int tst(void)
                           "a1a2a3a4" "b1b2" "a1a2a3a4" "b1b2b3b4" "c1c2c3c4" "d1d2d3d4"
                           "b3b4" "c1c2c3c4" "d1d2d3d4"));
   ASSERT(vstr_num(s1, 1, s1->len) == 2);
-  
+
   return (TST_B_RET(ret));
 }

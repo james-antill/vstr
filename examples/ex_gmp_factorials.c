@@ -13,6 +13,13 @@ against...
 
 http://www.newdream.net/~sage/old/numbers/fact.htm
 
+...or a POSIX "bc" via. ...
+
+  define f (x) {
+    if (x <= 1) return (1);
+    return (f(x-1) * x);
+  }
+
 */
 
 /* we only need output here, so turn off other IO functions */
@@ -184,7 +191,10 @@ int main(int argc, char *argv[])
     cnt_max_sz = s1->len; vstr_del(s1, 1, s1->len);
 
     /* work out the result */
-    ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for, FALSE, NULL, 0, 0);
+    if (mpz_fits_ulong_p(bignum_for))
+      mpz_fac_ui(bignum_ret, mpz_get_ui(bignum_for));
+    else
+      ex_gmp_fact(bignum_ret, bignum_cnt, bignum_for, FALSE, NULL, 0, 0);
 
     /* value of the result... */
     if (!vstr_add_fmt(s1, s1->len, "$'<MPZ:%p>", (void *)bignum_ret))

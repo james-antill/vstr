@@ -1,6 +1,6 @@
 #define VSTR_SC_NOPOSIX_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -105,4 +105,9 @@ int vstr_sc_fmt_add_ipv6_ptr(Vstr_conf *conf __attribute__((unused)),
                              const char *name __attribute__((unused)))
 {
   return (FALSE);
+}
+
+int vstr__sc_fmt_add_posix(Vstr_conf *conf __attribute__((unused)))
+{
+  return (TRUE);
 }

@@ -81,8 +81,8 @@
 
 
 
-#<span class="cppdefine">define</span> <span class="assert">assert</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"assert("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
-#<span class="cppdefine">define</span> <span class="assert">ASSERT</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"ASSERT("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
+#<span class="cppdefine">define</span> <span class="assert">assert</span>(x) <span class="do">do</span> { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"assert("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
+#<span class="cppdefine">define</span> <span class="assert">ASSERT</span>(x) <span class="do">do</span> { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"ASSERT("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
 
 
 
@@ -104,6 +104,7 @@
 #<span class="cppdefine">define</span> IO_EOF   2
 #<span class="cppdefine">define</span> IO_NONE  3
 
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_BLOCK
 <span class="comment">/* block waiting for IO read, write or both... */</span>
 <span class="static">static</span> <span class="void">void</span> io_block(<span class="int">int</span> io_r_fd, <span class="int">int</span> io_w_fd)
 {
@@ -141,6 +142,7 @@
       <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"poll"</span>);
   }
 }
+#<span class="cppendif">endif</span>
 
 <span class="comment">/* Try and move some data from Vstr string to fd */</span>
 <span class="static">static</span> <span class="int">int</span> io_put(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
@@ -159,6 +161,7 @@
   <span class="return">return</span> (IO_OK);
 }
 
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_BLOCK
 <span class="comment">/* loop outputting data until empty, blocking when needed */</span>
 <span class="static">static</span> <span class="void">void</span> io_put_all(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
 {
@@ -170,8 +173,10 @@
       io_block(<span class="numm1">-1</span>, fd);
   }
 }
-    
+#<span class="cppendif">endif</span>
+
 #<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_INPUT
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_GET
 <span class="comment">/* Try and move some data from fd to Vstr string */</span>
 <span class="static">static</span> <span class="int">int</span> io_get(<span class="vstrbase">Vstr_base</span> *io_r, <span class="int">int</span> fd)
 {
@@ -191,7 +196,9 @@
 
   <span class="return">return</span> (IO_OK);
 }
+#<span class="cppendif">endif</span>
 
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_LIMIT
 <span class="comment">/* block read or writting, depending on limits */</span>
 <span class="static">static</span> <span class="void">void</span> io_limit(<span class="int">int</span> io_r_state, <span class="int">int</span> io_r_fd,
                      <span class="int">int</span> io_w_state, <span class="int">int</span> io_w_fd, <span class="vstrbase">Vstr_base</span> *s_w)
@@ -206,6 +213,7 @@
   <span class="else">else</span> <span class="if">if</span> ((io_w_state == IO_NONE) &amp;&amp; (io_r_state == IO_BLOCK))
     io_block(io_r_fd, <span class="numm1">-1</span>); <span class="comment">/* block to get more data */</span>
 }
+#<span class="cppendif">endif</span>
 #<span class="cppendif">endif</span>
 
 <span class="comment">/* generic POSIX IO functions that _don't_ call Vstr functions */</span>
@@ -310,7 +318,7 @@
 #<span class="cppendif">endif</span>
 </pre>
 <!-- C to html convertion of ex_utils.h -->
-<!--   done on Mon Jan 26 05:27:57 2004
+<!--   done on Sun May  9 02:31:18 2004
  -->
 <!--   done by ex_highlight -->
 

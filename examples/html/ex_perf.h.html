@@ -33,7 +33,7 @@
                <span class="str">"+${rep_chr:%c%zu}+\n"</span>, \
                <span class="chr">'-'</span>, 18 + 18, <span class="chr">'-'</span>, 18, <span class="chr">'-'</span>, 18)
 
-#<span class="cppdefine">define</span> TST_BEG(x, y) do { \
+#<span class="cppdefine">define</span> TST_BEG(x, y) <span class="do">do</span> { \
 		struct mallinfo mal_beg; \
 		struct mallinfo mal_end; \
 		struct timeval tv_beg; \
@@ -89,7 +89,7 @@
 
 </pre>
 <!-- C to html convertion of ex_perf.h -->
-<!--   done on Mon Jan 26 05:27:57 2004
+<!--   done on Sun May  9 02:29:54 2004
  -->
 <!--   done by ex_highlight -->
 

@@ -1,6 +1,6 @@
 #define VSTR_SC_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -53,11 +53,11 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
     unsigned int num_base = 10;
 
     if (0) { }
-    else if (VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
       num_base = 16;
-    else if (VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
+    else if (flags & VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
       num_base =  8;
-    else if (VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
       num_base =  2;
       
     if (!spec->fmt_hash)
@@ -383,6 +383,96 @@ int vstr_sc_fmt_add_rep_chr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
+#define BKMG_SWITCH() \
+    if (0) do { /* do nothing */ } while (FALSE)
+
+#define BKMG_CASE(x, y)                              \
+    else if (bkmg >= val_ ## x )                     \
+      do                                             \
+      {                                              \
+        bkmg_whole = bkmg / val_ ## x ;              \
+        mov_dot_back = y;                            \
+        end_bkmg = buf_ ## x ;                       \
+      } while (FALSE)
+
+#define BKMG_LEN_NUM(x, Ty, z) do {                  \
+      Ty bkmg_tmp = (z);                             \
+      x = 1;                                         \
+      while (bkmg_tmp >= 10)                         \
+      {                                              \
+        ++ x;                                        \
+        bkmg_tmp /= 10;                              \
+      }                                              \
+    } while (FALSE)
+
+
+static int vstr__sc_fmt_add_cb_bkmg__beg(Vstr_base *base, size_t *pos,
+                                         Vstr_fmt_spec *spec, size_t *sf_len,
+                                         unsigned int val_len,
+                                         unsigned int mov_dot_back,
+                                         const char *end_bkmg,
+                                         unsigned int *ret_prec,
+                                         char buf_dot[2])
+{
+  unsigned int prec = 0;
+  
+  /* NOTE: hard to do due to . and , -- change cb_beg ?
+   *       shouldn't trigger anyway */
+  spec->fmt_quote = FALSE;
+  
+  if (spec->fmt_precision)
+    prec = spec->obj_precision;
+  else
+    prec = 2;
+  spec->fmt_precision = FALSE; /* for cb_beg */
+  
+  if (prec > mov_dot_back)
+    prec = mov_dot_back;
+
+  /* One of...
+   * NNN '.' N+ end_bkmg
+   * NNN        end_bkmg */
+  *sf_len = val_len + !!prec + prec + strlen(end_bkmg);
+  
+  if (!vstr_sc_fmt_cb_beg(base, pos, spec, sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
+    return (FALSE);
+  
+  if (prec)
+    buf_dot[0] = '.';
+
+  *ret_prec = prec;
+
+  return (TRUE);
+}
+
+static int vstr__sc_fmt_add_cb_bkmg__end(Vstr_base *base, size_t pos,
+                                         Vstr_fmt_spec *spec, size_t sf_len,
+                                         unsigned int val_len,
+                                         unsigned int mov_dot_back,
+                                         unsigned int prec,
+                                         unsigned int num_added)
+{
+  size_t num_keep = 0;
+  
+  assert(val_len == (num_added - mov_dot_back));
+  assert(num_added >= val_len);
+  assert(num_added > mov_dot_back);
+
+  if (prec && !vstr_mov(base, pos + val_len,
+                        base, pos + num_added + 1, 1))
+    return (FALSE);
+
+  num_keep = val_len + prec;
+  if (num_added > num_keep)
+    vstr_del(base, pos + 1 + num_keep + !!prec, (num_added - num_keep));
+
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+
+  return (TRUE);
+}
+
 static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
                                           Vstr_fmt_spec *spec,
                                           const char *buf_B,
@@ -401,90 +491,88 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
   unsigned int num_added = 0;
   unsigned int mov_dot_back = 0;
   unsigned int prec = 0;
-
+  char buf_dot[2] = {0, 0};
+  int num_iadded = 0;
+  
   assert(strlen(buf_B) <= strlen(buf_M));
   assert(strlen(buf_K) == strlen(buf_M));
   assert(strlen(buf_K) == strlen(buf_G));
 
-  if (0)
-  { /* do nothing */ }
-  else if (bkmg >= val_G)
-  {
-    bkmg_whole = bkmg / val_G;
-    mov_dot_back = 9;
-    end_bkmg = buf_G;
-  }
-  else if (bkmg >= val_M)
-  {
-    bkmg_whole = bkmg / val_M;
-    mov_dot_back = 6;
-    end_bkmg = buf_M;
-  }
-  else if (bkmg >= val_K)
-  {
-    bkmg_whole = bkmg / val_K;
-    mov_dot_back = 3;
-    end_bkmg = buf_K;
-  }
+  BKMG_SWITCH();
+  BKMG_CASE(G,  9);
+  BKMG_CASE(M,  6);
+  BKMG_CASE(K,  3);
 
-  if (bkmg_whole >= 100)
-    val_len = 3;
-  else if (bkmg_whole >= 10)
-    val_len = 2;
-  else
-    val_len = 1;
+  BKMG_LEN_NUM(val_len, unsigned int, bkmg_whole);
 
-  if (spec->fmt_precision)
-    prec = spec->obj_precision;
-  else
-    prec = 2;
-  spec->fmt_precision = FALSE; /* for cb_beg */
+  if (!vstr__sc_fmt_add_cb_bkmg__beg(base, &pos, spec, &sf_len, val_len,
+                                     mov_dot_back, end_bkmg, &prec, buf_dot))
+    return (FALSE);
   
-  if (prec > mov_dot_back)
-    prec = mov_dot_back;
-
-  /* One of....
-   * NNN '.' N+ end_bkmg
-   * NNN        end_bkmg */
-  sf_len = val_len + !!prec + prec + strlen(end_bkmg);
-
-  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
+  if (!vstr_add_sysfmt(base, pos, "%u%n%s%s", bkmg, &num_iadded,
+                       buf_dot, end_bkmg))
     return (FALSE);
+  num_added = num_iadded;
 
-  if (TRUE)
-  {
-    char buf_dot[2] = {0, 0};
-    int num_iadded = 0;
+  return (vstr__sc_fmt_add_cb_bkmg__end(base, pos, spec, sf_len, val_len,
+                                        mov_dot_back, prec, num_added));
+}
 
-    if (prec)
-      buf_dot[0] = '.';
+static int vstr__sc_fmt_add_cb_bkmg__uintmax(Vstr_base *base, size_t pos,
+                                             Vstr_fmt_spec *spec,
+                                             const char *buf_B,
+                                             const char *buf_K,
+                                             const char *buf_M,
+                                             const char *buf_G,
+                                             const char *buf_T,
+                                             const char *buf_P,
+                                             const char *buf_E)
+{
+  const unsigned int val_K = (1000U);
+  const unsigned int val_M = (1000U * 1000U);
+  const unsigned int val_G = (1000U * 1000U * 1000U);
+  const uintmax_t    val_T = (1000ULL * val_G);
+  const uintmax_t    val_P = (1000ULL * val_T);
+  const uintmax_t    val_E = (1000ULL * val_P);
+  uintmax_t bkmg = VSTR_FMT_CB_ARG_VAL(spec, uintmax_t, 0);
+  uintmax_t bkmg_whole = bkmg;
+  unsigned int val_len = 0;
+  size_t sf_len = SIZE_MAX;
+  const char *end_bkmg = buf_B;
+  unsigned int num_added = 0;
+  unsigned int mov_dot_back = 0;
+  unsigned int prec = 0;
+  char buf_dot[2] = {0, 0};
+  int num_iadded = 0;
 
-    if (!vstr_add_sysfmt(base, pos, "%u%n%s%s", bkmg, &num_iadded,
-                         buf_dot, end_bkmg))
-      return (FALSE);
-    num_added = num_iadded;
-  }
+  assert(strlen(buf_B) <= strlen(buf_M));
+  assert(strlen(buf_K) == strlen(buf_M));
+  assert(strlen(buf_K) == strlen(buf_G));
+  assert(strlen(buf_K) == strlen(buf_T));
+  assert(strlen(buf_K) == strlen(buf_P));
+  assert(strlen(buf_K) == strlen(buf_E));
 
-  assert(val_len == (num_added - mov_dot_back));
-  assert(num_added >= val_len);
-  assert(num_added > mov_dot_back);
+  BKMG_SWITCH();
+  BKMG_CASE(E, 18);
+  BKMG_CASE(P, 15);
+  BKMG_CASE(T, 12);
+  BKMG_CASE(G,  9);
+  BKMG_CASE(M,  6);
+  BKMG_CASE(K,  3);
 
-  if (prec && !vstr_mov(base, pos + val_len,
-                        base, pos + num_added + 1, 1))
+  BKMG_LEN_NUM(val_len, uintmax_t, bkmg_whole);
+  
+  if (!vstr__sc_fmt_add_cb_bkmg__beg(base, &pos, spec, &sf_len, val_len,
+                                     mov_dot_back, end_bkmg, &prec, buf_dot))
     return (FALSE);
-
-  if (TRUE)
-  {
-    size_t num_keep = val_len + prec;
-    if (num_added > num_keep)
-      vstr_del(base, pos + 1 + num_keep + !!prec, (num_added - num_keep));
-  }
-
-  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+  
+  if (!vstr_add_sysfmt(base, pos, "%ju%n%s%s", bkmg, &num_iadded,
+                       buf_dot, end_bkmg))
     return (FALSE);
+  num_added = num_iadded;
 
-  return (TRUE);
+  return (vstr__sc_fmt_add_cb_bkmg__end(base, pos, spec, sf_len, val_len,
+                                        mov_dot_back, prec, num_added));
 }
 
 static int vstr__sc_fmt_add_cb_bkmg_Byte_uint(Vstr_base *base, size_t pos,
@@ -540,6 +628,68 @@ int vstr_sc_fmt_add_bkmg_bits_uint(Vstr_conf *conf, const char *name)
 {
   return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bits_uint,
                        VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+}
+
+/* intmax */
+
+static int vstr__sc_fmt_add_cb_bkmg_Byte_uintmax(Vstr_base *base, size_t pos,
+                                                 Vstr_fmt_spec *spec)
+{
+  return (vstr__sc_fmt_add_cb_bkmg__uintmax(base, pos, spec, "B",
+                                            "KB", "MB", "GB",
+                                            "TB", "PB", "EB"));
+}
+
+int vstr_sc_fmt_add_bkmg_Byte_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Byte_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_bkmg_Bytes_uintmax(Vstr_base *base, size_t pos,
+                                                  Vstr_fmt_spec *spec)
+{
+  return (vstr__sc_fmt_add_cb_bkmg__uintmax(base, pos, spec, "B/s",
+                                            "KB/s", "MB/s", "GB/s",
+                                            "TB/s", "PB/s", "EB/s"));
+}
+
+int vstr_sc_fmt_add_bkmg_Bytes_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Bytes_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_bkmg_bit_uintmax(Vstr_base *base, size_t pos,
+                                                Vstr_fmt_spec *spec)
+{
+  return (vstr__sc_fmt_add_cb_bkmg__uintmax(base, pos, spec, "b",
+                                            "Kb", "Mb", "Gb",
+                                            "Tb", "Pb", "Eb"));
+}
+
+int vstr_sc_fmt_add_bkmg_bit_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bit_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vstr__sc_fmt_add_cb_bkmg_bits_uintmax(Vstr_base *base, size_t pos,
+                                                 Vstr_fmt_spec *spec)
+{
+  return (vstr__sc_fmt_add_cb_bkmg__uintmax(base, pos, spec, "b/s",
+                                            "Kb/s", "Mb/s", "Gb/s",
+                                            "Tb/s", "Pb/s", "Eb/s"));
+}
+
+int vstr_sc_fmt_add_bkmg_bits_uintmax(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bits_uintmax,
+                       VSTR_TYPE_FMT_UINTMAX_T,
                        VSTR_TYPE_FMT_END));
 }
 
@@ -690,39 +840,46 @@ static int vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
          (ips[4] <= 0xFFFF) && (ips[5] <= 0xFFFF) &&
          (ips[6] <= 0xFFFF) && (ips[7] <= 0xFFFF));
 
-  if (0) { }
-  else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED)
-    len = 7 + 4*8;
-  else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_STD)
-    len = (vstr__sc_fmt_num_ipv6_std(ips, 8) + 7);
-  else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT)
+  switch (type)
   {
-    size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 8, pos_compact);
-    len = (vstr__sc_fmt_num_ipv6_std(ips, 8) + 7 - len_minus);
-  }
-  else if ((type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED) ||
-           (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD) ||
-           (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT))
-  {
-    if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED)
-      len = 6 + 4*6;
-    else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD)
-      len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 6);
-    else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT)
+    case VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED:
+      len = 7 + 4*8; break;
+    case VSTR_TYPE_SC_FMT_CB_IPV6_STD:
+      len = (vstr__sc_fmt_num_ipv6_std(ips, 8) + 7); break;
+    case VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT:
     {
-      size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 6, pos_compact);
-      len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 6 - len_minus);
+      size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 8, pos_compact);
+      len = (vstr__sc_fmt_num_ipv6_std(ips, 8) + 7 - len_minus);
     }
+    break;
+    
+    case VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED:
+    case VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD:
+    case VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT:
+    {
+      if (0) { }
+      else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED)
+        len = 6 + 4*6;
+      else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD)
+        len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 6);
+      else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT)
+      {
+        size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 6, pos_compact);
+        len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 6 - len_minus);
+      }
+      
+      /* add the ipv4 address on the end using the last 2 16bit entities */
+      len += vstr__sc_fmt_num10_len((ips[6] >> 8) & 0xFF);
+      len += vstr__sc_fmt_num10_len((ips[6] >> 0) & 0xFF);
+      len += vstr__sc_fmt_num10_len((ips[7] >> 8) & 0xFF);
+      len += vstr__sc_fmt_num10_len((ips[7] >> 0) & 0xFF);
+      len += 3;
+    }
+    break;
 
-    /* add the ipv4 address on the end using the last 2 16bit entities */
-    len += vstr__sc_fmt_num10_len((ips[6] >> 8) & 0xFF);
-    len += vstr__sc_fmt_num10_len((ips[6] >> 0) & 0xFF);
-    len += vstr__sc_fmt_num10_len((ips[7] >> 8) & 0xFF);
-    len += vstr__sc_fmt_num10_len((ips[7] >> 0) & 0xFF);
-    len += 3;
+    default:
+      ASSERT_RET(FALSE, FALSE);
   }
-  else
-    assert_ret(FALSE, FALSE);
 
   *ret_len = len;
 
@@ -912,7 +1069,9 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
 
   assert(cidr <= 128);
 
-  vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
+  if (!vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len))
+    return (FALSE);
+  
   len += 1 + vstr__sc_fmt_num10_len(cidr);
   saved_len = len;
   
@@ -1069,15 +1228,10 @@ int vstr_sc_fmt_add_lower_base2_uintmax(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
-#define VSTR__SC_FMT_ADD(x, nb, ne) \
- if (!( \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" ne "}") && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*"   ne "}")  && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  ".*" ne "}")  && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*.*" ne "}")  && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  "d%" ne "}")  && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "d%d%" ne "}") &&  \
- vstr_sc_fmt_add_ ## x (conf, "{" nb "}"))) ret = FALSE
+#define VSTR__SC_FMT_ADD(x, n, nchk)                                    \
+    if (ret &&                                                          \
+        !VSTR_SC_FMT_ADD(vstr_sc_fmt_add_ ## x, conf, "{", n, nchk, "}")) \
+      ret = FALSE
 
 int vstr_sc_fmt_add_all(Vstr_conf *conf)
 {
@@ -1099,15 +1253,19 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
 
   VSTR__SC_FMT_ADD(rep_chr, "rep_chr", "c%zu");
 
-  VSTR__SC_FMT_ADD(bkmg_Byte_uint, "BKMG.u", "u");
-  VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
-  VSTR__SC_FMT_ADD(bkmg_bit_uint, "bKMG.u", "u");
-  VSTR__SC_FMT_ADD(bkmg_bits_uint, "bKMG/s.u", "u");
+  VSTR__SC_FMT_ADD(bkmg_Byte_uint,  "BKMG.u",   "u");
+  VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u", "u");
+  VSTR__SC_FMT_ADD(bkmg_bit_uint,   "bKMG.u",   "u");
+  VSTR__SC_FMT_ADD(bkmg_bits_uint,  "bKMG/s.u", "u");
   
-#ifdef HAVE_POSIX_HOST
-  VSTR__SC_FMT_ADD(ipv4_ptr, "ipv4.p", "p");
-  VSTR__SC_FMT_ADD(ipv6_ptr, "ipv6.p", "p");
-#endif
+  VSTR__SC_FMT_ADD(bkmg_Byte_uintmax,  "BKMG.ju",   "ju");
+  VSTR__SC_FMT_ADD(bkmg_Bytes_uintmax, "BKMG/s.ju", "ju");
+  VSTR__SC_FMT_ADD(bkmg_bit_uintmax,   "bKMG.ju",   "ju");
+  VSTR__SC_FMT_ADD(bkmg_bits_uintmax,  "bKMG/s.ju", "ju");
+
+  if (ret && !vstr__sc_fmt_add_posix(conf))
+    ret = FALSE;
+
   VSTR__SC_FMT_ADD(ipv4_vec, "ipv4.v", "p");
   VSTR__SC_FMT_ADD(ipv6_vec, "ipv6.v", "p%u");
   VSTR__SC_FMT_ADD(ipv4_vec_cidr, "ipv4.v+C", "p%u");
@@ -1123,8 +1281,6 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(lower_base2_size,    "b.zu", "zu");
   VSTR__SC_FMT_ADD(lower_base2_uintmax, "b.ju", "ju");
   
-  assert(ret);
-
   return (ret);
 }
 #undef VSTR__SC_FMT_ADD
@@ -1147,9 +1303,7 @@ void vstr_sc_basename(const Vstr_base *base, size_t pos, size_t len,
   }
   else if (ls == end_pos)
   {
-    char buf[1] = {'/'};
-
-    ls = vstr_spn_chrs_rev(base, pos, len, buf, 1);
+    ls = vstr_spn_cstr_chrs_rev(base, pos, len, "/");
     vstr_sc_basename(base, pos, len - ls, ret_pos, ret_len);
   }
   else
@@ -1165,14 +1319,12 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
 {
   size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
   size_t end_pos = vstr_sc_poslast(pos, len);
-  const char buf[1] = {'/'};
-
 
   if (!ls)
     *ret_len = 0;
   else if (ls == end_pos)
   {
-    ls = vstr_spn_chrs_rev(base, pos, len, buf, 1);
+    ls = vstr_spn_cstr_chrs_rev(base, pos, len, "/");
     len -= ls;
     if (!len)
       *ret_len = 1;
@@ -1182,7 +1334,7 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
   else
   {
     len = VSTR_SC_POSDIFF(pos, ls);
-    *ret_len = len - vstr_spn_chrs_rev(base, pos, len - 1, buf, 1);
+    *ret_len = len - vstr_spn_cstr_chrs_rev(base, pos, len - 1, "/");
   }
 }
 

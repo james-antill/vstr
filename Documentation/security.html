@@ -755,29 +755,36 @@ else
 <a id="sprintf-ex2"></a>
 <pre class="c2html">
 <span class="char">char</span> buf[4];
-<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
+<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, 14, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
 </pre>
 
 <p>
 ...of course after the discussion about
 <a href="#libcsprintf">what the return value should be for overflow</a>
 you'll have said depends on the implementation. But let's assume that in the
-following code "ret" is 9 (Nine)...
+following code "ret" is 14 (Fourteen)...
 </p>
 
 <a id="sprintf-ex3"></a>
 <pre class="c2html">
 <span class="char">char</span> buf[4];
-<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, <span class="str">"123456789"</span>);
+<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%s"</span>, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
 </pre>
 
 <p>
-  Ah, you say "it follows the ISO 9899:199 behaviour" so the value of ret
-will be 14 (Fourteen). However, you'd be wrong, the value returned is
+  Ah, you say "it follows the ISO 9899:1999 behaviour" so the value of ret
+must be 14 (Fourteen). However, you'd be wrong, the value returned is
 -1 (Minus one) on Linux if you are in a UTF-8 locale due to the
  <a href="printf_comparison.html#glibc">multibyte "issue"</a>. More generally
-there are standard defined reasons why snprintf() can return -1 (Minus one), and
-mixing use and non use of i18n parameter numbers is "undefined" in std. C ...
+ISO 9899:1999 says:
+</p>
+<blockquote type="cite" cite="http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=29237">
+7.19.6.5/3<br>
+The snprintf function returns the number of characters that would have been written had n been sufficiently large, not counting the terminating null character, or a negative value if an encoding error occurred. Thus, the null-terminated output has been completely written if and only if the returned value is nonnegative and less than n.
+</blockquote>
+<p>
+Also note that the std. declares that mixing use and non use of i18n
+parameter numbers is "undefined" in std. C ...
 which is great for the libc developers, but not so much fun from a security
 point of view.
 </p>
@@ -795,7 +802,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 29 19:08:23 EDT 2003
+Last modified: Sat Feb 14 12:59:12 EST 2004
 <!-- hhmts end -->
   </body>
 </html>

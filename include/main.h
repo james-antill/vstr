@@ -8,6 +8,13 @@
 # include "main_system.h"
 #else
 # include "main_noposix_system.h"
+
+struct iovec
+{
+ void *iov_base;
+ size_t iov_len;
+}; /* normally part of <sys/uio.h> ... but that isn't here now */
+
 #endif
 
 #define FIX_NAMESPACE_SYMBOL vstr__autoconf_

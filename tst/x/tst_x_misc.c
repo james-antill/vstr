@@ -35,8 +35,9 @@ int tst(void)
 
   tst_v("%s", "123456789 123456789 123456789 123456789 123456789 123456789 ");
   assert(s1->len == 120);
-  /* FAIL: vstr_iter_fwd_beg(s1, 1, s1->len + 1, iter); */
+
   vstr_iter_fwd_beg(s1, 1, s1->len, iter);
+  ASSERT(iter->num == vstr_iter_num(iter));
   ASSERT((iter->len + iter->remaining) == 120);
   vstr_iter_fwd_nxt(iter);
 
@@ -67,6 +68,10 @@ int tst(void)
   vstr_sc_fmt_add_upper_base2_uint(NULL, "m");
   vstr_sc_fmt_add_upper_base2_uintmax(NULL, "n");
   vstr_sc_fmt_add_upper_base2_ulong(NULL, "o");
+  vstr_sc_fmt_add_bkmg_bits_uintmax(NULL, "p");
+  vstr_sc_fmt_add_bkmg_bit_uintmax(NULL, "q");
+  vstr_sc_fmt_add_bkmg_Bytes_uintmax(NULL, "r");
+  vstr_sc_fmt_add_bkmg_Byte_uintmax(NULL, "s");
 
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1);
 
@@ -81,13 +86,6 @@ int tst(void)
  *
  * VSTR_MAX_NODE_ALL
  *
- * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
- * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM
- * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
- * VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM
- *
  * VSTR_SECTS_INIT()
- *
- * VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC -- not done.
  *
  */

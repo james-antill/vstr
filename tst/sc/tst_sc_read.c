@@ -17,6 +17,22 @@ int tst(void)
   int pfds[2];
 
 #ifndef HAVE_POSIX_HOST
+  ASSERT(!vstr_sc_read_iov_fd(s1, 0, -1, 1, 1, &err));
+  ASSERT((err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &&
+         (errno == ENOSYS));
+  
+  ASSERT(!vstr_sc_read_len_fd(s1, 0, -1, 1, &err));
+  ASSERT((err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &&
+         (errno == ENOSYS));
+  
+  ASSERT(!vstr_sc_read_iov_file(s1, 0, __FILE__, 0, 1, 1, &err));
+  ASSERT((err == VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO) &&
+         (errno == ENOSYS));
+  
+  ASSERT(!vstr_sc_read_len_file(s1, 0, __FILE__, 0, 1, &err));
+  ASSERT((err == VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO) &&
+         (errno == ENOSYS));
+  
   return (EXIT_FAILED_OK);
 #endif
 
@@ -64,7 +80,7 @@ int tst(void)
   {
     TST_B_TST(ret, 7,
               !vstr_sc_read_iov_file(s3, s3->len, __FILE__,
-                                     s3->len, 2, 4, NULL));
+                                     s3->len, UIO_MAXIOV + 1, UINT_MAX, NULL));
     if (ret) break;
   }
 
@@ -120,6 +136,11 @@ int tst(void)
   TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
   TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FILE_ERR_EOF));
 
+  TST_B_TST(ret, 17, !!vstr_sc_read_len_file(s4, s4->len, "/dev/null",
+                                             0, 20, &err));
+  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
+  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FILE_ERR_EOF));
+
   TST_B_TST(ret, 19, vstr_sc_read_len_file(s1, s1->len, "/abcd_missing",
                                            0, 1, &err));
   TST_B_TST(ret, 20, (err != VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO));
@@ -158,13 +179,15 @@ int tst(void)
            (err == VSTR_TYPE_SC_READ_FILE_ERR_MEM));
   TST_B_TST(ret, 23, (mfail_count == 1) && MFAIL_NUM_OK);
 
+  tst_mfail_num(0);
+  vstr_add_cstr_buf(s4, 0, "abcd");
   mfail_count = 0;
   do
   {
     vstr_free_spare_nodes(s4->conf, VSTR_TYPE_NODE_BUF, 1000);
     vstr_free_spare_nodes(s4->conf, VSTR_TYPE_NODE_REF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_sc_read_len_file(s4, s4->len, __FILE__, 0, 1, &err) &&
+  } while (!vstr_sc_read_len_file(s4, s4->len - 2, __FILE__, 0, 1, &err) &&
            (err == VSTR_TYPE_SC_READ_FILE_ERR_MEM));
   TST_B_TST(ret, 24, (mfail_count == 1) && MFAIL_NUM_OK);
 
@@ -174,7 +197,7 @@ int tst(void)
     vstr_free_spare_nodes(s4->conf, VSTR_TYPE_NODE_BUF, 1000);
     vstr_free_spare_nodes(s4->conf, VSTR_TYPE_NODE_REF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_sc_read_iov_file(s4, s4->len, __FILE__, 0, 1, 1, &err) &&
+  } while (!vstr_sc_read_iov_file(s4, s4->len - 2, __FILE__, 0, 1, 1, &err) &&
            (err == VSTR_TYPE_SC_READ_FILE_ERR_MEM));
   TST_B_TST(ret, 24, (mfail_count == 1) && MFAIL_NUM_OK);
 
@@ -203,7 +226,7 @@ int tst(void)
   TST_B_TST(ret, 27, !VSTR_CMP_CSTR_EQ(s1, s1->len - 2, 3, "abZ"));
 
 #ifdef __linux__
-  /* hangs on FreeBSD ... */
+  /* hangs on FreeBSD ... stdin == stdout thing again, I assume */
   TST_B_TST(ret, 28, vstr_sc_read_len_file(s1, s1->len, "/dev/stdin",
                                            1, 1, &err));
   TST_B_TST(ret, 29, (err != VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO));
@@ -216,10 +239,3 @@ int tst(void)
 
   return (TST_B_RET(ret));
 }
-/* Crap for tst_coverage constants... None trivial to test.
- *
- * VSTR_TYPE_SC_READ_FD_ERR_TOO_LARGE
- * VSTR_TYPE_SC_READ_FILE_ERR_CLOSE_ERRNO
- * VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE
- *
- */

@@ -9,7 +9,6 @@ int tst(void)
   Vstr_sects *sects2 = vstr_sects_make(1);
   Vstr_sects *sects3 = vstr_sects_make(1);
   int mfail_count = 0;
-  unsigned int num = 0;
   
   VSTR_ADD_CSTR_BUF(s1, 0, "123456789 123456789 123456789 123456789 ");
   vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);

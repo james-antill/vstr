@@ -18,6 +18,7 @@ int tst(void)
   VSTR_SECTS_DECL_INIT(sects2);
 
   VSTR_ADD_CSTR_BUF(s1, 0, ":a::b:!:c::d:");
+  /*                        123456789 123 */
   a_pos = 2;
   b_pos = 5;
   c_pos = 9;
@@ -228,6 +229,142 @@ int tst(void)
   TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 1)->len != 3));
   TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 2)->pos != 5));
   TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 2)->len != 0));
+
+  
+  VSTR_SUB_CSTR_BUF(s1, 1, s1->len, ":a::b:!:c::d:");
+  /*                                 123456789 123 */
+  /* beg_nul err */
+  VSTR_SECTS_NUM(sects8, 1)->pos = 88;
+  VSTR_SECTS_NUM(sects8, 1)->len = 88;
+  sects8->num        = 0;
+  sects8->sz         = 1;
+  sects8->can_add_sz = FALSE;
+  split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, ":abcd",
+                                    sects8, 0,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_MID_NULL |
+                                    VSTR_FLAG_SPLIT_END_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+
+  ASSERT(split8_num  == s1->len);
+  ASSERT(sects8->num == 1);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->pos == 1);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->len == 0);
+
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_sects *mst = vstr_sects_make(1);
+
+    ASSERT(mst);
+
+    VSTR_SECTS_NUM(mst, 1)->pos = 88;
+    VSTR_SECTS_NUM(mst, 1)->len = 88;
+      
+    tst_mfail_num(1);
+    mst->num = 0;
+    mst->sz  = 1;
+    split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, ":abcd",
+                                      mst, 0,
+                                      VSTR_FLAG_SPLIT_BEG_NULL |
+                                      VSTR_FLAG_SPLIT_MID_NULL |
+                                      VSTR_FLAG_SPLIT_END_NULL |
+                                      VSTR_FLAG_SPLIT_POST_NULL);
+
+    ASSERT(split8_num == 0);
+    ASSERT(mst->num   == 0);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->pos == 1);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->len == 0);
+
+    vstr_sects_free(mst);
+  }
+  
+  /* mid_nul err */
+  VSTR_SECTS_NUM(sects8, 1)->pos = 88;
+  VSTR_SECTS_NUM(sects8, 1)->len = 88;
+  sects8->num        = 0;
+  sects8->sz         = 1;
+  sects8->can_add_sz = FALSE;
+  split8_num = vstr_split_cstr_chrs(s1, 5, 5, ":!",
+                                    sects8, 0,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_MID_NULL |
+                                    VSTR_FLAG_SPLIT_END_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  
+  ASSERT(split8_num  == 4);
+  ASSERT(sects8->num == 1);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->pos == 5);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->len == 1);
+
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_sects *mst = vstr_sects_make(1);
+
+    ASSERT(mst);
+
+    VSTR_SECTS_NUM(mst, 1)->pos = 88;
+    VSTR_SECTS_NUM(mst, 1)->len = 88;
+      
+    tst_mfail_num(1);
+    mst->num = 0;
+    mst->sz  = 1;
+    split8_num = vstr_split_cstr_chrs(s1, 5, 5, ":!", mst, 0,
+                                      VSTR_FLAG_SPLIT_BEG_NULL |
+                                      VSTR_FLAG_SPLIT_MID_NULL |
+                                      VSTR_FLAG_SPLIT_END_NULL |
+                                      VSTR_FLAG_SPLIT_POST_NULL);
+
+    ASSERT(split8_num == 0);
+    ASSERT(mst->num   == 0);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->pos == 5);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->len == 1);
+
+    vstr_sects_free(mst);
+  }
+  
+  /* post_nul err */
+  VSTR_SECTS_NUM(sects8, 1)->pos = 88;
+  VSTR_SECTS_NUM(sects8, 1)->len = 88;
+  sects8->num        = 0;
+  sects8->sz         = 1;
+  sects8->can_add_sz = FALSE;
+  split8_num = vstr_split_cstr_chrs(s1, 2, 2, ":",
+                                    sects8, 0,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_MID_NULL |
+                                    VSTR_FLAG_SPLIT_END_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  
+  ASSERT(split8_num  == 2);
+  ASSERT(sects8->num == 1);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->pos == 2);
+  ASSERT(VSTR_SECTS_NUM(sects8, 1)->len == 1);
+
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_sects *mst = vstr_sects_make(1);
+
+    ASSERT(mst);
+
+    VSTR_SECTS_NUM(mst, 1)->pos = 88;
+    VSTR_SECTS_NUM(mst, 1)->len = 88;
+      
+    tst_mfail_num(1);
+    mst->num = 0;
+    mst->sz  = 1;
+    split8_num = vstr_split_cstr_chrs(s1, 2, 2, ":", mst, 0,
+                                      VSTR_FLAG_SPLIT_BEG_NULL |
+                                      VSTR_FLAG_SPLIT_MID_NULL |
+                                      VSTR_FLAG_SPLIT_END_NULL |
+                                      VSTR_FLAG_SPLIT_POST_NULL);
+
+    ASSERT(split8_num == 0);
+    ASSERT(mst->num   == 0);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->pos == 2);
+    ASSERT(VSTR_SECTS_NUM(mst, 1)->len == 1);
+
+    vstr_sects_free(mst);
+  }
   
   return (TST_B_RET(ret));
 }

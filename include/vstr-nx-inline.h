@@ -46,7 +46,7 @@ extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
 # define vstr_wrap_memrchr(x, y, z) memrchr(x, y, z)
 #endif
 
-#ifndef NDEBUG /* this is all non threadsafe ... */
+#if USE_MALLOC_CHECK /* this is all non threadsafe ... */
 static inline void vstr__debug_alloc(void)
 {
   size_t sz = vstr__options.mem_sz;

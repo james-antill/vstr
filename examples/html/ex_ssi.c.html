@@ -7,10 +7,7 @@
   <body>
      <h1>ex_ssi.c</h1>
 <pre class="c2html">
-<span class="comment">/* quick and qirty static ssi processor. Only does ...
-
-&lt;!--#include file="foo" --&gt;
-
+<span class="comment">/* quick but useful static ssi processor.
 */</span>
 #<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
 
@@ -24,18 +21,17 @@
 #<span class="cppinclude">include</span> &lt;spawn.h&gt;
 
 
-#<span class="cppdefine">define</span> EX_SSI_FAILED(x) do {                                           \
+#<span class="cppdefine">define</span> EX_SSI_FAILED(x) <span class="do">do</span> {                                           \
         vstr_add_fmt(s1, s1-&gt;len,                                       \
                      <span class="str">"&lt;!-- \"%s\" SSI command FAILED --&gt;\n"</span>, (x));      \
         <span class="goto">goto</span> ssi_parse_failed;                                          \
     }                                                                   \
     <span class="while">while</span> (<span class="false">FALSE</span>)
 
-#warning <span class="str">"ALL_REF on upgrade"</span>
-#<span class="cppdefine">define</span> EX_SSI_OK(x, sf, p, l, end) do {                                \
+#<span class="cppdefine">define</span> EX_SSI_OK(x, sf, p, l, end) <span class="do">do</span> {                                \
       vstr_add_fmt(s1, s1-&gt;len, <span class="str">"&lt;!-- \"%s ${vstr:%p%zu%zu%u}"</span>          \
                    <span class="str">"\" SSI command OK --&gt;%s"</span>,                           \
-                   (x), (sf), (p), (l), VSTR_TYPE_ADD_DEF,              \
+                   (x), (sf), (p), (l), VSTR_TYPE_ADD_ALL_REF,          \
                    (end) ? <span class="str">"\n"</span> : <span class="str">""</span>);                                  \
     }                                                                   \
     <span class="while">while</span> (<span class="false">FALSE</span>)
@@ -619,7 +615,7 @@
 }
 </pre>
 <!-- C to html convertion of ex_ssi.c -->
-<!--   done on Mon Jan 26 05:27:56 2004
+<!--   done on Sun May  9 02:29:54 2004
  -->
 <!--   done by ex_highlight -->
 

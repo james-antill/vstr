@@ -1,7 +1,4 @@
-/* quick and qirty static ssi processor. Only does ...
-
-<!--#include file="foo" -->
-
+/* quick but useful static ssi processor.
 */
 #include "ex_utils.h"
 
@@ -22,11 +19,10 @@
     }                                                                   \
     while (FALSE)
 
-#warning "ALL_REF on upgrade"
 #define EX_SSI_OK(x, sf, p, l, end) do {                                \
       vstr_add_fmt(s1, s1->len, "<!-- \"%s ${vstr:%p%zu%zu%u}"          \
                    "\" SSI command OK -->%s",                           \
-                   (x), (sf), (p), (l), VSTR_TYPE_ADD_DEF,              \
+                   (x), (sf), (p), (l), VSTR_TYPE_ADD_ALL_REF,          \
                    (end) ? "\n" : "");                                  \
     }                                                                   \
     while (FALSE)

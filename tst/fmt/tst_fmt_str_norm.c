@@ -75,14 +75,14 @@ int tst(void)
   TST_B_TST(ret, 7, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "abcd abcd"));
 
   vstr_del(s1, 1, s1->len);
-  ASSERT(!vstr_add_fmt(s1, 0, "%s%lc", "abcd", L'\xFEFE'));
+  ASSERT(!vstr_add_fmt(s1, 0, "%s%lc", "abcd", (wint_t)L'\xFEFE'));
   ASSERT(!s1->len && !s1->conf->malloc_bad);
   /* ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd",
    *                      L"\x80\x80\x80\x80 123456789")); */
   ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd", L"\xFEFE 123456789"));
   ASSERT(!s1->len && !s1->conf->malloc_bad);
   
-  vstr_add_fmt(s1, 0, "%.*s", 1, L"abcd");
+  vstr_add_fmt(s1, 0, "%.*ls", 1, L"abcd");
   TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a"));
 
   

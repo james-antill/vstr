@@ -691,9 +691,15 @@ int vstr_init(void)
   if (!vstr__options.def)
   {
     vstr__options.mmap_count = 0;
+    
+    vstr__options.fd_count = 0;
+
     vstr__options.mem_sz = 0;
     vstr__options.mem_num = 0;
     vstr__options.mem_vals = NULL;
+
+    /* NOTE: don't set fail nums */
+    
     if (!(vstr__options.def = vstr_make_conf()))
       return (FALSE);
   }
@@ -703,13 +709,14 @@ int vstr_init(void)
 
 void vstr_exit(void)
 {
-  assert((vstr__options.def->user_ref == 1) &&
+  ASSERT((vstr__options.def->user_ref == 1) &&
          (vstr__options.def->ref == 1));
 
   vstr_free_conf(vstr__options.def);
   vstr__options.def = NULL;
 
-  assert(!vstr__options.mmap_count);
+  ASSERT(!vstr__options.mmap_count);
+  ASSERT(!vstr__options.fd_count);
   
   VSTR__DEBUG_MALLOC_CHECK_EMPTY();
 }
@@ -863,24 +870,23 @@ static Vstr_base *vstr__make_base_cache(Vstr_conf *conf)
   base->cache_internal = TRUE;
   
   /* allocate cache pointers */
-  if (num)
-  {
-    if (!(cache = VSTR__MK(sizeof(Vstr__cache) + (sizeof(void *) * num))))
-      goto malloc_fail_cache;
-    
-    cache->sz  = num;
-    cache->vec = NULL;
-    
-    vstr_wrap_memset(cache->data, 0, sizeof(void *) * num);
-      
-    VSTR__CACHE(base)     = cache;
-    base->cache_available = TRUE;
-  }
-  else
+  if (!num)
   {
     base->cache_available = FALSE;
     ASSERT(conf->no_cache);
+    return (base);
   }
+
+  if (!(cache = VSTR__MK(sizeof(Vstr__cache) + (sizeof(void *) * num))))
+    goto malloc_fail_cache;
+  
+  cache->sz  = num;
+  cache->vec = NULL;
+  
+  vstr_wrap_memset(cache->data, 0, sizeof(void *) * num);
+  
+  VSTR__CACHE(base)     = cache;
+  base->cache_available = TRUE;
   
   /* NOTE: hand init/allocate empty data for each cache type,
    * this should really be in vstr_cache.c ... */
@@ -940,11 +946,7 @@ static Vstr_base *vstr__make_base_cache(Vstr_conf *conf)
       ASSERT(vstr_cache_get(base, 1) == data);
     }
     ASSERT(cache->sz >= 1);
-    /* FALLTHOUGH */
-      
-    case VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE:
-      
-      ASSERT_NO_SWITCH_DEF();
+    ASSERT_NO_SWITCH_DEF();
   }
 
   return (base);

@@ -11,6 +11,8 @@
 #  define ASSERT_RET(x, y)   do { if (x) {} else return (y); } while (FALSE)
 #  define assert_ret_void(x) do { if (x) {} else return; } while (FALSE)
 #  define ASSERT_RET_VOID(x) do { if (x) {} else return; } while (FALSE)
+#  define assert_goto(x, y)  do { if (x) {} else goto y; } while (FALSE)
+#  define ASSERT_GOTO(x, y)  do { if (x) {} else goto y; } while (FALSE)
 #  define assert_no_switch_def() break
 #  define ASSERT_NO_SWITCH_DEF() break
 #else
@@ -41,6 +43,14 @@ extern void vstr__assert_loop(const char *,
 #  define ASSERT_RET_VOID(x) do { \
  if (x) {} else { \
   vstr__assert_loop(#x, __FILE__, __LINE__, __func__); return; } \
+ } while (FALSE)
+#  define assert_goto(x, y) do { \
+ if (x) {} else { \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); return (y); } \
+ } while (FALSE)
+#  define ASSERT_GOTO(x, y) do { \
+ if (x) {} else { \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); goto     y; } \
  } while (FALSE)
 # else
 #  define assert(x) do { \
@@ -79,6 +89,18 @@ extern void vstr__assert_loop(const char *,
   fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
           #x , __func__, __LINE__, __FILE__); \
   abort(); } \
+ } while (FALSE)
+#  define assert_goto(x, y) do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } \
+ } while (FALSE)
+#  define ASSERT_GOTO(x, y) do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); goto     y; } \
  } while (FALSE)
 # endif
 # define assert_no_switch_def() break; default: ASSERT(FALSE)

@@ -32,6 +32,15 @@ int tst(void)
   unsigned int err = 0;
 
 #ifndef HAVE_POSIX_HOST
+  ASSERT(!vstr_sc_write_fd(s1, 1, 1, -1, &err));
+  ASSERT((err == VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO) &&
+         (errno == ENOSYS));
+  
+  ASSERT(!vstr_sc_write_file(s1, 1, 1, fn,
+                             O_WRONLY | O_CREAT, 0600, 0, &err));
+  ASSERT((err == VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO) &&
+         (errno == ENOSYS));
+  
   return (EXIT_FAILED_OK);
 #endif
 
@@ -41,12 +50,9 @@ int tst(void)
   VSTR_ADD_CSTR_BUF(s3, 0, buf);
   VSTR_ADD_CSTR_BUF(s4, 0, buf);
 
-  /* make s3 big enough to overflow UIO_MAXIOV */
-  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
-  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
-  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
-  vstr_add_vstr(s3, s3->len, s3, 1, s3->len, VSTR_TYPE_ADD_BUF_REF);
-
+  vstr_add_vstr(s3,       0, s3, 1, s1->len, 0);
+  vstr_add_vstr(s3, s3->len, s3, 1, s1->len, 0);
+  
   unlink(fn);
   tmp = s1->len;
   while (s1->len)
@@ -67,10 +73,10 @@ int tst(void)
   {
     tst_mfail_num(1);
     TST_B_TST(ret, 3,
-              !!vstr_sc_write_file(s3, 1, s3->len,    fn, 0, 0600, 0, NULL));
+              !!vstr_sc_write_file(s3, 1, s3->len,     fn, 0, 0600, 0, NULL));
     unlink(fn);
+    tst_mfail_num(0);
   }
-  tst_mfail_num(0);
   TST_B_TST(ret, 4,
             !vstr_sc_write_file(s3, 2, s3->len - 1, fn, 0, 0600, 0, NULL));
 
@@ -175,7 +181,6 @@ int tst(void)
 /* Crap for tst_coverage constants... None trivial to test.
  *
  * VSTR_TYPE_SC_WRITE_FD_ERR_MEM
- * VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO
  * VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
  *
  */
