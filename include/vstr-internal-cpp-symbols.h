@@ -54,6 +54,7 @@
 #define vstr_nx_cmp_case vstr_cmp_case
 #define vstr_nx_cmp_case_buf vstr_cmp_case_buf
 #define vstr_nx_cmp_vers vstr_cmp_vers
+#define vstr_nx_cmp_vers_buf vstr_cmp_vers_buf
 #define vstr_nx_srch_chr_fwd vstr_srch_chr_fwd
 #define vstr_nx_srch_chr_rev vstr_srch_chr_rev
 #define vstr_nx_srch_chrs_fwd vstr_srch_chrs_fwd
@@ -104,6 +105,10 @@
 #define vstr_nx_fmt_del vstr_fmt_del
 #define vstr_nx_fmt_srch vstr_fmt_srch
 #define vstr_nx_sc_fmt_add_vstr vstr_sc_fmt_add_vstr
+#define vstr_nx_sc_fmt_add_buf vstr_sc_fmt_add_buf
+#define vstr_nx_sc_fmt_add_ptr vstr_sc_fmt_add_ptr
+#define vstr_nx_sc_fmt_add_non vstr_sc_fmt_add_non
+#define vstr_nx_sc_fmt_add_ref vstr_sc_fmt_add_ref
 #define vstr_nx_sc_fmt_add_ipv4_ptr vstr_sc_fmt_add_ipv4_ptr
 #define vstr_nx_sc_fmt_add_ipv6_ptr vstr_sc_fmt_add_ipv6_ptr
 #define vstr_nx_sc_fmt_cb_beg vstr_sc_fmt_cb_beg

@@ -290,6 +290,22 @@ Constant: VSTR_TYPE_FMT_PTR_VOID
  from the argument list passed to it
 
 
+Constant: VSTR_TYPE_FMT_PTR_CHAR
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "char *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_WCHAR_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt should expect an "wchar_t *" type
+ from the argument list passed to it
+
+
 Section: Constants passed to vstr_conv_unprintable_*()
 
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE

@@ -111,13 +111,13 @@ pkgconfig_DATA = vstr.pc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ./include/autoconf.h
-CONFIG_CLEAN_FILES =  vstr.pc vstr.spec
+CONFIG_CLEAN_FILES =  vstr.pc vstr.spec VERSION
 DATA =  $(pkgconfig_DATA)
 
 DIST_COMMON =  README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
-Makefile.in NEWS TODO aclocal.m4 config.guess config.sub configure \
-configure.in install-sh ltconfig ltmain.sh missing mkinstalldirs \
-vstr.pc.in vstr.spec.in
+Makefile.in NEWS TODO VERSION.in aclocal.m4 config.guess config.sub \
+configure configure.in install-sh ltconfig ltmain.sh missing \
+mkinstalldirs vstr.pc.in vstr.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -143,6 +143,8 @@ $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCI
 vstr.pc: $(top_builddir)/config.status vstr.pc.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 vstr.spec: $(top_builddir)/config.status vstr.spec.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+VERSION: $(top_builddir)/config.status VERSION.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 install-pkgconfigDATA: $(pkgconfig_DATA)

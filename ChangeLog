@@ -1,3 +1,61 @@
+2002-09-21  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.15
+
+	* scripts/rpms-create-james.sh: Added script to create rpms.
+
+	* src/vstr_srch.c (vstr__srch_buf_rev_fast): Fixed bugs.
+	(vstr__srch_chr_rev_fast): Fixed bugs.
+
+	* src/vstr_spn.c (vstr__spn_chrs_rev_fast): Fixed bugs.
+	(vstr__cspn_chrs_rev_fast): Fixed bugs.
+
+	* src/vstr.c (vstr__base_scan_rev_beg): Fixed major bug for all reverse
+	function fast paths.
+
+2002-09-20  James Antill  <james@and.org>
+
+	* tst/spn/tst_c_chrs.c (tst): Check fast, as well as slow paths, for
+	reverse	functions.
+
+	* tst/spn/tst_chrs.c (tst): Check fast, as well as slow paths, for
+	reverse	functions.
+
+	* tst/srch/tst_vstr.c (tst): Check fast, as well as slow paths, for
+	reverse	functions (although they aren't implemented atm.).
+
+	* tst/srch/tst_chr.c (tst): Check fast, as well as slow paths, for
+	reverse	functions.
+
+	* tst/srch/tst_buf.c (tst): Check fast, as well as slow paths, for
+	reverse	functions.
+
+	* src/vstr_export.c (vstr_export_iovec_ptr_all): Allow NULL
+	parameters.
+
+2002-09-19  James Antill  <james@and.org>
+
+	* include/vstr-const.h (VSTR_TYPE_FMT_PTR_CHAR): Added constant.
+	(VSTR_TYPE_FMT_PTR_WCHAR_T): Added constant.
+
+2002-09-18  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_FMT_CB_ARG_VAL): Added macro function.
+	(VSTR_FMT_CB_ARG_PTR): Added macro function.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_buf): Added function.
+	(vstr_sc_fmt_add_ptr): Added function.
+	(vstr_sc_fmt_add_non): Added function.
+	(vstr_sc_fmt_add_ref): Added function.
+
+	* src/vstr_parse_netstr.c (vstr__parse_netstr): Always set the returned
+	position and data length to zero, so we can test for found but not
+	available easily.
+
+2002-09-17  James Antill  <james@and.org>
+
+	* src/vstr_cmp.c (vstr_cmp_vers_buf): Added function.
+
 2002-09-11  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.14
@@ -25,8 +83,6 @@
 
 	* src/vstr.c (vstr_nx_exit): Add checks for mmap() counts, when in 
 	debugging mode.
-
-2002-09-02  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.13
 

@@ -2,13 +2,9 @@
  For 1.0
  -------
 
-. At least a minimal make check case for each function (see FIXME in Makefiles).
-
 . Add vstr_parse_double()/long_double()
 
 . Allow non-atomic ops.
-
-. Add --with-libc=diet,host,klibc -- put into test framework.
 
 . parse_ipv6
  *   1. hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh
@@ -16,8 +12,12 @@
  *   3. The last two words may be written as IPv4 address
   include CIDR
 
+. find_case
+
  Not needed for 1.0
  ------------------
+
+. Add --with-libc=diet,host,klibc -- put into test framework.
 
 . vstr_split_csv() ?
 

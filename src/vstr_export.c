@@ -25,17 +25,17 @@
 size_t vstr_nx_export_iovec_ptr_all(const Vstr_base *base,
                                     struct iovec **iovs, unsigned int *ret_num)
 {
-  assert(iovs && ret_num);
-  
  if (!base->num)
    return (0);
 
  if (!vstr__cache_iovec_valid((Vstr_base *)base))
    return (0);
 
- *iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
+ if (iovs)
+   *iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
 
- *ret_num = base->num;
+ if (ret_num)
+   *ret_num = base->num;
  
  return (base->len);
 }
@@ -104,7 +104,7 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
     iovs[ret_num].iov_len = used;
     ++ret_num;
   }
-  
+
   *real_ret_num = ret_num;
   
   return (ret_len);

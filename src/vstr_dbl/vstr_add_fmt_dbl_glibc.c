@@ -118,9 +118,8 @@ struct vstr__fmt_printf_info
 #define MPN_GE(u,v) \
   (u##size > v##size || (u##size == v##size && __mpn_cmp (u, v, u##size) >= 0))
 
-/* FIXME: autoconf it -- maybe */
 #if !defined(VSTR__LDOUBLE_BITS_128) && !defined(VSTR__LDOUBLE_BITS_96) && \
-    defined(__i386__) && defined(__linux__)
+    defined(__i386__)
 # define VSTR__LDOUBLE_BITS_96 1
 #else
 # error "No long double size defined"

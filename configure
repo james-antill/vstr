@@ -1413,7 +1413,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=14
+VSTR_MICRO_VERSION=15
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -16446,7 +16446,7 @@ echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 VSTR_LIBS="$LIBS"
 
 
-ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile src/vstr_version.c vstr.spec"
+ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -16952,6 +16952,7 @@ do
   "tst/sub/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/sub/Makefile" ;;
   "src/vstr_version.c" ) CONFIG_FILES="$CONFIG_FILES src/vstr_version.c" ;;
   "vstr.spec" ) CONFIG_FILES="$CONFIG_FILES vstr.spec" ;;
+  "VERSION" ) CONFIG_FILES="$CONFIG_FILES VERSION" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "include/autoconf.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/autoconf.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

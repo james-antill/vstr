@@ -1,12 +1,25 @@
-# This is hacked from glib
-# Note that this is NOT a relocatable package
 %define ver      @VERSION@
 %define libver  @LT_RELEASE@
-%define RELEASE 1
+%define real_release_num 1
+%define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   /usr
 %define name    vstr
-%define fmtfloat --with-fmt-float=%{?FLOAT}%{!?FLOAT:host}
+
+%define dbg_opt %{?dbg}%{!?dbg:0}
+
+%if %{dbg_opt}
+%define debugopt --enable-debug
+%define RELEASE %{real_release_num}debug
+%else
+%define debugopt %nil
+%endif
+
+%ifarch i386
+%define fmtfloatopt --with-fmt-float=%{?float}%{!?float:glibc}
+%else
+%define fmtfloatopt --with-fmt-float=%{?float}%{!?float:host}
+%endif
 
 %define devdoco %{_datadir}/doc/vstr-devel-%{ver}
 
@@ -18,6 +31,7 @@ Copyright: LGPL
 Group: Development/Libraries
 Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
+BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool
 URL: http://www.and.org/vstr/
 Packager: James Antill <james@and.org>
 
@@ -33,12 +47,19 @@ memory, and includes a portable version of a printf-like function.
 %package devel
 Summary: String library, safe, quick and easy to use. Specilizes in IO.
 Group: Development/Libraries
+Requires: pkgconfig >= 0.8
+Requires: %{name} = %{version}
 
 %description devel
  Static libraries and header files for the Vstr string library
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
+* Tue Sep 17 2002 James Antill <james@and.org>
+- Add BuildRequires
+- Add Requires to -devel package.
+- Use glibc FLOAT by default on i386 arch.
+
 * Mon Sep  2 2002 James Antill <james@and.org>
 - Add `float' cmd line define.
 
@@ -63,17 +84,19 @@ fi
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
   --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script \
-  %{fmtfloat}
+  %{fmtfloatopt} %{debugopt}
 
 make
 
 %install
-if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
-make DESTDIR=$RPM_BUILD_ROOT install
+rm -rf $RPM_BUILD_ROOT
+
+%makeinstall
+
 cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 
 %clean
-if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
+rm -rf $RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
 
@@ -85,11 +108,11 @@ if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
 %doc AUTHORS COPYING ChangeLog NEWS README TODO
 
 %{_libdir}/lib%{name}-%{libver}.so.*
-%{_libdir}/lib%{name}.so
 
 %files devel
 %defattr(-, root, root)
 
+%{_libdir}/lib%{name}.so
 %{_libdir}/lib%{name}.a
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/*.h

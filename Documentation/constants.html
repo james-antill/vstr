@@ -64,6 +64,8 @@
 <li><a href="#VSTR_TYPE_FMT_DOUBLE">VSTR_TYPE_FMT_DOUBLE</a>
 <li><a href="#VSTR_TYPE_FMT_DOUBLE_LONG">VSTR_TYPE_FMT_DOUBLE_LONG</a>
 <li><a href="#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>
+<li><a href="#VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>
+<li><a href="#VSTR_TYPE_FMT_PTR_WCHAR_T">VSTR_TYPE_FMT_PTR_WCHAR_T</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29">Constants passed to vstr_conv_unprintable_*()</a>
 <ul>
 <li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE</a>
@@ -513,6 +515,22 @@
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag means that vstr_add_vfmt should expect an "void *" type
+ from the argument list passed to it
+
+
+<a name="VSTR_TYPE_FMT_PTR_CHAR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_FMT_PTR_CHAR
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that vstr_add_vfmt should expect an "char *" type
+ from the argument list passed to it
+
+
+<a name="VSTR_TYPE_FMT_PTR_WCHAR_T"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_FMT_PTR_WCHAR_T
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that vstr_add_vfmt should expect an "wchar_t *" type
  from the argument list passed to it
 
 

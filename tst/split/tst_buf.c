@@ -17,11 +17,11 @@ int tst(void)
   VSTR_SECTS_DECL_INIT(sects4);
   VSTR_SECTS_DECL_INIT(sects2);
   
-  VSTR_ADD_CSTR_BUF(s1, 0, ":a::b:!::c::d:");
-  a_pos = 1;
-  b_pos = 5;
-  c_pos = 10;
-  d_pos = 13;
+  VSTR_ADD_CSTR_BUF(s1, 0, ":::a::b:!::c::d:");
+  a_pos = 3;
+  b_pos = 7;
+  c_pos = 12;
+  d_pos = 15;
 
   split2_num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, "::",
                                    sects2, sects2->sz, VSTR_FLAG_SPLIT_DEF);
@@ -33,8 +33,6 @@ int tst(void)
   VSTR_SECTS_DECL_INIT(sects8); /* can do many times without harm */
   VSTR_SECTS_DECL_INIT(sects4);
   VSTR_SECTS_DECL_INIT(sects2);
-
-  /* FIXME: NULL flags */
   
   /* limited to size - done for speed */
   TST_B_TST(ret, 1, ((sects8->num != 4) ||
@@ -117,5 +115,65 @@ int tst(void)
                      (VSTR_SECTS_NUM(sects2, 2)->pos != b_pos) ||
                      (VSTR_SECTS_NUM(sects2, 2)->len != 10)));
 
+  /* with REMAIN and beg null flags */
+  sects2->num = 0;
+  split2_num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, "::",
+                                   sects2, sects2->sz,
+                                   VSTR_FLAG_SPLIT_BEG_NULL |
+                                   VSTR_FLAG_SPLIT_REMAIN);
+  
+  sects8->num = 0;
+  split8_num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, "::",
+                                   sects8, sects8->sz,
+                                   VSTR_FLAG_SPLIT_BEG_NULL |
+                                   VSTR_FLAG_SPLIT_REMAIN);
+
+  TST_B_TST(ret, 8, ((sects8->num != 5) ||
+                     (split8_num  != 5) ||
+                     (VSTR_SECTS_NUM(sects8, 1)->pos != 1) ||
+                     (VSTR_SECTS_NUM(sects8, 1)->len != 0) ||
+                     (VSTR_SECTS_NUM(sects8, 2)->pos != a_pos) ||
+                     (VSTR_SECTS_NUM(sects8, 2)->len != 2) ||
+                     (VSTR_SECTS_NUM(sects8, 3)->pos != b_pos) ||
+                     (VSTR_SECTS_NUM(sects8, 3)->len != 3) ||
+                     (VSTR_SECTS_NUM(sects8, 4)->pos != c_pos) ||
+                     (VSTR_SECTS_NUM(sects8, 4)->len != 1) ||
+                     (VSTR_SECTS_NUM(sects8, 5)->pos != d_pos) ||
+                     (VSTR_SECTS_NUM(sects8, 5)->len != 2)));
+
+  TST_B_TST(ret, 9, ((sects2->num != 2) ||
+                     (split2_num  != 2) ||
+                     (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
+                     (VSTR_SECTS_NUM(sects2, 1)->len != 0) ||
+                     (VSTR_SECTS_NUM(sects2, 2)->pos != a_pos) ||
+                     (VSTR_SECTS_NUM(sects2, 2)->len != 14)));
+
+  /* with beg_null, and no remain ... check ret */
+  sects2->num = 0;
+  split2_num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, "::",
+                                   sects2, 0,
+                                   VSTR_FLAG_SPLIT_BEG_NULL);
+  
+  TST_B_TST(ret, 10, ((sects2->num != 2) ||
+                      (split2_num  != 5) ||
+                      (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
+                      (VSTR_SECTS_NUM(sects2, 1)->len != 0) ||
+                      (VSTR_SECTS_NUM(sects2, 2)->pos != a_pos) ||
+                      (VSTR_SECTS_NUM(sects2, 2)->len != 2)));
+
+  /* with beg_null, no remain and no ret needed */
+  sects2->num = 0;
+  split2_num = VSTR_SPLIT_CSTR_BUF(s1, 1, s1->len, "::",
+                                   sects2, 0,
+                                   VSTR_FLAG_SPLIT_BEG_NULL |
+                                   VSTR_FLAG_SPLIT_NO_RET);
+  
+  TST_B_TST(ret, 11, ((sects2->num != 2) ||
+                      !split2_num ||
+                      (VSTR_SECTS_NUM(sects2, 1)->pos != 1) ||
+                      (VSTR_SECTS_NUM(sects2, 1)->len != 0) ||
+                      (VSTR_SECTS_NUM(sects2, 2)->pos != a_pos) ||
+                      (VSTR_SECTS_NUM(sects2, 2)->len != 2)));
+  
   return (TST_B_RET(ret));
 }

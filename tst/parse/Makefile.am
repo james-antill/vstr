@@ -5,14 +5,9 @@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_ip \
-      tst_int \
+      tst_num \
       tst_netstr \
       tst_netstr2
-
-# FIXME
-#   tst_short
-#   tst_long
-#   tst_intmax_t
 
 check_PROGRAMS = $(tst)
 

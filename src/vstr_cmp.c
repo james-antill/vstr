@@ -87,54 +87,54 @@ int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 
 /* compare with a "normal" C string */
 int vstr_nx_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
-                    const void *str, size_t str_len)
+                    const void *buf, size_t buf_len)
 {
- Vstr_node *scan = NULL;
- unsigned int num = 0;
- char *scan_str = NULL;
- size_t scan_len = 0;
- 
- scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
- if (!scan && !str_len)
-   return (0);
- if (!scan)
-   return (-1);
- if (!str_len)
-   return (1);
- 
- do
- {
-  int ret = 0;
-
-  if (scan_len > str_len)
-  {
-   scan_len = str_len;
-   len += 1; /* just need enough for test at end */
-  }
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
   
-  if ((scan->type == VSTR_TYPE_NODE_NON) && str)
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  if (!scan && !buf_len)
+    return (0);
+  if (!scan)
     return (-1);
-  if ((scan->type != VSTR_TYPE_NODE_NON) && !str)
+  if (!buf_len)
     return (1);
   
-  if (str)
+  do
   {
-   if ((ret = memcmp(scan_str, str, scan_len)))
-     return (ret);
-   str = ((char *)str) + scan_len;
-  }
-  
-  str_len -= scan_len;
- } while (str_len &&
-          (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                          scan, &scan_str, &scan_len)));
+    int ret = 0;
+    
+    if (scan_len > buf_len)
+    {
+      scan_len = buf_len;
+      len += !len; /* just need enough for test at end, Ie. 1 when len == 0 */
+    }
+    
+    if ((scan->type == VSTR_TYPE_NODE_NON) && buf)
+      return (-1);
+    if ((scan->type != VSTR_TYPE_NODE_NON) && !buf)
+      return (1);
+    
+    if (buf)
+    {
+      if ((ret = memcmp(scan_str, buf, scan_len)))
+        return (ret);
+      buf = ((char *)buf) + scan_len;
+    }
+    
+    buf_len -= scan_len;
+  } while (buf_len &&
+           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                           scan, &scan_str, &scan_len)));
 
- if (len)
-   return (1);
- if (str_len)
-   return (-1);
- 
- return (0);
+  if (len)
+    return (1);
+  if (buf_len)
+    return (-1);
+  
+  return (0);
 }
 
 /* only do ASCII/binary case comparisons -- regardless of the OS/compiler
@@ -227,7 +227,7 @@ int vstr_nx_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 }
 
 int vstr_nx_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
-                         const void *str, size_t str_len)
+                         const char *buf, size_t buf_len)
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;
@@ -235,43 +235,43 @@ int vstr_nx_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
   size_t scan_len = 0;
   
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  if (!scan && !str_len)
+  if (!scan && !buf_len)
     return (0);
   if (!scan)
     return (-1);
-  if (!str_len)
+  if (!buf_len)
     return (1);
   
   do
   {
     int ret = 0;
     
-    if (scan_len > str_len)
+    if (scan_len > buf_len)
     {
-      scan_len = str_len;
-      len += 1; /* just need enough for test at end */
+      scan_len = buf_len;
+      len += !len; /* just need enough for test at end, Ie. 1 when len == 0 */
     }
     
-    if ((scan->type == VSTR_TYPE_NODE_NON) && str)
+    if ((scan->type == VSTR_TYPE_NODE_NON) && buf)
       return (-1);
-    if ((scan->type != VSTR_TYPE_NODE_NON) && !str)
+    if ((scan->type != VSTR_TYPE_NODE_NON) && !buf)
       return (1);
     
-    if (str)
+    if (buf)
     {
-      if ((ret = vstr__cmp_memcasecmp(scan_str, str, scan_len)))
+      if ((ret = vstr__cmp_memcasecmp(scan_str, buf, scan_len)))
         return (ret);
-      str = ((char *)str) + scan_len;
+      buf += scan_len;
     }
     
-    str_len -= scan_len;
-  } while (str_len &&
+    buf_len -= scan_len;
+  } while (buf_len &&
            (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                            scan, &scan_str, &scan_len)));
   
   if (len)
     return (1);
-  if (str_len)
+  if (buf_len)
     return (-1);
   
   return (0);
@@ -423,7 +423,7 @@ int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  size_t scan_len_1 = 0;
  size_t scan_len_2 = 0;
  int state = VSTR__CMP_NORM;
- int diff = 0;
+ int ret = 0;
  
  scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
                                   &scan_str_1, &scan_len_1);
@@ -438,34 +438,34 @@ int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 
  do
  {
-  size_t tmp = scan_len_1;
-  if (tmp > scan_len_2)
-    tmp = scan_len_2;
+   size_t tmp = scan_len_1;
+   if (tmp > scan_len_2)
+     tmp = scan_len_2;
   
-  if ((scan_1->type != VSTR_TYPE_NODE_NON) &&
-      (scan_2->type != VSTR_TYPE_NODE_NON))
-  {
-   state = vstr__cmp_vers(scan_str_1, scan_str_2, tmp, state, &diff);
-   if (state == VSTR__CMP_DONE)
-     return (diff);
-   scan_str_1 += tmp;
-   scan_str_2 += tmp;
-  }
-  else if (scan_1->type != VSTR_TYPE_NODE_NON)
-    goto scan_1_longer;
-  else if (scan_2->type != VSTR_TYPE_NODE_NON)
-    goto scan_2_longer;
-
-  scan_len_1 -= tmp;
-  scan_len_2 -= tmp;
-
-  assert(!scan_len_1 || !scan_len_2);
-  if (!scan_len_1)
-    scan_1 = vstr__base_scan_fwd_nxt(base_1, &len_1, &num_1,
-                                     scan_1, &scan_str_1, &scan_len_1);
-  if (!scan_len_2)
-    scan_2 = vstr__base_scan_fwd_nxt(base_2, &len_2, &num_2,
-                                     scan_2, &scan_str_2, &scan_len_2);
+   if ((scan_1->type != VSTR_TYPE_NODE_NON) &&
+       (scan_2->type != VSTR_TYPE_NODE_NON))
+   {
+     state = vstr__cmp_vers(scan_str_1, scan_str_2, tmp, state, &ret);
+     if (state == VSTR__CMP_DONE)
+       return (ret);
+     scan_str_1 += tmp;
+     scan_str_2 += tmp;
+   }
+   else if (scan_1->type != VSTR_TYPE_NODE_NON)
+     goto scan_1_longer;
+   else if (scan_2->type != VSTR_TYPE_NODE_NON)
+     goto scan_2_longer;
+   
+   scan_len_1 -= tmp;
+   scan_len_2 -= tmp;
+   
+   assert(!scan_len_1 || !scan_len_2);
+   if (!scan_len_1)
+     scan_1 = vstr__base_scan_fwd_nxt(base_1, &len_1, &num_1,
+                                      scan_1, &scan_str_1, &scan_len_1);
+   if (!scan_len_2)
+     scan_2 = vstr__base_scan_fwd_nxt(base_2, &len_2, &num_2,
+                                      scan_2, &scan_str_2, &scan_len_2);
  } while (scan_1 && scan_2);
  
  if (scan_1)
@@ -473,7 +473,7 @@ int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  if (scan_2)
    goto scan_2_longer;
  
- return (diff); /* same length, might have been different at a previous point */
+ return (ret); /* same length, might have been different at a previous point */
 
  scan_1_longer:  
  if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
@@ -490,5 +490,74 @@ int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
  assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
         (state == VSTR__CMP_LEN_POS));
  return (-1);
+}
+
+int vstr_nx_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
+                         const char *buf, size_t buf_len)
+{
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  int state = VSTR__CMP_NORM;
+  int ret = 0;
+
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  if (!scan && !buf_len)
+    return (0);
+  if (!scan)
+    return (-1);
+  if (!buf_len)
+    return (1);
+  
+  do
+  {
+    if (scan_len > buf_len)
+    {
+      scan_len = buf_len;
+      len += !len; /* just need enough for test at end, Ie. 1 when len == 0 */
+    }
+    
+    if ((scan->type == VSTR_TYPE_NODE_NON) && buf)
+      goto scan_2_longer;
+    if ((scan->type != VSTR_TYPE_NODE_NON) && !buf)
+      goto scan_1_longer;
+    
+    if (buf)
+    {
+      state = vstr__cmp_vers(scan_str, buf, scan_len, state, &ret);
+      if (state == VSTR__CMP_DONE)
+        return (ret);
+
+      buf += scan_len;
+    }
+    
+    buf_len -= scan_len;
+  } while (buf_len &&
+           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                           scan, &scan_str, &scan_len)));
+  
+  if (len)
+    goto scan_1_longer;
+  if (buf_len)
+    goto scan_2_longer;
+  
+  return (ret);
+
+ scan_1_longer:  
+  if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
+    return (-1);
+  
+  assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
+         (state == VSTR__CMP_LEN_POS));
+  return (1);
+  
+ scan_2_longer:  
+  if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
+    return (1);
+  
+  assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
+         (state == VSTR__CMP_LEN_POS));
+  return (-1);
 }
 

@@ -771,6 +771,8 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
         usr_spec->data_ptr[scan] = &spec->u;
         break;
       case VSTR_TYPE_FMT_PTR_VOID:
+      case VSTR_TYPE_FMT_PTR_CHAR:
+      case VSTR_TYPE_FMT_PTR_WCHAR_T:
         usr_spec->data_ptr[scan] =  spec->u.data_ptr;
         break;
       default:
@@ -796,16 +798,10 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   return (last);
 }
 
-#define VSTR__FMT_N_PTR(x, y, z) \
+#define VSTR__FMT_N_PTR(x, y) \
      case x: \
-       if (spec->flags & SIGN) \
        { \
         y *len_curr = spec->u.data_ptr; \
-        *len_curr = len; \
-       } \
-       else \
-       { \
-        z *len_curr = spec->u.data_ptr; \
         *len_curr = len; \
        } \
        break
@@ -880,24 +876,16 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         
         switch (spec->int_type)
         {
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, signed char, unsigned char);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, signed short, unsigned short);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, signed int, unsigned int);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, signed long, unsigned long);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, char);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);
 #ifdef HAVE_LONG_LONG
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG,
-                          signed long long, unsigned long long);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, long long);
 #endif
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t, size_t);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t, uintmax_t);
-          
-          case VSTR_TYPE_FMT_PTRDIFF_T:
-            if (1)
-            { /* no unsigned version ... */
-              ptrdiff_t *len_curr = spec->u.data_ptr;
-              *len_curr = len;
-            }
-            break;
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);
             
           default:
             assert(FALSE);
@@ -937,12 +925,9 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 }
 
 #undef VSTR__FMT_N_PTR
-#define VSTR__FMT_N_PTR(x, y, z) \
+#define VSTR__FMT_N_PTR(x, y) \
           case x: \
-            if (spec->flags & SIGN) \
-              u.data_ptr = va_arg(ap, y *); \
-            else \
-              u.data_ptr = va_arg(ap, z *); \
+            u.data_ptr = va_arg(ap, y *); \
             break
 
 static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
@@ -1141,20 +1126,16 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
        case 'n':
          switch (spec->int_type)
          {
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, signed char, unsigned char);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, signed short, unsigned short);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, signed int, unsigned int);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, signed long, unsigned long);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, char);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);
 #ifdef HAVE_LONG_LONG
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG,
-                          signed long long, unsigned long long);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, long long);
 #endif
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t, size_t);
-          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t, uintmax_t);
-            
-          case VSTR_TYPE_FMT_PTRDIFF_T:
-            u.data_ptr = va_arg(ap, ptrdiff_t *);
-            break;
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);
+          VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);
             
           default:
             assert(FALSE);
@@ -1290,6 +1271,12 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
           break;
         case VSTR_TYPE_FMT_PTR_VOID:
           spec->fmt_code = 'p';
+          break;
+        case VSTR_TYPE_FMT_PTR_CHAR:
+          spec->fmt_code = 's';
+          break;
+        case VSTR_TYPE_FMT_PTR_WCHAR_T:
+          spec->fmt_code = 'S';
           break;
         default:
           assert(FALSE);
@@ -1435,38 +1422,6 @@ static const char *vstr__add_fmt_spec(const char *fmt,
       }
     }
   }
-  
-  /* get width of type */
-  switch (*fmt)
-  {
-   case 'h':
-     ++fmt;
-     if (*fmt == 'h')
-     {
-      ++fmt;
-      spec->int_type = VSTR_TYPE_FMT_UCHAR;
-     }
-     else
-       spec->int_type = VSTR_TYPE_FMT_USHORT;
-     break;
-   case 'l':
-     ++fmt;
-     if (*fmt == 'l')
-     {
-      ++fmt;
-      spec->int_type = VSTR_TYPE_FMT_ULONG_LONG;
-     }
-     else
-       spec->int_type = VSTR_TYPE_FMT_ULONG;
-     break;
-   case 'L': ++fmt; spec->int_type = VSTR_TYPE_FMT_ULONG_LONG; break;
-   case 'z': ++fmt; spec->int_type = VSTR_TYPE_FMT_SIZE_T;     break;
-   case 't': ++fmt; spec->int_type = VSTR_TYPE_FMT_PTRDIFF_T;  break;
-   case 'j': ++fmt; spec->int_type = VSTR_TYPE_FMT_UINTMAX_T;  break;
-
-   default:
-     break;
-  }
 
   return (fmt);
 }
@@ -1567,6 +1522,38 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
   }
 
   vstr__fmt_sys_escapes:
+    /* get width of type */
+  switch (*fmt)
+  {
+   case 'h':
+     ++fmt;
+     if (*fmt == 'h')
+     {
+      ++fmt;
+      spec->int_type = VSTR_TYPE_FMT_UCHAR;
+     }
+     else
+       spec->int_type = VSTR_TYPE_FMT_USHORT;
+     break;
+   case 'l':
+     ++fmt;
+     if (*fmt == 'l')
+     {
+      ++fmt;
+      spec->int_type = VSTR_TYPE_FMT_ULONG_LONG;
+     }
+     else
+       spec->int_type = VSTR_TYPE_FMT_ULONG;
+     break;
+   case 'L': ++fmt; spec->int_type = VSTR_TYPE_FMT_ULONG_LONG; break;
+   case 'z': ++fmt; spec->int_type = VSTR_TYPE_FMT_SIZE_T;     break;
+   case 't': ++fmt; spec->int_type = VSTR_TYPE_FMT_PTRDIFF_T;  break;
+   case 'j': ++fmt; spec->int_type = VSTR_TYPE_FMT_UINTMAX_T;  break;
+
+   default:
+     break;
+  }
+  
   spec->fmt_code = *fmt;
   switch (*fmt)
   {
@@ -1777,6 +1764,8 @@ int vstr_nx_fmt_add(Vstr_conf *conf, const char *name,
            (scan_type == VSTR_TYPE_FMT_DOUBLE) ||
            (scan_type == VSTR_TYPE_FMT_DOUBLE_LONG) ||
            (scan_type == VSTR_TYPE_FMT_PTR_VOID) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_CHAR) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_WCHAR_T) ||
            FALSE);
     
     node->types[count - 2] = scan_type;

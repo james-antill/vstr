@@ -221,6 +221,10 @@ int tst(void)
                                          tst_cache_cb);
   if (!tst_cache_srch_pos)
     die();
+
+  /* make sure it's the same ... */
+  if (vstr_cache_srch(s1->conf, "/tst_usr/srch_fwd") != tst_cache_srch_pos)
+    return (99);
   
   VSTR_ADD_CSTR_BUF(s1, 0, "The tester!retset ehT");
 

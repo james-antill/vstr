@@ -1057,7 +1057,7 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
   ++*num;
  }
 
- if (cache && (*num > 1))
+ if (cache)
    vstr__base_cache_pos(base, scan, (orig_pos - *pos) + 1, *num);
  
  return (scan);
@@ -1127,8 +1127,11 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
                             unsigned int *num, unsigned int *type,
                             char **scan_str, size_t *scan_len)
 {
-  Vstr_node *scan = NULL;
-
+  Vstr_node *scan_beg = NULL;
+  Vstr_node *scan_end = NULL;
+  unsigned int dummy_num = 0;
+  size_t end_pos = 0;
+  
   assert(base && num && len && type);
   
   assert(*len && ((pos + *len - 1) <= base->len));
@@ -1141,22 +1144,38 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
   if ((pos + *len - 1) > base->len)
     *len = base->len - (pos - 1);
 
-  pos += *len - 1; /* pos at end of string */
-  scan = vstr__base_pos(base, &pos, num, TRUE);
-  assert(scan);
-  
+  end_pos = pos;
+  end_pos += *len - 1;
+  scan_beg = vstr__base_pos(base, &pos, &dummy_num, TRUE);
+  assert(scan_beg);
   --pos;
-
-  *type = scan->type;
-  *scan_len = scan->len - pos;
   
-  if (*scan_len > *len)
+  scan_end = vstr__base_pos(base, &end_pos, num, FALSE);
+  assert(scan_end);
+
+  *type = scan_end->type;
+  
+  if (scan_beg != scan_end)
+  {
+    assert(*num != dummy_num);
+    assert(scan_end != base->beg);
+    
+    pos = 0;
+    *scan_len = end_pos;
+    
+    assert(*scan_len < *len);
+    *len -= *scan_len;
+  }
+  else
+  {
+    assert(scan_end->len >= *len);
     *scan_len = *len;
-  *len -= *scan_len;
+    *len = 0;
+  }
   
   *scan_str = NULL;
-  if (scan->type != VSTR_TYPE_NODE_NON)
-    *scan_str = vstr__export_node_ptr(scan) + pos;
+  if (scan_end->type != VSTR_TYPE_NODE_NON)
+    *scan_str = vstr__export_node_ptr(scan_end) + pos;
   
   return (TRUE);
 }

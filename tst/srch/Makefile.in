@@ -103,12 +103,10 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_buf \
       tst_chr \
+      tst_chrs \
+      tst_csrch_chrs \
       tst_vstr
 
-
-# FIXME
-#     tst_chrs
-#     tst_c_chrs
 
 check_PROGRAMS = $(tst)
 
@@ -119,7 +117,8 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_buf$(EXEEXT) tst_chr$(EXEEXT) tst_vstr$(EXEEXT)
+check_PROGRAMS =  tst_buf$(EXEEXT) tst_chr$(EXEEXT) tst_chrs$(EXEEXT) \
+tst_csrch_chrs$(EXEEXT) tst_vstr$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
 tst_buf_SOURCES = tst_buf.c
@@ -132,6 +131,16 @@ tst_chr_OBJECTS =  tst_chr.$(OBJEXT)
 tst_chr_LDADD = $(LDADD)
 tst_chr_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_chr_LDFLAGS = 
+tst_chrs_SOURCES = tst_chrs.c
+tst_chrs_OBJECTS =  tst_chrs.$(OBJEXT)
+tst_chrs_LDADD = $(LDADD)
+tst_chrs_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_chrs_LDFLAGS = 
+tst_csrch_chrs_SOURCES = tst_csrch_chrs.c
+tst_csrch_chrs_OBJECTS =  tst_csrch_chrs.$(OBJEXT)
+tst_csrch_chrs_LDADD = $(LDADD)
+tst_csrch_chrs_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_csrch_chrs_LDFLAGS = 
 tst_vstr_SOURCES = tst_vstr.c
 tst_vstr_OBJECTS =  tst_vstr.$(OBJEXT)
 tst_vstr_LDADD = $(LDADD)
@@ -148,8 +157,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_buf.c tst_chr.c tst_vstr.c
-OBJECTS = tst_buf.$(OBJEXT) tst_chr.$(OBJEXT) tst_vstr.$(OBJEXT)
+SOURCES = tst_buf.c tst_chr.c tst_chrs.c tst_csrch_chrs.c tst_vstr.c
+OBJECTS = tst_buf.$(OBJEXT) tst_chr.$(OBJEXT) tst_chrs.$(OBJEXT) tst_csrch_chrs.$(OBJEXT) tst_vstr.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -222,6 +231,14 @@ tst_buf$(EXEEXT): $(tst_buf_OBJECTS) $(tst_buf_DEPENDENCIES)
 tst_chr$(EXEEXT): $(tst_chr_OBJECTS) $(tst_chr_DEPENDENCIES)
 	@rm -f tst_chr$(EXEEXT)
 	$(LINK) $(tst_chr_LDFLAGS) $(tst_chr_OBJECTS) $(tst_chr_LDADD) $(LIBS)
+
+tst_chrs$(EXEEXT): $(tst_chrs_OBJECTS) $(tst_chrs_DEPENDENCIES)
+	@rm -f tst_chrs$(EXEEXT)
+	$(LINK) $(tst_chrs_LDFLAGS) $(tst_chrs_OBJECTS) $(tst_chrs_LDADD) $(LIBS)
+
+tst_csrch_chrs$(EXEEXT): $(tst_csrch_chrs_OBJECTS) $(tst_csrch_chrs_DEPENDENCIES)
+	@rm -f tst_csrch_chrs$(EXEEXT)
+	$(LINK) $(tst_csrch_chrs_LDFLAGS) $(tst_csrch_chrs_OBJECTS) $(tst_csrch_chrs_LDADD) $(LIBS)
 
 tst_vstr$(EXEEXT): $(tst_vstr_OBJECTS) $(tst_vstr_DEPENDENCIES)
 	@rm -f tst_vstr$(EXEEXT)

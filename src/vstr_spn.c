@@ -172,9 +172,9 @@ static size_t vstr__spn_chrs_rev_fast(const Vstr_base *base,
     
     while (count < scan_len)
     {
-      if (!memchr(spn_chrs, scan_str[scan_len - count], spn_len))
-        return (ret + count);
       ++count;
+      if (!memchr(spn_chrs, scan_str[scan_len - count], spn_len))
+        return (ret + (count - 1));
     }
     assert(count == scan_len);
     
@@ -207,45 +207,46 @@ size_t vstr_nx_cspn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
  if (!cspn_chrs && !base->node_non_used)
    return (len);
  
+ if (cspn_len == 1)
+ {
+   size_t f_pos = vstr_nx_srch_chr_fwd(base, pos, len, cspn_chrs[0]);
+   
+   if (!f_pos)
+     return (len);
+   
+   return (f_pos - pos);
+ }
+
  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
  if (!scan)
    return (0);
 
  do
  {
-  if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_chrs)
-    goto next_loop;
-
-  if (scan->type == VSTR_TYPE_NODE_NON)
-  {
-   assert(!cspn_chrs);
-   return (ret);
-  }
-  
-  if (!cspn_chrs)
-    goto next_loop;
-  
-  if (cspn_len == 1)
-  { /* Much faster for the single char case */
-    char *tmp = memchr(scan_str, cspn_chrs[0], scan_len);
-    if (tmp)
-      return (ret + (tmp - scan_str));
-  }
-  else
-  {
-    size_t count = 0;
-    
-    while (count < scan_len)
-    {
-      if (memchr(cspn_chrs, scan_str[count], cspn_len))
-        return (ret + count);
-      ++count;
-    }
-    assert(count == scan_len);
-  }
-  
- next_loop:
-  ret += scan_len;
+   size_t count = 0;
+   
+   if ((scan->type == VSTR_TYPE_NODE_NON) && cspn_chrs)
+     goto next_loop;
+   
+   if (scan->type == VSTR_TYPE_NODE_NON)
+   {
+     assert(!cspn_chrs);
+     return (ret);
+   }
+   
+   if (!cspn_chrs)
+     goto next_loop;
+   
+   while (count < scan_len)
+   {
+     if (memchr(cspn_chrs, scan_str[count], cspn_len))
+       return (ret + count);
+     ++count;
+   }
+   assert(count == scan_len);
+   
+  next_loop:
+   ret += scan_len;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                           scan, &scan_str, &scan_len)));
  
@@ -319,15 +320,14 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
   char *scan_str = NULL;
   size_t scan_len = 0;
   
- if (!cspn_chrs && !base->node_non_used)
-   return (len);
- 
   if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &type,
                                &scan_str, &scan_len))
     return (0);
   
   do
   {
+    size_t count = 0;
+    
     if ((type == VSTR_TYPE_NODE_NON) && cspn_chrs)
       return (ret);
     
@@ -340,24 +340,13 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
     if (!cspn_chrs)
       return (ret);
     
-    if (cspn_len == 1)
-    { /* Much faster for the single char case */
-      char *tmp = memrchr(scan_str, cspn_chrs[0], scan_len);
-      if (tmp)
-        return (ret + (tmp - scan_str));
-    }
-    else
+    while (count < scan_len)
     {
-      size_t count = 0;
-      
-      while (count < scan_len)
-      {
-        if (memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
-          return (ret + count);
-        ++count;
-      }
-      assert(count == scan_len);
+      ++count;
+      if (memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
+        return (ret + (count - 1));
     }
+    assert(count == scan_len);
   
    next_loop:
     ret += scan_len;
@@ -370,6 +359,19 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
 size_t vstr_nx_cspn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
                             const char *cspn_chrs, size_t cspn_len)
 {  
+  if (!cspn_chrs && !base->node_non_used)
+    return (len);
+  
+  if (cspn_len == 1)
+  {
+    size_t f_pos = vstr_nx_srch_chr_rev(base, pos, len, cspn_chrs[0]);
+
+    if (!f_pos)
+      return (len);
+    
+    return ((pos + (len - 1)) - f_pos);
+  }
+ 
   if (base->iovec_upto_date)
     return (vstr__cspn_chrs_rev_fast(base, pos, len, cspn_chrs, cspn_len));
   

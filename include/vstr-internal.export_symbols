@@ -54,6 +54,7 @@ cmp_buf
 cmp_case
 cmp_case_buf
 cmp_vers
+cmp_vers_buf
 srch_chr_fwd
 srch_chr_rev
 srch_chrs_fwd
@@ -104,6 +105,10 @@ fmt_add
 fmt_del
 fmt_srch
 sc_fmt_add_vstr
+sc_fmt_add_buf
+sc_fmt_add_ptr
+sc_fmt_add_non
+sc_fmt_add_ref
 sc_fmt_add_ipv4_ptr
 sc_fmt_add_ipv6_ptr
 sc_fmt_cb_beg

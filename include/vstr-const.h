@@ -105,6 +105,8 @@
 #define VSTR_TYPE_FMT_DOUBLE 14
 #define VSTR_TYPE_FMT_DOUBLE_LONG 15
 #define VSTR_TYPE_FMT_PTR_VOID 16
+#define VSTR_TYPE_FMT_PTR_CHAR 17
+#define VSTR_TYPE_FMT_PTR_WCHAR_T 18
 
 /* aliases to make life more readable */
 #define VSTR_TYPE_SUB_DEF VSTR_TYPE_ADD_DEF

@@ -36,10 +36,23 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   unsigned int flags = VSTR_FLAG_PARSE_NUM_OVERFLOW;
   size_t num_len = 0;
   size_t ret_len = 0;
+  size_t dummy_ret_pos = 0;
+  size_t dummy_ret_data_len = 0;
   
+  if (!ret_pos)
+    ret_pos = &dummy_ret_pos;
+  if (!ret_data_len)
+    ret_data_len = &dummy_ret_data_len;
+
+  *ret_pos = 0;
+  *ret_data_len = 0;
+
   if (!netstr2)
     flags |= VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO;
   ret_len = vstr_nx_parse_ulong(base, pos, len, 10 | flags, &num_len, NULL);
+
+  if (!num_len)
+    return (0);
 
   if (num_len == len)
     return (0);
@@ -47,10 +60,8 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   if (vstr_nx_export_chr(base, pos + num_len) != VSTR__ASCII_COLON())
     return (0);
   
-  if (ret_pos)
-    *ret_pos = pos + num_len + 1;
-  if (ret_data_len)
-    *ret_data_len = ret_len;
+  *ret_pos = pos + num_len + 1;
+  *ret_data_len = ret_len;
 
   ret_len += (num_len + 2); /* colon and comma */
   if (ret_len > len)

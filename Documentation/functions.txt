@@ -2114,10 +2114,10 @@ Function: vstr_cmp_case_buf()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
- Parameter[5]: Length of data (Parameter[4])
+ Parameter[5]: Length of ASCII C string (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2166,6 +2166,31 @@ Function: vstr_cmp_vers()
  as greater than it.
 
 
+Function: vstr_cmp_vers_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Parameter[5]: Length of ASCII C string (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_vers().
+
+
 Function: VSTR_CMP_EQ()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -2207,7 +2232,7 @@ Function: VSTR_CMP_CSTR()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Pointer to ASCII C string
  Type[4]: const char *
 
  Explanation:
@@ -2254,7 +2279,7 @@ Function: VSTR_CMP_CSTR_EQ()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Pointer to ASCII C string
  Type[4]: const char *
 
  Explanation:
@@ -2288,7 +2313,7 @@ Function: VSTR_CMP_CASE_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_case_cmp() if both of the length
+  This macro function calls returns !vstr_cmp_case() if both of the length
  values (Parameter[3] Parameter[6]) are equal.
 
 
@@ -2305,7 +2330,7 @@ Function: VSTR_CMP_CASE_CSTR()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Pointer to ASCII C string
  Type[4]: const char *
 
  Explanation:
@@ -2327,10 +2352,10 @@ Function: VSTR_CMP_CASE_BUF_EQ()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Pointer to ASCII C string
  Type[4]: const void *
 
- Parameter[5]: Length of data (Parameter[4])
+ Parameter[5]: Length of ASCII C string (Parameter[4])
  Type[5]: size_t
 
  Explanation:
@@ -2352,12 +2377,110 @@ Function: VSTR_CMP_CASE_CSTR_EQ()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
+ Parameter[4]: Pointer to ASCII C string
  Type[4]: const char *
 
  Explanation:
 
   This macro function returns !vstr_cmp_case_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CMP_VERS_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_cmp_vers() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+Function: VSTR_CMP_VERS_CSTR()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_cmp_vers_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CMP_VERS_BUF_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const void *
+
+ Parameter[5]: Length of ASCII C string (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_cmp_vers_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+Function: VSTR_CMP_VERS_CSTR_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function returns !vstr_cmp_vers_buf(), if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
 
@@ -3098,7 +3221,7 @@ Function: VSTR_SECTS_INIT()
  Parameter[1]: Vstr sections
  Type[1]: struct Vstr_sects *
 
- Parameter[2]: Size of the Vstr sections
+ Parameter[2]: Maximum number of the Vstr sections
  Type[2]: unsigned int
 
  Parameter[3]: Array of Vstr section nodes
@@ -3136,7 +3259,7 @@ Function: vstr_sects_make()
  Returns: Vstr sections
  Type: struct Vstr_sects *
 
- Parameter[1]: Size of the Vstr sections
+ Parameter[1]: Maximum number of the Vstr sections
  Type[1]: unsigned int
 
  Explanation:
@@ -3711,9 +3834,6 @@ Function: vstr_parse_netstr()
  and data exist in the Vstr string. If one is found but is not whole then the
  position of the start of data and the length of the netstring will still be
  returned.
-  This searches for the begining of a netstring, so a length (Paramter[3]) of
- 1 would still find the netstring as long as it is whole and starts at the
- start position in the Vstr string (Parameter[2]).
 
 
 Function: vstr_parse_netstr2()
@@ -3749,9 +3869,6 @@ Function: vstr_parse_netstr2()
  and data exist in the Vstr string. If one is found but is not whole then the
  position of the start of data and the length of the netstring will still be
  returned.
-  This searches for the begining of a netstring, so a length (Paramter[3]) of
- 1 would still find the netstring as long as it is whole and starts at the
- start position in the Vstr string (Parameter[2]).
   The specification of a netstring2 is a superset of the specification of a
  netstring, so this function will find either.
 
@@ -3857,6 +3974,41 @@ Function: vstr_fmt_srch()
 
   This function allows you to find out if a format specifier has been added
  using vstr_fmt_add().
+
+
+Function: VSTR_FMT_CB_ARG_PTR()
+ Returns: Pointer to data
+ Type: void *
+
+ Parameter[1]: Format specifier passed to a callback of vstr_add_vfmt()
+ Type[1]: struct Vstr_fmt_spec *
+
+ Parameter[2]: Number of the parameter passed to the callback
+ Type[2]: size_t
+
+ Explanation:
+
+  This macro function returns the nth (Parameter[2]) parameter passed to a
+ callback of vstr_add_vfmt(), as a generic pointer.
+
+
+Function: VSTR_FMT_CB_ARG_VAL()
+ Returns: Data of specified type
+ Type: Paramter[2]
+
+ Parameter[1]: Format specifier passed to a callback of vstr_add_vfmt()
+ Type[1]: struct Vstr_fmt_spec *
+
+ Parameter[2]: Type of the specified value
+ Type[2]: <symbol>
+
+ Parameter[3]: Number of the parameter for the callback
+ Type[3]: size_t
+
+ Explanation:
+
+  This macro function returns the nth (Parameter[3]) parameter passed to a
+ callback of vstr_add_vfmt(), by value.
 
 
 Section: Functions for hooking into the cache system for the Vstr string
@@ -4046,14 +4198,115 @@ Function: vstr_sc_fmt_add_vstr()
 
   This function is used to add a custom specifier function to print
  Vstr strings. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_VOID_PTR, VSTR_TYPE_FMT_SIZE_T,
+ arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_SIZE_T,
  VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END. These
  correspond to the last 4 arguments to vstr_add_vstr().
 
  Note:
 
   As you would expect the precision and field width values are used from the
- format, so the length of the Vstr string printed if the lower bound of the
+ format, so the length of the Vstr string printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_fmt_add_buf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_CHAR, VSTR_TYPE_FMT_SIZE_T and
+ VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_buf().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_fmt_add_ptr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_CHAR, VSTR_TYPE_FMT_SIZE_T and
+ VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_ptr().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_fmt_add_non()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_SIZE_T and VSTR_TYPE_FMT_END.
+ These correspond to the last argument to vstr_add_non().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+
+Function: vstr_sc_fmt_add_ref()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T,
+ VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END.
+ These correspond to the last 3 arguments to vstr_add_ref().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
  length passed and the precision.
   The function will return 0 if it needs to allocate memory and cannot do so.
 
@@ -4073,8 +4326,15 @@ Function: vstr_sc_fmt_add_ipv4_ptr()
   This function is used to add a custom specifier function to print
  ipv4 IP addresses from a struct in_addr *. It is equivalent to calling 
  vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is
+ arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
  a struct in_addr *, to be passed to inet_ntop().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the string printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
 
 
 Function: vstr_sc_fmt_add_ipv6_ptr()
@@ -4092,8 +4352,15 @@ Function: vstr_sc_fmt_add_ipv6_ptr()
   This function is used to add a custom specifier function to print
  ipv4 IP addresses from a struct in6_addr *. It is equivalent to calling 
  vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_VOID_PTR and VSTR_TYPE_FMT_END. This pointer is
+ arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
  a struct in6_addr *, to be passed to inet_ntop().
+
+ Note:
+
+  As you would expect the precision and field width values are used from the
+ format, so the length of the string printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
 
 
 Function: vstr_sc_mmap_fd()

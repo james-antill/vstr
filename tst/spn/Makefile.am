@@ -4,7 +4,8 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst
+tst = tst_chrs \
+      tst_c_chrs
 
 check_PROGRAMS = $(tst)
 

@@ -101,20 +101,11 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_vstr \
-    tst_vstr_case \
-    tst_vstr_vers \
-    tst_vstr_non
+tst = tst \
+    tst_case \
+    tst_vers \
+    tst_non
 
-
-# FIXME:
-#
-# tst_buf
-# tst_case_buf
-# tst_non_buf
-# tst_case_non_buf
-#
-#
 
 check_PROGRAMS = $(tst)
 
@@ -125,30 +116,30 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_vstr$(EXEEXT) tst_vstr_case$(EXEEXT) \
-tst_vstr_vers$(EXEEXT) tst_vstr_non$(EXEEXT)
+check_PROGRAMS =  tst$(EXEEXT) tst_case$(EXEEXT) tst_vers$(EXEEXT) \
+tst_non$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
-tst_vstr_SOURCES = tst_vstr.c
-tst_vstr_OBJECTS =  tst_vstr.$(OBJEXT)
-tst_vstr_LDADD = $(LDADD)
-tst_vstr_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_vstr_LDFLAGS = 
-tst_vstr_case_SOURCES = tst_vstr_case.c
-tst_vstr_case_OBJECTS =  tst_vstr_case.$(OBJEXT)
-tst_vstr_case_LDADD = $(LDADD)
-tst_vstr_case_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_vstr_case_LDFLAGS = 
-tst_vstr_vers_SOURCES = tst_vstr_vers.c
-tst_vstr_vers_OBJECTS =  tst_vstr_vers.$(OBJEXT)
-tst_vstr_vers_LDADD = $(LDADD)
-tst_vstr_vers_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_vstr_vers_LDFLAGS = 
-tst_vstr_non_SOURCES = tst_vstr_non.c
-tst_vstr_non_OBJECTS =  tst_vstr_non.$(OBJEXT)
-tst_vstr_non_LDADD = $(LDADD)
-tst_vstr_non_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_vstr_non_LDFLAGS = 
+tst_SOURCES = tst.c
+tst_OBJECTS =  tst.$(OBJEXT)
+tst_LDADD = $(LDADD)
+tst_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_LDFLAGS = 
+tst_case_SOURCES = tst_case.c
+tst_case_OBJECTS =  tst_case.$(OBJEXT)
+tst_case_LDADD = $(LDADD)
+tst_case_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_case_LDFLAGS = 
+tst_vers_SOURCES = tst_vers.c
+tst_vers_OBJECTS =  tst_vers.$(OBJEXT)
+tst_vers_LDADD = $(LDADD)
+tst_vers_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_vers_LDFLAGS = 
+tst_non_SOURCES = tst_non.c
+tst_non_OBJECTS =  tst_non.$(OBJEXT)
+tst_non_LDADD = $(LDADD)
+tst_non_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_non_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -160,8 +151,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_vstr.c tst_vstr_case.c tst_vstr_vers.c tst_vstr_non.c
-OBJECTS = tst_vstr.$(OBJEXT) tst_vstr_case.$(OBJEXT) tst_vstr_vers.$(OBJEXT) tst_vstr_non.$(OBJEXT)
+SOURCES = tst.c tst_case.c tst_vers.c tst_non.c
+OBJECTS = tst.$(OBJEXT) tst_case.$(OBJEXT) tst_vers.$(OBJEXT) tst_non.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -227,21 +218,21 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-tst_vstr$(EXEEXT): $(tst_vstr_OBJECTS) $(tst_vstr_DEPENDENCIES)
-	@rm -f tst_vstr$(EXEEXT)
-	$(LINK) $(tst_vstr_LDFLAGS) $(tst_vstr_OBJECTS) $(tst_vstr_LDADD) $(LIBS)
+tst$(EXEEXT): $(tst_OBJECTS) $(tst_DEPENDENCIES)
+	@rm -f tst$(EXEEXT)
+	$(LINK) $(tst_LDFLAGS) $(tst_OBJECTS) $(tst_LDADD) $(LIBS)
 
-tst_vstr_case$(EXEEXT): $(tst_vstr_case_OBJECTS) $(tst_vstr_case_DEPENDENCIES)
-	@rm -f tst_vstr_case$(EXEEXT)
-	$(LINK) $(tst_vstr_case_LDFLAGS) $(tst_vstr_case_OBJECTS) $(tst_vstr_case_LDADD) $(LIBS)
+tst_case$(EXEEXT): $(tst_case_OBJECTS) $(tst_case_DEPENDENCIES)
+	@rm -f tst_case$(EXEEXT)
+	$(LINK) $(tst_case_LDFLAGS) $(tst_case_OBJECTS) $(tst_case_LDADD) $(LIBS)
 
-tst_vstr_vers$(EXEEXT): $(tst_vstr_vers_OBJECTS) $(tst_vstr_vers_DEPENDENCIES)
-	@rm -f tst_vstr_vers$(EXEEXT)
-	$(LINK) $(tst_vstr_vers_LDFLAGS) $(tst_vstr_vers_OBJECTS) $(tst_vstr_vers_LDADD) $(LIBS)
+tst_vers$(EXEEXT): $(tst_vers_OBJECTS) $(tst_vers_DEPENDENCIES)
+	@rm -f tst_vers$(EXEEXT)
+	$(LINK) $(tst_vers_LDFLAGS) $(tst_vers_OBJECTS) $(tst_vers_LDADD) $(LIBS)
 
-tst_vstr_non$(EXEEXT): $(tst_vstr_non_OBJECTS) $(tst_vstr_non_DEPENDENCIES)
-	@rm -f tst_vstr_non$(EXEEXT)
-	$(LINK) $(tst_vstr_non_LDFLAGS) $(tst_vstr_non_OBJECTS) $(tst_vstr_non_LDADD) $(LIBS)
+tst_non$(EXEEXT): $(tst_non_OBJECTS) $(tst_non_DEPENDENCIES)
+	@rm -f tst_non$(EXEEXT)
+	$(LINK) $(tst_non_LDFLAGS) $(tst_non_OBJECTS) $(tst_non_LDADD) $(LIBS)
 
 tags: TAGS
 

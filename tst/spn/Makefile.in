@@ -101,7 +101,9 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst
+tst = tst_chrs \
+      tst_c_chrs
+
 
 check_PROGRAMS = $(tst)
 
@@ -112,14 +114,19 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst$(EXEEXT)
+check_PROGRAMS =  tst_chrs$(EXEEXT) tst_c_chrs$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
-tst_SOURCES = tst.c
-tst_OBJECTS =  tst.$(OBJEXT)
-tst_LDADD = $(LDADD)
-tst_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_LDFLAGS = 
+tst_chrs_SOURCES = tst_chrs.c
+tst_chrs_OBJECTS =  tst_chrs.$(OBJEXT)
+tst_chrs_LDADD = $(LDADD)
+tst_chrs_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_chrs_LDFLAGS = 
+tst_c_chrs_SOURCES = tst_c_chrs.c
+tst_c_chrs_OBJECTS =  tst_c_chrs.$(OBJEXT)
+tst_c_chrs_LDADD = $(LDADD)
+tst_c_chrs_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_c_chrs_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -131,8 +138,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst.c
-OBJECTS = tst.$(OBJEXT)
+SOURCES = tst_chrs.c tst_c_chrs.c
+OBJECTS = tst_chrs.$(OBJEXT) tst_c_chrs.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -198,9 +205,13 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-tst$(EXEEXT): $(tst_OBJECTS) $(tst_DEPENDENCIES)
-	@rm -f tst$(EXEEXT)
-	$(LINK) $(tst_LDFLAGS) $(tst_OBJECTS) $(tst_LDADD) $(LIBS)
+tst_chrs$(EXEEXT): $(tst_chrs_OBJECTS) $(tst_chrs_DEPENDENCIES)
+	@rm -f tst_chrs$(EXEEXT)
+	$(LINK) $(tst_chrs_LDFLAGS) $(tst_chrs_OBJECTS) $(tst_chrs_LDADD) $(LIBS)
+
+tst_c_chrs$(EXEEXT): $(tst_c_chrs_OBJECTS) $(tst_c_chrs_DEPENDENCIES)
+	@rm -f tst_c_chrs$(EXEEXT)
+	$(LINK) $(tst_c_chrs_LDFLAGS) $(tst_c_chrs_OBJECTS) $(tst_c_chrs_LDADD) $(LIBS)
 
 tags: TAGS
 

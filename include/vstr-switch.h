@@ -48,24 +48,27 @@
 # define VSTR__DECL_TYPEDEF2(x) /* nothing */
 #endif
 
+/* struct hack arrays, for use in an array of the encompassing type
+ * C99 doesn't allow that */
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+/*  The _SZ will be wrong if you compile your program with -ansi and *
+ * the lib without ... but that doesn't matter because it's internal
+ * so you shouldn't be using it anyway.
+ */
+# define VSTR__STRUCT_ARRAY_HACK_ARRAY(x) x[0]
+# define VSTR__STRUCT_ARRAY_HACK_SZ(type) (0)
+#else
+# define VSTR__STRUCT_ARRAY_HACK_ARRAY(x) x[1]
+# define VSTR__STRUCT_ARRAY_HACK_SZ(type) sizeof(type)
+#endif
+
+/* struct hack arrays, normal single objects */
 #ifdef VSTR_AUTOCONF_HAVE_C9x_STRUCT_HACK
 # define VSTR__STRUCT_HACK_ARRAY(x) x[]
 # define VSTR__STRUCT_HACK_SZ(type) (0)
 #else
-/*  The _SZ will be wrong if you compile your program with -ansi but *
- * the lib without ... but that doesn't matter because it's internal
- * so you shouldn't be using it anyway.
- *
- *  Technically _ARRAY will be too, but that doesn't matter as you can't
- * malloc() your own nodes either.
- */
-# if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-#  define VSTR__STRUCT_HACK_ARRAY(x) x[0]
-#  define VSTR__STRUCT_HACK_SZ(type) (0)
-# else
-#  define VSTR__STRUCT_HACK_ARRAY(x) x[1]
-#  define VSTR__STRUCT_HACK_SZ(type) sizeof(type)
-# endif
+# define VSTR__STRUCT_HACK_ARRAY(x) VSTR__STRUCT_ARRAY_HACK_ARRAY(x)
+# define VSTR__STRUCT_HACK_SZ(x)    VSTR__STRUCT_ARRAY_HACK_SZ(x)
 #endif
 
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES

@@ -67,13 +67,13 @@ int vstr_nx_sc_fmt_cb_end(Vstr_base *base, size_t pos,
   return (TRUE);
 }
 
-static int vstr__sc_fmt_add_vstr_cb(Vstr_base *base, size_t pos,
+static int vstr__sc_fmt_add_cb_vstr(Vstr_base *base, size_t pos,
                                     Vstr_fmt_spec *spec)
 {
-  Vstr_base *sf    = spec->data_ptr[0];
-  size_t sf_pos    = *(size_t *)(spec->data_ptr[1]);
-  size_t sf_len    = *(size_t *)(spec->data_ptr[2]);
-  size_t sf_flags  = *(unsigned int *)(spec->data_ptr[3]);
+  Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_pos          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+  size_t sf_len          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
+  unsigned int sf_flags  = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 3);
 
   if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len))
     return (FALSE);
@@ -87,9 +87,97 @@ static int vstr__sc_fmt_add_vstr_cb(Vstr_base *base, size_t pos,
   return (TRUE);
 }
 
+static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  const char *buf = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_len   = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+
+  if (!buf)
+  {
+    buf = "(null)";
+    if (sf_len > strlen("(null)"))
+      sf_len = strlen("(null)");
+  }
+  
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_add_buf(base, pos, buf, sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  const char *ptr = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_len   = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+
+  if (!ptr)
+  {
+    ptr = "(null)";
+    if (sf_len > strlen("(null)"))
+      sf_len = strlen("(null)");
+  }
+  
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_add_ptr(base, pos, ptr, sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+static int vstr__sc_fmt_add_cb_non(Vstr_base *base, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  size_t sf_len   = VSTR_FMT_CB_ARG_VAL(spec, size_t, 0);
+
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_add_non(base, pos, sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+static int vstr__sc_fmt_add_cb_ref(Vstr_base *base, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  Vstr_ref *ref = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_off = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+  size_t sf_len = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
+
+  assert(ref);
+  
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_add_ref(base, pos, ref, sf_off, sf_len))
+    return (FALSE);
+  
+  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
 int vstr_nx_sc_fmt_add_vstr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_vstr_cb,
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_vstr,
                           VSTR_TYPE_FMT_PTR_VOID,
                           VSTR_TYPE_FMT_SIZE_T,
                           VSTR_TYPE_FMT_SIZE_T,
@@ -97,3 +185,34 @@ int vstr_nx_sc_fmt_add_vstr(Vstr_conf *conf, const char *name)
                           VSTR_TYPE_FMT_END));
 }
 
+int vstr_nx_sc_fmt_add_buf(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_buf,
+                          VSTR_TYPE_FMT_PTR_CHAR,
+                          VSTR_TYPE_FMT_SIZE_T,
+                          VSTR_TYPE_FMT_END));
+}
+
+int vstr_nx_sc_fmt_add_ptr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ptr,
+                          VSTR_TYPE_FMT_PTR_CHAR,
+                          VSTR_TYPE_FMT_SIZE_T,
+                          VSTR_TYPE_FMT_END));
+}
+
+int vstr_nx_sc_fmt_add_non(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_non,
+                          VSTR_TYPE_FMT_SIZE_T,
+                          VSTR_TYPE_FMT_END));
+}
+
+int vstr_nx_sc_fmt_add_ref(Vstr_conf *conf, const char *name)
+{
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ref,
+                          VSTR_TYPE_FMT_PTR_VOID,
+                          VSTR_TYPE_FMT_SIZE_T,
+                          VSTR_TYPE_FMT_SIZE_T,
+                          VSTR_TYPE_FMT_END));
+}

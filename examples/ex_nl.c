@@ -35,7 +35,10 @@ static void ex_nl_process(Vstr_base *str1, Vstr_base *str2, int last)
 
     VSTR_SECTS_DECL_INIT(sects);
     vstr_split_buf(str2, 1, str2->len, "\n", 1, sects, sects->sz, flags);
-    
+
+    if ((sects->num != sects->sz) && !last)
+      return;
+
     while ((++num < SECTS_LOOP) && (num <= sects->num))
     {
       size_t split_pos = VSTR_SECTS_NUM(sects, num)->pos;
@@ -51,7 +54,7 @@ static void ex_nl_process(Vstr_base *str1, Vstr_base *str2, int last)
         errno = ENOMEM, DIE("adding data:");
     }
 
-    if ((sects->num != sects->sz) && last)
+    if (sects->num != sects->sz)
       vstr_del(str2, 1, str2->len);
     else
     {

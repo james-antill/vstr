@@ -103,13 +103,11 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_buf \
     tst_ptr \
+    tst_non \
     tst_ref \
     tst_vstr \
     tst_rep_chr
 
-
-# FIXME
-#   tst_non
 
 check_PROGRAMS = $(tst)
 
@@ -120,8 +118,8 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_buf$(EXEEXT) tst_ptr$(EXEEXT) tst_ref$(EXEEXT) \
-tst_vstr$(EXEEXT) tst_rep_chr$(EXEEXT)
+check_PROGRAMS =  tst_buf$(EXEEXT) tst_ptr$(EXEEXT) tst_non$(EXEEXT) \
+tst_ref$(EXEEXT) tst_vstr$(EXEEXT) tst_rep_chr$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
 tst_buf_SOURCES = tst_buf.c
@@ -134,6 +132,11 @@ tst_ptr_OBJECTS =  tst_ptr.$(OBJEXT)
 tst_ptr_LDADD = $(LDADD)
 tst_ptr_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_ptr_LDFLAGS = 
+tst_non_SOURCES = tst_non.c
+tst_non_OBJECTS =  tst_non.$(OBJEXT)
+tst_non_LDADD = $(LDADD)
+tst_non_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_non_LDFLAGS = 
 tst_ref_SOURCES = tst_ref.c
 tst_ref_OBJECTS =  tst_ref.$(OBJEXT)
 tst_ref_LDADD = $(LDADD)
@@ -160,8 +163,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_buf.c tst_ptr.c tst_ref.c tst_vstr.c tst_rep_chr.c
-OBJECTS = tst_buf.$(OBJEXT) tst_ptr.$(OBJEXT) tst_ref.$(OBJEXT) tst_vstr.$(OBJEXT) tst_rep_chr.$(OBJEXT)
+SOURCES = tst_buf.c tst_ptr.c tst_non.c tst_ref.c tst_vstr.c tst_rep_chr.c
+OBJECTS = tst_buf.$(OBJEXT) tst_ptr.$(OBJEXT) tst_non.$(OBJEXT) tst_ref.$(OBJEXT) tst_vstr.$(OBJEXT) tst_rep_chr.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -234,6 +237,10 @@ tst_buf$(EXEEXT): $(tst_buf_OBJECTS) $(tst_buf_DEPENDENCIES)
 tst_ptr$(EXEEXT): $(tst_ptr_OBJECTS) $(tst_ptr_DEPENDENCIES)
 	@rm -f tst_ptr$(EXEEXT)
 	$(LINK) $(tst_ptr_LDFLAGS) $(tst_ptr_OBJECTS) $(tst_ptr_LDADD) $(LIBS)
+
+tst_non$(EXEEXT): $(tst_non_OBJECTS) $(tst_non_DEPENDENCIES)
+	@rm -f tst_non$(EXEEXT)
+	$(LINK) $(tst_non_LDFLAGS) $(tst_non_OBJECTS) $(tst_non_LDADD) $(LIBS)
 
 tst_ref$(EXEEXT): $(tst_ref_OBJECTS) $(tst_ref_DEPENDENCIES)
 	@rm -f tst_ref$(EXEEXT)

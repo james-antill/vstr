@@ -4,11 +4,8 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_usr
-
-# FIXME
-#     tst_sub
-#     tst_srch
+tst = tst_usr \
+      tst_srch
 
 check_PROGRAMS = $(tst)
 

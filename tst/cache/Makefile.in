@@ -101,11 +101,9 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_usr
+tst = tst_usr \
+      tst_srch
 
-# FIXME
-#     tst_sub
-#     tst_srch
 
 check_PROGRAMS = $(tst)
 
@@ -116,7 +114,7 @@ LDADD = ../../src/.libs/libvstr.a
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_usr$(EXEEXT)
+check_PROGRAMS =  tst_usr$(EXEEXT) tst_srch$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
 tst_usr_SOURCES = tst_usr.c
@@ -124,6 +122,11 @@ tst_usr_OBJECTS =  tst_usr.$(OBJEXT)
 tst_usr_LDADD = $(LDADD)
 tst_usr_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_usr_LDFLAGS = 
+tst_srch_SOURCES = tst_srch.c
+tst_srch_OBJECTS =  tst_srch.$(OBJEXT)
+tst_srch_LDADD = $(LDADD)
+tst_srch_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_srch_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -135,8 +138,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = tst_usr.c
-OBJECTS = tst_usr.$(OBJEXT)
+SOURCES = tst_usr.c tst_srch.c
+OBJECTS = tst_usr.$(OBJEXT) tst_srch.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
@@ -205,6 +208,10 @@ maintainer-clean-libtool:
 tst_usr$(EXEEXT): $(tst_usr_OBJECTS) $(tst_usr_DEPENDENCIES)
 	@rm -f tst_usr$(EXEEXT)
 	$(LINK) $(tst_usr_LDFLAGS) $(tst_usr_OBJECTS) $(tst_usr_LDADD) $(LIBS)
+
+tst_srch$(EXEEXT): $(tst_srch_OBJECTS) $(tst_srch_DEPENDENCIES)
+	@rm -f tst_srch$(EXEEXT)
+	$(LINK) $(tst_srch_LDFLAGS) $(tst_srch_OBJECTS) $(tst_srch_LDADD) $(LIBS)
 
 tags: TAGS
 

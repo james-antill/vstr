@@ -29,7 +29,8 @@
 #include "main.h"
 
 #ifndef VSTR_AUTOCONF_ULONG_MAX_LEN
-size_t vstr__netstr2_ULONG_MAX_len = 0; /* FIXME: should be a constant */
+/* only used as a variable if can't work i tout at compile time */
+size_t vstr__netstr2_ULONG_MAX_len = 0;
 #endif
 
 size_t vstr_nx_add_netstr2_beg(Vstr_base *base, size_t pos)

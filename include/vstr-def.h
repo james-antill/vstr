@@ -201,8 +201,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sect_node)
 
 VSTR__DECL_TYPEDEF1(struct Vstr_sects)
 {
-  unsigned int num; /* public/read|write */
-  unsigned int sz; /* public/read|write */
+  size_t num; /* public/read|write */
+  size_t sz; /* public/read|write */
   
   unsigned int malloc_bad : 1; /* public/read|write */
   unsigned int free_ptr : 1; /* public/read|write */
@@ -222,6 +222,7 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sects)
   VSTR__DEF_BITFLAG_1_4(8); /* private */
   
   struct Vstr_sect_node *ptr; /* public/read|write */
+  struct Vstr_sect_node VSTR__STRUCT_ARRAY_HACK_ARRAY(integrated_objs); /* priavte */
 } VSTR__DECL_TYPEDEF2(Vstr_sects);
 
 

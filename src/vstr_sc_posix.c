@@ -577,14 +577,15 @@ int vstr_nx_sc_write_file(Vstr_base *base, size_t pos, size_t len,
   return (ret);
 }
 
-static int vstr__sc_fmt_add_ipv4_ptr_cb(Vstr_base *base, size_t pos,
+static int vstr__sc_fmt_add_cb_ipv4_ptr(Vstr_base *base, size_t pos,
                                         Vstr_fmt_spec *spec)
 {
-  struct in_addr *ipv4 = spec->data_ptr[0];
+  struct in_addr *ipv4 = VSTR_FMT_CB_ARG_PTR(spec, 0);
   size_t obj_len = 0;
   char buf[1024];
   const char *ptr = NULL;
-  
+
+  assert(ipv4);
   assert(sizeof(buf) >= INET_ADDRSTRLEN);
   
   ptr = inet_ntop(AF_INET, ipv4, buf, sizeof(buf));
@@ -604,14 +605,15 @@ static int vstr__sc_fmt_add_ipv4_ptr_cb(Vstr_base *base, size_t pos,
   return (TRUE);
 }
 
-static int vstr__sc_fmt_add_ipv6_ptr_cb(Vstr_base *base, size_t pos,
+static int vstr__sc_fmt_add_cb_ipv6_ptr(Vstr_base *base, size_t pos,
                                         Vstr_fmt_spec *spec)
 {
-  struct in6_addr *ipv6 = spec->data_ptr[0];
+  struct in6_addr *ipv6 = VSTR_FMT_CB_ARG_PTR(spec, 0);
   size_t obj_len = 0;
   char buf[1024];
   const char *ptr = NULL;
 
+  assert(ipv6);
   assert(sizeof(buf) >= INET6_ADDRSTRLEN);
   
   ptr = inet_ntop(AF_INET6, ipv6, buf, sizeof(buf));
@@ -633,14 +635,14 @@ static int vstr__sc_fmt_add_ipv6_ptr_cb(Vstr_base *base, size_t pos,
 
 int vstr_nx_sc_fmt_add_ipv4_ptr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_ipv4_ptr_cb,
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_ptr,
                           VSTR_TYPE_FMT_PTR_VOID,
                           VSTR_TYPE_FMT_END));
 }
 
 int vstr_nx_sc_fmt_add_ipv6_ptr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_ipv6_ptr_cb,
+  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_ptr,
                           VSTR_TYPE_FMT_PTR_VOID,
                           VSTR_TYPE_FMT_END));
 }

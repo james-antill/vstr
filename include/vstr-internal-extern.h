@@ -61,20 +61,32 @@
  * ...asssuming that C allowed that, with the meaning of tack the second
  * declaration on the end of the first.
  *
- * NOTE: assumes sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node) */
+ */
+/* The allocation is calculated by working out the of the difference in structs
+ * and then working out, from that, how many Vstr_sects nodes are wasted.
+ * This wasted value is then taken from the number passed, to come up with how
+ * many should be used.
+ * NOTE: the wasted number is rounded down, so we waste at most
+ * sizeof(Vstr_sects) bytes.
+ */
 #define VSTR_SECTS_EXTERN_DECL(name, sz) \
  struct Vstr_sects name[1 + \
-   ((sz) - (((sizeof(struct Vstr_sects) - \
-              sizeof(struct Vstr_sect_node)) * (sz)) / \
+   (((unsigned int) (sz)) - (((sizeof(struct Vstr_sects) - \
+              sizeof(struct Vstr_sect_node)) * ((unsigned int) (sz))) / \
             sizeof(struct Vstr_sects)))]
 
 #define VSTR_SECTS_DECL(name, sz) \
  VSTR_SECTS_EXTERN_DECL(name, sz) = {VSTR__SECTS_DECL_INIT(sz)}
 
 #define VSTR_SECTS_DECL_INIT(sects) \
- ((void)((sects)->ptr = (struct Vstr_sect_node *)(&((sects)[1]))))
+ ((void)((sects)->ptr = (sects)->integrated_objs))
 
-#define VSTR_SECTS_NUM(sects, pos) (&((sects)->ptr[(pos) - 1]))
+#define VSTR_SECTS_NUM(sects, pos) (&((sects)->ptr[((unsigned int) (pos)) - 1]))
+
+#define VSTR_FMT_CB_ARG_PTR(spec, num) \
+ (       (spec)->data_ptr[(size_t) (num)])
+#define VSTR_FMT_CB_ARG_VAL(spec, T, num) \
+ (*(T *)((spec)->data_ptr[(size_t) (num)]))
 
 #define VSTR_CMP_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
  !vstr_nx_cmp(x, p1, l1, y, p1, l2))
@@ -92,6 +104,14 @@
   vstr_nx_cmp_case_buf(x, p1, l1, y, strlen(y))
 #define VSTR_CMP_CASE_CSTR_EQ(x, p1, l1, y) (((l1) == strlen(y)) && \
  !vstr_nx_cmp_case_buf(x, p1, l1, y, l1))
+#define VSTR_CMP_VERS_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
+ !vstr_nx_cmp_vers(x, p1, l1, y, p2, l1))
+#define VSTR_CMP_VERS_BUF_EQ(x, p1, l1, y, l2) (((l1) == (l2)) && \
+ !vstr_nx_cmp_vers_buf(x, p1, l1, y, l1))
+#define VSTR_CMP_VERS_CSTR(x, p1, l1, y) \
+  vstr_nx_cmp_vers_buf(x, p1, l1, y, strlen(y))
+#define VSTR_CMP_VERS_CSTR_EQ(x, p1, l1, y) (((l1) == strlen(y)) && \
+ !vstr_nx_cmp_vers_buf(x, p1, l1, y, l1))
 
 
 #define VSTR_ADD_CSTR_BUF(x, y, buf) vstr_nx_add_buf(x, y, buf, strlen(buf))
@@ -227,7 +247,8 @@ extern size_t vstr_nx_add_sysfmt(struct Vstr_base *, size_t, const char *, ...)
 extern size_t vstr_nx_add_iovec_buf_beg(struct Vstr_base *, size_t,
                                      unsigned int, unsigned int,
                                      struct iovec **,
-                                     unsigned int *) VSTR__ATTR_H() ;
+                                     unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1, 5)) VSTR__ATTR_H() ;
 extern void vstr_nx_add_iovec_buf_end(struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
@@ -313,10 +334,13 @@ extern int vstr_nx_cmp_case(const struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_cmp_case_buf(const struct Vstr_base *, size_t, size_t,
-                             const void *, size_t)
+                             const char *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_cmp_vers(const struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_cmp_vers_buf(const struct Vstr_base *, size_t, size_t,
+                             const char *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
 /* search functions */
@@ -377,7 +401,7 @@ extern size_t vstr_nx_cspn_chrs_rev(const struct Vstr_base *, size_t, size_t,
 extern size_t vstr_nx_export_iovec_ptr_all(const struct Vstr_base *,
                                         struct iovec **,
                                         unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__ATTR_H() ;
 extern size_t vstr_nx_export_iovec_cpy_buf(const struct Vstr_base *,
                                         size_t, size_t,
                                         struct iovec *, unsigned int,
@@ -519,6 +543,14 @@ extern int vstr_nx_sc_fmt_cb_end(struct Vstr_base *, size_t,
                               struct Vstr_fmt_spec *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_vstr(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_buf(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ptr(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_non(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ref(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
 extern int vstr_nx_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)
