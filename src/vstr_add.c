@@ -49,8 +49,7 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
   
   tmp = vstr__export_node_ptr(node);
   
-  num = VSTR__CACHE(base)->vec->off - 1;
-  VSTR__CACHE(base)->vec->off = num;
+  num = VSTR__CACHE(base)->vec->off--;
   
   VSTR__CACHE(base)->vec->v[num].iov_len = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
@@ -62,10 +61,11 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
 void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
                                     unsigned int len)
 {
- if (!base->iovec_upto_date)
-   return;
-
- VSTR__CACHE(base)->vec->v[num - 1].iov_len += len;
+  if (!base->iovec_upto_date)
+    return;
+  
+  num += VSTR__CACHE(base)->vec->off;
+  VSTR__CACHE(base)->vec->v[num - 1].iov_len += len;
 }
 
 static int vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
@@ -332,7 +332,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  if ((scan->type == VSTR_TYPE_NODE_NON) &&
      (scan->len < VSTR_MAX_NODE_ALL))
  {
-   size_t tmp = scan->len - VSTR_MAX_NODE_ALL;
+   size_t tmp = VSTR_MAX_NODE_ALL - scan->len;
 
    if (tmp > len)
      tmp = len;
@@ -773,8 +773,6 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   Vstr_node *scan = NULL;
   Vstr_node **adder = NULL;
   
-  base->len += bytes;
-  
   iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
   types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
   if (pos)
@@ -825,16 +823,18 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   else
     adder = &base->beg;
 
+  base->len += orig_bytes;
+  
   if (!bytes)
   {
-    if (!base->iovec_upto_date && base->len)
+    if (!base->end)
     {
-      if (!base->end)
-      {
-        assert(!*adder);
-        base->end = scan;
-      }
-      
+      assert(!*adder);
+      base->end = scan;
+    }
+
+    if (!base->iovec_upto_date && base->len)
+    {      
       count = 0;
       scan = *adder;
       while (scan)

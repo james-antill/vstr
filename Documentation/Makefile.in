@@ -98,11 +98,20 @@ VSTR_LIBS = @VSTR_LIBS@
 WARNS = @WARNS@
 
 confexecdir := $(prefix)/share/doc/vstr-devel-$(VERSION)/
-confexec_DATA =                  functions.txt                 functions.html                 constants.txt                 constants.html                 namespace.txt                 namespace.html                 overview.txt                 overview.html
+confexec_DATA =                  functions.txt                 functions.html                 functions.3                 constants.txt                 constants.html                 namespace.txt                 namespace.html                 overview.txt                 overview.html                 structs.txt                 structs.html 		size_cmp.gnumeric
 
+
+man_MANS =                  vstr.3
+
+
+EXTRA_DIST = $(man_MANS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../include/autoconf.h
 CONFIG_CLEAN_FILES = 
+man3dir = $(mandir)/man3
+MANS = $(man_MANS)
+
+NROFF = nroff
 DATA =  $(confexec_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -121,6 +130,45 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
+
+install-man3:
+	$(mkinstalldirs) $(DESTDIR)$(man3dir)
+	@list='$(man3_MANS)'; \
+	l2='$(man_MANS)'; for i in $$l2; do \
+	  case "$$i" in \
+	    *.3*) list="$$list $$i" ;; \
+	  esac; \
+	done; \
+	for i in $$list; do \
+	  if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
+	  else file=$$i; fi; \
+	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+	  echo " $(INSTALL_DATA) $$file $(DESTDIR)$(man3dir)/$$inst"; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(man3dir)/$$inst; \
+	done
+
+uninstall-man3:
+	@list='$(man3_MANS)'; \
+	l2='$(man_MANS)'; for i in $$l2; do \
+	  case "$$i" in \
+	    *.3*) list="$$list $$i" ;; \
+	  esac; \
+	done; \
+	for i in $$list; do \
+	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+	  echo " rm -f $(DESTDIR)$(man3dir)/$$inst"; \
+	  rm -f $(DESTDIR)$(man3dir)/$$inst; \
+	done
+install-man: $(MANS)
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-man3
+uninstall-man:
+	@$(NORMAL_UNINSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-man3
 
 install-confexecDATA: $(confexec_DATA)
 	@$(NORMAL_INSTALL)
@@ -175,20 +223,20 @@ installcheck: installcheck-am
 install-exec-am: install-confexecDATA
 install-exec: install-exec-am
 
-install-data-am:
+install-data-am: install-man
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-confexecDATA
+uninstall-am: uninstall-man uninstall-confexecDATA
 uninstall: uninstall-am
-all-am: Makefile $(DATA)
+all-am: Makefile $(MANS) $(DATA)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(confexecdir)
+	$(mkinstalldirs)  $(DESTDIR)$(mandir)/man3 $(DESTDIR)$(confexecdir)
 
 
 mostlyclean-generic:
@@ -219,13 +267,17 @@ maintainer-clean-am:  maintainer-clean-generic distclean-am
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: uninstall-confexecDATA install-confexecDATA tags distdir info-am \
-info dvi-am dvi check check-am installcheck-am installcheck \
-install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all installdirs \
+.PHONY: install-man3 uninstall-man3 install-man uninstall-man \
+uninstall-confexecDATA install-confexecDATA tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+vstr.3: functions.3
+		cp -a functions.3 vstr.3
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -234,6 +234,13 @@ unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
       
       ++added;
     }
+    else if (!split_pos)
+    {
+      if (!vstr_sects_add(sects, pos, len))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
   }
   else if ((flags & VSTR_FLAG_SPLIT_POST_NULL) && (!limit || (added < limit)))
     if (!vstr_sects_add(sects, pos, 0))
@@ -309,6 +316,13 @@ unsigned int vstr_split_chrs(const Vstr_base *base, size_t pos, size_t len,
     {
       assert(!limit || (added <= (limit - 1)));
       
+      if (!vstr_sects_add(sects, pos, len))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
+    else if (!split_pos)
+    {
       if (!vstr_sects_add(sects, pos, len))
         VSTR__SPLIT_HDL_ERR();
       

@@ -1,3 +1,22 @@
+2002-04-05  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.2
+
+	* src/vstr_add.c (vstr_add_iovec_buf_end): Fixup base->end.
+	(vstr__cache_iovec_add_node_end): Take into account the offset when
+	adding to the end.
+
+	* src/vstr_sc.c (vstr_sc_read_fd): Fix doing a read into a non end part
+	of the Vstr string.
+
+	* src/vstr_add.c (vstr_add_iovec_buf_end): Fix premature adding of 
+	base->len as that confuses find.
+
+2002-04-03  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr__base_scan_fwd_beg): Allow a whole bunch of stuff to
+	access the entire string even if it's empty.
+
 2002-03-21  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.1

@@ -403,7 +403,9 @@ static int vstr__cache_iovec_check(Vstr_base *base)
           (vstr__export_node_ptr(scan) + base->used));
  assert(VSTR__CACHE(base)->vec->t[count] == scan->type);
  
- scan = scan->next;
+ if (!(scan = scan->next))
+   assert(base->beg == base->end);
+ 
  ++count;
  while (scan)
  {
@@ -412,6 +414,10 @@ static int vstr__cache_iovec_check(Vstr_base *base)
   assert(VSTR__CACHE(base)->vec->v[count].iov_base == vstr__export_node_ptr(scan));
 
   ++count;
+
+  if (!scan->next)
+    assert(scan == base->end);
+  
   scan = scan->next;
  }
  
@@ -779,6 +785,7 @@ int vstr__check_real_nodes(Vstr_base *base)
   scan = scan->next;
  }
 
+ assert(!!base->beg == !!base->end);
  assert(!base->used || (base->used < base->beg->len));
  assert(((len - base->used) == base->len) && (num == base->num));
 
@@ -923,6 +930,9 @@ Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
                                    char **scan_str, size_t *scan_len)
 {
  Vstr_node *scan = NULL;
+
+ if ((pos == 1) && !*len && !base->len)
+   return (NULL);
  
  assert(base && pos && len && *len && ((pos + *len - 1) <= base->len));
  

@@ -151,12 +151,12 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   
   if (bytes == -1)
   {
-    vstr_add_iovec_buf_end(base, base->len, 0);
+    vstr_add_iovec_buf_end(base, pos, 0);
     *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
     return (FALSE);
   }
 
-  vstr_add_iovec_buf_end(base, base->len, (size_t)bytes);
+  vstr_add_iovec_buf_end(base, pos, (size_t)bytes);
   
   if (!bytes)
   {

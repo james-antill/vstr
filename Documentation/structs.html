@@ -17,7 +17,7 @@
   <body>
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- structs</h1>
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>the Vstr_ref struct</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>struct Vstr_ref (aka. Vstr reference)</h2>
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Member: </strong> func
@@ -48,6 +48,100 @@
 </p><p>  It is safest to only change this by calling either vstr_ref_add_ref() or
  vstr_ref_del_ref(). These will automatically call the cleanup function when
  the reference reaches zero.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>struct Vstr_conf (aka. Vstr configuration)</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> malloc_bad
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE by any function which does an
+ allocation on a Vstr string or Vstr configuration that fails, this allows the
+ programmer to call multiple allocation functions and then do a single test.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>struct Vstr_base (aka. Vstr string)</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> len
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the length of the Vstr string.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> conf
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a pointer to the Vstr configuration used by the Vstr string.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>struct Vstr_sects (aka. Vstr sections)</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> num
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the number of used sections in the Vstr sections.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Some of the section nodes may be used by null or deleted sections.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> sz
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the size of space allocated for sections in the Vstr sections.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> malloc_bad
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE by any function which does an
+ allocation on a section that fails, this allows the programmer to call
+ multiple allocation functions and then do a single test.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> free_ptr
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to free().
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> can_add_sz
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to realloc() to make it bigger.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> can_del_sz
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to realloc() to make it smaller.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> alloc_double
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a bitflag which is set to TRUE when the data in ->ptr should be 
+ realloc()'d at twice it's current size when it needs to be bigger.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> ptr
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a pointer to the section nodes.
 
 
 

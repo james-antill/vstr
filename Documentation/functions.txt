@@ -51,7 +51,6 @@ Function: vstr_export_cstr_ptr()
 
 
 Function: vstr_export_cstr_buf()
-
  Returns: nothing
  Type: void
 
@@ -285,7 +284,6 @@ Function: vstr_export_chr()
 
 
 Function: vstr_export_ref()
-
  Returns: Vstr memory reference
  Type: struct Vstr_ref *
 
@@ -1354,7 +1352,7 @@ Function: vstr_cntl_opt()
  Type[1]: int
 
  Parameter[ ... ]: options depending on value of Parameter[1]
- Type[ ... ]: Default stdarg/vararg promotion
+ Type[ ... ]: ...
 
 Function: vstr_cntl_base()
  Returns: TRUE on success and FALSE on failure
@@ -1367,7 +1365,7 @@ Function: vstr_cntl_base()
  Type[2]: int
 
  Parameter[ ... ]: options depending on value of Parameter[2]
- Type[ ... ]: Default stdarg/vararg promotion
+ Type[ ... ]: ...
 
 
 Function: vstr_cntl_conf()
@@ -1381,7 +1379,7 @@ Function: vstr_cntl_conf()
  Type[2]: int
 
  Parameter[ ... ]: options depending on value of Parameter[2]
- Type[ ... ]: Default stdarg/vararg promotion
+ Type[ ... ]: ...
 
 
 Section: Functions to compare with a Vstr string
@@ -1636,7 +1634,7 @@ Function: VSTR_CMP_CSTR_EQ()
  Type[3]: size_t
 
  Parameter[4]: Pointer to data
- Type[4]: const void *
+ Type[4]: const char *
 
  Explanation:
 
