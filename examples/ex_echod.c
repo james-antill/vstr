@@ -211,10 +211,10 @@ static int cl_make_bind(const char *acpt_addr, short acpt_port)
 
 static void usage(const char *program_name, int tst_err)
 {
-  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-chmtwV] <?>\n"
-          " --help -h         - Print this message.\n"
+  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-dHhnPtV]\n"
           " --debug -d        - Enable/disable debug info.\n"
           " --host -H         - IPv4 address to bind (def: \"all\").\n"
+          " --help -h         - Print this message.\n"
           " --port -P         - Port to bind to.\n"
           " --nagle -n        - Enable/disable nagle TCP option.\n"
           " --timeout -t      - Timeout (usecs) for connections.\n"
@@ -262,7 +262,7 @@ static void cl_cmd_line(int argc, char *argv[])
         usage(program_name, '?' == optchar);
         
       case 'V':
-        printf(" %s version 0.0.1, compiled on %s.\n",
+        printf(" %s version 0.1.1, compiled on %s.\n",
                program_name,
                __DATE__);
         printf(" %s compiled on %s.\n", program_name, __DATE__);
@@ -290,10 +290,8 @@ static void cl_cmd_line(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  //  if (argc != 1)
-  //    usage(program_name, TRUE);
-
-  //  ip_addr_input_file = argv[0];
+  if (argc != 1)
+    usage(program_name, TRUE);
 }
 
 static void cl_timer_con(int type, void *data)

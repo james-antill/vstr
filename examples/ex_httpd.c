@@ -22,6 +22,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <getopt.h>
 
 /* is the data is less than this, queue instead of hitting write */
 #define CL_MAX_WAIT_SEND 16
@@ -54,6 +55,7 @@
 #define CONF_OUTPUT_SZ   (1024 * 128)
 
 #include <assert.h>
+#define ASSERT assert
 #define ASSERT_NOT_REACHED() assert(FALSE)
 
 #define CSTREQ(x, y) (strcmp(x, y) == 0)
@@ -75,6 +77,13 @@ static struct Evnt *acpt_evnt = NULL;
 static unsigned int server_clients_count = 0;
 
 static unsigned int client_timeout = (2 * 60); /* 2 minutes */
+
+static const char *server_ipv4_address = CONF_SERV_DEF_ADDR;
+static short server_port = CONF_SERV_DEF_PORT;
+
+static unsigned int server_max_clients = 0;
+
+static unsigned int server_max_header_sz = CONF_INPUT_MAXSZ;
 
 static unsigned int cl_dbg_opt = FALSE;
 static Vstr_base *cl_dbg_log = NULL;
@@ -102,20 +111,19 @@ static void dbg(const char *fmt, ... )
   }
 }
 
-
 static void usage(const char *program_name, int ret)
 {
-  Vstr_base *serr = NULL;
-
-  if ((serr = vstr_make_base(NULL)))
-  {
-    vstr_add_fmt(serr, serr->len, " Format: %s <dir> [port]\n",
-                 program_name);
-    while (serr->len &&
-           vstr_sc_write_fd(serr, 1, serr->len,
-                            (!ret) ? STDOUT_FILENO : STDERR_FILENO, NULL))
-    { /* nothing */ }
-  }
+  fprintf(ret ? stderr : stdout, "\n Format: %s [-dHhMnPtV] <dir>\n"
+         " --debug -d        - Enable/disable debug info.\n"
+         " --host -H         - IPv4 address to bind (def: \"all\").\n"
+         " --help -h         - Print this message.\n"
+         " --max-clients -M  - Max clients allowed to connect (0 = no limit).\n"
+         " --max-header-sz   - Max size of http header (0 = no limit).\n"
+         " --nagle -n        - Toggle usage of nagle TCP option.\n"
+         " --port -P         - Port to bind to.\n"
+         " --timeout -t      - Timeout (usecs) for connections.\n"
+         " --version -V      - Print the version string.\n",
+          program_name);
   
   exit (ret);
 }
@@ -304,7 +312,7 @@ static int serv_recv(struct con *con)
   {
     if (!(h_end = vstr_srch_cstr_buf_fwd(data, 1, data->len, "\r\n\r\n")))
     {
-      if (data->len > CONF_INPUT_MAXSZ)
+      if (server_max_header_sz && (data->len > server_max_header_sz))
         goto con_cleanup;
       
       return (TRUE);
@@ -484,7 +492,8 @@ static int serv_recv(struct con *con)
       {
         const char *tmp = req_head_if_mod_since;
         
-        /* assumes time doesn't go backwards */
+        /* assumes time doesn't go backwards ... I'm 99% sure a client can't
+         * legally discover we did something different */
         if (tmp &&
             (CSTREQ(tmp, serv_date_rfc1123(f_stat.st_mtime)) ||
              CSTREQ(tmp, serv_date_rfc850(f_stat.st_mtime))  ||
@@ -654,10 +663,15 @@ static void serv_cb_func_acpt_free(struct Evnt *evnt)
 static struct Evnt *serv_cb_func_accept(int fd,
                                         struct sockaddr *sa, socklen_t len)
 {
-  struct con *con = malloc(sizeof(struct con));
+  struct con *con = NULL;
   struct timeval tv;
 
-  if (!con || !evnt_make_acpt(con->ev, fd, sa, len))
+  ASSERT(!server_max_clients || (server_clients_count <= server_max_clients));
+  if (server_max_clients && (server_clients_count >= server_max_clients))
+    goto make_acpt_fail;
+  
+  if (!(con = malloc(sizeof(struct con))) ||
+      !evnt_make_acpt(con->ev, fd, sa, len))
     goto make_acpt_fail;
 
   tv = con->ev->ctime;
@@ -726,27 +740,86 @@ static void cl_timer_con(int type, void *data)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 }
 
-int main(int argc, char *argv[])
+static void cl_cmd_line(int argc, char *argv[])
 {
-  const char *addr = CONF_SERV_DEF_ADDR;
-  short port = CONF_SERV_DEF_PORT;
-  
-  serv_init();
-  
-  switch (argc)
+  char optchar = 0;
+  const char *program_name = "echod";
+  struct option long_options[] =
   {
-    case 3:
-      port = atoi(argv[2]);
-    case 2:
-      if (chdir(argv[1]) == -1)
-        err(EXIT_FAILURE, "chdir(%s)", argv[1]);
-      break;
-      
-    default:
-      usage(argv[0], EXIT_FAILURE);
-      break;
+   {"help", no_argument, NULL, 'h'},
+   {"debug", required_argument, NULL, 'd'},
+   {"host", required_argument, NULL, 'H'},
+   {"port", required_argument, NULL, 'P'},
+   {"nagle", optional_argument, NULL, 'n'},
+   {"max-clients", required_argument, NULL, 'M'},
+   {"max-header-sz", required_argument, NULL, 1},
+   {"timeout", required_argument, NULL, 't'},
+   {"version", no_argument, NULL, 'V'},
+   {NULL, 0, NULL, 0}
+  };
+  
+  if (argv[0])
+  {
+    if ((program_name = strrchr(argv[0], '/')))
+      ++program_name;
+    else
+      program_name = argv[0];
   }
 
+  while ((optchar = getopt_long(argc, argv, "d:hH:M:nP:t:V",
+                                long_options, NULL)) != EOF)
+  {
+    switch (optchar)
+    {
+      case '?':
+        fprintf(stderr, " That option is not valid.\n");
+      case 'h':
+        usage(program_name, 'h' == optchar);
+        
+      case 'V':
+        printf(" %s version 0.1.1, compiled on %s.\n",
+               program_name,
+               __DATE__);
+        printf(" %s compiled on %s.\n", program_name, __DATE__);
+        exit (EXIT_SUCCESS);
+
+      case 'd': cl_dbg_opt           = atoi(optarg); break;
+      case 't': client_timeout       = atoi(optarg); break;
+      case 'H': server_ipv4_address  = optarg;       break;
+      case   1: server_max_header_sz = atoi(optarg); break;
+      case 'M': server_max_clients   = atoi(optarg); break;
+      case 'P': server_port          = atoi(optarg); break;
+
+      case 'n':
+        if (!optarg)
+        { evnt_opt_nagle = !evnt_opt_nagle; }
+        else if (!strcasecmp("true", optarg))   evnt_opt_nagle = TRUE;
+        else if (!strcasecmp("1", optarg))      evnt_opt_nagle = TRUE;
+        else if (!strcasecmp("false", optarg))  evnt_opt_nagle = FALSE;
+        else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
+        break;
+
+      default:
+        abort();
+    }
+  }
+
+  argc -= optind;
+  argv += optind;
+
+  if (argc != 2)
+    usage(argv[0], EXIT_FAILURE);
+
+  if (chdir(argv[1]) == -1)
+    err(EXIT_FAILURE, "chdir(%s)", argv[1]);
+}
+
+int main(int argc, char *argv[])
+{
+  serv_init();
+
+  cl_cmd_line(argc, argv);
+  
   cl_timeout_base = timer_q_add_base(cl_timer_con, TIMER_Q_FLAG_BASE_DEFAULT);
 
   if (!cl_timeout_base)
@@ -755,8 +828,9 @@ int main(int argc, char *argv[])
   if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   
-  if (!evnt_make_bind_ipv4(acpt_evnt, addr, port))
-    err(EXIT_FAILURE, "bind(%s:%hu)", addr ? addr : "any", port);
+  if (!evnt_make_bind_ipv4(acpt_evnt, server_ipv4_address, server_port))
+    err(EXIT_FAILURE, "bind(%s:%hu)",
+        server_ipv4_address ? server_ipv4_address : "any", server_port);
 
   SOCKET_POLL_INDICATOR(acpt_evnt->ind)->events |= POLLIN;
 

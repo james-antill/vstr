@@ -42,7 +42,7 @@
 # define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x
 #endif
 
-int evnt_opt_nagle = TRUE;
+int evnt_opt_nagle = FALSE;
 
 struct Evnt *q_send_now = NULL;  /* Try a send "now" */
 
