@@ -1,3 +1,10 @@
+2004-10-04  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_read_len_fd): Fixed OOB zero length fail
+	return.
+	(vstr_sc_read_len_file): Dito.
+	(vstr_sc_write_fd): Fixed zero length fail return.
+
 2004-09-20  James Antill  <james@and.org>
 
 	* src/vstr_add_fmt.c (vstr__add_fmt_spec): Flags processing should

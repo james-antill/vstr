@@ -188,6 +188,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/%{name}-%{ver}/examples/html
 rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/functions.3
 rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
 
+mkdir -p $RPM_BUILD_ROOT/var/empty/jechod
+mkdir -p $RPM_BUILD_ROOT/var/empty/jhttpd
+ln -s %{_libdir}/%{name}-%{ver}/examples/ex_echod $RPM_BUILD_ROOT/%{_sbindir}/jechod
+ln -s %{_libdir}/%{name}-%{ver}/examples/ex_httpd $RPM_BUILD_ROOT/%{_sbindir}/jhttpd
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -248,6 +252,10 @@ fi
 %{_libdir}/%{name}-%{ver}/examples
 
 %files initd
-%defattr(-, root, root)
+%defattr(111, root, root)
 
+/var/empty/j*d
+
+%defattr(-, root, root)
 %{_sysconfdir}/init.d/j*d
+%{_sbindir}/j*d

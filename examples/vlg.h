@@ -47,6 +47,8 @@ extern void vlg_dbg2(Vlg *, const char *fmt, ... )
 extern void vlg_dbg3(Vlg *, const char *fmt, ... )
       VSTR__COMPILE_ATTR_FMT(2, 3);
 
+extern void vlg_pid_file(Vlg *, const char *);
+
 #ifndef VLG_COMPILE_INLINE
 #define VLG_COMPILE_INLINE 1
 #endif

@@ -1,0 +1,11 @@
+ These are all examples of how you can use the Vstr library, they are often
+centered around IO (as that's the main design of the library) but some show
+features like custom formatters.
+ They all require a POSIX like environment ... although the library should
+happily work on win32 etc.
+
+ All code in this dir. is also under the LGPL, not the GPL.
+
+ ex_httpd
+	 This should be a HTTP/1.1 compliant server, does most everything you'd
+	want for just serving files.

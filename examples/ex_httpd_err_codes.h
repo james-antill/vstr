@@ -175,15 +175,16 @@
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar
 */
-#define HTTP_REQ_CHK_DIR(s1, goto_label) do {                     \
-      if (vstr_export_chr((s1), (s1)->len) != '/')                \
+#define HTTP_REQ_CHK_DIR(s1, head_op, goto_label) do {            \
+      if (VSUFFIX((s1), 1, (s1)->len, "/.."))                     \
+        HTTPD_ERR(404, head_op);                                  \
+      else if (!VSUFFIX((s1), 1, (s1)->len, "/"))                 \
       {                                                           \
         vstr_del((s1), 1, vhost_prefix_len);                      \
         vhost_prefix_len = 0;                                     \
                                                                   \
         vstr_conv_encode_uri((s1), 1, (s1)->len);                 \
         vstr_add_cstr_buf((s1), (s1)->len, "/");                  \
-        redirect_loc = TRUE;                                      \
         http_error_code = 301;                                    \
         http_error_line = CONF_LINE_RET_301;                      \
         http_error_len  = CONF_MSG_LEN_301(s1, 1, s1->len);       \
@@ -191,6 +192,8 @@
           redirect_http_error_msg = TRUE;                         \
         goto goto_label ;                                         \
       }                                                           \
+      else                                                        \
+        vstr_add_cstr_ptr(fname, fname->len, "index.html");       \
     } while (0)
       
 #endif

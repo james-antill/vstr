@@ -421,7 +421,10 @@ int vstr_sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
     err = &dummy_err;
   *err = 0;
 
-  ASSERT_GOTO(base && (pos <= base->len), inval_args);
+  ASSERT_GOTO(base && ((pos <= base->len) || !len), inval_args);
+
+  if (!len)
+    return (TRUE);
   
   if (!vstr__sc_get_size(base->len, fd, &len, off, err,
                          VSTR_TYPE_SC_READ_FD_ERR_FSTAT_ERRNO,
@@ -503,7 +506,10 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
     err = &dummy_err;
   *err = 0;
 
-  ASSERT_GOTO(base && (pos <= base->len), inval_args);
+  ASSERT_GOTO(base && ((pos <= base->len) || !len), inval_args);
+  
+  if (!len)
+    return (TRUE);
   
   if ((fd = VSTR__POSIX_OPEN(filename, O_RDONLY | O_NOCTTY, 0)) == -1)
   {
@@ -557,10 +563,9 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     err = &dummy_err;
   *err = 0;
 
-  ASSERT_GOTO(base &&
-              pos &&
-              (pos <= base->len) &&
-              (vstr_sc_poslast(pos, len) <= base->len), inval_args);
+  ASSERT_GOTO(base && pos && (((pos <= base->len) &&
+                               (vstr_sc_poslast(pos, len) <= base->len)) ||
+                              !len), inval_args);
   
   if (!len)
     return (TRUE);
@@ -609,10 +614,11 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
       return (FALSE);
     }
 
-    assert((size_t)bytes <= len);
+    ASSERT((size_t)bytes <= len);
 
     vstr_del(base, pos, bytes);
     
+    ASSERT((size_t)bytes <= clen);
     if (clen != (size_t)bytes)
       break;
     
@@ -637,6 +643,10 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
   int ret = 0;
   int saved_errno = 0;
 
+  ASSERT_GOTO(base && pos && (((pos <= base->len) &&
+                               (vstr_sc_poslast(pos, len) <= base->len)) ||
+                              !len), inval_args);
+  
   if (!err)
     err = &dummy_err;
 

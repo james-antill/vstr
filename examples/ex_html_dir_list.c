@@ -198,15 +198,23 @@ static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
  <link rel=\"stylesheet\" type=\"text/css\" href=\"dir_list.css\">\
  </head>\n\
  <body>\n\
+  \n\
   <h1>Directory listing of %s</h1>\n\
+  \n\
   <table class=\"dir_list\">\n\
-  <tr class=\"rh\"> <td class=\"c1\">Name</td> <td class=\"c2\">Size</td>  <td class=\"c3\">Type</td> </tr>\n\
+  \n\
+  <thead>\n\
+  <tr class=\"rh\"> <th class=\"c1\">Name</th> <th class=\"c2\">Size</th>  <th class=\"c3\">Type</th> </tr>\n\
+  </thead>\n\
+  \n\
+  <tbody>\n\
 ", fname, fname);
 }
 
 static void ex_html_dir_list_end(Vstr_base *s1)
 {
   vstr_add_cstr_buf(s1, s1->len, "\n\
+  </tbody>\n\
   </table>\n\
  </body>\n\
 </html>\n\

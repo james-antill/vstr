@@ -2,17 +2,6 @@
 #include <stdlib.h>
 #include <vstr.h>
 
-#if VSTR_AUTOCONF_TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if VSTR_AUTOCONF_HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
-
 #include <err.h>
 
 #include "date.h"
@@ -28,7 +17,7 @@
 /* FIXME: fix this to use constant data which is always in the C locale */
 
 /* use macro so we pass a constant fmt string for gcc's checker */
-#define SERV__STRFTIME(val, fmt) do {           \
+#define SERV__STRFTIME(val, loc, fmt) do {      \
       static char ret[4096];                    \
       struct tm *tm_val = gmtime(&val);         \
                                                 \
@@ -42,14 +31,18 @@
 
 const char *date_rfc1123(time_t val)
 {
-  SERV__STRFTIME(val, "%a, %d %b %Y %T GMT");
+  SERV__STRFTIME(val, FALSE, "%a, %d %b %Y %T GMT");
 }
 const char *date_rfc850(time_t val)
 {
-  SERV__STRFTIME(val, "%A, %d-%b-%y %T GMT");
+  SERV__STRFTIME(val, FALSE, "%A, %d-%b-%y %T GMT");
 }
 const char *date_asctime(time_t val)
 {
-  SERV__STRFTIME(val, "%a %b %e %T %Y");
+  SERV__STRFTIME(val, FALSE, "%a %b %e %T %Y");
+}
+const char *date_syslog(time_t val)
+{
+  SERV__STRFTIME(val, TRUE, "%b %e %T");
 }
 

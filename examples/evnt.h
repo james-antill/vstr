@@ -32,19 +32,32 @@ struct Evnt
 
  struct timeval ctime;
  struct timeval mtime;
- 
- unsigned int req_put;
- unsigned int req_got;
+
+ struct
+ {
+  unsigned int            req_put;
+  unsigned int            req_got;
+  VSTR_AUTOCONF_uintmax_t bytes_r;
+  VSTR_AUTOCONF_uintmax_t bytes_w;
+ } acct;
  
  unsigned int flag_q_send_recv : 1;
  unsigned int flag_q_send_now  : 1;
  unsigned int flag_q_none      : 1;
 };
 
+#define EVNT_SA(x)    (                      (x)->sa)
+#define EVNT_SA_IN(x) ((struct sockaddr_in *)(x)->sa)
 
 extern void evnt_logger(Vlg *);
 
 extern void evnt_fd_set_nonblock(int, int);
+
+extern int evnt_cb_func_connect(struct Evnt *);
+extern struct Evnt *evnt_cb_func_accept(int, struct sockaddr *, socklen_t);
+extern int evnt_cb_func_recv(struct Evnt *);
+extern int evnt_cb_func_send(struct Evnt *);
+extern void evnt_cb_func_free(struct Evnt *);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
 extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short);

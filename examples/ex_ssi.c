@@ -471,9 +471,11 @@ static int ex_ssi_process(Vstr_base *s1, Vstr_base *s2, time_t last_modified,
         err(EXIT_FAILURE, "stat(%s)", vstr_export_cstr_ptr(s2, 1, tmp));
 
       if (use_size_abbrev)
-        vstr_add_fmt(s1, s1->len, "${BKMG.ju:%ju}", (uintmax_t)sbuf->st_size);
+        vstr_add_fmt(s1, s1->len, "${BKMG.ju:%ju}",
+                     (VSTR_AUTOCONF_uintmax_t)sbuf->st_size);
       else
-        vstr_add_fmt(s1, s1->len, "%ju", (uintmax_t)sbuf->st_size);
+        vstr_add_fmt(s1, s1->len, "%ju",
+                     (VSTR_AUTOCONF_uintmax_t)sbuf->st_size);
     }
     else if (vstr_cmp_case_bod_cstr_eq(s2, 1, s2->len, "<!--#flastmod"))
     {

@@ -10,17 +10,21 @@
 # Source function library.
 . /etc/init.d/functions
 
-prog_name=jhttpd
-prog_exe=ex_httpd
-ex_dir=@libdir@/vstr-@VERSION@/examples
+# Needed to resolve sbindir ... *sigh*
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
 
+prog_name=jhttpd
+prog_exe="@sbindir@/${prog_name}"
+
+I_ARGS="--daemon --pid-file /var/run/${prog_name}.pid"
 JHTTPD_DIR=/var/www/html
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
 
 function start()
 {
         echo -n $"Starting $prog_name: "
-        daemon --check $prog_name $ex_dir/$prog_exe --daemon $JHTTPD_ARGS $JHTTPD_DIR
+        daemon --check $prog_name $prog_exe $I_ARGS $JHTTPD_ARGS $JHTTPD_DIR
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name

@@ -7,13 +7,13 @@ was needed for vstr-1.0.0
  Maybe During 1.0.x
  ------------------
 
-. evnt groups .. epoll?
+. test len=0 on _sc_*()
+
+. read/write entire file with read_file/write_file
 
 . glibc printf tests ... enable all three forms of fmt for coverage?
 
 . examples/ex_relay
-
-. examples/ex_httpd 1.1
 
 . examples/chatserv
 

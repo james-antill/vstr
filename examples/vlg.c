@@ -4,6 +4,12 @@
 #include <syslog.h>
 #include <err.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "date.h"
+
 #define VLG_COMPILE_INLINE 0
 #include "vlg.h"
 
@@ -27,13 +33,27 @@ static Vstr_conf *vlg__conf = NULL;
 static int vlg__done_syslog_init = FALSE;
 
 
-static void vlg__flush(Vlg *vlg, int syslg_type, int out_err)
+static void vlg__flush(Vlg *vlg, int type, int out_err)
 {
   Vstr_base *dlg = vlg->out_vstr;
 
   if (!vlg->daemon_mode)
   {
     int fd = out_err ? STDERR_FILENO : STDOUT_FILENO;
+    const char *tm = date_syslog(time(NULL));
+    
+    if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
+        !vstr_add_cstr_ptr(dlg, 0, "[") ||
+        !vstr_add_cstr_ptr(dlg, strlen(tm) + 1, "]: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "time");
+
+    if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "warn");
+    if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "warn");
+    if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
+
     while (dlg->len)
       if (!vstr_sc_write_fd(dlg, 1, dlg->len, fd, NULL) && (errno != EAGAIN))
         err(EXIT_FAILURE, "vlg__flush");
@@ -47,7 +67,7 @@ static void vlg__flush(Vlg *vlg, int syslg_type, int out_err)
     
     /* ignoring borken syslog()'s that overflow ... eventually implement
      * syslog protocol, until then use a real OS */
-    syslog(syslg_type, "%s", tmp);
+    syslog(type, "%s", tmp);
     vstr_del(dlg, 1, dlg->len);
   }
 }
@@ -192,7 +212,7 @@ void vlg_free(Vlg *vlg)
 void vlg_daemon(Vlg *vlg, const char *name)
 {
   if (!vlg__done_syslog_init)
-    openlog(name, LOG_PID, LOG_DAEMON);
+    openlog(name, LOG_PID | LOG_NDELAY, LOG_DAEMON);
   vlg__done_syslog_init = TRUE;
 
   vlg->daemon_mode = TRUE;
@@ -217,12 +237,7 @@ void vlg_verr(Vlg *vlg, int exit_code, const char *fmt, va_list ap)
     errno = ENOMEM, err(exit_code, "vlog_verr");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-  {
-    if (!vstr_add_cstr_ptr(dlg, 0, "ERR: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog_verr");
-      
     vlg__flush(vlg, LOG_ALERT, TRUE);
-  }
   
   _exit(exit_code);
 }
@@ -235,12 +250,7 @@ void vlg_vwarn(Vlg *vlg, const char *fmt, va_list ap)
     errno = ENOMEM, err(EXIT_FAILURE, "vlog_vwarn");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-  {
-    if (!vstr_add_cstr_ptr(dlg, 0, "WARN: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vwarn");
-      
     vlg__flush(vlg, LOG_WARNING, TRUE);
-  }
 }
 
 void vlg_vinfo(Vlg *vlg, const char *fmt, va_list ap)
@@ -262,12 +272,7 @@ static void vlg__vdbg(Vlg *vlg, const char *fmt, va_list ap)
     errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-  {
-    if (!vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
-      
     vlg__flush(vlg, LOG_DEBUG, FALSE);
-  }
 }
 
 void vlg_vdbg1(Vlg *vlg, const char *fmt, va_list ap)
@@ -296,7 +301,7 @@ void vlg_vdbg3(Vlg *vlg, const char *fmt, va_list ap)
 
 /* ---------- ... ---------- */
 
-extern void vlg_err(Vlg *vlg, int exit_code, const char *fmt, ... )
+void vlg_err(Vlg *vlg, int exit_code, const char *fmt, ... )
 {
   va_list ap;
 
@@ -307,7 +312,7 @@ extern void vlg_err(Vlg *vlg, int exit_code, const char *fmt, ... )
   ASSERT_NOT_REACHED();
 }
 
-extern void vlg_warn(Vlg *vlg, const char *fmt, ... )
+void vlg_warn(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;
 
@@ -316,7 +321,7 @@ extern void vlg_warn(Vlg *vlg, const char *fmt, ... )
   va_end(ap);
 }
 
-extern void vlg_info(Vlg *vlg, const char *fmt, ... )
+void vlg_info(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;
 
@@ -325,7 +330,7 @@ extern void vlg_info(Vlg *vlg, const char *fmt, ... )
   va_end(ap);
 }
 
-extern void vlg_dbg1(Vlg *vlg, const char *fmt, ... )
+void vlg_dbg1(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;
 
@@ -334,7 +339,7 @@ extern void vlg_dbg1(Vlg *vlg, const char *fmt, ... )
   va_end(ap);
 }
 
-extern void vlg_dbg2(Vlg *vlg, const char *fmt, ... )
+void vlg_dbg2(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;
 
@@ -343,11 +348,32 @@ extern void vlg_dbg2(Vlg *vlg, const char *fmt, ... )
   va_end(ap);
 }
 
-extern void vlg_dbg3(Vlg *vlg, const char *fmt, ... )
+void vlg_dbg3(Vlg *vlg, const char *fmt, ... )
 {
   va_list ap;
 
   va_start(ap, fmt);
   vlg_vdbg3(vlg, fmt, ap);
   va_end(ap);
+}
+
+void vlg_pid_file(Vlg *vlg, const char *pid_file)
+{
+  int fd = open(pid_file, O_WRONLY | O_CREAT | O_TRUNC);
+  Vstr_base *out = vlg->out_vstr;
+  
+  if (fd == -1)
+    vlg_err(vlg, EXIT_FAILURE, "open(%s): %m\n", pid_file);
+
+  if (out->len)
+    vlg_err(vlg, EXIT_FAILURE, "Data in vlg for pid_file\n");
+  
+  if (!vstr_add_fmt(out, out->len, "%lu", (unsigned long)getpid()))
+    vlg_err(vlg, EXIT_FAILURE, "vlg_pid_file: %m\n");
+
+  while (out->len)
+    if (!vstr_sc_write_fd(out, 1, out->len, fd, NULL) && (errno != EAGAIN))
+      vlg_err(vlg, EXIT_FAILURE, "write(%s): %m\n", pid_file);
+
+  close(fd);
 }

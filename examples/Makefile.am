@@ -105,18 +105,18 @@ ex_slowcat_DEPENDENCIES = ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_dns_SOURCES = ex_dns.c dns.c evnt.c vlg.c
-ex_dns_DEPENDENCIES = dns.h evnt.h vlg.h
+ex_dns_SOURCES = ex_dns.c dns.c evnt.c date.c vlg.c
+ex_dns_DEPENDENCIES = dns.h     evnt.h date.h vlg.h
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_httpd_SOURCES = ex_httpd.c evnt.c date.c vlg.c
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h date.h vlg.h
+ex_httpd_SOURCES = ex_httpd.c                      evnt.c date.c vlg.c
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h opt.h evnt.h date.h vlg.h
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 ex_echod_SOURCES = ex_echod.c evnt.c date.c vlg.c
-ex_echod_DEPENDENCIES = evnt.h date.h vlg.h
+ex_echod_DEPENDENCIES = opt.h evnt.h date.h vlg.h
 ex_echod_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_echod_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -269,6 +269,7 @@ html_DATA = \
   html/ex_highlight.c.html \
   html/ex_html_dir_list.c.html \
   html/ex_httpd.c.html \
+  html/ex_httpd_err_codes.h.html \
   html/ex_lookup_ip.c.html \
   html/ex_mon_cp.c.html \
   html/ex_netstr.c.html \
@@ -286,7 +287,13 @@ html_DATA = \
   html/ex_utils.h.html \
   html/ex_yes.c.html \
   html/ex_ypservd.c.html \
-  html/ex_zcat.c.html
+  html/ex_zcat.c.html \
+  html/date.c.html \
+  html/date.h.html \
+  html/vlg.c.html \
+  html/opt.h.html \
+  html/vlg.c.html \
+  html/vlg.h.html
 #  html/ex_tdns.c.html 
 
 initddir = $(sysconfdir)/init.d
