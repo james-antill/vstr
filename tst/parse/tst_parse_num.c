@@ -146,20 +146,20 @@ int tst(void)
                          VSTR_FLAG_PARSE_NUM_LOCAL | VSTR_FLAG_PARSE_NUM_SPACE,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_ONLY_S)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     num = vstr_parse_int(s1, 1, s1->len, 0 |
                          VSTR_FLAG_PARSE_NUM_LOCAL,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     num = vstr_parse_int(s1, 1, s1->len, 0 |
                          VSTR_FLAG_PARSE_NUM_LOCAL |
                          VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_ADD_CSTR_BUF(s1, s1->len, "0");
     num = vstr_parse_int(s1, 1, s1->len, 16 |
@@ -168,7 +168,7 @@ int tst(void)
                          VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_NONE)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_ADD_CSTR_BUF(s1, s1->len, "0");
     num = vstr_parse_int(s1, 1, s1->len, 16 |
@@ -177,7 +177,7 @@ int tst(void)
                          VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_ADD_CSTR_BUF(s1, s1->len, "1");
     num = vstr_parse_int(s1, 1, s1->len, 16 |
@@ -186,7 +186,7 @@ int tst(void)
                          VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_ADD_CSTR_BUF(s2, s2->len, "0x");
     num = vstr_parse_int(s2, 1, s2->len, 16 |
@@ -195,7 +195,7 @@ int tst(void)
                          VSTR_FLAG_PARSE_NUM_NO_BEG_PM,
                          &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_ADD_CSTR_BUF(s2, 0, "-");
     VSTR_ADD_CSTR_BUF(s2, s2->len, "4");
@@ -205,7 +205,7 @@ int tst(void)
                           VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO,
                           &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_SUB_CSTR_BUF(s2, 1, 1, "+");
     num = vstr_parse_uint(s2, 1, s2->len, 16 |
@@ -215,7 +215,7 @@ int tst(void)
                           VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO,
                           &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_OOB)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_SUB_CSTR_BUF(s2, 1, 1, "-");
     num = vstr_parse_uint(s2, 1, s2->len, 16 |
@@ -225,7 +225,7 @@ int tst(void)
                           VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO,
                           &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_OOB)
-      exit (ret); ++ret;
+      return (ret); ++ret;
 
     VSTR_SUB_CSTR_BUF(s2, 1, 1, "+");
     VSTR_ADD_CSTR_BUF(s2, s2->len, "fFFf");
@@ -237,14 +237,42 @@ int tst(void)
                             VSTR_FLAG_PARSE_NUM_OVERFLOW,
                             &num_len, &err);
     if (err != VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW)
-      exit (ret); ++ret;
+      return (ret); ++ret;
+
+    vstr_sub_cstr_buf(s1, 1, s1->len, "--1");
+    num = vstr_parse_ushort(s1, 1, s1->len, 10 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 0) || num)
+      return (ret); ++ret;
+    
+    vstr_sub_cstr_buf(s1, 1, s1->len, "++1");
+    num = vstr_parse_ushort(s1, 1, s1->len, 10 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 0) || num)
+      return (ret); ++ret;
+    
+    vstr_sub_cstr_buf(s1, 1, s1->len, "0xx");
+    num = vstr_parse_ushort(s1, 1, s1->len, 10 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 1) || num)
+      return (ret); ++ret;
+    
+    vstr_sub_cstr_buf(s1, 1, s1->len, "100x");
+    num = vstr_parse_ushort(s1, 1, s1->len, 10 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_OOB) || (num_len != 3) || (num != 100))
+      return (ret); ++ret;
+
+    vstr_sub_cstr_buf(s1, 1, s1->len, "100");
+    num = vstr_parse_ushort(s1, 1, s1->len, 37 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_NONE) || (num_len != 3) || (num != (36 * 36)))
+      return (ret); ++ret;
+    num = vstr_parse_ushort(s1, 1, s1->len, 1 | VSTR_FLAG_PARSE_NUM_DEF,
+                            &num_len, &err);
+    if ((err != VSTR_TYPE_PARSE_NUM_ERR_NONE) || (num_len != 3) || (num != 4))
+      return (ret); ++ret;
   }
 
   return (0);
 }
-
-/* tst_coverage
- *
- * VSTR_FLAG_PARSE_NUM_DEF
- *
- */

@@ -65,9 +65,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=7
-VSTR_INTERFACE_AGE=7
-VSTR_BINARY_AGE=7
+VSTR_MICRO_VERSION=8
+VSTR_INTERFACE_AGE=8
+VSTR_BINARY_AGE=8
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -1410,6 +1410,25 @@ case x$local_cv_has_attrib_visibility in
 xyes) AC_DEFINE(HAVE_ATTRIB_VISIBILITY) ;;
 esac
 
+AC_MSG_CHECKING(if warn_unused_result is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_warn_unused_ret,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(char *) __attribute__((warn_unused_result)) ;
+int func(char *abcd) { return (!abcd); }
+
+int main() {
+ return func("abcd");
+}],
+local_cv_has_attrib_warn_unused_ret=yes,
+local_cv_has_attrib_warn_unused_ret=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_warn_unused_ret)
+case x$local_cv_has_attrib_warn_unused_ret in
+xyes) AC_DEFINE(HAVE_ATTRIB_WARN_UNUSED_RET) ;;
+esac
 
 
 CFLAGS=$XCFLAGS

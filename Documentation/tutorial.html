@@ -2,64 +2,1071 @@
 <html>
   <head>
     <title>Tutorial</title>
+
+ <link rel="stylesheet" type="text/css" href="f_c.css">
+  <style>
+      A:hover { color: #20b2aa; }
+      P { text-indent: 2em; }
+
+      body { background: #FFF; }
+
+      tr.heading { background: #DDD; }
+      tr.heading:hover { background: #ccc; }
+
+      table.conv       { border-bottom: solid; margin-bottom: 2em; }
+
+      table.conv tr.r1 { background: #eee; }
+      table.conv tr.r2 { }
+      table.conv tr.r1:hover { background: #ccc; }
+      table.conv tr.r2:hover { background: #ccc; }
+  </style>
   </head>
 
   <body>
     <h1>Tutorial</h1>
-<pre>
-/* hello world with the Vstr string API */
 
-#define VSTR_COMPILE_INCLUDE 1
-#include &lt;vstr.h&gt;
-#include &lt;errno.h&gt;
+<p>
+ <a href="overview.html">Vstr</a> is a string library designed to work
+easily and efficiently in network applications. This means that it is
+<a href="design.html"> designed </a>
+to perform IO operations in a non-blocking fashion, and allow the programer to
+take data from various places and join them in an IO operation without having
+to do any copies.
+</p>
 
-int main(void)
+<p>
+ Often IO primitives are assumed to be blocking (Ie. all possible data will be
+done before IO operation completes). This does make "Hello World" type
+applications somewhat simpler, however networked applications have different
+requirements. However, don't be detered functions will be introduced for those
+simple applications to make them more readable.
+</p>
+
+<p>
+ Also note that <b>all error checking</b> is included in every example, it may
+make the examples somewhat easier to read if it wasn't included ... however
+including error checking is what the code <i>must</i> look like in a real
+application.
+</p>
+
+<ul>
+<li><a href="#hw_s">Hello World</a>: The Simplest Hello World example. </li>
+<li><a href="#hw_h">Hello World - Header</a>: Header for Simple IO functions in the hello world examples. </li>
+<li><a href="#hw_s2">Hello World - Revistited</a>: The Simple Hello World examples, now using the <a href="#hw_h">header</a>. </li>
+<li><a href="#hw_m">Hello World - With multiple points of data</a>: This still outputs Hello World, but is now a little more real by having multiple sources for the data. </li>
+<li><a href="#hw_x">Hello World - Complicated</a>: This still outputs Hello World, but uses copies of data; substitution of one set of data for another; and Vstr_references. </li>
+<li><a href="#ex_h">Example Header</a>: The original header from Hello World, with the extra simple functions needed for working with simple non-blocking IO both reading and writing. </li>
+<li><a href="#ex_cat">Unix cat</a>: A Simple Unix cat command example. </li>
+<li><a href="#ex_nl">Unix nl</a>: A Simple Unix nl command example. </li>
+<li><a href="overview.html#examples">Other examples</a>: Other examples. </li>
+<li><a href="#cstrvstr">Convertion table</a>: From std. C functions to Vstr functions. </li>
+<li><a href="#cppstrvstr">Convertion table</a>: From std. C++ std::string functions to Vstr functions. </li>
+</ul>
+
+<a id="hw_s">
+<h2> Simplest Hello World </h2>
+</a>
+<p> Here is about the most simple Vstr application, this is a single function
+that prints "Hello World" on a single line in a POSIX environment...</p>
+
+<pre class="c2html">
+<span class="comment">/* hello world - Self contained, using a single piece of data at
+ *               initialisation time (no data copying) */</span> 
+
+#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1
+#<span class="include">include</span> &lt;vstr.h&gt;
+#<span class="include">include</span> &lt;errno.h&gt;  <span class="comment">/* errno variable */</span>
+#<span class="include">include</span> &lt;err.h&gt;    <span class="comment">/* BSD/Linux header see: man errx */</span>
+#<span class="include">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
+
+<span class="int">int</span> main(void)
 {
-  Vstr_base *s1 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
 
-  if (!vstr_init())
-    exit (EXIT_FAILURE);
+  <span class="if">if</span> (!vstr_init()) <span class="comment">/* initialize the library */</span>
+    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
 
-  s1 = vstr_dup_cstr_buf(NULL, "Hello World\n");
-  if (!s1)
-    exit (EXIT_FAILURE);
+  <span class="comment">/* create a string with data */</span>
+  <span class="if">if</span> (!(s1 = vstr_dup_cstr_buf(NULL, <span class="str">"Hello World\n"</span>)))
+    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
 
-  while (s1->len) /* assumes POSIX */
-    if (!vstr_sc_write_fd(s1, 1, s1->len, 1, NULL))
+  <span class="comment">/* output the data to the user -- assumes POSIX */</span>
+  <span class="while">while</span> (s1-&gt;len)
+    <span class="if">if</span> (!vstr_sc_write_fd(s1, 1, s1-&gt;len, STDOUT_FILENO, NULL))
     {
-      if ((errno != EAGAIN) && (errno != EINTR))
-        exit (EXIT_FAILURE);
+      <span class="if">if</span> ((errno != EAGAIN) &amp;&amp; (errno != EINTR))
+        <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
     }
 
+  <span class="comment">/* cleanup allocated resources */</span>
   vstr_free_base(s1);
 
   vstr_exit();
 
-  exit (EXIT_SUCCESS);
+  <span class="exit">exit</span> (EXIT_SUCCESS);
 }
 </pre>
+<!-- C to html convertion of ex_hello_world.c -->
+<!--   done on Mon Sep 22 19:20:08 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<p>
+...however this example is somewhat too simplistic because, normally, a Vstr
+string contains multiple nodes of informtion that are treated internally as a
+single entity.
+</p>
+
+<a id="hw_h">
+<h2> Hello World Header </h2>
+</a>
+
+<p>
+ So first we'll clean up the above example to move all the header inclusion into one file and create some helper functions to simplify the actually "hello world" code. Here's a quick overview of the functions moved into the header file...
+</p>
+
+<ul>
+<li><b>io_put</b>: This function will move data from a Vstr string to a file
+descriptor (doesn't work well with non-blocking mode file descriptors).</li>
+<li><b>hw_init</b>: This initializes the library and creates a Vstr string objects.</li>
+<li><b>hw_exit</b>: This does cleanup on the resources aquired in hw_init.</li>
+</ul>
+
+
+<pre class="c2html">
+<span class="comment">/* *****************************************************************************
+   Beg of hello_world.h header file which will be used in the following examples
+   ****************************************************************************/</span>
+#<span class="ifndef">ifndef</span> HELLO_WORLD_H
+#<span class="define">define</span> HELLO_WORLD_H
+
+<span class="comment">/* ************************************************************************** */</span>
+<span class="comment">/* headers: Vstr (and all supporting system headers), plus extra ones we need */</span>
+<span class="comment">/* ************************************************************************** */</span>
+
+#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
+#<span class="include">include</span> &lt;vstr.h&gt;
+#<span class="include">include</span> &lt;errno.h&gt;
+#<span class="include">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
+#<span class="include">include</span> &lt;unistd.h&gt; <span class="comment">/* for STDOUT_FILENO */</span>
+
+<span class="comment">/* ********************************* */</span>
+<span class="comment">/* generic POSIX IO helper functions */</span>
+<span class="comment">/* ********************************* */</span>
+
+#<span class="define">define</span> IO_OK    0
+<span class="comment">/* the missing values will be explained later in the tutorial... */</span>
+#<span class="define">define</span> IO_NONE  3
+
+<span class="static">static</span> <span class="int">int</span> io_put(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
+{ <span class="comment">/* assumes POSIX */</span>
+  <span class="if">if</span> (!io_w-&gt;len)
+    <span class="return">return</span> (IO_NONE);
+  
+  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, NULL))
+  {
+    <span class="if">if</span> (errno != EINTR)
+      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+  }
+
+  <span class="return">return</span> (IO_OK);
+}
+
+<span class="comment">/* ************************ */</span>
+<span class="comment">/* generic helper functions */</span>
+<span class="comment">/* ************************ */</span>
+
+<span class="comment">/* hello world init function, init library and create a string */</span>
+<span class="static">static</span> <span class="vstrbase">Vstr_base</span> *hw_init(void)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
+
+  <span class="if">if</span> (!vstr_init())
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
+
+  <span class="if">if</span> (!(s1 = vstr_make_base(NULL))) <span class="comment">/* create an empty string */</span>
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
+
+  <span class="return">return</span> (s1);
+}
+
+<span class="comment">/* hello world exit function, cleanup what was allocated in hw_init() */</span>
+<span class="static">static</span> <span class="int">int</span> hw_exit(<span class="vstrbase">Vstr_base</span> *s1)
+{
+  vstr_free_base(s1);
+
+  vstr_exit();
+
+  <span class="return">return</span> (EXIT_SUCCESS);
+}
+
+#<span class="endif">endif</span>
+<span class="comment">/* *****************************************************************************
+   End of hello_world.h header file which will be used in the following examples
+   ****************************************************************************/</span>
+</pre>
+<!-- C to html convertion of ex_hello_world.h -->
+<!--   done on Mon Sep 22 19:21:08 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<a id="hw_s2">
+<h2> Simple Hello World, using the helper functions </h2>
+</a>
+
+<p>
+ Now using the above header file, we can re-write the initial example in a much more readable form...
+</p>
+
+<pre class="c2html">
+<span class="comment">/* hello world - Using a single piece of data (no data copying) */</span>
+
+#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+
+<span class="int">int</span> main(void)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = hw_init();
+
+  vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"Hello World\n"</span>);
+
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+
+  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+
+  <span class="exit">exit</span> (hw_exit(s1));
+}
+</pre>
+<!-- C to html convertion of ex_hello_world_s.c -->
+<!--   done on Mon Sep 22 19:21:34 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<a id="hw_m">
+<h2> Hello World, using multiple sources of data </h2>
+</a>
+
+<p>
+ We can now alter the above to still
+print "Hello World" on a line, but have the data come from multiple sources
+which is then stored internally in mutliple nodes (remember there is no copying
+of data still). However can treat this all as a single string from our point of
+view. Although this example is obviously contrived, this is much more
+representative of what a networked application looks like...
+</p>
+
+<pre class="c2html">
+<span class="comment">/* hello world - multiple sources of data (still no data copying) */</span>
+
+#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+
+<span class="int">int</span> main(void)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = hw_init();
+
+  vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"Hello"</span>);
+  vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">" "</span>);
+  vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"World\n"</span>);
+
+  <span class="comment">/* we are checking whether any of the above three functions failed here */</span>
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+
+  <span class="comment">/* loop until all data is output... */</span>
+  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+
+  <span class="exit">exit</span> (hw_exit(s1));
+}
+</pre>
+<!-- C to html convertion of ex_hello_world_m.c -->
+<!--   done on Mon Sep 22 19:21:50 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<a id="hw_x">
+<h2> Complicated Hello World </h2>
+</a>
+
+<p>
+ This is the final Hello World example, this is the first one that actually
+copies some of the data for the string. It also shows how you can add data at
+any point in the string, and substitute data within the string. Note that when
+giving the position to add data to the string you give the position before the
+position you wish the start of the data to be at, and when giving the
+position/length for a section (or sub-string) the position given is
+included within the section.
+</p><p>
+ For people familiar with C++ this works out to be the
+same way that C++ std::string encodes positions for adding data
+(Ie. insert()), but not for getting sections (C++ often explains it as having
+a 0 index'd string and data is added before the point given, Vstr does uses a
+1 poition for the first byte as that means that appending data is always done
+at the current length ... and a position of 0 can be used as invalid for
+searching etc.).
+</p>
+
+<table class="conv">
+<tr class="heading"><td>Description of operation</td><td>Position</td><td>Legnth</td></tr>
+<tr class="r1"><td>Prepend data to X</td><td>0 (Zero)</td><td>N/A</td></tr>
+<tr class="r2"><td>Append data to X</td><td>X-&gt;len (Length of Vstr string)</td><td>N/A</td></tr>
+<tr class="r1"><td>Last byte</td><td>X-&gt;len (Length of Vstr string)</td><td>1 (One)</td></tr>
+<tr class="r2"><td>First byte</td><td>1 (One)</td><td>1 (One)</td></tr>
+<tr class="r1"><td>Entire Vstr string</td><td>1 (One)</td><td>X-&gt;len (Length of Vstr string)</td></tr>
+<tr class="r2"><td>All of X, but the first and last bytes</td><td>2 (Two)</td><td>X-&gt;len - 2 (Length of Vstr string minus Two)</td></tr>
+</table>
+
+<pre class="c2html">
+<span class="comment">/* hello world - multiple pieces of data, includes substitution and
+ *               inserting data into the middle of a string */</span>
+
+#<span class="include">include</span> <span class="str">"ex_hello_world.h"</span> <span class="comment">/* helper functions */</span>
+
+<span class="int">int</span> main(void)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = hw_init();
+  Vstr_ref *ref = NULL;
+
+  vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"Hello"</span>);
+
+  vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'W'</span>, 5); <span class="comment">/* add "WWWWWW" */</span>
+
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+
+  <span class="comment">/* substitute an 'o' for a 'W' */</span>
+  <span class="if">if</span> (!vstr_sub_rep_chr(s1, strlen(<span class="str">"HelloWW"</span>), 1, <span class="chr">'o'</span>, 1))
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Substitute string data"</span>);
+
+  <span class="comment">/* substitute "WWW" for a "rld\n" -- */</span>
+  <span class="if">if</span> (!vstr_sub_cstr_buf(s1, strlen(<span class="str">"HelloWoW"</span>), strlen(<span class="str">"WWW"</span>), <span class="str">"rld\n"</span>))
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Substitute string data"</span>);
+
+  <span class="if">if</span> (!(ref = vstr_ref_make_ptr((<span class="char">char</span> *)<span class="str">"XYZ "</span>, vstr_ref_cb_free_ref)))
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create data reference"</span>);
+  <span class="comment">/* now ref-&gt;ptr is "XYZ " */</span>
+
+  <span class="comment">/* add space after "Hello", by skipping "XYZ" in reference */</span>
+  vstr_add_ref(s1, strlen(<span class="str">"Hello"</span>), ref, strlen(<span class="str">"XYZ"</span>), strlen(<span class="str">" "</span>));
+
+  vstr_ref_del(ref); <span class="comment">/* delete our reference to the Vstr_ref */</span>
+
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Add string data"</span>);
+
+  <span class="while">while</span> (io_put(s1, STDOUT_FILENO) != IO_NONE) {}
+
+  <span class="exit">exit</span> (hw_exit(s1));
+}
+</pre>
+<!-- C to html convertion of ex_hello_world_x.c -->
+<!--   done on Mon Sep 22 20:12:33 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<hr>
+
+<a id="ex_h">
+<h2> IO header file </h2>
+</a>
+
+<p>
+ This is a full header file needed to do simple non-blocking IO operations, it
+also puts into functions the common init and exit sections. This will be used
+by all of the following examples. The Simple GETOPT implementation isn't used
+for a while, so you can ignore that for now. A quick overview of the
+<b>changes</b> from the hello_world.h header file are...
+</p>
+
+<ul>
+<li><b>io_put</b>: This can now work with non-blocking file descriptors.</li>
+<li><b>ex_init</b>: (renamed hw_init) This now alters the Node size to be
+more efficient for IO,
+can create another Vstr string object, will create some data storage space for
+use by either Vstr string object and sets standard output to be
+non-blocking (allowing us to block on input and output at the same time).</li>
+<li><b>ex_exit</b>: (renamed hw_init) This can now cleanup two Vstr string
+objects.</li>
+</ul>
+
+<p>
+ And a quick review of the <b>additions</b>...
+</p>
+
+<ul>
+<li><b>io_block</b>: This is how applications block, now that all IO should be in non-blocking mode. This API only allows a single input and single output source to be blocked on, which is fine for the following examples (but networked applications will often wish to block on many sources).</li>
+<li><b>io_put_all</b>: This can thought of as a blocking io_put(), even when dealing with non-blocking IO.</li>
+<li><b>io_get</b>: This is a non-blocking read wrapper, in the same way that io_put is a non-blocking write wrapper.</li>
+<li><b>io_limit</b>: This is calls io_block if the return values from both io_get and io_put are IO_BLOCK or either one is in the IO_BLOCK state and must be dealt with now.</li>
+<li><b>io_fd_set_o_nonblock</b>: This is a simple function to set the O_NONBLOCK flag on a file descriptor.</li>
+<li><b>io_open</b>: This is a simple function to open a file, and set the O_NONBLOCK flag on it (note that although real files tend not to honour the O_NONBLOCK flag, file system objects might not be files).</li>
+<li><b>EX_UTILS_GETOPT_CSTR</b>: A simple getopt to get a C-style string.</li>
+<li><b>EX_UTILS_GETOPT_NUM</b>: A simple getopt to get a number.</li>
+</ul>
+
+<pre class="c2html">
+#<span class="ifndef">ifndef</span> EX_UTILS_H
+#<span class="define">define</span> EX_UTILS_H 1
+
+<span class="comment">/* ************************************************************************** */</span>
+<span class="comment">/* headers: Vstr (and all supporting system headers), plus extra ones we need */</span>
+<span class="comment">/* ************************************************************************** */</span>
+
+#<span class="define">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
+#<span class="include">include</span> &lt;vstr.h&gt;
+
+#<span class="include">include</span> &lt;errno.h&gt;
+
+#<span class="include">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
+
+#<span class="include">include</span> &lt;sys/poll.h&gt;
+
+#<span class="include">include</span> &lt;sys/types.h&gt; <span class="comment">/* stat + open + STDXXX_FILENO */</span>
+#<span class="include">include</span> &lt;sys/stat.h&gt;
+#<span class="include">include</span> &lt;unistd.h&gt;
+#<span class="include">include</span> &lt;fcntl.h&gt;
+
+#<span class="include">include</span> &lt;string.h&gt; <span class="comment">/* strncmp() etc. in GETOPT macros */</span>
+
+<span class="comment">/* **************************************************************** */</span>
+<span class="comment">/* defines: TRUE/FALSE and assert(), Note that GETOPT is used later */</span>
+<span class="comment">/* **************************************************************** */</span>
+
+#<span class="ifndef">ifndef</span> FALSE
+# <span class="define">define</span> FALSE 0
+#<span class="endif">endif</span>
+
+#<span class="ifndef">ifndef</span> TRUE
+# <span class="define">define</span> TRUE 1
+#<span class="endif">endif</span>
+
+<span class="comment">/* Simple getopt code... */</span>
+#<span class="define">define</span> EX_UTILS_GETOPT_NUM(name, var) \
+    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
+    { \
+      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
+        (var) = strtol(argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>), NULL, 0); \
+      <span class="else">else</span> \
+      { \
+        (var) = 0; \
+        \
+        ++count; \
+        <span class="if">if</span> (count &gt;= argc) \
+          break; \
+        \
+        (var) = strtol(argv[count], NULL, 0); \
+      } \
+    } \
+    <span class="else">else</span> <span class="if">if</span> (0) ASSERT(FALSE)
+
+#<span class="define">define</span> EX_UTILS_GETOPT_CSTR(name, var) \
+    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
+    { \
+      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
+        (var) = argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>); \
+      <span class="else">else</span> \
+      { \
+        (var) = NULL; \
+        \
+        ++count; \
+        <span class="if">if</span> (count &gt;= argc) \
+          break; \
+        \
+        (var) = argv[count]; \
+      } \
+    } \
+    <span class="else">else</span> <span class="if">if</span> (0) ASSERT(FALSE)
+
+
+
+#<span class="define">define</span> assert(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(EXIT_FAILURE, <span class="str">"Assert=\""</span> #x <span class="str">"\""</span>); } <span class="while">while</span> (FALSE)
+#<span class="define">define</span> ASSERT(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(EXIT_FAILURE, <span class="str">"Assert=\""</span> #x <span class="str">"\""</span>); } <span class="while">while</span> (FALSE)
+
+
+
+<span class="comment">/* ********************************* */</span>
+<span class="comment">/* generic POSIX IO helper functions */</span>
+<span class="comment">/* ********************************* */</span>
+
+<span class="comment">/* limits on amount of data we keep in core -- can be overridden */</span>
+<span class="comment">/* Note that EX_UTILS_NO_USE_INPUT should be defined if Input IO isn't needed */</span>
+#<span class="ifndef">ifndef</span> EX_MAX_R_DATA_INCORE
+#<span class="define">define</span> EX_MAX_R_DATA_INCORE (8 * 1024)
+#<span class="endif">endif</span>
+#<span class="ifndef">ifndef</span> EX_MAX_W_DATA_INCORE
+#<span class="define">define</span> EX_MAX_W_DATA_INCORE (8 * 1024)
+#<span class="endif">endif</span>
+
+#<span class="define">define</span> IO_OK    0
+#<span class="define">define</span> IO_BLOCK 1
+#<span class="define">define</span> IO_EOF   2
+#<span class="define">define</span> IO_NONE  3
+
+<span class="comment">/* block waiting for IO read, write or both... */</span>
+<span class="static">static</span> <span class="void">void</span> io_block(<span class="int">int</span> io_r_fd, <span class="int">int</span> io_w_fd)
+{
+  <span class="pollfd">struct pollfd</span> ios_beg[2];
+  <span class="pollfd">struct pollfd</span> *ios = ios_beg;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> num = 0;
+  
+  ios[0].revents = ios[1].revents = 0;
+  
+  <span class="if">if</span> (io_r_fd == io_w_fd)
+  { <span class="comment">/* block on both read and write, same fds */</span>
+    num = 1;
+    ios[0].events = POLLIN | POLLOUT;
+    ios[0].fd     = io_w_fd;
+  }
+  else
+  { <span class="comment">/* block on read or write or both */</span>
+    <span class="if">if</span> (io_r_fd != -1)
+    {
+      ios-&gt;events = POLLIN;
+      ios-&gt;fd     = io_r_fd;
+      ++num; ++ios;
+    }
+    <span class="if">if</span> (io_w_fd != -1)
+    {
+      ios-&gt;events = POLLOUT;
+      ios-&gt;fd     = io_w_fd;
+      ++num; ++ios;
+    }
+  }
+  
+  <span class="while">while</span> (poll(ios_beg, num, -1) == -1) <span class="comment">/* can't timeout */</span>
+  {
+    <span class="if">if</span> (errno != EINTR)
+      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"poll"</span>);
+  }
+}
+
+<span class="comment">/* Try and move some data from Vstr string to fd */</span>
+<span class="static">static</span> <span class="int">int</span> io_put(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
+{
+  <span class="if">if</span> (!io_w-&gt;len)
+    <span class="return">return</span> (IO_NONE);
+
+  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, NULL))
+  {
+    <span class="if">if</span> (errno == EAGAIN)
+      <span class="return">return</span> (IO_BLOCK);
+    
+    <span class="if">if</span> (errno != EINTR)
+      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"write"</span>);
+  }
+
+  <span class="return">return</span> (IO_OK);
+}
+
+<span class="comment">/* loop outputting data, blocking when needed */</span>
+<span class="static">static</span> <span class="void">void</span> io_put_all(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
+{
+  <span class="int">int</span> state = IO_NONE;
+
+  <span class="while">while</span> ((state = io_put(io_w, fd)) != IO_NONE)
+  {
+    <span class="if">if</span> (state == IO_BLOCK)
+      io_block(-1, fd);
+  }
+}
+    
+#<span class="ifndef">ifndef</span> EX_UTILS_NO_USE_INPUT
+<span class="comment">/* Try and move some data from fd to Vstr string */</span>
+<span class="static">static</span> <span class="int">int</span> io_get(<span class="vstrbase">Vstr_base</span> *io_r, <span class="int">int</span> fd)
+{
+  <span class="if">if</span> (io_r-&gt;len &lt; EX_MAX_R_DATA_INCORE)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = 0;
+
+    vstr_sc_read_iov_fd(io_r, io_r-&gt;len, fd, 8, 16, &amp;ern);
+    
+    <span class="if">if</span> (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
+      <span class="return">return</span> (IO_EOF);
+    <span class="else">else</span> <span class="if">if</span> ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &amp;&amp; (errno == EAGAIN))
+      <span class="return">return</span> (IO_BLOCK);
+    <span class="else">else</span> <span class="if">if</span> ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &amp;&amp; (errno == EINTR))
+      <span class="return">return</span> (IO_OK); <span class="comment">/* ignore this */</span>
+    <span class="else">else</span> <span class="if">if</span> (ern)
+      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"read"</span>);
+  }
+
+  <span class="return">return</span> (IO_OK);
+}
+
+<span class="comment">/* block read or writting, depending on limits */</span>
+<span class="static">static</span> <span class="void">void</span> io_limit(<span class="int">int</span> io_r_state, <span class="int">int</span> io_r_fd,
+                     <span class="int">int</span> io_w_state, <span class="int">int</span> io_w_fd, <span class="vstrbase">Vstr_base</span> *s_w)
+{
+  <span class="if">if</span> (io_w_state == IO_BLOCK) <span class="comment">/* allow 16k to build up */</span>
+  {
+    <span class="if">if</span> (io_r_state == IO_BLOCK) <span class="comment">/* block to either get or put some data */</span>
+      io_block(io_r_fd, io_w_fd);
+    <span class="else">else</span> <span class="if">if</span> (s_w-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      io_block(-1, io_w_fd); <span class="comment">/* block to put more data */</span>
+  }
+  <span class="else">else</span> <span class="if">if</span> ((io_w_state == IO_NONE) &amp;&amp; (io_r_state == IO_BLOCK))
+    io_block(io_r_fd, -1); <span class="comment">/* block to get more data */</span>
+}
+#<span class="endif">endif</span>
+
+<span class="comment">/* generic POSIX IO functions that _don't_ call Vstr functions */</span>
+
+<span class="static">static</span> <span class="int">int</span> io_fd_set_o_nonblock(<span class="int">int</span> fd)
+{
+  <span class="int">int</span> flags = 0;
+
+  <span class="comment">/* see if the NONBLOCK flag is set... */</span>
+  <span class="if">if</span> ((flags = fcntl(fd, F_GETFL)) == -1)
+    <span class="return">return</span> (FALSE);
+
+  <span class="comment">/* if it isn't try and add it to the current flags */</span>
+  <span class="if">if</span> (!(flags &amp; O_NONBLOCK) &amp;&amp;
+      (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
+    <span class="return">return</span> (FALSE);
+
+  <span class="return">return</span> (TRUE);
+}
+
+#<span class="ifndef">ifndef</span> VSTR_AUTOCONF_HAVE_OPEN64
+# <span class="define">define</span> open64 open
+#<span class="endif">endif</span>
+<span class="static">static</span> <span class="int">int</span> io_open(<span class="const">const</span> <span class="char">char</span> *filename)
+{
+  <span class="int">int</span> fd = open64(filename, O_RDONLY | O_NOCTTY);
+
+  <span class="if">if</span> (fd == -1)
+    <span class="err">err</span>(EXIT_FAILURE, <span class="str">"open(%s)"</span>, filename);
+
+  <span class="comment">/* When doing IO, it should always be non-blocking */</span>
+  io_fd_set_o_nonblock(fd);
+
+  <span class="return">return</span> (fd);
+}
+
+<span class="comment">/* ********************************* */</span>
+<span class="comment">/* generic helper functions */</span>
+<span class="comment">/* ********************************* */</span>
+
+<span class="comment">/* Example init function */</span>
+<span class="static">static</span> <span class="vstrbase">Vstr_base</span> *ex_init(<span class="vstrbase">Vstr_base</span> **s2)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = NULL;
+  struct stat stat_buf;
+
+  <span class="if">if</span> (!vstr_init()) <span class="comment">/* init the library */</span>
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"init"</span>);
+
+  
+  <span class="comment">/* alter the node buffer size to be whatever the stdout block size is */</span>
+  <span class="if">if</span> (fstat(1, &amp;stat_buf) == -1)
+    <span class="warn">warn</span>(<span class="str">"fstat(STDOUT)"</span>);
+  else
+  {
+    <span class="if">if</span> (!stat_buf.st_blksize) <span class="comment">/* this is allowed to be Zero */</span>
+      stat_buf.st_blksize = 4096;
+
+    <span class="if">if</span> (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
+                        stat_buf.st_blksize / 8))
+      <span class="warn">warnx</span>(<span class="str">"Couldn't alter node size to match block size"</span>);
+  }
+
+  <span class="comment">/* create strings... */</span>  
+  <span class="if">if</span> (!(s1 = vstr_make_base(NULL)) ||
+      (s2 &amp;&amp; !(*s2 = vstr_make_base(NULL))))
+    errno = ENOMEM, <span class="err">err</span>(EXIT_FAILURE, <span class="str">"Create string"</span>);
+
+  <span class="comment">/* create some data storage for _both_ of the above strings */</span>
+  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
+  
+  <span class="comment">/* Try and make stdout non-blocking, if it is a file this won't do anything */</span>
+  io_fd_set_o_nonblock(STDOUT_FILENO);
+
+  <span class="return">return</span> (s1);
+}
+
+<span class="comment">/* Example exit function */</span>
+<span class="static">static</span> <span class="int">int</span> ex_exit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2)
+{
+  <span class="comment">/* These next calls are only really needed for debugging,
+   * in that when they are done any memory leaks can be seen in debugging mode.
+   */</span>
+
+  <span class="comment">/* As with the system free() both of these are ok if passed NULL */</span>
+  
+  <span class="comment">/* free s1, our String object */</span>
+  vstr_free_base(s1);
+  <span class="comment">/* free s2, our String object */</span>
+  vstr_free_base(s2);
+
+  <span class="comment">/* "exit" Vstr, this free's all internal data and no library calls apart from
+   * vstr_init() should be called after this.
+   */</span>
+  vstr_exit();
+
+  <span class="return">return</span> (EXIT_SUCCESS);
+}
+
+#<span class="endif">endif</span>
+</pre>
+<!-- C to html convertion of ex_utils.h -->
+<!--   done on Mon Sep 22 19:37:12 2003
+ -->
+<!--   done by ex_highlight -->
+
+<hr>
+
+<a id="ex_cat">
+<h2> Unix cat command </h2>
+</a>
+
+<p>
+ This is the unix cat command, implemented with the help of the functions in
+the above ex_utils.h header file. This uses the same Vstr string for both
+input and output and uses non-blocking IO, both of which are done for
+efficiency.
+</p><p>
+If you have seen something like the
+<a href="http://people.redhat.com/johnsonm/lad/src/cat.c.html">"simple" cat in LAD</a> this version <b>looks much bigger</b>.
+ However one of the main reasons for this is that the
+<b>LAD version has many bugs</b>.
+ The main problem is the lack of checking on
+the IO calls, this is most easily demonstrated by running it
+like so...
+</p>
 
 <pre>
-  s1 = vstr_dup_cstr_buf(NULL, "Hello");
-  if (!s1)
-    exit (EXIT_FAILURE);
-
-  vstr_add_rep_chr(s1, s1->len, 'W', 1);
-  vstr_add_rep_chr(s1, s1->len, 'o', 1);
-
-  vstr_add_buf(s1, s1->len, "rl", 1);
-
-  vstr_add_cstr_buf(s1, s1->len, "d");
-
-  VSTR_ADD_CSTR_BUF(s1, strlen("Hello"), " ");
+perl -e 'use Fcntl; fcntl(STDIN, F_SETFL, O_NONBLOCK); exec(@ARGV);' ./cat
 </pre>
 
+<p>
+...will cause the LAD version to exit immediatley due to an EAGAIN being
+returned from read. This problem also affects the LAD version being used in a
+blocking pipe due to the fact that write() isn't required to write() all
+it's data.
+</p><p>
+The LAD version also doesn't open() any files, which is significant
+functionality. So after fixing those bugs we
+<a href="basic_cat.c.html">get something</a> that
+is much closer to 
+the Vstr version <b>and it still suffers from performance problems</b>
+due to the need to
+block on input and output separately. It is possible to create a version using read, write and poll that would perform the same as the Vstr version ...
+however even the simplest method would have to implement it's own ring buffer
+which is very prone to error and would almost certainly make it bigger than
+ex_cat.c and ex_utils.h combined.
+</p>
+
+<pre class="c2html">
+<span class="comment">/* This is a _simple_ cat program, no command line options. And no use of mmap.
+ * Reads from stdin if no args are given.
+ *
+ * This file is more commented than normal code, so as to make it easy to follow
+ * while knowing almost nothing about Vstr or Linux IO programming.
+ */</span>
+#<span class="include">include</span> <span class="str">"ex_utils.h"</span>
+
+<span class="comment">/*  Keep reading on the file descriptor until there is no more data (ERR_EOF)
+ * abort if there is an error reading or writing */</span>
+<span class="static">static</span> <span class="void">void</span> ex_cat_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="int">int</span> fd)
+{
+  <span class="while">while</span> (TRUE)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s1, fd);
+
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      break;
+    
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);    
+  }
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{ <span class="comment">/* This is "cat", without any command line options */</span>
+  
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(NULL); <span class="comment">/* init the library etc. */</span>
+  <span class="int">int</span> count = 1; <span class="comment">/* skip the program name */</span>
+
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(STDIN_FILENO);
+    ex_cat_read_fd_write_stdout(s1, STDIN_FILENO);
+  }
+
+  
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="int">int</span> fd = io_open(argv[count]);
+
+    ex_cat_read_fd_write_stdout(s1, fd);
+
+    <span class="if">if</span> (close(fd) == -1)
+      <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+
+    ++count;
+  }
+
+  <span class="comment">/* output all remaining data */</span>
+  io_put_all(s1, STDOUT_FILENO);
+
+  <span class="exit">exit</span> (ex_exit(s1, NULL));
+}
+</pre>
+<!-- C to html convertion of ex_cat.c -->
+<!--   done on Mon Sep 22 19:23:21 2003
+ -->
+<!--   done by ex_highlight -->
+
+<hr>
+
+<a id="ex_nl">
+<h2> Unix nl command </h2>
+</a>
+
+<p>
+ This si somewhat like the "nl" unix command, this is implemented in much the
+same way as the cat command. However the data has to have something added to
+the start of each line before it can be output, so we now have two string
+objects: One for iunput and one for output. <b>Note</b> that as the data is
+"moved" from the input to the output, it isn't copied instead a reference is
+created and shared between the two strings.
+</p>
+
+<pre class="c2html">
+<span class="comment">/* Unix nl command -- no arguments */</span>
+#<span class="include">include</span> <span class="str">"ex_utils.h"</span>
+
+<span class="static">static</span> <span class="int">int</span> ex_nl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> count = 0;
+  size_t pos = 0;
+
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (FALSE);
+
+  <span class="if">if</span> (!s2-&gt;len)
+    <span class="return">return</span> (TRUE);
+
+  <span class="while">while</span> ((pos = vstr_srch_chr_fwd(s2, 1, s2-&gt;len, <span class="chr">'\n'</span>)))
+  {
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"% 6d\t"</span>, ++count);
+
+    <span class="comment">/* The flag turns _BUF nodes into sharable _REF nodes */</span>
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, pos, VSTR_TYPE_ADD_BUF_REF);
+    vstr_del(s2, 1, pos);
+    
+    <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      <span class="return">return</span> (TRUE);
+  }
+
+  <span class="if">if</span> (s2-&gt;len &amp;&amp; last)
+  {
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"% 6d\t"</span>, ++count);
+    <span class="if">if</span> (s2-&gt;len)
+      vstr_mov(s1, s1-&gt;len, s2, 1, s2-&gt;len);
+    vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
+  }
+
+  <span class="return">return</span> (TRUE);
+}
+#<span class="endif">endif</span>
+
+<span class="comment">/* files are merged */</span>
+<span class="static">static</span> <span class="void">void</span> ex_nl_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> fd)
+{
+  <span class="while">while</span> (TRUE)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      break;
+
+    ex_nl_process(s1, s2, FALSE);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_nl_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  {
+    <span class="int">int</span> proc_data = ex_nl_process(s1, s2, !lim);
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
+      io_block(-1, STDOUT_FILENO);
+  }
+}
+
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s2 = NULL;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2);
+  <span class="int">int</span> count = 1;
+
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(STDIN_FILENO);
+    ex_nl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
+  }
+
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = 0;
+
+    <span class="if">if</span> (s2-&gt;len &lt;= EX_MAX_R_DATA_INCORE)
+      vstr_sc_mmap_file(s2, s2-&gt;len, argv[count], 0, 0, &amp;ern);
+
+    <span class="if">if</span> ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    {
+      <span class="int">int</span> fd = io_open(argv[count]);
+
+      ex_nl_read_fd_write_stdout(s1, s2, fd);
+
+      <span class="if">if</span> (close(fd) == -1)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+    }
+    <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      <span class="err">err</span>(EXIT_FAILURE, <span class="str">"add"</span>);
+    else
+      ex_nl_process_limit(s1, s2, EX_MAX_R_DATA_INCORE);
+    
+    ++count;
+  }
+
+  ex_nl_process_limit(s1, s2, 0);
+
+  io_put_all(s1, STDOUT_FILENO);
+
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_nl.c -->
+<!--   done on Mon Sep 22 19:59:14 2003
+ -->
+<!--   done by ex_highlight -->
+
+
+<hr>
+
+<a id="cstrvstr">
+<h2> Convertion table for C functions to Vstr functions </h2>
+</a>
+
+<p>
+ This is a mapping from std. C functions operating on C-style strings to
+Vstr string functions...
+</p>
+
+<table class="conv">
+<tr class="heading"><td>Common C string functions</td><td>Vstr string functions</td></tr>
+<tr class="r1"><td>memcpy</td><td>vstr_add_buf</td></tr>
+<tr class="r2"><td>memmove</td><td>vstr_add_vstr</td></tr>
+<tr class="r1"><td>memmove</td><td>vstr_sub_vstr</td></tr>
+<tr class="r2"><td>memmove</td><td>vstr_mov</td></tr>
+<tr class="r1"><td>strcpy</td><td>vstr_add_cstr_buf</td></tr>
+<tr class="r2"><td>strncpy</td><td>vstr_add_cstr_buf</td></tr>
+<tr class="r1"><td>strcat</td><td>vstr_add_cstr_buf</td></tr>
+<tr class="r2"><td>strncat</td><td>vstr_add_cstr_buf</td></tr>
+<tr class="r1"><td>memcmp</td><td>vstr_cmp_buf</td></tr>
+<tr class="r2"><td>strcmp</td><td>vstr_cmp_cstr_buf</td></tr>
+<tr class="r1"><td>strcmp</td><td>vstr_cmp</td></tr>
+<tr class="r2"><td>strncmp</td><td>vstr_cmp_buf</td></tr>
+<tr class="r1"><td>strncmp</td><td>vstr_cmp</td></tr>
+<tr class="r2"><td>strcasecmp</td><td>vstr_cmp_case_cstr_buf</td></tr>
+<tr class="r1"><td>strcasecmp</td><td>vstr_cmp_case</td></tr>
+<tr class="r2"><td>strncasecmp</td><td>vstr_cmp_case_buf</td></tr>
+<tr class="r1"><td>strncasecmp</td><td>vstr_cmp_case</td></tr>
+<tr class="r2"><td>strncmp</td><td>vstr_cmp_cstr_buf</td></tr>
+<tr class="r1"><td>strcoll</td><td>N/A</td></tr>
+<tr class="r2"><td>strxfrm</td><td>N/A</td></tr>
+<tr class="r1"><td>memchr</td><td>vstr_srch_chr_fwd</td></tr>
+<tr class="r2"><td>strchr</td><td>vstr_srch_chr_fwd</td></tr>
+<tr class="r1"><td>strnchr</td><td>vstr_srch_chr_fwd</td></tr>
+<tr class="r2"><td>strrchr</td><td>vstr_srch_chr_rev</td></tr>
+<tr class="r1"><td>strtok</td><td>vstr_split_chrs</td></tr>
+<tr class="r2"><td>memset</td><td>vstr_add_rep_chr</td></tr>
+<tr class="r1"><td>memmem</td><td>vstr_srch_buf_fwd</td></tr>
+<tr class="r2"><td>strstr</td><td>vstr_srch_cstr_buf_fwd</td></tr>
+<tr class="r1"><td>strspn</td><td>vstr_spn_chrs_buf_fwd</td></tr>
+<tr class="r2"><td>strcspn</td><td>vstr_cspn_chrs_buf_fwd</td></tr>
+<tr class="r1"><td>sprintf</td><td>vstr_add_sysfmt</td></tr>
+<tr class="r2"><td>strlen</td><td>-&gt;len (member variable, also always passed to functions)</td></tr>
+</table>
+
+<a id="cppstrvstr">
+<h2> Convertion table for C++ std::string functions to Vstr functions </h2>
+</a>
+
+<p>
+ This is a mapping from C++ std::string functions to Vstr string functions...
+</p>
+
+<table class="conv">
+<tr class="heading"><td>Common C++ string functions</td><td>Vstr string functions</td></tr>
+<tr class="r1"><td>append</td><td>vstr_add_buf</td></tr>
+<tr class="r2"><td>append</td><td>vstr_add_rep_chr</td></tr>
+<tr class="r1"><td>append</td><td>vstr_add_vstr</td></tr>
+<tr class="r2"><td>insert</td><td>vstr_add_buf</td></tr>
+<tr class="r1"><td>insert</td><td>vstr_add_rep_chr</td></tr>
+<tr class="r2"><td>insert</td><td>vstr_add_vstr</td></tr>
+<tr class="r1"><td>replace</td><td>vstr_sub_buf</td></tr>
+<tr class="r2"><td>replace</td><td>vstr_sub_rep_chr</td></tr>
+<tr class="r1"><td>replace</td><td>vstr_sub_vstr</td></tr>
+<tr class="r2"><td>substr</td><td>Fundamental part of Vstr</td></tr>
+<tr class="r1"><td>find</td><td>vstr_srch_cstr_buf_fwd</td></tr>
+<tr class="r2"><td>find</td><td>vstr_srch_buf_fwd</td></tr>
+<tr class="r1"><td>find</td><td>vstr_srch_chr_fwd</td></tr>
+<tr class="r2"><td>find</td><td>vstr_srch_vstr_fwd</td></tr>
+<tr class="r1"><td>find_first_of</td><td>vstr_srch_cstr_chrs_fwd</td></tr>
+<tr class="r2"><td>find_last_of</td><td>vstr_srch_cstr_chrs_rev</td></tr>
+<tr class="r1"><td>find_first_not_of</td><td>vstr_csrch_cstr_chrs_fwd</td></tr>
+<tr class="r2"><td>find_last_not_of</td><td>vstr_csrch_cstr_chrs_rev</td></tr>
+<tr class="r1"><td>rfind</td><td>vstr_srch_cstr_buf_rev</td></tr>
+<tr class="r2"><td>rfind</td><td>vstr_srch_buf_rev</td></tr>
+<tr class="r1"><td>rfind</td><td>vstr_srch_chr_rev</td></tr>
+<tr class="r2"><td>rfind</td><td>vstr_srch_vstr_rev</td></tr>
+<tr class="r1"><td>erase</td><td>vstr_del</td></tr>
+<tr class="r2"><td>resize</td><td>vstr_sc_reduce</td></tr>
+<tr class="r1"><td>compare</td><td>vstr_cmp</td></tr>
+<tr class="r2"><td>compare</td><td>vstr_cmp_cstr</td></tr>
+<tr class="r1"><td>swap</td><td>vstr_mov</td></tr>
+<tr class="r2"><td>==</td><td>vstr_cmp_eq</td></tr>
+<tr class="r1"><td>==</td><td>vstr_cmp_cstr_eq</td></tr>
+<tr class="r2"><td>c_str</td><td>vstr_export_cstr_ptr</td></tr>
+<tr class="r1"><td>data</td><td>vstr_export_cstr_ref</td></tr>
+<tr class="r2"><td>reserve</td><td>vstr_make_spare_nodes<!-- vstr_cntl_base(impl, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, X, Y) --></td></tr>
+<tr class="r1"><td>assign</td><td>vstr_sub_vstr</td></tr>
+<tr class="r2"><td>copy</td><td>vstr_export_cstr_buf</td></tr>
+<tr class="r1"><td>copy</td><td>vstr_export_cstr_ptr</td></tr>
+<tr class="r2"><td>copy</td><td>vstr_export_cstr_malloc</td></tr>
+<tr class="r1"><td>copy</td><td>vstr_dup_vstr</td></tr>
+<tr class="r2"><td>length</td><td>-&gt;len (member variable, also always passed to functions)</td></tr>
+</table>
 
     <hr>
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sat Aug  3 15:35:00 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Fri Aug  8 11:29:06 EDT 2003
+Last modified: Mon Sep 22 20:55:20 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

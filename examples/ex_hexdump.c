@@ -8,21 +8,6 @@
  * while knowing almost nothing about Vstr or Linux IO programming.
  */
 
-#define _GNU_SOURCE 1 /* make Linux behave like normal systems,
-                       * and export extentions */
-
-#define VSTR_COMPILE_INCLUDE 1 /* make Vstr include it's own system headers */
-#include <vstr.h>
-
-#include <string.h>
-#include <errno.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-
-/* some utils shared among the more complex examples ... mainly for
- * die(), the read/write, fcntl() for NONBLOCK and poll() calls which are the
- * same in all the examples.
- */
 #include "ex_utils.h"
 
 /* hexdump in "readable" format ... note this is a bit more fleshed out than
@@ -47,10 +32,6 @@ util-linux-2.11r-10
  *  It also probably acts differently in that seperate files aren't merged
  * into one output line
  */
-
-/* how much in core memory to use for read and write operations */
-#define MAX_R_DATA_INCORE (1024 * 1024)
-#define MAX_W_DATA_INCORE (1024 * 8)
 
 #define PRNT_NONE 0
 #define PRNT_SPAC 1
@@ -121,8 +102,8 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     case PRNT_NONE:                    break;
   }
 
-  /* note that we don't want to create more data, if we are over our limit */
-  if (s1->len > MAX_W_DATA_INCORE)
+  /* we don't want to create more data, if we are over our limit */
+  if (s1->len > EX_MAX_W_DATA_INCORE)
     return (FALSE);
 
   /* while we have a hexdump line ... */
@@ -158,7 +139,7 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 
     /* note that we don't want to create data indefinitely, so stop
      * according to in core configuration */
-    if (s1->len > MAX_W_DATA_INCORE)
+    if (s1->len > EX_MAX_W_DATA_INCORE)
       return (TRUE);
   }
 
@@ -203,67 +184,55 @@ static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 
   /* if any of the above memory mgmt failed, error */
   if (s1->conf->malloc_bad)
-    errno = ENOMEM, DIE("adding data:");
+    errno = ENOMEM, err(EXIT_FAILURE, "adding data:");
 
   return (FALSE);
 }
 
+static void ex_hexdump_process_limit(Vstr_base *s1, Vstr_base *s2,
+                                     unsigned int lim)
+{
+  while (s2->len > lim)
+  { /* Finish processing read data (try writing if we need memory) */
+    int proc_data = ex_hexdump_process(s1, s2, !lim);
+
+    if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
+      io_block(-1, STDOUT_FILENO);
+  }
+}
+
+/* we process an entire file at a time... */
 static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
                                             int fd)
 {
-  unsigned int err = 0;
-  int keep_going = TRUE;
-
   /* read/process/write loop */
-  while (keep_going)
+  while (TRUE)
   {
-    int proc_data = FALSE;
+    int io_w_state = IO_OK;
+    int io_r_state = io_get(s2, fd);
+    
+    if (io_r_state == IO_EOF)
+      break;
+    
+    ex_hexdump_process(s1, s2, FALSE);
 
-    EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
+    io_w_state = io_put(s1, 1);
 
-    proc_data = ex_hexdump_process(s1, s2, !keep_going);
-
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-
-    EX_UTILS_LIMBLOCK_WAIT(s1, s2, fd, 16, keep_going, proc_data);
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
   }
+
+  ex_hexdump_process_limit(s1, s2, 0);
 }
 
 
 int main(int argc, char *argv[])
 { /* This is "hexdump", as it should be by default */
-  Vstr_base *s1 = NULL;
   Vstr_base *s2 = NULL;
+  Vstr_base *s1 = ex_init(&s2); /* init the library, and create two strings */
   int count = 1; /* skip the program name */
-  struct stat stat_buf;
   unsigned int use_mmap = FALSE;
 
-  /* init the Vstr string library, note that if this fails we can't call DIE
-   * or the program will crash */
-
-  if (!vstr_init())
-    exit (EXIT_FAILURE);
-
-  /*  Change the default Vstr configuration, so we can have a node buffer size
-   * that is whatever the stdout block size is */
-  if (fstat(1, &stat_buf) == -1)
-    stat_buf.st_blksize = 4 * 1024;
-  if (!stat_buf.st_blksize)
-    stat_buf.st_blksize = 4 * 1024; /* defualt 4k -- proc etc. */
-
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
-  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
-
-  /* create two Vstr strings for doing the IO with */
-  if (FALSE ||
-      !(s1 = vstr_make_base(NULL)) ||
-      !(s2 = vstr_make_base(NULL)) ||
-      FALSE)
-    errno = ENOMEM, DIE("vstr_make_base:");
-
-  /* set output to non-blocking mode */
-  ex_utils_set_o_nonblock(STDOUT_FILENO);
-
+  /* parse command line arguments... */
   while (count < argc)
   { /* quick hack getopt_long */
     if (!strcmp("--", argv[count]))
@@ -313,10 +282,10 @@ Report bugs to James Antill <james@and.org>.\n\
     ++count;
   }
 
-  if (count >= argc)  /* if no arguments -- use stdin */
+  /* if no arguments are given just do stdin to stdout */
+  if (count >= argc)
   {
-    /* set input to non-blocking mode */
-    ex_utils_set_o_nonblock(STDIN_FILENO);
+    io_fd_set_o_nonblock(STDIN_FILENO);
     ex_hexdump_read_fd_write_stdout(s1, s2, STDIN_FILENO);
   }
 
@@ -324,66 +293,39 @@ Report bugs to James Antill <james@and.org>.\n\
    * and do the read/write loop */
   while (count < argc)
   {
-    unsigned int err = 0;
+    unsigned int ern = 0;
 
     /* try to mmap the file, as that is faster ... */
-    if (use_mmap && (s2->len < MAX_R_DATA_INCORE))
-      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
+    if (use_mmap)
+      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
     if (!use_mmap ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
-    {
-      int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
-
-      if (fd == -1)
-        WARN("open(%s):", argv[count]);
-
-      /* if mmap didn't work ... set file to nonblocking mode and do a
-       * read/alter/write loop */
-      ex_utils_set_o_nonblock(fd);
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    { /* if mmap didn't work ... do a read/alter/write loop */
+      int fd = io_open(argv[count]);
+      
       ex_hexdump_read_fd_write_stdout(s1, s2, fd);
 
-      close(fd);
+      if (close(fd) == -1)
+        warn("close(%s)", argv[count]);
     }
-    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
-      DIE("add:");
-    else
-      /* mmap worked so processes the entire file at once */
-      ex_hexdump_process(s1, s2, TRUE);
+    else if (ern && (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      err(EXIT_FAILURE, "add");
+    else /* mmap worked so processes the entire file at once */
+      ex_hexdump_process_limit(s1, s2, 0);
 
-    /* write some of what we've created */
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-
+    ASSERT(!s2->len);
+    
     ++count;
   }
 
-  while (s2->len)
-  { /* No more data to read ...
-     * finish processing read data and writing some of it */
-    int proc_data = ex_hexdump_process(s1, s2, TRUE);
-
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-    EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 16, s2->len, proc_data);
-  }
-
-  /* The vstr_free_base() and vstr_exit() calls are only really needed to
-   * make memory checkers happy.
-   */
-
+  ex_hexdump_process_limit(s1, s2, 0);
+  
+  /* Cleanup... */
  out:
-  vstr_free_base(s2);
-
-  while (s1->len)
-  { /* finish outputting processed data */
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-    EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 16, FALSE, FALSE);
-  }
-
-  vstr_free_base(s1);
-
-  vstr_exit();
-
-  exit (EXIT_SUCCESS);
+  io_put_all(s1, STDOUT_FILENO);
+  
+  exit (ex_exit(s1, s2));
 }

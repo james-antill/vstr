@@ -138,7 +138,12 @@ cp   \
  examples/ex_cat.c \
  examples/ex_csv.c \
  examples/ex_hello_world.c \
+ examples/ex_hello_world.h \
+ examples/ex_hello_world_s.c \
+ examples/ex_hello_world_m.c \
+ examples/ex_hello_world_x.c \
  examples/ex_hexdump.c \
+ examples/ex_highlight.c \
  examples/ex_lookup_ip.c \
  examples/ex_mon_cp.c \
  examples/ex_nl.c \
@@ -148,7 +153,6 @@ cp   \
  examples/ex_perf_sgopenssl.c \
  examples/ex_rot13.c \
  examples/ex_slowcat.c \
- examples/ex_utils.c \
  examples/ex_utils.h \
  examples/ex_yes.c \
  examples/ex_zcat.c \
@@ -187,24 +191,43 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/TODO
 %{_mandir}/man3/vstr.3.gz
 %{_mandir}/man3/vstr_const.3.gz
-%{devdoco}/printf_comparison.html
+%{devdoco}/basic_cat.c.html
 %{devdoco}/comparison.html
+%{devdoco}/compare_licenses/SafeStr.txt
+%{devdoco}/compare_licenses/bstring.txt
+%{devdoco}/compare_licenses/cords.txt
+%{devdoco}/compare_licenses/ossp-str.txt
+%{devdoco}/compare_licenses/rope.txt
+%{devdoco}/compare_licenses/sz.txt
+%{devdoco}/compare_licenses/toolbox.txt
 %{devdoco}/constants.txt
 %{devdoco}/constants.html
 %{devdoco}/design.html
+%{devdoco}/f_c.css
 %{devdoco}/functions.txt
 %{devdoco}/functions.html
+%{devdoco}/internal_structure.dia
 %{devdoco}/namespace.html
 %{devdoco}/overview.html
+%{devdoco}/printf_comparison.html
+%{devdoco}/req_trunc_io.html
+%{devdoco}/security.html
+%{devdoco}/security_problems.html
+%{devdoco}/speed.html
 %{devdoco}/structs.txt
 %{devdoco}/structs.html
 %{devdoco}/size_cmp.gnumeric
-%{devdoco}/internal_structure.dia
+%{devdoco}/tutorial.html
 %{devdoco}/examples/Makefile
 %{devdoco}/examples/ex_cat.c
 %{devdoco}/examples/ex_csv.c
 %{devdoco}/examples/ex_hello_world.c
+%{devdoco}/examples/ex_hello_world.h
+%{devdoco}/examples/ex_hello_world_s.c
+%{devdoco}/examples/ex_hello_world_m.c
+%{devdoco}/examples/ex_hello_world_x.c
 %{devdoco}/examples/ex_hexdump.c
+%{devdoco}/examples/ex_highlight.c
 %{devdoco}/examples/ex_lookup_ip.c
 %{devdoco}/examples/ex_mon_cp.c
 %{devdoco}/examples/ex_nl.c
@@ -214,7 +237,6 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/examples/ex_perf_sgopenssl.c
 %{devdoco}/examples/ex_rot13.c
 %{devdoco}/examples/ex_slowcat.c
-%{devdoco}/examples/ex_utils.c
 %{devdoco}/examples/ex_utils.h
 %{devdoco}/examples/ex_yes.c
 %{devdoco}/examples/ex_zcat.c

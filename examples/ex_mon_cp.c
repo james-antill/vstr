@@ -1,28 +1,17 @@
-#define _GNU_SOURCE
-
 /* This monitors a copy to a file, and prints nice stats */
 
-#define VSTR_COMPILE_INCLUDE 1
-
-#include <vstr.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/fcntl.h>
-#include <sys/time.h>
-#include <time.h>
-
+#define EX_UTILS_NO_USE_INPUT 1
 #include "ex_utils.h"
 
-#define MAX_W_DATA_INCORE (1024 * 8)
+#include <sys/time.h>
+#include <time.h>
 
 #define CUR_RATE_NUM_SECS 60
 
 int main(int argc, char *argv[])
 {
-  Vstr_conf *conf = NULL;
   Vstr_base *s1 = NULL;
-  Vstr_base *s2 = NULL;
+  Vstr_base *s2 = ex_init(&s1);
   int fd = -1;
   struct stat stat_buf;
   time_t beg_time;
@@ -34,30 +23,6 @@ int main(int argc, char *argv[])
    time_t timestamp;
    unsigned int sz;
   } cur[CUR_RATE_NUM_SECS];
-
-  if (!vstr_init())
-    errno = ENOMEM, DIE("vstr_init:");
-
-  if (fstat(1, &stat_buf) == -1)
-    DIE("fstat:");
-
-  if (!(conf = vstr_make_conf()))
-    errno = ENOMEM, DIE("vstr_make_conf:");
-
-  if (!stat_buf.st_blksize)
-    stat_buf.st_blksize = 4096;
-
-  vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
-
-  s2 = vstr_make_base(NULL);
-  if (!s2)
-    errno = ENOMEM, DIE("vstr_make_base:");
-
-  s1 = vstr_make_base(conf);
-  if (!s1)
-    errno = ENOMEM, DIE("vstr_make_base:");
-
-  vstr_free_conf(conf);
 
   if (argc != 2)
   {
@@ -71,17 +36,15 @@ int main(int argc, char *argv[])
     VSTR_ADD_CSTR_PTR(s1, 0, " Format: ");
     VSTR_ADD_CSTR_PTR(s1, s1->len, " <filename>\n");
 
-    while (s1->len)
-      EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 2);
+    io_put_all(s1, STDERR_FILENO);
 
     exit (EXIT_FAILURE);
   }
 
-  if ((fd = open(argv[1], O_RDONLY | O_LARGEFILE | O_NOCTTY)) == -1)
-    DIE("open:");
+  fd = io_open(argv[1]);
 
   if (fstat(fd, &stat_buf) == -1)
-    DIE("fstat:");
+    err(EXIT_FAILURE, "fstat");
 
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s2->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
@@ -89,6 +52,9 @@ int main(int argc, char *argv[])
   vstr_sc_fmt_add_bkmg_Byte_uint(s2->conf, "{BKMG:%u}");
   vstr_sc_fmt_add_bkmg_Bytes_uint(s2->conf, "{BKMG/s:%u}");
 
+  if (s1->conf->malloc_bad || s2->conf->malloc_bad)
+    errno = ENOMEM, err(EXIT_FAILURE, "conf");
+  
   beg_time = time(NULL); --beg_time;
   beg_sz = last_sz = stat_buf.st_size;
   while (count < CUR_RATE_NUM_SECS)
@@ -108,7 +74,7 @@ int main(int argc, char *argv[])
     time_t now;
 
     if (fstat(fd, &stat_buf) == -1)
-      DIE("fstat:");
+      err(EXIT_FAILURE, "fstat:");
 
     ++count;
     if (last_sz != (unsigned int)stat_buf.st_size)
@@ -144,7 +110,10 @@ int main(int argc, char *argv[])
     vstr_add_rep_chr(s1, s1->len, '\b', prev_len);
     vstr_add_vstr(s1, s1->len, s2, 1, s2->len, 0);
 
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+    if (s1->conf->malloc_bad || s2->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "data");
+  
+    io_put_all(s1, STDOUT_FILENO);
 
     sleep(1);
   }
@@ -152,13 +121,8 @@ int main(int argc, char *argv[])
   close(fd);
 
   vstr_add_rep_chr(s1, s1->len, '\n', 1);
-  while (s1->len)
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
 
-  vstr_free_base(s1);
-  vstr_free_base(s2);
+  io_put_all(s1, STDOUT_FILENO);
 
-  vstr_exit();
-
-  exit (EXIT_SUCCESS);
+  exit (ex_exit(s1, s2));
 }

@@ -56,6 +56,7 @@
 #include "ex_perf.h"
 
 #include <assert.h>
+#include <unistd.h>
 
 #include <glib.h>
 
@@ -86,8 +87,7 @@ int main(void)
   char *s2 = NULL;
   GString *s3 = NULL;
   char *s4 = NULL;
-  unsigned int clean_extra = 0;
-  unsigned int err = 0;
+  unsigned int ern = 0;
   char *mal_overhead[TST_NUM_END];
   char *s3_data = NULL;
 
@@ -238,8 +238,8 @@ int main(void)
       TST_CLEANUP_TRIM(1);
 
       if (out->len)
-        vstr_sc_write_fd(out, 1, out->len, 1 /* stdout */, &err);
-      if (err)
+        vstr_sc_write_fd(out, 1, out->len, 1 /* stdout */, &ern);
+      if (ern)
         goto failed;
 
       count += TST_COUNT_INC;
@@ -257,8 +257,8 @@ int main(void)
   if (s1->conf->malloc_bad || out->conf->malloc_bad)
     goto failed;
 
-  while (out->len && !err)
-    vstr_sc_write_fd(out, 1, out->len, 1 /* stdout */, &err);
+  while (out->len && !ern)
+    vstr_sc_write_fd(out, 1, out->len, STDOUT_FILENO, &ern);
 
   vstr_free_conf(conf);
   vstr_free_base(out);
@@ -270,9 +270,9 @@ int main(void)
   exit (EXIT_SUCCESS);
 
  failed:
-  err = 0;
-  while (out->len && !err)
-    vstr_sc_write_fd(out, 1, out->len, 2 /* stderr */, &err);
+  ern = 0;
+  while (out->len && !ern)
+    vstr_sc_write_fd(out, 1, out->len, STDERR_FILENO, &ern);
 
   vstr_free_base(out);
   vstr_free_base(s1);

@@ -25,4 +25,4 @@ cd ..
 # cd ..
 
 genhtml src/lib.info $tst_info --output-directory output --title "Vstr coverage" --show-details --description-file descriptions
-echo Point your browser at file://`pwd`/output/index.html
+echo Point your browser at file:`pwd`/output/index.html

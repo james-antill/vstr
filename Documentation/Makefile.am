@@ -1,22 +1,36 @@
-confexecdir := $(datadir)/doc/vstr-devel-$(VERSION)/
-confexec_DATA =                         \
-                functions.txt \
-                functions.html \
+docmaindir := $(datadir)/doc/vstr-devel-$(VERSION)/
+docmain_DATA =                         \
+                basic_cat.c.html \
+                comparison.html \
                 constants.txt \
                 constants.html \
+                design.html \
+                f_c.css \
+                functions.txt \
+                functions.html \
+		internal_structure.dia \
                 structs.txt \
                 structs.html \
                 namespace.html \
-                design.html \
                 overview.html \
-                comparison.html \
                 printf_comparison.html \
+                req_trunc_io.html \
                 security.html \
                 speed.html \
-                req_trunc_io.html \
                 security_problems.html \
 		size_cmp.gnumeric \
-		internal_structure.dia
+                tutorial.html
+
+doclicdir := $(datadir)/doc/vstr-devel-$(VERSION)/compare_licenses/
+doclic_DATA =                         \
+                compare_licenses/SafeStr.txt \
+                compare_licenses/bstring.txt \
+                compare_licenses/cords.txt \
+                compare_licenses/ossp-str.txt \
+                compare_licenses/rope.txt \
+                compare_licenses/sz.txt \
+                compare_licenses/toolbox.txt
+
 
 man_MANS = \
                 vstr.3 \

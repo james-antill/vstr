@@ -579,9 +579,6 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
       break;
   }
 
-  if (!len && (scan == 4))
-    goto ret_len;
-
   if ((scan != 4) && (flags & VSTR_FLAG_PARSE_IPV4_FULL))
   {
     *err = VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL;
@@ -594,10 +591,7 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
   if (cidr)
     *cidr = 32;
 
-  if (!len)
-    goto ret_len;
-
-  if (vstr_export_chr(base, pos) == sym_slash)
+  if (len && (vstr_export_chr(base, pos) == sym_slash))
   {
     if (flags & VSTR_FLAG_PARSE_IPV4_CIDR)
     {
@@ -619,10 +613,9 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
     }
   }
 
-  if ((flags & VSTR_FLAG_PARSE_IPV4_ONLY) && len)
+  if (len && (flags & VSTR_FLAG_PARSE_IPV4_ONLY))
     *err = VSTR_TYPE_PARSE_IPV4_ERR_ONLY;
 
- ret_len:
   if (ret_len)
     *ret_len = orig_len - len;
 
@@ -808,10 +801,8 @@ int vstr_parse_ipv6(const struct Vstr_base *base,
   len -= num_len;
   if (cidr)
     *cidr = 128;
-  if (!len)
-    goto ret_len;
 
-  if (vstr_export_chr(base, pos) == sym_slash)
+  if (len && (vstr_export_chr(base, pos) == sym_slash))
   {
     if (flags & VSTR_FLAG_PARSE_IPV6_CIDR)
     {
@@ -823,11 +814,11 @@ int vstr_parse_ipv6(const struct Vstr_base *base,
     }
   }
 
-  if ((flags & VSTR_FLAG_PARSE_IPV6_ONLY) && len)
+  if (len && (flags & VSTR_FLAG_PARSE_IPV6_ONLY))
     *err = VSTR_TYPE_PARSE_IPV6_ERR_ONLY;
 
- ret_len:
   if (ret_len)
     *ret_len = orig_len - len;
+
   return (TRUE);
 }

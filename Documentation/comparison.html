@@ -20,7 +20,6 @@
 
       td.sn       { text-align: right;  font-weight: bold; }
       td.sv       { color: #444; }
-      td.main     { }
     </style>
 
   </head>
@@ -952,6 +951,8 @@ Needs another string library for anything but dealing with <a href="http://cr.yp
 <a id="toolbox" href="http://www.alphazed.co.uk/software/toolbox/download.php">toolbox</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">General purpose Library (although not much more than just the string APIs)
+</td> </tr><tr> <td class="sn">Model:</td> <td class="sv">
+Pointer and size
 </td> </tr><tr> <td class="sn">License:</td> <td class="sv">
 <a href="http://www.and.org/vstr/compare_licenses/toolbox.txt">Custom</a>
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
@@ -962,7 +963,7 @@ Just strcpy() etc. anything else you'll have to do yourself.
 </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
 2003-03-10
 </td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
-It returns (char *) types that, in theory, you can treat as if you allocated them yourself with "malloc" ... however this isn't true, so the only advantage is really a disadvantage.
+It returns (char *) types that, in theory, you can treat as if you allocated them yourself with "malloc" ... however this isn't true.
 </td> </tr><tr> <td class="sn">Con:</td> <td class="sv">
 The theory doesn't match up with reality. The price for the theory that
 doesn't really work is massive overhead for each function call. SafeStr is about
@@ -977,10 +978,16 @@ of your strings is from strdup() and which from the library. However you can't
 pass a malloc()'d string to the library (it'll call abort()), and if you
 free()/realloc() a pointer returned from the library then you'll corrupt
 it's internal state on a subsequent allocation.
+</p><p>
  However to keep this illusion that you could do those things the library has
 to do a looup for the metadata, which is kept seperately, on each call into
 the library. Currently this is done via. a sequential scan through an unsorted
 array (O(n/2) time).
+</p><p>
+ In theory you might be able to reduce the errors to not calling abort() on
+invalid strings when you should, by doing an extra lookup at
+allocation/reallocation time. Although this would reduce the speed even further,
+and is not strictly conforming C.
 </p></td></tr></table>
 
 
@@ -1114,6 +1121,8 @@ Most of the original string functions that DJB wrote, are now released as
 <a id="xstring" href="http://www.prism.gatech.edu/~gte477n/languages/c/xstring.html">xstring</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">String Library
+</td> </tr><tr> <td class="sn">Model:</td> <td class="sv">
+Pointer, length and size
 <!--
 </td> </tr><tr> <td class="sn">License:</td> <td class="sv">
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
@@ -1202,7 +1211,7 @@ It would be better to use the std::string class.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Sat Aug 23 01:56:59 EDT 2003
+Last modified: Mon Sep  8 00:22:25 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

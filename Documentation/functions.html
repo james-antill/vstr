@@ -78,6 +78,8 @@
 <li class="obj"><a href="#vstr_ref_make_malloc%28%29">vstr_ref_make_malloc()</a>
 <li class="obj"><a href="#vstr_ref_make_ptr%28%29">vstr_ref_make_ptr()</a>
 <li class="obj"><a href="#vstr_ref_make_memdup%28%29">vstr_ref_make_memdup()</a>
+<li class="obj"><a href="#vstr_ref_make_strdup%28%29">vstr_ref_make_strdup()</a>
+<li class="obj"><a href="#VSTR_REF_MAKE_STRDUP%28%29">VSTR_REF_MAKE_STRDUP()</a>
 <li class="obj"><a href="#vstr_ref_make_vstr_base%28%29">vstr_ref_make_vstr_base()</a>
 <li class="obj"><a href="#vstr_ref_make_vstr_conf%28%29">vstr_ref_make_vstr_conf()</a>
 <li class="obj"><a href="#vstr_ref_make_vstr_sects%28%29">vstr_ref_make_vstr_sects()</a>
@@ -987,6 +989,24 @@
  by (Parameter[1]) of length (Parameter[2]) will be the pointer value. The
  cleanup function will point to a function to free both the reference and the
  copy of memory.
+
+
+<a name="vstr_ref_make_strdup%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_strdup()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to data<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions.html#vstr_ref_make_memdup()">vstr_ref_make_memdup()</a> with the length being the value of
+ strlen() on the data parameter (Parameter[1]).
+
+
+<a name="VSTR_REF_MAKE_STRDUP%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_REF_MAKE_STRDUP()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to data<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls <a href="functions.html#vstr_ref_make_memdup()">vstr_ref_make_memdup()</a> with the length being the
+ value of strlen() on the data parameter (Parameter[1]).
 
 
 <a name="vstr_ref_make_vstr_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

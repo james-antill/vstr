@@ -1,25 +1,15 @@
-#define _GNU_SOURCE 1
+/* automatically decompresses data from either gzip of bzip2 formats
+ * very usefull so you can do tar -xzvf <foo> and it just works */
 
-#define VSTR_COMPILE_INCLUDE 1
-#include <vstr.h>
+#include "ex_utils.h"
 
-#include <string.h>
-#include <errno.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
 
 /* compression libraries */
 #include <zlib.h>
 #include <bzlib.h>
 
 
-#include "ex_utils.h"
-
-#define ASSERT assert
-
-/* how much in core memory to use for read and write operations */
-#define MAX_R_DATA_INCORE (1024 * 1024)
-#define MAX_W_DATA_INCORE (1024 * 8)
+#define EX_ZCAT_USE_MMAP 1
 
 #define EX_ZCAT_USAGE_ENCOMPRESS 1
 #define EX_ZCAT_USAGE_DECOMPRESS 2
@@ -126,7 +116,7 @@ static int ex_zcat_open(Vstr_base *s2)
       vstr_del(s2, 1, pos - 1);
 
       if (inflateInit2(&u->gzip, -MAX_WBITS) != Z_OK)
-        DIE("gzip beg: failed");
+        errx(EXIT_FAILURE, "gzip init: failed");
     }
     break;
 
@@ -135,7 +125,7 @@ static int ex_zcat_open(Vstr_base *s2)
       union ex_zcat_lib_decomp_u *u = &ex_zcat_lib_decomp_data;
 
       if (BZ2_bzDecompressInit(&u->bzip2, FALSE, FALSE) != BZ_OK)
-        DIE("bzip2 beg: failed");
+        errx(EXIT_FAILURE, "bzip2 beg: failed");
     }
     break;
 
@@ -165,12 +155,12 @@ static void ex_zcat_close(void)
 
     case EX_ZCAT_TYPE_GZIP:
       if (inflateEnd(&u->gzip) != Z_OK)
-        DIE("gzip end: failed");
+        errx(EXIT_FAILURE, "gzip end: failed");
       break;
 
     case EX_ZCAT_TYPE_BZIP2:
       if (BZ2_bzDecompressEnd(&u->bzip2) != BZ_OK)
-        DIE("bzip2 end: failed");
+        errx(EXIT_FAILURE, "bzip2 end: failed");
       break;
 
     case EX_ZCAT_TYPE_COMPRESS:
@@ -220,14 +210,14 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
     io_r_len = io_s2[0].iov_len;
   }
   else if (s2->len)
-    errno = ENOMEM, DIE("decompress:");
+    errno = ENOMEM, err(EXIT_FAILURE, "decompress");
 
   /* setup decompressor output... */
   {
     unsigned int dummy_num;
 
     if (!vstr_add_iovec_buf_beg(s1, s1->len, 1, 2, &io_s1, &dummy_num))
-      errno = ENOMEM, DIE("decompress:");
+      errno = ENOMEM, err(EXIT_FAILURE, "decompress");
 
     io_w_ptr = io_s1[0].iov_base;
     io_w_len = io_s1[0].iov_len;
@@ -259,7 +249,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
         ex_zcat_close();
       }
       else if (ret != Z_OK)
-        DIE("gzip: failed %d = %s", (int)ret, u->gzip.msg);
+        errx(EXIT_FAILURE, "failed %d = %s", (int)ret, u->gzip.msg);
     }
     break;
 
@@ -281,7 +271,7 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
         ex_zcat_close();
       }
       else if (ret != BZ_OK)
-        DIE("bzip2: failed %d", (int)ret);
+        errx(EXIT_FAILURE, "failed %d", (int)ret);
     }
     break;
 
@@ -301,33 +291,43 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
   return (!at_end);
 }
 
-static void ex_zcat_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
-                                                   int fd)
+static void ex_zcat_process_limit(Vstr_base *s1, Vstr_base *s2,
+                                  unsigned int lim)
 {
-  unsigned int err = 0;
-  int keep_going = TRUE;
-
-  /* read/process/write loop */
-  while (keep_going)
+  while (s2->len > lim)
   {
-    int proc_data = FALSE;
-
-    EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
-
-    proc_data = ex_zcat_process(s1, s2, !keep_going);
-
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-    EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, keep_going, proc_data);
+    int proc_data = ex_zcat_process(s1, s2, !lim);
+    
+    if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
+      io_block(-1, STDOUT_FILENO);
   }
 }
 
+static void ex_zcat_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
+{
+  while (TRUE)
+  {
+    int io_w_state = IO_OK;
+    int io_r_state = io_get(s2, fd);
+
+    if (io_r_state == IO_EOF)
+      break;
+
+    ex_zcat_process(s1, s2, FALSE);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+
+  ex_zcat_process_limit(s1, s2, 0);
+}
 
 int main(int argc, char *argv[])
 {
-  Vstr_base *s1 = NULL;
   Vstr_base *s2 = NULL;
+  Vstr_base *s1 = NULL;
   int count = 1; /* skip the program name */
-  struct stat stat_buf;
   int ex_zcat_direction = EX_ZCAT_USAGE_ENCOMPRESS;
 
   if (argc == 1)
@@ -345,98 +345,48 @@ int main(int argc, char *argv[])
     exit (EXIT_FAILURE);
   }
 
-  /* init the Vstr string library, note that if this fails we can't call DIE
-   * or the program will crash */
-  if (!vstr_init())
-    exit (EXIT_FAILURE);
-
-  /*  Change the default Vstr configuration, so we can have a node buffer size
-   * that is whatever the stdout block size is */
-  if (fstat(1, &stat_buf) == -1)
-    stat_buf.st_blksize = 4 * 1024;
-  if (!stat_buf.st_blksize)
-    stat_buf.st_blksize = 4 * 1024; /* defualt 4k -- proc etc. */
-
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
-  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
-
-  /* create two Vstr strings for doing the IO with */
-  if (FALSE ||
-      !(s1 = vstr_make_base(NULL)) ||
-      !(s2 = vstr_make_base(NULL)) ||
-      FALSE)
-    errno = ENOMEM, DIE("vstr_make_base:");
-
-  /* set output to non-blocking mode */
-  ex_utils_set_o_nonblock(STDOUT_FILENO);
-
-  if (count >= argc)  /* if no arguments -- use stdin */
+  /* init library etc. */
+  s1 = ex_init(&s2);
+  
+  if (count >= argc)
   {
-    /* set input to non-blocking mode */
-    ex_utils_set_o_nonblock(STDIN_FILENO);
+    io_fd_set_o_nonblock(STDIN_FILENO);
     ex_zcat_read_fd_write_stdout(s1, s2, STDIN_FILENO);
 
-    while (ex_zcat_process(s1, s2, TRUE))
-    { /* No more data to read ...
-       * finish processing read data and writing some of it */
-      EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-      EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, TRUE);
-    }
+    ex_zcat_process_limit(s1, s2, 0);
   }
 
   /* loop through all arguments, open the file specified
    * and do the read/write loop */
   while (count < argc)
   {
-    unsigned int err = 0;
+    unsigned int ern = 0;
 
     /* try to mmap the file, as that is faster ... */
-    if (s2->len < MAX_R_DATA_INCORE)
-      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
+    if (EX_ZCAT_USE_MMAP && (s2->len < EX_MAX_R_DATA_INCORE))
+      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
-    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    if ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
-      int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
+      int fd = io_open(argv[count]);
 
-      if (fd == -1)
-        WARN("open(%s):", argv[count]);
-
-      /* if mmap didn't work ... set file to nonblocking mode and do a
-       * read/alter/write loop */
-      ex_utils_set_o_nonblock(fd);
       ex_zcat_read_fd_write_stdout(s1, s2, fd);
 
-      close(fd);
+      if (close(fd) == -1)
+        warn("close(%s)", argv[count]);
     }
-    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
-      DIE("add:");
-    /* else mmap worked */
-
-    while (ex_zcat_process(s1, s2, TRUE))
-    { /* write some of what we've created */
-      EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-      EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, TRUE);
-    }
-
+    else if (ern && (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      err(EXIT_FAILURE, "add");
+    else
+      ex_zcat_process_limit(s1, s2, 0);
+    
     ++count;
   }
 
-  /* The vstr_free_base() and vstr_exit() calls are only really needed to
-   * make memory checkers happy.
-   */
-  vstr_free_base(s2);
-
-  while (s1->len)
-  { /* finish outputting processed data */
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-    EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 1, FALSE, FALSE);
-  }
-
-  vstr_free_base(s1);
-
-  vstr_exit();
-
-  exit (EXIT_SUCCESS);
+  ex_zcat_process_limit(s1, s2, 0);
+  io_put_all(s1, STDOUT_FILENO);
+  
+  exit (ex_exit(s1, s2));
 }

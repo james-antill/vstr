@@ -32,7 +32,8 @@ static void tst_iovec(Vstr_base *t1)
 
 int tst(void)
 {
-
+  const char *tmp_s = NULL;
+  
   ASSERT(!vstr_export_iovec_ptr_all(s1, NULL, NULL));
 
   {
@@ -68,7 +69,8 @@ int tst(void)
   TST_B_TST(ret, 6, !s1->iovec_upto_date);
   vstr_del(s1, 1, s1->len / 2);
   TST_B_TST(ret, 6, !s1->iovec_upto_date);
-  vstr_export_cstr_ptr(s1, 1, s1->len);
+  tmp_s = vstr_export_cstr_ptr(s1, 1, s1->len);
+  TST_B_TST(ret, 6, !tmp_s);
   TST_B_TST(ret, 6, !s1->iovec_upto_date);
   {
     struct iovec *iovs = NULL;
@@ -82,7 +84,8 @@ int tst(void)
   vstr_add_vstr(s1, s1->len, s1, 1, s1->len, 0);
   tst_iovec(s1);
 
-  vstr_export_cstr_ptr(s3, 1, s3->len);
+  tmp_s = vstr_export_cstr_ptr(s3, 1, s3->len);
+  TST_B_TST(ret, 10, !tmp_s);
   TST_B_TST(ret, 10, !s3->iovec_upto_date);
   vstr_add_ptr(s3, 0, "abcd", 4);
   vstr_add_buf(s3, 0, "abcd", 4);

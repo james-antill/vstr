@@ -173,6 +173,9 @@
  vstr_split_buf(x, y, z, buf, strlen(buf), sect, lim, flags)
 #define VSTR_SPLIT_CSTR_CHRS(x, y, z, chrs, sect, lim, flags) \
  vstr_split_chrs(x, y, z, chrs, strlen(chrs), sect, lim, flags)
+
+#define VSTR_REF_MAKE_STRDUP(x) vstr_ref_make_memdup((x), strlen(x))
+
 #endif
 
 #define VSTR__CACHE(x) ((struct Vstr__base_cache *)(x))->cache
@@ -188,34 +191,36 @@ extern void vstr_ref_cb_free_ptr_ref(struct Vstr_ref *);
 extern struct Vstr_ref *vstr_ref_add(struct Vstr_ref *)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern void vstr_ref_del(struct Vstr_ref *);
-extern struct Vstr_ref *vstr_ref_make_ptr(void *,
+extern struct Vstr_ref *vstr_ref_make_ptr(const void *,
                                           void (*)(struct Vstr_ref *))
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_malloc(size_t)
-    VSTR__COMPILE_ATTR_MALLOC();
-extern struct Vstr_ref *vstr_ref_make_memdup(void *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern struct Vstr_ref *vstr_ref_make_memdup(const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern struct Vstr_ref *vstr_ref_make_strdup(const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_vstr_base(struct Vstr_base *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_vstr_conf(struct Vstr_conf *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_vstr_sects(struct Vstr_sects *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 
 /* real start of vector string functions */
 
-extern int  vstr_init(void);
+extern int  vstr_init(void) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern void vstr_exit(void);
 
 extern struct Vstr_conf *vstr_make_conf(void)
-    VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern void vstr_free_conf(struct Vstr_conf *);
 extern int vstr_swap_conf(struct Vstr_base *, struct Vstr_conf **)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern struct Vstr_base *vstr_make_base(struct Vstr_conf *)
-    VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern void vstr_free_base(struct Vstr_base *);
 
 extern unsigned int vstr_make_spare_nodes(struct Vstr_conf *,
@@ -244,20 +249,20 @@ extern int vstr_add_rep_chr(struct Vstr_base *, size_t, char, size_t)
 
 
 extern struct Vstr_base *vstr_dup_buf(struct Vstr_conf *, const void *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_ptr(struct Vstr_conf *, const void *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_non(struct Vstr_conf *, size_t)
-    VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_ref(struct Vstr_conf *,
                                       struct Vstr_ref *ref, size_t, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_vstr(struct Vstr_conf *,
                                        const struct Vstr_base *, size_t, size_t,
                                        unsigned int)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_rep_chr(struct Vstr_conf *, char, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_add_vfmt(struct Vstr_base *, size_t, const char *, va_list)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_FMT(3, 0);
@@ -298,13 +303,13 @@ extern int vstr_add_cstr_ref(struct Vstr_base *, size_t,
 
 extern struct Vstr_base *vstr_dup_cstr_buf(struct Vstr_conf *,
                                            const char *)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_cstr_ptr(struct Vstr_conf *,
                                            const char *)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_base *vstr_dup_cstr_ref(struct Vstr_conf *,
                                            struct Vstr_ref *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 /* delete functions */
 extern int vstr_del(struct Vstr_base *, size_t, size_t)
@@ -374,281 +379,281 @@ extern int vstr_cntl_conf(struct Vstr_conf *, int, ...);
 
 /* data about the vstr */
 extern unsigned int vstr_num(const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 /* comparing functions */
 extern int vstr_cmp(const struct Vstr_base *, size_t, size_t,
                     const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_buf(const struct Vstr_base *, size_t, size_t,
                         const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case(const struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_buf(const struct Vstr_base *, size_t, size_t,
                              const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers(const struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_buf(const struct Vstr_base *, size_t, size_t,
                              const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eq(const struct Vstr_base *, size_t, size_t,
                        const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_buf_eq(const struct Vstr_base *, size_t, size_t,
                            const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_cstr(const struct Vstr_base *, size_t, size_t,
                          const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_cstr_eq(const struct Vstr_base *, size_t, size_t,
                             const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eq(const struct Vstr_base *, size_t, size_t,
                             const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_buf_eq(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_cstr(const struct Vstr_base *, size_t, size_t,
                               const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_cstr_eq(const struct Vstr_base *,
                                  size_t, size_t, const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eq(const struct Vstr_base *, size_t, size_t,
                             const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_buf_eq(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_cstr(const struct Vstr_base *,
                               size_t, size_t, const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_cstr_eq(const struct Vstr_base *,
                                  size_t, size_t, const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod(const struct Vstr_base *, size_t, size_t,
                         const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod(const struct Vstr_base *, size_t, size_t,
                         const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod_eq(const struct Vstr_base *, size_t, size_t,
                            const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod_eq(const struct Vstr_base *, size_t, size_t,
                            const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod_buf(const struct Vstr_base *, size_t, size_t,
                             const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod_buf(const struct Vstr_base *, size_t, size_t,
                             const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod_cstr(const struct Vstr_base *, size_t, size_t,
                              const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod_cstr(const struct Vstr_base *, size_t, size_t,
                              const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_bod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                 const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_eod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                 const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod(const struct Vstr_base *, size_t, size_t,
                              const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod(const struct Vstr_base *, size_t, size_t,
                              const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod_eq(const struct Vstr_base *, size_t, size_t,
                                 const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod_eq(const struct Vstr_base *, size_t, size_t,
                                   const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod_buf(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod_buf(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                     const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                     const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_bod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_case_eod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod(const struct Vstr_base *, size_t, size_t,
                              const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod(const struct Vstr_base *, size_t, size_t,
                              const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod_eq(const struct Vstr_base *, size_t, size_t,
                                 const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod_eq(const struct Vstr_base *, size_t, size_t,
                                 const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod_buf(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod_buf(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                     const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod_buf_eq(const struct Vstr_base *, size_t, size_t,
                                     const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_bod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_cmp_vers_eod_cstr_eq(const struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 
 
 /* search functions */
 extern size_t vstr_srch_chr_fwd(const struct Vstr_base *, size_t, size_t, char)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_chr_rev(const struct Vstr_base *, size_t, size_t, char)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_chrs_fwd(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_csrch_chrs_fwd(const struct Vstr_base *, size_t, size_t,
                                   const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_csrch_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                   const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_buf_fwd(const struct Vstr_base *, size_t, size_t,
                                 const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_buf_rev(const struct Vstr_base *, size_t, size_t,
                                 const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_vstr_fwd(const struct Vstr_base *, size_t, size_t,
                                  const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_vstr_rev(const struct Vstr_base *, size_t, size_t,
                                  const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_case_chr_fwd(const struct Vstr_base *, size_t, size_t,
                                      char)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_case_chr_rev(const struct Vstr_base *, size_t, size_t,
                                      char)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_case_buf_fwd(const struct Vstr_base *, size_t, size_t,
                                      const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_case_buf_rev(const struct Vstr_base *, size_t, size_t,
                                      const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_case_vstr_fwd(const struct Vstr_base *, size_t, size_t,
                                       const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_case_vstr_rev(const struct Vstr_base *, size_t, size_t,
                                       const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_srch_cstr_buf_fwd(struct Vstr_base *,
                                             size_t, size_t,
                                             const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_cstr_buf_rev(struct Vstr_base *,
                                             size_t, size_t,
                                             const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_cstr_chrs_fwd(struct Vstr_base *, size_t, size_t,
                                       const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_cstr_chrs_rev(struct Vstr_base *, size_t, size_t,
                                       const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_csrch_cstr_chrs_fwd(struct Vstr_base *, size_t, size_t,
                                        const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_csrch_cstr_chrs_rev(struct Vstr_base *, size_t, size_t,
                                        const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_case_cstr_buf_fwd(struct Vstr_base *, size_t, size_t,
                                           const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_srch_case_cstr_buf_rev(struct Vstr_base *, size_t, size_t,
                                                  const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 /* spanning and compliment spanning */
 extern size_t vstr_spn_chrs_fwd(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_spn_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                 const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_cspn_chrs_fwd(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_cspn_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                  const char *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern size_t vstr_spn_cstr_chrs_fwd(struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_spn_cstr_chrs_rev(struct Vstr_base *, size_t, size_t,
                                      const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_cspn_cstr_chrs_fwd(struct Vstr_base *, size_t, size_t,
                                       const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_cspn_cstr_chrs_rev(struct Vstr_base *, size_t, size_t,
                                       const char *)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 
 /* export functions */
@@ -674,55 +679,55 @@ extern char vstr_export_chr(const struct Vstr_base *, size_t)
 
 extern struct Vstr_ref *vstr_export_ref(const struct Vstr_base *,
                                         size_t, size_t, size_t *)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern const char *vstr_export_cstr_ptr(const struct Vstr_base *,
                                         size_t, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern char *vstr_export_cstr_malloc(const struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_export_cstr_buf(const struct Vstr_base *, size_t, size_t,
                                    void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern struct Vstr_ref *vstr_export_cstr_ref(const struct Vstr_base *,
                                              size_t, size_t, size_t *)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 /* functions for parsing data out of a vstr */
 extern short vstr_parse_short(const struct Vstr_base *,
                               size_t, size_t, unsigned int, size_t *,
                               unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern unsigned short vstr_parse_ushort(const struct Vstr_base *,
                                         size_t, size_t,
                                         unsigned int, size_t *,
                                         unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_parse_int(const struct Vstr_base *,
                           size_t, size_t, unsigned int, size_t *,
                           unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern unsigned int vstr_parse_uint(const struct Vstr_base *,
                                     size_t, size_t, unsigned int, size_t *,
                                     unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern long vstr_parse_long(const struct Vstr_base *,
                             size_t, size_t, unsigned int, size_t *,
                             unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern unsigned long vstr_parse_ulong(const struct Vstr_base *,
                                       size_t, size_t, unsigned int, size_t *,
                                       unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern VSTR_AUTOCONF_intmax_t vstr_parse_intmax(const struct Vstr_base *,
                                                 size_t, size_t, unsigned int,
                                                 size_t *, unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern VSTR_AUTOCONF_uintmax_t vstr_parse_uintmax(const struct Vstr_base *,
                                                   size_t, size_t,
                                                   unsigned int, size_t *,
                                                   unsigned int *)
-    VSTR__COMPILE_ATTR_NONNULL_L((1));
+    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern int vstr_parse_ipv4(const struct Vstr_base *,
                            size_t, size_t,
@@ -744,7 +749,7 @@ extern size_t vstr_parse_netstr2(const struct Vstr_base *, size_t, size_t,
 
 /* section functions -- seperate namespace */
 extern struct Vstr_sects *vstr_sects_make(unsigned int)
-    VSTR__COMPILE_ATTR_MALLOC();
+    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern void vstr_sects_free(struct Vstr_sects *);
 
 extern int vstr_sects_add(struct Vstr_sects *, size_t, size_t)
@@ -753,7 +758,7 @@ extern int vstr_sects_del(struct Vstr_sects *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
 extern unsigned int vstr_sects_srch(struct Vstr_sects *, size_t, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern int vstr_sects_foreach(const struct Vstr_base *, struct Vstr_sects *,
                               unsigned int,
@@ -797,7 +802,7 @@ extern unsigned int vstr_cache_add(struct Vstr_conf *, const char *,
                                              unsigned int, void *))
     VSTR__COMPILE_ATTR_NONNULL_L((2, 3));
 extern unsigned int vstr_cache_srch(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_L((2));
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern void *vstr_cache_get(const struct Vstr_base *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_cache_set(const struct Vstr_base *, unsigned int, void *)
@@ -817,20 +822,20 @@ extern int vstr_fmt_add(struct Vstr_conf *, const char *,
 extern void vstr_fmt_del(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
 extern int vstr_fmt_srch(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_L((2));
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 /* scan the vstr in iteration functions */
 
 extern int vstr_iter_fwd_beg(const struct Vstr_base *, size_t, size_t,
                              struct Vstr_iter *)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_iter_fwd_nxt(struct Vstr_iter *)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 
 /* shortcut functions ... */
 extern size_t vstr_sc_posdiff(size_t, size_t)
-    VSTR__COMPILE_ATTR_CONST();
+    VSTR__COMPILE_ATTR_CONST() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_sc_reduce(struct Vstr_base *, size_t, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
@@ -928,12 +933,12 @@ extern void vstr_sc_dirname(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern struct Vstr__cache_data_pos *
                      vstr_extern_inline_make_cache_pos(const struct Vstr_base *)
-    VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
  extern void *vstr_wrap_memcpy(void *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern int   vstr_wrap_memcmp(const void *, const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern void *vstr_wrap_memchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
  extern void *vstr_wrap_memset(void *, int, size_t)
@@ -945,4 +950,4 @@ extern void vstr_sc_dirname(const struct Vstr_base *, size_t, size_t,
                             struct Vstr_node *, size_t, unsigned int);
  extern struct Vstr_node *vstr_base__pos(const struct Vstr_base *,
                                          size_t *, unsigned int *, int);
- extern char *vstr_export__node_ptr(const struct Vstr_node *);
+ extern char *vstr_export__node_ptr(const struct Vstr_node *) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();

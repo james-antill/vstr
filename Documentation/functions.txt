@@ -945,6 +945,32 @@ Function: vstr_ref_make_memdup()
  copy of memory.
 
 
+Function: vstr_ref_make_strdup()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to data
+ Type[1]: char *
+
+ Explanation:
+
+  This function calls vstr_ref_make_memdup() with the length being the value of
+ strlen() on the data parameter (Parameter[1]).
+
+
+Function: VSTR_REF_MAKE_STRDUP()
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Pointer to data
+ Type[1]: char *
+
+ Explanation:
+
+  This macro function calls vstr_ref_make_memdup() with the length being the
+ value of strlen() on the data parameter (Parameter[1]).
+
+
 Function: vstr_ref_make_vstr_base()
  Returns: Vstr memory reference
  Type: struct Vstr_ref *

@@ -13,7 +13,7 @@ int tst(void)
   vstr_ref_del(ref);
   vstr_ref_del(ref);
 
-  ref = vstr_ref_make_ptr(NULL, vstr_ref_cb_free_ref);
+  ref = vstr_ref_make_ptr("", vstr_ref_cb_free_ref);
   vstr_ref_add(ref);
   vstr_ref_del(ref);
   vstr_ref_del(ref);
@@ -31,7 +31,30 @@ int tst(void)
   vstr_ref_add(ref);
   vstr_ref_del(ref);
   vstr_ref_del(ref);
-  free(ref);
+  free(ref); /* cb only free's the ref->ptr */
+
+  ref = vstr_ref_make_strdup("abcd");
+  vstr_ref_add(ref);
+  if (strcmp("abcd", ref->ptr))
+    ASSERT(FALSE);
+  if ("abcd" == ref->ptr)
+    ASSERT(FALSE);
+  vstr_ref_del(ref);
+  vstr_ref_del(ref);
+
+  tst_mfail_num(1); /* test no check error */
+  ref = vstr_ref_make_strdup("abcd");
+  ASSERT(!ref);
+  tst_mfail_num(0);
+
+  ref = VSTR_REF_MAKE_STRDUP("abcd");
+  vstr_ref_add(ref);
+  if (strcmp("abcd", ref->ptr))
+    ASSERT(FALSE);
+  if ("abcd" == ref->ptr)
+    ASSERT(FALSE);
+  vstr_ref_del(ref);
+  vstr_ref_del(ref);
 
   {
     Vstr_base *b = vstr_make_base(NULL);

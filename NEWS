@@ -1,34 +1,38 @@
- Latest stable release is 1.0.6
+ Latest stable release is 1.0.8
 
- Version 1.0.7 ... Added more tests, now at over 95% code coverage. Another set
-of corner cases got fixed. More documentation. Some portability fixes.
+2003-09-22: Version 1.0.8 ... Slightly more testing, now at almost 96% code
+coverage. Another set of corner cases got fixed. More documentation, including
+a tutorial. Added a simple C to html converter example, re-did parts of the
+examples to be simpler (for the tutorial).
 
- Version 1.0.6 ... Added a pile of more tests, now at 89% code coverage. A
-large amount of corner cases got fixed.
+2003-08-23: Version 1.0.7 ... Added more tests, now at over 95% code
+coverage. Another set of corner cases got fixed. More documentation. Some
+portability fixes.
 
- Version 1.0.5 ... Added speedups for vstr_fmt_add(). Added some documentation.
-added vstr_sc_fmt_add_rep_chr function.
+2003-05-31: Version 1.0.6 ... Added a pile of more tests, now at 89% code
+coverage. A large amount of corner cases got fixed.
 
- Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up
+2003-05-07: Version 1.0.5 ... Added speedups for vstr_fmt_add(). Added some
+documentation. Added vstr_sc_fmt_add_rep_chr function.
+
+2003-03-15: Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up
 export_cstr_ptr() in certain cases ... fixed problem with substituting data of
 _ptr and _ref types and having a bad position cache ... added documentation
 about the internal design.
 
- Version 1.0.3 ... a few corner case bugs fixed ... added a HAVE_CACHE control
-for Vstr strings ... fixed the examples to work on 0 length proc files ...
-added assert calls to inline functions ... added builtin_constant_p() and
-speedups related to that.
+2003-03-04: Version 1.0.3 ... a few corner case bugs fixed ... Added a
+HAVE_CACHE control for Vstr strings ... fixed the examples to work on 0
+length proc files ... added assert calls to inline functions ... added
+builtin_constant_p() and speedups related to that.
 
- Version 1.0.2 ... a couple more functions added to make life easier for
-calculating lengths given positions ... build fixes for FreeBSD ... runtime
-fixes for using code from C++.
+2003-02-21: Version 1.0.2 ... a couple more functions added to make life
+easier for calculating lengths given positions ... build fixes for
+FreeBSD ... runtime fixes for using code from C++.
 
- Version 1.0.1 ... first binary compatible release, more testsuite code which
-made a pile of bug fixes ... also a lot of simple functions added to make life
-easier.
+2003-02-12: Version 1.0.1 ... first binary compatible release, more testsuite
+code which made a pile of bug fixes ... also a lot of simple functions added
+to make life easier.
 
- Version 1.0.0 ... the first truley stable release has now been made. ABI is
-frozen for 1.0.x lifetime ... API will only have things added to it etc.
- Feel free to start using.
-
- Now has a real application that uses the library, and-vsftpd.
+2003-01-20: Version 1.0.0 ... the first truley stable release has now been
+made. ABI is frozen for 1.0.x lifetime ... API will only have things added to
+it etc.

@@ -1,28 +1,13 @@
-#define _GNU_SOURCE
-/* for easy of use in certain places it's possible to do this to include the
- * system headers needed */
-#define VSTR_COMPILE_INCLUDE 1
-#include <vstr.h>
-
-#include <string.h>
-#include <errno.h>
-#include <sys/poll.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
+/* do a rot13 of ASCII text */
 
 #include "ex_utils.h"
-/* do a rot13 of ASCII text */
 
 /* configuration:
    how to do it ... */
-#define USE_ITER        1
-#define USE_EXPORT_CHR  0
-#define USE_SUB_CHR     0
-#define USE_CSTR_MALLOC 0
-
-
-#define MAX_R_DATA_INCORE (1024 * 1024)
-#define MAX_W_DATA_INCORE (1024 * 8)
+#define EX_ROT13_USE_ITER        1
+#define EX_ROT13_USE_EXPORT_CHR  0
+#define EX_ROT13_USE_SUB_CHR     0
+#define EX_ROT13_USE_CSTR_MALLOC 0
 
 #define ROT13_LETTER(x) ( \
  (((x) >= 'A' && (x) <= 'M') || \
@@ -61,10 +46,14 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
   static const char chrs[] = ("abcdefghijklmnopqrstuvwxyz"
                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
+  /* we don't want to create more data, if we are over our limit */
+  if (s1->len > EX_MAX_W_DATA_INCORE)
+    return (FALSE);
+
   if (!s2->len)
     return (FALSE);
 
-#if USE_ITER
+  if (EX_ROT13_USE_ITER)
   {
     Vstr_iter iter[1];
 
@@ -84,8 +73,8 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
 
     vstr_del(s2, 1, s2->len);
   }
-#endif
-#if USE_EXPORT_CHR
+
+  if (EX_ROT13_USE_EXPORT_CHR)
   {
     unsigned int scan = 0;
     while (scan++ < s2->len)
@@ -96,8 +85,8 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
     }
     vstr_del(s2, 1, s2->len);
   }
-#endif
-#if USE_SUB_CHR
+  
+  if (EX_ROT13_USE_SUB_CHR)
   {
     unsigned int scan = 0;
 
@@ -111,8 +100,8 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
                   VSTR_TYPE_ADD_BUF_REF);
     vstr_del(s2, 1, s2->len);
   }
-#endif
-#if USE_CSTR_MALLOC
+  
+  if (EX_ROT13_USE_CSTR_MALLOC)
   while (s2->len)
   {
     if ((count = VSTR_CSPN_CSTR_CHRS_FWD(s2, 1, s2->len, chrs)))
@@ -121,7 +110,7 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
                     VSTR_TYPE_ADD_BUF_REF);
       vstr_del(s2, 1, count);
 
-      if (s1->len > MAX_W_DATA_INCORE)
+      if (s1->len > EX_MAX_W_DATA_INCORE)
         return (TRUE);
     }
 
@@ -131,7 +120,7 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
       Vstr_ref *ref = vstr_ref_make_ptr(ptr, vstr_ref_cb_free_ptr_ref);
 
       if (!ref || !ref->ptr)
-        errno = ENOMEM, DIE("vstr_make_conf:");
+        errno = ENOMEM, err(EXIT_FAILURE, "vstr_make_conf");
 
       while (*ptr)
       {
@@ -143,119 +132,84 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
       vstr_del(s2, 1, count);
     }
   }
-#endif
+
   return (TRUE);
 }
 
 
 static void ex_rot13_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 {
-  unsigned int err = 0;
-  int keep_going = TRUE;
-
-  while (keep_going)
+  while (TRUE)
   {
-    int proc_data = FALSE;
+    int io_w_state = IO_OK;
+    int io_r_state = io_get(s2, fd);
 
-    EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
+    if (io_r_state == IO_EOF)
+      break;
 
-    proc_data = ex_rot13_process(s1, s2);
+    ex_rot13_process(s1, s2);
 
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+    io_w_state = io_put(s1, 1);
 
-    EX_UTILS_LIMBLOCK_WAIT(s1, s2, fd, 1, keep_going, proc_data);
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
   }
 }
 
+static void ex_rot13_process_limit(Vstr_base *s1, Vstr_base *s2,
+                                   unsigned int lim)
+{
+  while (s2->len > lim)
+  {
+    int proc_data = ex_rot13_process(s1, s2);
+    if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
+      io_block(-1, STDOUT_FILENO);
+  }
+}
+
+
 int main(int argc, char *argv[])
 {
-  Vstr_conf *conf = NULL;
   Vstr_base *s1 = NULL;
-  Vstr_base *s2 = NULL;
+  Vstr_base *s2 = ex_init(&s1);
   int count = 1;
-  struct stat stat_buf;
-
-  if (!vstr_init())
-    exit (EXIT_FAILURE);
-
-  if (!(conf = vstr_make_conf()))
-    errno = ENOMEM, DIE("vstr_make_conf:");
-
-  if (fstat(1, &stat_buf) == -1)
-    stat_buf.st_blksize = 4 * 1024;
-  if (!stat_buf.st_blksize)
-    stat_buf.st_blksize = 4 * 1024;
-
-  vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
-  vstr_make_spare_nodes(conf, VSTR_TYPE_NODE_BUF, 32);
-
-  if (FALSE ||
-      !(s1 = vstr_make_base(NULL)) ||
-      !(s2 = vstr_make_base(NULL)) ||
-      FALSE)
-    errno = ENOMEM, DIE("vstr_make_base:");
-
-  vstr_free_conf(conf);
-
-  ex_utils_set_o_nonblock(1);
 
   if (count >= argc)  /* use stdin */
   {
-    ex_utils_set_o_nonblock(0);
-    ex_rot13_read_fd_write_stdout(s1, s2, 0);
+    io_fd_set_o_nonblock(STDIN_FILENO);
+    ex_rot13_read_fd_write_stdout(s1, s2, STDIN_FILENO);
   }
 
+  /* loop through all arguments, open the file specified
+   * and do the read/write loop */
   while (count < argc)
   {
-    unsigned int err = 0;
+    unsigned int ern = 0;
 
-    if (s2->len < MAX_R_DATA_INCORE)
-      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
+    if (s2->len < EX_MAX_R_DATA_INCORE)
+      vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
-    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
-        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    if ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
-      int fd = open(argv[count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
+      int fd = io_open(argv[count]);
 
-      if (fd == -1)
-        DIE("open:");
-
-      ex_utils_set_o_nonblock(fd);
       ex_rot13_read_fd_write_stdout(s1, s2, fd);
 
-      close(fd);
+      if (close(fd) == -1)
+        warn("close(%s)", argv[count]);
     }
-    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
-      DIE("add:");
+    else if (ern && (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      err(EXIT_FAILURE, "add");
     else
-      ex_rot13_process(s1, s2);
-
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+      ex_rot13_process_limit(s1, s2, EX_MAX_R_DATA_INCORE);
 
     ++count;
   }
 
-  while (s2->len)
-  { /* No more data to read ...
-     * finish processing read data and writing some of it */
-    int proc_data = ex_rot13_process(s1, s2);
+  ex_rot13_process_limit(s1, s2, 0);
 
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
-    EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 1, s2->len, proc_data);
-  }
+  io_put_all(s1, STDOUT_FILENO);
 
-  vstr_free_base(s2);
-
-  while (s1->len)
-  { /* finish outputting processed data */
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
-    EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 1, FALSE, FALSE);
-  }
-
-  vstr_free_base(s1);
-
-  vstr_exit();
-
-  exit (EXIT_SUCCESS);
+  exit (ex_exit(s1, s2));
 }

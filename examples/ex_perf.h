@@ -71,7 +71,7 @@
                tv_end.tv_usec - tv_beg.tv_usec, \
                ((long)mal_end.uordblks - (long)mal_beg.uordblks) + \
                ((long)mal_end.hblkhd - (long)mal_beg.hblkhd), \
-               (mal_end.fordblks - mal_beg.fordblks)); \
+               ((long)mal_end.fordblks - (long)mal_beg.fordblks)); \
 	} while (0)
 
 

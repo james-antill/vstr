@@ -7,7 +7,12 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
-. vstr_ref_make_strdup() ?
+. do the warn_unused_result thing in gcc-3.4 if it's needed on malloc's.
+
+. Another page for showing how to do IO over internet ...
+  everyone fucks it up, Ie. gtetrinet/bomberman (docs)
+
+. tutorial show how csv was made? ... or hexdump. (docs)
 
 . %s, NULL - win32 aparently prints "" not "(null)" ... should probably allow
   that to be configured (feature)
@@ -19,12 +24,8 @@ was needed for vstr-1.0.0
 . security ... more info. on testing. (docs)
 . security ... formal verification methods? (docs)
 
-. comparison ... licenses (docs)
 . comparison ... portability plus ...
   can you copy and paste the code ... or need a shared lib. (docs)
-
-. speed  implications of vstr. (docs)
-. memory implications of vstr. (docs)
 
 . Have a way to make thousands sep. group/output differently for hex numbers?
   (functionality)

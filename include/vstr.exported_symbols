@@ -153,6 +153,7 @@ ref_cb_free_ref
 ref_del
 ref_make_malloc
 ref_make_memdup
+ref_make_strdup
 ref_make_ptr
 ref_make_vstr_base
 ref_make_vstr_conf

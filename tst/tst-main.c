@@ -18,8 +18,21 @@
 #include <vstr.h>
 
 #undef NDEBUG /* always use assert */
-#include <assert.h>
-#define ASSERT(x) assert(x)
+#undef assert
+#undef ASSERT
+/* cpoy and paste from assert loop extern */
+#define assert(x) do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } \
+ } while (FALSE)
+#  define ASSERT(x) do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } \
+ } while (FALSE)
 
 static int tst(void); /* fwd */
 

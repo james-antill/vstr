@@ -154,6 +154,7 @@
 #undef vstr_ref_del
 #undef vstr_ref_make_malloc
 #undef vstr_ref_make_memdup
+#undef vstr_ref_make_strdup
 #undef vstr_ref_make_ptr
 #undef vstr_ref_make_vstr_base
 #undef vstr_ref_make_vstr_conf

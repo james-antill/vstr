@@ -68,7 +68,8 @@ int vstr_cntl_opt(int option, ...)
 
       ret = TRUE;
     }
-
+    break;
+    
 #ifndef NDEBUG
     case 666:
     {

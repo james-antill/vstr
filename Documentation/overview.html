@@ -38,6 +38,10 @@
 	      standards compliance.
 	    </li>
 
+	    <li> <a href="tutorial.html">Tutorial</a> - A tutorial of how you
+	      can use the library, and it's features.
+	    </li>
+
 	    <li> <a href="#testing">Testing</a> - A description of the
 	      testing done for the library.
 	    </li>
@@ -105,7 +109,7 @@
 	</td></tr></table>
 
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.7</h2>
+	  <h2>Current version is 1.0.8</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -479,22 +483,22 @@ that can be broken up into... <br>
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, "%d", num);
 	  </pre>
 	  ...however if you want to write an IPv4 addres, a Vstr
-	  string or anything else that isn't in ISO 9899:1999 to a string
+	  string or any other type that isn't in ISO 9899:1999 to a string
 	  you have to resort to doing to by hand. And if you want to format that
 	  output you have to either convert it to a C style string and use the
-	  "%s" option to the printf() like function, or do the formatting
-	  yourself as well. This is all pretty ugly, often unreliable, slow
-	  and takes significant programer resources in the first place.
+	  "%s" option to the printf() like function, or do all the formatting
+	  yourself. This is all pretty ugly, often unreliable, slow
+	  and takes significant programer resources.
 	</p><p>
 	    This is where custom formatters should help and give you back
 	    code clarity, reliability, speed and ease of use. Assuming you want
-	    to print an IPv4 address again, then assuming you've initialized
+	    to print an IPv4 address, then you would initialize
 	    the Vstr configuration like so...
 	  <pre>
 <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all</a>(my_vstr->conf);
 <a href="functions.html#vstr_cntl_conf()">vstr_cntl_conf</a>(my_vstr->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '%');
 	  </pre>
-	  ...you just need to write...
+	  ...you then you can write...
 	  <pre>
 struct sockaddr_in sa;
 struct in_addr ipv4;
@@ -513,10 +517,10 @@ struct in_addr ipv4;
 	  change the order. However if you try the above, you'll note that all
 	  of the calls to <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>
 	  will produce warnings with gcc, because "%{" isn't the start of a
-	  valid formatting character under the system printf() rules.
-	  This makes most implementations of custom formatters useless, as you
-	  have to either turn warnings off, see at least one warning for every
-	  usage of a custom formatter or just not use customer formatters.
+	  valid formatting character under gcc's static printf() rules.
+	  This makes custom formatters mostly useless, as you
+	  have to either turn warnings off or see at least one warning for every
+	  usage of a custom formatter.
 	  </p><p>
 	    To deal with this, you can use the following initialization code...
 	  <pre>
@@ -536,19 +540,17 @@ struct in_addr ipv4;
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
 	  ...which isn't as good as true support for customer formatters in gcc,
-	  as you could tell it what type the pointer is and it could check the
-	  formatter names better, however it does make sure that custom
+	  however it does make sure that custom
 	  formatters will not crash, provides complete protection for
 	  non-custom formatters and doesn't produce spurious warnings.
 	  <b>One final note</b> is that in all sane environments you don't
 	  need the cast to (void *).
 	  </p><p>
-	    You can also look at the
-	    <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a> function
-	    and the
+	    You should also look at the functions:
+	    <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>,
 	    <a href="functions.html#vstr_sc_fmt_cb_beg()">vstr_sc_fmt_cb_beg()</a> and
 	    <a href="functions.html#vstr_sc_fmt_cb_end()">vstr_sc_fmt_cb_end()</a>
-	    helper functions, if you wish to create your own custom formatters.
+	    if you want to create your own custom formatters.
 </p></td></tr>
 
 </table>
@@ -561,11 +563,11 @@ struct in_addr ipv4;
 
 <table width="80%"><tr><td><p>
 
- To get a rough overview of how to use the library you can see the following
-<b>heavily commented</b> examples:</p>
+ Note that some of these are explained in much more detail in the <a href="tutorial.html">tutorial</a>. To get a rough overview of how to use the library you
+can see the following <b>heavily commented</b> examples:</p>
 <ul>
 <li>
-<a href="vstr-latest/vstr/examples/ex_hello_world.c.html">cat</a> - A program
+<a href="vstr-latest/vstr/examples/ex_hello_world.c.html">hello world</a> - A program
 that just does a "Hello World".
 </li>
 <li>
@@ -626,6 +628,11 @@ should show how much simpler you can make your code using those features.
 <a href="http://www.and.org/timer_q/">Timer_q</a> library, and getopt_long) - This is like the cat program, except that you can specify a delay between blocks of output ... this is especially useful for ASCII art programs.
 </li>
 <li>
+<a href="vstr-latest/vstr/examples/ex_highlight.c.html">C to html converter</a> - This program implements something similar to
+<a href="http://freshmeat.net/projects/highlight/"></a>, but just for C,
+this is used to turn the tutorial examples into html.
+</li>
+<li>
 <a href="vstr-latest/vstr/examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
 <a href="http://www.openssl.org/">OpenSSL</a> library) - This program times
 the usage of the MD5 or SHA1 functions from OpenSSL, with a all of: A single chunk of data, an iovec list of the data at the default buffer size, and
@@ -659,7 +666,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Sat Aug 23 02:02:52 EDT 2003
+Last modified: Mon Sep 22 14:46:39 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

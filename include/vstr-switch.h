@@ -121,6 +121,15 @@
 # define VSTR__COMPILE_ATTR_MALLOC() /* nothing */
 #endif
 
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && \
+    defined(VSTR_AUTOCONF_HAVE_ATTRIB_WARN_UNUSED_RET) && \
+   !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+# define VSTR__COMPILE_ATTR_WARN_UNUSED_RET() \
+ __attribute__ ((__warn_unused_result__))
+#else
+# define VSTR__COMPILE_ATTR_WARN_UNUSED_RET() /* nothing */
+#endif
+
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 # define VSTR__AT_COMPILE_CONST_P(x) __builtin_constant_p (x)
 #else

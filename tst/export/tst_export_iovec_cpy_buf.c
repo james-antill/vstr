@@ -70,7 +70,7 @@ int tst(void)
 
   len = vstr_export_iovec_cpy_buf(s1, 1, 0, iov, 4, NULL);
   TST_B_TST(ret, 28, len);
-  len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, NULL, 0, NULL);
+  len = vstr_export_iovec_cpy_buf(s1, 1, s1->len, iov, 0, NULL);
   TST_B_TST(ret, 29, len);
 
   return (TST_B_RET(ret));

@@ -1015,6 +1015,10 @@ extern inline int vstr_cmp_vers_eod_cstr_eq(const struct Vstr_base *s1,
                                             const char *buf)
 { return (vstr_cmp_vers_eod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
 
+/* ref */
+extern inline struct Vstr_ref *vstr_ref_make_strdup(const char *val)
+{ return (vstr_ref_make_memdup(val, strlen(val) + 1)); }
+
 #undef VSTR__ASSERT
 #undef VSTR__ASSERT_RET
 #undef VSTR__ASSERT_NO_SWITCH_DEF

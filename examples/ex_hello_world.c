@@ -1,27 +1,32 @@
-/* hello world with the Vstr string API */
+/* hello world - Self contained, using a single piece of data at
+ *               initialisation time (no data copying) */ 
 
 #define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
-#include <errno.h>
+#include <errno.h>  /* errno variable */
+#include <err.h>    /* BSD/Linux header see: man errx */
+#include <unistd.h> /* for STDOUT_FILENO */
 
 int main(void)
 {
   Vstr_base *s1 = NULL;
 
-  if (!vstr_init())
-    exit (EXIT_FAILURE);
+  if (!vstr_init()) /* initialize the library */
+    err(EXIT_FAILURE, "init");
 
-  s1 = vstr_dup_cstr_buf(NULL, "Hello World\n");
-  if (!s1)
-    exit (EXIT_FAILURE);
+  /* create a string with data */
+  if (!(s1 = vstr_dup_cstr_buf(NULL, "Hello World\n")))
+    err(EXIT_FAILURE, "Create string");
 
-  while (s1->len) /* assumes POSIX */
-    if (!vstr_sc_write_fd(s1, 1, s1->len, 1, NULL))
+  /* output the data to the user -- assumes POSIX */
+  while (s1->len)
+    if (!vstr_sc_write_fd(s1, 1, s1->len, STDOUT_FILENO, NULL))
     {
       if ((errno != EAGAIN) && (errno != EINTR))
-        exit (EXIT_FAILURE);
+        err(EXIT_FAILURE, "write");
     }
 
+  /* cleanup allocated resources */
   vstr_free_base(s1);
 
   vstr_exit();

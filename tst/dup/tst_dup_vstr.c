@@ -72,9 +72,10 @@ static void tst_vstr_a(unsigned int num,
   tst_vstr_ca(num, s3->conf, pos, len, flags);
 }
 
-#define ADD(x) do { Vstr_ref *ref = NULL; \
+#define ADD(x, T) do { const char *tmp = NULL; Vstr_ref *ref = NULL; \
   VSTR_ADD_CSTR_BUF(x, 0, buf); \
-  VSTR_ADD_CSTR_PTR(x, 0, buf); vstr_export_cstr_ptr((x), 1, (x)->len); \
+  VSTR_ADD_CSTR_PTR(x, 0, buf); tmp = vstr_export_cstr_ptr((x), 1, (x)->len); \
+  ASSERT((T) == !!tmp); \
   vstr_add_non(x, 0, 4); \
   ref = vstr_ref_make_malloc(4); memset(ref->ptr, 'X', 4); \
   vstr_add_ref(x, 0, ref, 0, 4); \
@@ -85,10 +86,10 @@ int tst(void)
 {
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
-  ADD(s1);
-  ADD(s2);
-  ADD(s3);
-  ADD(s4);
+  ADD(s1, TRUE);
+  ADD(s2, TRUE);
+  ADD(s3, TRUE);
+  ADD(s4, FALSE);
 
   tst_vstr_a( 1, 1, s1->len, VSTR_TYPE_ADD_DEF);
   tst_vstr_a( 2, 1, s1->len, VSTR_TYPE_ADD_BUF_PTR);

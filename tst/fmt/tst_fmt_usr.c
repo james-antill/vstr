@@ -368,18 +368,26 @@ int tst(void)
   tst_fmt(ret, s1);
   tst_fmt(ret, s3);
 
-  TST_B_TST(ret, 28, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
+  TST_B_TST(ret, 27, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
 
+  ipv4[0] = ipv4[1] = ipv4[2] = ipv4[3] = 111;
+  ipv6[0] = ipv6[1] = ipv6[2] = 0x22;
+  ipv6[3] = ipv6[4] = 0;
+  ipv6[5] = 0x222;
+  ipv6[6] = ipv6[7] = IPV4(111U, 111);
+
+  ref = vstr_ref_make_ptr((char *)"--ref--", vstr_ref_cb_free_ref);
+  ASSERT(ref);
+  
   vstr_del(s1, 1, s1->len);
   vstr_del(s3, 1, s3->len);
 
   mfail_count = 0;
 
-  ipv4[0] = ipv4[1] = ipv4[2] = ipv4[3] = 111;
-  ipv6[0] = ipv6[1] = ipv6[2] = ipv6[3] = ipv6[4] = ipv6[5] = 0x2222;
-  ipv6[6] = ipv6[7] = IPV4(111U, 111);
-
-  ref = vstr_ref_make_ptr((char *)"ref", vstr_ref_cb_free_ref);
+  /* allocate fmt nodes... */
+  vstr_add_fmt(s3, 0, "%s%s%s%s%.d%s%s%s%s%.d%s%s%s%s%.d%s%s%s%s%.d%s%s%s%s%.d",
+               "", "", "", "", 0, "", "", "", "", 0, "", "", "", "", 0,
+               "", "", "", "", 0, "", "", "", "", 0);
   do
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
@@ -388,37 +396,112 @@ int tst(void)
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
     tst_mfail_num(++mfail_count);
   } while (!vstr_add_fmt(s3, 0,
-                         "$8.4{buf:%s%zu}|"
-                         "$4.8{ptr:%s%zu}|"
-                         "${non:%zu}|"
-                         "${ref:%p%zu%zu}|"
-                         "$.5{rep_chr:%c%zu}|"
-                         "${ipv4.v+C:%p%u}|"
-                         "${ipv6.v+C:%p%u%u}"
+                         "$16{buf:%s%zu}|"
+                         "$16{ptr:%s%zu}|"
+                         "$16{non:%zu}|"
+                         "$16{ref:%p%zu%zu}|"
+                         "$16{rep_chr:%c%zu}|"
+                         "$76{ipv4.v+C:%p%u}|"
+
+                         "$76{ipv6.v+C:%p%u%u}|"
+                         "$76{ipv6.v+C:%p%u%u}|"
+                         "$76{ipv6.v+C:%p%u%u}|"
+
+                         "$76{ipv6.v+C:%p%u%u}|"
+                         "$76{ipv6.v+C:%p%u%u}|"
+                         "$76{ipv6.v+C:%p%u%u}"
                          "",
-                         "buf", 3,
-                         "ptr", 3,
-                         3,
-                         ref, 0, 3,
+                         "--buf--", 7,
+                         "--ptr--", 7,
+                         7,
+                         ref, 0, 7,
                          'x', 8,
                          ipv4, 24,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_STD, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 96,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD, 96));
-  vstr_ref_del(ref);
   tst_mfail_num(0);
 
-  vstr_add_fmt(s1, s1->len, "%s|%s|", " buf", " ptr");
-  vstr_add_non(s1, s1->len, 3);
-  vstr_add_fmt(s1, s1->len, "|%s|%s|%s|%s", "ref", "xxxxx",
-               "111.111.111.111/24",
-               "2222:2222:2222:2222:2222:2222:111.111.111.111/96");
+  vstr_add_fmt(s1, s1->len, "%s|%s|         ",
+               "         --buf--", "         --ptr--");
+  vstr_add_non(s1, s1->len, 7);
+  vstr_add_fmt(s1, s1->len, "|%s|%s|%s|%s|%s|%s|%s|%s|%s",
+               "         --ref--", "        xxxxxxxx",
+"                                                          111.111.111.111/24",
+"                                  0022:0022:0022:0000:0000:0222:6F6F:6F6F/96",
+"                                                  22:22:22::222:6F6F:6F6F/96",
+"                                               22:22:22:0:0:222:6F6F:6F6F/96",
+"                            0022:0022:0022:0000:0000:0222:111.111.111.111/96",
+"                                            22:22:22::222:111.111.111.111/96",
+"                                         22:22:22:0:0:222:111.111.111.111/96");
+  
+  TST_B_TST(ret, 28, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
+  
+  vstr_del(s1, 1, s1->len);
+  vstr_del(s3, 1, s3->len);
+
+  mfail_count = 0;
+  
+  do
+  {
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_PTR, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_NON, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_REF, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_fmt(s3, 0,
+                         "$-16{buf:%s%zu}|"
+                         "$-16{ptr:%s%zu}|"
+                         "$-16{non:%zu}|"
+                         "$-16{ref:%p%zu%zu}|"
+                         "$-16{rep_chr:%c%zu}|"
+                         "$-76{ipv4.v+C:%p%u}|"
+
+                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}"
+
+                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}"
+                         "$-76{ipv6.v+C:%p%u%u}"
+                         "",
+                         "--buf--", 7,
+                         "--ptr--", 7,
+                         7,
+                         ref, 0, 7,
+                         'x', 8,
+                         ipv4, 24,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_STD, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT, 96,
+                         ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD, 96));
+  tst_mfail_num(0);
+
+  vstr_add_fmt(s1, s1->len, "%s|%s|", "--buf--         ", "--ptr--         ");
+  vstr_add_non(s1, s1->len, 7);
+  vstr_add_fmt(s1, s1->len, "         |%s|%s|%s|%s%s%s%s%s%s",
+               "--ref--         ", "xxxxxxxx        ",
+"111.111.111.111/24                                                          ",
+"0022:0022:0022:0000:0000:0222:6F6F:6F6F/96                                  ",
+"22:22:22::222:6F6F:6F6F/96                                                  ",
+"22:22:22:0:0:222:6F6F:6F6F/96                                               ",
+"0022:0022:0022:0000:0000:0222:111.111.111.111/96                            ",
+"22:22:22::222:111.111.111.111/96                                            ",
+"22:22:22:0:0:222:111.111.111.111/96                                         ");
 
   TST_B_TST(ret, 29, !VSTR_CMP_EQ(s1, 1, s1->len, s3, 1, s3->len));
 
+  vstr_ref_del(ref);
+  
   /* flush the max name length cache ... */
-  vstr_fmt_add(s3->conf,
-               "{ref-xxxxxxxxxxxxxxxxxxxxxxx}", NULL, VSTR_TYPE_FMT_END);
-  vstr_fmt_del(s3->conf,
-               "{ref-xxxxxxxxxxxxxxxxxxxxxxx}");
+  vstr_fmt_add(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}",
+               tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_del(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}");
   
   {
     const char *ptr = NULL;

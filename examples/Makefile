@@ -8,7 +8,7 @@ VSTR_LOCAL_DIR=../
 # VSTR_LOCAL_DIR=../j
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
-OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
+OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3 # -ansi -pedantic
 
 HAVE_TIMER_Q=0
 HAVE_SSL=1
@@ -19,7 +19,7 @@ LOCAL=0
 PROFILE=0
 # 1 == Static with libvstr, 2 == really static
 STATIC=0
-FAST=1
+FAST=0
 
 ifeq ($(PROFILE),1)
 PROF=-pg
@@ -39,7 +39,7 @@ ST=-static
 endif
 
 ifeq ($(FAST),1)
-OPTWARNS=-O2 -march=i386 -mcpu=i686 -fexpensive-optimizations
+OPTWARNS=-O2 -mcpu=i686 -fexpensive-optimizations
 endif
 
 ifeq ($(LOCAL),1)
@@ -76,8 +76,9 @@ ZCAT=ex_zcat
 endif
 endif
 
-FILES= ex_cat ex_hello_world \
-  ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip ex_csv \
+FILES= ex_cat \
+  ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
+  ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip ex_csv ex_highlight \
   ex_perf_nodesize \
   ex_perf_nodesize_foreach \
   $(ZCAT) \
@@ -86,43 +87,39 @@ FILES= ex_cat ex_hello_world \
 
 all: $(FILES)
 
-ex_utils.o: ex_utils.c ex_utils.h
-		$(CC) $(EX_CFLAGS) -o ex_utils.o -c ex_utils.c
-
 ex%.o: ex%.c
-		$(CC) $(EX_CFLAGS) -o $@ -c $<
+		@echo "Compiling $<"
+		@$(CC) $(EX_CFLAGS) -o $@ -c $<
 
-ex%: ex%.o ex_utils.o
-		$(CC) -o $@ $< ex_utils.o $(EX_LDFLAGS)
+ex%: ex%.o
+		@echo "Linking $@"
+		@$(CC) -o $@ $< $(EX_LDFLAGS)
+		@echo ""
 
-ex_cat: ex_cat.c
-		$(CC) $(EX_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o $(EX_LDFLAGS)
-
-ex_hello_world: ex_hello_world.c
-		$(CC) $(EX_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o $(EX_LDFLAGS)
-
-ex_zcat: ex_zcat.c ex_utils.o
-		$(CC) $(ZCAT_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o ex_utils.o $(ZCAT_LDFLAGS)
-
-ex_perf_nodesize: ex_perf_nodesize.c ex_perf.h
-		$(CC) $(EX_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o $(EX_LDFLAGS)
+# Custom rules for these due to different cflags/ldflags
+ex_zcat: ex_zcat.c
+		@echo "Compiling $<"
+		@$(CC) $(ZCAT_CFLAGS) -o $@.o -c $<
+		@echo "Linking $@"
+		@$(CC) -o $@ $@.o $(ZCAT_LDFLAGS)
 
 ex_perf_nodesize_foreach: ex_perf_nodesize_foreach.c ex_perf.h
-		$(CC) $(GLIB_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o $(GLIB_LDFLAGS)
+		@echo "Compiling $<"
+		@$(CC) $(GLIB_CFLAGS) -o $@.o -c $<
+		@echo "Linking $@"
+		@$(CC) -o $@ $@.o $(GLIB_LDFLAGS)
 
 ex_perf_sgopenssl: ex_perf_sgopenssl.c ex_perf.h
-		$(CC) $(SSL_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o $(SSL_LDFLAGS)
+		@echo "Compiling $<"
+		@$(CC) $(SSL_CFLAGS) -o $@.o -c $<
+		@echo "Linking $@"
+		@$(CC) -o $@ $@.o $(SSL_LDFLAGS)
 
-ex_slowcat: ex_slowcat.c ex_utils.o
-		$(CC) $(TQ_CFLAGS) -o $@.o -c $<
-		$(CC) -o $@ $@.o ex_utils.o $(TQ_LDFLAGS)
-$(LDFLAGS)
+ex_slowcat: ex_slowcat.c
+		@echo "Compiling $<"
+		@$(CC) $(TQ_CFLAGS) -o $@.o -c $<
+		@echo "Linking $@"
+		@$(CC) -o $@ $@.o $(TQ_LDFLAGS)
 
 clean:
 		rm -f *.o $(FILES) gmon.out

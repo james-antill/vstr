@@ -1,4 +1,39 @@
+2003-09-22  James Antill  <james@and.org>
+
+	* NEWS: Release-1.0.8
+
+2003-09-20  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr__sc_fmt_num_ipv6): Fix couple of bugs for length
+	ipv6 output with IPV4 at the end.
+
+2003-09-18  James Antill  <james@and.org>
+
+	* include/vstr-switch.h (VSTR__COMPILE_ATTR_WARN_UNUSED_RET): Add
+	warn_unused_return gcc compiler attribute.
+
+	* include/vstr-extern.h (vstr_dup_rep_chr): Remove nonnull attribute.
+
+	* src/vstr_cntl.c (vstr_cntl_opt): Fix fallthrough error when compiling
+	in debug mode.
+
+	* src/vstr_ref.c (vstr_ref_make_memdup): Add test for malloc failure.
+	(vstr_ref_make_memdup): Change pointer to const, this is ABI compatible.
+	(vstr_ref_make_ptr): Change pointer to const, this is ABI compatible.
+
+2003-09-12  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_ref_make_strdup): Added function.
+
+2003-09-02  James Antill  <james@and.org>
+
+	* src/vstr_parse.c (vstr_parse_ipv4): Minor cidr wasn't written if
+	ip was entire size of section.
+
 2003-08-23  James Antill  <james@and.org>
+
+	* Documentation/security_problems.txt: Added more
+	classifications
 
 	* NEWS: Release-1.0.7
 

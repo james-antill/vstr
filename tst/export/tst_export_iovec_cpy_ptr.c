@@ -41,10 +41,10 @@ int tst(void)
   len = vstr_export_iovec_cpy_ptr(s1, 1, 0, iov, num, NULL);
   TST_B_TST(ret, 8, len);
 
-  free(iov);
-
-  len = vstr_export_iovec_cpy_ptr(s1, 1, s1->len, NULL, 0, NULL);
+  len = vstr_export_iovec_cpy_ptr(s1, 1, s1->len, iov, 0, NULL);
   TST_B_TST(ret, 9, len);
+
+  free(iov);
 
   return (TST_B_RET(ret));
 }

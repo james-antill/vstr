@@ -90,10 +90,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
       if (++ret_num >= num_max)
         break;
     }
-
-    if (!iter->len)
-      vstr_iter_fwd_nxt(iter);
-  } while (iter->node);
+  } while (iter->len || vstr_iter_fwd_nxt(iter));
 
   if (used)
   {

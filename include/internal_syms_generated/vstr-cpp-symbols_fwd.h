@@ -154,6 +154,7 @@
 #define vstr_ref_del vstr_nx_ref_del
 #define vstr_ref_make_malloc vstr_nx_ref_make_malloc
 #define vstr_ref_make_memdup vstr_nx_ref_make_memdup
+#define vstr_ref_make_strdup vstr_nx_ref_make_strdup
 #define vstr_ref_make_ptr vstr_nx_ref_make_ptr
 #define vstr_ref_make_vstr_base vstr_nx_ref_make_vstr_base
 #define vstr_ref_make_vstr_conf vstr_nx_ref_make_vstr_conf

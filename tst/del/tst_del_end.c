@@ -42,7 +42,9 @@ int tst(void)
   size_t len = 0;
   Vstr_ref *adder_ref = NULL;
   size_t off = 0;
-
+  const char *tmp_s = NULL;
+  int tmp_i = 0;
+  
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   len = strlen(buf);
 
@@ -65,17 +67,21 @@ int tst(void)
   ADD(s4);
 
 
-  vstr_export_cstr_ptr(s1, 4, s1->len - 3);
-  vstr_export_iovec_ptr_all(s1, NULL, NULL);
+  tmp_s = vstr_export_cstr_ptr(s1, 4, s1->len - 3);
+  tmp_i = vstr_export_iovec_ptr_all(s1, NULL, NULL);
+  ASSERT(tmp_s && tmp_i);
+  
+  tmp_s = vstr_export_cstr_ptr(s2, 4, s2->len - 3);
+  tmp_i = vstr_export_iovec_ptr_all(s2, NULL, NULL);
+  ASSERT(tmp_s && tmp_i);
 
-  vstr_export_cstr_ptr(s2, 4, s2->len - 3);
-  vstr_export_iovec_ptr_all(s2,NULL,NULL);
+  tmp_s = vstr_export_cstr_ptr(s3, 4, s3->len - 3);
+  tmp_i = vstr_export_iovec_ptr_all(s3, NULL, NULL);
+  ASSERT(tmp_s && tmp_i);
 
-  vstr_export_cstr_ptr(s3, 4, s3->len - 3);
-  vstr_export_iovec_ptr_all(s3,NULL,NULL);
-
-  vstr_export_cstr_ptr(s4, 4, s4->len - 3);
-  vstr_export_iovec_ptr_all(s4,NULL,NULL);
+  tmp_s = vstr_export_cstr_ptr(s4, 4, s4->len - 3);
+  tmp_i = vstr_export_iovec_ptr_all(s4, NULL, NULL);
+  ASSERT(!tmp_s && !tmp_i);
 
 
   tst_del(s1, (len * 4) + 8);

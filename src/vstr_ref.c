@@ -52,7 +52,7 @@ static void vstr__ref_cb_free_ref(Vstr_ref *ref)
 }
 #endif
 
-Vstr_ref *vstr_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
+Vstr_ref *vstr_ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *))
 {
   Vstr_ref *ref = NULL;
 
@@ -70,7 +70,7 @@ Vstr_ref *vstr_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
     return (NULL);
 
   ref->ref = 1;
-  ref->ptr = ptr;
+  ref->ptr = (void *)ptr;
   ref->func = func;
 
   return (ref);
@@ -92,10 +92,12 @@ Vstr_ref *vstr_ref_make_malloc(size_t len)
   return (&ref->ref);
 }
 
-Vstr_ref *vstr_ref_make_memdup(void *ptr, size_t len)
+Vstr_ref *vstr_ref_make_memdup(const void *ptr, size_t len)
 {
   Vstr_ref *ref = vstr_ref_make_malloc(len);
-  vstr_wrap_memcpy(ref->ptr, ptr, len);
+
+  if (ref)
+    vstr_wrap_memcpy(ref->ptr, ptr, len);
 
   return (ref);
 }

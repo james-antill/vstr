@@ -4,5 +4,5 @@ static const char *rf = __FILE__;
 
 void xfail_tst(void)
 {
-  vstr_add_netstr_end(NULL, 0, 0);
+  vstr_add_netstr_end(TST__NULL_ptr, 0, 0);
 }

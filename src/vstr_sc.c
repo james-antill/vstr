@@ -468,10 +468,14 @@ static unsigned int vstr__sc_fmt_num10_len(unsigned int num)
 
 static unsigned int vstr__sc_fmt_num16_len(unsigned int num)
 {
-  if (num & 0xF0000000) return (8);
-  if (num & 0x0F000000) return (7);
-  if (num & 0x00F00000) return (6);
-  if (num & 0x000F0000) return (5);
+  ASSERT(num < 0x00010000);
+  /*
+    if (num & 0xF0000000) return (8);
+    if (num & 0x0F000000) return (7);
+    if (num & 0x00F00000) return (6);
+    if (num & 0x000F0000) return (5);
+  */
+  
   if (num & 0x0000F000) return (4);
   if (num & 0x00000F00) return (3);
   if (num & 0x000000F0) return (2);
@@ -614,14 +618,14 @@ static void vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
     else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT)
     {
       size_t len_minus = vstr__sc_fmt_num_ipv6_compact(ips, 6, pos_compact);
-      len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 7 - len_minus);
+      len = (vstr__sc_fmt_num_ipv6_std(ips, 6) + 6 - len_minus);
     }
 
     /* add the ipv4 address on the end using the last 2 16bit entities */
-    len += vstr__sc_fmt_num10_len((ips[6] >> 8) & 0xF);
-    len += vstr__sc_fmt_num10_len((ips[6] >> 0) & 0xF);
-    len += vstr__sc_fmt_num10_len((ips[7] >> 8) & 0xF);
-    len += vstr__sc_fmt_num10_len((ips[7] >> 0) & 0xF);
+    len += vstr__sc_fmt_num10_len((ips[6] >> 8) & 0xFF);
+    len += vstr__sc_fmt_num10_len((ips[6] >> 0) & 0xFF);
+    len += vstr__sc_fmt_num10_len((ips[7] >> 8) & 0xFF);
+    len += vstr__sc_fmt_num10_len((ips[7] >> 0) & 0xFF);
     len += 3;
   }
   else
@@ -809,6 +813,7 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
   unsigned int type = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 1);
   unsigned int cidr = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 2);
   size_t len = 0;
+  size_t saved_len = 0;
   size_t pos_compact = 9;
   size_t orig_len = 0;
 
@@ -816,7 +821,8 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
 
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
   len += 1 + vstr__sc_fmt_num10_len(cidr);
-
+  saved_len = len;
+  
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
@@ -826,7 +832,8 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
     return (FALSE);
   if (!vstr_add_fmt(base, pos + (base->len - orig_len), "/%u", cidr))
     return (FALSE);
-
+  ASSERT((base->len - orig_len) == saved_len);
+  
   if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 

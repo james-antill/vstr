@@ -1,4 +1,4 @@
-.TH vstr 3 "31-May-2003" "Vstr 1.0.6" "Vstr String Library"
+.TH vstr 3 "21-Sep-2003" "Vstr 1.0.7" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -171,6 +171,14 @@ struct Vstr_ref *\fBvstr_ref_make_ptr\fR(void *, void (*)(struct Vstr_ref *));
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_memdup\fR('u
 .ti \w'  'u
 struct Vstr_ref *\fBvstr_ref_make_memdup\fR(void *, size_t);
+.br
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_strdup\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBvstr_ref_make_strdup\fR(char *);
+.br
+.in \w'  struct Vstr_ref *\fBVSTR_REF_MAKE_STRDUP\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBVSTR_REF_MAKE_STRDUP\fR(char *);
 .br
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR('u
 .ti \w'  'u
@@ -1441,7 +1449,7 @@ Type\fB[4]\fR: size_t *
 \fBExplanation:\fR
 
 .br
-  This function is used to return a pointer to a Vstr memory reference of at  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
+  This function is used to return a pointer to a Vstr memory reference of at least length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
 .br
   When you are finished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
 .br
@@ -1544,7 +1552,7 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to export a copy of the data in the Vstr string to an array of iovec structures this can then be passed directly to writev()  (or even a readv() although that wouldn't often be useful) etc.
+  This function is used to export a copy of the data in the Vstr string to an array of iovec structures this can then be passed directly to writev() (or even a readv() although that wouldn't often be useful) etc.
 .br
   Think of this function as doing a readv() from a Vstr string.
 .br
@@ -1719,7 +1727,7 @@ Type\fB[4]\fR: size_t *
 \fBExplanation:\fR
 
 .br
-  This function is used to return a pointer to a Vstr memory reference of at  least length (Parameter[3]). The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
+  This function is used to return a pointer to a Vstr memory reference of at least length (Parameter[3]). The offset (Parameter[4]) should be used to find the beginning of the block of memory to use.
 .br
   When you are finished with the reference you need to use vstr_ref_del() or the memory will stay allocated forever.
 .br
@@ -1832,9 +1840,7 @@ Type\fB[1]\fR: struct Vstr_ref *
 .ti -2
 .br
 \fBFunction: \fR vstr_ref_del()
-.br
-Returns:
-.br
+ Returns:.br
 Type: void
 
 .br
@@ -2442,6 +2448,44 @@ Type\fB[2]\fR: size_t
 
 .ti -2
 .br
+\fBFunction: \fR vstr_ref_make_strdup()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Pointer to data
+.br
+Type\fB[1]\fR: char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function calls vstr_ref_make_memdup() with the length being the value of strlen() on the data parameter (Parameter[1]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_REF_MAKE_STRDUP()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Pointer to data
+.br
+Type\fB[1]\fR: char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_ref_make_memdup() with the length being the value of strlen() on the data parameter (Parameter[1]).
+
+.ti -2
+.br
 \fBFunction: \fR vstr_ref_make_vstr_base()
 .br
 Returns: Vstr memory reference
@@ -2604,7 +2648,7 @@ Type\fB[4]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to add a copy of the data in the data array to a  Vstr string.
+  This function is used to add a copy of the data in the data array to a Vstr string.
 .br
   Think of this function as doing a write() into a Vstr string.
 .br
@@ -4046,9 +4090,7 @@ Returns: TRUE on success and FALSE on failure
 .br
 Type: int
 
-.br
-Parameter\fB[1]\fR:
-.br
+ Parameter[1]:.br
 Type\fB[1]\fR: struct Vstr_conf *
 
 .br
@@ -8879,7 +8921,7 @@ Type\fB[2]\fR: struct Vstr_sects *
 \fBExplanation:\fR
 
 .br
-  This function will cause the section (Parameter[2]) that was previously  updated when changes are made to the Vstr string (Parameter[1]) to not be updated anymore.
+  This function will cause the section (Parameter[2]) that was previously updated when changes are made to the Vstr string (Parameter[1]) to not be updated anymore.
 
 .ti -2
 .br
@@ -9884,7 +9926,7 @@ Type\fB[4]\fR: ...
 .br
   This function allows you to register arbitrary format specifiers for printing from vstr_add_fmt(). Note that these trigger off the user escape character, which may or may not be the same as the "system" escape character of '%'.
 .br
-  The call back you register should return 0 (zero) if memory couldn't be  allocated and 1 (one) otherwise.
+  The call back you register should return 0 (zero) if memory couldn't be allocated and 1 (one) otherwise.
 .sp
 \fBNote:\fR
 
@@ -10195,7 +10237,7 @@ Type\fB[2]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  If you have generated cache data, this function will tell the cache function  to free that data.
+  If you have generated cache data, this function will tell the cache function to free that data.
 .sp
 \fBNote:\fR
 
@@ -10489,6 +10531,7 @@ Type\fB[2]\fR: const char *
   The function will return 0 if it needs to allocate memory and cannot do so.
 .br
   It is recommended that you use the name "{vstr}", with the gcc warning compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
 .ti -2
 .br
 \fBFunction: \fR vstr_sc_fmt_add_buf()
@@ -10834,7 +10877,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv4 IP addresses from a struct in_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in_addr *, to be passed to inet_ntop().
+  This function is used to add a custom specifier function to print ipv4 IP addresses from a struct in_addr *. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in_addr *, to be passed to inet_ntop().
 .sp
 \fBNote:\fR
 
@@ -10867,7 +10910,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in6_addr *, to be passed to inet_ntop().
+  This function is used to add a custom specifier function to print ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in6_addr *, to be passed to inet_ntop().
 .sp
 \fBNote:\fR
 
@@ -10900,7 +10943,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv4 IP addresses from a vector of 4 unsigned char. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
+  This function is used to add a custom specifier function to print ipv4 IP addresses from a vector of 4 unsigned char. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
 .sp
 \fBNote:\fR
 
@@ -10933,7 +10976,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv6 IP addresses from a vector of 8 unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
+  This function is used to add a custom specifier function to print ipv6 IP addresses from a vector of 8 unsigned int. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
 .sp
 \fBNote:\fR
 
@@ -10966,7 +11009,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
+  This function is used to add a custom specifier function to print ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an unsigned int. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
 .sp
 \fBNote:\fR
 
@@ -10999,7 +11042,7 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
+  This function is used to add a custom specifier function to print ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an unsigned int. It is equivalent to calling vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
 .sp
 \fBNote:\fR
 
@@ -11036,7 +11079,7 @@ Type\fB[1]\fR: struct Vstr_conf *
 .br
   If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
-  If any of the custom formatter adds fails (for example, if the name is already in use) then all the rest of the names of that type will fail,  however the other remaining types of formatters will be tried.
+  If any of the custom formatter adds fails (for example, if the name is already in use) then all the rest of the names of that type will fail, however the other remaining types of formatters will be tried.
 
 .ti -2
 .br

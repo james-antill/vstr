@@ -50,7 +50,8 @@ int tst(void)
     static Vstr_ref c;
     static Vstr_ref d;
     static Vstr_ref X;
-
+    int tmp = 0;
+    
     a.ptr = (void *)"a"; a.func = vstr_ref_cb_free_nothing; a.ref = 0;
     b.ptr = (void *)"b"; b.func = vstr_ref_cb_free_nothing; b.ref = 0;
     c.ptr = (void *)"c"; c.func = vstr_ref_cb_free_nothing; c.ref = 0;
@@ -62,7 +63,9 @@ int tst(void)
     vstr_add_cstr_ref(s1, s1->len, &X, 0);
     vstr_add_cstr_ref(s1, s1->len, &c, 0);
     vstr_add_cstr_ref(s1, s1->len, &d, 0);
-    vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY");/* sets up the pos cache */
+    /* sets up the pos cache */
+    tmp = vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY");
+    ASSERT(!tmp);
     vstr_sub_cstr_ref(s1, s1->len - 2, 1, &b, 0);
     TST_B_TST(ret, 5, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
   }

@@ -1,4 +1,4 @@
-.TH vstr_const 3 "31-May-2003" "Vstr 1.0.6" "Vstr String Library"
+.TH vstr_const 3 "21-Sep-2003" "Vstr 1.0.7" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -851,7 +851,7 @@
 \fBNote:\fR
 
 .br
-  Because you can have multiple arguments associated with one custom "fmt"  specification this has to be the last argument to every call to vstr_fmt_add().
+  Because you can have multiple arguments associated with one custom "fmt" specification this has to be the last argument to every call to vstr_fmt_add().
 .br
   Just specifying this type means that there are no arguments used, by the custom "fmt" specification.
 
@@ -2456,9 +2456,7 @@ Type\fB[1]\fR: const char **
 .br
 \fBConstant: \fR VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 
-.br
-Parameter\fB[1]\fR:
-.br
+ Parameter[1]:.br
 Type\fB[1]\fR: const char *
 
 .br
@@ -2695,7 +2693,7 @@ Type\fB[2]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  This option will make the number of spare nodes of the specified type fit into the range given, by calling either vstr_make_spare_nodes() or  vstr_free_spare_nodes().
+  This option will make the number of spare nodes of the specified type fit into the range given, by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
 .sp
 \fBNote:\fR
 

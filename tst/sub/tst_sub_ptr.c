@@ -22,7 +22,8 @@ int tst(void)
 {
   int ret = 0;
   int mfail_count = 0;
-
+  size_t tmp = 0;
+  
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
   VSTR_ADD_CSTR_BUF(s1, s1->len, buf);
   VSTR_ADD_CSTR_BUF(s1, s1->len, buf);
@@ -61,7 +62,10 @@ int tst(void)
   vstr_add_cstr_ptr(s1, s1->len, "X");
   vstr_add_cstr_ptr(s1, s1->len, "c");
   vstr_add_cstr_ptr(s1, s1->len, "d");
-  vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY"); /* sets up the pos cache */
+  /* sets up the pos cache */
+  tmp = vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY");
+  TST_B_TST(ret, 5, !!tmp);
+  
   vstr_sub_cstr_ptr(s1, s1->len - 2, 1, "b");
   TST_B_TST(ret, 5, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
 
@@ -87,7 +91,7 @@ int tst(void)
   {
     Vstr_iter iter[1];
 
-    vstr_iter_fwd_beg(s1, 3, 1, iter);
+    ASSERT(vstr_iter_fwd_beg(s1, 3, 1, iter));
     assert(VSTR__ITER_EQ_ALL_NODE(s1, iter));
   }
   vstr_sub_cstr_ptr(s1, 3, 1, "a"); /* speed bug in 1.0.6 and earlier */

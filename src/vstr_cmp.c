@@ -21,6 +21,21 @@
 /* functions for comparing vstrs */
 #include "main.h"
 
+#define VSTR__CMP_DOUBLE_ITER_BEG(b1, p1, l1, i1, b2, p2, l2, i2) do { \
+  int r1 = vstr_iter_fwd_beg(b1, p1, l1, i1); \
+  int r2 = vstr_iter_fwd_beg(b2, p2, l2, i2); \
+  if (!r1 && !r2) \
+    return (0); \
+  else if (!r1) \
+    return (-1); \
+  else if (!r2) \
+    return (1); \
+  \
+  ASSERT((i1)->node && (i2)->node); \
+  \
+ } while (FALSE)
+
+
 /* compare 2 vector strings */
 int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
              const Vstr_base *base_2, size_t pos_2, size_t len_2)
@@ -28,15 +43,8 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
 
-  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-
-  if (!iter1->node && !iter2->node)
-    return (0);
-  if (!iter1->node)
-    return (-1);
-  if (!iter2->node)
-    return (1);
+  VSTR__CMP_DOUBLE_ITER_BEG(base_1, pos_1, len_1, iter1,
+                            base_2, pos_2, len_2, iter2);
 
   do
   {
@@ -83,9 +91,7 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr_iter iter[1];
 
-  vstr_iter_fwd_beg(base, pos, len, iter);
-
-  if (!iter->node && !buf_len)
+  if (!vstr_iter_fwd_beg(base, pos, len, iter) && !buf_len)
     return (0);
   if (!iter->node)
     return (-1);
@@ -158,15 +164,8 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
 
-  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-
-  if (!iter1->node && !iter2->node)
-    return (0);
-  if (!iter1->node)
-    return (-1);
-  if (!iter2->node)
-    return (1);
+  VSTR__CMP_DOUBLE_ITER_BEG(base_1, pos_1, len_1, iter1,
+                            base_2, pos_2, len_2, iter2);
 
   do
   {
@@ -212,9 +211,7 @@ int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
 {
   Vstr_iter iter[1];
 
-  vstr_iter_fwd_beg(base, pos, len, iter);
-
-  if (!iter->node && !buf_len)
+  if (!vstr_iter_fwd_beg(base, pos, len, iter) && !buf_len)
     return (0);
   if (!iter->node)
     return (-1);
@@ -397,15 +394,8 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   int state = VSTR__CMP_NORM;
   int ret = 0;
 
-  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
-
-  if (!iter1->node && !iter2->node)
-    return (0);
-  if (!iter1->node)
-    return (-1);
-  if (!iter2->node)
-    return (1);
+  VSTR__CMP_DOUBLE_ITER_BEG(base_1, pos_1, len_1, iter1,
+                            base_2, pos_2, len_2, iter2);
 
   do
   {
@@ -468,9 +458,7 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
   int state = VSTR__CMP_NORM;
   int ret = 0;
 
-  vstr_iter_fwd_beg(base, pos, len, iter);
-
-  if (!iter->node && !buf_len)
+  if (!vstr_iter_fwd_beg(base, pos, len, iter) && !buf_len)
     return (0);
   if (!iter->node)
     return (-1);
