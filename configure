@@ -1410,7 +1410,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=6
+VSTR_MICRO_VERSION=7
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -15572,6 +15572,62 @@ _ACEOF
 
 esac
 
+echo "$as_me:$LINENO: checking if inline is a valid keyword" >&5
+echo $ECHO_N "checking if inline is a valid keyword... $ECHO_C" >&6
+if test "${local_cv_has_inline+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+
+inline int func(void) { return (0); }
+
+int main() {
+ return func();
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_inline=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_inline=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_inline" >&5
+echo "${ECHO_T}$local_cv_has_inline" >&6
+case x$local_cv_has_inline in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_INLINE 1
+_ACEOF
+ ;;
+esac
+
 echo "$as_me:$LINENO: result: " >&5
 echo "${ECHO_T}" >&6
 echo "$as_me:$LINENO: result: ${T_MD}Output Substitution:${T_ME}" >&5
@@ -15581,7 +15637,7 @@ echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 VSTR_LIBS="$LIBS"
 
 
-ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile src/vstr_version.c vstr.spec"
+ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/fmt/Makefile tst/parse/Makefile src/vstr_version.c vstr.spec"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -16069,6 +16125,12 @@ do
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "Documentation/Makefile" ) CONFIG_FILES="$CONFIG_FILES Documentation/Makefile" ;;
+  "tst/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/Makefile" ;;
+  "tst/cache/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cache/Makefile" ;;
+  "tst/cmp/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/cmp/Makefile" ;;
+  "tst/conv/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/conv/Makefile" ;;
+  "tst/fmt/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/fmt/Makefile" ;;
+  "tst/parse/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/parse/Makefile" ;;
   "src/vstr_version.c" ) CONFIG_FILES="$CONFIG_FILES src/vstr_version.c" ;;
   "vstr.spec" ) CONFIG_FILES="$CONFIG_FILES vstr.spec" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;

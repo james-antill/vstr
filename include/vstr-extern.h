@@ -125,6 +125,9 @@
 #define VSTR_CSPN_CSTR_BUF_REV(x, y, z, buf) \
  vstr_cspn_buf_rev(x, y, z, buf, strlen(buf))
 
+#define VSTR__CACHE(x) ((struct Vstr__base_cache *)(x))->cache
+
+
 /* == real functions == */
 
 /* not really vectored string functions ... just stuff needed */
@@ -396,3 +399,7 @@ extern int vstr_sc_write_file(struct Vstr_base *, size_t, size_t,
                               const char *, int, int, unsigned int *);
 
     
+/* == inline functions == */
+#if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
+# include <vstr-inline.h>
+#endif

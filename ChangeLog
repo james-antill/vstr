@@ -1,6 +1,68 @@
+2002-07-15  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.7
+
+	* src/vstr_cache.c (vstr__cache_cbs): Allow cache_internal to be enabled
+	again.
+
+	* src/vstr.c (vstr_free_conf): Make vstr_free_conf() have the std. free
+	semantics.
+
+2002-07-09  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_del): Add inline vstr_del() for deleting
+	from the begining of Vstrs.
+
+	* src/vstr_ref.c (vstr_ref_del): Make vstr_ref_del() have the std. free
+	semantics.
+
+2002-07-07  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_free_base): Must free conf last, as it might be the
+	last reference.
+
+2002-07-05  James Antill  <james@and.org>
+
+	* src/vstr_srch.c (vstr_srch_buf_fwd): Speed up search buf fwd.
+
+	* src/vstr_inline.c: Include out of line inlines.
+
+2002-07-04  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt_dbl_host.c (vstr__add_fmt_dbl): Do thousand
+	seperation on 'g' in 'f' style as well as 'f' itself.
+
+	* include/vstr-switch.h (VSTR_COMPILE_INLINE): Added runtime compile
+	switch to turn off inline'ing.
+
+	* src/vstr_cache.c (vstr_cache_set_data): Turn cache_internal off if a 
+	cache data value is set that isn't internal to the library. This is
+	speeds up the vstr_add_buf() inline.
+
+	* Documentation/functions.txt: Added doco. for vstr_exit(), vstr_num(),
+	VSTR_SRCH_CSTR_BUF_FWD(), VSTR_SRCH_CSTR_BUF_REV(), 
+	VSTR_SPN_CSTR_BUF_FWD(), VSTR_SPN_CSTR_BUF_REV(), 
+	VSTR_CSPN_CSTR_BUF_FWD(), VSTR_CSPN_CSTR_BUF_REV(), and vstr_cache_sub()
+
+2002-07-03  James Antill  <james@and.org>
+
+	* src/vstr_parse.c (vstr_parse_ipv4): Only increment the length for the
+	'/' if we are looking for more than just the ip.
+
+	* src/vstr_add_fmt.c (vstr__add_number): Only always show octal zero 
+	when # flag is on.
+
+	* tst/tst-main.c (main): Added "make check"
+
+	* src/vstr.c (vstr__make_conf_loc_def_numeric): Setup decimal point 
+	properly.
+
 2002-06-24  James Antill  <james@and.org>
 
-	* NEWS: Relase 0.9.6
+	* include/vstr-inline.h (vstr_add_buf): Add inline function.
+	(vstr_sects_add): Add inline function.
+
+	* NEWS: Release 0.9.6
 
 2002-06-24  James Antill  <james@and.org>
 

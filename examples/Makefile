@@ -3,21 +3,21 @@ WARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align
 
 LOCAL=1
 
+# PROF=-pg
+
 ifeq ($(LOCAL),1)
-CFLAGS=-I../include $(WARNS)
-LDFLAGS=../src/.libs/libvstr.a
+CFLAGS=-I../include $(WARNS) -O2 $(PROF)
+LDFLAGS=../src/.libs/libvstr.a $(PROF)
 else
-CFLAGS=`pkg-config --cflags vstr` $(WARNS)
-LDFLAGS=`pkg-config --libs vstr`
+CFLAGS=`pkg-config --cflags vstr` $(WARNS) $(PROF)
+LDFLAGS=`pkg-config --libs vstr` $(PROF)
 endif
 
 # Isn't converted to pkg-config yet...
 TQ_CFLAGS=`gnome-config --cflags timer_q`
 TQ_LDFLAGS=`gnome-config --libs timer_q`
 
-FILES=ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-          ex_test1 ex_test2 \
-          ex_cat ex_nl ex_slowcat
+FILES= ex_cat ex_hexdump ex_nl ex_slowcat # ex_tst1
 
 all: $(FILES)
 

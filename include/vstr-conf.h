@@ -162,7 +162,7 @@
 
 #define VSTR_AUTOCONF_ULONG_MAX_LEN 10
 
-#define VSTR_AUTOCONF_NDEBUG 1
+/* #undef NDEBUG */
 
 #define VSTR_AUTOCONF_FMT_DBL_host 1
 /* #undef FMT_DBL_glibc */
@@ -171,3 +171,5 @@
 /* #undef HAVE_LINKER_SCRIPT */
 
 #define VSTR_AUTOCONF_HAVE_POSIX_HOST 1
+
+#define VSTR_AUTOCONF_HAVE_INLINE 1

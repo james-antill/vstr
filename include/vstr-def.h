@@ -150,7 +150,7 @@ VSTR__DECL_TYPEDEF1(struct Vstr_base)
   unsigned int free_do : 1; /* private */
   unsigned int iovec_upto_date : 1; /* private */
   unsigned int cache_available : 1; /* private */
-  unsigned int unused04 : 1; /* private */
+  unsigned int cache_internal : 1; /* private */
   
   VSTR__DEF_BITFLAG_1_4(6); /* private */
   VSTR__DEF_BITFLAG_1_4(7); /* private */
@@ -187,4 +187,45 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sects)
   
   struct Vstr_sect_node *ptr; /* public/read|write */
 } VSTR__DECL_TYPEDEF2(Vstr_sects);
+
+
+/* internal defines ... */
+
+struct Vstr__cache_data_cstr
+{
+ size_t pos;
+ size_t len;
+ struct Vstr_ref *ref;
+};
+
+struct Vstr__cache_data_iovec
+{
+ struct iovec *v;
+ unsigned char *t;
+ /* num == base->num */
+ unsigned int off;
+ unsigned int sz;
+};
+
+struct Vstr__cache_data_pos
+{
+ size_t pos;
+ unsigned int num;
+ struct Vstr_node *node;
+};
+
+struct Vstr__cache
+{
+ unsigned int sz;
+ 
+ struct Vstr__cache_data_iovec *vec;
+ 
+ void *VSTR__STRUCT_HACK_ARRAY(data);
+};
+
+struct Vstr__base_cache
+{
+ struct Vstr_base base;
+ struct Vstr__cache *cache;
+};
 

@@ -194,7 +194,7 @@ static void vstr__del_all(Vstr_base *base)
 
 static void vstr__del_beg(Vstr_base *base, size_t len)
 {
-  size_t orig_len = base->len;
+  size_t orig_len = len;
   unsigned int num = 0;
   unsigned int type;
   Vstr_node **scan = NULL;
@@ -224,7 +224,9 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
    base->used += len;
    
    vstr__cache_iovec_del_node_beg(base, *scan, 1, len);
-   
+
+   vstr__cache_del(base, 1, orig_len);
+
    assert(vstr__check_real_nodes(base));
    return;
   }
@@ -232,9 +234,9 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
   num = 1;
   
   len -= ((*scan)->len - base->used);
-  if ((*scan)->type == VSTR_TYPE_NODE_REF)
-    vstr_ref_del(((Vstr_node_ref *)(*scan))->ref);
-  type = (*scan)->type;
+  assert((*scan)->type == VSTR_TYPE_NODE_BUF);
+  /*  vstr_ref_del(((Vstr_node_ref *)(*scan))->ref); */
+  type = VSTR_TYPE_NODE_BUF;
   
   scan = &(*scan)->next;
   
@@ -349,7 +351,7 @@ static Vstr_node *vstr__del_end_cleanup(Vstr_conf *conf, unsigned int type,
  return (ret);
 }
 
-int vstr_del(Vstr_base *base, size_t pos, size_t len)
+int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -364,12 +366,12 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
 
  assert(base && pos && ((pos + len - 1) <= base->len));
  
- if (pos == 1 && !len && !base->len)
+ if (!len && !base->len)
    return (TRUE);
  
- assert(len);
+ assert(pos && len);
 
- if (!len || (pos > base->len))
+ if (pos > base->len)
    return (FALSE);
 
  if (pos <= 1)

@@ -104,8 +104,9 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   tmp = ret;
   str = float_buffer;
   
-  /* hand code thousands_sep into the number if it's a %f or %F */
-  if (((spec->fmt_code == 'f') || (spec->fmt_code == 'F')) &&
+  /* hand code thousands_sep into the number if it's a %f style */
+  if (((spec->fmt_code != 'f') || (spec->fmt_code == 'F') ||
+       (spec->fmt_code != 'g') || (spec->fmt_code == 'G')) &&
       (spec->flags & THOUSAND_SEP) &&
       base->conf->loc->thousands_sep_len)
   {

@@ -33,6 +33,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \
+                        vstr_inline.c \
                         vstr_join.c \
                         vstr_mov.c \
                         vstr_parse.c \

@@ -1,23 +1,23 @@
 
-. bunch of the _rev functions don't have a fast path.
-
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 
 . Max and Min ammounts for spare nodes.
   min = when allocating a node actually do MAX(1, min_ammount - cur_ammount)
   max = when deleting a node actually do MAX(cur_ammount - max_ammount, 1)
 
-. Size of Vstr_base
-  base = 24 bytes could be 20
-         (num disappears ? ... becomes part of iovec ? [4]).
-
 . Optionaly use Timer_q to delete old cache entries ?
 
 . vstr_conv_encode_qp (quoted printable rfc2045.txt)
-. vstr_conv_encode_ASN.1 (International Standard 8824)
+. vstr_conv_encode_b64 (base64 rfc2045.txt)
+. ASN.1 (International Standard 8824)
 
 . only using _NON and _BUF nodes flag for sub functions optomisation.
 
 . Allow 0 len vstrs everywhere.
 
-. --without-posix configure option to remove POSIX APIs in vstr_sc.c
+. use enum's for types so gcc can warn on switch ?
+
+. vstr_x_* for external usage, 
+	Ie. vstr_x_pcre_*
+	vstr_x_hash_md5 vstr_x_hash_sha1
+

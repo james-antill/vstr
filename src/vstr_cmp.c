@@ -21,7 +21,7 @@
 /* functions for comparing vstrs */
 #include "main.h"
 
-/* compare 2 strings */
+/* compare 2 vector strings */
 int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
              const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {

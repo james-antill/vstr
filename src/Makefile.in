@@ -124,6 +124,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \
+                        vstr_inline.c \
                         vstr_join.c \
                         vstr_mov.c \
                         vstr_parse.c \
@@ -156,9 +157,9 @@ libvstr_la_LIBADD =
 @HAVE_POSIX_HOST_TRUE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
 @HAVE_POSIX_HOST_TRUE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
 @HAVE_POSIX_HOST_TRUE@vstr_del.lo vstr_dup.lo vstr_export.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_join.lo vstr_mov.lo vstr_parse.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_parse_netstr.lo vstr_ref.lo vstr_sc.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_sect.lo vstr_spn.lo vstr_split.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_inline.lo vstr_join.lo vstr_mov.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_parse.lo vstr_parse_netstr.lo vstr_ref.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_sc.lo vstr_sect.lo vstr_spn.lo vstr_split.lo \
 @HAVE_POSIX_HOST_TRUE@vstr_srch.lo vstr_sub.lo vstr_version.lo \
 @HAVE_POSIX_HOST_TRUE@vstr_sc_posix.lo
 @HAVE_POSIX_HOST_FALSE@libvstr_la_OBJECTS =  assert_loop.lo fix.lo \
@@ -166,11 +167,11 @@ libvstr_la_LIBADD =
 @HAVE_POSIX_HOST_FALSE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
 @HAVE_POSIX_HOST_FALSE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
 @HAVE_POSIX_HOST_FALSE@vstr_del.lo vstr_dup.lo vstr_export.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_join.lo vstr_mov.lo vstr_parse.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_parse_netstr.lo vstr_ref.lo vstr_sc.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_sect.lo vstr_spn.lo vstr_split.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_srch.lo vstr_sub.lo vstr_version.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.lo
+@HAVE_POSIX_HOST_FALSE@vstr_inline.lo vstr_join.lo vstr_mov.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_parse.lo vstr_parse_netstr.lo vstr_ref.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_sc.lo vstr_sect.lo vstr_spn.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_split.lo vstr_srch.lo vstr_sub.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_version.lo vstr_sc_noposix.lo
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)

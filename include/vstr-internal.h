@@ -65,45 +65,17 @@
 #define VSTR__ASCII_COLON() (0x3A)
 #define VSTR__ASCII_COMMA() (0x2C)
 
-typedef struct Vstr_cache_data_iovec
-{
- struct iovec *v;
- unsigned char *t;
- /* num == base->num */
- unsigned int off;
- unsigned int sz;
-} Vstr_cache_data_iovec;
+#define VSTR__CACHE_INTERNAL_POS_MAX 2
 
-typedef struct Vstr_cache_data_cstr
-{
- size_t pos;
- size_t len;
- struct Vstr_ref *ref;
-} Vstr_cache_data_cstr;
+typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;
 
-typedef struct Vstr_cache_data_pos
-{
- size_t pos;
- unsigned int num;
- struct Vstr_node *node;
-} Vstr_cache_data_pos;
+typedef struct Vstr__cache_data_cstr Vstr__cache_data_cstr;
 
-typedef struct Vstr_cache
-{
- unsigned int sz;
+typedef struct Vstr__cache_data_pos Vstr__cache_data_pos;
 
- struct Vstr_cache_data_iovec *vec;
+typedef struct Vstr__cache Vstr__cache;
 
- void *VSTR__STRUCT_HACK_ARRAY(data);
-} Vstr_cache;
-
-typedef struct Vstr__base_cache
-{
- Vstr_base base;
- Vstr_cache *cache;
-} Vstr__base_cache;
-
-#define VSTR__CACHE(x) ((Vstr__base_cache *)(x))->cache
+typedef struct Vstr__base_cache Vstr__base_cache;
 
 typedef struct Vstr__options
 {

@@ -65,10 +65,13 @@ void vstr__ref_cb_free_bufnode_ref(Vstr_ref *ref)
 
 void vstr_ref_del(Vstr_ref *tmp)
 {
- assert(tmp->ref);
- 
- if (!--tmp->ref)
-   (*tmp->func)(tmp);
+  if (!tmp)
+    return; /* std. free semantics */
+  
+  assert(tmp->ref);
+  
+  if (!--tmp->ref)
+    (*tmp->func)(tmp);
 }
 
 Vstr_ref *vstr_ref_add(Vstr_ref *tmp)

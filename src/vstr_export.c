@@ -1,6 +1,6 @@
 #define VSTR_EXPORT_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -238,7 +238,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
 
   if (base->cache_available)
   { /* use cstr cache if available */
-    Vstr_cache_data_cstr *data = NULL;
+    Vstr__cache_data_cstr *data = NULL;
     unsigned int off = base->conf->cache_pos_cb_cstr;
     
     if ((data = vstr_cache_get_data(base, off)) && data->ref)

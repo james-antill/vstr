@@ -156,36 +156,45 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 
  do
  {
-  if ((scan->type == VSTR_TYPE_NODE_NON) && !str)
-  {
-   if (!vstr_cmp_buf(base, pos + (ret - len), str_len, NULL, str_len))
-     return (pos + (ret - len));
-   goto next_loop;
-  }
-  if (!str)
-  {
-   non_len = 0;
-   goto next_loop;
-  }
-  
-  if (scan->type == VSTR_TYPE_NODE_NON)
-    goto next_loop;
-  
-  while (scan_len > 0)
-  {
-   size_t tmp = scan_len;
+   if ((scan->type == VSTR_TYPE_NODE_NON) && !str)
+   {
+     if (!vstr_cmp_buf(base, pos + (ret - len), str_len, NULL, str_len))
+       return (pos + (ret - len));
+     goto next_loop;
+   }
+   if (!str)
+   {
+     non_len = 0;
+     goto next_loop;
+   }
    
-   if (tmp > str_len)
-     tmp = str_len;
+   if (scan->type == VSTR_TYPE_NODE_NON)
+     goto next_loop;   
    
-   if (!memcmp(scan_str, str, tmp) &&
-       !vstr_cmp_buf(base, pos + ((ret - len) - scan_len), str_len,
-                     str, str_len))
-     return (pos + ((ret - len) - scan_len));
-   
-   ++scan_str;
-   --scan_len;
-  }
+   while (scan_len > 0)
+   {
+     size_t tmp = 0;
+     char *som = NULL; /* start of a possible match */
+     
+     if (!(som = memchr(scan_str, *(const char *)str, scan_len)))
+       goto next_loop;
+     scan_len -= (som - scan_str);
+     scan_str = som;
+
+     tmp = scan_len;
+     if (tmp > str_len)
+       tmp = str_len;
+     
+     if (!memcmp(scan_str, str, tmp) &&
+         ((tmp == str_len) ||
+          !vstr_cmp_buf(base,
+                        pos + ((ret - len) - scan_len) + tmp, str_len - tmp,
+                        str, str_len - tmp)))
+       return (pos + ((ret - len) - scan_len));
+     
+     ++scan_str;
+     --scan_len;
+   }
   
  next_loop:
   continue;

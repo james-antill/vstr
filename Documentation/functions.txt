@@ -15,6 +15,44 @@ Function: vstr_init()
   The function can be called multiple times, without any problems.
 
 
+Function: vstr_exit()
+ Returns: nothing
+ Type: void
+
+ Explanation:
+
+  This function can be called before exit, after all vstr objects have been
+ freed, to cleanup data allocated internally in the vstr library.
+
+ Note:
+
+  The function isn't needed but helps make sure there are no memory leaks, when
+ used with a memory checker.
+
+
+Section: Functions to get specific data about the vstr
+
+Function: vstr_num()
+ Returns: Number of nodes used in the vstr
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used to find out how many nodes are being used for a given
+ section of a vstr.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
 Section: Functions to export vstr data
 
 
@@ -1943,6 +1981,7 @@ Function: vstr_srch_buf_fwd()
   If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
  size (Paramter[5]) will be searched for.
 
+
 Function: vstr_srch_buf_rev()
  Returns: Position in the Vstr string of the start of the data
  Type: size_t
@@ -2039,6 +2078,49 @@ Function: vstr_srch_vstr_rev()
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   If the data cannot be found 0 is returned.
+
+Function: VSTR_SRCH_CSTR_BUF_FWD()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_srch_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_SRCH_CSTR_BUF_REV()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_srch_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
 
 
 Section: Functions to calculate spanning in a Vstr string
@@ -2155,6 +2237,94 @@ Function: vstr_cspn_buf_rev()
  Vstr string that are in the compliment of those in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+
+Function: VSTR_SPN_CSTR_BUF_FWD()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_spn_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_SPN_CSTR_BUF_REV()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_spn_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CSPN_CSTR_BUF_FWD()
+ Returns: Number of characters in the compliment span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_cspn_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CSPN_CSTR_BUF_REV()
+ Returns: Number of characters in the compliment span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_cspn_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
 
 
 Section: Functions for converting data in a vstr
@@ -2285,7 +2455,7 @@ Function: vstr_conv_decode_uri()
  the encoded sequence %20 becomes the ASCII space character ' ' etc.
 
 
-Section: Functions for dealing with a constant section of a vstr
+Section: Functions for dealing with a section of a vstr
 
 Function: VSTR_SECTS_DECL()
  Returns: Declaration of a Vstr sections
@@ -2972,7 +3142,32 @@ Function: vstr_parse_ipv4()
  cidr mask / netmask, from the Vstr string.
 
 
-Section: Functions for hooking into the cache for the Vstr string
+Section: Functions for hooking into the cache system for the Vstr string
+
+Function: vstr_cache_sub()
+ Returns: nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  If you are substituting data in a vstr (from an iovec export, followed by a
+ readv for instance or changing the data in a mmap()'d area) then you can use
+ this function to notify the vstr caching mechanisms.
+
+ Note:
+
+  This is a last resort function, to make the hard things possible, use
+ vstr_sub_*() functions instead.
+
 
 Function: vstr_cache_add_cb()
  Returns: Cookie reference for cache function

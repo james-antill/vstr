@@ -64,6 +64,12 @@ void vstr_version_func(void)
  "    Linker script enabled (suppresses internal symbols).\n"
 #endif
 
+#ifdef HAVE_INLINE
+ "    Functions can be inlined for speed.\n"
+#else
+ "    Functions cannot be inlined by the environment.\n"
+#endif
+
     
  "\n"
 "Information can be found at:                          http://www.and.org/vstr/"

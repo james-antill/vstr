@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=6
+VSTR_MICRO_VERSION=7
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -1105,6 +1105,25 @@ xnope) ;;
 *) AC_DEFINE_UNQUOTED(ULONG_MAX_LEN, $local_cv_has_ULONG_MAX_len_sprintf)
 esac
 
+AC_MSG_CHECKING(if inline is a valid keyword)
+AC_CACHE_VAL(local_cv_has_inline,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+inline int func(void) { return (0); }
+
+int main() {
+ return func();
+}],
+local_cv_has_inline=yes,
+local_cv_has_inline=no,
+)])
+AC_MSG_RESULT($local_cv_has_inline)
+case x$local_cv_has_inline in
+xyes) AC_DEFINE(HAVE_INLINE) ;;
+esac
+
 TWOCAN_CONF_MSG(Output Substitution)
 
 VSTR_LIBS="$LIBS"
@@ -1116,6 +1135,12 @@ AC_OUTPUT([Makefile
            src/Makefile
            include/Makefile
            Documentation/Makefile
+           tst/Makefile
+           tst/cache/Makefile
+           tst/cmp/Makefile
+           tst/conv/Makefile
+           tst/fmt/Makefile
+           tst/parse/Makefile
            src/vstr_version.c
            vstr.spec
 ])

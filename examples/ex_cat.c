@@ -32,6 +32,8 @@ static void ex_cat_read_fd_write_stdout(Vstr_base *str1, int fd)
     vstr_sc_read_fd(str1, str1->len, fd, 2, 32, &err);
     if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
       break;
+    if (err)
+      DIE("read:");
     
     if (!vstr_sc_write_fd(str1, 1, str1->len, 1, &err))
     { /* should really use socket_poll ...
@@ -77,6 +79,8 @@ int main(int argc, char *argv[])
  if (!str1)
    errno = ENOMEM, DIE("vstr_make_base:");
 
+ vstr_free_conf(conf);
+ 
  if (count == argc)  /* use stdin */
    ex_cat_read_fd_write_stdout(str1, 0);
 
@@ -111,8 +115,6 @@ int main(int argc, char *argv[])
      DIE("write:");
 
  vstr_free_base(str1);
-
- vstr_free_conf(conf);
  
  vstr_exit();
  

@@ -92,26 +92,14 @@ static int vstr__sects_del(Vstr_sects *sects)
   return (TRUE);
 }
 
-/* FIXME: inline */
-int vstr_sects_add(Vstr_sects *sects, size_t pos, size_t len)
+int vstr_extern_inline_sects_add(Vstr_sects *sects,
+                                 size_t pos __attribute__((unused)),
+                                 size_t len __attribute__((unused)))
 {
   /* see vstr-extern.h for why */
   assert(sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node));
-  
-  if (!sects->sz || (sects->num >= sects->sz))
-  {
-    if (!sects->can_add_sz)
-      return (FALSE);
-    
-    if (!vstr__sects_add(sects))
-      return (FALSE);
-  }
-  
-  sects->ptr[sects->num].pos = pos;
-  sects->ptr[sects->num].len = len;
-  ++sects->num;
-  
-  return (TRUE);
+
+  return (vstr__sects_add(sects));
 }
 
 int vstr_sects_del(Vstr_sects *sects, unsigned int num)

@@ -597,17 +597,20 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
 
   if (vstr_export_chr(base, pos) == sym_slash)
   {
-    ++pos;
-    --len;
-
     if (flags & VSTR_FLAG_PARSE_IPV4_CIDR)
     {
+      ++pos;
+      --len;
+      
       if (!vstr__parse_ipv4_cidr(base, pos, &len, flags, num_flags, sym_dot,
                                  cidr, err))
         return (FALSE);
     }
     else if (flags & VSTR_FLAG_PARSE_IPV4_NETMASK)
     {
+      ++pos;
+      --len;
+      
       if (!vstr__parse_ipv4_netmask(base, pos, &len, flags, num_flags, sym_dot,
                                     cidr, err))
         return (FALSE);

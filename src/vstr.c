@@ -74,8 +74,8 @@ static int vstr__make_conf_loc_def_numeric(Vstr_locale *loc)
   *loc->name_lc_numeric_str = 'C'; 
   loc->name_lc_numeric_len = 1;
 
-  *loc->name_lc_numeric_str = '.'; 
-  loc->decimal_point_len = 0;
+  *loc->decimal_point_str = '.'; 
+  loc->decimal_point_len = 1;
   
   loc->thousands_sep_len = 0;
 
@@ -213,7 +213,7 @@ Vstr_conf *vstr_make_conf(void)
   conf->iov_min_alloc = 0;
   conf->iov_min_offset = 0;
   
-  conf->buf_sz = 32 - sizeof(Vstr_node_buf);
+  conf->buf_sz = 64 - sizeof(Vstr_node_buf);
 
   conf->ref = 1;
   
@@ -288,6 +288,9 @@ void vstr__del_conf(Vstr_conf *conf)
 
 void vstr_free_conf(Vstr_conf *conf)
 {
+  if (!conf)
+    return;
+  
   assert(conf->no_node_ref > 0);
   assert(conf->no_node_ref < 3); /* only a user and the default */
   assert(conf->no_node_ref <= conf->ref);
@@ -458,7 +461,7 @@ static int vstr__cache_iovec_check(Vstr_base *base)
 
 static int vstr__cache_cstr_check(Vstr_base *base)
 {
-  Vstr_cache_data_cstr *data = NULL;
+  Vstr__cache_data_cstr *data = NULL;
   
   if (!(data = vstr_cache_get_data(base, base->conf->cache_pos_cb_cstr)))
     return (TRUE);
@@ -487,6 +490,7 @@ static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
    VSTR__CACHE(base) = NULL;
    base->cache_available = TRUE;
  }
+ base->cache_internal = TRUE;
  
  vstr__add_base_conf(base, conf);
 
@@ -513,10 +517,10 @@ void vstr_free_base(Vstr_base *base)
    return;
 
  vstr_del(base, 1, base->len);
- 
- vstr__del_conf(base->conf);
 
  vstr__free_cache(base);
+ 
+ vstr__del_conf(base->conf);
  
  if (base->free_do)
    free(base);
@@ -889,14 +893,14 @@ int vstr__check_spare_nodes(Vstr_conf *conf)
 static int vstr__base_cache_pos(const Vstr_base *base,
                                 Vstr_node *node, size_t pos, unsigned int num)
 {
-  Vstr_cache_data_pos *data = NULL;
+  Vstr__cache_data_pos *data = NULL;
   
   if (!base->cache_available)
     return (FALSE);
 
   if (!(data = vstr_cache_get_data(base, base->conf->cache_pos_cb_pos)))
   {
-    if (!(data = malloc(sizeof(Vstr_cache_data_pos))))
+    if (!(data = malloc(sizeof(Vstr__cache_data_pos))))
       return (FALSE);
 
     if (!vstr_cache_set_data(base, base->conf->cache_pos_cb_pos, data))
@@ -932,14 +936,19 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
 {
  size_t orig_pos = *pos;
  Vstr_node *scan = base->beg;
- Vstr_cache_data_pos *data = NULL;
+ Vstr__cache_data_pos *data = NULL;
 
+ // fprintf(stderr, "pos = %zu\tlen=%zu\tbeglen=%zu\n", *pos, base->len,
+ //         base->beg ? base->beg->len : 0);
+ 
  *pos += base->used;
  *num = 1;
- 
- if (base->beg == base->end)
-   return (base->beg);
 
+ if (*pos <= base->beg->len)
+ {
+   return (base->beg);
+ }
+ 
  /* must be more than one node */
  
  if (orig_pos > (base->len - base->end->len))
@@ -956,7 +965,9 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
   *num = data->num;
   *pos = (orig_pos - data->pos) + 1;
  }
- 
+
+ // fprintf(stderr, "** miss num = %u\t", *num);
+
  while (*pos > scan->len)
  {
   *pos -= scan->len;
@@ -968,6 +979,8 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
 
  if (cache && (*num > 1))
    vstr__base_cache_pos(base, scan, (orig_pos - *pos) + 1, *num);
+
+ // fprintf(stderr, "%u\n", *num);
  
  return (scan);
 }
@@ -979,10 +992,8 @@ Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
 {
  Vstr_node *scan = NULL;
 
- if ((pos == 1) && !*len && !base->len)
-   return (NULL);
- 
- assert(base && pos && len && *len && ((pos + *len - 1) <= base->len));
+ assert(base && pos && len && (((pos <= base->len) &&
+                                ((pos + *len - 1) <= base->len)) || !*len));
  
  if ((pos > base->len) || !*len)
    return (NULL);

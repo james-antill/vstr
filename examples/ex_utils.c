@@ -34,7 +34,7 @@ void ex_utils_die(const char *msg, ...)
     vstr_add_vfmt(str, str->len, msg, ap);
     va_end(ap);
     
-    if (vstr_export_chr(str, strlen(msg)) == ':')
+    if (msg[strlen(msg) - 1] == ':')
       vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
     
     vstr_add_buf(str, str->len, "\n", 1);

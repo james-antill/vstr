@@ -60,7 +60,7 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
 
 void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
                                     unsigned int len)
-{
+{ /* repeated in vstr-inline.h */
   if (!base->iovec_upto_date)
     return;
   
@@ -221,9 +221,8 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  assert(vstr__check_real_nodes(base)); \
 } while (FALSE)
 
-/* FIXME: inline first bit */
-int vstr_add_buf(Vstr_base *base, size_t pos,
-                 const void *buffer, size_t len)
+int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
+                               const void *buffer, size_t len)
 {
   unsigned int num = 0;
   size_t orig_pos = pos;
@@ -458,7 +457,7 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
   {
     if ((*scan)->type == VSTR_TYPE_NODE_BUF)
     {
-      Vstr_cache_data_pos *data = NULL;
+      Vstr__cache_data_pos *data = NULL;
 
       if (base->conf->spare_ref_num < 1)
       {
@@ -575,6 +574,7 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
           return (FALSE);
         break;
       }
+      
       if (!vstr_add_ptr(base, pos, ptr + off, len))
         return (FALSE);
     }
@@ -589,6 +589,7 @@ static int vstr__add_vstr_node(Vstr_base *base, size_t pos,
           return (FALSE);
         break;
       }
+      
       if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, len))
         return (FALSE);
       break;

@@ -43,12 +43,12 @@ static Vstr__buf_ref *vstr__export_cstr_ref(const Vstr_base *base,
   return (ref);
 }
 
-static Vstr_cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
-                                               size_t pos, size_t len,
-                                               size_t *ret_off)
+static Vstr__cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
+                                                size_t pos, size_t len,
+                                                size_t *ret_off)
 {
   struct Vstr__buf_ref *ref = NULL;
-  Vstr_cache_data_cstr *data = NULL;
+  Vstr__cache_data_cstr *data = NULL;
   unsigned int off = base->conf->cache_pos_cb_cstr;
   
   assert(base && pos && ((pos + len - 1) <= base->len));
@@ -59,7 +59,7 @@ static Vstr_cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
     if (!vstr_cache_set_data(base, off, NULL))
       return (NULL);
     
-    if (!(data = malloc(sizeof(Vstr_cache_data_cstr))))
+    if (!(data = malloc(sizeof(Vstr__cache_data_cstr))))
     {
       base->conf->malloc_bad = TRUE;
       return (NULL);
@@ -100,7 +100,7 @@ static Vstr_cache_data_cstr *vstr__export_cstr(const Vstr_base *base,
 
 char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
 {
-  Vstr_cache_data_cstr *data = NULL;
+  Vstr__cache_data_cstr *data = NULL;
   size_t off = 0;
   
   if (!(data = vstr__export_cstr(base, pos, len, &off)))
@@ -112,7 +112,7 @@ char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
 Vstr_ref *vstr_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
                                size_t *ret_off)
 {
-  Vstr_cache_data_cstr *data = NULL;
+  Vstr__cache_data_cstr *data = NULL;
   
   if (!base->cache_available)
   {

@@ -170,3 +170,5 @@
 #undef HAVE_LINKER_SCRIPT
 
 #undef HAVE_POSIX_HOST
+
+#undef HAVE_INLINE

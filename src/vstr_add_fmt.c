@@ -59,60 +59,43 @@
 
 static int vstr__add_spaces(Vstr_base *base, size_t pos_diff, size_t len)
 {
- size_t tmp = CONST_STRLEN(VSTR__CONST_STR_SPACE);
- unsigned int num = 0;
- unsigned int left = 0;
-
- if (base->end)
-   left = (base->conf->buf_sz - base->end->len);
- 
- if (len > left)
-   num = (len / base->conf->buf_sz) + 1; /* overestimates ... but that's ok */
-
- if ((base->conf->spare_buf_num < num) &&
-     (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
-   return (FALSE);
-
- while (tmp < len)
- {
-  VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, tmp);
-  len -= tmp;
- }
-
- if (len)
-   VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, len);
- 
- return (TRUE);
+  size_t tmp = CONST_STRLEN(VSTR__CONST_STR_SPACE);
+  
+  while (tmp < len)
+  {
+    if (!VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, tmp))
+      goto fail;
+    len -= tmp;
+  }
+  
+  if (len && !VSTR__FMT_ADD(base, VSTR__CONST_STR_SPACE, len))
+    goto fail;
+  
+  return (TRUE);
+ fail:
+  return (FALSE);
 }
 
 static int vstr__add_zeros(Vstr_base *base, size_t pos_diff, size_t len)
 {
- size_t tmp = CONST_STRLEN(VSTR__CONST_STR_ZERO);
- unsigned int num = 0;
- unsigned int left = 0;
-
- if (base->end)
-   left = (base->conf->buf_sz - base->end->len);
- 
- if (len > left)
-   num = (len / base->conf->buf_sz) + 1; /* overestimates ... but that's ok */
-
- if ((base->conf->spare_buf_num < num) &&
-     (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
-   return (FALSE);
-
- while (tmp < len)
- {
-  VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, tmp);
-  len -= tmp;
- }
-
- if (len)
-   VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, len);
- return (TRUE);
+  size_t tmp = CONST_STRLEN(VSTR__CONST_STR_ZERO);
+  
+  while (tmp < len)
+  {
+    if (!VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, tmp))
+      goto fail;
+    len -= tmp;
+  }
+  
+  if (len && !VSTR__FMT_ADD(base, VSTR__CONST_STR_ZERO, len))
+    goto fail;
+  
+  return (TRUE);
+ fail:
+  return (FALSE);
 }
 
-/* print a number backwards... */
+/* print a number backwards (any base)... */
 #define VSTR__FMT_ADD_NUM(type) do { \
  type *ptr_num = (type *)passed_num; \
  type num = *ptr_num; \
@@ -204,10 +187,10 @@ static int vstr__grouping_add_num(Vstr_base *base, size_t pos_diff,
   return (TRUE);
 }
 
-static int vstr__add_number(Vstr_base *base, size_t pos_diff,
-                            void *passed_num, int int_type,
-                            unsigned int size, unsigned int precision,
-                            int flags)
+static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
+                                void *passed_num, int int_type,
+                                unsigned int size, unsigned int precision,
+                                int flags)
 {
  char sign = 0;
  /* used to hold the actual number */
@@ -224,7 +207,7 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
  
  /* hacky spec, if precision == 0 and num ==0, then don't display anything,
   * apart from if it's in octal and they specified the '#' modifier */
- if (!precision && (flags & IS_ZERO) && (num_base == 8))
+ if (!precision && (flags & IS_ZERO) && (flags & SPECIAL) && (num_base == 8))
    ++precision;
  /* if the usr specified a precision the '0' flag is ignored */
  if (flags & IS_USR_PREC)
@@ -331,25 +314,25 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
  if (flags & SPECIAL)
    switch (num_base)
    {
-    case 16:
-      if (!(flags & IS_ZERO) && precision)
-      {
-        if (!vstr__add_zeros(base, pos_diff, 1))
-          goto failed_alloc;
-        if (!VSTR__FMT_ADD(base, (digits + 33), 1))
-          goto failed_alloc;
-      }
-      break;
-     
-    case 8:
-      if (!(flags & IS_ZERO) && precision)
-      {
-        if (!vstr__add_zeros(base, pos_diff, 1))
-          goto failed_alloc;
-      }
-      /* FALLTHROUGH */
-    default:
-      break;
+     case 16: /* only append 0x if it is a non-zero value */
+       if (!(flags & IS_ZERO) && precision)
+       {
+         if (!vstr__add_zeros(base, pos_diff, 1))
+           goto failed_alloc;
+         if (!VSTR__FMT_ADD(base, (digits + 33), 1))
+           goto failed_alloc;
+       }
+       break;
+       
+     case 8: /* just print number if 0 */
+       if (!(flags & IS_ZERO) && precision)
+       {
+         if (!vstr__add_zeros(base, pos_diff, 1))
+           goto failed_alloc;
+       }
+       /* FALLTHROUGH */
+     default:
+       break;
    }
 
  if (!(flags & LEFT))
@@ -748,10 +731,10 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
                TRUE);
 #undef VSTR__FMT_A
 #undef VSTR__FMT_L_A
-        
-        if (!vstr__add_number(base, pos_diff, &spec->u, spec->int_type,
-                              spec->field_width, spec->precision,
-                              spec->num_base | spec->flags))
+
+        if (!vstr__add_fmt_number(base, pos_diff, &spec->u, spec->int_type,
+                                  spec->field_width, spec->precision,
+                                  spec->num_base | spec->flags))
           goto failed_alloc;
         break;
         
