@@ -1093,6 +1093,18 @@ static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
+static void http__multi_hdr_fixup(Vstr_sect_node *hdr_ignore,
+                                  Vstr_sect_node *hdr, size_t pos, size_t len)
+{
+  if (hdr == hdr_ignore)
+    return;
+  
+  if (hdr->pos <= pos)
+    return;
+
+  hdr->pos += len;
+}
+
 static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
                                Vstr_sect_node *hdr, size_t pos, size_t len)
 {
@@ -1116,10 +1128,19 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
   /* reverses the order, but that doesn't matter */
   if (!vstr_add_cstr_ptr(comb, hdr->pos - 1, ","))
     return (FALSE);
-  
-  hdr->len += len + 1;
-  return (vstr_add_vstr(comb, hdr->pos - 1,
-                        data, pos, len, VSTR_TYPE_ADD_BUF_PTR));
+
+  if (!vstr_add_vstr(comb, hdr->pos - 1,
+                     data, pos, len, VSTR_TYPE_ADD_BUF_PTR))
+    return (FALSE);
+  hdr->len += ++len;
+
+  pos = hdr->pos - 1;
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept,          pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_encoding, pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_language, pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_range,           pos, len);
+    
+  return (TRUE);
 }
 
 /* vprefix, with local knowledge */

@@ -1,12 +1,18 @@
 GET / HTTP/1.1
 Host: default
 Accept: text/foo
+Range: ,
+Accept-Languge: en-US
 Accept: text/bar
 
 GET / HTTP/1.1
 Host: default
 Accept: text/foo
+Range: ,
+Accept-Languge: en-US
 Accept: text/html
+Range: ,
+Accept-Languge: fr,de
 Accept: text/bar
 Connection: close
 
