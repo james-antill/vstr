@@ -1,4 +1,3 @@
-
 #ifndef VSTR__HEADER_H
 # error " You must _just_ #include <vstr.h>"
 #endif
@@ -489,7 +488,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 
         pdata = (struct Vstr__cache_data_cstr *)data;
 
-        if (pdata->ref)
+        if (pdata->ref && pdata->len)
         {
           size_t data_end_pos = pdata->pos + pdata->len - 1;
           size_t end_pos = len;
@@ -561,8 +560,7 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 
         pdata = (struct Vstr__cache_data_cstr *)data;
         
-        vstr_ref_del(pdata->ref);
-        pdata->ref = (struct Vstr_ref *)0;
+        pdata->len = 0;
       }
       if (base->iovec_upto_date)
       {

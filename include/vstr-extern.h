@@ -676,7 +676,7 @@ extern struct Vstr_ref *vstr_export_ref(const struct Vstr_base *,
                                         size_t, size_t, size_t *)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
-extern char *vstr_export_cstr_ptr(const struct Vstr_base *, size_t, size_t)
+extern const char *vstr_export_cstr_ptr(const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern char *vstr_export_cstr_malloc(const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();

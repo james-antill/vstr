@@ -49,6 +49,10 @@ tst_del = \
     del/tst_del_mid \
     del/tst_del_end
 
+xfail_tst_del = \
+    del/xfail_tst_del_oob_pos \
+    del/xfail_tst_del_oob_len
+
 tst_dup = \
     dup/tst_dup_buf \
     dup/tst_dup_ptr \
@@ -159,6 +163,10 @@ tst_x = \
     x/tst_x_swap_conf \
     x/tst_x_version
 
+xfail_tst_x = \
+    x/xfail_tst_x_make_bad_node \
+    x/xfail_tst_x_free_bad_node
+
 
 tst = \
   $(tst_add) \
@@ -183,7 +191,9 @@ tst = \
 
 xfail_tst = \
   $(xfail_tst_add) \
-  $(xfail_tst_fmt)
+  $(xfail_tst_del) \
+  $(xfail_tst_fmt) \
+  $(xfail_tst_x)
 
 check_PROGRAMS = $(tst) $(xfail_tst)
 

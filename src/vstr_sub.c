@@ -241,11 +241,7 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
     if (iter->node->type == VSTR_TYPE_NODE_PTR)
       vstr__cache_iovec_reset_node(base, &ptr_node->s, iter->num);
     else
-    {
-      if (iter->node == base->beg)
-        base->used = 0;
       vstr__swap_node_X_X(base, pos, &ptr_node->s);
-    }
     
     vstr_cache_cb_sub(base, pos, ptr_len);
     
@@ -326,11 +322,7 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
     if (iter->node->type == VSTR_TYPE_NODE_REF)
       vstr__cache_iovec_reset_node(base, &ref_node->s, iter->num);
     else
-    {
-      if (iter->node == base->beg)
-        base->used = 0;
       vstr__swap_node_X_X(base, pos, &ref_node->s);
-    }
     
     vstr_cache_cb_sub(base, pos, ref_len);
     

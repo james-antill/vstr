@@ -26,5 +26,15 @@ int tst(void)
   vstr_sub_cstr_ptr(s1, 1, s1->len, buf);
   TST_B_TST(ret, 4, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
 
+  strcat(buf, "abcd");
+  vstr_add_cstr_ptr(s1, s1->len, "a");
+  vstr_add_cstr_ptr(s1, s1->len, "X");
+  vstr_add_cstr_ptr(s1, s1->len, "c");
+  vstr_add_cstr_ptr(s1, s1->len, "d");
+  vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY"); /* sets up the pos cache */
+  vstr_sub_cstr_ptr(s1, s1->len - 2, 1, "b");
+  TST_B_TST(ret, 5, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
+  
+  
   return (TST_B_RET(ret));
 }

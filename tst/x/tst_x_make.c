@@ -28,7 +28,7 @@ static void tst_nums(int *ret,
 int tst(void)
 {
   int ret = 0;
-
+  
   tst_nums(&ret, 0, 0, 0, 0);
 
   TST_B_TST(ret, 10,
@@ -90,6 +90,38 @@ int tst(void)
             !vstr_cntl_conf(s1->conf,
                             VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, 40, 50));
   tst_nums(&ret, 20, 30, 40, 50);
+
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_conf *succeeded = NULL;
+    unsigned long mfail_count = 0;
+    
+    while (!succeeded)
+    {
+      tst_mfail_num(++mfail_count);
+      succeeded = vstr_make_conf();
+    }
+    tst_mfail_num(0);
+    ASSERT(mfail_count > 1);
+    vstr_free_conf(succeeded);
+  }
+
+  if (MFAIL_NUM_OK)
+  {
+    Vstr_base *succeeded = NULL;
+    unsigned long mfail_count = 0;
+    
+    while (!succeeded)
+    {
+      tst_mfail_num(++mfail_count);
+      succeeded = vstr_make_base(NULL);
+    }
+    tst_mfail_num(0);
+    ASSERT(mfail_count > 1);
+    vstr_free_base(succeeded);
+  }
+
+  vstr_free_conf(NULL);
   
   return (TST_B_RET(ret));
 }

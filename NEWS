@@ -1,3 +1,8 @@
+ Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up 
+export_cstr_ptr() in certain cases ... fixed problem with substituting data of
+_ptr and _ref types and having a bad position cache ... added documentation
+about the internal design.
+
  Version 1.0.3 ... a few corner case bugs fixed ... added a HAVE_CACHE control
 for Vstr strings ... fixed the examples to work on 0 length proc files ...
 added assert calls to inline functions ... added builtin_constant_p() and

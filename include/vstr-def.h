@@ -254,9 +254,9 @@ struct Vstr__cache_data_cstr
 {
  size_t pos;
  size_t len;
- size_t off;
- size_t sz;
  struct Vstr_ref *ref;
+ size_t sz; /* ABI: order must be this, for ABI */
+ size_t off;
 };
 
 struct Vstr__cache_data_iovec

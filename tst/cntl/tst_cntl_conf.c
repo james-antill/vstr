@@ -64,6 +64,22 @@ int tst(void)
   TST_CSTR(  7, LOC_CSTR_NAME_NUMERIC, "C", "James");
   TST_CSTR2( 8, LOC_CSTR_THOU_GRP, "", "\1\2\3\255abcd", "\1\2\3\255");
   TST_CSTR(  9, LOC_CSTR_THOU_SEP, "", "<->");
+
+  if (MFAIL_NUM_OK)
+  {
+    int succeeded = FALSE;
+    unsigned long mfail_count = 0;
+    
+    while (!succeeded)
+    {
+      tst_mfail_num(++mfail_count);
+      succeeded = vstr_cntl_conf(NULL,
+                                 VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
+                                 "C");
+    }
+    tst_mfail_num(0);
+    ASSERT(mfail_count > 1);
+  }
   
   return (TST_B_RET(ret));
 }

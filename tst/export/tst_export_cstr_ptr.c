@@ -4,8 +4,8 @@ static const char *rf = __FILE__;
 
 int tst(void)
 {
-  char *optr = NULL;
-  char *ptr = NULL;
+  const char *optr = NULL;
+  const char *ptr = NULL;
   int ret = 0;
   struct iovec *dum1 = NULL;
   unsigned int dum2 = 0;
@@ -61,17 +61,22 @@ int tst(void)
   optr = vstr_export_cstr_ptr(s1, 1, s1->len);
   
   /* s2 */
-  vstr_add_buf(s2, 0, "a", 1);
-  ptr = vstr_export_cstr_ptr(s2, 1, s2->len);
-  vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
-  vstr_del(s2, 1, s2->len);
+  {
+    const char *optr2 = optr;
+    
+    vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
+    optr = vstr_export_cstr_ptr(s2, 1, s2->len);
+    vstr_del(s2, 1, s2->len);
+    
+    vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
+    ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);
+    
+    TST_B_TST(ret, 14, !!strcmp(buf + 5, ptr));
+    TST_B_TST(ret, 15, (ptr != optr)); /* uses same space */
+    
+    optr = optr2;
+  }
   
-  vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
-  ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);
-  
-  TST_B_TST(ret, 14, !!strcmp(buf + 5, ptr));
-  TST_B_TST(ret, 15, (ptr != (optr + 5)));
-
   vstr_cache_cb_free(s2, 0); /* free all cached stuff */
   
   ptr = vstr_export_cstr_ptr(s2, 6, s2->len - 5);

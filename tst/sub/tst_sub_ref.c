@@ -31,5 +31,28 @@ int tst(void)
   vstr_sub_cstr_ref(s1, 1, s1->len, &ref, 0);
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
   
+  {
+    static Vstr_ref a;
+    static Vstr_ref b;
+    static Vstr_ref c;
+    static Vstr_ref d;
+    static Vstr_ref X;
+
+    a.ptr = (void *)"a"; a.func = vstr_ref_cb_free_nothing; a.ref = 0;
+    b.ptr = (void *)"b"; b.func = vstr_ref_cb_free_nothing; b.ref = 0;
+    c.ptr = (void *)"c"; c.func = vstr_ref_cb_free_nothing; c.ref = 0;
+    d.ptr = (void *)"d"; d.func = vstr_ref_cb_free_nothing; d.ref = 0;
+    X.ptr = (void *)"X"; X.func = vstr_ref_cb_free_nothing; X.ref = 0;
+
+    strcat(buf, "abcd");
+    vstr_add_cstr_ref(s1, s1->len, &a, 0);
+    vstr_add_cstr_ref(s1, s1->len, &X, 0);
+    vstr_add_cstr_ref(s1, s1->len, &c, 0);
+    vstr_add_cstr_ref(s1, s1->len, &d, 0);
+    vstr_srch_cstr_buf_fwd(s1, s1->len - 2, 3, "XY");/* sets up the pos cache */
+    vstr_sub_cstr_ref(s1, s1->len - 2, 1, &b, 0);
+    TST_B_TST(ret, 5, !vstr_cmp_cstr_eq(s1, 1, s1->len, buf));
+  }
+  
   return (TST_B_RET(ret));
 }

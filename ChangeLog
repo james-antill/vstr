@@ -1,3 +1,26 @@
+2003-03-15  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.4
+
+	* src/vstr_cstr.c (vstr_export_cstr_ptr): Change return value to be 
+	const qualified.
+
+	* Documentation/design.html: Documentation that gives a look at the
+	internal design of the library.
+
+	* src/vstr_cache.c (vstr__cache_cstr_cb): Keep malloc'd cstr data
+	around, even when not currently valid.
+
+2003-03-13  James Antill  <james@and.org>
+
+	* include/vstr-def.h (struct Vstr__cache_data_cstr): Fix ABI breakage in
+	1.0.3
+
+2003-03-07  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr__swap_node_X_X): Fix test for old node, for updating
+	position cache node.
+
 2003-03-04  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.3

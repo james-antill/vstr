@@ -166,6 +166,11 @@ tst_del = \
     del/tst_del_end
 
 
+xfail_tst_del = \
+    del/xfail_tst_del_oob_pos \
+    del/xfail_tst_del_oob_len
+
+
 tst_dup = \
     dup/tst_dup_buf \
     dup/tst_dup_ptr \
@@ -290,6 +295,11 @@ tst_x = \
     x/tst_x_version
 
 
+xfail_tst_x = \
+    x/xfail_tst_x_make_bad_node \
+    x/xfail_tst_x_free_bad_node
+
+
 tst = \
   $(tst_add) \
   $(tst_cache) \
@@ -314,7 +324,9 @@ tst = \
 
 xfail_tst = \
   $(xfail_tst_add) \
-  $(xfail_tst_fmt)
+  $(xfail_tst_del) \
+  $(xfail_tst_fmt) \
+  $(xfail_tst_x)
 
 
 check_PROGRAMS = $(tst) $(xfail_tst)
@@ -389,8 +401,12 @@ check_PROGRAMS = add/tst_add_buf$(EXEEXT) add/tst_add_ptr$(EXEEXT) \
 	x/tst_x_ref$(EXEEXT) x/tst_x_swap_conf$(EXEEXT) \
 	x/tst_x_version$(EXEEXT) add/xfail_tst_add_buf_pos$(EXEEXT) \
 	add/xfail_tst_add_buf_NULL$(EXEEXT) \
+	del/xfail_tst_del_oob_pos$(EXEEXT) \
+	del/xfail_tst_del_oob_len$(EXEEXT) \
 	fmt/xfail_tst_fmt_invalid_sysfmt$(EXEEXT) \
-	fmt/xfail_tst_fmt_invalid_fmt$(EXEEXT)
+	fmt/xfail_tst_fmt_invalid_fmt$(EXEEXT) \
+	x/xfail_tst_x_make_bad_node$(EXEEXT) \
+	x/xfail_tst_x_free_bad_node$(EXEEXT)
 add_tst_add_buf_SOURCES = add/tst_add_buf.c
 add_tst_add_buf_OBJECTS = tst_add_buf.$(OBJEXT)
 add_tst_add_buf_LDADD = $(LDADD)
@@ -546,6 +562,16 @@ del_tst_del_mid_OBJECTS = tst_del_mid.$(OBJEXT)
 del_tst_del_mid_LDADD = $(LDADD)
 del_tst_del_mid_DEPENDENCIES =
 del_tst_del_mid_LDFLAGS =
+del_xfail_tst_del_oob_len_SOURCES = del/xfail_tst_del_oob_len.c
+del_xfail_tst_del_oob_len_OBJECTS = xfail_tst_del_oob_len.$(OBJEXT)
+del_xfail_tst_del_oob_len_LDADD = $(LDADD)
+del_xfail_tst_del_oob_len_DEPENDENCIES =
+del_xfail_tst_del_oob_len_LDFLAGS =
+del_xfail_tst_del_oob_pos_SOURCES = del/xfail_tst_del_oob_pos.c
+del_xfail_tst_del_oob_pos_OBJECTS = xfail_tst_del_oob_pos.$(OBJEXT)
+del_xfail_tst_del_oob_pos_LDADD = $(LDADD)
+del_xfail_tst_del_oob_pos_DEPENDENCIES =
+del_xfail_tst_del_oob_pos_LDFLAGS =
 dup_tst_dup_buf_SOURCES = dup/tst_dup_buf.c
 dup_tst_dup_buf_OBJECTS = tst_dup_buf.$(OBJEXT)
 dup_tst_dup_buf_LDADD = $(LDADD)
@@ -965,6 +991,18 @@ x_tst_x_version_OBJECTS = tst_x_version.$(OBJEXT)
 x_tst_x_version_LDADD = $(LDADD)
 x_tst_x_version_DEPENDENCIES =
 x_tst_x_version_LDFLAGS =
+x_xfail_tst_x_free_bad_node_SOURCES = x/xfail_tst_x_free_bad_node.c
+x_xfail_tst_x_free_bad_node_OBJECTS = \
+	xfail_tst_x_free_bad_node.$(OBJEXT)
+x_xfail_tst_x_free_bad_node_LDADD = $(LDADD)
+x_xfail_tst_x_free_bad_node_DEPENDENCIES =
+x_xfail_tst_x_free_bad_node_LDFLAGS =
+x_xfail_tst_x_make_bad_node_SOURCES = x/xfail_tst_x_make_bad_node.c
+x_xfail_tst_x_make_bad_node_OBJECTS = \
+	xfail_tst_x_make_bad_node.$(OBJEXT)
+x_xfail_tst_x_make_bad_node_LDADD = $(LDADD)
+x_xfail_tst_x_make_bad_node_DEPENDENCIES =
+x_xfail_tst_x_make_bad_node_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -989,6 +1027,7 @@ DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c \
 	conv/tst_conv_uppercase.c del/tst_del_all.c del/tst_del_beg.c \
 	del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c \
+	del/xfail_tst_del_oob_len.c del/xfail_tst_del_oob_pos.c \
 	dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c \
 	dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c \
 	export/tst_export_buf.c export/tst_export_chr.c \
@@ -1022,9 +1061,10 @@ DIST_SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c \
 	sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c \
 	x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c \
 	x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c \
-	x/tst_x_typedef.c x/tst_x_version.c
+	x/tst_x_typedef.c x/tst_x_version.c \
+	x/xfail_tst_x_free_bad_node.c x/xfail_tst_x_make_bad_node.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c add/xfail_tst_add_buf_pos.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c fmt/xfail_tst_fmt_invalid_fmt.c fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c sc/tst_sc_basename.c sc/tst_sc_dirname.c sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c
+SOURCES = add/tst_add_buf.c add/tst_add_iovec_buf.c add/tst_add_netstr.c add/tst_add_netstr2.c add/tst_add_non.c add/tst_add_ptr.c add/tst_add_ref.c add/tst_add_rep_chr.c add/tst_add_vstr.c add/xfail_tst_add_buf_NULL.c add/xfail_tst_add_buf_pos.c cache/tst_cache_free.c cache/tst_cache_srch.c cache/tst_cache_usr.c cmp/tst_cmp.c cmp/tst_cmp_case.c cmp/tst_cmp_non.c cmp/tst_cmp_vers.c cntl/tst_cntl_base.c cntl/tst_cntl_conf.c cntl/tst_cntl_opt.c conv/tst_conv_decode.c conv/tst_conv_encode.c conv/tst_conv_lowercase.c conv/tst_conv_unprintable.c conv/tst_conv_uppercase.c del/tst_del_all.c del/tst_del_beg.c del/tst_del_empty.c del/tst_del_end.c del/tst_del_mid.c del/xfail_tst_del_oob_len.c del/xfail_tst_del_oob_pos.c dup/tst_dup_buf.c dup/tst_dup_non.c dup/tst_dup_ptr.c dup/tst_dup_ref.c dup/tst_dup_rep_chr.c dup/tst_dup_vstr.c export/tst_export_buf.c export/tst_export_chr.c export/tst_export_cstr_buf.c export/tst_export_cstr_malloc.c export/tst_export_cstr_ptr.c export/tst_export_cstr_ref.c export/tst_export_iovec_cpy_buf.c export/tst_export_iovec_cpy_ptr.c export/tst_export_iovec_ptr_all.c export/tst_export_ref.c fmt/tst_fmt_bkmg.c fmt/tst_fmt_char.c fmt/tst_fmt_double.c fmt/tst_fmt_i18n.c fmt/tst_fmt_int.c fmt/tst_fmt_intmax_t.c fmt/tst_fmt_ip.c fmt/tst_fmt_long.c fmt/tst_fmt_long_double.c fmt/tst_fmt_m.c fmt/tst_fmt_n.c fmt/tst_fmt_num.c fmt/tst_fmt_p.c fmt/tst_fmt_ptrdiff_t.c fmt/tst_fmt_short.c fmt/tst_fmt_size_t.c fmt/tst_fmt_str_norm.c fmt/tst_fmt_usr.c fmt/xfail_tst_fmt_invalid_fmt.c fmt/xfail_tst_fmt_invalid_sysfmt.c loc/tst_loc_num.c mov/tst_mov_data.c mov/tst_mov_empty.c parse/tst_parse_ipv4.c parse/tst_parse_ipv6.c parse/tst_parse_netstr.c parse/tst_parse_netstr2.c parse/tst_parse_num.c sc/tst_sc_basename.c sc/tst_sc_dirname.c sc/tst_sc_mmap.c sc/tst_sc_read.c sc/tst_sc_write.c sects/tst_sects_add.c sects/tst_sects_del.c sects/tst_sects_foreach.c sects/tst_sects_join.c sects/tst_sects_srch.c sects/tst_sects_update.c split/tst_split_buf.c split/tst_split_chrs.c spn/tst_spn_c_chrs.c spn/tst_spn_chrs.c srch/tst_srch_buf.c srch/tst_srch_case_buf.c srch/tst_srch_case_chr.c srch/tst_srch_case_vstr.c srch/tst_srch_chr.c srch/tst_srch_chrs.c srch/tst_srch_csrch_chrs.c srch/tst_srch_vstr.c sub/tst_sub_buf.c sub/tst_sub_non.c sub/tst_sub_ptr.c sub/tst_sub_ref.c sub/tst_sub_rep_chr.c sub/tst_sub_vstr.c x/tst_x_include.c x/tst_x_inline.c x/tst_x_macros.c x/tst_x_make.c x/tst_x_misc.c x/tst_x_ref.c x/tst_x_swap_conf.c x/tst_x_typedef.c x/tst_x_version.c x/xfail_tst_x_free_bad_node.c x/xfail_tst_x_make_bad_node.c
 
 all: all-am
 
@@ -1184,6 +1224,14 @@ tst_del_mid.$(OBJEXT): del/tst_del_mid.c
 del/tst_del_mid$(EXEEXT): $(del_tst_del_mid_OBJECTS) $(del_tst_del_mid_DEPENDENCIES) del/.dirstamp
 	@rm -f del/tst_del_mid$(EXEEXT)
 	$(LINK) $(del_tst_del_mid_LDFLAGS) $(del_tst_del_mid_OBJECTS) $(del_tst_del_mid_LDADD) $(LIBS)
+xfail_tst_del_oob_len.$(OBJEXT): del/xfail_tst_del_oob_len.c
+del/xfail_tst_del_oob_len$(EXEEXT): $(del_xfail_tst_del_oob_len_OBJECTS) $(del_xfail_tst_del_oob_len_DEPENDENCIES) del/.dirstamp
+	@rm -f del/xfail_tst_del_oob_len$(EXEEXT)
+	$(LINK) $(del_xfail_tst_del_oob_len_LDFLAGS) $(del_xfail_tst_del_oob_len_OBJECTS) $(del_xfail_tst_del_oob_len_LDADD) $(LIBS)
+xfail_tst_del_oob_pos.$(OBJEXT): del/xfail_tst_del_oob_pos.c
+del/xfail_tst_del_oob_pos$(EXEEXT): $(del_xfail_tst_del_oob_pos_OBJECTS) $(del_xfail_tst_del_oob_pos_DEPENDENCIES) del/.dirstamp
+	@rm -f del/xfail_tst_del_oob_pos$(EXEEXT)
+	$(LINK) $(del_xfail_tst_del_oob_pos_LDFLAGS) $(del_xfail_tst_del_oob_pos_OBJECTS) $(del_xfail_tst_del_oob_pos_LDADD) $(LIBS)
 tst_dup_buf.$(OBJEXT): dup/tst_dup_buf.c
 dup/.dirstamp:
 	@$(mkinstalldirs) dup
@@ -1552,6 +1600,14 @@ tst_x_version.$(OBJEXT): x/tst_x_version.c
 x/tst_x_version$(EXEEXT): $(x_tst_x_version_OBJECTS) $(x_tst_x_version_DEPENDENCIES) x/.dirstamp
 	@rm -f x/tst_x_version$(EXEEXT)
 	$(LINK) $(x_tst_x_version_LDFLAGS) $(x_tst_x_version_OBJECTS) $(x_tst_x_version_LDADD) $(LIBS)
+xfail_tst_x_free_bad_node.$(OBJEXT): x/xfail_tst_x_free_bad_node.c
+x/xfail_tst_x_free_bad_node$(EXEEXT): $(x_xfail_tst_x_free_bad_node_OBJECTS) $(x_xfail_tst_x_free_bad_node_DEPENDENCIES) x/.dirstamp
+	@rm -f x/xfail_tst_x_free_bad_node$(EXEEXT)
+	$(LINK) $(x_xfail_tst_x_free_bad_node_LDFLAGS) $(x_xfail_tst_x_free_bad_node_OBJECTS) $(x_xfail_tst_x_free_bad_node_LDADD) $(LIBS)
+xfail_tst_x_make_bad_node.$(OBJEXT): x/xfail_tst_x_make_bad_node.c
+x/xfail_tst_x_make_bad_node$(EXEEXT): $(x_xfail_tst_x_make_bad_node_OBJECTS) $(x_xfail_tst_x_make_bad_node_DEPENDENCIES) x/.dirstamp
+	@rm -f x/xfail_tst_x_make_bad_node$(EXEEXT)
+	$(LINK) $(x_xfail_tst_x_make_bad_node_LDFLAGS) $(x_xfail_tst_x_make_bad_node_OBJECTS) $(x_xfail_tst_x_make_bad_node_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -1865,6 +1921,24 @@ tst_del_mid.obj: del/tst_del_mid.c
 
 tst_del_mid.lo: del/tst_del_mid.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_del_mid.lo `test -f 'del/tst_del_mid.c' || echo '$(srcdir)/'`del/tst_del_mid.c
+
+xfail_tst_del_oob_len.o: del/xfail_tst_del_oob_len.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_len.o `test -f 'del/xfail_tst_del_oob_len.c' || echo '$(srcdir)/'`del/xfail_tst_del_oob_len.c
+
+xfail_tst_del_oob_len.obj: del/xfail_tst_del_oob_len.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_len.obj `cygpath -w del/xfail_tst_del_oob_len.c`
+
+xfail_tst_del_oob_len.lo: del/xfail_tst_del_oob_len.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_len.lo `test -f 'del/xfail_tst_del_oob_len.c' || echo '$(srcdir)/'`del/xfail_tst_del_oob_len.c
+
+xfail_tst_del_oob_pos.o: del/xfail_tst_del_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_pos.o `test -f 'del/xfail_tst_del_oob_pos.c' || echo '$(srcdir)/'`del/xfail_tst_del_oob_pos.c
+
+xfail_tst_del_oob_pos.obj: del/xfail_tst_del_oob_pos.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_pos.obj `cygpath -w del/xfail_tst_del_oob_pos.c`
+
+xfail_tst_del_oob_pos.lo: del/xfail_tst_del_oob_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_del_oob_pos.lo `test -f 'del/xfail_tst_del_oob_pos.c' || echo '$(srcdir)/'`del/xfail_tst_del_oob_pos.c
 
 tst_dup_buf.o: dup/tst_dup_buf.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_dup_buf.o `test -f 'dup/tst_dup_buf.c' || echo '$(srcdir)/'`dup/tst_dup_buf.c
@@ -2603,6 +2677,24 @@ tst_x_version.obj: x/tst_x_version.c
 
 tst_x_version.lo: x/tst_x_version.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tst_x_version.lo `test -f 'x/tst_x_version.c' || echo '$(srcdir)/'`x/tst_x_version.c
+
+xfail_tst_x_free_bad_node.o: x/xfail_tst_x_free_bad_node.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_free_bad_node.o `test -f 'x/xfail_tst_x_free_bad_node.c' || echo '$(srcdir)/'`x/xfail_tst_x_free_bad_node.c
+
+xfail_tst_x_free_bad_node.obj: x/xfail_tst_x_free_bad_node.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_free_bad_node.obj `cygpath -w x/xfail_tst_x_free_bad_node.c`
+
+xfail_tst_x_free_bad_node.lo: x/xfail_tst_x_free_bad_node.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_free_bad_node.lo `test -f 'x/xfail_tst_x_free_bad_node.c' || echo '$(srcdir)/'`x/xfail_tst_x_free_bad_node.c
+
+xfail_tst_x_make_bad_node.o: x/xfail_tst_x_make_bad_node.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_make_bad_node.o `test -f 'x/xfail_tst_x_make_bad_node.c' || echo '$(srcdir)/'`x/xfail_tst_x_make_bad_node.c
+
+xfail_tst_x_make_bad_node.obj: x/xfail_tst_x_make_bad_node.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_make_bad_node.obj `cygpath -w x/xfail_tst_x_make_bad_node.c`
+
+xfail_tst_x_make_bad_node.lo: x/xfail_tst_x_make_bad_node.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xfail_tst_x_make_bad_node.lo `test -f 'x/xfail_tst_x_make_bad_node.c' || echo '$(srcdir)/'`x/xfail_tst_x_make_bad_node.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

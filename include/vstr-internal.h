@@ -168,7 +168,6 @@ extern void vstr__base_zero_used(Vstr_base *)
 extern Vstr_node *vstr__base_split_node(Vstr_base *, Vstr_node *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
-extern unsigned int vstr__num_node(Vstr_base *, Vstr_node *) VSTR__ATTR_I();
 extern Vstr_node **vstr__base_ptr_pos(const Vstr_base *, size_t *,
                                       unsigned int *) VSTR__ATTR_I();
 extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,

@@ -92,7 +92,7 @@
 	</td></tr></table>
     
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.3</h2>
+	  <h2>Current version is 1.0.4</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -111,6 +111,9 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    </li>
             <li> ChangeLog file can be found
               <a href="ChangeLog">here</a>
+	    </li>
+            <li> NEWS file can be found
+              <a href="NEWS">here</a>
 	    </li>
             <li> TODO file can be found
               <a href="TODO">here</a>
@@ -200,6 +203,11 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    This means that you can do Network I/O in the C locale and
 	    user IO in the users locale.
 	  </p>
+
+	  <p>
+	    For a look at the internal design of the Vstr string library, you
+	    can read <a href="design.html">this</a>.
+	  </p>
 	    
 </td></tr>
 
@@ -215,7 +223,7 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	  <p>
 	    The Vstr string 
 	    library comes with a "make check" test suite with about
-	  <emp>seven thousand lines</emp> of code in it.
+	  <emp>eight thousand lines</emp> of code in it.
 	  This is over a third of the size of the library itself, and more 
 	  lines of code than some string library implementations. 
 	</p><p>
@@ -227,7 +235,7 @@ rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
 	    suite).
 	  </p><p>
 	    Using the coverage analysis available with gcc the test suite has
-	  <emp>coverage of over 84% of the source</emp>
+	  <emp>coverage of over 86% of the source</emp>
 	  (the biggest untested sections of code are those from
 	  the malloc() error paths).
 	</p><p>
@@ -629,7 +637,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Tue Mar  4 02:30:22 EST 2003
+Last modified: Sat Mar 15 12:49:54 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

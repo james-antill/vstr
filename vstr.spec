@@ -1,4 +1,4 @@
-%define ver      1.0.3
+%define ver      1.0.4
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}

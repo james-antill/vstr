@@ -22,5 +22,6 @@ if $doln; then
  lndir ../$s/../src
 fi
 
-../$s/ggcov.sh
+cd ..
+$s/ggcov.sh
 

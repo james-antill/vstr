@@ -67,7 +67,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     vstr_cache_set(base, off, data);
   }
  
-  if (data->ref)
+  if (data->ref && data->len)
   {
     ASSERT(data->sz);
     ASSERT(((Vstr__buf_ref *)data->ref)->buf == data->ref->ptr);
@@ -83,7 +83,9 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
         return (data);
       }
     }
-
+  }
+  if (data->ref)
+  {
     if ((data->sz <= len) || (data->ref->ref != 1))
     {
       vstr_ref_del(data->ref);
@@ -93,11 +95,11 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     { /* can overwrite previous cache entry */
       ref = data->ref;
       vstr_export_cstr_buf(base, pos, len, ref->ptr, len + 1);
-
+      
       goto export_new_cstr;
     }
   }
-
+  
   if (!(ref = vstr__export_cstr_ref(base, pos, len)))
     return (NULL);
   data->sz = len + 1;
@@ -112,7 +114,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   return (data);
 }
 
-char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
+const char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
 {
   Vstr__cache_data_cstr *data = NULL;
   size_t off = 0;

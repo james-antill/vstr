@@ -22,25 +22,6 @@
 #include "main.h"
 
 
-unsigned int vstr__num_node(Vstr_base *base, Vstr_node *node)
-{
-  unsigned int num = 0;
-  Vstr_node *scan = base->beg;
-  
-  while (scan)
-  {
-    ++num;
-    
-    if (scan == node)
-      return (num);
-    
-    scan = scan->next;
-  }
-  assert(FALSE);
-
-  return (0);
-}
-
 size_t vstr__loc_thou_grp_strlen(const char *passed_str)
 {
   const unsigned char *str = (const unsigned char *)passed_str;
@@ -495,7 +476,7 @@ static void vstr__cache_cstr_check(const Vstr_base *base)
   
   if (!(data = vstr_cache_get(base, base->conf->cache_pos_cb_cstr)))
     return;
-  if (!data->ref)
+  if (!data->ref || !data->len)
     return;
 
   ASSERT(data->len < data->sz);
@@ -554,7 +535,8 @@ static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
       vstr__del_conf(conf);
       return (FALSE);
     }
-    
+
+    /* if they've used min alloc etc. ... we can start using */
     if (VSTR__CACHE(base) &&
         VSTR__CACHE(base)->vec && VSTR__CACHE(base)->vec->sz)
       base->iovec_upto_date = TRUE;
@@ -714,6 +696,7 @@ static int vstr__make_spare_node(Vstr_conf *conf, unsigned int type)
       break;
       
     default:
+      assert(FALSE);
       return (FALSE);
   }
   
@@ -841,6 +824,7 @@ static int vstr__free_spare_node(Vstr_conf *conf, unsigned int type)
       break;
 
     default:
+      assert(FALSE);
       return (FALSE);
   }
 
@@ -1073,24 +1057,30 @@ static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
 void vstr__swap_node_X_X(const Vstr_base *base, size_t pos,
                          Vstr_node *node)
 {
+  Vstr_node *old_scan = NULL;
+  size_t old_scan_len = 0;
   Vstr_node **scan = NULL;
   unsigned int num = 0;
   Vstr__cache_data_pos *data = NULL;
 
   scan = vstr__base_ptr_pos(base, &pos, &num);
+
+  old_scan = *scan;
+  old_scan_len = old_scan->len;
   
   node->next = (*scan)->next;
-  
   vstr__relink_nodes(base->conf, *scan, &(*scan)->next, 1);
-  
   *scan = node;
+
+  if (node == base->beg)
+    ((Vstr_base *)base)->used = 0;
   
   if ((data = vstr_cache_get(base, base->conf->cache_pos_cb_pos)) &&
-      (data->node == *scan))
+      (data->node == old_scan))
   {
     data->node = NULL;
     
-    if (node->len >= (*scan)->len)
+    if (node->len >= old_scan_len)
       data->node = node;
   }
 

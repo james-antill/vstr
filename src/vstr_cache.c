@@ -126,7 +126,7 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   if (!(from_data = vstr_cache_get(from_base, from_off)))
     return;
 
-  if (data->ref || !from_data->ref)
+  if (data->ref || !(from_data->ref && from_data->len))
     return;
 
   if ((from_pos >= from_data->pos) &&
@@ -382,7 +382,7 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
     return (NULL);
   }
 
-  if (!data->ref)
+  if (!data->ref || !data->len)
     return (data);
   
   if (data_end_pos < pos)
@@ -415,9 +415,8 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
     
     return (data);
   }
-  
-  vstr_ref_del(data->ref);
-  data->ref = NULL;
+
+  data->len = 0;
   
   return (data);
 }

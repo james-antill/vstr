@@ -1,4 +1,4 @@
-.TH vstr 3 "04-Mar-2003" "Vstr 1.0.3" "Vstr String Library"
+.TH vstr 3 "15-Mar-2003" "Vstr 1.0.4" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -25,9 +25,9 @@ unsigned int \fBVSTR_FLAGXX\fR(<symbol>, <symbol>);
 unsigned int \fBvstr_num\fR(const struct Vstr_base *, size_t, size_t);
 .sp
 .br
-.in \w'  char *\fBvstr_export_cstr_ptr\fR('u
+.in \w'  const char *\fBvstr_export_cstr_ptr\fR('u
 .ti \w'  'u
-char *\fBvstr_export_cstr_ptr\fR(const struct Vstr_base *, size_t, size_t);
+const char *\fBvstr_export_cstr_ptr\fR(const struct Vstr_base *, size_t, size_t);
 .br
 .in \w'  char *\fBvstr_export_cstr_malloc\fR('u
 .ti \w'  'u
@@ -1277,7 +1277,7 @@ Type\fB[3]\fR: size_t
 .br
 Returns: A pointer to an array of characters, terminated by NIL
 .br
-Type: char *
+Type: const char *
 
 .br
 Parameter\fB[1]\fR: Vstr string

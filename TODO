@@ -29,10 +29,6 @@ was needed for vstr-1.0.0
 . del() inline kills cache too easily ... make cb's extern inline and call
    directly. (speed)
 
-. have vstr_export_cstr_ptr()/etc. have a size so you don't need to go through
-   malloc each call to getsame sized bits ... mostly done ... free's when it
-   isn't in use which won't always be appreciated ... fix that.
-
  1.2.x
  -----
 

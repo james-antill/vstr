@@ -71,6 +71,15 @@ int tst(void)
   TST_B_TST(ret, 15,
             !VSTR_CMP_CSTR_EQ(s3, app_len + 1, 5, "abcdX"));
   TST_B_TST(ret, 16,  s3->iovec_upto_date); /* too much data */
+
+  vstr_del(s1, 1, s1->len);
+  vstr_add_non(s1, 0, 2);
+  vstr_add_cstr_buf(s1, 1, "abcdX");
+  vstr_del(s1, 1, 1);
+  vstr_sc_reduce(s1, 1, s1->len, 1);
+  
+  TST_B_TST(ret, 17,
+            !VSTR_CMP_CSTR_EQ(s1, 1, 5, "abcdX"));
   
   return (TST_B_RET(ret));
 }

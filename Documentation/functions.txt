@@ -100,7 +100,7 @@ Section: Functions to export vstr data
 
 Function: vstr_export_cstr_ptr()
  Returns: A pointer to an array of characters, terminated by NIL
- Type: char *
+ Type: const char *
 
  Parameter[1]: Vstr string
  Type[1]: const struct Vstr_base *
