@@ -1,4 +1,4 @@
-Section Constants for initialisation in debuging mode
+Section: Constants for initialisation in debuging mode
 
 Constant: VSTR_DEBUG_INIT_BASE
 

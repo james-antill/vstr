@@ -13,6 +13,8 @@
 #include <sys/mman.h>
 #include <stdarg.h>
 
+/* this shows how you can remove the typedef namespace, if you wish to use it */
+#define VSTR_COMPILE_TYPEDEF 0
 #include <vstr.h>
 
 #ifndef FALSE
@@ -44,12 +46,12 @@
 
 typedef struct ex3_mmap_ref
 {
- Vstr_ref ref;
+ struct Vstr_ref ref;
  size_t len;
 } ex3_mmap_ref;
 
 #if 0
-static void ex3_ref_munmap(Vstr_ref *passed_ref)
+static void ex3_ref_munmap(struct Vstr_ref *passed_ref)
 {
  ex3_mmap_ref *ref = (ex3_mmap_ref *)passed_ref;
  munmap(ref->ref.ptr, ref->len);
@@ -59,7 +61,7 @@ static void ex3_ref_munmap(Vstr_ref *passed_ref)
 static void problem(const char *msg)
 {
  int saved_errno = errno;
- Vstr_base *str = NULL;
+ struct Vstr_base *str = NULL;
  struct iovec *vec;
  unsigned int num = 0;
  size_t len = 0;
@@ -95,9 +97,9 @@ static void problem(const char *msg)
  _exit (EXIT_FAILURE);
 }
 
-static void ex3_cpy_write(Vstr_base *base, int fd)
+static void ex3_cpy_write(struct Vstr_base *base, int fd)
 {
- static Vstr_base *cpy = NULL;
+ static struct Vstr_base *cpy = NULL;
  struct iovec *vec;
  unsigned int num = 0;
  size_t len = 0;
@@ -134,13 +136,13 @@ static void ex3_cpy_write(Vstr_base *base, int fd)
 
 int main(void /* int argc, char *argv[] */)
 {
- Vstr_conf *conf = NULL;
- /* Vstr_base *str1 = NULL; */
- Vstr_base *str2 = NULL;
- /* size_t netstr_beg1 = 0;
-    size_t netstr_beg2 = 0; */
- Vstr_base *x_str = NULL;
- Vstr_base *y_str = NULL;
+  struct Vstr_conf *conf = NULL;
+  /* Vstr_base *str1 = NULL; */
+  struct Vstr_base *str2 = NULL;
+  /* size_t netstr_beg1 = 0;
+     size_t netstr_beg2 = 0; */
+  struct Vstr_base *x_str = NULL;
+  struct Vstr_base *y_str = NULL;
  
  if (!vstr_init())
    errno = ENOMEM, PROBLEM("vstr_init:");

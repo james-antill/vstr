@@ -43,7 +43,7 @@ typedef struct Vstr__cstr_ref
 
 extern Vstr__options vstr__options;
 
-extern size_t netstr2_num_len;
+extern size_t vstr__netstr2_num_len;
 
 #ifndef NDEBUG
 extern int vstr__check_real_nodes(Vstr_base *);

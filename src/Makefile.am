@@ -26,6 +26,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \
+                        vstr_mov.c \
                         vstr_ref.c \
                         vstr_spn.c \
                         vstr_srch.c \

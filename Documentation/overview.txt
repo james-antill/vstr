@@ -6,7 +6,8 @@ with readv()/writev() for input/output.
    INTRODUCTION
 
  All functions are documented in functions.txt, all constants are
-in constants.txt and the namespace rules are in namespace.txt (fancy that).
+in constants.txt, all public members of structures are in structs.txt and the
+namespace rules are in namespace.txt.
 
 Basically you should be able to get an overview of a function by looking at
 the functions.txt file, and be able to get a deeper understanding by looking

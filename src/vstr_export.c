@@ -38,6 +38,103 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
  return (base->len);
 }
 
+size_t vstr_export_iovec_cpy_buf(const Vstr_base *base, size_t pos, size_t len,
+                                 struct iovec *iovs, unsigned int num_max,
+                                 unsigned int *real_ret_num)
+{
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  size_t ret_len = 0;
+  unsigned int ret_num = 0;
+  size_t used = 0;
+
+  assert(num_max && real_ret_num);
+
+  if (!num_max)
+    return (0);
+  
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  if (!scan)
+    return (0);
+  
+  do
+  {
+    size_t tmp = scan_len;
+    
+    if (tmp > (iovs[num].iov_len - used))
+      tmp = (iovs[num].iov_len - used);
+    
+    if (scan->type != VSTR_TYPE_NODE_NON)
+      memcpy(((char *)iovs[ret_num].iov_base) + used, scan_str, tmp);
+
+    used += tmp;
+    scan_str += tmp;
+    scan_len -= tmp;
+    ret_len += scan_len;
+
+    if (iovs[ret_num].iov_len == used)
+    {
+      used = 0;
+      
+      if (++ret_num >= num_max)
+        break;
+    }
+    
+    if (!scan_len)
+      scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                     scan, &scan_str, &scan_len);
+  } while (scan);
+
+  if (used)
+  {
+    iovs[ret_num].iov_len = used;
+    ++ret_num;
+  }
+  
+  *real_ret_num = ret_num;
+  
+  return (ret_len);
+}
+
+size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
+                                 struct iovec *iovs, unsigned int num_max,
+                                 unsigned int *real_ret_num)
+{
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  size_t ret_len = 0;
+  unsigned int ret_num = 0;
+
+  assert(num_max && real_ret_num);
+
+  if (!num_max)
+    return (0);
+  
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  if (!scan)
+    return (0);
+  
+  do
+  {    
+    iovs[ret_num].iov_base = scan_str;
+    iovs[ret_num].iov_len = scan_len;
+    ret_len += scan_len;
+    
+    if (++ret_num >= num_max)
+      break;
+    
+  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                           scan, &scan_str, &scan_len)));
+  
+  *real_ret_num = ret_num;
+  
+  return (ret_len);
+}
+
 size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len, void *buf)
 {
  Vstr_node *scan = NULL;

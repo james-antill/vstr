@@ -112,7 +112,7 @@ INCLUDES = -I$(top_srcdir)/include
 @HAVE_LINKER_MAIN_RELOCATE_TRUE@CFLAGS = @CFLAGS@ @WARNS@
 @HAVE_LINKER_MAIN_RELOCATE_FALSE@CFLAGS = @CFLAGS@ @WARNS@ -DHAVE_NO_RELOC_MAIN
 
-libvstr_la_SOURCES = assert_loop.c fix.c                         vstr.c                         vstr_add.c                         vstr_add_netstr.c                         vstr_cache.c                         vstr_cmp.c                         vstr_cntl.c                         vstr_cstr.c                         vstr_del.c                         vstr_dup.c                         vstr_export.c                         vstr_ref.c                         vstr_spn.c                         vstr_srch.c                         vstr_srch_netstr.c                         vstr_sub.c                         vstr_version.c                         vstr_fmt.c
+libvstr_la_SOURCES = assert_loop.c fix.c                         vstr.c                         vstr_add.c                         vstr_add_netstr.c                         vstr_cache.c                         vstr_cmp.c                         vstr_cntl.c                         vstr_cstr.c                         vstr_del.c                         vstr_dup.c                         vstr_export.c                         vstr_mov.c                         vstr_ref.c                         vstr_spn.c                         vstr_srch.c                         vstr_srch_netstr.c                         vstr_sub.c                         vstr_version.c                         vstr_fmt.c
 
 
 libvstr_la_LDFLAGS =          -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)         -release $(LT_RELEASE)         -export-dynamic $(VSTR__LINKER_RELOC_MAIN) -lm
@@ -127,9 +127,9 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I../include
 libvstr_la_LIBADD = 
 libvstr_la_OBJECTS =  assert_loop.lo fix.lo vstr.lo vstr_add.lo \
 vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo vstr_cntl.lo vstr_cstr.lo \
-vstr_del.lo vstr_dup.lo vstr_export.lo vstr_ref.lo vstr_spn.lo \
-vstr_srch.lo vstr_srch_netstr.lo vstr_sub.lo vstr_version.lo \
-vstr_fmt.lo
+vstr_del.lo vstr_dup.lo vstr_export.lo vstr_mov.lo vstr_ref.lo \
+vstr_spn.lo vstr_srch.lo vstr_srch_netstr.lo vstr_sub.lo \
+vstr_version.lo vstr_fmt.lo
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)

@@ -40,23 +40,23 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
    return (0);
 
  /* setup beg */
- if (!netstr2_num_len)
+ if (!vstr__netstr2_num_len)
  {
   Vstr_base *tmp = vstr_make_base(NULL);
   if (!tmp)
     goto malloc_failed;
   
-  netstr2_num_len = vstr_add_fmt(tmp, 0, "%lu", ULONG_MAX);
-  assert(netstr2_num_len || tmp->conf->malloc_bad);
+  vstr__netstr2_num_len = vstr_add_fmt(tmp, 0, "%lu", ULONG_MAX);
+  assert(vstr__netstr2_num_len || tmp->conf->malloc_bad);
   
   vstr_free_base(tmp);
-  if (!netstr2_num_len)
+  if (!vstr__netstr2_num_len)
     goto malloc_failed;
  }
 
  if (!buf)
  {
-  buf = malloc(netstr2_num_len + 1);
+  buf = malloc(vstr__netstr2_num_len + 1);
   if (!buf)
     goto malloc_failed;
  }
@@ -68,7 +68,7 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
 
  while (len > 0)
  {
-  size_t tmp = len + netstr2_num_len;
+  size_t tmp = len + vstr__netstr2_num_len;
   size_t first_char_pos = 0;
   unsigned int count = 0;
   
@@ -85,16 +85,16 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
    goto next_loop;
   }
 
-  if (tmp > netstr2_num_len)
+  if (tmp > vstr__netstr2_num_len)
   {
-   tmp -= netstr2_num_len;
+   tmp -= vstr__netstr2_num_len;
    /* this recalcs the _spn_ number, but then I can't imagine this is
     * something that most people would want to do -- esp. as it means it's
     * very hard to find out later which number we start from for the netstr */
    goto next_loop;
   }
   
-  if (netstr2 && (tmp != netstr2_num_len))
+  if (netstr2 && (tmp != vstr__netstr2_num_len))
     goto next_loop;
    
   vstr_export_buf(base, pos, tmp + 1, buf);

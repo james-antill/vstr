@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Vstr documentation -- structs</title>
+    <style type="text/css">
+      A:visited { color: #ff4040; }
+      A:hover { color: #20b2aa; }
+
+      P { text-indent: 1cm; }
+
+      body { background: #FFFFFF; }
+
+      td.heading { background: #DDDDDD; }
+    </style>
+
+  </head>
+  <body>
+<table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- structs</h1>
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>the Vstr_ref struct</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Member: </strong> func
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the cleanup function to be called when noone wants a reference to the
+ memory help by the reference anymore.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function should free() the memory accociated with the reference struct
+ itself, if that is required.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Member: </strong> ptr
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a ptr to a block of memory.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Member: </strong> ref
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  When this reaches the value 0, you are free to call the func member.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  It is safest to only change this by calling either vstr_ref_add_ref() or
+ vstr_ref_del_ref(). These will automatically call the cleanup function when
+ the reference reaches zero.
+
+
+
+</td></tr></table>
+</body></html>

@@ -255,7 +255,7 @@ static int vstr__base_iovec_check(Vstr_base *base)
 }
 #endif
 
-int vstr_init_base(Vstr_base *base, Vstr_conf *conf)
+int vstr_init_base(Vstr_conf *conf, Vstr_base *base)
 {
  if (!conf)
    conf = vstr__options.def;
@@ -304,7 +304,7 @@ Vstr_base *vstr_make_base(Vstr_conf *conf)
  if (!base)
    return (NULL);
  
- if (!vstr_init_base(base, conf))
+ if (!vstr_init_base(conf, base))
  {
   free(base);
   return (NULL);

@@ -79,7 +79,7 @@ Vstr_base *vstr_dup_non(struct Vstr_conf *conf, size_t len)
 }
 
 Vstr_base *vstr_dup_vstr(struct Vstr_conf *conf,
-                         Vstr_base *base, size_t pos, size_t len,
+                         const Vstr_base *base, size_t pos, size_t len,
                          unsigned int type)
 {
  Vstr_base *ret = vstr_make_base(conf);

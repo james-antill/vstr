@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>Vstr documentation -- constants</title>
+    <style type="text/css">
+      A:visited { color: #ff4040; }
+      A:hover { color: #20b2aa; }
+
+      P { text-indent: 1cm; }
+
+      body { background: #FFFFFF; }
+
+      td.heading { background: #DDDDDD; }
+    </style>
+
+  </head>
+  <body>
+<table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- constants</h1>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants for initialisation in debuging mode</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_DEBUG_INIT_BASE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the value that static (Vstr_base) structs need to be initialised
+ to when in debugging mode.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  In non-debugging mode this value is all 0's, so this won't do anything
+ different from just declaring your structs as static.
+</p><p>  The library will also re-initialise the base back to it's correct form before
+ returning from timer_q_del_base, so you just need to set it up correctly the
+ first time.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to vstr_add_vstr()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants you pass to the vstr_cntl_base() function</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_CNTL_BASE_SET_FLAG_
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: value<br>Type<strong>[1]</strong>: int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the value of the flag _BLAH on the base.
+
+
+
+</td></tr></table>
+</body></html>

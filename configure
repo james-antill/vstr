@@ -737,7 +737,7 @@ echo "$ac_t""${T_MD}Initial phase:${T_ME}" 1>&6
 # Seriously butchered from glib...
 
 VSTR_MAJOR_VERSION=0
-VSTR_MINOR_VERSION=3
+VSTR_MINOR_VERSION=5
 VSTR_MICRO_VERSION=1
 VSTR_INTERFACE_AGE=1
 VSTR_BINARY_AGE=1

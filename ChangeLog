@@ -1,3 +1,38 @@
+2001-12-02  James Antill  <james@and.org>
+
+	* src/vstr_mov.c (vstr_mov): Added function.
+
+	* src/vstr_sub.c (vstr_sub_buf): Make function atomic.
+
+	* src/vstr_srch.c (vstr_srch_chr_fwd): Changed char to char type.
+	(vstr_srch_chr_rev): Changed char to char type.
+
+	* src/vstr.c (vstr_init_base): Switched arguments aroudn to match other
+	functions.
+
+	* examples/ex3.c: Made the file test non typedef compile mode.
+
+	* src/vstr_add_netstr.c (vstr_add_netstr2_beg): Added pos argument.
+	(vstr_add_netstr_beg): Added pos argument.
+	(vstr_add_netstr2_end): Added end pos argument.
+	(vstr_add_netstr_end): Added end pos argument.
+
+2001-11-29  James Antill  <james@and.org>
+
+	* src/vstr_export.c (vstr_export_iovec_cpy_buf): Added function.
+	(vstr_export_iovec_cpy_ptr): Added function.
+
+2001-11-21  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr__add_all_ref): Add de-ref for the 
+	export_cstr_ref.
+
+	* src/vstr_sub.c (vstr_sub_buf): Added function.
+	(vstr_sub_ptr): Added function.
+	(vstr_sub_non): Added function.
+	(vstr_sub_ref): Added function.
+	(vstr_sub_vstr): Added function.
+
 2001-11-19  James Antill  <james@and.org>
 
 	* src/vstr_srch.c (vstr_srch_buf_fwd): Fixup for the no below API 

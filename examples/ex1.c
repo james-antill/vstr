@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
  if (!str2)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2)))
+ if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
    errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
  
  if (argc > 1)
@@ -255,13 +255,13 @@ int main(int argc, char *argv[])
   if (offsetof(ex1_mmap_ref, ref))
     PROBLEM("assert");
   
-  if (!vstr_add_ref(str2, str2->len, &ref->ref, ref->len, 0))
+  if (!vstr_add_ref(str2, str2->len, &ref->ref, 0, ref->len))
     errno = ENOMEM, PROBLEM("vstr_add_ref:");
 
   have_mmaped_file = 1;
  }
 
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2)))
+ if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
  
  if (!vstr_add_ptr(str2, str2->len,
@@ -344,19 +344,19 @@ int main(int argc, char *argv[])
  if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", str2))
    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
  
- if (!vstr_add_netstr2_end(str2, netstr_beg2))
+ if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
- if (!vstr_add_netstr_end(str2, netstr_beg1))
+ if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
    errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
  
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2)))
+ if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
    errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
- if (!vstr_add_netstr_end(str2, netstr_beg1))
+ if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
    errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
  
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2)))
+ if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
- if (!vstr_add_netstr2_end(str2, netstr_beg2))
+ if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
    errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
 
  if (!vstr_add_buf(str2, str2->len, "\n", 1))

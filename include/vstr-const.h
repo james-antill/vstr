@@ -42,6 +42,12 @@
 #define VSTR_TYPE_ADD_BUF_REF 2
 #define VSTR_TYPE_ADD_ALL_REF 3
 
+/* aliases to make life more readable */
+#define VSTR_TYPE_SUB_DEF VSTR_TYPE_ADD_DEF
+#define VSTR_TYPE_SUB_BUF_PTR VSTR_TYPE_ADD_BUF_PTR
+#define VSTR_TYPE_SUB_BUF_REF VSTR_TYPE_ADD_BUF_REF
+#define VSTR_TYPE_SUB_ALL_REF VSTR_TYPE_ADD_ALL_REF
+
 #define VSTR__CNTL(x, y) ((VSTR__CNTL_ ## x ## _OFFSET) + (y))
 
 #define VSTR__CNTL_OPT_OFFSET 4000

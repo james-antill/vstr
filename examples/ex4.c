@@ -139,12 +139,12 @@ static void test1(Vstr_base *str1, Vstr_base *str2, const char *tester)
  size_t netstr_len = 0;
  size_t tmp = 0;
 
- netstr_beg = vstr_add_netstr_beg(str1);
+ netstr_beg = vstr_add_netstr_beg(str1, str1->len);
  if (netstr_beg != 1)
    PROBLEM("netstr_beg");
  
  tmp = vstr_add_fmt(str1, str1->len, "%s", tester);
- vstr_add_netstr_end(str1, netstr_beg);
+ vstr_add_netstr_end(str1, netstr_beg, str1->len);
 
  vstr_add_fmt(str2, str2->len, "String is: %s\n", tester);
  vstr_add_fmt(str2, str2->len, "String len: %d\n", tmp);
@@ -173,11 +173,11 @@ static void test2(Vstr_base *str1, Vstr_base *str2)
  size_t netstr_len = 0;
  
  /* test empty */
- netstr_beg = vstr_add_netstr_beg(str1);
+ netstr_beg = vstr_add_netstr_beg(str1, str1->len);
  if (netstr_beg != 1)
    PROBLEM("netstr_beg");
  
- vstr_add_netstr_end(str1, netstr_beg);
+ vstr_add_netstr_end(str1, netstr_beg, str1->len);
 
  vstr_add_fmt(str2, str2->len, "String empty.\n");
  

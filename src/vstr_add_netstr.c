@@ -29,7 +29,8 @@
 
 #include "main.h"
 
-size_t netstr2_num_len = 0;
+/* the size of ULONG_MAX converted to a string */
+size_t vstr__netstr2_num_len = 0; /* FIXME: should be a constant */
 
 
 static size_t vstr__netstr2_zero(char *str, size_t len, size_t *zeros)
@@ -50,7 +51,7 @@ static size_t vstr__netstr2_zero(char *str, size_t len, size_t *zeros)
 
 static size_t vstr__netstr2_copy(char *str, char *buf, size_t len, size_t count)
 {
- size_t tmp = netstr2_num_len - count;
+ size_t tmp = vstr__netstr2_num_len - count;
  
  if (tmp > len)
    tmp = len;
@@ -61,66 +62,72 @@ static size_t vstr__netstr2_copy(char *str, char *buf, size_t len, size_t count)
  return (count);
 }
 
-size_t vstr_add_netstr2_beg(Vstr_base *base)
+size_t vstr_add_netstr2_beg(Vstr_base *base, size_t pos)
 {
  size_t tmp = 0;
- size_t ret = base->len + 1;
- 
- tmp = vstr_add_fmt(base, base->len, "%lu:", ULONG_MAX);
+ size_t ret = 0;
+
+ assert(pos <= base->len);
+ if (pos > base->len)
+   return (0);
+
+ ret = pos + 1;
+ tmp = vstr_add_fmt(base, pos, "%lu:", ULONG_MAX);
 
  if (!tmp)
     return (0);
 
  --tmp; /* remove comma from len */
  
- assert(!netstr2_num_len || (tmp == netstr2_num_len));
- netstr2_num_len = tmp;
+ assert(!vstr__netstr2_num_len || (tmp == vstr__netstr2_num_len));
+ vstr__netstr2_num_len = tmp;
 
  return (ret);
 }
 
 static int vstr__netstr_end_start(Vstr_base *base,
-                                  size_t netstr_pos,
+                                  size_t netstr_beg_pos, size_t netstr_end_pos,
                                   size_t *count, size_t *netstr_len, char *buf)
 {
- if (!netstr2_num_len)
+ if (!vstr__netstr2_num_len)
    return (FALSE);
 
- if (netstr_pos >= (base->len - netstr2_num_len + 1))
+ if (netstr_beg_pos >= (netstr_end_pos - vstr__netstr2_num_len + 1))
    return (FALSE);
 
- assert(vstr_export_chr(base, netstr_pos + netstr2_num_len) == ':');
+ if (netstr_end_pos > base->len)
+   return (FALSE);
+
+ assert(vstr_export_chr(base, netstr_beg_pos + vstr__netstr2_num_len) == ':');
  
  /* + 1 because of the ':' */
- *netstr_len = base->len - (netstr_pos + netstr2_num_len);
+ *netstr_len = netstr_end_pos - (netstr_beg_pos + vstr__netstr2_num_len);
 
  if (TRUE)
  {
-  size_t pos = netstr_pos + netstr2_num_len + *netstr_len;
   size_t len = 1;
   Vstr_node *scan = NULL;
   unsigned int num = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
-
-  assert(pos <= base->len);
   
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  scan = vstr__base_scan_fwd_beg(base, netstr_end_pos, &len,
+                                 &num, &scan_str, &scan_len);
   assert(scan);
 
   if (scan->type == VSTR_TYPE_NODE_BUF)
   {
-   if (!vstr_add_buf(base, base->len, ",", 1))
+   if (!vstr_add_buf(base, netstr_end_pos, ",", 1))
      return (FALSE);
   }
   else
   {
-   if (!vstr_add_ptr(base, base->len, ",", 1))
+   if (!vstr_add_ptr(base, netstr_end_pos, ",", 1))
      return (FALSE);
   }
  }
  
- *count = netstr2_num_len;
+ *count = vstr__netstr2_num_len;
  while (*netstr_len)
  {
   int off = *netstr_len % 10;
@@ -133,19 +140,22 @@ static int vstr__netstr_end_start(Vstr_base *base,
  return (TRUE);
 }
 
-int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
+int vstr_add_netstr2_end(Vstr_base *base,
+                         size_t netstr_beg_pos, size_t netstr_end_pos)
 {
  size_t netstr_len = 0;
  size_t count = 0;
  char buf[BUF_NUM_TYPE_SZ(unsigned long)]; 
 
- assert(sizeof(buf) >= netstr2_num_len);
- assert(netstr_pos);
+ assert(sizeof(buf) >= vstr__netstr2_num_len);
+ assert(netstr_beg_pos);
+ assert(netstr_end_pos);
  
- if (!vstr__netstr_end_start(base, netstr_pos, &count, &netstr_len, buf))
+ if (!vstr__netstr_end_start(base, netstr_beg_pos, netstr_end_pos,
+                             &count, &netstr_len, buf))
    return (FALSE);
 
- --netstr_pos;
+ --netstr_beg_pos;
  
  /*
   * count == num of zero's needed
@@ -194,11 +204,11 @@ int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
    str = (char *)scan->iov_base;
   }
   
-  while (count < netstr2_num_len)
+  while (count < vstr__netstr2_num_len)
   {
    count = vstr__netstr2_copy(str, len, count);
    
-   if (count == netstr2_num_len)
+   if (count == vstr__netstr2_num_len)
      break;
    
    ++scan;
@@ -216,9 +226,9 @@ int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
   size_t len = 0;
   size_t zeros = 0;
 
-  netstr_pos += base->used;
+  netstr_beg_pos += base->used;
   
-  while ((skip + scan->len) <= netstr_pos)
+  while ((skip + scan->len) <= netstr_beg_pos)
   {
    skip += scan->len;
    scan = scan->next;
@@ -226,8 +236,8 @@ int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
 
   assert(scan->type == VSTR_TYPE_NODE_BUF);
   
-  len = scan->len - (netstr_pos - skip);
-  str = vstr__export_node_ptr(scan) + (netstr_pos - skip);
+  len = scan->len - (netstr_beg_pos - skip);
+  str = vstr__export_node_ptr(scan) + (netstr_beg_pos - skip);
   
   zeros = count;
   
@@ -249,12 +259,12 @@ int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
    str = vstr__export_node_ptr(scan);
   }
   
-  while (count < netstr2_num_len)
+  while (count < vstr__netstr2_num_len)
   {
    assert(scan->type == VSTR_TYPE_NODE_BUF);
    count = vstr__netstr2_copy(str, buf, len, count);
    
-   if (count == netstr2_num_len)
+   if (count == vstr__netstr2_num_len)
      break;
    
    scan = scan->next;
@@ -267,27 +277,30 @@ int vstr_add_netstr2_end(Vstr_base *base, size_t netstr_pos)
  return (TRUE);
 }
 
-/* might want to use vstr_add_pos_buf()/_ref() eventually */
-size_t vstr_add_netstr_beg(Vstr_base *base)
+/* NOTE: might want to use vstr_add_pos_buf()/_ref() eventually */
+size_t vstr_add_netstr_beg(Vstr_base *base, size_t pos)
 {
- return (vstr_add_netstr2_beg(base));
+ return (vstr_add_netstr2_beg(base, pos));
 }
 
-int vstr_add_netstr_end(Vstr_base *base, size_t netstr_pos)
+int vstr_add_netstr_end(Vstr_base *base,
+                        size_t netstr_beg_pos, size_t netstr_end_pos)
 {
  size_t netstr_len = 0;
  size_t count = 0;
  char buf[BUF_NUM_TYPE_SZ(unsigned long)];
  
- assert(sizeof(buf) >= netstr2_num_len);
- assert(netstr_pos);
+ assert(sizeof(buf) >= vstr__netstr2_num_len);
+ assert(netstr_beg_pos);
+ assert(netstr_end_pos);
  
- if (!vstr__netstr_end_start(base, netstr_pos, &count, &netstr_len, buf))
+  if (!vstr__netstr_end_start(base, netstr_beg_pos, netstr_end_pos,
+                             &count, &netstr_len, buf))
    return (FALSE);
 
- --netstr_pos;
+ --netstr_beg_pos;
  
- if (count == netstr2_num_len)
+ if (count == vstr__netstr2_num_len)
  { /* here we delete, so need to keep something */
   buf[--count] = '0';
  }
@@ -296,23 +309,23 @@ int vstr_add_netstr_end(Vstr_base *base, size_t netstr_pos)
   * count == num of zero's needed
   * buf[count] == Highest digit in number
   */
- /* can't do iovec as the delete will kill the upto date bit anyway */ 
+ /* can't do iovec as the delete will kill the uptodate bit anyway */ 
  {
   Vstr_node *scan = NULL;
   size_t skip = 0;
   char *str = NULL;
   size_t len = 0;
 
-  if (count && !vstr_del(base, netstr_pos + 1, count))
+  if (count && !vstr_del(base, netstr_beg_pos + 1, count))
   {
-   vstr_del(base, base->len, 1); /* remove comma, always works */
+   vstr_del(base, netstr_end_pos + 1, 1); /* remove comma, always works */
    return (FALSE);
   }
   
-  netstr_pos += base->used;
+  netstr_beg_pos += base->used;
 
   scan = base->beg;
-  while ((skip + scan->len) <= netstr_pos)
+  while ((skip + scan->len) <= netstr_beg_pos)
   {
    skip += scan->len;
    scan = scan->next;
@@ -320,15 +333,15 @@ int vstr_add_netstr_end(Vstr_base *base, size_t netstr_pos)
 
   assert(scan->type == VSTR_TYPE_NODE_BUF);
   
-  len = scan->len - (netstr_pos - skip);
-  str = vstr__export_node_ptr(scan) + (netstr_pos - skip);
+  len = scan->len - (netstr_beg_pos - skip);
+  str = vstr__export_node_ptr(scan) + (netstr_beg_pos - skip);
   
-  while (count < netstr2_num_len)
+  while (count < vstr__netstr2_num_len)
   {
    assert(scan->type == VSTR_TYPE_NODE_BUF);
    count = vstr__netstr2_copy(str, buf, len, count);
    
-   if (count == netstr2_num_len)
+   if (count == vstr__netstr2_num_len)
      break;
    
    scan = scan->next;

@@ -235,7 +235,7 @@ static void ex_slowcat_mmap_file(Vstr_base *str1, int fd, size_t len)
  if (offsetof(ex_slowcat_mmap_ref, ref))
    PROBLEM("assert");
  
- if (!vstr_add_ref(str1, str1->len, &ref->ref, ref->len, 0))
+ if (!vstr_add_ref(str1, str1->len, &ref->ref, 0, ref->len))
    errno = ENOMEM, PROBLEM("vstr_add_ref:");
 
  ++have_mmaped_file;

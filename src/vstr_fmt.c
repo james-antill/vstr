@@ -1302,7 +1302,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
       spec_make->int_type = INTMAX_T_TYPE;
       spec_make->fmt_code = 'p';
       spec_make->flags |= SPECIAL;
-      spec_make->precision = numb_precision; /* FIXME: ok ? */
+      spec_make->precision = numb_precision; /* ok ? */
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       

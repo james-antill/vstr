@@ -1,0 +1,36 @@
+
+Section: the Vstr_ref struct
+
+Member: func
+
+ Explanation:
+
+  This is the cleanup function to be called when noone wants a reference to the
+ memory help by the reference anymore.
+
+ Note:
+
+  This function should free() the memory accociated with the reference struct
+ itself, if that is required.
+
+
+Member: ptr
+
+ Explanation:
+
+  This is a ptr to a block of memory.
+
+
+Member: ref
+
+ Explanation:
+
+  When this reaches the value 0, you are free to call the func member.
+
+ Note:
+
+  It is safest to only change this by calling either vstr_ref_add_ref() or
+ vstr_ref_del_ref(). These will automatically call the cleanup function when
+ the reference reaches zero.
+
+

@@ -565,13 +565,18 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
   }
 
   if (!vstr_add_ref(base, pos, ref, 0, len))
-    goto add_all_ref_fail;
+    goto add_ref_all_ref_fail;
 
   if (cpy.ref)
     vstr__add_cleanup_cache(from_base, &cpy);
+
+  vstr_ref_del_ref(ref);
   
   return (TRUE);
 
+ add_ref_all_ref_fail:
+  vstr_ref_del_ref(ref);
+  
  add_all_ref_fail:
 
   vstr__add_cleanup_cache(from_base, &cpy);
@@ -580,7 +585,7 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
 }
 
 int vstr_add_vstr(Vstr_base *base, size_t pos, 
-                  Vstr_base *from_base, size_t from_pos, size_t len,
+                  const Vstr_base *from_base, size_t from_pos, size_t len,
                   unsigned int type)
 {
  size_t orig_pos = pos;
@@ -601,7 +606,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   * from_base in certain cases */
  if (type == VSTR_TYPE_ADD_ALL_REF)
  {
-  if (!vstr__add_all_ref(base, pos, len, from_base, from_pos))
+  if (!vstr__add_all_ref(base, pos, len, (Vstr_base *)from_base, from_pos))
     return (FALSE);
 
   return (TRUE);
@@ -610,7 +615,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
  /* make sure there are no buf nodes */
  if (type == VSTR_TYPE_ADD_BUF_REF)
  {
-   if (!vstr__convert_buf_ref(from_base, from_pos, len))
+   if (!vstr__convert_buf_ref((Vstr_base *)from_base, from_pos, len))
    {
      base->conf->malloc_bad = TRUE;
      return (FALSE);
@@ -670,7 +675,8 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   scan = scan->next;
  }
 
- vstr__cache_cpy(base, orig_pos, orig_len, from_base, orig_from_pos);
+ vstr__cache_cpy(base, orig_pos, orig_len,
+                 (Vstr_base *)from_base, orig_from_pos);
  
  return (TRUE);
 

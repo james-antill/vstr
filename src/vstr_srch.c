@@ -22,7 +22,7 @@
 #include "main.h"
 
 size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
-                         int srch)
+                         char srch)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -53,7 +53,7 @@ size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
 
 static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
                                       size_t pos, size_t len,
-                                      int srch)
+                                      char srch)
 {
   size_t ret = 0;
   size_t scan_pos = pos;
@@ -76,7 +76,7 @@ static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
 }
 
 size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
-                         int srch)
+                         char srch)
 { /* FIXME: this needs to use iovec to walk backwards */
 
   /* if (!vstr__base_iovec_valid((Vstr_base *)base))

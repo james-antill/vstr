@@ -167,7 +167,6 @@ static void vstr_del_all(Vstr_base *base)
   }
   
   ++num;
-  (*scan)->len = 0;
   
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
     vstr_ref_del_ref(((Vstr_node_ref *)*scan)->ref);
@@ -213,7 +212,7 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
  {
   assert((*scan)->len > base->used);
   
-  if (len < (size_t)((*scan)->len - base->used))
+  if (len < ((*scan)->len - base->used))
   {
    base->used += len;
    
@@ -226,7 +225,6 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
   num = 1;
   
   len -= ((*scan)->len - base->used);
-  (*scan)->len = 0; /* FIXME: not needed ... */
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
     vstr_ref_del_ref(((Vstr_node_ref *)(*scan))->ref);
   type = (*scan)->type;
@@ -257,7 +255,6 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
   
   ++num;
   len -= (*scan)->len;
-  (*scan)->len = 0;
   if ((*scan)->type == VSTR_TYPE_NODE_REF)
     vstr_ref_del_ref(((Vstr_node_ref *)(*scan))->ref);
   
@@ -329,7 +326,7 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
  Vstr_node *scan = NULL;
  Vstr_node **pscan = NULL;
  Vstr_node *beg = NULL;
- int type = 0;
+ int type;
  Vstr_node *saved_beg = NULL;
  unsigned int saved_num = 0;
  unsigned int del_nodes = 0;
