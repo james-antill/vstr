@@ -235,7 +235,8 @@ static int io_open(const char *filename)
   if (fd == -1)
     err(EXIT_FAILURE, "open(%s)", filename);
 
-  /* When doing IO, it should always be non-blocking */
+  /* When doing IO, it should always be non-blocking -- doesn't work
+   * for files, but fd object might be a FIFO etc. */
   io_fd_set_o_nonblock(fd);
 
   return (fd);
@@ -246,6 +247,7 @@ static int io_open(const char *filename)
 /* generic helper functions */
 /* ************************ */
 
+#ifndef EX_UTILS_NO_USE_INIT
 /* Example init function */
 static Vstr_base *ex_init(Vstr_base **s2)
 {
@@ -282,7 +284,9 @@ static Vstr_base *ex_init(Vstr_base **s2)
 
   return (s1);
 }
+#endif
 
+#ifndef EX_UTILS_NO_USE_EXIT
 /* Example exit function */
 static int ex_exit(Vstr_base *s1, Vstr_base *s2)
 {
@@ -304,5 +308,6 @@ static int ex_exit(Vstr_base *s1, Vstr_base *s2)
 
   return (EXIT_SUCCESS);
 }
+#endif
 
 #endif

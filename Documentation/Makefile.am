@@ -88,22 +88,22 @@ SEC_SSI_FILES= \
   sec/snprintf2.c
 
 security_problems.html: security_problems.txt sec_txt2html.pl
-		sec_txt2html.pl
+		$(srcdir)/sec_txt2html.pl
 
 functions.html: functions.txt txt2html.pl
-		txt2html.pl
+		$(srcdir)/txt2html.pl
 
 constants.html: constants.txt txt2html.pl
-		txt2html.pl
+		$(srcdir)/txt2html.pl
 
 structs.html: structs.txt txt2html.pl
-		txt2html.pl
+		$(srcdir)/txt2html.pl
 
 functions.3: functions.txt txt2man.pl
-		txt2man.pl
+		$(srcdir)/txt2man.pl
 
 constants.3: constants.txt txt2man.pl
-		txt2man.pl
+		$(srcdir)/txt2man.pl
 
 # FIXME: change to use examples versions...
 # at which point they'll be generated every build...

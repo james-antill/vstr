@@ -68,7 +68,7 @@ static void in_a(const char *buf)
  funlockfile(stdout);
 } 
 
-void *threadfunc(void *ctx)
+static void *threadfunc(void *ctx)
 {
   char buf[1024];
   

@@ -72,6 +72,11 @@ ex_dns_DEPENDENCIES = dns.h
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
+ex_httpd_SOURCES = ex_httpd.c
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h
+ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
+ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
+
 ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
 ex_tdns_LDADD    = $(GEN_LDLIBS)
 ex_tdns_LDFLAGS  = -pthread
@@ -120,6 +125,8 @@ hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
 
 
+pthread_APP = ex_tdns
+
 norm_APPS = \
   ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
@@ -130,7 +137,8 @@ if TIMER_Q_AVAIL
 timer_q_APPS = ex_slowcat
 
 if SOCKET_POLL_AVAIL
-dns_APP = ex_dns # ex_tdns
+dns_APP   = ex_dns
+httpd_APP = ex_httpd
 endif
 # Timer_q
 endif
@@ -172,7 +180,10 @@ examples_PROGRAMS = \
   $(openssl_APPS) \
   $(gmp_APPS) \
   $(glib_APPS) \
-  $(dns_APP)
+  $(dns_APP) \
+  $(httpd_APP) \
+  $(pthread_APP)
+
 
 otherdir   = $(EX_INST_DIR)
 other_DATA = \
@@ -199,6 +210,7 @@ html_DATA = \
   html/ex_hello_world_x.c.html \
   html/ex_hexdump.c.html \
   html/ex_highlight.c.html \
+  html/ex_httpd.c.html \
   html/ex_limited_cat.c.html \
   html/ex_lookup_ip.c.html \
   html/ex_mon_cp.c.html \

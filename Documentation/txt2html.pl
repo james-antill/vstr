@@ -228,7 +228,7 @@ EOL
             my $text = $3;
 
             $text = conv_html($text);
-            conv_html();
+            $_ = conv_html($_);
 	    if (defined $param_num)
 	      {
 		if ($attr eq "Type")
@@ -269,13 +269,13 @@ EOL
 	  }
 	elsif (/\.\.\.$/)
 	  {
-            conv_html();
+            $_ = conv_html($_);
 	    $_ = "$_</p><pre>";
 	    $in_pre_tag = 1;
 	  }
 	elsif (!$in_pre_tag && /^  /)
 	  {
-            conv_html();
+            $_ = conv_html($_);
 	    $_ = "</p><p>$_";
 
 	    conv_A_refs(0);
