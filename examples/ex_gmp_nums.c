@@ -130,6 +130,7 @@ static void *vmpz_num(unsigned int base, int val,
   else
   {
     unsigned int uval = ++val;
+    uval = -uval;
     ++uval;
     mpz_sub_ui(bignum, bignum, uval);
   }

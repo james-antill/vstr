@@ -399,6 +399,7 @@ static int serv_recv(struct con *con)
         
         op_pos = VSTR_SECTS_NUM(sects, 3)->pos;
         op_len = VSTR_SECTS_NUM(sects, 3)->len;
+        /* allow 1.x ? */
         if (!vstr_cmp_cstr_eq(data, op_pos, op_len, "HTTP/0.9") &&
             !vstr_cmp_cstr_eq(data, op_pos, op_len, "HTTP/1.0") &&
             !vstr_cmp_cstr_eq(data, op_pos, op_len, "HTTP/1.1"))

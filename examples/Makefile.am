@@ -179,6 +179,23 @@ examples_PROGRAMS += ex_zcat
 endif
 endif
 
+if GMP_AVAIL
+examples_PROGRAMS += \
+  ex_gmp_factorials ex_gmp_nums ex_gmp_num_roman ex_gmp_num_words
+endif
+
+if OPENSSL_AVAIL
+if MALLINFO_AVAIL
+examples_PROGRAMS += ex_perf_sgopenssl
+endif
+endif
+
+if GLIB20_AVAIL
+if MALLINFO_AVAIL
+examples_PROGRAMS += ex_perf_nodesize_foreach
+endif
+endif
+
 # !HAVE_POSIX_HOST
 else
 
@@ -188,24 +205,6 @@ hi_APP = jhighlight
 
 # HAVE_POSIX_HOST
 endif
-
-if OPENSSL_AVAIL
-if MALLINFO_AVAIL
-examples_PROGRAMS += ex_perf_sgopenssl
-endif
-endif
-
-if GMP_AVAIL
-examples_PROGRAMS += \
-  ex_gmp_factorials ex_gmp_nums ex_gmp_num_roman ex_gmp_num_words
-endif
-
-if GLIB20_AVAIL
-if MALLINFO_AVAIL
-examples_PROGRAMS += ex_perf_nodesize_foreach
-endif
-endif
-
 
 otherdir   = $(EX_INST_DIR)
 other_DATA = \

@@ -20,6 +20,15 @@
 
 #include <string.h> /* strncmp() etc. in GETOPT macros */
 
+#ifdef VSTR_AUTOCONF_fstat64
+# define fstat64 VSTR_AUTOCONF_fstat64
+#endif
+#ifdef VSTR_AUTOCONF_stat64
+/* does "stat" + "struct stat" */
+# define stat64 VSTR_AUTOCONF_stat64
+#endif
+
+
 /* **************************************************************** */
 /* defines: TRUE/FALSE and assert(), Note that GETOPT is used later */
 /* **************************************************************** */
@@ -263,24 +272,25 @@ static int io_open(const char *filename)
 static Vstr_base *ex_init(Vstr_base **s2)
 {
   Vstr_base *s1 = NULL;
-  struct stat stat_buf;
+  struct stat64 stat_buf;
 
   if (!vstr_init()) /* init the library */
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
   
   /* alter the node buffer size to be whatever the stdout block size is */
-  if (fstat(1, &stat_buf) == -1)
-    warn("fstat(STDOUT)");
-  else
+  if (fstat64(1, &stat_buf) == -1)
   {
-    if (!stat_buf.st_blksize) /* this is allowed to be Zero */
-      stat_buf.st_blksize = 4096;
-
-    if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
-                        stat_buf.st_blksize / 8))
-      warnx("Couldn't alter node size to match block size");
+    warn("fstat(STDOUT)");
+    stat_buf.st_blksize = 0;
   }
+  
+  if (!stat_buf.st_blksize) /* this is allowed to be Zero -- *BSD proc */
+    stat_buf.st_blksize = 4096;
+  
+  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
+                      stat_buf.st_blksize / 8))
+    warnx("Couldn't alter node size to match block size");
 
   /* create strings... */  
   if (!(s1 = vstr_make_base(NULL)) ||

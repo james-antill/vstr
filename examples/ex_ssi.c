@@ -10,9 +10,13 @@
 #include <pwd.h>
 
 #include <dirent.h>
-#include <spawn.h>
 
 #define USE_POPEN 1 /* hacky ... */
+
+#if !USE_POPEN
+/* spawn.h doesn't exist on MacOSX ... *sigh*/
+#include <spawn.h>
+#endif
 
 #define EX_SSI_FAILED(x) do {                                           \
         vstr_add_fmt(s1, s1->len,                                       \
