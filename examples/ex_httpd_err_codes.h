@@ -216,29 +216,16 @@
    to the dirname of the request.
 */
 #define HTTP_REQ_CHK_DIR(req, val) do {                                 \
-      Vstr_base *lfn = (req)->fname;                                    \
+      ASSERT((req)->fname->len && vstr_export_chr((req)->fname, 1) != '/'); \
                                                                         \
-      ASSERT(lfn->len && vstr_export_chr(lfn, 1) != '/');               \
-                                                                        \
-      if (vstr_cmp_cstr_eq(lfn, 1, lfn->len, "..") ||                   \
-          VSUFFIX(lfn, 1, lfn->len, "/.."))                             \
+      if (vstr_cmp_cstr_eq((req)->fname, 1, (req)->fname->len, "..") || \
+          VSUFFIX((req)->fname, 1, (req)->fname->len, "/.."))           \
         HTTPD_ERR_RET(req, 403, val);                                   \
-      else if (VSUFFIX(lfn, 1, lfn->len, "/"))                          \
-        vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);           \
+      else if (VSUFFIX((req)->fname, 1, (req)->fname->len, "/"))        \
+        vstr_add_cstr_ptr((req)->fname, (req)->fname->len,serv->dir_filename); \
       else                                                              \
       {                                                                 \
-        size_t last_slash = 0;                                          \
-                                                                        \
-        last_slash = vstr_srch_chr_rev(lfn, 1, lfn->len, '/');          \
-        vstr_del(lfn, 1, last_slash);                                   \
-                                                                        \
-        vstr_conv_encode_uri(lfn, 1, lfn->len);                         \
-        vstr_add_cstr_buf(lfn, lfn->len, "/");                          \
-        req->http_error_code = 301;                                     \
-        req->http_error_line = CONF_LINE_RET_301;                       \
-        req->http_error_len  = CONF_MSG_LEN_301(lfn);                   \
-        if (!req->head_op)                                              \
-          req->redirect_http_error_msg = TRUE;                          \
+        http__req_redirect_dir(con, req);                               \
         return (val);                                                   \
       }                                                                 \
     } while (0)

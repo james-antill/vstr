@@ -24,7 +24,7 @@
     --help -h         - Print this message.
     --max-clients -M  - Max clients allowed to connect (0 = no limit).
     --max-header-sz   - Max size of http header (0 = no limit).
-    --nagle -n        - Toggle usage of nagle TCP option (default: off).
+    --nagle -n        - Toggle usage of nagle TCP option (default: on).
     --port -P         - Port to bind to.
     --timeout -t      - Timeout (usecs) for connections.
     --version -V      - Print the version string.

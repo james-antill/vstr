@@ -8,6 +8,9 @@ Connection:   Keep-Alive
 HEAD          http://X/default HTTP/1.0
 Connection:   Keep-Alive    
 
+HEAD          http:///default HTTP/1.0
+Connection:   Keep-Alive    
+
 HEAD http://X/foo.example.com/.. HTTP/1.0
 Connection:
                 Keep-Alive         

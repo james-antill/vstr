@@ -23,8 +23,18 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 258
-Location: default/
+Content-Length: 267
+Location: http://X/default/
+
+HTTP/1.1 301 Moved Permanently
+Date:
+Server: jhttpd/0.9.1 (Vstr)
+Last-Modified:
+Connection: Keep-Alive
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 264
+Location: http:/default/
 
 HTTP/1.1 403 Forbidden
 Date:

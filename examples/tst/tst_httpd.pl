@@ -158,6 +158,7 @@ my $args = $root;
 rmtree($root);
 mkpath([$root . "/default",
 	$root . "/foo.example.com/nxt",
+	$root . "/foo.example.com/corner/index.html",
 	$root . "/foo.example.com:1234"]);
 
 sub munge_mtime
@@ -200,6 +201,7 @@ make_html(1, "root",    "$root/index.html");
 make_html(2, "default", "$root/default/index.html");
 make_html(3, "norm",    "$root/foo.example.com/index.html");
 make_html(4, "port",    "$root/foo.example.com:1234/index.html");
+make_html(5, "corner",  "$root/foo.example.com/corner/index.html/index.html");
 make_html(0, "",        "$root/default/noprivs.html");
 make_html(0, "privs",   "$root/default/noallprivs.html");
 

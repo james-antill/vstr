@@ -170,6 +170,8 @@ struct Http_req_data
 {
  Vstr_base *fname;
  size_t len;
+ size_t path_pos;
+ size_t path_len;
  unsigned int http_error_code;
  const char *http_error_line;
  const char *http_error_msg;
@@ -1000,13 +1002,11 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
   return (TRUE);
 }
 
-static int serv_http_absolute_uri(struct Con *con,
-                                  size_t *passed_op_pos, size_t *passed_op_len,
-                                  int ver_1_1)
+static int serv_http_absolute_uri(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
-  size_t op_pos = *passed_op_pos;
-  size_t op_len = *passed_op_len;
+  size_t op_pos = req->path_pos;
+  size_t op_len = req->path_len;
   
   /* check for absolute URIs */
   if (VIPREFIX(data, op_pos, op_len, "http://"))
@@ -1032,7 +1032,7 @@ static int serv_http_absolute_uri(struct Con *con,
   }
 
   /* HTTP/1.1 requires a host -- allow blank hostnames */
-  if (ver_1_1 && !con->http_hdrs->hdr_host->pos)
+  if (req->ver_1_1 && !con->http_hdrs->hdr_host->pos)
     return (FALSE);
   
   if (con->http_hdrs->hdr_host->len)
@@ -1074,8 +1074,8 @@ static int serv_http_absolute_uri(struct Con *con,
   /* uri#fragment ... craptastic clients pass this and assume it is ignored */
   op_len = vstr_cspn_cstr_chrs_fwd(data, op_pos, op_len, "#");
   
-  *passed_op_pos = op_pos;
-  *passed_op_len = op_len;
+  req->path_pos = op_pos;
+  req->path_len = op_len;
   
   return (TRUE);
 }
@@ -1231,9 +1231,10 @@ static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
   
   if (!vstr_sc_mmap_fd(req->f_mmap, 0, con->f_fd, mmoff, mmlen, NULL))
     VLG_WARN_RET_VOID((vlg, /* fall back to read */
-                       "mmap($<http-esc.vstr.sect:%p%p%u>,"
+                       "mmap($<http-esc.vstr:%p%zu%zu>,"
                             "(%ju,%ju)->(%ju,%ju)): %m\n",
-                       data, req->sects, 2, off, f_len, mmoff, mmlen));
+                       req->fname, 1, req->fname->len,
+                       off, f_len, mmoff, mmlen));
 
   req->use_mmap = TRUE;  
   vstr_del(req->f_mmap, 1, off - mmoff);
@@ -1248,8 +1249,6 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
                           VSTR_AUTOCONF_uintmax_t f_off,
                           VSTR_AUTOCONF_uintmax_t f_len)
 {
-  Vstr_base *data = con->ev->io_r;
-  
   ASSERT(!req->head_op);
   
   if (req->use_mmap || con->use_sendfile)
@@ -1257,8 +1256,8 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
 
   if (f_off && (lseek64(con->f_fd, f_off, SEEK_SET) == -1))
   {
-    vlg_warn(vlg, "lseek($<http-esc.vstr.sect:%p%p%u>,off=%ju): %m\n",
-             data, req->sects, 2, f_off);
+    vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
+             req->fname, 1, req->fname->len, f_off);
     con->http_hdrs->hdr_range->pos = 0;
     req->advertise_accept_ranges = FALSE;
     return (FALSE);
@@ -1535,21 +1534,21 @@ static void http_vlg_def(struct Con *con, struct Http_req_data *req)
   vlg_info(vlg, ": $<http-esc.vstr.sect:%p%p%u>\n", data, req->sects, 2);
 }
 
-static int http_req_make_path(struct Con *con, struct Http_req_data *req,
-                              size_t url_pos, size_t url_len)
+static int http_req_make_path(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
   Vstr_base *fname = req->fname;
-
+  
   ASSERT(!fname->len);
 
-  assert(VPREFIX(data, url_pos, url_len, "/"));
+  assert(VPREFIX(data, req->path_pos, req->path_len, "/"));
 
   /* don't allow encoded slashes */
-  if (vstr_srch_case_cstr_buf_fwd(data, url_pos, url_len, "%2f"))
+  if (vstr_srch_case_cstr_buf_fwd(data, req->path_pos, req->path_len, "%2f"))
     HTTPD_ERR_RET(req, 403, FALSE);
   
-  vstr_add_vstr(fname, 0, data, url_pos, url_len, VSTR_TYPE_ADD_BUF_PTR);
+  vstr_add_vstr(fname, 0,
+                data, req->path_pos, req->path_len, VSTR_TYPE_ADD_BUF_PTR);
   vstr_conv_decode_uri(fname, 1, fname->len);
 
   if (fname->conf->malloc_bad) /* dealt with in req_op_get */
@@ -1621,7 +1620,7 @@ static struct Http_req_data *http_make_req(struct Con *con)
 
   if (!req->done_once)
   {
-    if (!(req->fname = vstr_make_base(NULL)) ||
+    if (!(req->fname = vstr_make_base(con->ev->io_w->conf)) ||
         !(req->sects = vstr_sects_make(8)))
       return (NULL);
   }
@@ -1819,6 +1818,40 @@ static int http_fin_errmem_close_req(struct Con *con, struct Http_req_data *req)
   return (http_fin_errmem_req(con, req));
 }
 
+static void http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
+{
+  Vstr_base *data = con->ev->io_r;
+  Vstr_sect_node *h_h = con->http_hdrs->hdr_host;
+  Vstr_base *lfn = req->fname;
+
+  vstr_del(lfn, 1, lfn->len);
+  
+  if (!h_h->len) /* this is valid AFAICS... */
+    vstr_add_cstr_buf(lfn, lfn->len, "http:");
+  else
+  { /* but we'll do it "normally" if we have a host */
+    vstr_add_cstr_buf(lfn, lfn->len, "http://");
+    vstr_add_vstr(lfn, lfn->len,
+                  data, h_h->pos, h_h->len, VSTR_TYPE_ADD_ALL_BUF);
+  }
+  
+  vstr_add_vstr(lfn, lfn->len,
+                con->ev->io_r, req->path_pos, req->path_len,
+                VSTR_TYPE_ADD_ALL_BUF);
+
+  if (VSUFFIX(lfn, 1, lfn->len, "/"))
+    vstr_add_cstr_buf(lfn, lfn->len, serv->dir_filename);
+  
+  vstr_add_cstr_buf(lfn, lfn->len, "/");
+  
+  req->http_error_code = 301;
+  req->http_error_line = CONF_LINE_RET_301;
+  req->http_error_len  = CONF_MSG_LEN_301(lfn);
+  
+  if (!req->head_op)
+    req->redirect_http_error_msg = TRUE;
+}
+
 static int http_req_op_get(struct Con *con, struct Http_req_data *req)
 { /* GET or HEAD ops */
   Vstr_base *data = con->ev->io_r;
@@ -1968,8 +2001,6 @@ static int http_parse_req(struct Con *con)
   {
     size_t op_pos = 0;
     size_t op_len = 0;
-    size_t url_pos = 0;
-    size_t url_len = 0;
 
     if (!req->ver_0_9)
     { /* need to get all headers */
@@ -1990,16 +2021,16 @@ static int http_parse_req(struct Con *con)
     if (!req->ver_0_9 && !http_req_parse_1_x(con, req))
       return (http_fin_err_req(con, req));
       
-    url_pos = VSTR_SECTS_NUM(req->sects, 2)->pos;
-    url_len = VSTR_SECTS_NUM(req->sects, 2)->len;
+    req->path_pos = VSTR_SECTS_NUM(req->sects, 2)->pos;
+    req->path_len = VSTR_SECTS_NUM(req->sects, 2)->len;
 
-    if (!serv_http_absolute_uri(con, &url_pos, &url_len, req->ver_1_1))
+    if (!serv_http_absolute_uri(con, req))
       HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
 
     if (0) { }
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "GET"))
     {
-      if (!http_req_make_path(con, req, url_pos, url_len))
+      if (!http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
 
       return (http_req_op_get(con, req));      
@@ -2010,7 +2041,7 @@ static int http_parse_req(struct Con *con)
     {
       req->head_op = TRUE;
       
-      if (!http_req_make_path(con, req, url_pos, url_len))
+      if (!http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
 
       return (http_req_op_get(con, req));      
