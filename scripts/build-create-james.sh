@@ -1,8 +1,12 @@
 #! /bin/sh -e
 
 if [ ! -r VERSION -o ! -r vstr.spec -o ! -r configure ]; then
- echo "No VERSION, vstr.spec or configure file."
- exit 1
+  if [ -r configure ]; then
+    ./scripts/b/DOCS.sh
+  else
+    echo "No VERSION, vstr.spec or configure file."
+    exit 1
+  fi
 fi
 
 v="`cat VERSION`"
