@@ -63,6 +63,8 @@ static unsigned int client_timeout = (2 * 60); /* 2 minutes */
 static const char *server_ipv4_address = NULL;
 static short server_port = 7;
 
+static int server_daemon = FALSE;
+
 static unsigned int cl_dbg_opt = FALSE;
 static Vstr_base *cl_dbg_log = NULL;
 
@@ -169,10 +171,17 @@ static struct Evnt *cl_cb_func_accept(int fd,
     goto timer_add_fail;
 
   /* simple logger */
-  printf("CONNECT @[%s] from[%s]\n",
+  if (server_daemon)
+    syslog(LOG_NOTICE, "CONNECT @[%s] from[%s]\n",
          serv_date_rfc1123(time(NULL)),
          inet_ntoa(((struct sockaddr_in *)sa)->sin_addr));
-  fflush(NULL);
+  else
+  {
+    printf("CONNECT @[%s] from[%s]\n",
+           serv_date_rfc1123(time(NULL)),
+           inet_ntoa(((struct sockaddr_in *)sa)->sin_addr));
+    fflush(NULL);
+  }
   
   con->ev->cbs->cb_func_recv = cl_cb_func_recv;
   con->ev->cbs->cb_func_free = cl_cb_func_free;
@@ -212,6 +221,7 @@ static int cl_make_bind(const char *acpt_addr, short acpt_port)
 static void usage(const char *program_name, int tst_err)
 {
   fprintf(tst_err ? stderr : stdout, "\n Format: %s [-dHhnPtV]\n"
+          " --daemon          - Become a daemon.\n"
           " --debug -d        - Enable/disable debug info.\n"
           " --host -H         - IPv4 address to bind (def: \"all\").\n"
           " --help -h         - Print this message.\n"
@@ -234,6 +244,7 @@ static void cl_cmd_line(int argc, char *argv[])
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
+   {"daemon", no_argument, NULL, 99},
    {"debug", required_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
@@ -282,6 +293,13 @@ static void cl_cmd_line(int argc, char *argv[])
         else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
         break;
 
+      case 99:
+        if (daemon(FALSE, TRUE) == -1)
+          err(EXIT_FAILURE, "daemon");
+        server_daemon = TRUE;
+        openlog("jechod", 0, LOG_DAEMON);
+        break;
+        
       default:
         abort();
     }
@@ -382,6 +400,8 @@ int main(int argc, char *argv[])
     
     if ((ready == -1) && (errno != EINTR))
       err(EXIT_FAILURE, __func__);
+    if (ready == -1)
+      continue;
 
     dbg("1 a=%p r=%p s=%p n=%p\n", q_accept, q_recv, q_send_recv, q_none);
     evnt_scan_fds(ready, CL_MAX_WAIT_SEND);

@@ -84,6 +84,8 @@ static unsigned int server_max_clients = 0;
 
 static unsigned int server_max_header_sz = CONF_INPUT_MAXSZ;
 
+static int server_daemon = FALSE;
+
 static unsigned int cl_dbg_opt = FALSE;
 static Vstr_base *cl_dbg_log = NULL;
 
@@ -113,6 +115,7 @@ static void dbg(const char *fmt, ... )
 static void usage(const char *program_name, int ret)
 {
   fprintf(ret ? stderr : stdout, "\n Format: %s [-dHhMnPtV] <dir>\n"
+         " --daemon          - Become a daemon.\n"
          " --debug -d        - Enable/disable debug info.\n"
          " --host -H         - IPv4 address to bind (def: \"all\").\n"
          " --help -h         - Print this message.\n"
@@ -430,11 +433,20 @@ static int serv_recv(struct con *con)
         goto con_close_cleanup;
       
       /* simple logger */
-      printf("REQ %s @[%s] from[%s] t[%s]: %s\n", head_op ? "HEAD" : "GET",
-             serv_date_rfc1123(time(NULL)),
-             inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr),
-             http_req_content_type, fname);
-      fflush(NULL);
+      if (server_daemon)
+        syslog(LOG_NOTICE,
+               "REQ %s @[%s] from[%s] t[%s]: %s\n", head_op ? "HEAD" : "GET",
+               serv_date_rfc1123(time(NULL)),
+               inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr),
+               http_req_content_type, fname);
+      else
+      {
+        printf("REQ %s @[%s] from[%s] t[%s]: %s\n", head_op ? "HEAD" : "GET",
+               serv_date_rfc1123(time(NULL)),
+               inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr),
+               http_req_content_type, fname);
+        fflush(NULL);
+      }
       
       if ((con->f_fd = EX_UTILS_OPEN(fname, O_RDONLY | O_NOCTTY)) == -1)
       {
@@ -685,10 +697,17 @@ static struct Evnt *serv_cb_func_accept(int fd,
   memcpy(con->sa, sa, len);
   
   /* simple logger */
-  printf("CONNECT @[%s] from[%s]\n",
-         serv_date_rfc1123(time(NULL)),
-         inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr));
-  fflush(NULL);
+  if (server_daemon)
+    syslog(LOG_NOTICE, "CONNECT @[%s] from[%s]\n",
+           serv_date_rfc1123(time(NULL)),
+           inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr));
+  else
+  {
+    printf("CONNECT @[%s] from[%s]\n",
+           serv_date_rfc1123(time(NULL)),
+           inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr));
+    fflush(NULL);
+  }
   
   con->ev->cbs->cb_func_recv = serv_cb_func_recv;
   con->ev->cbs->cb_func_send = serv_cb_func_send;
@@ -746,6 +765,7 @@ static void cl_cmd_line(int argc, char *argv[])
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
+   {"daemon", no_argument, NULL, 99},
    {"debug", required_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
@@ -798,6 +818,13 @@ static void cl_cmd_line(int argc, char *argv[])
         else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
         break;
 
+      case 99:
+        if (daemon(FALSE, TRUE) == -1)
+          err(EXIT_FAILURE, "daemon");
+        server_daemon = TRUE;
+        openlog("jhttpd", 0, LOG_DAEMON);
+        break;
+        
       default:
         abort();
     }
@@ -844,7 +871,9 @@ int main(int argc, char *argv[])
     
     if ((ready == -1) && (errno != EINTR))
       err(EXIT_FAILURE, __func__);
-
+    if (ready == -1)
+      continue;
+    
     dbg("1 a=%p r=%p s=%p n=%p\n", q_accept, q_recv, q_send_recv, q_none);
     evnt_scan_fds(ready, CL_MAX_WAIT_SEND);
     dbg("2 a=%p r=%p s=%p n=%p\n", q_accept, q_recv, q_send_recv, q_none);

@@ -679,6 +679,8 @@ int main(int argc, char *argv[])
     
     if ((ready == -1) && (errno != EINTR))
       err(EXIT_FAILURE, __func__);
+    if (ready == -1)
+      continue;
 
     dbg("1 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
     ready = cl_scan_io_fds(ready);

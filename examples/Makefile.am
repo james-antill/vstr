@@ -251,7 +251,7 @@ html_DATA = \
 #  html/ex_tdns.c.html 
 
 initddir = $(sysconfdir)/init.d
-initd_DATA = \
+initd_SCRIPTS = \
   init.d/jechod \
   init.d/jhttpd
 

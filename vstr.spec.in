@@ -9,6 +9,8 @@
 # Do we want to run "make check" after the build...
 %define chk_opt %{?chk}%{!?chk:0}
 
+%define makeopts %{?jnum:-j %jnum}%{!?chk:%nil}
+
 # Auto work out what kind of float support we want.
 %ifarch i386
 %define fmtfloatopt --with-fmt-float=%{?float}%{!?float:glibc}
@@ -52,6 +54,7 @@ Requires: %{name} >= %{ver}
 Summary: String library, init.d files for daemon examples.
 Group: Development/Tools
 Requires: %{name}-examples = %{ver}
+BuildRequires: timer_q-devel, socket_poll-devel
 
 %description initd
  init.d start files for example programs in %{_libdir}/%{name}-%{ver}/examples
@@ -139,9 +142,10 @@ the Vstr string library
 
 function build()
 {
-  make
 %if %{chk_opt}
-  make check
+  make %{makeopts} check
+%else
+  make %{makeopts} 
 %endif
 }
 
@@ -246,4 +250,4 @@ fi
 %files initd
 %defattr(-, root, root)
 
-%{_sysconfdir}/init.d
+%{_sysconfdir}/init.d/j*d

@@ -19,8 +19,8 @@ JHTTPD_DIR=/var/www/html
 
 function start()
 {
-        echo -n $"Starting $prog: "
-        daemon --check $prog_name $ex_dir/$prog_exe $JHTTPD_ARGS $JHTTPD_DIR
+        echo -n $"Starting $prog_name: "
+        daemon --check $prog_name $ex_dir/$prog_exe --daemon $JHTTPD_ARGS $JHTTPD_DIR
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name
