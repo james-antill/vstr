@@ -139,6 +139,10 @@ struct con
  struct http_hdrs http_hdrs[1];
 };
 
+#define HTTP_NIL_KEEP_ALIVE 0
+#define HTTP_1_0_KEEP_ALIVE 1
+#define HTTP_1_1_KEEP_ALIVE 2
+
 #define CON_HDR_SET(con, h, p, l) do {                      \
       (con)-> http_hdrs -> hdr_ ## h ->pos = (p);           \
       (con)-> http_hdrs -> hdr_ ## h ->len = (l);           \
@@ -290,11 +294,8 @@ static void req_split_method(Vstr_sects *sects,
       goto fail_req;
     *ver_0_9 = TRUE;
     vstr_sects_add(sects, pos, len - strlen("\r\n"));
-    vlg_dbg1(vlg, "Method(0.9): ${vstr:%p%zu%zu%u} ${vstr:%p%zu%zu%u}\n",
-             s1, VSTR_SECTS_NUM(sects, 1)->pos, VSTR_SECTS_NUM(sects, 1)->len,
-             VSTR_TYPE_ADD_BUF_PTR,
-             s1, VSTR_SECTS_NUM(sects, 2)->pos, VSTR_SECTS_NUM(sects, 2)->len,
-             VSTR_TYPE_ADD_BUF_PTR);
+    vlg_dbg1(vlg, "Method(0.9): $<vstr.sect:%p%p%u> $<vstr.sect:%p%p%u>\n",
+             s1, sects, 1, s1, sects, 2);
     return;
   }
   vstr_sects_add(sects, pos, el - pos);
@@ -321,13 +322,8 @@ static void req_split_headers(Vstr_sects *sects,
   ASSERT(sects->num >= 3);
   
   vlg_dbg1(vlg, "Method(1.x):"
-           " ${vstr:%p%zu%zu%u} ${vstr:%p%zu%zu%u} ${vstr:%p%zu%zu%u}\n",
-           s1, VSTR_SECTS_NUM(sects, 1)->pos, VSTR_SECTS_NUM(sects, 1)->len,
-           VSTR_TYPE_ADD_BUF_PTR,
-           s1, VSTR_SECTS_NUM(sects, 2)->pos, VSTR_SECTS_NUM(sects, 2)->len,
-           VSTR_TYPE_ADD_BUF_PTR,
-           s1, VSTR_SECTS_NUM(sects, 3)->pos, VSTR_SECTS_NUM(sects, 3)->len,
-           VSTR_TYPE_ADD_BUF_PTR);
+           " $<vstr.sect:%p%p%u> $<vstr.sect:%p%p%u> $<vstr.sect:%p%p%u>\n",
+           s1, sects, 1, s1, sects, 2, s1, sects, 3);
     
   /* skip first line */
   el = (VSTR_SECTS_NUM(sects, sects->num)->pos +
@@ -360,8 +356,7 @@ static void req_split_headers(Vstr_sects *sects,
       continue;
 
     vstr_sects_add(sects, hpos, el - hpos);
-    vlg_dbg1(vlg, "${vstr:%p%zu%zu%u}\n",
-             s1, hpos, el - hpos, VSTR_TYPE_ADD_BUF_PTR);
+    vlg_dbg1(vlg, "$<vstr:%p%zu%zu>\n", s1, hpos, el - hpos);
 
     if (VPREFIX(s1, pos, len, "\r\n"))
       return; /* found end of headers */
@@ -401,8 +396,24 @@ static void app_def_headers(Vstr_base *out, int keep_alive, time_t now,
   app_header_cstr(out, "Date", date_rfc1123(now));
   app_header_cstr(out, "Server", CONF_SERV_NAME);
   app_header_cstr(out, "Last-Modified", date_rfc1123(last_mod));
-  if (!keep_alive)
-    app_header_cstr(out, "Connection", "close");
+
+  switch (keep_alive)
+  {
+    case HTTP_NIL_KEEP_ALIVE:
+      app_header_cstr(out, "Connection", "close");
+      break;
+      
+    case HTTP_1_0_KEEP_ALIVE:
+      app_header_cstr(out, "Connection", "Keep-Alive");
+      /* app_header_cstr(out, "Keep-Alive", "timeout=15, max=100"); */
+      break;
+      
+    case HTTP_1_1_KEEP_ALIVE: break;
+      
+    default:
+      ASSERT_NOT_REACHED();
+  }
+  
   if (CONF_SERV_USE_RANGE)
     app_header_cstr(out, "Accept-Ranges", "bytes");
   app_header_cstr(out, "Content-Type", content_type);
@@ -603,7 +614,7 @@ static int serv_http_parse_version(Vstr_base *data,
   return (0);
 }
 
-static int serv_http_parse_1_0(struct con *con,
+static int serv_http_parse_1_x(struct con *con,
                                Vstr_base *data, Vstr_sects *sects,
                                int *ver_1_1)
 {
@@ -616,14 +627,17 @@ static int serv_http_parse_1_0(struct con *con,
     return (ret);
   
   parse_hdrs(data, con->http_hdrs, sects, 3);
-        
-  if (*ver_1_1 && (!h_c->pos ||
-                   !vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "close")))
-    con->keep_alive = CONF_SERV_USE_KEEPA;
-  if (h_c->pos &&
-      vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "keep-alive"))
-    con->keep_alive = CONF_SERV_USE_KEEPA;
-
+  
+  if (CONF_SERV_USE_KEEPA)
+  {
+    if (*ver_1_1 && (!h_c->pos ||
+                     !vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "close")))
+      con->keep_alive = HTTP_1_1_KEEP_ALIVE;
+    else if (h_c->pos &&
+             vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "keep-alive"))
+      con->keep_alive = HTTP_1_0_KEEP_ALIVE;
+  }
+  
   return (0);
 }
 
@@ -801,23 +815,32 @@ static int serv_recv(struct con *con)
   const char *eor = "\r\n";
   struct stat64 f_stat; /* 416 needs this */
   size_t vhost_prefix_len = 0;
-  
+
   if (!ret)
   { /* untested -- getting EOF while still doing an old request */
     if (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
     {
-      con->keep_alive = FALSE;
+      con->keep_alive = HTTP_NIL_KEEP_ALIVE;
       SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
 
       vstr_del(data, 1, data->len); /* didn't match last time, ignore */
       
-      if (out->len || (con->f_fd != -1))
+      if (out->len || con->f_len)
         return (TRUE);
     }
 
     goto con_cleanup;
   }
 
+  if (out->len || con->f_len) /* already outputting one req */
+  {
+    ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
+
+    if (data->len > server_max_header_sz)
+      SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
+    return (TRUE);
+  }
+  
   if (con->parsed_method_ver_1_0) /* wait for all the headers */
     eor = "\r\n\r\n";
   
@@ -833,7 +856,7 @@ static int serv_recv(struct con *con)
   if (!(sects = vstr_sects_make(8)))
     goto con_cleanup;
   
-  con->keep_alive = FALSE;
+  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   req_split_method(sects, data, 1, req_len, &ver_0_9);
   if (sects->malloc_bad)
     VLG_WARNNOMEM_GOTO(con_cleanup, (vlg, "split: %m\n"));
@@ -886,7 +909,7 @@ static int serv_recv(struct con *con)
       
       if (!ver_0_9)
       {
-        int ecode = serv_http_parse_1_0(con, data, sects, &ver_1_1);
+        int ecode = serv_http_parse_1_x(con, data, sects, &ver_1_1);
 
         if (ecode)
           switch (ecode)
@@ -1049,7 +1072,7 @@ static int serv_recv(struct con *con)
         {
           if (lseek64(con->f_fd, range_beg, SEEK_SET) == -1)
           { /* FIXME: shouldn't Accept-Ranges now ... but do */
-            vlg_warn(vlg, "lseek(%s,sz=%ju,off=%ju)",
+            vlg_warn(vlg, "lseek(%s,sz=%ju,off=%ju): %m\n",
                      fname_cstr, (uintmax_t)f_stat.st_size, range_beg);
             con->http_hdrs->hdr_range->pos = 0;
           }
@@ -1069,7 +1092,7 @@ static int serv_recv(struct con *con)
         if (out->conf->malloc_bad)
           VLG_WARNNOMEM_GOTO(con_close_cleanup, (vlg, "headers: %m\n"));
         
-        vlg_dbg2(vlg, "${vstr:%p%zu%zu%u}\n", out, (size_t)1, out->len, 0);
+        vlg_dbg2(vlg, "$<vstr:%p%zu%zu>\n", out, (size_t)1, out->len);
       }
       
       vstr_free_base(fname);
@@ -1079,6 +1102,7 @@ static int serv_recv(struct con *con)
         io_fd_set_o_nonblock(con->f_fd);
       else
       {
+        con->f_len = 0;
         close(con->f_fd);
         con->f_fd = -1;
       }
@@ -1096,11 +1120,12 @@ static int serv_recv(struct con *con)
       goto con_cleanup;
       
      con_close_fin_error_code:
+      con->f_len = 0;
       close(con->f_fd);
       con->f_fd = -1;
       goto con_fin_error_code;
     }
-    else if (!ver_0_9 &&
+    else if (!ver_0_9 && /* we know about these ... but don't allow them */
              (vstr_cmp_cstr_eq(data, op_pos, op_len, "OPTIONS") ||
               vstr_cmp_cstr_eq(data, op_pos, op_len, "POST") ||
               vstr_cmp_cstr_eq(data, op_pos, op_len, "PUT") ||
@@ -1121,19 +1146,18 @@ static int serv_recv(struct con *con)
   ASSERT_NOT_REACHED();
   
  con_fin_error_code:
+  ASSERT(!con->f_len);
+  
   if (data->conf->malloc_bad || (fname && fname->conf->malloc_bad))
     VLG_WARNNOMEM_GOTO(con_cleanup, (vlg, "err: %m\n"));
   
-  vlg_info(vlg, "ERREQ @[%s] from[%s:%hu] err[%03u %s]:",
+  vlg_info(vlg, "ERREQ @[%s] from[%s:%hu] err[%03u %s]",
            date_rfc1123(time(NULL)),
            inet_ntoa(((struct sockaddr_in *)con->sa)->sin_addr),
            ntohs(((struct sockaddr_in *)con->sa)->sin_port),
            http_error_code, http_error_line);
   if (sects->num >= 2)
-  {
-    Vstr_sect_node *req = VSTR_SECTS_NUM(sects, 2);
-    vlg_info(vlg, " ${vstr:%p%zu%zu%u}\n", data, req->pos, req->len, 0);
-  }
+    vlg_info(vlg, ": $<vstr.sect:%p%p%u>\n", data, sects, 2);
   else
     vlg_info(vlg, "%s", "\n");
   
@@ -1151,7 +1175,8 @@ static int serv_recv(struct con *con)
     if (http_error_code == 403)
       app_header_cstr(out, "Allow", "GET, HEAD");      
     if (redirect_loc)
-      app_header_vstr(out, "Location", fname, (size_t)1, fname->len, 0);
+      app_header_vstr(out, "Location",
+                      fname, (size_t)1, fname->len, VSTR_TYPE_ADD_ALL_BUF);
     app_end_headers(out);
   }
   
@@ -1163,7 +1188,7 @@ static int serv_recv(struct con *con)
   else
     vstr_add_cstr_ptr(out, out->len, http_error_msg);
 
-  vlg_dbg2(vlg, "${vstr:%p%zu%zu%u}\n", out, (size_t)1, out->len, 0);
+  vlg_dbg2(vlg, "$<vstr:%p%zu%zu>\n", out, (size_t)1, out->len);
   
  con_do_write:
   serv_clear_hdrs(con);
@@ -1174,9 +1199,13 @@ static int serv_recv(struct con *con)
   vstr_free_base(fname);  fname = NULL;
   vstr_sects_free(sects); sects = NULL;
 
+  if (!con->keep_alive) /* all input is here */
+    SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
+
   if (evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND))
     return (TRUE);
-  vlg_warn(vlg, "send: %m\n");  
+  if (errno != EPIPE)
+    vlg_warn(vlg, "send: %m\n");  
   
  con_cleanup:
   vstr_free_base(fname);
@@ -1213,28 +1242,52 @@ static void serv_send_zeropad(struct con *con, size_t len)
   }
 }
 
-static int serv_cb_func_send(struct Evnt *evnt)
+static int serv_send(struct con *con)
 {
-  struct con *con = (struct con *)evnt;
   size_t len = 0;
   int ret = IO_OK;
-  
-  /* FIXME: sendfile too */
+
+  ASSERT(!con->ev->io_w->conf->malloc_bad);
 
   if ((con->f_fd == -1) && con->f_len)
   {
     serv_send_zeropad(con, 0);
-    if (!evnt_send_add(con->ev, TRUE, CL_MAX_WAIT_SEND))
-      VLG_WARN_RET((FALSE), (vlg, "send: %m\n"));
-    return (TRUE);
+    if (con->ev->io_w->conf->malloc_bad)
+    {
+      con->ev->io_w->conf->malloc_bad = FALSE;
+      VLG_WARNNOMEM_RET((FALSE), (vlg, "zeropad: %m\n"));
+    }
+
+    if (con->f_len)
+    {
+      if (!evnt_send(con->ev))
+      {
+        if (errno != EPIPE)
+          vlg_warn(vlg, "send: %m\n");
+        return (FALSE);
+      }
+      
+      return (TRUE);
+    }
   }
   
-  if (con->f_fd == -1)
+  if (!con->f_len)
   {
-    if (!evnt_send(evnt))
-      VLG_WARN_RET((FALSE), (vlg, "send: %m\n"));
+    if (!evnt_send(con->ev))
+    {
+      if (errno != EPIPE)
+        vlg_warn(vlg, "send: %m\n");
+      return (FALSE);
+    }
 
-    return (con->keep_alive || (con->ev->io_w->len != 0));
+
+    if (con->keep_alive)
+    {
+      SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
+      return (TRUE);
+    }
+    
+    return (con->ev->io_w->len != 0);
   }
   
   ASSERT(con->f_len);
@@ -1255,8 +1308,12 @@ static int serv_cb_func_send(struct Evnt *evnt)
     }
 
     tmp = con->ev->io_w->len;
-    if (!evnt_send_add(con->ev, TRUE, CL_MAX_WAIT_SEND))
-      VLG_WARN_RET((FALSE), (vlg, "send: %m\n"));
+    if (!evnt_send(con->ev))
+    {
+      if (errno != EPIPE)
+        vlg_warn(vlg, "send: %m\n");
+      return (FALSE);
+    }
     vlg_dbg3(vlg, "write = %zu\n", tmp - con->ev->io_w->len);
     
     if (con->ev->io_w->len >= CONF_OUTPUT_SZ)
@@ -1264,26 +1321,22 @@ static int serv_cb_func_send(struct Evnt *evnt)
 
     len = con->ev->io_w->len;
   }
+
+  if (ret == IO_FAIL)
+    vlg_warn(vlg, "read: %m\n");
+  
+  if (con->ev->io_w->conf->malloc_bad)
+    con->ev->io_w->conf->malloc_bad = FALSE;
   
   close(con->f_fd);
   con->f_fd = -1;
 
-  if (con->f_len)
-    serv_send_zeropad(con, 0);
+  return (serv_send(con));
+}
 
-  if (con->ev->io_w->conf->malloc_bad)
-  {
-    con->ev->io_w->conf->malloc_bad = FALSE;
-    return (FALSE);
-  }
-  
-  if (!evnt_send_add(con->ev, TRUE, CL_MAX_WAIT_SEND))
-    VLG_WARN_RET((FALSE), (vlg, "send: %m\n"));
-  
-  if (!con->keep_alive && !con->ev->io_w->len)
-    return (FALSE);
-  
-  return (TRUE);
+static int serv_cb_func_send(struct Evnt *evnt)
+{
+  return (serv_send((struct con *)evnt));
 }
 
 static void serv_cb_func_free(struct Evnt *evnt)
@@ -1332,7 +1385,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
   tv = con->ev->ctime;
   TIMER_Q_TIMEVAL_ADD_SECS(&tv, 0, client_timeout);
 
-  con->keep_alive = FALSE;
+  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   con->parsed_method_ver_1_0 = FALSE;
 
   serv_clear_hdrs(con);
@@ -1353,7 +1406,8 @@ static struct Evnt *serv_cb_func_accept(int fd,
   con->ev->cbs->cb_func_send = serv_cb_func_send;
   con->ev->cbs->cb_func_free = serv_cb_func_free;
 
-  con->f_fd = -1;
+  con->f_fd  = -1;
+  con->f_len =  0;
   
   ++server_clients_count;
   
@@ -1375,7 +1429,7 @@ static void cl_cmd_line(int argc, char *argv[])
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
-   {"daemon", no_argument, NULL, 99},
+   {"daemon", no_argument, NULL, 2},
    {"debug", no_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
@@ -1407,10 +1461,7 @@ static void cl_cmd_line(int argc, char *argv[])
         usage(program_name, 'h' != optchar);
         
       case 'V':
-        printf(" %s version 0.1.1, compiled on %s.\n",
-               program_name,
-               __DATE__);
-        printf(" %s compiled on %s.\n", program_name, __DATE__);
+        printf(" %s version 0.1.1, compiled on %s.\n", program_name, __DATE__);
         exit (EXIT_SUCCESS);
 
       case 't': client_timeout       = atoi(optarg);  break;
@@ -1430,7 +1481,7 @@ static void cl_cmd_line(int argc, char *argv[])
         else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
         break;
 
-      case 99:
+      case 2:
         become_daemon = TRUE;
         break;
         

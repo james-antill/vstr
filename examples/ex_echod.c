@@ -209,7 +209,7 @@ static void cl_cmd_line(int argc, char *argv[])
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
-   {"daemon", no_argument, NULL, 99},
+   {"daemon", no_argument, NULL, 1},
    {"debug", required_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
@@ -239,10 +239,7 @@ static void cl_cmd_line(int argc, char *argv[])
         usage(program_name, 'h' != optchar);
         
       case 'V':
-        printf(" %s version 0.1.1, compiled on %s.\n",
-               program_name,
-               __DATE__);
-        printf(" %s compiled on %s.\n", program_name, __DATE__);
+        printf(" %s version 0.1.1, compiled on %s.\n", program_name, __DATE__);
         exit (EXIT_SUCCESS);
 
       case 't': client_timeout      = atoi(optarg); break;
@@ -260,7 +257,7 @@ static void cl_cmd_line(int argc, char *argv[])
         else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
         break;
 
-      case 99:
+      case 1:
         become_daemon = TRUE;
         break;
         

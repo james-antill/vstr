@@ -122,7 +122,8 @@ static void cl_parse(struct con *con, size_t msg_len)
 
 static int cl_recv(struct con *con)
 {
-  int ret = evnt_recv(con->ev);
+  unsigned int ern = 0;
+  int ret = evnt_recv(con->ev, &ern);
   unsigned int msg_len = 0;
   
   /* parse data */
@@ -435,10 +436,7 @@ static void cl_cmd_line(int argc, char *argv[])
         usage(program_name, '?' == optchar);
         
       case 'V':
-        printf(" %s version 0.0.1, compiled on %s.\n",
-               program_name,
-               __DATE__);
-        printf(" %s compiled on %s.\n", program_name, __DATE__);
+        printf(" %s version 0.0.1, compiled on %s.\n", program_name, __DATE__);
         exit (EXIT_SUCCESS);
 
       case 'c': server_clients      = atoi(optarg); break;

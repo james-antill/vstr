@@ -14,60 +14,89 @@ GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD  = $(GEN_LDLIBS)
+
 ex_ccount_DEPENDENCIES = ex_utils.h
 ex_ccount_CFLAGS = $(GEN_CFLAGS)
 ex_ccount_LDADD  = $(GEN_LDLIBS)
+
 ex_hello_world_DEPENDENCIES = ex_utils.h
 ex_hello_world_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_LDADD  = $(GEN_LDLIBS)
+
 ex_hello_world_s_DEPENDENCIES = ex_utils.h
 ex_hello_world_s_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_s_LDADD  = $(GEN_LDLIBS)
+
 ex_hello_world_m_DEPENDENCIES = ex_utils.h
 ex_hello_world_m_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_m_LDADD  = $(GEN_LDLIBS)
+
 ex_hello_world_x_DEPENDENCIES = ex_utils.h
 ex_hello_world_x_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_x_LDADD  = $(GEN_LDLIBS)
+
 ex_hexdump_DEPENDENCIES = ex_utils.h
 ex_hexdump_CFLAGS = $(GEN_CFLAGS)
 ex_hexdump_LDADD  = $(GEN_LDLIBS)
+
 ex_html_dir_list_DEPENDENCIES = ex_utils.h
 ex_html_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_html_dir_list_LDADD  = $(GEN_LDLIBS)
+
+ex_dir_filter_SOURCES = ex_dir_filter.c bag.c
+ex_dir_filter_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_filter_CFLAGS = $(GEN_CFLAGS)
+ex_dir_filter_LDADD  = $(GEN_LDLIBS)
+
 ex_dir_list_DEPENDENCIES = ex_utils.h
 ex_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_dir_list_LDADD  = $(GEN_LDLIBS)
+
+ex_dir_sort_SOURCES = ex_dir_sort.c bag.c
+ex_dir_sort_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_sort_CFLAGS = $(GEN_CFLAGS)
+ex_dir_sort_LDADD  = $(GEN_LDLIBS)
+
 ex_nl_DEPENDENCIES = ex_utils.h
 ex_nl_CFLAGS = $(GEN_CFLAGS)
 ex_nl_LDADD  = $(GEN_LDLIBS)
+
 ex_phone_names_DEPENDENCIES = ex_utils.h
 ex_phone_names_CFLAGS = $(GEN_CFLAGS)
 ex_phone_names_LDADD  = $(GEN_LDLIBS)
+
 ex_rot13_DEPENDENCIES = ex_utils.h
 ex_rot13_CFLAGS = $(GEN_CFLAGS)
 ex_rot13_LDADD  = $(GEN_LDLIBS)
+
 ex_yes_DEPENDENCIES = ex_utils.h
 ex_yes_CFLAGS = $(GEN_CFLAGS)
 ex_yes_LDADD  = $(GEN_LDLIBS)
+
 ex_mon_cp_DEPENDENCIES = ex_utils.h
 ex_mon_cp_CFLAGS = $(GEN_CFLAGS)
 ex_mon_cp_LDADD  = $(GEN_LDLIBS)
+
 ex_lookup_ip_DEPENDENCIES = ex_utils.h
 ex_lookup_ip_CFLAGS = $(GEN_CFLAGS)
 ex_lookup_ip_LDADD  = $(GEN_LDLIBS)
+
 ex_csv_DEPENDENCIES = ex_utils.h
 ex_csv_CFLAGS = $(GEN_CFLAGS)
 ex_csv_LDADD  = $(GEN_LDLIBS)
+
 ex_highlight_DEPENDENCIES = ex_utils.h
 ex_highlight_CFLAGS = $(GEN_CFLAGS)
 ex_highlight_LDADD  = $(GEN_LDLIBS)
+
 ex_ssi_DEPENDENCIES = ex_utils.h
 ex_ssi_CFLAGS = $(GEN_CFLAGS)
 ex_ssi_LDADD  = $(GEN_LDLIBS)
+
 ex_rainbow_DEPENDENCIES = ex_utils.h
 ex_rainbow_CFLAGS = $(GEN_CFLAGS)
 ex_rainbow_LDADD  = $(GEN_LDLIBS)
+
 ex_changelog_diff_DEPENDENCIES = ex_utils.h
 ex_changelog_diff_CFLAGS = $(GEN_CFLAGS)
 ex_changelog_diff_LDADD  = $(GEN_LDLIBS)
@@ -159,7 +188,8 @@ hi_APP = ./ex_highlight
 examples_PROGRAMS += \
   ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
-  ex_hexdump ex_html_dir_list ex_dir_list ex_nl ex_phone_names ex_rot13 \
+  ex_hexdump ex_html_dir_list ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
+  ex_phone_names ex_rot13 \
   ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
   ex_ssi ex_rainbow ex_changelog_diff ex_ccount
 
@@ -221,7 +251,9 @@ html_DATA = \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
   html/ex_csv.c.html \
+  html/ex_dir_filter.c.html \
   html/ex_dir_list.c.html \
+  html/ex_dir_sort.c.html \
   html/ex_dns.c.html \
   html/ex_echod.c.html \
   html/ex_gmp_factorials.c.html \

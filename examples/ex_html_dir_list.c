@@ -1,18 +1,50 @@
 
-#define EX_UTILS_NO_USE_OPEN 1
 #include "ex_utils.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define SUB_CODE(x) do {                                \
+      if (!vstr_sub_cstr_buf(s1, pos, 1, x))            \
+        return (FALSE);                                 \
+                                                        \
+      count = strlen(x);                                \
+    } while (FALSE)
+static int html_conv_encode_data(Vstr_base *s1, size_t pos, size_t len)
+{
+
+  while (len)
+  {
+    size_t count = vstr_cspn_cstr_chrs_fwd(s1, pos, len, "&<>");
+    len -= count; pos += count;
+
+    if (len)
+    {
+      switch (vstr_export_chr(s1, pos))
+      {
+        case '&': SUB_CODE("&amp;"); break;
+        case '<': SUB_CODE("&lt;");  break;
+        case '>': SUB_CODE("&gt;");  break;
+        default:
+          ASSERT_NOT_REACHED();
+      }
+      len -= count; pos += count;
+    }
+  }
+
+  return (TRUE);
+}
+
 static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
-                                    int *parsed_header)
+                                    int *parsed_header, int *row_num)
 {
   size_t pos = 0;
   size_t len = 0;
   size_t ns1 = vstr_parse_netstr(s2, 1, s2->len, &pos, &len);
-  int done = FALSE;
+  Vstr_sect_node name[1] = {{0,0}};
+  Vstr_sect_node size[1] = {{0,0}};
+  Vstr_sect_node type[1] = {{0,0}};
   
   if (!ns1)
   {
@@ -50,7 +82,7 @@ static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
     size_t vpos = 0;
     size_t vlen = 0;
     size_t nst  = 0;
-
+    
     if (!(nst = vstr_parse_netstr(s2, pos, len, &kpos, &klen)))
       errx(EXIT_FAILURE, "bad input");
     pos += nst; len -= nst;
@@ -61,58 +93,95 @@ static int ex_html_dir_list_process(Vstr_base *s1, Vstr_base *s2,
 
     if (0) { }
     else if (vstr_cmp_cstr_eq(s2, kpos, klen, "name"))
-    { /* FIXME: need to urlize it */
-      vstr_add_fmt(s1, s1->len,
-                   "%s<li>"
-                   "<a href=\"${vstr:%p%zu%zu%u}\">${vstr:%p%zu%zu%u}</a>",
-                   done ? "</li>\n" : "",
-                   s2, vpos, vlen, 0,
-                   s2, vpos, vlen, 0);
-      done = TRUE;
+    {
+      name->pos = vpos;
+      name->len = vlen;
     }
     else if (vstr_cmp_cstr_eq(s2, kpos, klen, "type"))
     {
-      VSTR_AUTOCONF_uintmax_t val = vstr_parse_uintmax(s2, vpos, vlen, 10,
-                                                       NULL, NULL);
+      type->pos = vpos;
+      type->len = vlen;
+    }
+    else if (vstr_cmp_cstr_eq(s2, kpos, klen, "size"))
+    {
+      size->pos = vpos;
+      size->len = vlen;
+    }
+  }
 
+  if (name->pos)
+  {
+    *row_num %= 2;
+    ++*row_num;
+    
+    {
+      Vstr_base *href = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
+      Vstr_base *text = vstr_dup_vstr(NULL, s2, name->pos, name->len, 0);
+
+      if (!href || !vstr_conv_encode_uri(href, 1, href->len))
+        errno = ENOMEM, err(EXIT_FAILURE, "html");
+      if (!text || !html_conv_encode_data(text, 1, text->len))
+        errno = ENOMEM, err(EXIT_FAILURE, "html");
+
+      vstr_add_fmt(s1, s1->len, "  <tr class=\"r%d\"> <td class=\"c1\">"
+                   "<a href=\"${vstr:%p%zu%zu%u}\">${vstr:%p%zu%zu%u}</a></td>",
+                   *row_num,
+                   href, (size_t)1, href->len, 0,
+                   text, (size_t)1, text->len, 0);
+      vstr_free_base(href);
+      vstr_free_base(text);
+    }
+    
+    if (!size->pos)
+      vstr_add_cstr_buf(s1, s1->len, " <td class=\"c2\"></td>");
+    else
+    {
+      VSTR_AUTOCONF_uintmax_t val = 0;
+
+      val = vstr_parse_uintmax(s2, size->pos, size->len, 10, NULL, NULL);
+
+      vstr_add_fmt(s1, s1->len, " <td class=\"c2\">${BKMG.ju:%ju}</td>", val);
+    }
+    
+    if (!type->pos)
+      vstr_add_cstr_buf(s1, s1->len, " <td class=\"c3\"></td>");
+    else
+    { /* FIXME: add option to skip for block devices etc. */
+      VSTR_AUTOCONF_uintmax_t val = 0;
+
+      val = vstr_parse_uintmax(s2, type->pos, type->len, 10, NULL, NULL);
+      
+      vstr_add_cstr_buf(s1, s1->len, " <td class=\"c3\">");
       if (0) { }
       else if (S_ISREG(val))
       { /* do nothing */ }
       else if (S_ISDIR(val))
-        vstr_add_cstr_buf(s1, s1->len, " (directory)");
+        vstr_add_cstr_buf(s1, s1->len, "(directory)");
       else if (S_ISCHR(val))
-        vstr_add_cstr_buf(s1, s1->len, " (character device)");
+        vstr_add_cstr_buf(s1, s1->len, "(character device)");
       else if (S_ISBLK(val))
-        vstr_add_cstr_buf(s1, s1->len, " (block device)");
+        vstr_add_cstr_buf(s1, s1->len, "(block device)");
       else if (S_ISLNK(val))
-        vstr_add_cstr_buf(s1, s1->len, " (symbolic link)");
+        vstr_add_cstr_buf(s1, s1->len, "(symbolic link)");
       else if (S_ISSOCK(val))
-        vstr_add_cstr_buf(s1, s1->len, " (socket)");
-
-      done = TRUE;
+        vstr_add_cstr_buf(s1, s1->len, "(socket)");
+      vstr_add_cstr_buf(s1, s1->len, "</td>");
     }
-    else if (vstr_cmp_cstr_eq(s2, kpos, klen, "size"))
-    {
-      VSTR_AUTOCONF_uintmax_t val = vstr_parse_uintmax(s2, vpos, vlen, 10,
-                                                       NULL, NULL);
-      vstr_add_fmt(s1, s1->len, " ${BKMG.ju:%ju}", val);
-    }
+      
+    vstr_add_cstr_buf(s1, s1->len, "</tr>\n");
   }
-
-  if (done)
-    vstr_add_cstr_buf(s1, s1->len, "</li>\n");
-
+  
   vstr_del(s2, 1, ns1);
 
   return (TRUE);
 }
 
 static void ex_html_dir_list_process_limit(Vstr_base *s1, Vstr_base *s2,
-                                           int *parsed_header)
+                                           int *parsed_header, int *row_num)
 {
   while (s2->len)
   { /* Finish processing read data (try writing if we need memory) */
-    int proc_data = ex_html_dir_list_process(s1, s2, parsed_header);
+    int proc_data = ex_html_dir_list_process(s1, s2, parsed_header, row_num);
 
     if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
       io_block(-1, STDOUT_FILENO);
@@ -122,21 +191,23 @@ static void ex_html_dir_list_process_limit(Vstr_base *s1, Vstr_base *s2,
 static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
 {
   vstr_add_fmt(s1, s1->len, "\
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n\
+<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\
 <html>\n\
  <head>\n\
   <title>Directory listing of %s</title>\n\
+ <link rel=\"stylesheet\" type=\"text/css\" href=\"dir_list.css\">\
  </head>\n\
  <body>\n\
   <h1>Directory listing of %s</h1>\n\
-  <ul>\n\
+  <table class=\"dir_list\">\n\
+  <tr class=\"rh\"> <td class=\"c1\">Name</td> <td class=\"c2\">Size</td>  <td class=\"c3\">Type</td> </tr>\n\
 ", fname, fname);
 }
 
 static void ex_html_dir_list_end(Vstr_base *s1)
 {
   vstr_add_cstr_buf(s1, s1->len, "\n\
-  </ul>\n\
+  </table>\n\
  </body>\n\
 </html>\n\
 ");
@@ -146,6 +217,7 @@ static void ex_html_dir_list_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
                                                   int fd)
 {
   int parsed_header[1] = {FALSE};
+  int row_num[1] = {0};
   
   while (TRUE)
   {
@@ -155,23 +227,16 @@ static void ex_html_dir_list_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     if (io_r_state == IO_EOF)
       break;
 
-    ex_html_dir_list_process(s1, s2, parsed_header);
+    ex_html_dir_list_process(s1, s2, parsed_header, row_num);
     
     io_w_state = io_put(s1, STDOUT_FILENO);
 
     io_limit(io_r_state, fd, io_w_state, STDOUT_FILENO, s1);    
   }
   
-  ex_html_dir_list_process_limit(s1, s2, parsed_header);
+  ex_html_dir_list_process_limit(s1, s2, parsed_header, row_num);
 }
 
-static int ex_html_dir_list_spawn_dir_list(const char *arg)
-{ /* FIXME: should allow spawning of arbitrary apps. to generate dir list */
-  abort();
-  return -1;
-}
-
-/* This is "dir_list", without any command line options */
 int main(int argc, char *argv[])
 {
   Vstr_base *s1 = NULL;
@@ -236,7 +301,7 @@ Report bugs to James Antill <james@and.org>.\n\
    * and do the read/write loop */
   while (count < argc)
   {
-    int fd = ex_html_dir_list_spawn_dir_list(argv[count]);
+    int fd = io_open(argv[count]);
 
     ex_html_dir_list_beg(s1, argv[count]);
     ex_html_dir_list_read_fd_write_stdout(s1, s2, fd);

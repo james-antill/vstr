@@ -52,6 +52,71 @@ static void vlg__flush(Vlg *vlg, int syslg_type, int out_err)
   }
 }
 
+/* because vlg goes away quickly it's likely we'll want to just use _BUF_PTR
+   for Vstr data to save the copying. So here is a helper. */
+static int vlg__fmt__add_vstr_add_vstr(Vstr_base *base, size_t pos,
+                                       Vstr_fmt_spec *spec)
+{
+  Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_pos          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+  size_t sf_len          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
+  unsigned int sf_flags  = VSTR_TYPE_ADD_BUF_PTR;
+                                                                                
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+    return (FALSE);
+                                                                                
+  if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
+    return (FALSE);
+                                                                                
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+                                                                                
+  return (TRUE);
+}
+
+static int vlg__fmt_add_vstr_add_vstr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vlg__fmt__add_vstr_add_vstr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
+}
+
+/* also a helper for printing sects --
+ * should probably have some in Vstr itself */
+static int vlg__fmt__add_vstr_add_sect_vstr(Vstr_base *base, size_t pos,
+                                            Vstr_fmt_spec *spec)
+{
+  Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  Vstr_sects *sects      = VSTR_FMT_CB_ARG_PTR(spec, 1);
+  unsigned int num       = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 2);
+  size_t sf_pos          = VSTR_SECTS_NUM(sects, num)->pos;
+  size_t sf_len          = VSTR_SECTS_NUM(sects, num)->len;
+  unsigned int sf_flags  = VSTR_TYPE_ADD_BUF_PTR;
+                                                                                
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+    return (FALSE);
+                                                                                
+  if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
+    return (FALSE);
+                                                                                
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+                                                                                
+  return (TRUE);
+}
+
+static int vlg__fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vlg__fmt__add_vstr_add_sect_vstr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+}
 
 void vlg_init(void)
 {
@@ -61,7 +126,12 @@ void vlg_init(void)
     goto malloc_err_vstr_conf;
 
   if (!vstr_cntl_conf(vlg__conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
-      !vstr_sc_fmt_add_all(vlg__conf))
+      !vstr_sc_fmt_add_all(vlg__conf) ||
+      !VSTR_SC_FMT_ADD(vlg__conf, vlg__fmt_add_vstr_add_vstr,
+                       "<vstr", "p%zu%zu", ">") ||
+      !VSTR_SC_FMT_ADD(vlg__conf, vlg__fmt_add_vstr_add_sect_vstr,
+                       "<vstr.sect", "p%p%u", ">") ||
+      FALSE)
     goto malloc_err_vstr_fmt_all;
 
   vstr_cntl_conf(vlg__conf, VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &buf_sz);
@@ -143,93 +213,85 @@ void vlg_verr(Vlg *vlg, int exit_code, const char *fmt, va_list ap)
 {
   Vstr_base *dlg = vlg->out_vstr;
 
-  vstr_add_cstr_buf(dlg, dlg->len, "ERR: ");
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
-
-  if (dlg->conf->malloc_bad)
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
     errno = ENOMEM, err(exit_code, "vlog_verr");
   
-  vlg__flush(vlg, LOG_ALERT, TRUE);
-
+  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+  {
+    if (!vstr_add_cstr_ptr(dlg, 0, "ERR: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "vlog_verr");
+      
+    vlg__flush(vlg, LOG_ALERT, TRUE);
+  }
+  
   _exit(exit_code);
 }
 
 void vlg_vwarn(Vlg *vlg, const char *fmt, va_list ap)
 {
   Vstr_base *dlg = vlg->out_vstr;
-  
-  vstr_add_cstr_buf(dlg, dlg->len, "WARN: ");
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
 
-  if (dlg->conf->malloc_bad)
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
     errno = ENOMEM, err(EXIT_FAILURE, "vlog_vwarn");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+  {
+    if (!vstr_add_cstr_ptr(dlg, 0, "WARN: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vwarn");
+      
     vlg__flush(vlg, LOG_WARNING, TRUE);
+  }
 }
 
 void vlg_vinfo(Vlg *vlg, const char *fmt, va_list ap)
 {
   Vstr_base *dlg = vlg->out_vstr;
   
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
-
-  if (dlg->conf->malloc_bad)
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
     errno = ENOMEM, err(EXIT_FAILURE, "vlog_vinfo");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
     vlg__flush(vlg, LOG_NOTICE, FALSE);
 }
 
-void vlg_vdbg1(Vlg *vlg, const char *fmt, va_list ap)
+static void vlg__vdbg(Vlg *vlg, const char *fmt, va_list ap)
 {
   Vstr_base *dlg = vlg->out_vstr;
   
-  if (vlg->out_dbg < 1)
-    return;
-
-  vstr_add_cstr_buf(dlg, dlg->len, "DEBUG: ");
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
-
-  if (dlg->conf->malloc_bad)
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
     errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
   
   if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+  {
+    if (!vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
+      errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
+      
     vlg__flush(vlg, LOG_DEBUG, FALSE);
+  }
+}
+
+void vlg_vdbg1(Vlg *vlg, const char *fmt, va_list ap)
+{
+  if (vlg->out_dbg < 1)
+    return;
+
+  vlg__vdbg(vlg, fmt, ap);
 }
 
 void vlg_vdbg2(Vlg *vlg, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-  
   if (vlg->out_dbg < 2)
     return;
 
-  vstr_add_cstr_buf(dlg, dlg->len, "DEBUG: ");
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
-
-  if (dlg->conf->malloc_bad)
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_DEBUG, FALSE);
+  vlg__vdbg(vlg, fmt, ap);
 }
 
 void vlg_vdbg3(Vlg *vlg, const char *fmt, va_list ap)
 {
-  Vstr_base *dlg = vlg->out_vstr;
-  
   if (vlg->out_dbg < 3)
     return;
 
-  vstr_add_cstr_buf(dlg, dlg->len, "DEBUG: ");
-  vstr_add_vfmt(dlg, dlg->len, fmt, ap);
-
-  if (dlg->conf->malloc_bad)
-    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
-  
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
-    vlg__flush(vlg, LOG_DEBUG, FALSE);
+  vlg__vdbg(vlg, fmt, ap);
 }
 
 /* ---------- ... ---------- */

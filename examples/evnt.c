@@ -38,8 +38,8 @@
 #endif
 
 #ifndef NDEBUG
-# define ASSERT(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-# define assert(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+# define ASSERT(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u\n", __LINE__); } while (FALSE)
+# define assert(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "assert(" #x "), FAILED at line %u\n", __LINE__); } while (FALSE)
 #else
 # define ASSERT(x)
 # define assert(x)
@@ -247,7 +247,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   return (TRUE);
 
  bind_fail:
-  vlg_warn(vlg, "bind(%s:%hd)", acpt_addr ? acpt_addr : "any", server_port);
+  vlg_warn(vlg, "bind(%s:%hd)\n", acpt_addr ? acpt_addr : "any", server_port);
  listen_fail:
  reuse_fail:
  init_fail:
@@ -409,7 +409,7 @@ int evnt_recv(struct Evnt *con, unsigned int *ern)
       break;
 
     default: /* unknown */
-      VLG_WARN_RET(FALSE, (vlg, "read_iov() = %d: %m", *ern));
+      VLG_WARN_RET(FALSE, (vlg, "read_iov() = %d: %m\n", *ern));
   }
 
   return (ret);
@@ -510,12 +510,12 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       ret = getsockopt(SOCKET_POLL_INDICATOR(scan->ind)->fd,
                        SOL_SOCKET, SO_ERROR, &ern, &len);
       if (ret == -1)
-        vlg_err(vlg, EXIT_FAILURE, "getsockopt(SO_ERROR)");
+        vlg_err(vlg, EXIT_FAILURE, "getsockopt(SO_ERROR): %m\n");
       else if (ern)
       {
         /* server_ipv4_address */
         if (ern == ECONNREFUSED)
-          errno = ern, vlg_err(vlg, EXIT_FAILURE, "connect");
+          errno = ern, vlg_err(vlg, EXIT_FAILURE, "connect(): %m\n");
 
         /* FIXME: move del */
         evnt_del(&q_connect, scan);
@@ -665,7 +665,7 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
   }
 
   if (ready)
-    vlg_err(vlg, EXIT_FAILURE, "ready = %d", ready);
+    vlg_err(vlg, EXIT_FAILURE, "ready = %d\n", ready);
 }
 
 void evnt_scan_send_fds(void)

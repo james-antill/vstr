@@ -85,10 +85,15 @@
     else if (0) ASSERT(FALSE)
 
 
-
+#ifndef NDEBUG
 #define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
 #define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
 #define ASSERT_NOT_REACHED() assert(FALSE)
+#else
+#define assert(x) do { } while (FALSE)
+#define ASSERT(x) do { } while (FALSE)
+#define ASSERT_NOT_REACHED() assert(FALSE)
+#endif
 
 
 /* ********************************* */

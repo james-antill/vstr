@@ -4,6 +4,7 @@
 #define CONF_LINE_RET_301 "Moved Permanently"
 #define CONF_MSG_FMT_301 "%s${vstr:%p%zu%zu%u}%s"
 #define CONF_MSG__FMT_301_BEG "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>301 Moved Permanently</title>\r\n\
@@ -25,6 +26,7 @@
 
 #define CONF_LINE_RET_400 "Bad Request"
 #define CONF_MSG_RET_400 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>400 Bad Request</title>\r\n\
@@ -38,6 +40,7 @@
 
 #define CONF_LINE_RET_403 "Forbidden"
 #define CONF_MSG_RET_403 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>403 Forbidden</title>\r\n\
@@ -51,6 +54,7 @@
 
 #define CONF_LINE_RET_404 "Not Found"
 #define CONF_MSG_RET_404 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>404 Not Found</title>\r\n\
@@ -64,6 +68,7 @@
 
 #define CONF_LINE_RET_412 "Precondition Failed"
 #define CONF_MSG_RET_412 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>412 Precondition Failed</title>\r\n\
@@ -77,6 +82,7 @@
 
 #define CONF_LINE_RET_414 "Request-URI Too Long"
 #define CONF_MSG_RET_414 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>414 Request-URI Too Long</title>\r\n\
@@ -90,6 +96,7 @@
 
 #define CONF_LINE_RET_416 "Requested Range Not Satisfiable"
 #define CONF_MSG_RET_416 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>416 Requested Range Not Satisfiable</title>\r\n\
@@ -103,6 +110,7 @@
 
 #define CONF_LINE_RET_417 "Expectation Failed"
 #define CONF_MSG_RET_417 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>417 Expectation Failed</title>\r\n\
@@ -116,6 +124,7 @@
 
 #define CONF_LINE_RET_500 "Internal Server Error"
 #define CONF_MSG_RET_500 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>500 Internal Server Error</title>\r\n\
@@ -129,6 +138,7 @@
 
 #define CONF_LINE_RET_501 "Not Implemented"
 #define CONF_MSG_RET_501 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>501 Not Implemented</title>\r\n\
@@ -142,6 +152,7 @@
 
 #define CONF_LINE_RET_505 "Version not supported"
 #define CONF_MSG_RET_505 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
 <html>\r\n\
   <head>\r\n\
     <title>505 Version not supported</title>\r\n\
