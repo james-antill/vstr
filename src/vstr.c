@@ -139,16 +139,19 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
     if (!(loc->decimal_point_str = malloc(deci_len + 1)))
       goto fail_deci;
 
-    memcpy(loc->name_lc_numeric_str, name_numeric, numeric_len + 1);
+    vstr_nx_wrap_memcpy(loc->name_lc_numeric_str, name_numeric,
+                        numeric_len + 1);
     loc->name_lc_numeric_len = numeric_len;
     
-    memcpy(loc->grouping, SYS_LOC(grouping), grp_len);
+    vstr_nx_wrap_memcpy(loc->grouping, SYS_LOC(grouping), grp_len);
     loc->grouping[grp_len] = 0; /* make sure all cstrs are 0 terminated */
     
-    memcpy(loc->thousands_sep_str, SYS_LOC(thousands_sep), thou_len + 1);
+    vstr_nx_wrap_memcpy(loc->thousands_sep_str, SYS_LOC(thousands_sep),
+                        thou_len + 1);
     loc->thousands_sep_len = thou_len;
     
-    memcpy(loc->decimal_point_str, SYS_LOC(decimal_point), deci_len + 1);
+    vstr_nx_wrap_memcpy(loc->decimal_point_str, SYS_LOC(decimal_point),
+                        deci_len + 1);
     loc->decimal_point_len = deci_len;
   }
 
@@ -587,9 +590,9 @@ void vstr_nx_free_base(Vstr_base *base)
  if (!base)
    return;
 
- vstr_nx_del(base, 1, base->len);
-
  vstr__free_cache(base);
+
+ vstr_nx_del(base, 1, base->len);
  
  vstr__del_conf(base->conf);
  
@@ -639,8 +642,8 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
     beg = (Vstr_node *)base->conf->spare_buf_beg;
     base->conf->spare_buf_beg = (Vstr_node_buf *)beg->next;
     
-    memcpy(((Vstr_node_buf *)beg)->buf,
-           ((Vstr_node_buf *)node)->buf + pos, node->len - pos);
+    vstr_nx_wrap_memcpy(((Vstr_node_buf *)beg)->buf,
+                        ((Vstr_node_buf *)node)->buf + pos, node->len - pos);
     break;
     
   case VSTR_TYPE_NODE_NON:
@@ -1016,9 +1019,9 @@ void vstr__base_zero_used(Vstr_base *base)
   {
     assert(base->beg->type == VSTR_TYPE_NODE_BUF);
     base->beg->len -= base->used;
-    memmove(((Vstr_node_buf *)base->beg)->buf,
-            ((Vstr_node_buf *)base->beg)->buf + base->used,
-            base->beg->len);
+    vstr_nx_wrap_memmove(((Vstr_node_buf *)base->beg)->buf,
+                         ((Vstr_node_buf *)base->beg)->buf + base->used,
+                         base->beg->len);
     base->used = 0;
   }
 }

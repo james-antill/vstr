@@ -25,16 +25,7 @@
 <li><a href="#vstr_exit%28%29">vstr_exit()</a>
 </ul><li><a href="#Functions%20to%20choose%20multiple%20VSTR_FLAG_%2a%20constants">Functions to choose multiple VSTR_FLAG_* constants</a>
 <ul>
-<li><a href="#VSTR_FLAG10%28%29">VSTR_FLAG10()</a>
-<li><a href="#VSTR_FLAG09%28%29">VSTR_FLAG09()</a>
-<li><a href="#VSTR_FLAG08%28%29">VSTR_FLAG08()</a>
-<li><a href="#VSTR_FLAG07%28%29">VSTR_FLAG07()</a>
-<li><a href="#VSTR_FLAG06%28%29">VSTR_FLAG06()</a>
-<li><a href="#VSTR_FLAG05%28%29">VSTR_FLAG05()</a>
-<li><a href="#VSTR_FLAG04%28%29">VSTR_FLAG04()</a>
-<li><a href="#VSTR_FLAG03%28%29">VSTR_FLAG03()</a>
-<li><a href="#VSTR_FLAG02%28%29">VSTR_FLAG02()</a>
-<li><a href="#VSTR_FLAG01%28%29">VSTR_FLAG01()</a>
+<li><a href="#VSTR_FLAGXX%28%29">VSTR_FLAGXX()</a>
 </ul><li><a href="#Functions%20to%20get%20specific%20data%20about%20the%20vstr">Functions to get specific data about the vstr</a>
 <ul>
 <li><a href="#vstr_num%28%29">vstr_num()</a>
@@ -197,6 +188,8 @@
 <li><a href="#vstr_sects_add%28%29">vstr_sects_add()</a>
 <li><a href="#vstr_sects_del%28%29">vstr_sects_del()</a>
 <li><a href="#vstr_sects_foreach%28%29">vstr_sects_foreach()</a>
+<li><a href="#vstr_sects_update_add%28%29">vstr_sects_update_add()</a>
+<li><a href="#vstr_sects_update_del%28%29">vstr_sects_update_del()</a>
 <li><a href="#vstr_sects_srch%28%29">vstr_sects_srch()</a>
 </ul><li><a href="#Functions%20for%20splitting%20data%20in%20a%20Vstr%20into%20sections">Functions for splitting data in a Vstr into sections</a>
 <ul>
@@ -264,6 +257,7 @@
 <a name="vstr_init%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_init()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Nothing<br>Type<strong>[1]</strong>: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function needs to be called before any of the other functions are
  called.
@@ -275,6 +269,7 @@
 <a name="vstr_exit%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_exit()
 </a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Nothing<br>Type<strong>[1]</strong>: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function can be called before exit, after all vstr objects have been
  freed, to cleanup data allocated internally in the vstr library.
@@ -286,172 +281,32 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20choose%20multiple%20VSTR_FLAG_%2a%20constants"><h2>Functions to choose multiple VSTR_FLAG_* constants</h2>
 </a>
-<a name="VSTR_FLAG10%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG10()
+<a name="VSTR_FLAGXX%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_FLAGXX()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Name of a flag in given flag type<br>Type<strong>[7]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Name of a flag in given flag type<br>Type<strong>[8]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[9]</strong>: Name of a flag in given flag type<br>Type<strong>[9]</strong>: <symbol>
- Parameter[10]: Name of a flag in given flag type
- Type[10]: <symbol>
-
- Parameter[11]: Name of a flag in given flag type
- Type[11]: <symbol>
-
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: &lt;symbol&gt;
+</td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Names of a flags in the given flag type<br>Type<strong>[ ... ]</strong>: &lt;symbol&gt;
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-  This macro function combines 10 flags. So instead of having to say...
+</p><p>  This isn't one macro function but a group of functions that all do the same
+ thing, just with different numbers of arguments. They combine the namespace
+ requirements so that you can specify multiple flags in a concise manner. For
+ instance VSTR_FLAG06() combines 6 flags. So instead of having to wite...
 <br><pre>
     (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA)
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)
 
-</pre> ...you can now say...
+</pre> ...you can write...
 <br><pre>
-    VSTR_FLAG10(CONV_UNPRINTABLE_ALLOW, 
-                NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA)
+    VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
 
-</pre> ...this becomes a lot more readable as the number of flags increases.
-
-
-<a name="VSTR_FLAG09%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG09()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Name of a flag in given flag type<br>Type<strong>[7]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Name of a flag in given flag type<br>Type<strong>[8]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[9]</strong>: Name of a flag in given flag type<br>Type<strong>[9]</strong>: <symbol>
- Parameter[10]: Name of a flag in given flag type
- Type[10]: <symbol>
-
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 9 flags.
-
-
-<a name="VSTR_FLAG08%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG08()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Name of a flag in given flag type<br>Type<strong>[7]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Name of a flag in given flag type<br>Type<strong>[8]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[9]</strong>: Name of a flag in given flag type<br>Type<strong>[9]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 8 flags.
-
-
-<a name="VSTR_FLAG07%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG07()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Name of a flag in given flag type<br>Type<strong>[7]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Name of a flag in given flag type<br>Type<strong>[8]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 7 flags.
-
-
-<a name="VSTR_FLAG06%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG06()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Name of a flag in given flag type<br>Type<strong>[7]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 6 flags.
-
-
-<a name="VSTR_FLAG05%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG05()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Name of a flag in given flag type<br>Type<strong>[6]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 5 flags.
-
-
-<a name="VSTR_FLAG04%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG04()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Name of a flag in given flag type<br>Type<strong>[5]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 4 flags.
-
-
-<a name="VSTR_FLAG03%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG03()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Name of a flag in given flag type<br>Type<strong>[4]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 3 flags.
-
-
-<a name="VSTR_FLAG02%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG02()
-</a><br>Returns: The value of the flags combined<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Name of a flag in given flag type<br>Type<strong>[3]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 2 flags.
-
-
-<a name="VSTR_FLAG01%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_FLAG01()
-</a><br>Returns: The value of the flag<br>Type: unsigned int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of a flag in given flag type<br>Type<strong>[2]</strong>: <symbol>
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function acts the same as VSTR_FLAG10() except it only combines
- 1 flag with 0, this is here mainly for compatability.
+</pre> ...which is a lot more readable as the number of flags increases.
+</p><p>  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
+ number at the end refering to how many flags are passed to it (not the number
+ of parameters, which is one more than that).
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20get%20specific%20data%20about%20the%20vstr"><h2>Functions to get specific data about the vstr</h2>
@@ -492,7 +347,7 @@
  instead.
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
  cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
+</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
@@ -514,7 +369,7 @@
 </p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
+</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
@@ -538,7 +393,7 @@
 </p><p>  Data from nodes of type NON are exported by not doing anything to the
  underlying data array (Ie. It'll have whatever data was in there to
  start with).
-</p><p>  If there are any 0 bytes in the Vstr they will make the "C string" look
+</p><p>  If there are any 0 bytes in the Vstr they will make the &quot;C string&quot; look
  shorter than it really is to normal C/POSIX string functions.
 
 
@@ -563,7 +418,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
  cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
-</p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
+</p><p>  Any _NON data in the Vstr will be uninitialised data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
@@ -721,14 +576,14 @@
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
+</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])-&gt;ptr.
 
 <a name="vstr_ref_cb_free_ptr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr_ref()
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr and
+</p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])-&gt;ptr and
  then call free() on the Vstr_ref (Parameter[1]).
 
 
@@ -1016,7 +871,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of non data<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to add "non" (or invisible) data to a Vstr string.
+</p><p>  This function is used to add &quot;non&quot; (or invisible) data to a Vstr string.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1064,7 +919,7 @@
  (Parameter[1]) and in some cases even how the data is represented in the
  Vstr string (Parameter[3]) for more information see the documentation on the
  VSTR_TYPE_ADD_* constants.
-</p><p>  This function will set _both_ (Parameter[1])->conf->malloc_bad and
+</p><p>  This function will set _both_ (Parameter[1])-&gt;conf-&gt;malloc_bad and
  (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
 
 
@@ -2352,7 +2207,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function converts characters to the URI %<hex><hex> encoding, so the
+</p><p>  This function converts characters to the URI %&lt;hex&gt;&lt;hex&gt; encoding, so the
  ASCII space character ' ' becomes the encoded sequence %20 etc.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2367,7 +2222,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function converts characters from the URI %<hex><hex> encoding, so that
+</p><p>  This function converts characters from the URI %&lt;hex&gt;&lt;hex&gt; encoding, so that
  the encoded sequence %20 becomes the ASCII space character ' ' etc.
 
 
@@ -2376,7 +2231,7 @@
 <a name="VSTR_SECTS_DECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_DECL()
 </a><br>Returns: Declaration of a Vstr sections<br>Type: struct Vstr_sects *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: <symbol>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: &lt;symbol&gt;
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum size of the Vstr sections (Parameter[1])<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function declares a Vstr sections, of the specified size
@@ -2390,7 +2245,7 @@
 <a name="VSTR_SECTS_EXTERN_DECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_EXTERN_DECL()
 </a><br>Returns: Extern declaration of a Vstr sections<br>Type: struct Vstr_sects *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: <symbol>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: &lt;symbol&gt;
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum size of the Vstr sections<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function declares a Vstr sections, of the specified size
@@ -2484,6 +2339,34 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The foreach callback body function returns types starting
  VSTR_TYPE_SECT_FOREACH_.
+
+
+<a name="vstr_sects_update_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sects_update_add()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr sections<br>Type<strong>[2]</strong>: struct Vstr_sects *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will cause the section (Parameter[2]) to automatically be
+ updated when changes are made to the Vstr string (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  You need to call vstr_sects_update_del(), before you free the
+ section (Parameter[2]). However if the next thing you are going to do is call
+ vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them
+ backwards.
+</p><p>  This uses the vstr_cache_add() function.
+
+
+<a name="vstr_sects_update_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sects_update_del()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr sections<br>Type<strong>[2]</strong>: struct Vstr_sects *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will cause the section (Parameter[2]) that was previously 
+ updated when changes are made to the Vstr string (Parameter[1]) to not be
+ updated anymore.
 
 
 <a name="vstr_sects_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2760,7 +2643,7 @@
 </p><p>  If the data cannot be found 0 is returned.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The netstring is only found if it is "whole", in that the entire netstring
+</p><p>  The netstring is only found if it is &quot;whole&quot;, in that the entire netstring
  and data exist in the Vstr string. If one is found but is not whole then the
  position of the start of data and the length of the netstring will still be
  returned.
@@ -2782,7 +2665,7 @@
 </p><p>  If the data cannot be found 0 is returned.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The netstring is only found if it is "whole", in that the entire netstring
+</p><p>  The netstring is only found if it is &quot;whole&quot;, in that the entire netstring
  and data exist in the Vstr string. If one is found but is not whole then the
  position of the start of data and the length of the netstring will still be
  returned.
@@ -2866,7 +2749,7 @@
 <strong>Function: </strong> VSTR_FMT_CB_ARG_VAL()
 </a><br>Returns: Data of specified type<br>Type: Paramter[2]
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Type of the specified value<br>Type<strong>[2]</strong>: <symbol>
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Type of the specified value<br>Type<strong>[2]</strong>: &lt;symbol&gt;
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of the parameter for the callback<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function returns the nth (Parameter[3]) parameter passed to a
@@ -2896,6 +2779,9 @@
  function.
 </p><p>  The callback function will not be called if the data for the cache function
  is NULL.
+</p><p>  The inline adding and delete from the Vstr strings is not performed if
+ callbacks are registered for the string (because functions will have to be
+ called anyway).
 
 
 <a name="vstr_cache_get%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2957,7 +2843,7 @@
  to free that data.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  A Cookie reference of "zero" means tell all cache functions to free cached
+</p><p>  A Cookie reference of &quot;zero&quot; means tell all cache functions to free cached
  data. Note that this can cause severe performance degradation if overly used.
 
 
@@ -3140,7 +3026,7 @@
  number and before a "B" for bytes.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The precision specifies how many digits are included after the "whole" part
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
@@ -3158,7 +3044,7 @@
  number and before a "B/s" for bytes per second.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The precision specifies how many digits are included after the "whole" part
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
@@ -3176,7 +3062,7 @@
  number and before a "b" for bits.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The precision specifies how many digits are included after the "whole" part
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
@@ -3194,7 +3080,7 @@
  number and before a "b/s" for bits per second.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The precision specifies how many digits are included after the "whole" part
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
@@ -3361,7 +3247,7 @@
  filedescriptor.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If the start position is 1, the length is (Parameter[1])->len and caching is
+</p><p>  If the start position is 1, the length is (Parameter[1])-&gt;len and caching is
  available for the Vstr string the data will be exported as though
  vstr_export_iovec_ptr_all(), writev() and then vstr_del() were called.
 

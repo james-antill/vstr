@@ -207,3 +207,228 @@ int vstr_nx_sects_foreach(const Vstr_base *base,
   return (count);
 }
 
+typedef struct Vstr__sects_cache_data
+{
+ unsigned int sz;
+ unsigned int len;
+ Vstr_sects *VSTR__STRUCT_HACK_ARRAY(updates);
+} Vstr__sects_cache_data;
+
+static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
+                                   unsigned int type, void *passed_data)
+{
+  Vstr__sects_cache_data *data = passed_data;
+  unsigned int count = 0;
+  
+  ASSERT(base->conf->cache_pos_cb_sects);
+  ASSERT(data == vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects));
+  
+  if (type == VSTR_TYPE_CACHE_FREE)
+  {
+    free(data);
+    return (NULL);
+  }
+
+  if (type == VSTR_TYPE_CACHE_SUB) /* do nothing for substitutions ... */
+    return (data);
+  
+  while (count < data->len)
+  {
+    Vstr_sects *sects = data->updates[count];
+
+    switch (type)
+    {
+      case VSTR_TYPE_CACHE_ADD:
+      {
+        unsigned int scan = 0;
+        while (scan < sects->num)
+        {
+          if (sects->ptr[scan].pos && sects->ptr[scan].len)
+          {
+            if (pos < sects->ptr[scan].pos)
+              sects->ptr[scan].pos += len;
+            if ((pos >= sects->ptr[scan].pos) &&
+                (pos < (sects->ptr[scan].pos + sects->ptr[scan].len - 1)))
+              sects->ptr[scan].len += len;
+          }
+          
+          ++scan;
+        }
+      }
+      break;
+      
+      case VSTR_TYPE_CACHE_DEL:
+      {
+        unsigned int scan = 0;
+
+        while (scan < sects->num)
+        {
+          if (sects->ptr[scan].pos && sects->ptr[scan].len)
+          {
+            if (pos <= sects->ptr[scan].pos)
+            {
+              size_t tmp = sects->ptr[scan].pos - pos;
+
+              if (tmp >= len)
+                sects->ptr[scan].pos -= len;
+              else
+              {
+                len -= tmp;
+                if (len >= sects->ptr[scan].len)
+                  sects->ptr[scan].pos = 0;
+                else
+                {
+                  sects->ptr[scan].pos -= tmp;
+                  sects->ptr[scan].len -= len;
+                }
+              }
+            }
+            else if ((pos >= sects->ptr[scan].pos) &&
+                     (pos < (sects->ptr[scan].pos + sects->ptr[scan].len - 1)))
+            {
+              size_t tmp = pos - sects->ptr[scan].pos;
+
+              if (!tmp && (len >= sects->ptr[scan].len))
+                sects->ptr[scan].pos = 0;
+              else if (len >= (sects->ptr[scan].len - tmp))
+                sects->ptr[scan].len = tmp;
+              else
+                sects->ptr[scan].len -= len;
+            }
+          }
+          
+          ++scan;
+        }
+      }
+      break;
+        
+      default:
+        ASSERT(FALSE);
+    }
+    
+    ++count;
+  }
+
+  return (data);
+}
+
+static Vstr_sects **vstr__sects_update_srch(Vstr__sects_cache_data *data,
+                                            Vstr_sects *sects)
+{
+  unsigned int count = 0;
+
+  while (count < data->len)
+  {
+    if (data->updates[count] == sects)
+      return (&data->updates[count]);
+    
+    ++count;
+  }
+
+  return (NULL);
+}
+
+static void vstr__sects_update_del(Vstr__sects_cache_data *data,
+                                   Vstr_sects **sects)
+{
+  Vstr_sects **end = (data->updates + (data->len - 1));
+  
+  --data->len;
+  
+  if (sects != end)
+    memmove(sects, sects + 1, (end - sects) * sizeof(Vstr_sects *));
+}
+
+int vstr_nx_sects_update_add(const Vstr_base *base,
+                             Vstr_sects *sects)
+{
+  Vstr__sects_cache_data *data = NULL;
+  unsigned int sz = 1;
+  
+  if (!base->conf->cache_pos_cb_sects)
+  {
+    unsigned int tmp = 0;
+    
+    tmp = vstr_nx_cache_add(base->conf, "/vstr__/sects/update",
+                            vstr__sects_update_cb);
+
+    if (!tmp)
+      return (FALSE);
+    
+    base->conf->cache_pos_cb_sects = tmp;
+  }
+
+  if (!(data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects)))
+  {
+    if (!vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL))
+      return (FALSE);
+
+    data = malloc(sizeof(Vstr__sects_cache_data) + (sz * sizeof(Vstr_sects *)));
+    if (!data)
+    {
+      base->conf->malloc_bad = TRUE;
+      return (FALSE);
+    }
+
+    data->sz = 1;
+    data->len = 0;
+    
+    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, data);
+  }
+
+  sz = data->len + 1;
+  ASSERT(data->sz);
+  ASSERT(data->len <= data->sz);
+  if (data->len >= data->sz)
+  {
+    Vstr__sects_cache_data *tmp = realloc(data,
+                                          sizeof(Vstr__sects_cache_data) +
+                                          (sz * sizeof(Vstr_sects *)));
+    if (!tmp)
+    {
+      base->conf->malloc_bad = TRUE;
+      return (FALSE);
+    }
+
+    data = tmp;
+    data->sz = data->len + 1;
+    
+    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, data);
+  }
+
+  data->updates[data->len] = sects;
+  ++data->len;
+  
+  return (TRUE);
+}
+
+int vstr_nx_sects_update_del(const Vstr_base *base,
+                             Vstr_sects *sects)
+{
+  Vstr__sects_cache_data *data = NULL;
+  Vstr_sects **srch = NULL;
+  
+  if (!sects || !base->conf->cache_pos_cb_sects)
+    return (FALSE);
+  
+  data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects);
+  if (!data)
+    return (FALSE);
+
+  srch = vstr__sects_update_srch(data, sects);
+  if (!srch)
+  {
+    ASSERT(FALSE);
+    return (FALSE);
+  }
+  
+  vstr__sects_update_del(data, srch);
+
+  if (!data->len)
+  {
+    free(data);
+    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL);
+  }
+  
+  return (TRUE);
+}

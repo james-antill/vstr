@@ -1,3 +1,9 @@
+wrap_memcpy(USE_WRAP_MEMCPY)
+wrap_memcmp(USE_WRAP_MEMCMP)
+wrap_memchr(USE_WRAP_MEMCHR)
+wrap_memrchr(USE_WRAP_MEMRCHR)
+wrap_memset(USE_WRAP_MEMSET)
+wrap_memmove(USE_WRAP_MEMMOVE)
 ref_del
 ref_add
 cache_get

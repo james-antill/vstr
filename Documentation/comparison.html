@@ -23,6 +23,13 @@
       the Vstr library ... then again it is better :).
     </p>
 
+    <hr>
+
+    <p>
+      These are libraries that provide a string API.
+    </p>
+
+    <!-- BEG OF string libraries -->
     <ul>
       <li>
 	<h2> <a href="http://www.sgi.com/tech/stl/Rope.html">C++ STL rope</a>
@@ -87,11 +94,15 @@
 	  a concern.
 	</p>
 	<p>
-	  The printf implementation is internal, but 'F' 'a' and 'A' aren't
-	  supported, neither are i18n argument number specifiers or thousand
-	  seperator modifiers.
-	  The non standard 'q' length attribute denotes long long, and there is 
-	  no way of specifying long double. You can have custom modifiers, but
+	  The printf implementation is internal and based on the Apache
+	  snprintf() function, 
+	  '\'' (thousand modifiers), 'a', 'F', 'Lf', 'lld', 'td', 'zd', 'hhd' , etc.
+	  and i18n format parameter modifiers are all completly missing
+	  Unspecified precision is
+	  broken, as is corner cases for octal etc. also infinity/nan output 
+	  is not correct with regard to case. <b>Buffer overflows are possible
+	    in the integer formatting paths</b>
+	  You can have custom modifiers, but
 	  only triggered on the system '%' character ... so gcc will currently
 	  spam warnings. It also looks like the ISO C std. is completely ignored
 	  for certain corner cases. Also note that due to the fact that the
@@ -354,10 +365,149 @@
 	  sharing. Apart from that it is much like QString in the QT library.
 	</p>
       </li>
-	
-
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/libast/">libast (formerly libmej)</a></h2>
+	<p>
+	  Has a start pointer and length model, however it does grow the strings
+	  itself ... and call abort() is the allocations fails. However, note 
+	  that altough it includes a bad snprintf() implementation (see below)
+	  it doesn't have a sprintf() call to write into the "spif string".
+	  typedef's and macro's appear to be used just to make the code less
+	  readable.
+	  It has an "interesting"
+	  set of APIs, mainly due to the overhead of adding data to a 
+	  string or getting a substring. For instance you can "splice" part of
+	  a string and another string, but you can't substitue data inside a
+	  string without copying it multiple times.
+	</p>
+	<p>
+	  The fact that almost all searching/comparing APIs map
+	  onto C library APIs means that embeded NIL characters silently
+	  fail -- even though there are APIs to initialise strings from a file
+	  descriptor.
+	</p>
+	<p>
+	  It has terrible abuse of the namespace, outside of the string.c file
+	  however it looks like you could seperate the string.c code out 
+	  without a lot of work -- at which point the namespace is well
+	  contained (but it also is built assuming that you'll be using the 
+	  "spif" object model -- however this doesn't seem to be a requirement).
+	</p>
+	<p>
+	  The printf() like function is a version of Patrick Powell's 
+	  snprtinf() with a really bad version of a floating point formatter 
+	  added to it (see below for the Samba version which is slightly 
+	  better version of Patrick's code with floating point).
+	</p>
+      </li>
     </ul>
+    <!-- END OF string libraries -->
 
+    <hr>
+
+    <p>
+      These are libraries that provide a printf() like function, note that
+      if the library provides more than just a printf() like it will be
+      in the "string API" section above and the printf() like function
+      will be compared as part of the overall string API.
+    </p>
+    
+    <!-- BEG OF printf() like libraries -->
+    <ul>	
+      <li>
+	<h2> <a href="http://www.ijs.si/software/snprintf/">Mark Martinec snprintf</a></h2>
+	<p>
+	  Not a bad implementation for what is actually done (it seems to be
+	  fairly stds. compliant, and has optional platform specific behaviour,
+	  it seems to have been written by reading man pages from what I can
+	  see -- no small feat), however there is a lot of missing
+	  functionality (most of which it readily admits to on the web page).
+	  Probably the most noticable of is the missing 'zu', 'zd', 'ju',
+	  'jd', 'td', 'hhd', etc. formats (it is hard to write a portable
+	  program without these).
+	  Next being missng i18n format modifiers, and the 'n' format.
+	</p>
+	<p>
+	  No attempt is made to provide user specified formats.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www.contactor.se/~dast/trio/">Trio I/O library</a></h2>
+	<p>
+	  The printf() like function is not stds. compliant in a number of 
+	  ways, however it does try to implement most of the features of the
+	  std.
+	  Also worth noting is that the i18n format parameter modifiers have
+	  an arbitrary limit, and the double output is custom code that may
+	  well not produce the same output as a real implementation and as an
+	  I/O library the output model isn't very good for a dynamically 
+	  expanding string.
+	</p>
+	<p>
+	  User specified formats are supported, however they are done in such a
+	  way that the gcc warning parser makes them useless.
+	</p>
+
+      </li>
+      
+      <li>
+	<h2> <a href="http://samba.org/cgi-bin/cvsweb/samba/source/lib/snprintf.c">Patrick Powell's snprintf() as used in Samba</a></h2>
+	<p>
+	  This code was originally posted to BrugTraq, and has since been
+	  hacked on by at least four more people. This is the version in
+	  Samba, however there are other versions of this code floating around
+	  as it was a favourite for people to jsut copy and paste into their
+	  project.
+	</p>
+	<p>
+	  This is very poor for stds. compliance, it doesn't even support '#x' 
+	  to print a leading "0x" before the number.
+	  '\'' (thousand modifiers), 'A', 'a', 'F', 'zd', 'td', 'hhd', etc. and
+	  i18n format parameter modifiers are all completly missing. 
+	  An empty precision format doesn't make the precision zero. Unspecified
+	  precisions are wrong on double values, and zero specified ones aren't 
+	  correct for octal etc.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://httpd.apache.org/dev/">Apache HTTPD snprintf()</a></h2>
+	<p>
+	  '\'' (thousand modifiers), 'a', 'F', 'Lf', 'lld', 'td', 'zd', 'hhd' , etc.
+	  and i18n format parameter modifiers are all completly missing
+	  (although 'qd' is available for "long long" ints). 'A'
+	  isn't the std. formatter but a custom one. Unspecified precision is
+	  broken, as is corner cases for octal etc. also infinity/nan output 
+	  is not correct with regard to case. <b>Buffer overflows are possible
+	    in the integer formatting paths</b>
+	</p>
+	<p>
+	  Aopart from the static extensions 'A' and 'I', this is the basis of
+	  the OSSP str library implementation.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www.research.att.com/sw/tools/sfio/">Sfio</a></h2>
+	<p>
+	  The sfio97 version available <a href="http://www.cpan.org/src/misc/sfio97.src.unix.tar.gz">here</a> is the version I 
+	  looked at, it's possible that the 2002 versions fixes some of the
+	  problems. However I didn't get access to it.
+	<p>
+	<p>
+	  This is fairly stds. complian, for when it was written. However it 
+	  doesn't support '\'' (thousand seperators) 'td', 'jd', 'zd', 'hhd',
+	  'a', 'A', or i18n parameter modifiers etc.
+	  Also double printing of infinity is wrong with regard to case.
+	</p>
+	<p>
+	  This code contains a bunch of static extensions, and no way to define
+	  your own.
+	</p>
+      </li>
+    </ul>
+    <!-- END OF printf() like libraries -->
 
     <p> Any corrections or omissions you see in the above, feel free to contact 
       me at the address below </p>
@@ -366,7 +516,7 @@
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Thu Oct  3 18:06:25 EDT 2002
+Last modified: Sat Nov 16 18:27:24 EST 2002
 <!-- hhmts end -->
   </body>
 </html>

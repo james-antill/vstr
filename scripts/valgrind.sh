@@ -1,8 +1,5 @@
 #! /bin/sh
 
-# unhappy on 8.0 (glibc-2.3.x) atm.
-exit 0;
-
 # Run all exe's in the tst directory under valgrind.
 for i in tst/*/tst_*; do
    if [ -x $i ]; then # Skip .o

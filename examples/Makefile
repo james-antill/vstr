@@ -1,11 +1,12 @@
 
 CC=gcc
 #CC=gcc3
-#CC=diet gcc
+# CC=diet gcc
 #CC=diet gcc3
 
-VSTR_LIBS_DIR=../j/src/.libs
-# VSTR_LIBS_DIR=../src/.libs
+VSTR_LOCAL_DIR=../jwrap
+# VSTR_LOCAL_DIR=../
+VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
@@ -37,7 +38,7 @@ OPTWARNS=-O2 -march=i386 -mcpu=i686
 endif
 
 ifeq ($(LOCAL),1)
-CFLAGS=-I../include $(OPTWARNS) $(PROF)
+CFLAGS=-I$(VSTR_LOCAL_DIR)/include -I../include $(OPTWARNS) $(PROF)
 LDFLAGS=$(ST) $(LOCAL_LIBS) $(PROF)
 else
 CFLAGS=`pkg-config --cflags vstr` $(OPTWARNS) $(PROF)

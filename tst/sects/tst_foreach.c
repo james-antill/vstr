@@ -5,7 +5,7 @@ static const char *rf = __FILE__;
 static unsigned int s_foreach(const Vstr_base *t1, size_t pos, size_t len,
                               void *data)
 {
-  int *vals = data;
+  unsigned int *vals = data;
   
   (void)t1;
 
@@ -20,7 +20,7 @@ static unsigned int s_foreach(const Vstr_base *t1, size_t pos, size_t len,
 int tst(void)
 {
   Vstr_sects *sects = vstr_sects_make(4);
-  int vals[2] = {0, 0};
+  unsigned int vals[2] = {0, 0};
 
   TST_B_TST(vals[0], 1, (sects->sz != 4));
   TST_B_TST(vals[0], 2, (sects->num != 0));

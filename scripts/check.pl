@@ -5,53 +5,110 @@ use FileHandle;
 
 # Do a fast check of the main options ?
 my $conf_fast_check = 1;
+
+# Do a check of the linker script ?
+my $conf_linker_check = 1;
+
 # Do a full check, or group all disable options together
-my $conf_full_check = 0;
+my $conf_full_dbl_check = 0;
+my $conf_full_test_check = 0;
+my $conf_full_wrap_check = 0;
+
 my $conf_append_output = 0;
 my $conf_print_stdout_info = 0;
+# Skip valgrind run ... as it's broken on glibc-2.3 atm. with debugging on.
+my $conf_valgrind = 0;
+my $conf_time = 0;
+my $conf_test = 1;
+my $conf_wrap = 1;
 
 while (scalar (@ARGV))
 {
-  if (0) {}
-  elsif ("full" eq $ARGV[0])
-  { $conf_full_check = 1; }
-  elsif ("nofull" eq $ARGV[0])
-  { $conf_full_check = 0; }
-  elsif ("fast" eq $ARGV[0])
-  { $conf_fast_check = 1; }
-  elsif ("nofast" eq $ARGV[0])
-  { $conf_fast_check = 0; }
-  elsif ("append" eq $ARGV[0])
-  { $conf_append_output = 1; }
-  elsif ("noappend" eq $ARGV[0])
-  { $conf_append_output = 0; }
-  elsif ("verbose" eq $ARGV[0])
-  { $conf_print_stdout_info = 1; }
-  elsif ("noverbose" eq $ARGV[0])
-  { $conf_print_stdout_info = 0; }
-  else
-  { last; }
-  shift @ARGV;
-}
+  my $arg = shift @ARGV;
 
-# From above.
-# 1, 0
-# CC=gcc3 $0  3395.39s user 1056.41s system 82% cpu 1:29:52.09 total
-#
-# 1, 1
-#         $0  22581.08s user 7515.35s system 91% cpu 9:10:16.59 total
-# CC=gcc3 $0  24451.63s user 7777.30s system 91% cpu 9:49:38.91 total
+  if (0) {}
+
+  elsif ("fast" eq $arg)
+  { $conf_fast_check = 1; }
+  elsif ("nofast" eq $arg)
+  { $conf_fast_check = 0; }
+
+  elsif ("linker" eq $arg)
+  { $conf_linker_check = 1; }
+  elsif ("nolinker" eq $arg)
+  { $conf_linker_check = 0; }
+
+  elsif ("dblfull" eq $arg)
+  { $conf_full_dbl_check = 1; }
+  elsif ("nodblfull" eq $arg)
+  { $conf_full_dbl_check = 0; }
+  elsif ("tstfull" eq $arg)
+  { $conf_full_test_check = 1; }
+  elsif ("notstfull" eq $arg)
+  { $conf_full_test_check = 0; }
+  elsif ("wrapfull" eq $arg)
+  { $conf_full_wrap_check = 1; }
+  elsif ("nowrapfull" eq $arg)
+  { $conf_full_wrap_check = 0; }
+
+  elsif ("append" eq $arg)
+  { $conf_append_output = 1; }
+  elsif ("noappend" eq $arg)
+  { $conf_append_output = 0; }
+
+  elsif ("verbose" eq $arg)
+  { $conf_print_stdout_info = 1; }
+  elsif ("noverbose" eq $arg)
+  { $conf_print_stdout_info = 0; }
+
+  elsif ("valgrind" eq $arg)
+  { $conf_valgrind = 1; }
+  elsif ("novalgrind" eq $arg)
+  { $conf_valgrind = 0; }
+
+  elsif ("time" eq $arg)
+  { $conf_time = 1; }
+  elsif ("notime" eq $arg)
+  { $conf_time = 0; }
+
+  elsif ("test" eq $arg)
+  { $conf_test = 1; }
+  elsif ("notest" eq $arg)
+  { $conf_test = 0; }
+  elsif ("tst" eq $arg)
+  { $conf_test = 1; }
+  elsif ("notst" eq $arg)
+  { $conf_test = 0; }
+
+  elsif ("wrap" eq $arg)
+  { $conf_wrap = 1; }
+  elsif ("nowrap" eq $arg)
+  { $conf_wrap = 0; }
+
+  else
+  { die "Unknown option $arg\n"; }
+}
 
 
 my @C_ls =     ("--enable-linker-script");
 my @C_dbg =    ("--enable-debug");
 my @C_np =     ("--enable-noposix-host");
+
 my @C_nin =    ("--enable-tst-noinline");
 my @C_natals = ("--enable-tst-noattr-alias");
 my @C_natvis = ("--enable-tst-noattr-visibility");
+
 my @C_dbl_g =  ("--with-fmt-float=glibc");
 my @C_dbl_h =  ("--with-fmt-float=host");
 my @C_dbl_n =  ("--with-fmt-float=none");
+
+my @C_wr_cpy = ("--enable-wrap-memcpy");
+my @C_wr_cmp = ("--enable-wrap-memcmp");
+my @C_wr_chr = ("--enable-wrap-memchr");
+my @C_wr_rchr= ("--enable-wrap-memrchr");
+my @C_wr_set = ("--enable-wrap-memset");
+my @C_wr_move= ("--enable-wrap-memmove");
+
 
 $SIG{INT} = sub { exit (1); };
 
@@ -127,13 +184,14 @@ sub conf
 
   if (!system($c, @_) &&
       !system("make", "clean") &&
-      !system("make", "check"))
+      !system("make", "check") &&
+      (!$conf_time || !system("time", "make", "check")))
     {
       # Fear the power of sh...
       if (!open(STDOUT, ">&FERR"))
 	{ die "dup2(STDOUT, FERR): $!\n"; }
 
-      if (system("$v | egrep -C 2 '^=='"))
+      if (!$conf_valgrind || system("$v | egrep -C 2 '^=='"))
 	{
 	  $ok = 1;
 	}
@@ -162,13 +220,13 @@ sub t_U
 { # This accounts for the remap hash...
   my @a = @_;
 
-  @a = sort @a;
-
   for (@a)
     {
       if (defined ($remap{$_}))
 	{ $_ = $remap{$_}; }
     }
+
+  @a = sort @a;
 
   my $last = undef;
   for my $i (@a)
@@ -181,89 +239,87 @@ sub t_U
   return (1);
 }
 
-sub tst_conf_1
-{ # Pick all combs. of 1 each
-  for my $i (0..$#_)
+sub tst_conf_X
+  { # Pick all combs. of $len each
+    our $conf_args = shift;
+    our @a = ();
+    our $conf_last = $#{$conf_args};
+
+    sub tst_conf__X
+      { # Pick all combs. of $len each
+	my $len = shift;
+	my $num = shift;
+	local @a = @a;
+
+	if (defined ($num))
+	  {
+	    @a = (@a, $num);
+
+	    if (!t_U(@a))
+	      { return; }
+
+	    if ($len == 0)
+	      {
+		conf (map(@{$conf_args->[$_]}, @a));
+		return;
+	      }
+	  }
+	else
+	  {
+	    $num = 0;
+	  }
+
+	for my $i ($num..$conf_last)
+	  {
+	    tst_conf__X($len - 1, $i);
+	  }
+      }
+
+    my $tlen = $conf_last + 1;
+    while ($tlen)
+      {
+	tst_conf__X($tlen);
+	--$tlen;
+      }
+  }
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+# Main
+
+if ($conf_print_stdout_info)
+{
+  sub tf
     {
-      conf (@{$_[$i]});
+      my $val = shift;
+      if ($val) { return ("true"); }
+      
+      return ("false");
     }
+  
+  STDOUT->print("-" x 79 . "\n");
+
+  STDOUT->print("Running with the following config...\n");
+
+  STDOUT->print(sprintf("%16s = %s\n", "fast", tf($conf_fast_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "linker", tf($conf_linker_check)));
+
+  STDOUT->print(sprintf("%16s = %s\n", "dblfull", tf($conf_full_dbl_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "tstfull", tf($conf_full_test_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "wrapfull", tf($conf_full_wrap_check)));
+
+  STDOUT->print(sprintf("%16s = %s\n", "append", tf($conf_append_output)));
+  # verbose must be on...
+  STDOUT->print(sprintf("%16s = %s\n", "valgrind", tf($conf_valgrind)));
+  STDOUT->print(sprintf("%16s = %s\n", "time", tf($conf_time)));
+  STDOUT->print(sprintf("%16s = %s\n", "tst", tf($conf_test)));
+  STDOUT->print(sprintf("%16s = %s\n", "wrap", tf($conf_wrap)));
+
+  STDOUT->print("-" x 79 . "\n");
 }
 
-sub tst_conf_2
-{ # Pick all combs. of 2 each
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]});
-    } } }
-}
 
-sub tst_conf_3
-  {
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-    for my $k ($j..$#_) { local @a = (@a, $k); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]}, @{$_[$k]});
-    } } } } }
-  }
-
-sub tst_conf_4
-  {
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-    for my $k ($j..$#_) { local @a = (@a, $k); if (t_U @a) {
-    for my $l ($k..$#_) { local @a = (@a, $l); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]}, @{$_[$k]},
-	    @{$_[$l]});
-    } } } } } } }
-  }
-
-sub tst_conf_5
-  {
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-    for my $k ($j..$#_) { local @a = (@a, $k); if (t_U @a) {
-    for my $l ($k..$#_) { local @a = (@a, $l); if (t_U @a) {
-    for my $m ($l..$#_) { local @a = (@a, $m); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]}, @{$_[$k]},
-	    @{$_[$l]}, @{$_[$m]});
-    } } } } } } } } }
-  }
-
-sub tst_conf_6
-  {
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-    for my $k ($j..$#_) { local @a = (@a, $k); if (t_U @a) {
-    for my $l ($k..$#_) { local @a = (@a, $l); if (t_U @a) {
-    for my $m ($l..$#_) { local @a = (@a, $m); if (t_U @a) {
-    for my $n ($m..$#_) { local @a = (@a, $n); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]}, @{$_[$k]},
-	    @{$_[$l]}, @{$_[$m]}, @{$_[$n]});
-    } } } } } } } } } } }
-  }
-
-sub tst_conf_7
-  { # Pick all combs. of 7 each
-    our @a = ();
-    for my $i ( 0..$#_) { local @a = (@a, $i);
-    for my $j ($i..$#_) { local @a = (@a, $j); if (t_U @a) {
-    for my $k ($j..$#_) { local @a = (@a, $k); if (t_U @a) {
-    for my $l ($k..$#_) { local @a = (@a, $l); if (t_U @a) {
-    for my $m ($l..$#_) { local @a = (@a, $m); if (t_U @a) {
-    for my $n ($m..$#_) { local @a = (@a, $n); if (t_U @a) {
-    for my $o ($n..$#_) { local @a = (@a, $o); if (t_U @a) {
-      conf (@{$_[$i]}, @{$_[$j]}, @{$_[$k]},
-	    @{$_[$l]}, @{$_[$m]}, @{$_[$n]}, @{$_[$o]});
-    } } } } } } } } } } } } }
-  }
-
-# -------------------------------------------------------------
-# -------------------------------------------------------------
 
 if ($conf_append_output)
   {
@@ -284,58 +340,60 @@ else
 
 print_cc_cflags();
 
-# Do normal, then nothing, hopefully spots errors quicker
-#  also checked later on though.
-if ($conf_fast_check)
+my @confs = (\@C_dbg);
+
+if ($conf_linker_check)
   {
-    conf(@C_ls);
-    conf(@C_ls, @C_dbg);
+    push(@confs, \@C_ls);
   }
 
-if ($conf_full_check)
+if ($conf_fast_check)
   {
-    # Do all options...
+    tst_conf_X(\@confs);
+  }
 
-    $remap{7} = 6;
-    $remap{8} = 6;
-    tst_conf_7 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_6 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_5 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_4 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_3 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_2 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_1 (\@C_ls, \@C_dbg, \@C_nin, \@C_natals, \@C_natvis, \@C_np,
-		\@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
+if (!$conf_full_dbl_check)
+  {
+    push(@confs, \@C_dbl_g);
   }
 else
   {
-    # Group all "turn off" flags as one...
-
-    my @tmp_no = (@C_nin, @C_natals, @C_natvis, @C_np);
-
-    $remap{4} = 3;
-    $remap{5} = 3;
-    tst_conf_4 (\@C_ls, \@C_dbg, \@tmp_no, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_3 (\@C_ls, \@C_dbg, \@tmp_no, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_2 (\@C_ls, \@C_dbg, \@tmp_no, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
-    tst_conf_1 (\@C_ls, \@C_dbg, \@tmp_no, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
+    $remap{$#confs + 2} = $#confs + 1;
+    $remap{$#confs + 3} = $#confs + 1;
+    push(@confs, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
   }
 
+if ($conf_test)
+  {
+    # Group for "turn off" flags...
+    my @tmp_no = (\@C_nin, \@C_natals, \@C_natvis, \@C_np);
 
-if ($conf_print_stdout_info)
-{
-  STDOUT->print("Updating documentation.\n");
-}
+    if (!$conf_full_test_check)
+      {
+	push @confs, [ map { @$_ } @tmp_no ];
+      }
+    else
+      {
+	push @confs, @tmp_no;
+      }
+  }
 
-# Make sure that the documentation is up to date.
-chdir("Documentation");
-system("./txt2html.pl");
-system("./txt2man.pl");
+if ($conf_wrap)
+  {
+    # Group for "wrap" flags...
+    my @tmp_wr = (\@C_wr_cpy, \@C_wr_cmp, \@C_wr_chr, \@C_wr_rchr, \@C_wr_set,
+		  \@C_wr_move);
+
+    if (!$conf_full_wrap_check)
+      {
+	push @confs, [ map { @$_ } @tmp_wr ];
+      }
+    else
+      {
+	push @confs, @tmp_wr;
+      }
+  }
+
+tst_conf_X(\@confs);
 
 exit (0);

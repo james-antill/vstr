@@ -429,9 +429,9 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
     case VSTR_TYPE_NODE_BUF:
       if (!base->conf->split_buf_del)
       {
-       memmove(((Vstr_node_buf *)scan)->buf + pos,
-               ((Vstr_node_buf *)scan)->buf + pos + len,
-               scan->len - (pos + len));
+       vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf + pos,
+                            ((Vstr_node_buf *)scan)->buf + pos + len,
+                            scan->len - (pos + len));
        break;
       }
       /* else FALLTHROUGH */
@@ -514,10 +514,11 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
  if (base->iovec_upto_date)
  {
   size_t rebeg_num = saved_num + del_nodes;
+  Vstr__cache_data_iovec *vec = VSTR__CACHE(base)->vec;
+  struct iovec *vec_v = (vec->v + vec->off);
   
-  memmove(VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off + saved_num,
-          VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off + rebeg_num,
-          (base->num - rebeg_num) * sizeof(struct iovec));
+  vstr_nx_wrap_memmove(vec_v + saved_num, vec_v + rebeg_num,
+                       (base->num - rebeg_num) * sizeof(struct iovec));
  }
  base->num -= del_nodes;
  
@@ -534,9 +535,9 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
    case VSTR_TYPE_NODE_BUF:
      /* if (!base->conf->split_buf_del) */
      /* no point in splitting */
-     memmove(((Vstr_node_buf *)scan)->buf,
-             ((Vstr_node_buf *)scan)->buf + len,
-             scan->len - len);
+     vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf,
+                          ((Vstr_node_buf *)scan)->buf + len,
+                          scan->len - len);
      break;
    case VSTR_TYPE_NODE_NON:
      break;

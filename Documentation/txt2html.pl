@@ -3,6 +3,24 @@
 use strict;
 use FileHandle;
 
+my $docs = undef;
+
+if (0) {}
+elsif (-x "../configure") # In docs dir...
+  {
+    $docs ="../Documentation";
+  }
+elsif (-x "../../configure") # in build subdir
+  {
+    $docs ="../../Documentation";
+  }
+
+if (!defined ($docs))
+  {
+    STDERR->print("Can't find configure.\n");
+    exit (1);
+  }
+
 my $name = "Vstr documentation";
 
 my $html_header = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n<html>\n<head>\n";
@@ -61,6 +79,20 @@ sub convert_index()
     OUT->print("</ul></ul>\n");
   }
 
+sub conv_html
+{
+  my $text = shift;
+
+  if (defined ($text)) { $_ = $text; }
+
+s/&/&amp;/g;        # must remember to do this one first!
+s/</&lt;/g;         # this is the most important one
+s/>/&gt;/g;         # don't close too early
+s/"/&quot;/g;       # only in embedded tags, i guess
+
+  return ($_);
+}
+
 sub convert()
   {
     my $in_pre_tag = "";
@@ -117,26 +149,32 @@ EOL
 	  }
 	elsif (m!^ ([A-Z][a-z]+)(\[\d\]|\[ \.\.\. \])?: (.*)$!)
 	  {
-	    if (defined $2)
+            my $attr = $1;
+            my $param_num = $2;
+            my $text = $3;
+
+            $text = conv_html($text);
+            conv_html();
+	    if (defined $param_num)
 	      {
-		if ($1 eq "Type")
+		if ($attr eq "Type")
 		  {
-		    $_ = "<br>$1<strong>$2</strong>: $3";
+		    $_ = "<br>$attr<strong>$param_num</strong>: $text";
 		  }
 		else
 		  {
-		    $_ = "</td></tr><tr><td>$1<strong>$2</strong>: $3";
+		    $_ = "</td></tr><tr><td>$attr<strong>$param_num</strong>: $text";
 		  }
 	      }
 	    else
 	      {
-		if ($1 eq "Type" || $1 eq "Returns")
+		if ($attr eq "Type" || $attr eq "Returns")
 		  {
-		    $_ = "<br>$1: $3";
+		    $_ = "<br>$attr: $text";
 		  }
 		else
 		  {
-		    $_ = "</td></tr><tr><td>$1: $3";
+		    $_ = "</td></tr><tr><td>$attr: $text";
 		  }
 	      }
 	  }
@@ -155,11 +193,13 @@ EOL
 	  }
 	elsif (/\.\.\.$/)
 	  {
+            conv_html();
 	    $_ = "$_<br><pre>";
 	    $in_pre_tag = "</pre>";
 	  }
 	elsif (!$in_pre_tag && /^  /)
 	  {
+            conv_html();
 	    $_ = "</p><p>$_";
 	  }
 	
@@ -169,7 +209,7 @@ EOL
       }
   }
 
-if (!open (OUT, ">functions.html"))
+if (!open (OUT, "> functions.html"))
   {
     die "Open (write): $@";
   }
@@ -180,12 +220,12 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
   "<h1>", "$name -- functions", "</h1>", "\n";
 
-if (!open (IN, "<functions.txt"))
+if (!open (IN, "< $docs/functions.txt"))
   {
     die "Open (read): $@";
   }
 convert_index();
-if (!open (IN, "<functions.txt"))
+if (!open (IN, "< $docs/functions.txt"))
   {
     die "Open (read): $@";
   }
@@ -193,7 +233,7 @@ convert();
 
 print OUT $html_footer;
 
-if (!open (OUT, ">constants.html"))
+if (!open (OUT, "> constants.html"))
   {
     die "Open (write): $@";
   }
@@ -204,12 +244,12 @@ print OUT $html_body;
 print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
   "<h1>", "$name -- constants", "</h1>", "\n";
 
-if (!open (IN, "<constants.txt"))
+if (!open (IN, "< $docs/constants.txt"))
   {
     die "Open (read): $@";
   }
 convert_index();
-if (!open (IN, "<constants.txt"))
+if (!open (IN, "< $docs/constants.txt"))
   {
     die "Open (read): $@";
   }
@@ -219,7 +259,7 @@ print OUT $html_footer;
 
 if (-r "structs.txt")
   {
-    if (!open (OUT, ">structs.html"))
+    if (!open (OUT, "> $docs/structs.html"))
       {
 	die "Open (write): $@";
       }
@@ -230,12 +270,12 @@ if (-r "structs.txt")
     print OUT "<table width=\"100%\"><tr><td bgcolor=\"#DDFFDD\">", 
       "<h1>", "$name -- structs", "</h1>", "\n";
     
-    if (!open (IN, "<structs.txt"))
+    if (!open (IN, "< structs.txt"))
       {
 	die "Open (read): $@";
       }
     convert_index();
-    if (!open (IN, "<structs.txt"))
+    if (!open (IN, "< $docs/structs.txt"))
       {
 	die "Open (read): $@";
       }

@@ -41,7 +41,7 @@ size_t vstr_nx_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
  {
   if (scan->type != VSTR_TYPE_NODE_NON)
   {
-   found = memchr(scan_str, srch, scan_len);
+   found = vstr_nx_wrap_memchr(scan_str, srch, scan_len);
    if (found)
      return (pos + ((ret - len) - scan_len) + (found - scan_str));
   }
@@ -95,7 +95,7 @@ static size_t vstr__srch_chr_rev_fast(const Vstr_base *base,
   {
     if (type != VSTR_TYPE_NODE_NON)
     {
-      found = memrchr(scan_str, srch, scan_len);
+      found = vstr_nx_wrap_memrchr(scan_str, srch, scan_len);
       if (found)
         return (pos + len + (found - scan_str));
     }
@@ -211,7 +211,7 @@ size_t vstr_nx_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
      {
        char *som = NULL; /* start of a possible match */
        
-       if (!(som = memchr(scan_str, *(const char *)str, scan_len)))
+       if (!(som = vstr_nx_wrap_memchr(scan_str, *(const char *)str, scan_len)))
          goto next_loop;
        scan_len -= (som - scan_str);
        scan_str = som;
@@ -223,7 +223,7 @@ size_t vstr_nx_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
        tmp = str_len;
 
      beg_pos = pos + ((orig_len - len) - scan_len);
-     if (!memcmp(scan_str, str, tmp) &&
+     if (!vstr_nx_wrap_memcmp(scan_str, str, tmp) &&
          ((tmp == str_len) ||
           !vstr_nx_cmp_buf(base, beg_pos + tmp, str_len - tmp,
                            (const char *)str + tmp, str_len - tmp)))
@@ -289,7 +289,8 @@ static int vstr__cmp_eq_rev_buf(const Vstr_base *base, size_t len,
       if (tmp > str_len)
         tmp = str_len;
       
-      if (memcmp((str + str_len) - tmp, (scan_str + scan_len) - tmp, tmp))
+      if (vstr_nx_wrap_memcmp((str + str_len) - tmp,
+                              (scan_str + scan_len) - tmp, tmp))
         return (FALSE);
       
       str_len -= tmp;
@@ -373,7 +374,7 @@ static size_t vstr__srch_buf_rev_fast(const Vstr_base *base,
       {
         char *som = NULL; /* start of a possible match */
         
-        if (!rest || !(som = memrchr(scan_str, end_str[0], rest)))
+        if (!rest || !(som = vstr_nx_wrap_memrchr(scan_str, end_str[0], rest)))
           continue;
         count += ((scan_str + rest) - som);
         rest = scan_len - count;

@@ -55,7 +55,13 @@ Requires: %{name} = %{version}
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
-* Mon Sep 30 2002 James Antill <james@and.org> @VERSION@-%{real_release_num}
+* Sat Nov 16 2002 James Antill <james@and.org> @VERSION@-%{real_release_num}
+- Added wrap memcpy/memset to the default configure options.
+
+* Sat Nov  9 2002 James Antill <james@and.org>
+- Add comparison to installed documentation.
+
+* Mon Sep 30 2002 James Antill <james@and.org>
 - Remove files for check-files 8.0 rpm check.
 
 * Mon Sep 30 2002 James Antill <james@and.org>
@@ -90,6 +96,7 @@ fi
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
   --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script \
+  --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt} %{debugopt}
 
 make
@@ -102,6 +109,7 @@ rm -rf $RPM_BUILD_ROOT
 cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 rm -f $RPM_BUILD_ROOT/usr/lib/libvstr.la
 rm -f $RPM_BUILD_ROOT/usr/share/doc/vstr-devel-%{ver}/functions.3
+rm -f $RPM_BUILD_ROOT/usr/share/doc/vstr-devel-%{ver}/constants.3
 
 
 %clean
@@ -131,12 +139,14 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/TODO
 %{devdoco}/functions.txt
 %{_mandir}/man3/vstr.3.gz
+%{_mandir}/man3/vstr_const.3.gz
 %{devdoco}/functions.html
 %{devdoco}/constants.txt
 %{devdoco}/constants.html
 %{devdoco}/namespace.txt
 %{devdoco}/namespace.html
 %{devdoco}/overview.html
+%{devdoco}/comparison.html
 %{devdoco}/structs.txt
 %{devdoco}/structs.html
 %{devdoco}/size_cmp.gnumeric

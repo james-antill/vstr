@@ -36,45 +36,213 @@
  ( B ## x4 ) | \
  0)
 
-#define VSTR_FLAG01(T, x1) ( \
+/* Note none of these are documented seperately ... so they have the
+ * space there to fool the documentation checker */
+# define VSTR_FLAG01(T, x1) ( \
  VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x1 ) | \
  0)
-#define VSTR_FLAG02(T, x1, x2) ( \
+# define VSTR_FLAG02(T, x1, x2) ( \
  VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 ) | \
  0)
-#define VSTR_FLAG03(T, x1, x2, x3) ( \
+# define VSTR_FLAG03(T, x1, x2, x3) ( \
  VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 ) | \
  VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x3 ) | \
  0)
-#define VSTR_FLAG04(T, x1, x2, x3, x4) ( \
+# define VSTR_FLAG04(T, x1, x2, x3, x4) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  0)
-#define VSTR_FLAG05(T, x1, x2, x3, x4, x5) ( \
+# define VSTR_FLAG05(T, x1, x2, x3, x4, x5) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x5 ) | \
  0)
-#define VSTR_FLAG06(T, x1, x2, x3, x4, x5, x6) ( \
+# define VSTR_FLAG06(T, x1, x2, x3, x4, x5, x6) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 ) | \
  0)
-#define VSTR_FLAG07(T, x1, x2, x3, x4, x5, x6, x7) ( \
+# define VSTR_FLAG07(T, x1, x2, x3, x4, x5, x6, x7) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 ) | \
  VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x7 ) | \
  0)
-#define VSTR_FLAG08(T, x1, x2, x3, x4, x5, x6, x7, x8) ( \
+# define VSTR_FLAG08(T, x1, x2, x3, x4, x5, x6, x7, x8) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
  0)
-#define VSTR_FLAG09(T, x1, x2, x3, x4, x5, x6, x7, x8, x9) ( \
+# define VSTR_FLAG09(T, x1, x2, x3, x4, x5, x6, x7, x8, x9) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
  VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## x9 ) | \
  0)
-#define VSTR_FLAG10(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA) ( \
+# define VSTR_FLAG10(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA) ( \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
  VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
  VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA ) | \
+ 0)
+# define VSTR_FLAG11(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xB ) | \
+ 0)
+# define VSTR_FLAG12(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ 0)
+# define VSTR_FLAG13(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xD ) | \
+ 0)
+# define VSTR_FLAG14(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xD , _ ## xE ) | \
+ 0)
+# define VSTR_FLAG15(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xD , _ ## xE ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xF ) | \
+ 0)
+# define VSTR_FLAG16(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ 0)
+# define VSTR_FLAG17(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xH ) | \
+ 0)
+# define VSTR_FLAG18(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xH , _ ## xI ) | \
+ 0)
+# define VSTR_FLAG19(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xH , _ ## xI ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xJ ) | \
+ 0)
+# define VSTR_FLAG20(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ 0)
+# define VSTR_FLAG21(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xL ) | \
+ 0)
+# define VSTR_FLAG22(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xL , _ ## xM ) | \
+ 0)
+# define VSTR_FLAG23(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xL , _ ## xM ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xN ) | \
+ 0)
+# define VSTR_FLAG24(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ 0)
+# define VSTR_FLAG25(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xP ) | \
+ 0)
+# define VSTR_FLAG26(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ ) | \
+ 0)
+# define VSTR_FLAG27(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ, xR) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xR ) | \
+ 0)
+# define VSTR_FLAG28(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ, xR, xS) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ , _ ## xR , _ ## xS ) | \
+ 0)
+# define VSTR_FLAG29(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ, xR, xS, xT) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ , _ ## xR , _ ## xS ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xT ) | \
+ 0)
+# define VSTR_FLAG30(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ, xR, xS, xT, xU) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ , _ ## xR , _ ## xS ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xT , _ ## xU ) | \
+ 0)
+# define VSTR_FLAG31(T, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF, xG, xH, xI, xJ, xK, xL, xM, xN, xO, xP, xQ, xR, xS, xT, xU, xV) ( \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x1 , _ ## x2 , _ ## x3 , _ ## x4 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x5 , _ ## x6 , _ ## x7 , _ ## x8 ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## x9 , _ ## xA , _ ## xB , _ ## xC ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xD , _ ## xE , _ ## xF , _ ## xG ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xH , _ ## xI , _ ## xJ , _ ## xK ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xL , _ ## xM , _ ## xN , _ ## xO ) | \
+ VSTR__FLAG04( VSTR_FLAG_ ## T , _ ## xP , _ ## xQ , _ ## xR , _ ## xS ) | \
+ VSTR__FLAG02( VSTR_FLAG_ ## T , _ ## xT , _ ## xU ) | \
+ VSTR__FLAG01( VSTR_FLAG_ ## T , _ ## xV ) | \
  0)
 
 /* start of constants ... */
@@ -116,23 +284,23 @@
 #define VSTR_TYPE_SUB_ALL_REF VSTR_TYPE_ADD_ALL_REF
 #define VSTR_TYPE_SUB_ALL_BUF VSTR_TYPE_ADD_ALL_BUF
 
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE   0
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL   (1<<0)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL   (1<<1)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS    (1<<2)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT    (1<<3)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF    (1<<4)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT    (1<<5)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF    (1<<6)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR    (1<<7)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP    (1<<8)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA (1<<9)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT   (1<<9)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__     (1<<10)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC   (1<<11)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL   (1<<12)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP   (1<<13)
-#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH  (1<<14)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE   0U
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL   (1U<<0)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL   (1U<<1)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS    (1U<<2)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT    (1U<<3)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF    (1U<<4)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT    (1U<<5)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF    (1U<<6)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR    (1U<<7)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP    (1U<<8)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA (1U<<9)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT   (1U<<9)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__     (1U<<10)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC   (1U<<11)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL   (1U<<12)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP   (1U<<13)
+#define VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH  (1U<<14)
 #define VSTR_FLAG_CONV_UNPRINTABLE_DEF \
  VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW, SP, COMMA, DOT, _)
 
@@ -145,14 +313,14 @@
 #define VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE 6
 #define VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO 7
 
-#define VSTR_FLAG_PARSE_NUM_DEF 0
+#define VSTR_FLAG_PARSE_NUM_DEF          0U
 #define VSTR__MASK_PARSE_NUM_BASE (63) /* (1<<6) - 1 */
-#define VSTR_FLAG_PARSE_NUM_LOCAL (1<<6)
-#define VSTR_FLAG_PARSE_NUM_SEP (1<<7)
-#define VSTR_FLAG_PARSE_NUM_OVERFLOW (1<<8)
-#define VSTR_FLAG_PARSE_NUM_SPACE (1<<9)
-#define VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO (1<<10)
-#define VSTR_FLAG_PARSE_NUM_NO_BEG_PM (1<<11)
+#define VSTR_FLAG_PARSE_NUM_LOCAL       (1U<<6)
+#define VSTR_FLAG_PARSE_NUM_SEP         (1U<<7)
+#define VSTR_FLAG_PARSE_NUM_OVERFLOW    (1U<<8)
+#define VSTR_FLAG_PARSE_NUM_SPACE       (1U<<9)
+#define VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO (1U<<10)
+#define VSTR_FLAG_PARSE_NUM_NO_BEG_PM   (1U<<11)
 /* FIXME: #define VSTR_FLAG_PARSE_NUM_LOC_SEP ???? */
 
 #define VSTR_TYPE_PARSE_IPV4_ERR_NONE 0
@@ -164,27 +332,27 @@
 #define VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL 6
 #define VSTR_TYPE_PARSE_IPV4_ERR_ONLY 7
 
-#define VSTR_FLAG_PARSE_IPV4_DEF 0
-#define VSTR_FLAG_PARSE_IPV4_LOCAL (1<<0)
-#define VSTR_FLAG_PARSE_IPV4_ZEROS (1<<1)
-#define VSTR_FLAG_PARSE_IPV4_FULL (1<<2)
-#define VSTR_FLAG_PARSE_IPV4_CIDR (1<<3)
-#define VSTR_FLAG_PARSE_IPV4_CIDR_FULL (1<<4)
-#define VSTR_FLAG_PARSE_IPV4_NETMASK (1<<5)
-#define VSTR_FLAG_PARSE_IPV4_NETMASK_FULL (1<<6)
-#define VSTR_FLAG_PARSE_IPV4_ONLY (1<<7)
+#define VSTR_FLAG_PARSE_IPV4_DEF           0U
+#define VSTR_FLAG_PARSE_IPV4_LOCAL        (1U<<0)
+#define VSTR_FLAG_PARSE_IPV4_ZEROS        (1U<<1)
+#define VSTR_FLAG_PARSE_IPV4_FULL         (1U<<2)
+#define VSTR_FLAG_PARSE_IPV4_CIDR         (1U<<3)
+#define VSTR_FLAG_PARSE_IPV4_CIDR_FULL    (1U<<4)
+#define VSTR_FLAG_PARSE_IPV4_NETMASK      (1U<<5)
+#define VSTR_FLAG_PARSE_IPV4_NETMASK_FULL (1U<<6)
+#define VSTR_FLAG_PARSE_IPV4_ONLY         (1U<<7)
 
-#define VSTR_FLAG_SPLIT_DEF 0
-#define VSTR_FLAG_SPLIT_BEG_NULL (1<<0)
-#define VSTR_FLAG_SPLIT_MID_NULL (1<<1)
-#define VSTR_FLAG_SPLIT_END_NULL (1<<2)
-#define VSTR_FLAG_SPLIT_POST_NULL (1<<3)
-#define VSTR_FLAG_SPLIT_NO_RET (1<<4)
-#define VSTR_FLAG_SPLIT_REMAIN (1<<5)
+#define VSTR_FLAG_SPLIT_DEF        0U
+#define VSTR_FLAG_SPLIT_BEG_NULL  (1U<<0)
+#define VSTR_FLAG_SPLIT_MID_NULL  (1U<<1)
+#define VSTR_FLAG_SPLIT_END_NULL  (1U<<2)
+#define VSTR_FLAG_SPLIT_POST_NULL (1U<<3)
+#define VSTR_FLAG_SPLIT_NO_RET    (1U<<4)
+#define VSTR_FLAG_SPLIT_REMAIN    (1U<<5)
 
-#define VSTR_FLAG_SECTS_FOREACH_DEF 0
-#define VSTR_FLAG_SECTS_FOREACH_BACKWARDS (1<<0)
-#define VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL (1<<1)
+#define VSTR_FLAG_SECTS_FOREACH_DEF         0U
+#define VSTR_FLAG_SECTS_FOREACH_BACKWARDS  (1U<<0)
+#define VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL (1U<<1)
 
 #define VSTR_TYPE_SECTS_FOREACH_DEF 0
 #define VSTR_TYPE_SECTS_FOREACH_DEL 1
@@ -238,9 +406,9 @@
 #define VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO 4
 #define VSTR_TYPE_SC_WRITE_FILE_ERR_MEM 5
 
-#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR 0
-#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM (1<<0)
-#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG (1<<1)
+#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR  0U
+#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM (1U<<0)
+#define VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG (1U<<1)
 #define VSTR_FLAG_SC_FMT_CB_BEG_DEF VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR
 
 #define VSTR_MAX_NODE_BUF 0xFFFF /* used is 16 bits */

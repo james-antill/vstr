@@ -2,9 +2,9 @@
 
 if false; then
 echo "Do nothing"
-elif [ -r ./Documentation ]; then
+elif [ -r ./Documentation/constants.txt ]; then
       doc=./Documentation
-elif [ -r ../Documentation ]; then
+elif [ -r ../Documentation/constants.txt ]; then
       doc=../Documentation
 else
  echo "No Documentation dir"

@@ -118,7 +118,8 @@ tst = tst_add \
     tst_del \
     tst_srch \
     tst_foreach \
-    tst_join
+    tst_join \
+    tst_update
 
 
 check_PROGRAMS = $(tst)
@@ -130,7 +131,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
 check_PROGRAMS = tst_add$(EXEEXT) tst_del$(EXEEXT) tst_srch$(EXEEXT) \
-	tst_foreach$(EXEEXT) tst_join$(EXEEXT)
+	tst_foreach$(EXEEXT) tst_join$(EXEEXT) tst_update$(EXEEXT)
 tst_add_SOURCES = tst_add.c
 tst_add_OBJECTS = tst_add.$(OBJEXT)
 tst_add_LDADD = $(LDADD)
@@ -156,6 +157,11 @@ tst_srch_OBJECTS = tst_srch.$(OBJEXT)
 tst_srch_LDADD = $(LDADD)
 tst_srch_DEPENDENCIES =
 tst_srch_LDFLAGS =
+tst_update_SOURCES = tst_update.c
+tst_update_OBJECTS = tst_update.$(OBJEXT)
+tst_update_LDADD = $(LDADD)
+tst_update_DEPENDENCIES =
+tst_update_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -168,9 +174,10 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_add.c tst_del.c tst_foreach.c tst_join.c tst_srch.c
+DIST_SOURCES = tst_add.c tst_del.c tst_foreach.c tst_join.c tst_srch.c \
+	tst_update.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_add.c tst_del.c tst_foreach.c tst_join.c tst_srch.c
+SOURCES = tst_add.c tst_del.c tst_foreach.c tst_join.c tst_srch.c tst_update.c
 
 all: all-am
 
@@ -203,6 +210,9 @@ tst_join$(EXEEXT): $(tst_join_OBJECTS) $(tst_join_DEPENDENCIES)
 tst_srch$(EXEEXT): $(tst_srch_OBJECTS) $(tst_srch_DEPENDENCIES) 
 	@rm -f tst_srch$(EXEEXT)
 	$(LINK) $(tst_srch_LDFLAGS) $(tst_srch_OBJECTS) $(tst_srch_LDADD) $(LIBS)
+tst_update$(EXEEXT): $(tst_update_OBJECTS) $(tst_update_DEPENDENCIES) 
+	@rm -f tst_update$(EXEEXT)
+	$(LINK) $(tst_update_LDFLAGS) $(tst_update_OBJECTS) $(tst_update_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

@@ -5,6 +5,9 @@ Function: vstr_init()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
+ Parameter[1]: Nothing
+ Type[1]: void
+
  Explanation:
 
   This function needs to be called before any of the other functions are
@@ -19,6 +22,9 @@ Function: vstr_exit()
  Returns: Nothing
  Type: void
 
+ Parameter[1]: Nothing
+ Type[1]: void
+
  Explanation:
 
   This function can be called before exit, after all vstr objects have been
@@ -32,316 +38,38 @@ Function: vstr_exit()
 
 Section: Functions to choose multiple VSTR_FLAG_* constants
 
-Function: VSTR_FLAG10()
+Function: VSTR_FLAGXX()
  Returns: The value of the flags combined
  Type: unsigned int
 
  Parameter[1]: Name of flag type to use.
  Type[1]: <symbol>
 
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Parameter[7]: Name of a flag in given flag type
- Type[7]: <symbol>
-
- Parameter[8]: Name of a flag in given flag type
- Type[8]: <symbol>
-
- Parameter[9]: Name of a flag in given flag type
- Type[9]: <symbol>
-
- Parameter[10]: Name of a flag in given flag type
- Type[10]: <symbol>
-
- Parameter[11]: Name of a flag in given flag type
- Type[11]: <symbol>
+ Parameter[ ... ]: Names of a flags in the given flag type
+ Type[ ... ]: <symbol>
 
  Explanation:
 
-  This macro function combines 10 flags. So instead of having to say...
+  This isn't one macro function but a group of functions that all do the same
+ thing, just with different numbers of arguments. They combine the namespace
+ requirements so that you can specify multiple flags in a concise manner. For
+ instance VSTR_FLAG06() combines 6 flags. So instead of having to wite...
 
     (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA)
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)
 
- ...you can now say...
+ ...you can write...
 
-    VSTR_FLAG10(CONV_UNPRINTABLE_ALLOW, 
-                NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA)
+    VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
 
- ...this becomes a lot more readable as the number of flags increases.
-
-
-Function: VSTR_FLAG09()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Parameter[7]: Name of a flag in given flag type
- Type[7]: <symbol>
-
- Parameter[8]: Name of a flag in given flag type
- Type[8]: <symbol>
-
- Parameter[9]: Name of a flag in given flag type
- Type[9]: <symbol>
-
- Parameter[10]: Name of a flag in given flag type
- Type[10]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 9 flags.
-
-
-Function: VSTR_FLAG08()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Parameter[7]: Name of a flag in given flag type
- Type[7]: <symbol>
-
- Parameter[8]: Name of a flag in given flag type
- Type[8]: <symbol>
-
- Parameter[9]: Name of a flag in given flag type
- Type[9]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 8 flags.
-
-
-Function: VSTR_FLAG07()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Parameter[7]: Name of a flag in given flag type
- Type[7]: <symbol>
-
- Parameter[8]: Name of a flag in given flag type
- Type[8]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 7 flags.
-
-
-Function: VSTR_FLAG06()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Parameter[7]: Name of a flag in given flag type
- Type[7]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 6 flags.
-
-
-Function: VSTR_FLAG05()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Parameter[6]: Name of a flag in given flag type
- Type[6]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 5 flags.
-
-
-Function: VSTR_FLAG04()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Parameter[5]: Name of a flag in given flag type
- Type[5]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 4 flags.
-
-
-Function: VSTR_FLAG03()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Parameter[4]: Name of a flag in given flag type
- Type[4]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 3 flags.
-
-
-Function: VSTR_FLAG02()
- Returns: The value of the flags combined
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Parameter[3]: Name of a flag in given flag type
- Type[3]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 2 flags.
-
-
-Function: VSTR_FLAG01()
- Returns: The value of the flag
- Type: unsigned int
-
- Parameter[1]: Name of flag type to use.
- Type[1]: <symbol>
-
- Parameter[2]: Name of a flag in given flag type
- Type[2]: <symbol>
-
- Explanation:
-
-  This macro function acts the same as VSTR_FLAG10() except it only combines
- 1 flag with 0, this is here mainly for compatability.
+ ...which is a lot more readable as the number of flags increases.
+  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
+ number at the end refering to how many flags are passed to it (not the number
+ of parameters, which is one more than that).
 
 
 Section: Functions to get specific data about the vstr
@@ -3693,6 +3421,47 @@ Function: vstr_sects_foreach()
  VSTR_TYPE_SECT_FOREACH_.
 
 
+Function: vstr_sects_update_add()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Vstr sections
+ Type[2]: struct Vstr_sects *
+
+ Explanation:
+
+  This function will cause the section (Parameter[2]) to automatically be
+ updated when changes are made to the Vstr string (Parameter[1]).
+
+ Note:
+
+  You need to call vstr_sects_update_del(), before you free the
+ section (Parameter[2]). However if the next thing you are going to do is call
+ vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them
+ backwards.
+  This uses the vstr_cache_add() function.
+
+
+Function: vstr_sects_update_del()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Vstr sections
+ Type[2]: struct Vstr_sects *
+
+ Explanation:
+
+  This function will cause the section (Parameter[2]) that was previously 
+ updated when changes are made to the Vstr string (Parameter[1]) to not be
+ updated anymore.
+
+
 Function: vstr_sects_srch()
  Returns: Number of the section in the Vstr sections (Parameter[1])
  Type: unsigned int
@@ -4391,6 +4160,9 @@ Function: vstr_cache_add()
  function.
   The callback function will not be called if the data for the cache function
  is NULL.
+  The inline adding and delete from the Vstr strings is not performed if
+ callbacks are registered for the string (because functions will have to be
+ called anyway).
 
 
 Function: vstr_cache_get()

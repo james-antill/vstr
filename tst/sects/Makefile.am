@@ -8,7 +8,8 @@ tst = tst_add \
     tst_del \
     tst_srch \
     tst_foreach \
-    tst_join
+    tst_join \
+    tst_update
 
 
 check_PROGRAMS = $(tst)

@@ -6,7 +6,7 @@
  * for easy and fast IO.
  *
  * This file is more commented than normal code, so as to make it easy to follow
- * while knowning almost nothing about Vstr or Linux IO programming.
+ * while knowing almost nothing about Vstr or Linux IO programming.
  */
 
 #define VSTR_COMPILE_INCLUDE 1 /* make Vstr include it's own system headers */

@@ -1004,6 +1004,12 @@ Optional Features:
   --enable-tst-noinline   turn off use of inline default=no
 --enable-tst-noattr-visibility   turn off use of attribute visibility default=no
 --enable-tst-noattr-alias   turn off use of attribute alias default=no
+  --enable-wrap-memcpy  turn on wrapper for small values passed to memcpy default=no
+  --enable-wrap-memcmp  turn on wrapper for small values passed to memcmp default=no
+  --enable-wrap-memchr  turn on wrapper for small values passed to memchr default=no
+  --enable-wrap-memrchr  turn on wrapper for small values passed to memrchr default=no
+  --enable-wrap-memset  turn on wrapper for small values passed to memset default=no
+  --enable-wrap-memmove  turn on wrapper for small values passed to memmove default=no
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1414,7 +1420,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=18
+VSTR_MICRO_VERSION=19
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -4974,7 +4980,7 @@ test "x$enable_libtool_lock" != xno && enable_libtool_lock=yes
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4977 "configure"' > conftest.$ac_ext
+  echo '#line 4983 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5510,7 +5516,7 @@ chmod -w .
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
 compiler_c_o=no
-if { (eval echo configure:5513: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
+if { (eval echo configure:5519: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>out/conftest.err; } && test -s out/conftest2.$ac_objext; then
   # The compiler can only warn and ignore the option if not recognized
   # So say no if there are warnings
   if test -s out/conftest.err; then
@@ -7303,7 +7309,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 7306 "configure"
+#line 7312 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -7401,7 +7407,7 @@ else
     lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 7404 "configure"
+#line 7410 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8690,6 +8696,146 @@ if test "${enable_tst_noattr_alias+set}" = set; then
 else
   local_cv_have_tst_noattr_alias=false
 fi;
+
+
+# Check whether --enable-wrap-memcpy or --disable-wrap-memcpy was given.
+if test "${enable_wrap_memcpy+set}" = set; then
+  enableval="$enable_wrap_memcpy"
+  local_cv_linker_use_wrap_memcpy=true
+else
+  local_cv_linker_use_wrap_memcpy=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memcpy; then
+  USE_WRAP_MEMCPY_TRUE=
+  USE_WRAP_MEMCPY_FALSE='#'
+else
+  USE_WRAP_MEMCPY_TRUE='#'
+  USE_WRAP_MEMCPY_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memcpy in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMCPY 1
+_ACEOF
+ ;;
+esac
+# Check whether --enable-wrap-memcmp or --disable-wrap-memcmp was given.
+if test "${enable_wrap_memcmp+set}" = set; then
+  enableval="$enable_wrap_memcmp"
+  local_cv_linker_use_wrap_memcmp=true
+else
+  local_cv_linker_use_wrap_memcmp=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memcmp; then
+  USE_WRAP_MEMCMP_TRUE=
+  USE_WRAP_MEMCMP_FALSE='#'
+else
+  USE_WRAP_MEMCMP_TRUE='#'
+  USE_WRAP_MEMCMP_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memcmp in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMCMP 1
+_ACEOF
+ ;;
+esac
+# Check whether --enable-wrap-memchr or --disable-wrap-memchr was given.
+if test "${enable_wrap_memchr+set}" = set; then
+  enableval="$enable_wrap_memchr"
+  local_cv_linker_use_wrap_memchr=true
+else
+  local_cv_linker_use_wrap_memchr=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memchr; then
+  USE_WRAP_MEMCHR_TRUE=
+  USE_WRAP_MEMCHR_FALSE='#'
+else
+  USE_WRAP_MEMCHR_TRUE='#'
+  USE_WRAP_MEMCHR_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memchr in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMCHR 1
+_ACEOF
+ ;;
+esac
+# Check whether --enable-wrap-memrchr or --disable-wrap-memrchr was given.
+if test "${enable_wrap_memrchr+set}" = set; then
+  enableval="$enable_wrap_memrchr"
+  local_cv_linker_use_wrap_memrchr=true
+else
+  local_cv_linker_use_wrap_memrchr=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memrchr; then
+  USE_WRAP_MEMRCHR_TRUE=
+  USE_WRAP_MEMRCHR_FALSE='#'
+else
+  USE_WRAP_MEMRCHR_TRUE='#'
+  USE_WRAP_MEMRCHR_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memrchr in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMRCHR 1
+_ACEOF
+ ;;
+esac
+# Check whether --enable-wrap-memset or --disable-wrap-memset was given.
+if test "${enable_wrap_memset+set}" = set; then
+  enableval="$enable_wrap_memset"
+  local_cv_linker_use_wrap_memset=true
+else
+  local_cv_linker_use_wrap_memset=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memset; then
+  USE_WRAP_MEMSET_TRUE=
+  USE_WRAP_MEMSET_FALSE='#'
+else
+  USE_WRAP_MEMSET_TRUE='#'
+  USE_WRAP_MEMSET_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memset in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMSET 1
+_ACEOF
+ ;;
+esac
+# Check whether --enable-wrap-memmove or --disable-wrap-memmove was given.
+if test "${enable_wrap_memmove+set}" = set; then
+  enableval="$enable_wrap_memmove"
+  local_cv_linker_use_wrap_memmove=true
+else
+  local_cv_linker_use_wrap_memmove=false
+fi;
+
+
+if $local_cv_linker_use_wrap_memmove; then
+  USE_WRAP_MEMMOVE_TRUE=
+  USE_WRAP_MEMMOVE_FALSE='#'
+else
+  USE_WRAP_MEMMOVE_TRUE='#'
+  USE_WRAP_MEMMOVE_FALSE=
+fi
+
+case x$local_cv_linker_use_wrap_memmove in
+xtrue) cat >>confdefs.h <<\_ACEOF
+#define USE_WRAP_MEMMOVE 1
+_ACEOF
+ ;;
+esac
 
 
 
@@ -10959,7 +11105,136 @@ echo "${ECHO_T}${T_MD}Checking for libraries to link against:${T_ME}" >&6
 
 
 
-# AC_CHECK_LIB(socket, main)
+
+echo "$as_me:$LINENO: checking for inet_ntop in -lsocket" >&5
+echo $ECHO_N "checking for inet_ntop in -lsocket... $ECHO_C" >&6
+if test "${ac_cv_lib_socket_inet_ntop+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsocket  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char inet_ntop ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+inet_ntop ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_socket_inet_ntop=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_socket_inet_ntop=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_socket_inet_ntop" >&5
+echo "${ECHO_T}$ac_cv_lib_socket_inet_ntop" >&6
+if test $ac_cv_lib_socket_inet_ntop = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSOCKET 1
+_ACEOF
+
+  LIBS="-lsocket $LIBS"
+
+fi
+
+
+echo "$as_me:$LINENO: checking for inet_addr in -lsocket" >&5
+echo $ECHO_N "checking for inet_addr in -lsocket... $ECHO_C" >&6
+if test "${ac_cv_lib_socket_inet_addr+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsocket  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char inet_addr ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+inet_addr ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_socket_inet_addr=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_socket_inet_addr=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_socket_inet_addr" >&5
+echo "${ECHO_T}$ac_cv_lib_socket_inet_addr" >&6
+if test $ac_cv_lib_socket_inet_addr = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSOCKET 1
+_ACEOF
+
+  LIBS="-lsocket $LIBS"
+
+fi
+
 # AC_CHECK_LIB(m, log10)
 
 
@@ -16715,8 +16990,9 @@ else
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-int abcd(int n)  __attribute__((pure)) ;
+int abcd(int n)  __attribute__((__pure__)) ;
 int abcd(int n) { return (!n); }
 
 int main() {
@@ -16887,7 +17163,7 @@ echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 VSTR_LIBS="$LIBS"
 
 
-ac_config_files="$ac_config_files Makefile vstr.pc libtool_hack/Makefile src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/dup/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/sects/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
+ac_config_files="$ac_config_files Makefile vstr.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile tst/add/Makefile tst/add_fmt/Makefile tst/cache/Makefile tst/cmp/Makefile tst/conv/Makefile tst/del/Makefile tst/dup/Makefile tst/export/Makefile tst/loc/Makefile tst/mov/Makefile tst/parse/Makefile tst/sc/Makefile tst/sects/Makefile tst/split/Makefile tst/spn/Makefile tst/srch/Makefile tst/sub/Makefile tst/x/Makefile src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -16982,6 +17258,48 @@ if test -z "${HAVE_LINKER_VERSION_SCRIPT_TRUE}" && test -z "${HAVE_LINKER_VERSIO
   { { echo "$as_me:$LINENO: error: conditional \"HAVE_LINKER_VERSION_SCRIPT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"HAVE_LINKER_VERSION_SCRIPT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMCPY_TRUE}" && test -z "${USE_WRAP_MEMCPY_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMCPY\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMCPY\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMCMP_TRUE}" && test -z "${USE_WRAP_MEMCMP_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMCMP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMCMP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMCHR_TRUE}" && test -z "${USE_WRAP_MEMCHR_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMCHR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMCHR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMRCHR_TRUE}" && test -z "${USE_WRAP_MEMRCHR_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMRCHR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMRCHR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMSET_TRUE}" && test -z "${USE_WRAP_MEMSET_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMSET\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMSET\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${USE_WRAP_MEMMOVE_TRUE}" && test -z "${USE_WRAP_MEMMOVE_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"USE_WRAP_MEMMOVE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"USE_WRAP_MEMMOVE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -17462,7 +17780,6 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "vstr.pc" ) CONFIG_FILES="$CONFIG_FILES vstr.pc" ;;
-  "libtool_hack/Makefile" ) CONFIG_FILES="$CONFIG_FILES libtool_hack/Makefile" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "Documentation/Makefile" ) CONFIG_FILES="$CONFIG_FILES Documentation/Makefile" ;;
@@ -17640,6 +17957,18 @@ s,@HAVE_POSIX_HOST_TRUE@,$HAVE_POSIX_HOST_TRUE,;t t
 s,@HAVE_POSIX_HOST_FALSE@,$HAVE_POSIX_HOST_FALSE,;t t
 s,@HAVE_LINKER_VERSION_SCRIPT_TRUE@,$HAVE_LINKER_VERSION_SCRIPT_TRUE,;t t
 s,@HAVE_LINKER_VERSION_SCRIPT_FALSE@,$HAVE_LINKER_VERSION_SCRIPT_FALSE,;t t
+s,@USE_WRAP_MEMCPY_TRUE@,$USE_WRAP_MEMCPY_TRUE,;t t
+s,@USE_WRAP_MEMCPY_FALSE@,$USE_WRAP_MEMCPY_FALSE,;t t
+s,@USE_WRAP_MEMCMP_TRUE@,$USE_WRAP_MEMCMP_TRUE,;t t
+s,@USE_WRAP_MEMCMP_FALSE@,$USE_WRAP_MEMCMP_FALSE,;t t
+s,@USE_WRAP_MEMCHR_TRUE@,$USE_WRAP_MEMCHR_TRUE,;t t
+s,@USE_WRAP_MEMCHR_FALSE@,$USE_WRAP_MEMCHR_FALSE,;t t
+s,@USE_WRAP_MEMRCHR_TRUE@,$USE_WRAP_MEMRCHR_TRUE,;t t
+s,@USE_WRAP_MEMRCHR_FALSE@,$USE_WRAP_MEMRCHR_FALSE,;t t
+s,@USE_WRAP_MEMSET_TRUE@,$USE_WRAP_MEMSET_TRUE,;t t
+s,@USE_WRAP_MEMSET_FALSE@,$USE_WRAP_MEMSET_FALSE,;t t
+s,@USE_WRAP_MEMMOVE_TRUE@,$USE_WRAP_MEMMOVE_TRUE,;t t
+s,@USE_WRAP_MEMMOVE_FALSE@,$USE_WRAP_MEMMOVE_FALSE,;t t
 s,@FMT_DBL_host_TRUE@,$FMT_DBL_host_TRUE,;t t
 s,@FMT_DBL_host_FALSE@,$FMT_DBL_host_FALSE,;t t
 s,@FMT_DBL_none_TRUE@,$FMT_DBL_none_TRUE,;t t

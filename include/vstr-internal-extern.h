@@ -530,6 +530,14 @@ extern int vstr_nx_sects_foreach(const struct Vstr_base *, struct Vstr_sects *,
                               void *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 2, 4)) VSTR__ATTR_H() ;
 
+extern int vstr_nx_sects_update_add(const struct Vstr_base *,
+                                 struct Vstr_sects *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_sects_update_del(const struct Vstr_base *,
+                                 struct Vstr_sects *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+
+
 /* split functions */
 extern unsigned int vstr_nx_split_buf(const struct Vstr_base *, size_t, size_t,
                                    const void *, size_t, struct Vstr_sects *,
@@ -653,3 +661,17 @@ extern void vstr_nx_sc_dirname(const struct Vstr_base *, size_t, size_t,
  extern int vstr_nx_extern_inline_add_rep_chr(struct Vstr_base *, size_t, 
                                            char, size_t)
      VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+
+ extern void *vstr_nx_wrap_memcpy(void *, const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+ extern int   vstr_nx_wrap_memcmp(const void *, const void *, size_t)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+ extern void *vstr_nx_wrap_memchr(const void *, int, size_t)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+ extern void *vstr_nx_wrap_memrchr(const void *, int, size_t)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+ extern void *vstr_nx_wrap_memset(void *, int, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+ extern void *vstr_nx_wrap_memmove(void *, const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+

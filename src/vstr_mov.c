@@ -66,14 +66,14 @@ static int vstr__mov_single_node(Vstr_base *base, size_t pos,
   {
     char *ptr = vstr__export_node_ptr(scan);
 
-    memcpy(tbuf, ptr + from_pos - 1, len);
+    vstr_nx_wrap_memcpy(tbuf, ptr + from_pos - 1, len);
     if (pos > from_pos)
-      memmove(ptr + from_pos + len - 1,
-              ptr + from_pos - 1, (pos + 1) - from_pos);
+      vstr_nx_wrap_memmove(ptr + from_pos + len - 1,
+                           ptr + from_pos - 1, (pos + 1) - from_pos);
     else
-      memmove(ptr + pos + len,
-              ptr + pos, from_pos - (pos + 1));
-    memmove(ptr + pos, tbuf, len);
+      vstr_nx_wrap_memmove(ptr + pos + len,
+                           ptr + pos, from_pos - (pos + 1));
+    vstr_nx_wrap_memmove(ptr + pos, tbuf, len);
     
     return (TRUE);
   }

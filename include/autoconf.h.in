@@ -197,3 +197,14 @@
 
 #undef HAVE___TYPEOF
 
+#undef USE_WRAP_MEMCPY
+
+#undef USE_WRAP_MEMCMP
+
+#undef USE_WRAP_MEMCHR
+
+#undef USE_WRAP_MEMRCHR
+
+#undef USE_WRAP_MEMSET
+
+#undef USE_WRAP_MEMMOVE

@@ -20,9 +20,8 @@
  */
 /* functions which are inlined */
 
-#ifndef VSTR_COMPILE_INLINE /* gcc3 SEGVs if it sees the inline's twice */
+#undef  VSTR_COMPILE_INLINE /* gcc3 SEGVs if it sees the inline's twice */
 #define VSTR_COMPILE_INLINE 0
-#endif
 
 #include "main.h"
 
@@ -34,4 +33,4 @@
 # define inline /* nothing */
 
 # include "vstr-internal-inline.h"
-
+# include "vstr-nx-inline.h"

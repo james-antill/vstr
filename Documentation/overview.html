@@ -41,7 +41,7 @@
 	    "blocks" or nodes each carrying some of the data for the string.
 	    This model of representing the data also means that as a string gets
 	    bigger the Vstr memory usage only goes up linearly and has no 
-	    inherant copying (due to other string libraries increasing space
+	    inherent copying (due to other string libraries increasing space
 	    for the string via. realloc() the memory usage can almost double and
 	    require a complete copy of the string).
 	  </p>
@@ -49,9 +49,9 @@
 	    It also means that adding, substituting or moving data anywhere in
 	    the string can be optimised a lot, to require O(1) copying instead 
 	    of O(n).
-	    Talking about O(1), it's worth remembering that if you have a 
+	    Speaking of O(1), it's worth remembering that if you have a 
 	    Vstr string with caching enabled a writev() call will take 
-	    constant time as well (the cat example below shows and example of
+	    constant time as well (the cat example below shows an example of
 	    this, the write call is <emp>always constant time</emp>.
 	  </p>
 	  
@@ -63,7 +63,7 @@
 	      number modifiers. It also allows gcc warning compatible customer
 	      format specifiers (and includes pre-written custom format
 	      specifiers for ipv4 and ipv6 addresses, Vstr strings and more)
-	    <li> splitting of strings into parameter/record chunks (ala. perl).
+	    <li> splitting of strings into parameter/record chunks (a la perl).
 	    <li> substituting data in a Vstr string
 	    <li> moving data from one Vstr string to another (or within a Vstr
 	      string).
@@ -90,7 +90,7 @@
 	    The other unusual aspect of the Vstr string library is that it 
 	    attaches a notion of a locale to the string configuration
 	    and not globally (as POSIX, and pretty much everything else does).
-	    This means that you can do Network IO in the C locale and
+	    This means that you can do Network I/O in the C locale and
 	    user IO in the users locale.
 	  </p>
 
@@ -103,11 +103,76 @@
 	  </p>
 	    
 	  <p>
-	    For a comparison with other string libraries, see
+	    For a comparison with other string libraries and printf() like
+	    implementations, see
 	    <a href="comparison.html">this page</a>.
 	  </p>
 
 </td></tr>
+
+</table>
+
+<table width="90%"><tr><td bgcolor="#DDDDFF">
+	  <h2>A simple introduction to the API</h2>
+	</td></tr></table>
+
+<table width="80%"><tr><td><p>
+
+ At first glace the vstr API looks <b>huge</b> as there are over
+<b>One hundred and forty</b> functions. However the API was designed so 
+that you can mentally build functions from a template in your head ... so 
+instead of having to remember 140 functions you just need to remember
+10 to 20 pieces of a template.
+
+</p><p>
+ All vstr functions obey one of the following template rules...<br>
+ <br>
+"vstr_" &lt;verb&gt; <br>
+"vstr_" &lt;verb&gt;  &lt;noun&gt; <br>
+"vstr_" &lt;verb&gt;  &lt;noun&gt;  &lt;verb&gt; <br>
+ <br>
+...a good example is searching for data in a vstr, here is a list of the
+functions that you can use to search for data in a vstr...<br>
+ <br>
+ vstr_srch_chr_fwd() <br>
+ vstr_srch_chr_rev() <br>
+ vstr_srch_buf_fwd() <br>
+ vstr_srch_buf_rev() <br>
+ vstr_srch_chrs_fwd() <br>
+ vstr_srch_chrs_rev() <br>
+ vstr_srch_vstr_fwd() <br>
+ vstr_srch_vstr_rev() <br>
+ vstr_srch_case_chr_fwd() <br>
+ vstr_srch_case_chr_rev() <br>
+ vstr_srch_case_buf_fwd() <br>
+ vstr_srch_case_buf_rev() <br>
+ vstr_srch_case_vstr_fwd() <br>
+ vstr_srch_case_vstr_rev() <br>
+ vstr_csrch_chrs_fwd() <br>
+ vstr_csrch_chrs_rev() <br>
+ vstr_spn_chrs_fwd() <br>
+ vstr_spn_chrs_rev() <br>
+ vstr_cspn_chrs_fwd() <br>
+ vstr_cspn_chrs_rev() <br>
+ <br>
+...which is a <u>lot</u> of functions (and that doesn't even include the
+CSTR macro function variants) just to search for some data. However
+that can be broken up into... <br>
+
+<table>
+<tr>
+<td>"vstr_"</td><td>&lt;verb&gt;</td><td>&lt;noun&gt;</td><td>&lt;verb&gt;</td>
+</tr>
+<tr><td>"vstr_"</td><td> srch      </td><td> chr  </td><td> fwd </td></tr>
+<tr><td>       </td><td> srch_case </td><td> buf  </td><td> rev </td></tr>
+<tr><td>       </td><td> csrch     </td><td> vstr </td><td>     </td></tr>
+<tr><td>       </td><td> spn       </td><td> chrs </td><td>     </td></tr>
+<tr><td>       </td><td> cspn      </td><td>      </td><td>     </td></tr>
+</table>
+ <br>
+...which is much less information to remember.
+
+</p></td></tr>
 
 </table>
 
@@ -156,7 +221,7 @@ paste into your programs/libraries).
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu Oct  3 19:54:07 EDT 2002
+Last modified: Thu Nov 14 01:33:58 EST 2002
 <!-- hhmts end -->
   </body>
 </html>

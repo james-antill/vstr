@@ -33,7 +33,8 @@ vstr__fmt_usr_srch(Vstr_conf *conf, const char *name)
   {
     assert(!(*scan)->next || ((*scan)->name_len <= (*scan)->next->name_len));
     
-    if (((*scan)->name_len == len) && !memcmp((*scan)->name_str, name, len))
+    if (((*scan)->name_len == len) &&
+        !vstr_nx_wrap_memcmp((*scan)->name_str, name, len))
       return (scan);
     
     scan = &(*scan)->next;
@@ -66,7 +67,7 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   {
     assert(!scan->next || (scan->name_len <= scan->next->name_len));
     
-    if (!memcmp(fmt, scan->name_str, scan->name_len))
+    if (!vstr_nx_wrap_memcmp(fmt, scan->name_str, scan->name_len))
       return (scan);
     
     scan = scan->next;

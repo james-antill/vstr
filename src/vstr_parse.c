@@ -247,9 +247,9 @@ static int vstr__parse_num(const Vstr_base *base,
         add_num = (scan - '0'); \
       else if (num_base <= 10) \
         break; \
-      else if ((end = memchr(local_let_low, scan, num_base - 10))) \
+      else if ((end = vstr_nx_wrap_memchr(local_let_low, scan, num_base-10))) \
         add_num = 10 + (end - local_let_low); \
-      else if ((end = memchr(local_let_high, scan, num_base - 10))) \
+      else if ((end = vstr_nx_wrap_memchr(local_let_high, scan, num_base-10))) \
         add_num = 10 + (end - local_let_high); \
       else \
         break; \

@@ -1,4 +1,4 @@
-.TH Vstr 3 "21-Mar-2002" "Vstr 0.9.1" "Vstr String Library"
+.TH vstr 3 "16-Nov-2002" "Vstr 0.9.19" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -15,45 +15,9 @@ int \fBvstr_init\fR(void);
 void \fBvstr_exit\fR(void);
 .sp
 .br
-.in \w'  unsigned int \fBVSTR_FLAG10\fR('u
+.in \w'  unsigned int \fBVSTR_FLAGXX\fR('u
 .ti \w'  'u
-unsigned int \fBVSTR_FLAG10\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG09\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG09\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG08\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG08\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG07\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG07\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG06\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG06\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG05\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG05\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG04\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG04\fR(<symbol>, <symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG03\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG03\fR(<symbol>, <symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG02\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG02\fR(<symbol>, <symbol>, <symbol>);
-.br
-.in \w'  unsigned int \fBVSTR_FLAG01\fR('u
-.ti \w'  'u
-unsigned int \fBVSTR_FLAG01\fR(<symbol>, <symbol>);
+unsigned int \fBVSTR_FLAGXX\fR(<symbol>, <symbol>);
 .sp
 .br
 .in \w'  unsigned int \fBvstr_num\fR('u
@@ -605,6 +569,14 @@ int \fBvstr_sects_del\fR(struct Vstr_sects *, unsigned int);
 .ti \w'  'u
 unsigned int \fBvstr_sects_foreach\fR(const struct Vstr_base *, struct Vstr_sects *, unsigned int, unsigned int (*)(const Vstr_base *, size_t, size_t, void *), void *);
 .br
+.in \w'  int \fBvstr_sects_update_add\fR('u
+.ti \w'  'u
+int \fBvstr_sects_update_add\fR(const struct Vstr_base *, struct Vstr_sects *);
+.br
+.in \w'  int \fBvstr_sects_update_del\fR('u
+.ti \w'  'u
+int \fBvstr_sects_update_del\fR(const struct Vstr_base *, struct Vstr_sects *);
+.br
 .in \w'  unsigned int \fBvstr_sects_srch\fR('u
 .ti \w'  'u
 unsigned int \fBvstr_sects_srch\fR(struct Vstr_sects *, size_t, size_t);
@@ -814,11 +786,13 @@ int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, i
 .HY
 .SH "DESCRIPTION"
  A very simple overview is that you call vstr_init() at the start of your
-program then you can create a (Vstr_base *) by calling vstr_make_base().
+program and vstr_exit() at the end.
+ You can make new Vstr strings by calling vstr_make_base(), and free them by
+calling vstr_free_base(). There are also a vstr_dup_* set of functions to
+make a new Vstr string with data in them.
  You can then add/delete data from this string, using the provided functions,
 if you need to use all or part of the string with a "C string" interface
-then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
- To delete the entire vstr you call vstr_free_base() on the (Vstr_base *).
+then you can call vstr_export_cstr_ptr() or vstr_export_cstr_malloc().
 
 .SH Initialization function
 
@@ -829,6 +803,11 @@ then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
 Returns: TRUE on success and FALSE on failure
 .br
 Type: int
+
+.br
+Parameter\fB[1]\fR: Nothing
+.br
+Type\fB[1]\fR: void
 
 .br
 \fBExplanation:\fR
@@ -850,6 +829,11 @@ Returns: Nothing
 Type: void
 
 .br
+Parameter\fB[1]\fR: Nothing
+.br
+Type\fB[1]\fR: void
+
+.br
 \fBExplanation:\fR
 
 .br
@@ -864,7 +848,7 @@ Type: void
 
 .ti -2
 .br
-\fBFunction: \fR VSTR_FLAG10()
+\fBFunction: \fR VSTR_FLAGXX()
 .br
 Returns: The value of the flags combined
 .br
@@ -876,50 +860,15 @@ Parameter\fB[1]\fR: Name of flag type to use.
 Type\fB[1]\fR: <symbol>
 
 .br
-Parameter\fB[2]\fR: Name of a flag in given flag type
+Parameter\fB[ ... ]\fR: Names of a flags in the given flag type
 .br
-Type\fB[2]\fR: <symbol>
+Type\fB[ ... ]\fR: <symbol>
 
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-Parameter\fB[7]\fR: Name of a flag in given flag type
-.br
-Type\fB[7]\fR: <symbol>
-
-.br
-Parameter\fB[8]\fR: Name of a flag in given flag type
-.br
-Type\fB[8]\fR: <symbol>
-
-.br
-Parameter\fB[9]\fR: Name of a flag in given flag type
-.br
-Type\fB[9]\fR: <symbol>
-
- Parameter[10]: Name of a flag in given flag type Type[10]: <symbol>
- Parameter[11]: Name of a flag in given flag type Type[11]: <symbol>
 .br
 \fBExplanation:\fR
-  This macro function combines 10 flags. So instead of having to say...
+
+.br
+  This isn't one macro function but a group of functions that all do the same thing, just with different numbers of arguments. They combine the namespace requirements so that you can specify multiple flags in a concise manner. For instance VSTR_FLAG06() combines 6 flags. So instead of having to wite...
 
 .Vb 4
     (VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL |
@@ -927,414 +876,19 @@ Type\fB[9]\fR: <symbol>
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT |
      VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP |
-     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA)
+     VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT)
 
 .Ve
- ...you can now say...
+ ...you can write...
 .Vb 4
 
-    VSTR_FLAG10(CONV_UNPRINTABLE_ALLOW, 
-                NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA)
+    VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
 
 .Ve
- ...this becomes a lot more readable as the number of flags increases.
+ ...which is a lot more readable as the number of flags increases.
 
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG09()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-Parameter\fB[7]\fR: Name of a flag in given flag type
-.br
-Type\fB[7]\fR: <symbol>
-
-.br
-Parameter\fB[8]\fR: Name of a flag in given flag type
-.br
-Type\fB[8]\fR: <symbol>
-
-.br
-Parameter\fB[9]\fR: Name of a flag in given flag type
-.br
-Type\fB[9]\fR: <symbol>
-
- Parameter[10]: Name of a flag in given flag type Type[10]: <symbol>
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 9 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG08()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-Parameter\fB[7]\fR: Name of a flag in given flag type
-.br
-Type\fB[7]\fR: <symbol>
-
-.br
-Parameter\fB[8]\fR: Name of a flag in given flag type
-.br
-Type\fB[8]\fR: <symbol>
-
-.br
-Parameter\fB[9]\fR: Name of a flag in given flag type
-.br
-Type\fB[9]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 8 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG07()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-Parameter\fB[7]\fR: Name of a flag in given flag type
-.br
-Type\fB[7]\fR: <symbol>
-
-.br
-Parameter\fB[8]\fR: Name of a flag in given flag type
-.br
-Type\fB[8]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 7 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG06()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-Parameter\fB[7]\fR: Name of a flag in given flag type
-.br
-Type\fB[7]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 6 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG05()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-Parameter\fB[6]\fR: Name of a flag in given flag type
-.br
-Type\fB[6]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 5 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG04()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-Parameter\fB[5]\fR: Name of a flag in given flag type
-.br
-Type\fB[5]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 4 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG03()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-Parameter\fB[4]\fR: Name of a flag in given flag type
-.br
-Type\fB[4]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 3 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG02()
-.br
-Returns: The value of the flags combined
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-Parameter\fB[3]\fR: Name of a flag in given flag type
-.br
-Type\fB[3]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
-.br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 2 flags.
-
-.ti -2
-.br
-\fBFunction: \fR VSTR_FLAG01()
-.br
-Returns: The value of the flag
-.br
-Type: unsigned int
-
-.br
-Parameter\fB[1]\fR: Name of flag type to use.
-.br
-Type\fB[1]\fR: <symbol>
-
-.br
-Parameter\fB[2]\fR: Name of a flag in given flag type
-.br
-Type\fB[2]\fR: <symbol>
-
-.br
-\fBExplanation:\fR
-
 .br
-  This macro function acts the same as VSTR_FLAG10() except it only combines 1 flag with 0, this is here mainly for compatability.
+  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the number at the end refering to how many flags are passed to it (not the number of parameters, which is one more than that).
 
 .SH Functions to get specific data about the vstr
 
@@ -6194,6 +5748,61 @@ Type\fB[5]\fR: void *
 
 .ti -2
 .br
+\fBFunction: \fR vstr_sects_update_add()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Vstr sections
+.br
+Type\fB[2]\fR: struct Vstr_sects *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will cause the section (Parameter[2]) to automatically be updated when changes are made to the Vstr string (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  You need to call vstr_sects_update_del(), before you free the section (Parameter[2]). However if the next thing you are going to do is call vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them backwards.
+.br
+  This uses the vstr_cache_add() function.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sects_update_del()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Vstr sections
+.br
+Type\fB[2]\fR: struct Vstr_sects *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will cause the section (Parameter[2]) that was previously  updated when changes are made to the Vstr string (Parameter[1]) to not be updated anymore.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_sects_srch()
 .br
 Returns: Number of the section in the Vstr sections (Parameter[1])
@@ -7185,6 +6794,8 @@ Type\fB[3]\fR: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int,
   The callback function parameters, are the Vstr string, position, length, the type of callback starting VSTR_TYPE_CACHE_ and the data for the cache function.
 .br
   The callback function will not be called if the data for the cache function is NULL.
+.br
+  The inline adding and delete from the Vstr strings is not performed if callbacks are registered for the string (because functions will have to be called anyway).
 
 .ti -2
 .br
@@ -8232,3 +7843,5 @@ Type\fB[8]\fR: unsigned int *
 .br
   This function is used to take data from a Vstr string and write it to a file, after open()ing the file (Parameter[4]) with open flags (Parameter[5]) and open mode (Parameter[6]).
 
+.SH "SEE ALSO"
+.BR vstr_const (3)

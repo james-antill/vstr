@@ -54,7 +54,7 @@ int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   if ((scan_1->type != VSTR_TYPE_NODE_NON) &&
       (scan_2->type != VSTR_TYPE_NODE_NON))
   {
-   int ret = memcmp(scan_str_1, scan_str_2, tmp);
+   int ret = vstr_nx_wrap_memcmp(scan_str_1, scan_str_2, tmp);
    if (ret)
      return (ret);
    scan_str_1 += tmp;
@@ -119,7 +119,7 @@ int vstr_nx_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
     
     if (buf)
     {
-      if ((ret = memcmp(scan_str, buf, scan_len)))
+      if ((ret = vstr_nx_wrap_memcmp(scan_str, buf, scan_len)))
         return (ret);
       buf = ((char *)buf) + scan_len;
     }

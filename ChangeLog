@@ -1,3 +1,32 @@
+2002-11-16  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.19
+
+	* src/vstr_sect.c (vstr_sects_update_add): Add function, to auto
+	update sections.
+	(vstr_sects_update_del): Add function, to auto update sections.
+
+	* src/vstr.c (vstr_nx_free_base): Make dealoction faster, and don't 
+	call cache cbs except to say free yourself.
+
+2002-11-09  James Antill  <james@and.org>
+
+	* Documentation/Makefile.am (confexec_DATA): Add comparison to
+	installed documentation.
+
+2002-10-16  James Antill  <james@and.org>
+
+	* configure.in (HAVE_ATTRIB_PURE): Fixup configure.in test so it dies
+	on the stupid dietlibc headers, run... 
+	perl -pi -e 's/__pure__/__dietlibc_pure__/;' dietlibc/include/**/*.h
+	...if you care.
+
+2002-10-13  James Antill  <james@and.org>
+
+	* src/vstr_dbl/glibc/sysdeps/generic/printf_fphex.c (__printf_fphex): 
+	Fixed 2 formatting bugs for width accounting and 0 flag, in the glibc
+	code ... forwarded the fixes.
+
 2002-10-12  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.18

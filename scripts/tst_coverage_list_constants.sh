@@ -15,6 +15,7 @@ fi
 find $tst -name \*.c -print0 | \
   xargs -0 perl -ne '/(?:^|\W)(VSTR_[[:alnum:]][_[:alnum:]]+) *(\()?/ && \
                      print $1 . (defined($2) ? "()" : "") . "\n"' | \
-  egrep -v "^VSTR_AUTOCONF_" | sort | uniq
-
+  egrep -v "^VSTR_AUTOCONF_" | \
+  egrep -v "^VSTR_FLAG[0-9][0-9]()" | \
+  sort | uniq
 

@@ -238,7 +238,7 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
        break;
 
      free(conf->loc->name_lc_numeric_str);
-     memcpy(tmp, val, len + 1);
+     vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->name_lc_numeric_str = tmp;
      conf->loc->name_lc_numeric_len = len;
      
@@ -266,7 +266,7 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
        break;
 
      free(conf->loc->decimal_point_str);
-     memcpy(tmp, val, len + 1);
+     vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->decimal_point_str = tmp;
      conf->loc->decimal_point_len = len;     
      
@@ -294,7 +294,7 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
        break;
 
      free(conf->loc->thousands_sep_str);
-     memcpy(tmp, val, len + 1);
+     vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->thousands_sep_str = tmp;
      conf->loc->thousands_sep_len = len;
      
@@ -322,7 +322,7 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
        break;
 
      free(conf->loc->grouping);
-     memcpy(tmp, val, len); tmp[len] = 0;
+     vstr_nx_wrap_memcpy(tmp, val, len); tmp[len] = 0;
      conf->loc->grouping = tmp;
      
      ret = TRUE;

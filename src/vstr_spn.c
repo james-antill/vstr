@@ -55,7 +55,7 @@ size_t vstr_nx_spn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   
   while (count < scan_len)
   {
-   if (!memchr(spn_chrs, scan_str[count], spn_len))
+   if (!vstr_nx_wrap_memchr(spn_chrs, scan_str[count], spn_len))
      return (ret + count);
    ++count; 
   }
@@ -119,7 +119,7 @@ static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
   while (count > 0)
   {
    --count;
-   if (!memchr(spn_chrs, scan_str[count], spn_len))
+   if (!vstr_nx_wrap_memchr(spn_chrs, scan_str[count], spn_len))
    {
     ret = ((scan_len - count) - 1);
     goto next_loop_memchr_fail;
@@ -173,7 +173,7 @@ static size_t vstr__spn_chrs_rev_fast(const Vstr_base *base,
     while (count < scan_len)
     {
       ++count;
-      if (!memchr(spn_chrs, scan_str[scan_len - count], spn_len))
+      if (!vstr_nx_wrap_memchr(spn_chrs, scan_str[scan_len - count], spn_len))
         return (ret + (count - 1));
     }
     assert(count == scan_len);
@@ -239,7 +239,7 @@ size_t vstr_nx_cspn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
    
    while (count < scan_len)
    {
-     if (memchr(cspn_chrs, scan_str[count], cspn_len))
+     if (vstr_nx_wrap_memchr(cspn_chrs, scan_str[count], cspn_len))
        return (ret + count);
      ++count;
    }
@@ -292,7 +292,7 @@ static size_t vstr__cspn_chrs_rev_slow(const Vstr_base *base,
   while (count > 0)
   {
    --count;
-   if (memchr(cspn_chrs, scan_str[count], cspn_len))
+   if (vstr_nx_wrap_memchr(cspn_chrs, scan_str[count], cspn_len))
    {
     ret = ((scan_len - count) - 1);
     goto next_loop_memchr_fail;
@@ -343,7 +343,7 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
     while (count < scan_len)
     {
       ++count;
-      if (memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
+      if (vstr_nx_wrap_memchr(cspn_chrs, scan_str[scan_len - count], cspn_len))
         return (ret + (count - 1));
     }
     assert(count == scan_len);

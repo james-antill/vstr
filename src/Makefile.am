@@ -9,6 +9,14 @@ lib_LTLIBRARIES = libvstr.la
 INCLUDES = -I$(top_srcdir)/include
 
 if HAVE_LINKER_MAIN_RELOCATE
+VSTR__MAIN_RELOCATE_AM=-Wl,-e,vstr_version_func
+endif
+
+if HAVE_LINKER_VERSION_SCRIPT
+VSTR__VERSION_SCRIPT_AM=-Wl,--version-script=$(top_srcdir)/src/linker-script
+endif
+
+if HAVE_LINKER_MAIN_RELOCATE
 VSTR__RELOC_MAIN =
 else
 VSTR__RELOC_MAIN =  -DHAVE_NO_RELOC_MAIN
@@ -58,4 +66,4 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
         -release $(LT_RELEASE) \
-        -export-dynamic
+        -export-dynamic $(VSTR__MAIN_RELOCATE_AM) $(VSTR__VERSION_SCRIPT_AM)

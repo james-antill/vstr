@@ -6,6 +6,7 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_typedef \
       tst_inline \
+      tst_include \
       tst_misc \
       tst_swap_conf \
       tst_cntl_base \

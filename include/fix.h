@@ -173,7 +173,7 @@ extern short ospeed;
 # define __PRETTY_FUNCTION__ "(n/a)"
 #endif
 
-#if !defined(__GNUC__) || defined(__STRICT_ANSI__)
+#if !defined(__attribute__) && !defined(__GNUC__) || defined(__STRICT_ANSI__)
 # define __attribute__(x)
 #endif
 

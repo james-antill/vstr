@@ -102,6 +102,8 @@ sects_free
 sects_del
 sects_srch
 sects_foreach
+sects_update_add
+sects_update_del
 split_buf
 split_chrs
 cache_add

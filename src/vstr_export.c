@@ -79,7 +79,8 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
       tmp = (iovs[ret_num].iov_len - used);
     
     if (scan->type != VSTR_TYPE_NODE_NON)
-      memcpy(((char *)iovs[ret_num].iov_base) + used, scan_str, tmp);
+      vstr_nx_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used, scan_str,
+                          tmp);
 
     used += tmp;
     scan_str += tmp;
@@ -176,7 +177,7 @@ size_t vstr_nx_export_buf(const Vstr_base *base, size_t pos, size_t len,
  do
  {
   if (scan->type != VSTR_TYPE_NODE_NON)
-    memcpy(buf, scan_str, scan_len);
+    vstr_nx_wrap_memcpy(buf, scan_str, scan_len);
    
   buf = ((char *)buf) + scan_len;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,

@@ -260,7 +260,7 @@ int vstr_nx_extern_inline_add_buf(Vstr_base *base, size_t pos,
     if (tmp > len)
       tmp = len;
 
-    memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, tmp);
+    vstr_nx_wrap_memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, tmp);
     scan->len += tmp;
     buffer = ((char *)buffer) + tmp;
     
@@ -280,8 +280,7 @@ int vstr_nx_extern_inline_add_buf(Vstr_base *base, size_t pos,
   
   VSTR__ADD_MID(base->conf->buf_sz, buf);
 
-  /* always do memcpy -- don't do above */
-  memcpy(((Vstr_node_buf *)scan)->buf, buffer, tmp);
+  vstr_nx_wrap_memcpy(((Vstr_node_buf *)scan)->buf, buffer, tmp);
   buffer = ((char *)buffer) + tmp;
 
   VSTR__ADD_END(buf, VSTR_TYPE_NODE_BUF, orig_pos_scan_len);
@@ -1195,7 +1194,7 @@ int vstr_nx_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
     if (tmp > len)
       tmp = len;
     
-    memset(((Vstr_node_buf *)scan)->buf + scan->len, chr, tmp);
+    vstr_nx_wrap_memset(((Vstr_node_buf *)scan)->buf + scan->len, chr, tmp);
     scan->len += tmp;
     
     vstr__cache_iovec_add_node_end(base, num, tmp);
@@ -1215,7 +1214,7 @@ int vstr_nx_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
   VSTR__ADD_MID(base->conf->buf_sz, buf);
   
   /* always do memset -- don't do above */
-  memset(((Vstr_node_buf *)scan)->buf, chr, tmp);
+  vstr_nx_wrap_memset(((Vstr_node_buf *)scan)->buf, chr, tmp);
   
   VSTR__ADD_END(buf, VSTR_TYPE_NODE_BUF, orig_pos_scan_len);
   

@@ -28,8 +28,8 @@ bzip2 -9f vstr-$v.tar
 tar -cf vstr-$v.tar vstr-$v
 gzip -9f vstr-$v.tar
 
-rpmbuild -ta                  vstr-$v.tar.gz
-rpmbuild -tb --define 'dbg 1' vstr-$v.tar.gz
+sudo rpmbuild -ta                  vstr-$v.tar.gz
+sudo rpmbuild -tb --define 'dbg 1' vstr-$v.tar.gz
 
 ls -aslF /usr/src/redhat/RPMS/*/vstr*-$v-*
 ls -aslF /usr/src/redhat/SRPMS/vstr*-$v-*

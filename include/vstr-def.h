@@ -145,6 +145,7 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  unsigned int cache_pos_cb_pos; /* private */
  unsigned int cache_pos_cb_iovec; /* private */
  unsigned int cache_pos_cb_cstr; /* private */
+ unsigned int cache_pos_cb_sects; /* private */
 
  unsigned char fmt_usr_escape; /* private */
  struct Vstr__fmt_usr_name_node *fmt_usr_names; /* private */

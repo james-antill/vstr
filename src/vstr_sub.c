@@ -21,27 +21,11 @@
 /* functions to substitute data in a vstr */
 #include "main.h"
 
-#define VSTR__SUB_MEMCPY_BUF(obuf, off) do { \
-  switch (tmp) \
-  { /* Don't do a memcpy() on small values */ \
-    case 7:  (obuf)[off + 6] = ((const char *)buf)[6]; \
-    case 6:  (obuf)[off + 5] = ((const char *)buf)[5]; \
-    case 5:  (obuf)[off + 4] = ((const char *)buf)[4]; \
-    case 4:  (obuf)[off + 3] = ((const char *)buf)[3]; \
-    case 3:  (obuf)[off + 2] = ((const char *)buf)[2]; \
-    case 2:  (obuf)[off + 1] = ((const char *)buf)[1]; \
-    case 1:  (obuf)[off + 0] = ((const char *)buf)[0]; \
-             break; \
-    default: memcpy((obuf) + off, buf, tmp); \
-             break; \
-  } \
-} while (FALSE)
-
 #define VSTR__SUB_BUF() do { \
   if (tmp > buf_len) \
     tmp = buf_len; \
   \
-  VSTR__SUB_MEMCPY_BUF(((Vstr_node_buf *)scan)->buf, pos); \
+  vstr_nx_wrap_memcpy((((Vstr_node_buf *)scan)->buf) + pos, buf, tmp); \
   buf_len -= tmp; \
   buf = ((char *)buf) + tmp; \
 } while (FALSE)
@@ -66,7 +50,7 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
 
     assert(scan->type == VSTR_TYPE_NODE_BUF);
     
-    VSTR__SUB_MEMCPY_BUF(scan_str, 0);
+    vstr_nx_wrap_memcpy(scan_str, buf, tmp);
     buf = ((char *)buf) + tmp;
   } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                            scan, &scan_str, &scan_len)));
@@ -228,9 +212,9 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
           {
             pos -= base->used;
             scan->len -= base->used;
-            memmove(((Vstr_node_buf *)scan)->buf,
-                    ((Vstr_node_buf *)scan)->buf + base->used,
-                    scan->len);
+            vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf,
+                                 ((Vstr_node_buf *)scan)->buf + base->used,
+                                 scan->len);
             base->used = 0;
           }
           
@@ -243,9 +227,9 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
             tmp = buf_len;
           
           if (pos < scan->len)
-            memmove(((Vstr_node_buf *)scan)->buf + pos + tmp,
-                    ((Vstr_node_buf *)scan)->buf + pos,
-                    (scan->len - pos));
+            vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf + pos + tmp,
+                                 ((Vstr_node_buf *)scan)->buf + pos,
+                                 (scan->len - pos));
           
           VSTR__SUB_BUF();
           
@@ -423,7 +407,7 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
       
       assert(scan->type == VSTR_TYPE_NODE_BUF);
       
-      memset(scan_str, chr, tmp);
+      vstr_nx_wrap_memset(scan_str, chr, tmp);
     } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                              scan, &scan_str, &scan_len)));
 

@@ -21,6 +21,125 @@
 /* NOTE: this implementation can change when the ABI changes ... DO NOT use
  * undocumented knowledge from here */
 
+#ifdef VSTR_AUTOCONF_USE_WRAP_MEMCPY
+extern inline void *@@@@vstr_wrap_memcpy(void *dest, const void *src, size_t n)
+{
+  switch (n)
+  {
+    case 7:  ((unsigned char *)dest)[6] = ((const unsigned char *)src)[6];
+    case 6:  ((unsigned char *)dest)[5] = ((const unsigned char *)src)[5];
+    case 5:  ((unsigned char *)dest)[4] = ((const unsigned char *)src)[4];
+    case 4:  ((unsigned char *)dest)[3] = ((const unsigned char *)src)[3];
+    case 3:  ((unsigned char *)dest)[2] = ((const unsigned char *)src)[2];
+    case 2:  ((unsigned char *)dest)[1] = ((const unsigned char *)src)[1];
+    case 1:  ((unsigned char *)dest)[0] = ((const unsigned char *)src)[0];
+      break;
+    default: memcpy(dest, src, n);
+      break;
+  }
+  
+  return (dest);
+}
+#else
+# define @@@@vstr_wrap_memcpy(x, y, z)  memcpy(x, y, z)
+#endif
+
+#ifdef VSTR_AUTOCONF_USE_WRAP_MEMCMP
+extern inline int @@@@vstr_wrap_memcmp(const void *passed_s1,
+                                       const void *passed_s2, size_t n)
+{
+  const unsigned char *s1 = passed_s1;
+  const unsigned char *s2 = passed_s2;
+  int ret = 0;
+  int tmp = 0;
+
+  switch (n)
+  {
+    case 7:  tmp = s1[6] - s2[6]; if (tmp) ret = tmp;
+    case 6:  tmp = s1[5] - s2[5]; if (tmp) ret = tmp;
+    case 5:  tmp = s1[4] - s2[4]; if (tmp) ret = tmp;
+    case 4:  tmp = s1[3] - s2[3]; if (tmp) ret = tmp;
+    case 3:  tmp = s1[2] - s2[2]; if (tmp) ret = tmp;
+    case 2:  tmp = s1[1] - s2[1]; if (tmp) ret = tmp;
+    case 1:  tmp = s1[0] - s2[0]; if (tmp) ret = tmp;
+      break;
+    default: ret = memcmp(s1, s2, n);
+      break;
+  }
+  
+  return (ret);
+}
+#else
+# define @@@@vstr_wrap_memcmp(x, y, z)  memcmp(x, y, z)
+#endif
+
+#ifdef VSTR_AUTOCONF_USE_WRAP_MEMCHR
+extern inline void *@@@@vstr_wrap_memchr(const void *passed_s1, int c, size_t n)
+{
+  const unsigned char *s1 = passed_s1;
+  const void *ret = 0;
+  int tmp = 0;
+
+  switch (n)
+  {
+    case 7:  tmp = s1[6] == c; if (tmp) ret = s1 + 6;
+    case 6:  tmp = s1[5] == c; if (tmp) ret = s1 + 5;
+    case 5:  tmp = s1[4] == c; if (tmp) ret = s1 + 4;
+    case 4:  tmp = s1[3] == c; if (tmp) ret = s1 + 3;
+    case 3:  tmp = s1[2] == c; if (tmp) ret = s1 + 2;
+    case 2:  tmp = s1[1] == c; if (tmp) ret = s1 + 1;
+    case 1:  tmp = s1[0] == c; if (tmp) ret = s1 + 0;
+      break;
+    default: ret = memchr(s1, c, n);
+      break;
+  }
+  
+  return ((void *)ret);
+}
+#else
+# define @@@@vstr_wrap_memchr(x, y, z)  memchr(x, y, z)
+#endif
+
+#ifdef VSTR_AUTOCONF_USE_WRAP_MEMSET
+extern inline void *@@@@vstr_wrap_memset(void *dest, int c, size_t n)
+{
+  switch (n)
+  {
+    case 7:  ((unsigned char *)dest)[6] = c;
+    case 6:  ((unsigned char *)dest)[5] = c;
+    case 5:  ((unsigned char *)dest)[4] = c;
+    case 4:  ((unsigned char *)dest)[3] = c;
+    case 3:  ((unsigned char *)dest)[2] = c;
+    case 2:  ((unsigned char *)dest)[1] = c;
+    case 1:  ((unsigned char *)dest)[0] = c;
+      break;
+    default: memset(dest, c, n);
+      break;
+  }
+  
+  return (dest);
+}
+#else
+# define @@@@vstr_wrap_memset(x, y, z)  memset(x, y, z)
+#endif
+
+#ifdef VSTR_AUTOCONF_USE_WRAP_MEMMOVE
+extern inline void *@@@@vstr_wrap_memmove(void *dest, const void *src, size_t n)
+{
+  if (n < 8)
+  {
+    unsigned char tmp[8];
+    @@@@vstr_wrap_memcpy(tmp,  src, n);
+    @@@@vstr_wrap_memcpy(dest, tmp, n);
+    return (dest);
+  }
+
+  return memmove(dest, src, n);
+}
+#else
+# define @@@@vstr_wrap_memmove(x, y, z) memmove(x, y, z)
+#endif
+
 /* needed at the top so vstr_del() etc. can use it */
 extern inline void @@@@vstr_ref_del(struct Vstr_ref *tmp)
 {
@@ -66,22 +185,8 @@ extern inline int @@@@vstr_add_buf(struct Vstr_base *base, size_t pos,
       (!base->cache_available || base->cache_internal))
   {
     struct Vstr_node *scan = base->end;
-    const char *buf = buffer;
 
-    switch (len)
-    { /* Don't do a memcpy() on small values */
-      case 7:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 6] = buf[6];
-      case 6:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 5] = buf[5];
-      case 5:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 4] = buf[4];
-      case 4:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 3] = buf[3];
-      case 3:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 2] = buf[2];
-      case 2:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 1] = buf[1];
-      case 1:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 0] = buf[0];
-               break;
-      default: memcpy(((struct Vstr_node_buf *)scan)->buf + scan->len, buffer,
-                      len);
-               break;
-    }
+    @@@@vstr_wrap_memcpy(((struct Vstr_node_buf *)scan)->buf + scan->len, buffer, len);
     scan->len += len;
     base->len += len;
 
@@ -195,19 +300,7 @@ extern inline int @@@@vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
   {
     struct Vstr_node *scan = base->end;
 
-    switch (len)
-    { /* Don't do a memset() on small values */
-      case 7:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 6] = chr;
-      case 6:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 5] = chr;
-      case 5:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 4] = chr;
-      case 4:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 3] = chr;
-      case 3:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 2] = chr;
-      case 2:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 1] = chr;
-      case 1:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 0] = chr;
-               break;
-      default: memset(((struct Vstr_node_buf *)scan)->buf + scan->len, chr,len);
-               break;
-    }
+    @@@@vstr_wrap_memset(((struct Vstr_node_buf *)scan)->buf + scan->len, chr, len);
     scan->len += len;
     base->len += len;
 

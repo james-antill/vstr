@@ -3,7 +3,7 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-SUBDIRS = libtool_hack src include Documentation tst
+SUBDIRS = src include Documentation tst
 
 INST_GNOME_CONFIG_HACK=@INST_GNOME_CONFIG_HACK@
 

@@ -146,10 +146,10 @@ static void vstr__cache_iovec_memmove(const Vstr_base *base)
 {
  Vstr__cache_data_iovec *vec = VSTR__CACHE(base)->vec;
 
- memmove(vec->v + base->conf->iov_min_offset, vec->v + vec->off,
-         sizeof(struct iovec) * base->num);
- memmove(vec->t + base->conf->iov_min_offset, vec->t + vec->off,
-         base->num);
+ vstr_nx_wrap_memmove(vec->v + base->conf->iov_min_offset, vec->v + vec->off,
+                      sizeof(struct iovec) * base->num);
+ vstr_nx_wrap_memmove(vec->t + base->conf->iov_min_offset, vec->t + vec->off,
+                      base->num);
  vec->off = base->conf->iov_min_offset;
 }
 
@@ -293,6 +293,8 @@ void vstr__free_cache(const Vstr_base *base)
   vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE);
   
   free(VSTR__CACHE(base));
+
+  base->iovec_upto_date = FALSE;
   
   VSTR__CACHE(base) = NULL;
 }
@@ -311,7 +313,8 @@ static int vstr__resize_cache(const Vstr_base *base, unsigned int sz)
     return (FALSE);
   }
 
-  memset(cache->data + cache->sz, 0, sizeof(void *) * (sz - cache->sz));
+  vstr_nx_wrap_memset(cache->data + cache->sz, 0,
+                      sizeof(void *) * (sz - cache->sz));
 
   cache->sz = sz;
   VSTR__CACHE(base) = cache;
@@ -427,6 +430,9 @@ int vstr__cache_conf_init(Vstr_conf *conf)
     return (FALSE);
   
   conf->cache_cbs_sz = 3;
+
+  conf->cache_pos_cb_sects = 0; /* NOTE: should really be in vstr_sects.c ...
+                                 * but it's not a big problem */
   
   conf->cache_cbs_ents[0].name = "/vstr__/pos";
   conf->cache_cbs_ents[0].cb_func = vstr__cache_pos_cb;

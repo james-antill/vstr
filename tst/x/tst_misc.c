@@ -53,7 +53,11 @@ int tst(void)
   vstr_ref_del(ref);
   free(ref);
   
-  return (EXIT_SUCCESS);
+  return (!VSTR_FLAG31(CONV_UNPRINTABLE_ALLOW,
+                       NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA,
+                       NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA,
+                       NUL, BEL, BS, HT, LF,
+                       DOT, _, ESC, DEL, HSP, HIGH));
 }
 
 /* Crap for tst_coverage constants....
@@ -68,12 +72,6 @@ int tst(void)
  *
  * VSTR_TYPE_FMT_PTR_CHAR
  * VSTR_TYPE_FMT_SIZE_T
- *
- * VSTR_FLAG01()
- * VSTR_FLAG02()
- * VSTR_FLAG03()
- * VSTR_FLAG04()
- * VSTR_FLAG07()
  *
  * VSTR_SECTS_INIT()
  */

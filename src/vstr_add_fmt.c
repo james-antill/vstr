@@ -432,7 +432,7 @@ static int vstr__fmt_add_spec(void)
   if (!(spec = malloc(sizeof(struct Vstr__fmt_spec))))
     return (FALSE);
 
-  assert(memset(spec, 0xeF, sizeof(struct Vstr__fmt_spec)));
+  assert(vstr_nx_wrap_memset(spec, 0xeF, sizeof(struct Vstr__fmt_spec)));
   
   spec->next = vstr__fmt_spec_make;
   vstr__fmt_spec_make = spec;
@@ -540,7 +540,7 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
   size_t len_mbs = 0;
   char *buf_mbs = NULL;
   
-  memset(&state, 0, sizeof(mbstate_t));
+  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcrtomb(NULL, spec->u.data_wint, &state);
   if (len_mbs == (size_t)-1)
     goto failed_EILSEQ;
@@ -551,7 +551,7 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
     base->conf->malloc_bad = TRUE;
     goto failed_alloc;
   }
-  memset(&state, 0, sizeof(mbstate_t));
+  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcrtomb(buf_mbs, spec->u.data_wint, &state);
   len_mbs += wcrtomb(buf_mbs + len_mbs, L'\0', &state);
   --len_mbs; /* remove terminator */
@@ -641,7 +641,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   char *buf_mbs = NULL;
   const wchar_t *tmp = spec->u.data_ptr;
   
-  memset(&state, 0, sizeof(mbstate_t));
+  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
 
   if (!(spec->flags & PREC_USR))
     spec->precision = UINT_MAX;
@@ -666,7 +666,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
     goto failed_alloc;
   }
   tmp = spec->u.data_ptr;
-  memset(&state, 0, sizeof(mbstate_t));
+  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcsnrtombs(buf_mbs, &tmp, spec->precision, len_mbs, &state);
   if (tmp) /* wcslen() > spec->precision */
   {

@@ -444,10 +444,11 @@ __printf_fphex (FILE *fp,
   /* A special case when the mantissa or the precision is zero and the `#'
      is not given.  In this case we must not print the decimal point.  */
   if (precision == 0 && !info->alt)
-    ++width;		/* This nihilates the +1 for the decimal-point
-			   character in the following equation.  */
+	  /* This nihilates the +1 for the decimal-point
+	     character in the following equation. If the decimal point exists */
+    width += (precision > 0 || info->alt);
 
-  if (!info->left && width > 0)
+  if (!info->left && info->pad != '0' && width > 0)
     PADN (' ', width);
 
   if (negative)
@@ -462,6 +463,10 @@ __printf_fphex (FILE *fp,
     outchar (info->spec + ('x' - 'a'));
   else
     outchar (info->spec == 'A' ? 'X' : 'x');
+
+  if (!info->left && info->pad == '0' && width > 0)
+    PADN ('0', width);
+
   outchar (leading);
 
   if (precision > 0 || info->alt)
@@ -478,9 +483,6 @@ __printf_fphex (FILE *fp,
 	PADN ('0', tofill);
     }
 
-  if (info->left && info->pad == '0' && width > 0)
-    PADN ('0', width);
-
   if ('P' - 'A' == 'p' - 'a')
     outchar (info->spec + ('p' - 'a'));
   else
@@ -490,7 +492,7 @@ __printf_fphex (FILE *fp,
 
   PRINT (expstr, wexpstr, (expbuf + sizeof expbuf) - expstr);
 
-  if (info->left && info->pad != '0' && width > 0)
+  if (info->left && width > 0)
     PADN (info->pad, width);
 
   return !fp->base->conf->malloc_bad;

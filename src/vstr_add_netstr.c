@@ -54,6 +54,9 @@ size_t vstr_nx_add_netstr2_beg(Vstr_base *base, size_t pos)
  assert(!VSTR__ULONG_MAX_LEN || (tmp == VSTR__ULONG_MAX_LEN));
  VSTR__ULONG_MAX_SET_LEN(tmp);
 
+ assert(vstr_nx_export_chr(base, ret + VSTR__ULONG_MAX_LEN) ==
+        VSTR__ASCII_COLON());
+ 
  return (ret);
 }
 

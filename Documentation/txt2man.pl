@@ -3,61 +3,123 @@
 use strict;
 use FileHandle;
 
-my $name = "Vstr documentation";
+my $docs = undef;
 
-my $man_header = <<'EOL';
-.TH Vstr 3 "21-Mar-2002" "Vstr 0.9.1" "Vstr String Library"
+if (0) {}
+elsif (-x "../configure") # In docs dir...
+  {
+    $docs ="../Documentation";
+  }
+elsif (-x "../../configure") # in build subdir
+  {
+    $docs ="../../Documentation";
+  }
+
+if (!defined ($docs))
+  {
+    STDERR->print("Can't find configure.\n");
+    exit (1);
+  }
+
+my $hdr_date = `date '+%d-%b-%Y'`;
+chomp($hdr_date);
+
+my $hdr_ver = undef;
+if (!open(VER, "< ../VERSION"))
+  { die "No version file in parent directory."; }
+$_ = <VER>; chomp; $hdr_ver = $_;
+close(VER);
+
+
+my $man_funcs_header = <<EOL;
+.TH vstr 3 "$hdr_date" "Vstr $hdr_ver" "Vstr String Library"
 .SH "SYNOPSIS"
-.in \w'  'u
+.in \\w'  'u
 #include <vstr.h>
 .sp
 .NH
 EOL
 
-my $man_desc = <<EOL;
+my $man_consts_header = <<EOL;
+.TH vstr_const 3 "$hdr_date" "Vstr $hdr_ver" "Vstr String Library"
+.SH "SYNOPSIS"
+.in \\w'  'u
+#include <vstr.h>
+.sp
+.NH
+EOL
+
+my $man_funcs_desc = <<EOL;
 .ti
 .HY
 .SH "DESCRIPTION"
  A very simple overview is that you call vstr_init() at the start of your
-program then you can create a (Vstr_base *) by calling vstr_make_base().
+program and vstr_exit() at the end.
+ You can make new Vstr strings by calling vstr_make_base(), and free them by
+calling vstr_free_base(). There are also a vstr_dup_* set of functions to
+make a new Vstr string with data in them.
  You can then add/delete data from this string, using the provided functions,
 if you need to use all or part of the string with a "C string" interface
-then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
- To delete the entire vstr you call vstr_free_base() on the (Vstr_base *).
+then you can call vstr_export_cstr_ptr() or vstr_export_cstr_malloc().
 EOL
 
-sub synopsis()
+my $man_consts_desc = <<EOL;
+.ti
+.HY
+.SH "DESCRIPTION"
+EOL
+
+my $man_funcs_seealso = <<EOL;
+.SH "SEE ALSO"
+.BR vstr_const (3)
+EOL
+
+my $man_consts_seealso = <<EOL;
+.SH "SEE ALSO"
+.BR vstr (3)
+EOL
+
+sub synopsis
   {
-    my $count = 0;
-    my $args = 0;
+    my $funcs = shift;
     my $func = undef;
+    my $args = 0;
 
     sub fin
       {
-	my $count = shift;
+	my $funcs = shift;
 	my $args = shift;
 
-	if ($count)
-	  {
-	    if (!$args)
-	      {
-		OUT->print("void");
-	      }
-	    OUT->print(");\n");
-	  }
+	if (!$funcs) { return; }
+	if (!$args) { die "Parameter missing in docs"; }
+	OUT->print(");\n");
       }
 
     while (<IN>)
       {
-	if (s!^(Constant|Function|Member): (.*)\(\)$!$2!)
+	if (s!^(Function): (.*)\(\)$!$2! ||
+	    s!^(Constant|Member): (.*)$!$2!)
 	  {
 	    chomp;
-	    fin($count, $args);
-	    ++$count;
-	    $args = 0;
-	    $func = $_;
+
+	    if (!$funcs)
+	      {
+		OUT->print(".br\n");
+		OUT->print(".ti \\w'  'u\n");
+		OUT->print("\\fB$_\\fR\n");
+	      }
+	    else
+	      {
+		if ($func) { fin($funcs, $args); }
+		$args = 0;
+		$func = $_;
+	      }
+	    if (( $funcs && $1 ne "Function") ||
+		(!$funcs && $1 eq "Function") ||
+		0)
+	      { die "Bad txt documentation."; }
 	  }
-	elsif (/^ Type: (.*)/)
+	elsif ($funcs && /^ Type: (.*)/)
 	  {
 	    my $spc = " ";
 
@@ -72,7 +134,7 @@ sub synopsis()
 	    OUT->print(".ti \\w'  'u\n");
 	    OUT->print("$_$spc\\fB$func\\fR(");
 	  }
-	elsif (/^ Type\[.+\]: (.*)/)
+	elsif ($funcs && /^ Type\[.+\]: (.*)/)
 	  {
 	    $_ = $1;
 	    chomp;
@@ -86,13 +148,14 @@ sub synopsis()
 	  }
 	elsif (/^Section:/)
 	  {
-	    fin($count, $args);
-	    $count = 0;
+	    if ($func) { fin($funcs, $args); }
+	    $args = 0;
+	    $func = 0;
 	    OUT->print(".sp\n");
 	  }
       }
 
-    fin($count, $args);
+    fin($funcs, $args);
     OUT->print("\n");
   }
 
@@ -188,27 +251,58 @@ sub convert()
       }
   }
 
-if (!open (IN, "<functions.txt"))
+# MAIN
+
+# functions man page...
+if (!open (IN, "< $docs/functions.txt"))
   {
     die "Open (read): $@";
   }
 
-if (!open (OUT, ">functions.3"))
+if (!open (OUT, "> functions.3"))
   {
     die "Open (write): $@";
   }
 
-OUT->print($man_header);
+OUT->print($man_funcs_header);
 
-synopsis();
+synopsis(1);
 
-if (!open (IN, "<functions.txt"))
+if (!open (IN, "< $docs/functions.txt"))
   {
     die "Open (read): $@";
   }
 
-OUT->print($man_desc);
+OUT->print($man_funcs_desc);
 
 convert();
+
+OUT->print($man_funcs_seealso);
+
+# constants man page...
+if (!open (IN, "< $docs/constants.txt"))
+  {
+    die "Open (read): $@";
+  }
+
+if (!open (OUT, "> constants.3"))
+  {
+    die "Open (write): $@";
+  }
+
+OUT->print($man_consts_header);
+
+synopsis(0);
+
+if (!open (IN, "< $docs/constants.txt"))
+  {
+    die "Open (read): $@";
+  }
+
+OUT->print($man_consts_desc);
+
+convert();
+
+OUT->print($man_consts_seealso);
 
 exit (0);

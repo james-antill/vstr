@@ -37,6 +37,8 @@ while (/^#define\s+(VSTR_[0-9a-zA-Z][0-9a-zA-Z_]*)\s*\(/gm)
     print "$1()\n";
   }
 
+# Note all macro function are above prototypes...
+
 while (/^(?:extern|inline)[\sa-zA-Z_*]*\s+\**(vstr_[0-9a-zA-Z][0-9a-zA-Z_]*)\s*\(/gm)
   {
     print "$1()\n";

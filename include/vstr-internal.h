@@ -47,6 +47,7 @@
  * the external name */
 # include "vstr-internal-cpp-symbols.h"
 # include "vstr-internal-cpp-inline-symbols.h"
+
 #endif
 
 #include "vstr-internal-extern.h"
@@ -214,10 +215,35 @@ extern void vstr_version_func(void);
     VSTR__ATTR_A("vstr_nx_" #x ) VSTR__ATTR_D() ;
 
 # include "vstr-internal-alias-symbols.h"
+#endif
 
-# if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
-#  include "vstr-internal-inline.h"
+#if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
+# include "vstr-internal-inline.h"
+# include "vstr-nx-inline.h"
+#else
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMCPY
+#  define vstr_nx_wrap_memcpy(x, y, z)  memcpy(x, y, z)
 # endif
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMCMP
+#  define vstr_nx_wrap_memcmp(x, y, z)  memcmp(x, y, z)
+# endif
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMCHR
+#  define vstr_nx_wrap_memchr(x, y, z)  memchr(x, y, z)
+# endif
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMRCHR
+#  define vstr_nx_wrap_memrchr(x, y, z) memrchr(x, y, z)
+# endif
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMSET
+#  define vstr_nx_wrap_memset(x, y, z)  memset(x, y, z)
+# endif
+# ifndef VSTR_AUTOCONF_USE_WRAP_MEMMOVE
+#  define vstr_nx_wrap_memmove(x, y, z) memmove(x, y, z)
+# endif
+#endif
+
+#if  (defined(HAVE_ATTRIB_ALIAS) && \
+      (defined(HAVE_ATTRIB_VISIBILITY) || !defined(NDEBUG)) && \
+      defined(HAVE___TYPEOF))
 
 # include "vstr-internal-alias-inline-symbols.h"
 
