@@ -119,10 +119,7 @@ static void serv_cb_func_free(struct Evnt *evnt)
 {
   struct con *con = (struct con *)evnt;
 
-  vlg_info(vlg, "FREE from[$<sa:%p>]"
-           " recv[${BKMG.ju:%ju}:%ju] send[${BKMG.ju:%ju}:%ju]\n", con->ev->sa,
-           con->ev->acct.bytes_r, con->ev->acct.bytes_r,
-           con->ev->acct.bytes_w, con->ev->acct.bytes_w);
+  evnt_vlg_stats_info(evnt, "FREE");
 
   free(con);
 }

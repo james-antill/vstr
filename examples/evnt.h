@@ -121,6 +121,8 @@ extern int evnt_waiting(void);
 extern void evnt_fd_set_cork(struct Evnt *, int);
 extern void evnt_fd_set_defer_accept(struct Evnt *, int);
 
+extern void evnt_vlg_stats_info(struct Evnt *, const char *);
+
 extern int evnt_epoll_init(void);
 extern int evnt_epoll_enabled(void);
 

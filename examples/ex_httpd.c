@@ -128,17 +128,16 @@ struct sock_fprog
 #define HTTP_END_OF_REQUEST HTTP_EOL HTTP_EOL
 
 /* HTTP crack -- Implied linear whitespace between tokens, note that it
- * might have a \r\n at the start */
+ * is *LWS == *([CRLF] 1*(SP | HT)) */
 #define HTTP_SKIP_LWS(s1, p, l) do {                                    \
-      size_t lws__len = 0;                                              \
+      char q_tst = 0;                                                   \
                                                                         \
-      if (VPREFIX(s1, p, l, HTTP_EOL)) {                                \
-        l -= strlen(HTTP_EOL); p += strlen(HTTP_EOL);                   \
-      }                                                                 \
+      if (!l) break;                                                    \
+      q_tst = vstr_export_chr(s1, p);                                   \
+      if ((q_tst != '\r') && (q_tst != ' ') && (q_tst != '\t'))         \
+        break;                                                          \
                                                                         \
-      lws__len = vstr_spn_cstr_chrs_fwd(s1, p, l, HTTP_LWS);            \
-      l -= lws__len;                                                    \
-      p += lws__len;                                                    \
+      http__skip_lws(s1, &p, &l);                                       \
     } while (FALSE)
 
 /* is the cstr a prefix of the vstr */
@@ -452,6 +451,30 @@ static void cl_timer_con(int type, void *data)
   }
 }
 
+/* HTTP crack -- Implied linear whitespace between tokens, note that it
+ * is *LWS == *([CRLF] 1*(SP | HT)) */
+static void http__skip_lws(Vstr_base *s1, size_t *pos, size_t *len)
+{
+  size_t lws__len = 0;
+  
+  ASSERT(s1 && pos && len);
+  
+  while (TRUE)
+  {
+    if (VPREFIX(s1, *pos, *len, HTTP_EOL))
+    {
+      *len -= strlen(HTTP_EOL); *pos += strlen(HTTP_EOL);
+    }
+    else if (lws__len)
+      break;
+    
+    if (!(lws__len = vstr_spn_cstr_chrs_fwd(s1, *pos, *len, HTTP_LWS)))
+      break;
+    *len -= lws__len;
+    *pos += lws__len;
+  }
+}
+
 /* prints out headers in human friedly way for log files */
 #define PCUR (pos + (base->len - orig_len))
 static int http_app_vstr_escape(Vstr_base *base, size_t pos,
@@ -647,7 +670,8 @@ static void http_req_split_method(struct Con *con, struct Http_req_data *req)
   len -= (el - pos); pos += (el - pos);
   HTTP_SKIP_LWS(s1, pos, len);
 
-  ASSERT(len); /* must have at least EOL */
+  if (!len)
+    return;
 
   if (!VPREFIX(s1, pos, len, "/") && !VIPREFIX(s1, pos, len, "http://"))
   {
@@ -668,8 +692,9 @@ static void http_req_split_method(struct Con *con, struct Http_req_data *req)
   len -= (el - pos); pos += (el - pos);
   HTTP_SKIP_LWS(s1, pos, len);
 
-  el = vstr_srch_cstr_buf_fwd(s1, pos, len, HTTP_EOL);
-  ASSERT(el);
+  if (!(el = vstr_srch_cstr_buf_fwd(s1, pos, len, HTTP_EOL)))
+    return;
+
   vstr_sects_add(req->sects, pos, el - pos);
 }
 
@@ -774,12 +799,16 @@ static void http_app_header_uintmax(Vstr_base *out,
 }
 
 static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
+                              unsigned int http_ret_code,
+                              const char *http_ret_line,
                               time_t now, time_t mtime,
                               const char *custom_content_type,
                               VSTR_AUTOCONF_uintmax_t content_length)
 {
   Vstr_base *out = con->ev->io_w;
 
+  vstr_add_fmt(out, out->len, "%s %03u %s" HTTP_EOL,
+               "HTTP/1.1", http_ret_code, http_ret_line);
   http_app_header_cstr(out, "Date", date_rfc1123(now));
   http_app_header_cstr(out, "Server", serv->server_name);
   
@@ -1038,7 +1067,7 @@ static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
 
 /* vprefix, with local knowledge */
 #define HDR__EQ(x)                                                      \
-    ((len > (name_len = strlen(x ":"))) &&                              \
+    ((len >= (name_len = strlen(x ":"))) &&                             \
      vstr_cmp_case_buf_eq(data, pos, name_len, x ":", name_len))
 /* remove LWS from front and end... what a craptastic std. */
 #define HDR__SET(h) do {                                                \
@@ -1193,7 +1222,7 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
   return (TRUE);
 }
 
-static int serv_http_absolute_uri(struct Con *con, struct Http_req_data *req)
+static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
   size_t op_pos = req->path_pos;
@@ -1310,11 +1339,15 @@ static void http__parse_skip_blanks(Vstr_base *data,
    ...not allowing multiple ranges at once though, as multipart/byteranges
    is too much crack, I think this is stds. compliant.
  */
-static int serv_http_parse_range(Vstr_base *data, size_t pos, size_t len,
-                                 VSTR_AUTOCONF_uintmax_t fsize,
-                                 VSTR_AUTOCONF_uintmax_t *range_beg,
-                                 VSTR_AUTOCONF_uintmax_t *range_end)
+static int http_parse_range(struct Con *con, struct Http_req_data *req,
+                            VSTR_AUTOCONF_uintmax_t *range_beg,
+                            VSTR_AUTOCONF_uintmax_t *range_end)
 {
+  Vstr_base *data = con->ev->io_r;
+  Vstr_sect_node *h_r = con->http_hdrs->hdr_range;
+  size_t pos = h_r->pos;
+  size_t len = h_r->len;
+  VSTR_AUTOCONF_uintmax_t fsize = req->f_stat->st_size;
   unsigned int num_flags = 10 | (VSTR_FLAG_PARSE_NUM_NO_BEG_PM |
                                  VSTR_FLAG_PARSE_NUM_OVERFLOW);
   size_t num_len = 0;
@@ -1571,7 +1604,9 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
   Vstr_base *data = con->ev->io_r;
   size_t pos = 0;
   size_t len = 0;
-  unsigned int val = 0;
+  unsigned int gzip_val     = 1001;
+  unsigned int identity_val = 1001;
+  unsigned int star_val     = 1001;
   
   if (!serv->use_gzip_content_replacement)
     return (FALSE);
@@ -1590,22 +1625,29 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
                                          HTTP_EOL HTTP_LWS ";,");
     
     if (0) { }
+    else if (vstr_cmp_cstr_eq(data, pos, tmp, "identity"))
+    {
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &identity_val))
+        return (FALSE);
+    }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "gzip"))
     {
       len -= tmp; pos += tmp;
-      return (http_parse_quality(data, &pos, &len, FALSE, &val) && val);
+      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
+        return (FALSE);
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "x-gzip"))
     {
       len -= tmp; pos += tmp;
       req->content_encoding_xgzip = TRUE;
-      /* ignore quality on x-gzip */
-      return (http_parse_quality(data, &pos, &len, FALSE, &val));
+      /* ignore quality on x-gzip - just parse for errors */
+      return (http_parse_quality(data, &pos, &len, FALSE, &gzip_val));
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "*"))
     { /* "*;q=0,gzip" means TRUE ... and "*;q=1.0,gzip;q=0" means FALSE */
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &val))
+      if (!http_parse_quality(data, &pos, &len, FALSE, &star_val))
         return (FALSE);
     }
     else
@@ -1623,8 +1665,54 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
     HTTP_SKIP_LWS(data, pos, len);
   }
 
-  return (val);
+  if ((gzip_val == 1001) && (star_val == 1001))
+    return (FALSE);
+  if (gzip_val == 1001)
+    gzip_val = star_val;
+
+  if (identity_val != 1001)
+    if (identity_val > gzip_val)
+      return (FALSE);
+  
+  return (!!gzip_val);
 }
+
+/* try to use gzip content-encoding on entity */
+static void http__try_gzip_content(struct Con *con, struct Http_req_data *req)
+{
+  const char *fname_cstr = NULL;
+  int fd = -1;
+      
+  vstr_add_cstr_ptr(req->fname, req->fname->len, ".gz");
+
+  fname_cstr = vstr_export_cstr_ptr(req->fname, 1, req->fname->len);
+  if (!fname_cstr)
+    vlg_warn(vlg, "Failed to export cstr for gzip\n");
+  else if ((fd = io_open_nonblock(fname_cstr)) != -1)
+  {
+    struct stat64 f_stat[1];
+    
+    if (fstat64(fd, f_stat) == -1)
+      vlg_warn(vlg, "fstat: %m\n");
+    else if ((serv->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
+             (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
+             (req->f_stat->st_mtime >  f_stat->st_mtime) ||
+             (req->f_stat->st_size  <= f_stat->st_size))
+    { /* ignore the gzip else */ }
+    else
+    {
+      int tmp = fd; /* swap, close the old (later) and use the new */
+      fd = con->f_fd;
+      con->f_fd = tmp;
+      
+      ASSERT(con->f_len == (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
+      /* _only_ copy the new size over, mtime etc. is from the original file */
+      con->f_len = req->f_stat->st_size = f_stat->st_size;
+      req->content_encoding_gzip = TRUE;
+    }
+    close(fd);
+  }
+}  
 
 /* skip a quoted string, or fail on syntax error */
 static int http__skip_quoted_string(Vstr_base *data, size_t *pos, size_t *len)
@@ -1772,11 +1860,10 @@ static int http_parse_accept(struct Con *con, struct Http_req_data *req)
   return (val);
 }
 
-static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
-                             unsigned int *http_ret_code,
-                             const char **http_ret_line)
+static int http_req_1_x(struct Con *con, struct Http_req_data *req,
+                        unsigned int *http_ret_code,
+                        const char **http_ret_line)
 {
-  Vstr_base *data = con->ev->io_r;
   Vstr_base *out = con->ev->io_w;
   VSTR_AUTOCONF_uintmax_t range_beg = 0;
   VSTR_AUTOCONF_uintmax_t range_end = 0;
@@ -1789,15 +1876,18 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
      * have a body */
     HTTPD_ERR_RET(req, 417, FALSE);
           
+  /* Might normally add "!req->head_op && ..." but
+   * http://www.w3.org/TR/chips/#gl6 says that's bad */
+  if (http_parse_accept_encoding_gzip(con, req))
+    http__try_gzip_content(con, req);
+  
   if (h_r->pos)
   {
     int ret_code = 0;
 
     if (!(serv->use_range && (req->ver_1_1 || serv->use_range_1_0)))
       h_r->pos = 0;
-    else if (!(ret_code = serv_http_parse_range(data, h_r->pos, h_r->len,
-                                                req->f_stat->st_size,
-                                                &range_beg, &range_end)))
+    else if (!(ret_code = http_parse_range(con, req, &range_beg, &range_end)))
       h_r->pos = 0;
     ASSERT(!ret_code || (ret_code == 200) || (ret_code == 416));
     if (ret_code == 416)
@@ -1808,44 +1898,6 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
     }
   }
 
-  /* would normally add "!req->head_op && ..." but
-   * http://www.w3.org/TR/chips/#gl6 says that's bad */
-  if (!h_r->pos && http_parse_accept_encoding_gzip(con, req))
-  { /* If not doing range requests, try a gzip content-encoding on body */
-    const char *fname_cstr = NULL;
-    int fd = -1;
-      
-    vstr_add_cstr_ptr(req->fname, req->fname->len, ".gz");
-
-    fname_cstr = vstr_export_cstr_ptr(req->fname, 1, req->fname->len);
-    if (!fname_cstr)
-      vlg_warn(vlg, "Failed to export cstr for gzip\n");
-    else if ((fd = io_open_nonblock(fname_cstr)) != -1)
-    {
-      struct stat64 f_stat[1];
-      
-      if (fstat64(fd, f_stat) == -1)
-        vlg_warn(vlg, "fstat: %m\n");
-      else if ((serv->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
-               (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
-               (req->f_stat->st_mtime >  f_stat->st_mtime) ||
-               (req->f_stat->st_size  <= f_stat->st_size))
-      { /* ignore the gzip else */ }
-      else
-      {
-        int tmp = fd; /* swap, close the old (later) and use the new */
-        fd = con->f_fd;
-        con->f_fd = tmp;
-        
-        ASSERT(con->f_len == (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
-        /* only copy the new size over, mtime etc. is from the original */
-        con->f_len = req->f_stat->st_size = f_stat->st_size;
-        req->content_encoding_gzip = TRUE;
-      }
-      close(fd);
-    }
-  }
-  
   if (!http_app_response_ok(con, req, now, http_ret_code, http_ret_line))
     HTTPD_ERR_RET(req, 412, FALSE);
 
@@ -1867,9 +1919,8 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
     serv_call_seek(con, req, range_beg, f_len, http_ret_code, http_ret_line);
   }
 
-  vstr_add_fmt(out, out->len, "%s %03d %s" HTTP_EOL, "HTTP/1.1",
-               *http_ret_code, *http_ret_line);
-  http_app_def_hdrs(con, req, now, req->f_stat->st_mtime, NULL, con->f_len);
+  http_app_def_hdrs(con, req, *http_ret_code, *http_ret_line,
+                    now, req->f_stat->st_mtime, NULL, con->f_len);
   if (h_r->pos)
     http_app_header_fmt(out, "Content-Range",
                         "%s %ju-%ju/%ju", "bytes", range_beg, range_end,
@@ -2151,10 +2202,8 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   
   if (!req->ver_0_9)
   {
-    vstr_add_fmt(out, out->len, "%s %03u %s" HTTP_EOL,
-                 "HTTP/1.1", req->error_code, req->error_line);
-    http_app_def_hdrs(con, req, time(NULL), server_beg,
-                      "text/html", req->error_len);
+    http_app_def_hdrs(con, req, req->error_code, req->error_line,
+                      time(NULL), server_beg, "text/html", req->error_len);
     if (req->error_code == 416)
       http_app_header_fmt(out, "Content-Range", "%s */%ju", "bytes",
                           (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
@@ -2377,7 +2426,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
     serv_call_mmap(con, req, 0, con->f_len);
     http_ret_line = "OK - HTTP/0.9";
   }
-  else if (!serv_http_req_1_x(con, req, &http_ret_code, &http_ret_line))
+  else if (!http_req_1_x(con, req, &http_ret_code, &http_ret_line))
     return (http_fin_err_close_req(con, req));
   
   if (out->conf->malloc_bad)
@@ -2480,7 +2529,7 @@ static int http_parse_req(struct Con *con)
     if (!req->ver_0_9 && !http_req_parse_1_x(con, req))
       return (http_fin_err_req(con, req));
       
-    if (!serv_http_absolute_uri(con, req))
+    if (!http_absolute_uri(con, req))
       HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
 
     if (0) { }
@@ -2507,8 +2556,7 @@ static int http_parse_req(struct Con *con)
       time_t now = time(NULL);
       VSTR_AUTOCONF_uintmax_t tmp = 0;
       
-      vstr_add_fmt(out, out->len, "%s %03d %s" HTTP_EOL, "HTTP/1.1", 200, "OK");
-      http_app_def_hdrs(con, req, now, now, "message/http", req->len);
+      http_app_def_hdrs(con, req, 200, "OK", now,now, "message/http", req->len);
       http_app_end_hdrs(out);
       vstr_add_vstr(out, out->len, data, 1, req->len, VSTR_TYPE_ADD_DEF);
       if (out->conf->malloc_bad)
@@ -2724,10 +2772,7 @@ static void serv_cb_func_free(struct Evnt *evnt)
 
   serv_fd_close(con);
 
-  vlg_info(vlg, "FREE from[$<sa:%p>]"
-           " recv[${BKMG.ju:%ju}:%ju] send[${BKMG.ju:%ju}:%ju]\n", con->ev->sa,
-           con->ev->acct.bytes_r, con->ev->acct.bytes_r,
-           con->ev->acct.bytes_w, con->ev->acct.bytes_w);
+  evnt_vlg_stats_info(evnt, "FREE");
 
   if (acpt_evnt)
     evnt_stats_add(acpt_evnt, con->ev);
@@ -2737,7 +2782,7 @@ static void serv_cb_func_free(struct Evnt *evnt)
 
 static void serv_cb_func_acpt_free(struct Evnt *evnt)
 {
-  vlg_info(vlg, "ACCEPT FREE from[$<sa:%p>]\n", evnt->sa);
+  evnt_vlg_stats_info(evnt, "ACCEPT FREE");
 
   ASSERT(acpt_evnt == evnt);
 
@@ -2897,7 +2942,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {"virtual-hosts", optional_argument, NULL, 27},
    {"range", optional_argument, NULL, 26},
    {"range-1.0", optional_argument, NULL, 25},
-   {"public-only", optional_argument, NULL, 24},
+   {"public-only", optional_argument, NULL, 24}, /* FIXME: rm ? */
    {"dir-filename", required_argument, NULL, 23},
    {"server-name", required_argument, NULL, 22},
    {"gzip-content-replacement", optional_argument, NULL, 21},

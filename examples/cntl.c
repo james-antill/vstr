@@ -83,10 +83,10 @@ static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
 
     cntl__ns_out_fmt(out, "EVNT %s", tag);
     cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
-    cntl__ns_out_fmt(out, "req_put[%'u:%u]",
-                     ev->acct.req_put, ev->acct.req_put);
     cntl__ns_out_fmt(out, "req_got[%'u:%u]",
                      ev->acct.req_got, ev->acct.req_got);
+    cntl__ns_out_fmt(out, "req_put[%'u:%u]",
+                     ev->acct.req_put, ev->acct.req_put);
     cntl__ns_out_fmt(out, "recv[${BKMG.ju:%ju}:%ju]",
                      ev->acct.bytes_r, ev->acct.bytes_r);
     cntl__ns_out_fmt(out, "send[${BKMG.ju:%ju}:%ju]",
@@ -134,9 +134,7 @@ static void cntl__status(Vstr_base *out)
 
 static void cntl__cb_func_free(struct Evnt *evnt)
 {
-  vlg_info(vlg, "CNTL FREE from[$<sa:%p>]"
-           " recv[${BKMG.ju:%ju}] send[${BKMG.ju:%ju}]\n", evnt->sa,
-           evnt->acct.bytes_r, evnt->acct.bytes_w);
+  evnt_vlg_stats_info(evnt, "CNTL FREE");
 
   free(evnt);
 }

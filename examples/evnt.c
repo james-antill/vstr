@@ -1332,6 +1332,17 @@ void evnt_fd_set_cork(struct Evnt *evnt, int val)
   evnt->flag_io_cork = !!val;
 }
 
+void evnt_vlg_stats_info(struct Evnt *evnt, const char *prefix)
+{
+  vlg_info(vlg, "%s from[$<sa:%p>] req_got[%'u:%u] req_put[%'u:%u]"
+           " recv[${BKMG.ju:%ju}:%ju] send[${BKMG.ju:%ju}:%ju]\n",
+           prefix, evnt->sa,
+           evnt->acct.req_got, evnt->acct.req_got,
+           evnt->acct.req_put, evnt->acct.req_put,
+           evnt->acct.bytes_r, evnt->acct.bytes_r,
+           evnt->acct.bytes_w, evnt->acct.bytes_w);
+}
+
 #ifdef TCP_DEFER_ACCEPT
 # define USE_TCP_DEFER_ACCEPT 1
 #else

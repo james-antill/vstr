@@ -61,7 +61,7 @@
 #define CONF_MSG_RET_405 \
     CONF_MSG__MAKE("405", "Method Not Allowed", "The method specified is not allowed")
 
-#define CONF_LINE_RET_406 ""
+#define CONF_LINE_RET_406 "Not Acceptable"
 #define CONF_MSG_RET_406 \
     CONF_MSG__MAKE("406", "Not Acceptable", "The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request")
 

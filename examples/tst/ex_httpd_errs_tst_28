@@ -1,46 +1,46 @@
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: blah
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip X
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip , foo 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; foo 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q foo 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = foo 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = 0 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = 0 , foo
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = 0 foo 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = 0 . x 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip ; q = 0 . 6666 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: * ; q = 1 . 010 
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: ,,* ; q = 0 . 001 ,,
 
-GET http://default/ HTTP/1.1
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: ,,blah;q=1,,
 Connection: close
 
