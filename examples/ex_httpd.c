@@ -93,7 +93,7 @@ struct sock_fprog
 #define CONF_SERV_DEF_MIME_TYPE "application/octet-stream"
 #define CONF_SERV_MIME_TYPE_MAIN "/etc/mime.types"
 #define CONF_SERV_MIME_TYPE_XTRA NULL
-#define CONF_SERV_USE_ERR_415 TRUE
+#define CONF_SERV_USE_ERR_406 TRUE
 
 #include "ex_httpd_err_codes.h"
 
@@ -262,7 +262,7 @@ static struct
  unsigned int use_default_mime_type : 1;
  unsigned int num_procs : 8; /* 1 => 255 (10th-18th bitfields) */
  unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (18th-30th bitfields) */
- unsigned int use_err_415 : 1; /* 31st bitfield */
+ unsigned int use_err_406 : 1; /* 31st bitfield */
 
  const char * dir_filename;
  const char * mime_types_default_type;
@@ -279,7 +279,7 @@ static struct
               CONF_SERV_USE_DEFAULT_MIME_TYPE,
               CONF_SERV_DEF_PROCS,
               CONF_SERV_DEF_TCP_DEFER_ACCEPT,
-              CONF_SERV_USE_ERR_415,
+              CONF_SERV_USE_ERR_406,
               CONF_SERV_DEF_DIR_FILENAME,
               CONF_SERV_DEF_MIME_TYPE,
               CONF_SERV_MIME_TYPE_MAIN,
@@ -324,7 +324,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --mime-types-main - Main mime types filename (default: /etc/mime.types).\n\
     --mime-types-xtra - Additional mime types filename.\n\
     --processes       - Number of processes to use (default: 1).\n\
-    --send-err-415    - Toggle sending 415 responses%s.\n\
+    --send-err-406    - Toggle sending 406 responses%s.\n\
     --defer-accept    - Time to defer dataless connections (default: 16s).\n\
     --default-hostname\n\
                       - hostname used when none supplied (default is hostname).\n\
@@ -350,7 +350,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(CONF_SERV_USE_PUBLIC_ONLY),
                opt_def_toggle(CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT),
                opt_def_toggle(CONF_SERV_USE_DEFAULT_MIME_TYPE),
-               opt_def_toggle(CONF_SERV_USE_ERR_415),
+               opt_def_toggle(CONF_SERV_USE_ERR_406),
                opt_def_toggle(evnt_opt_nagle));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
@@ -1716,7 +1716,7 @@ static int http_parse_accept(struct Con *con, struct Http_req_data *req)
   pos = con->http_hdrs->hdr_accept->pos;
   len = con->http_hdrs->hdr_accept->len;
   
-  if (!serv->use_err_415 || !len)
+  if (!serv->use_err_406 || !len)
     return (TRUE);
 
   if (!(ct_sub_len = vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '/')) ||
@@ -2307,7 +2307,7 @@ static int http__req_content_type(struct Con *con, struct Http_req_data *req)
   req->content_type_len = len;
 
   if (!http_parse_accept(con, req))
-    HTTPD_ERR_RET(req, 415, FALSE);
+    HTTPD_ERR_RET(req, 406, FALSE);
   
   return (TRUE);
 }
@@ -2902,7 +2902,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {"server-name", required_argument, NULL, 22},
    {"gzip-content-replacement", optional_argument, NULL, 21},
    {"send-default-mime-type", optional_argument, NULL, 20},
-   {"send-err-415", optional_argument, NULL, 19},
+   {"send-err-406", optional_argument, NULL, 19},
    {"default-mime-type", required_argument, NULL, 18},
    {"mime-types-main", required_argument, NULL, 17},
    {"mime-types-extra", required_argument, NULL, 16},
@@ -2980,7 +2980,7 @@ static void cl_cmd_line(int argc, char *argv[])
       case 22: serv->server_name  = optarg;                        break;
       case 21: OPT_TOGGLE_ARG(serv->use_gzip_content_replacement); break;
       case 20: OPT_TOGGLE_ARG(serv->use_default_mime_type);        break;
-      case 19: OPT_TOGGLE_ARG(serv->use_err_415);                  break;
+      case 19: OPT_TOGGLE_ARG(serv->use_err_406);                  break;
       case 18: serv->mime_types_default_type = optarg;             break;
       case 17: serv->mime_types_main = optarg;                     break;
       case 16: serv->mime_types_xtra = optarg;                     break;

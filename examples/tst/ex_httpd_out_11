@@ -83,42 +83,42 @@ Content-Length: 165
     <h1>Foo default</h1>
   </body>
 </html>
-HTTP/1.1 415 Unsupported Media Type
+HTTP/1.1 406 
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 453
+Content-Length: 501
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>415 Unsupported Media Type</title>
+    <title>406 Not Acceptable</title>
   </head>
   <body>
-    <h1>415 Unsupported Media Type</h1>
-    <p>The server is refusing to service the request because the result of the request is in a format not supported, by the request.</p>
+    <h1>406 Not Acceptable</h1>
+    <p>The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.</p>
   <hr>
   Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
-HTTP/1.1 415 Unsupported Media Type
+HTTP/1.1 406 
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 453
+Content-Length: 501
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>415 Unsupported Media Type</title>
+    <title>406 Not Acceptable</title>
   </head>
   <body>
-    <h1>415 Unsupported Media Type</h1>
-    <p>The server is refusing to service the request because the result of the request is in a format not supported, by the request.</p>
+    <h1>406 Not Acceptable</h1>
+    <p>The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.</p>
   <hr>
   Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>

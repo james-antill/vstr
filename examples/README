@@ -39,6 +39,7 @@ http://www.sans.org/top20/#u2
 	Multi procs "cntl list" command pass through
 	max timeout for keep-alive
 	max requests for keep-alive?
+	getopt conf. for gzip-r, syslog2apache and make_index
 	conf
 	 Support accept/accept-language per file [w3/chips]
            GALEON
