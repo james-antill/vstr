@@ -164,9 +164,10 @@ static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
   return (added);
 }
 
-unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
-                            const void *buf, size_t buf_len, Vstr_sects *sects,
-                            unsigned int limit, unsigned int flags)
+unsigned int vstr_nx_split_buf(const Vstr_base *base, size_t pos, size_t len,
+                               const void *buf, size_t buf_len,
+                               Vstr_sects *sects,
+                               unsigned int limit, unsigned int flags)
 {
   size_t orig_pos = pos;
   size_t split_pos = 0;
@@ -249,10 +250,10 @@ unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
   return (added);
 }
 
-unsigned int vstr_split_chrs(const Vstr_base *base, size_t pos, size_t len,
-                             const char *chrs, size_t chrs_len,
-                             Vstr_sects *sects,
-                             unsigned int limit, unsigned int flags)
+unsigned int vstr_nx_split_chrs(const Vstr_base *base, size_t pos, size_t len,
+                                const char *chrs, size_t chrs_len,
+                                Vstr_sects *sects,
+                                unsigned int limit, unsigned int flags)
 {
   size_t orig_pos = pos;
   size_t split_pos = 0;

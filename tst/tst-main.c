@@ -33,15 +33,20 @@ static void die(void)
   abort();
 }
 
-#define PRNT_BUF()  fprintf(stderr, "buf  = %s\n", buf);
-#define PRNT_VSTR(s) fprintf(stderr, "vstr(%s):%zu = %s\n", #s , (s)->len, \
+#define PRNT_CSTR(s) fprintf(stderr, "cstr(%s):%zu%*s = %s\n", #s , strlen(s), \
+                             ((4 - strlen(#s)) > 0) ? (4 - strlen(#s)) : 0,"",s)
+#define PRNT_VSTR(s) fprintf(stderr, "vstr(%s):%zu%*s = %s\n", #s , (s)->len, \
+                             ((4 - strlen(#s)) > 0) ? (4 - strlen(#s)) : 0,"", \
                              vstr_export_cstr_ptr((s), 1, (s)->len))
+#define EXIT_FAILED_OK 77
 
 int main(void)
 {
   int ret = 0;
   Vstr_conf *conf1 = NULL;
   Vstr_conf *conf2 = NULL;
+
+  buf[0] = 0; /* make sure the compiler thinks buf is used ... */
   
   if (!vstr_init())
     die();
@@ -53,7 +58,7 @@ int main(void)
     die();
   if (!(conf2 = vstr_make_conf()))
     die();
-
+  
   if (!vstr_cntl_conf(conf1,
                       VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC, "en_US"))
     die();
@@ -75,6 +80,7 @@ int main(void)
 
   vstr_free_base(s1);
   vstr_free_base(s2);
+  vstr_free_base(s3);
   
   vstr_exit();
   

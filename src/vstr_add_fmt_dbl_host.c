@@ -17,7 +17,7 @@
  * 
  *  email: james@and.org
 */
-/* This code does the %F, %f, %G, %g, %A, %a, %E, %e from *printf by passing
+/* This code does the %E, %e, %F, %f, %G, %g, %A, %a from *printf by passing
  * it on to the host */
 /* Note that this file is #include'd */
 
@@ -51,7 +51,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   if (spec->field_width_usr)
     fmt_buffer[tmp++] = '*';
   
-  if (spec->flags & IS_USR_PREC)
+  if (spec->flags & PREC_USR)
   {
     fmt_buffer[tmp++] = '.';
     fmt_buffer[tmp++] = '*';
@@ -69,13 +69,13 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   
   if (spec->int_type == LONG_DOUBLE_TYPE)
   {
-    if (spec->field_width_usr && (spec->flags & IS_USR_PREC))
+    if (spec->field_width_usr && (spec->flags & PREC_USR))
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->field_width, spec->precision, spec->u.data_Ld);
     else if (spec->field_width_usr)
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->field_width, spec->u.data_Ld);
-    else if (spec->flags & IS_USR_PREC)
+    else if (spec->flags & PREC_USR)
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->precision, spec->u.data_Ld);
     else
@@ -84,13 +84,13 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   }
   else
   {
-    if (spec->field_width_usr && (spec->flags & IS_USR_PREC))
+    if (spec->field_width_usr && (spec->flags & PREC_USR))
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->field_width, spec->precision, spec->u.data_d);
     else if (spec->field_width_usr)
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->field_width, spec->u.data_d);
-    else if (spec->flags & IS_USR_PREC)
+    else if (spec->flags & PREC_USR)
       ret = asprintf(&float_buffer, fmt_buffer,
                      spec->precision, spec->u.data_d);
     else

@@ -22,10 +22,12 @@
 #include "main.h"
 
 
-size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
-                                 struct iovec **iovs, unsigned int *ret_num)
-{ 
- if (!base->num || !iovs || !ret_num)
+size_t vstr_nx_export_iovec_ptr_all(const Vstr_base *base,
+                                    struct iovec **iovs, unsigned int *ret_num)
+{
+  assert(iovs && ret_num);
+  
+ if (!base->num)
    return (0);
 
  if (!vstr__cache_iovec_valid((Vstr_base *)base))
@@ -38,33 +40,43 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
  return (base->len);
 }
 
-size_t vstr_export_iovec_cpy_buf(const Vstr_base *base, size_t pos, size_t len,
-                                 struct iovec *iovs, unsigned int num_max,
-                                 unsigned int *real_ret_num)
+size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
+                                    size_t pos, size_t len,
+                                    struct iovec *iovs, unsigned int num_max,
+                                    unsigned int *real_ret_num)
 {
   Vstr_node *scan = NULL;
-  unsigned int num = 0;
+  unsigned int scan_num = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
   size_t ret_len = 0;
+  unsigned int dummy_ret_num = 0;
   unsigned int ret_num = 0;
   size_t used = 0;
 
-  assert(num_max && real_ret_num);
+  assert(iovs && num_max);
 
   if (!num_max)
     return (0);
+
+  if (!real_ret_num)
+    real_ret_num = &dummy_ret_num;
   
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &scan_num,
+                                 &scan_str, &scan_len);
   if (!scan)
     return (0);
   
   do
   {
     size_t tmp = scan_len;
+
+    assert(tmp);
+    assert(iovs[ret_num].iov_len);
+    assert(iovs[ret_num].iov_len > used);
     
-    if (tmp > (iovs[num].iov_len - used))
-      tmp = (iovs[num].iov_len - used);
+    if (tmp > (iovs[ret_num].iov_len - used))
+      tmp = (iovs[ret_num].iov_len - used);
     
     if (scan->type != VSTR_TYPE_NODE_NON)
       memcpy(((char *)iovs[ret_num].iov_base) + used, scan_str, tmp);
@@ -72,7 +84,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base, size_t pos, size_t len,
     used += tmp;
     scan_str += tmp;
     scan_len -= tmp;
-    ret_len += scan_len;
+    ret_len += tmp;
 
     if (iovs[ret_num].iov_len == used)
     {
@@ -83,7 +95,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base, size_t pos, size_t len,
     }
     
     if (!scan_len)
-      scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+      scan = vstr__base_scan_fwd_nxt(base, &len, &scan_num,
                                      scan, &scan_str, &scan_len);
   } while (scan);
 
@@ -98,9 +110,10 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base, size_t pos, size_t len,
   return (ret_len);
 }
 
-size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
-                                 struct iovec *iovs, unsigned int num_max,
-                                 unsigned int *real_ret_num)
+size_t vstr_nx_export_iovec_cpy_ptr(const Vstr_base *base,
+                                    size_t pos, size_t len,
+                                    struct iovec *iovs, unsigned int num_max,
+                                    unsigned int *real_ret_num)
 {
   size_t orig_len = len;
   Vstr_node *scan = NULL;
@@ -108,12 +121,16 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
   char *scan_str = NULL;
   size_t scan_len = 0;
   size_t ret_len = 0;
+  unsigned int dummy_ret_num = 0;
   unsigned int ret_num = 0;
 
-  assert(num_max && real_ret_num);
+  assert(iovs && num_max && real_ret_num);
 
   if (!num_max)
     return (0);
+  
+  if (!real_ret_num)
+    real_ret_num = &dummy_ret_num;
   
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
   if (!scan)
@@ -135,13 +152,20 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
   return (ret_len);
 }
 
-size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len, void *buf)
+size_t vstr_nx_export_buf(const Vstr_base *base, size_t pos, size_t len,
+                          void *buf, size_t buf_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
  size_t ret = 0;
  char *scan_str = NULL;
  size_t scan_len = 0;
+
+ if (!buf_len)
+   return (0);
+ 
+ if (len > buf_len)
+   len = buf_len;
 
  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
  if (!scan)
@@ -161,12 +185,12 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len, void *buf)
  return (ret);
 }
 
-char vstr_export_chr(const Vstr_base *base, size_t pos)
+char vstr_nx_export_chr(const Vstr_base *base, size_t pos)
 {
  char buf[1] = {0};
 
  /* errors, requests for data from NON nodes and real data are all == 0 */
- vstr_nx_export_buf(base, pos, 1, buf);
+ vstr_nx_export_buf(base, pos, 1, buf, 1);
  
  return (buf[0]);
 }
@@ -175,6 +199,9 @@ static Vstr__buf_ref *vstr__export_buf_ref(const Vstr_base *base,
                                            size_t pos, size_t len)
 {
   struct Vstr__buf_ref *ref = NULL;
+
+  if (!len)
+    return (NULL);
   
   if (!(ref = malloc(sizeof(Vstr__buf_ref) + len)))
   {
@@ -186,14 +213,13 @@ static Vstr__buf_ref *vstr__export_buf_ref(const Vstr_base *base,
   ref->ref.ptr = ref->buf;
   ref->ref.ref = 1;
   
-  if (len)
-    vstr_nx_export_buf(base, pos, len, ref->buf);
+  vstr_nx_export_buf(base, pos, len, ref->buf, len);
   
   return (ref);
 }
 
-Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
-                          size_t *ret_off)
+Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
+                             size_t *ret_off)
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;

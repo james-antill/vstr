@@ -1,3 +1,45 @@
+Section: Compile switch constants
+
+Constant: VSTR_COMPILE_ATTRIBUTES
+
+ Explanation:
+
+  This switch controls whether gcc type __attribute__() statments are used in
+ the public headers headers for the library. If the value is 1 then if they are
+ supported by the compiler that built the library they will be used, if the
+ value is 0 they won't be used at all.
+
+
+Constant: VSTR_COMPILE_INCLUDE
+
+ Explanation:
+
+  This switch controls whether including <vstr.h> will include all the system
+ headers needed for the exported interfaces. If the value is 1 then if they are
+ included, if the value is 0 they won't be included.
+
+
+Constant: VSTR_COMPILE_INLINE
+
+ Explanation:
+
+  This switch controls whether inline functions will be used in the public
+ headers for the library. If the value is 1 then if they are supported by the
+ compiler that built the library they will be used, if the value is 0 they
+ won't be used at all.
+
+
+Constant: VSTR_COMPILE_TYPEDEF
+
+ Explanation:
+
+  This switch controls whether typedef will be used for the structs in the
+ public headers for the library. If the value is 1 then they will be used,
+ if the value is 0 they won't be used at all (and your code will have to use
+ struct tags instead -- note all libraries using vstr should compile with
+ this option set).
+
+
 Section: Global constants
 
 Constant: VSTR_MAX_NODE_ALL

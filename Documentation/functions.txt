@@ -84,7 +84,7 @@ Function: vstr_export_cstr_ptr()
  free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
  instead.
   Any _NON data in the Vstr will be uninitialised data in the "C string".
-  If there is any 0 bytes in the Vstr these will make the string look shorter
+  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
 
@@ -120,7 +120,7 @@ Function: vstr_export_cstr_buf()
   Data from nodes of type NON are exported by not doing anything to the
  underlying data array (Ie. It'll have whatever data was in there to
  start with).
-  If there is any 0 bytes in the Vstr these will make the "C string" look
+  If there are any 0 bytes in the Vstr they will make the "C string" look
  shorter than it really is to normal C/POSIX string functions.
 
 
@@ -155,7 +155,7 @@ Function: vstr_export_cstr_ref()
  Note:
 
   Any _NON data in the Vstr will be uninitialised data in the "C string".
-  If there is any 0 bytes in the Vstr these will make the string look shorter
+  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
 
@@ -208,12 +208,12 @@ Function: vstr_export_iovec_cpy_buf()
  Parameter[4]: Pointer to array of initialized iovec structures
  Type[4]: struct iovec *
 
- Parameter[5]: Length of iovec structures (Parameter[4])
+ Parameter[5]: Number of iovec structures (Parameter[4])
  Type[5]: unsigned int
 
  Parameter[6]: Returns the number of iovec structures used in the array
  Type[6]: unsigned int *
-           
+
  Explanation:
 
   This function is used to export a copy of the data in the Vstr string to an
@@ -248,7 +248,7 @@ Function: vstr_export_iovec_cpy_ptr()
  Parameter[4]: Pointer to array of iovec structures
  Type[4]: struct iovec *
 
- Parameter[5]: Length of iovec structures (Parameter[4])
+ Parameter[5]: Number of iovec structures (Parameter[4])
  Type[5]: unsigned int
 
  Parameter[6]: Returns the number of iovec structures used in the array
@@ -269,6 +269,7 @@ Function: vstr_export_iovec_cpy_ptr()
  this you should use either the vstr_sub_* functions instead or
  vstr_export_iovec_cpy_buf() (the later does a copy).
 
+
 Function: vstr_export_buf()
  Returns: Size of bytes exported from the Vstr string
  Type: size_t
@@ -285,11 +286,16 @@ Function: vstr_export_buf()
  Parameter[4]: Data array to export to
  Type[4]: void *
 
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
  Explanation:
 
   This function is used to export a copy of the data in the Vstr string to a
  data array.
-  Think of this function as doing a read() from a Vstr string.
+  Think of this function as doing a read() from a Vstr string. However the
+ data will be limited to the minimum of the length of the vstr (Parameter[3])
+ and the length of thedata (Parameter[5]).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
@@ -1034,7 +1040,7 @@ Function: vstr_add_netstr2_beg()
 
  Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
-           
+
  Explanation:
 
   This function creates the start of a netstring2 which is like a netstring

@@ -32,7 +32,7 @@
 size_t vstr__netstr2_ULONG_MAX_len = 0; /* FIXME: should be a constant */
 #endif
 
-size_t vstr_add_netstr2_beg(Vstr_base *base, size_t pos)
+size_t vstr_nx_add_netstr2_beg(Vstr_base *base, size_t pos)
 {
  size_t tmp = 0;
  size_t ret = 0;
@@ -94,8 +94,8 @@ static int vstr__netstr_end_start(Vstr_base *base,
  return (TRUE);
 }
 
-int vstr_add_netstr2_end(Vstr_base *base,
-                         size_t netstr_beg_pos, size_t netstr_end_pos)
+int vstr_nx_add_netstr2_end(Vstr_base *base,
+                            size_t netstr_beg_pos, size_t netstr_end_pos)
 {
   size_t count = 0;
   char buf[BUF_NUM_TYPE_SZ(unsigned long)];
@@ -129,13 +129,13 @@ int vstr_add_netstr2_end(Vstr_base *base,
 }
 
 /* NOTE: might want to use vstr_add_pos_buf()/_ref() eventually */
-size_t vstr_add_netstr_beg(Vstr_base *base, size_t pos)
+size_t vstr_nx_add_netstr_beg(Vstr_base *base, size_t pos)
 {
   return (vstr_nx_add_netstr2_beg(base, pos));
 }
 
-int vstr_add_netstr_end(Vstr_base *base,
-                        size_t netstr_beg_pos, size_t netstr_end_pos)
+int vstr_nx_add_netstr_end(Vstr_base *base,
+                           size_t netstr_beg_pos, size_t netstr_end_pos)
 {
   size_t count = 0;
   char buf[BUF_NUM_TYPE_SZ(unsigned long)];

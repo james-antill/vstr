@@ -62,7 +62,7 @@
   len = passed_len; \
 } while (FALSE)
 
-int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
+int vstr_nx_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
 {
   size_t len = passed_len;
   Vstr_node *scan = NULL;
@@ -104,7 +104,7 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
   return (FALSE);
 }
 
-int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
+int vstr_nx_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
 {
   size_t len = passed_len;
   Vstr_node *scan = NULL;
@@ -163,8 +163,8 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
  (VSTR__UC(x) >  0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
  (unsigned int)((VSTR__UC(x) >= 0x20) && (VSTR__UC(x) <= 0x7E)))
 
-int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
-                              unsigned int flags, char swp)
+int vstr_nx_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
+                                 unsigned int flags, char swp)
 {
   size_t len = passed_len;
   Vstr_node *scan = NULL;
@@ -205,8 +205,8 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
   return (FALSE);
 }
 
-int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
-                              unsigned int flags)
+int vstr_nx_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
+                                 unsigned int flags)
 {
   size_t len = passed_len;
   Vstr_node *scan = NULL;
@@ -329,7 +329,7 @@ int vstr_conv_decode_qp(Vstr_base *base, size_t pos, size_t passed_len)
 }
 #endif
 
-int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
+int vstr_nx_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 {
   Vstr_sects *sects = vstr_nx_sects_make(8);
   size_t count = 0;
@@ -402,12 +402,15 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   while (sects->num--)
   {
     unsigned int bad = 0;
-    char sub[4];
-
+    char sub[3];
+    const char *digits = "0123456789abcdef";
+    
     assert(sects->ptr[sects->num].len == 1);
 
     bad = vstr_nx_export_chr(base, sects->ptr[sects->num].pos);
-    sprintf(sub, "%%%02x", bad);
+    sub[0] = '%';
+    sub[1] = digits[((bad >> 4) & 0x0F)];
+    sub[2] = digits[(bad & 0x0F)];
 
     vstr_nx_sub_buf(base, sects->ptr[sects->num].pos, 1, sub, 3);
   }
@@ -417,7 +420,7 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
   return (TRUE);
 }
 
-int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
+int vstr_nx_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
 {
   Vstr_sects *sects = vstr_nx_sects_make(8);
   size_t srch_pos = 0;

@@ -22,11 +22,11 @@
  * including callbacks */
 #include "main.h"
 
-void vstr_ref_cb_free_nothing(Vstr_ref *ref __attribute__ ((unused)))
+void vstr_nx_ref_cb_free_nothing(Vstr_ref *ref __attribute__ ((unused)))
 {
 }
 
-void vstr_ref_cb_free_ref(Vstr_ref *ref)
+void vstr_nx_ref_cb_free_ref(Vstr_ref *ref)
 {
  free(ref);
 }
@@ -35,16 +35,16 @@ void vstr_ref_cb_free_ref(Vstr_ref *ref)
 void vstr__ref_cb_free_buf_ref(Vstr_ref *ref)
 {
   assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
-  vstr_ref_cb_free_ref(ref);
+  vstr_nx_ref_cb_free_ref(ref);
 }
 #endif
 
-void vstr_ref_cb_free_ptr(Vstr_ref *ref)
+void vstr_nx_ref_cb_free_ptr(Vstr_ref *ref)
 {
  free(ref->ptr);
 }
 
-void vstr_ref_cb_free_ptr_ref(Vstr_ref *ref)
+void vstr_nx_ref_cb_free_ptr_ref(Vstr_ref *ref)
 {
  vstr_nx_ref_cb_free_ptr(ref);
  free(ref);
@@ -63,32 +63,34 @@ void vstr__ref_cb_free_bufnode_ref(Vstr_ref *ref)
  free(ref);
 }
 
-void vstr_ref_del(Vstr_ref *tmp)
-{
-  if (!tmp)
-    return; /* std. free semantics */
-  
-  assert(tmp->ref);
-  
-  if (!--tmp->ref)
-    (*tmp->func)(tmp);
-}
 
-Vstr_ref *vstr_ref_add(Vstr_ref *tmp)
+Vstr_ref *vstr_nx_ref_make_ptr(void *ptr, void (*func)(struct Vstr_ref *))
 {
- if (!tmp)
- {
-  Vstr_ref do_ref_init = VSTR_REF_INIT();
+  Vstr_ref *ref = calloc(1, sizeof(Vstr_ref));
   
-  tmp = malloc(sizeof(Vstr_ref));
-  if (!tmp)
+  if (!ref)
     return (NULL);
 
-  *tmp = do_ref_init;
- }
+  /* ref->ref = 0; */
+  ref->ptr = ptr;
+  ref->func = func;
 
- ++tmp->ref;
-
- return (tmp);
+  return (ref);
 }
 
+Vstr_ref *vstr_nx_ref_make_malloc(size_t len)
+{
+  char *buf = malloc(len);
+  Vstr_ref *ref = NULL;
+  
+  if (!buf)
+    return (NULL);
+
+  if (!(ref = vstr_nx_ref_make_ptr(buf, vstr_nx_ref_cb_free_ptr_ref)))
+  {
+    free(buf);
+    return (NULL);
+  }
+  
+  return (ref);
+}

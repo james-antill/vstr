@@ -13,7 +13,3 @@ TESTS = $(tst)
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
 
-tst_usr_SOURCES = tst_usr.c
-
-
-

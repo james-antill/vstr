@@ -178,7 +178,7 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
   return (FALSE);
 }
 
-Vstr_conf *vstr_make_conf(void)
+Vstr_conf *vstr_nx_make_conf(void)
 {
   Vstr_conf *conf = malloc(sizeof(Vstr_conf));
   
@@ -287,7 +287,7 @@ void vstr__del_conf(Vstr_conf *conf)
  }
 }
 
-void vstr_free_conf(Vstr_conf *conf)
+void vstr_nx_free_conf(Vstr_conf *conf)
 {
   if (!conf)
     return;
@@ -301,22 +301,22 @@ void vstr_free_conf(Vstr_conf *conf)
   vstr__del_conf(conf);
 }
 
-int vstr_init(void)
+int vstr_nx_init(void)
 {
-  if (!vstr__options.def && !(vstr__options.def = vstr_make_conf()))
+  if (!vstr__options.def && !(vstr__options.def = vstr_nx_make_conf()))
     return (FALSE);
   
   return (TRUE);
 }
 
-void vstr_exit(void)
+void vstr_nx_exit(void)
 { /* have count of mmaped files and do check */
   vstr__add_fmt_cleanup_spec();
 
   assert((vstr__options.def->no_node_ref == 1) &&
          (vstr__options.def->ref == 1));
   
-  vstr_free_conf(vstr__options.def);
+  vstr_nx_free_conf(vstr__options.def);
   vstr__options.def = NULL;
 }
 
@@ -464,12 +464,13 @@ static int vstr__cache_cstr_check(Vstr_base *base)
 {
   Vstr__cache_data_cstr *data = NULL;
   
-  if (!(data = vstr_cache_get_data(base, base->conf->cache_pos_cb_cstr)))
+  if (!(data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_cstr)))
     return (TRUE);
   if (!data->ref)
     return (TRUE);
 
-  return (!vstr_cmp_buf(base, data->pos, data->len, data->ref->ptr, data->len));
+  return (VSTR_CMP_BUF_EQ(base, data->pos, data->len,
+                          data->ref->ptr,  data->len));
 }
 #endif
 
@@ -512,12 +513,12 @@ static int vstr__init_base(Vstr_conf *conf, Vstr_base *base)
  return (TRUE);
 }
 
-void vstr_free_base(Vstr_base *base)
+void vstr_nx_free_base(Vstr_base *base)
 {
  if (!base)
    return;
 
- vstr_del(base, 1, base->len);
+ vstr_nx_del(base, 1, base->len);
 
  vstr__free_cache(base);
  
@@ -527,7 +528,7 @@ void vstr_free_base(Vstr_base *base)
    free(base);
 }
 
-Vstr_base *vstr_make_base(Vstr_conf *conf)
+Vstr_base *vstr_nx_make_base(Vstr_conf *conf)
 {
  Vstr_base *base = NULL;
 
@@ -562,7 +563,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
  {
   case VSTR_TYPE_NODE_BUF:
     if ((base->conf->spare_buf_num < 1) &&
-        (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, 1) != 1))
+        (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, 1) != 1))
       return (NULL);
     
     --base->conf->spare_buf_num;
@@ -575,7 +576,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
     
   case VSTR_TYPE_NODE_NON:
     if ((base->conf->spare_non_num < 1) &&
-        (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_NON, 1) != 1))
+        (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_NON, 1) != 1))
       return (NULL);
     
     --base->conf->spare_non_num;
@@ -585,7 +586,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
     
   case VSTR_TYPE_NODE_PTR:
     if ((base->conf->spare_ptr_num < 1) &&
-        (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, 1) != 1))
+        (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_PTR, 1) != 1))
       return (NULL);
     
     --base->conf->spare_ptr_num;
@@ -600,7 +601,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
    Vstr_ref *ref = NULL;
    
    if ((base->conf->spare_ref_num < 1) &&
-       (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1))
+       (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1))
       return (NULL);
 
    --base->conf->spare_ref_num;
@@ -608,7 +609,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
    base->conf->spare_ref_beg = (Vstr_node_ref *)beg->next;
    
    ref = ((Vstr_node_ref *)node)->ref;
-   ((Vstr_node_ref *)beg)->ref = vstr_ref_add(ref);
+   ((Vstr_node_ref *)beg)->ref = vstr_nx_ref_add(ref);
    ((Vstr_node_ref *)beg)->off = ((Vstr_node_ref *)node)->off + pos;
   }
   break;
@@ -695,8 +696,8 @@ static int vstr__make_spare_node(Vstr_conf *conf, unsigned int type)
   return (TRUE);
 }
 
-unsigned int vstr_make_spare_nodes(Vstr_conf *conf, unsigned int type,
-                                   unsigned int num)
+unsigned int vstr_nx_make_spare_nodes(Vstr_conf *conf, unsigned int type,
+                                      unsigned int num)
 {
   unsigned int count = 0;
   
@@ -785,8 +786,8 @@ static int vstr__free_spare_node(Vstr_conf *conf, unsigned int type)
  return (TRUE);
 }
 
-unsigned int vstr_free_spare_nodes(Vstr_conf *conf, unsigned int type,
-                                   unsigned int num)
+unsigned int vstr_nx_free_spare_nodes(Vstr_conf *conf, unsigned int type,
+                                      unsigned int num)
 {
   unsigned int count = 0;
   
@@ -899,12 +900,12 @@ static int vstr__base_cache_pos(const Vstr_base *base,
   if (!base->cache_available)
     return (FALSE);
 
-  if (!(data = vstr_cache_get_data(base, base->conf->cache_pos_cb_pos)))
+  if (!(data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)))
   {
     if (!(data = malloc(sizeof(Vstr__cache_data_pos))))
       return (FALSE);
 
-    if (!vstr_cache_set_data(base, base->conf->cache_pos_cb_pos, data))
+    if (!vstr_nx_cache_set_data(base, base->conf->cache_pos_cb_pos, data))
     {
       free(data);
       return (FALSE);
@@ -959,7 +960,7 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
   return (base->end);
  }
 
- if ((data = vstr_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
+ if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
      data->node && (data->pos <= orig_pos))
  {
   scan = data->node;
@@ -1115,7 +1116,7 @@ int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   return (TRUE);
 }
 
-unsigned int vstr_num(const Vstr_base *base, size_t pos, size_t len)
+unsigned int vstr_nx_num(const Vstr_base *base, size_t pos, size_t len)
 {
   Vstr_node *scan = NULL;
   unsigned int ret = 0;

@@ -21,81 +21,81 @@
 /* These are just shortcut helper functions */
 #include "main.h"
 
-Vstr_base *vstr_dup_buf(struct Vstr_conf *conf, const void *data, size_t len)
+Vstr_base *vstr_nx_dup_buf(struct Vstr_conf *conf, const void *data, size_t len)
 {
- Vstr_base *ret = vstr_nx_make_base(conf);
-
- if (!ret)
-   goto make_base_fail;
-
- if (len && !vstr_nx_add_buf(ret, 0, data, len))
-   goto add_vstr_fail;
-
- return (ret);
-
+  Vstr_base *ret = vstr_nx_make_base(conf);
+  
+  if (!ret)
+    goto make_base_fail;
+  
+  if (len && !vstr_nx_add_buf(ret, 0, data, len))
+    goto add_vstr_fail;
+  
+  return (ret);
+  
  add_vstr_fail:
- vstr_nx_free_base(ret);
+  vstr_nx_free_base(ret);
  make_base_fail:
- 
- return (NULL);
+  
+  return (NULL);
 }
 
-Vstr_base *vstr_dup_ptr(struct Vstr_conf *conf, const void *data, size_t len)
+Vstr_base *vstr_nx_dup_ptr(struct Vstr_conf *conf, const void *data, size_t len)
 {
- Vstr_base *ret = vstr_nx_make_base(conf);
-
- if (!ret)
-   goto make_base_fail;
-
- if (len && !vstr_nx_add_ptr(ret, 0, data, len))
-   goto add_vstr_fail;
-
- return (ret);
-
+  Vstr_base *ret = vstr_nx_make_base(conf);
+  
+  if (!ret)
+    goto make_base_fail;
+  
+  if (len && !vstr_nx_add_ptr(ret, 0, data, len))
+    goto add_vstr_fail;
+  
+  return (ret);
+  
  add_vstr_fail:
- vstr_nx_free_base(ret);
+  vstr_nx_free_base(ret);
  make_base_fail:
- 
- return (NULL);
+  
+  return (NULL);
 }
 
-Vstr_base *vstr_dup_non(struct Vstr_conf *conf, size_t len)
+Vstr_base *vstr_nx_dup_non(struct Vstr_conf *conf, size_t len)
 {
- Vstr_base *ret = vstr_nx_make_base(conf);
-
- if (!ret)
-   goto make_base_fail;
-
- if (len && !vstr_nx_add_non(ret, 0, len))
-   goto add_vstr_fail;
-
- return (ret);
-
+  Vstr_base *ret = vstr_nx_make_base(conf);
+  
+  if (!ret)
+    goto make_base_fail;
+  
+  if (len && !vstr_nx_add_non(ret, 0, len))
+    goto add_vstr_fail;
+  
+  return (ret);
+  
  add_vstr_fail:
- vstr_nx_free_base(ret);
+  vstr_nx_free_base(ret);
  make_base_fail:
- 
- return (NULL);
+  
+  return (NULL);
 }
 
-Vstr_base *vstr_dup_vstr(struct Vstr_conf *conf,
-                         const Vstr_base *base, size_t pos, size_t len,
-                         unsigned int type)
+Vstr_base *vstr_nx_dup_vstr(struct Vstr_conf *conf,
+                            const Vstr_base *base, size_t pos, size_t len,
+                            unsigned int type)
 {
- Vstr_base *ret = vstr_nx_make_base(conf);
-
- if (!ret)
-   goto make_base_fail;
-
- if (len && !vstr_nx_add_vstr(ret, 0, base, pos, len, type))
-   goto add_vstr_fail;
-
- return (ret);
-
+  Vstr_base *ret = vstr_nx_make_base(conf);
+  
+  if (!ret)
+    goto make_base_fail;
+  
+  if (len && !vstr_nx_add_vstr(ret, 0, base, pos, len, type))
+    goto add_vstr_fail;
+  
+  return (ret);
+  
  add_vstr_fail:
- vstr_nx_free_base(ret);
+  vstr_nx_free_base(ret);
  make_base_fail:
- base->conf->malloc_bad = TRUE;
- 
- return (NULL);
+  base->conf->malloc_bad = TRUE;
+  
+  return (NULL);
 }

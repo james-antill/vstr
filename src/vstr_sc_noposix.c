@@ -21,34 +21,65 @@
 /* STUBS for - functions which are POSIX shortcuts */
 #include "main.h"
 
-int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
-                   unsigned int *err)
+int vstr_nx_sc_add_fd(Vstr_base *base, size_t pos, int fd,
+                      off_t off, size_t len,
+                      unsigned int *err)
 {
+  if (err)
+  {
+    errno = ENOSYS;
+    *err = VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO;
+  }
+  
   return (FALSE);
 }
 
-int vstr_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
-                     unsigned int *err)
+int vstr_nx_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
+                        unsigned int *err)
 {
+  if (err)
+  {
+    errno = ENOSYS;
+    *err = VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO;
+  }
+  
   return (FALSE);
 }
 
-int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
-                    unsigned int min, unsigned int max,
-                    unsigned int *err)
-{
-  return (FALSE);
-}
-
-int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
-                     unsigned int *err)
-{
-  return (FALSE);
-}
-
-int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
-                       const char *filename, int open_flags, int mode,
+int vstr_nx_sc_read_fd(Vstr_base *base, size_t pos, int fd,
+                       unsigned int min, unsigned int max,
                        unsigned int *err)
 {
+  if (err)
+  {
+    errno = ENOSYS;
+    *err = VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO;
+  }
+  
+  return (FALSE);
+}
+
+int vstr_nx_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
+                        unsigned int *err)
+{
+  if (err)
+  {
+    errno = ENOSYS;
+    *err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO;
+  }
+  
+  return (FALSE);
+}
+
+int vstr_nx_sc_write_file(Vstr_base *base, size_t pos, size_t len,
+                          const char *filename, int open_flags, int mode,
+                          unsigned int *err)
+{
+  if (err)
+  {
+    errno = ENOSYS;
+    *err = VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO;
+  }
+  
   return (FALSE);
 }

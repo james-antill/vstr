@@ -62,13 +62,13 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   return (ret_len);
 }
 
-size_t vstr_parse_netstr2(const Vstr_base *base, size_t pos, size_t len,
+size_t vstr_nx_parse_netstr2(const Vstr_base *base, size_t pos, size_t len,
                           size_t *ret_pos, size_t *ret_len)
 {
   return (vstr__parse_netstr(base, pos, len, ret_pos, ret_len, TRUE));
 }
 
-size_t vstr_parse_netstr(const Vstr_base *base, size_t pos, size_t len,
+size_t vstr_nx_parse_netstr(const Vstr_base *base, size_t pos, size_t len,
                          size_t *ret_pos, size_t *ret_len)
 {
   return (vstr__parse_netstr(base, pos, len, ret_pos, ret_len, FALSE));

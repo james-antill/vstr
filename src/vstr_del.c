@@ -351,7 +351,7 @@ static Vstr_node *vstr__del_end_cleanup(Vstr_conf *conf, unsigned int type,
  return (ret);
 }
 
-int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
+int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;

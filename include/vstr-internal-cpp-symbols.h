@@ -2,8 +2,8 @@
 #define vstr_nx_ref_cb_free_ref vstr_ref_cb_free_ref
 #define vstr_nx_ref_cb_free_ptr vstr_ref_cb_free_ptr
 #define vstr_nx_ref_cb_free_ptr_ref vstr_ref_cb_free_ptr_ref
-#define vstr_nx_ref_add vstr_ref_add
-#define vstr_nx_ref_del vstr_ref_del
+#define vstr_nx_ref_make_ptr vstr_ref_make_ptr
+#define vstr_nx_ref_make_malloc vstr_ref_make_malloc
 #define vstr_nx_init vstr_init
 #define vstr_nx_exit vstr_exit
 #define vstr_nx_make_conf vstr_make_conf

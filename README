@@ -7,3 +7,33 @@ library.
  It is Licensed under the LGPL, see the COPYING file for details.
 
  See the AUTHORS file for authors.
+
+ -------------- Adding functions to the library --------------
+
+ If you add a function to the library, you need to:
+
+1. Add the function to a source file, altering src/Makefile.am if it's in a new
+file.
+
+2. Add the prototype to include/vstr-extern.h.pre, including the @@@@ markers.
+If it has an inline part also add the inline definition to
+include/vstr-inline.h.pre (and if you have inline helper function add them to
+the bottom of vstr-extern.h.pre and indent them by one space.
+
+3. Add the name (without the vstr_ namespace) to
+include/vstr-internal.export_symbols (or vstr-internal.inline_export_symbols
+if it has an inline version).
+
+4. Add documentation to Documentation/functions.txt
+
+5. Add test cases to tst/<whatever>
+
+6. Run make check and ./scripts/autovalgrind.sh
+
+7. Run ./scripts/autocheck.sh (this takes a while).
+
+8. Send patch to me :).
+
+ You'll then need to run the ./scripts/autogen.sh file, this then generate
+the real extern and inline files and do all the symbol stuff.
+ 

@@ -105,25 +105,30 @@ tst = tst_encode \
     tst_decode
 
 
+# FIXME
+# 	tst_lowercase
+# 	tst_uppercase
+# 	tst_unprintable_chr
+# 	tst_unprintable_del
+
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
-
-tst_encode_SOURCES = tst_encode.c
-tst_decode_SOURCES = tst_decode.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
 check_PROGRAMS =  tst_encode$(EXEEXT) tst_decode$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
+tst_encode_SOURCES = tst_encode.c
 tst_encode_OBJECTS =  tst_encode.$(OBJEXT)
 tst_encode_LDADD = $(LDADD)
 tst_encode_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_encode_LDFLAGS = 
+tst_decode_SOURCES = tst_decode.c
 tst_decode_OBJECTS =  tst_decode.$(OBJEXT)
 tst_decode_LDADD = $(LDADD)
 tst_decode_DEPENDENCIES =  ../../src/.libs/libvstr.a
@@ -139,8 +144,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(tst_encode_SOURCES) $(tst_decode_SOURCES)
-OBJECTS = $(tst_encode_OBJECTS) $(tst_decode_OBJECTS)
+SOURCES = tst_encode.c tst_decode.c
+OBJECTS = tst_encode.$(OBJEXT) tst_decode.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:

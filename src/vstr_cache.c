@@ -77,7 +77,7 @@ void vstr__cache_add(const Vstr_base *base, size_t pos, size_t len)
  vstr__cache_cbs(base, pos, len, VSTR_TYPE_CACHE_ADD);
 }
 
-void vstr_cache_sub(const Vstr_base *base, size_t pos, size_t len)
+void vstr_nx_cache_sub(const Vstr_base *base, size_t pos, size_t len)
 {
   if (!base->cache_available || !VSTR__CACHE(base))
     return;
@@ -415,9 +415,10 @@ int vstr__cache_conf_init(Vstr_conf *conf)
 }
 
 /* initial stuff done in vstr.c */
-unsigned int vstr_cache_add_cb(Vstr_conf *conf, const char *name,
-                               void *(*func)(const Vstr_base *, size_t, size_t,
-                                             unsigned int, void *))
+unsigned int vstr_nx_cache_add_cb(Vstr_conf *conf, const char *name,
+                                  void *(*func)(const Vstr_base *,
+                                                size_t, size_t,
+                                                unsigned int, void *))
 {
   unsigned int sz = conf->cache_cbs_sz + 1;
   Vstr_cache_cb *ents = realloc(conf->cache_cbs_ents,
@@ -438,7 +439,7 @@ unsigned int vstr_cache_add_cb(Vstr_conf *conf, const char *name,
   return (sz);
 }
 
-unsigned int vstr_cache_srch(Vstr_conf *conf, const char *name)
+unsigned int vstr_nx_cache_srch(Vstr_conf *conf, const char *name)
 {
   unsigned int pos = 0;
 
@@ -451,7 +452,7 @@ unsigned int vstr_cache_srch(Vstr_conf *conf, const char *name)
   return (0);
 }
 
-int vstr_cache_set_data(const Vstr_base *base, unsigned int pos, void *data)
+int vstr_nx_cache_set_data(const Vstr_base *base, unsigned int pos, void *data)
 {
   assert(pos);
   

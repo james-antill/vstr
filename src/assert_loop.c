@@ -1,6 +1,6 @@
 #define ASSERT_LOOP_C
 /*
- *  Copyright (C) 1999, 2000 James Antill
+ *  Copyright (C) 1999, 2000, 2002 James Antill
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 #include "main.h"
 
-#ifdef USE_ASSERT_LOOP
+#if defined(USE_ASSERT_LOOP) && !defined(NDEBUG)
 
 /* don't raise a signal as it tends to blow bits of the stack */
 void vstr__assert_loop(const char *expr,

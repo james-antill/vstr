@@ -105,8 +105,8 @@ static void vstr__mov_iovec_kill(Vstr_base *base)
   base->iovec_upto_date = FALSE;
 }
 
-int vstr_mov(Vstr_base *base, size_t pos,
-             Vstr_base *from_base, size_t from_pos, size_t len)
+int vstr_nx_mov(Vstr_base *base, size_t pos,
+                Vstr_base *from_base, size_t from_pos, size_t len)
 {
   Vstr_node **beg = NULL;
   Vstr_node **end = NULL;

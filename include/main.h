@@ -10,7 +10,7 @@
 # include "main_noposix_system.h"
 #endif
 
-#define FIX_NAMESPACE_SYMBOL vstr_autoconf_
+#define FIX_NAMESPACE_SYMBOL vstr__autoconf_
 
 #include "fix.h"
 
@@ -24,7 +24,6 @@
 #include "vstr-switch.h"
 #include "vstr-const.h"
 #include "vstr-def.h"
-#include "vstr-extern.h"
 
 #include "vstr-internal.h" /* inline done in here */
 

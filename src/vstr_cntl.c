@@ -27,7 +27,7 @@ Vstr__options vstr__options =
  NULL,
 };
 
-int vstr_cntl_opt(int option, ...)
+int vstr_nx_cntl_opt(int option, ...)
 {
  int ret = 0;
  
@@ -53,7 +53,7 @@ int vstr_cntl_opt(int option, ...)
 
    if (vstr__options.def != val)
    {
-     vstr_free_conf(vstr__options.def);
+     vstr_nx_free_conf(vstr__options.def);
      vstr__add_no_node_conf(vstr__options.def = val);
    }
    
@@ -70,7 +70,7 @@ int vstr_cntl_opt(int option, ...)
  return (ret);
 }
 
-int vstr_cntl_base(Vstr_base *base, int option, ...)
+int vstr_nx_cntl_base(Vstr_base *base, int option, ...)
 {
  int ret = 0;
  
@@ -117,7 +117,7 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
  return (ret);
 }
 
-int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
+int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
 {
  int ret = 0;
  

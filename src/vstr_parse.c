@@ -327,45 +327,46 @@ static int vstr__parse_num(const Vstr_base *base,
   VSTR__PARSE_NUM_END_U(); \
 } while (FALSE)
     
-short vstr_parse_short(const Vstr_base *base, size_t pos, size_t len,
-                       unsigned int flags, size_t *ret_len, unsigned int *err)
+short vstr_nx_parse_short(const Vstr_base *base, size_t pos, size_t len,
+                          unsigned int flags, size_t *ret_len,
+                          unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned short, SHRT_MAX); }
 
-unsigned short vstr_parse_ushort(const Vstr_base *base,
-                                 size_t pos, size_t len,
-                                 unsigned int flags, size_t *ret_len,
-                                 unsigned int *err)
+unsigned short vstr_nx_parse_ushort(const Vstr_base *base,
+                                    size_t pos, size_t len,
+                                    unsigned int flags, size_t *ret_len,
+                                    unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned short); }
 
-int vstr_parse_int(const Vstr_base *base, size_t pos, size_t len,
-                   unsigned int flags, size_t *ret_len, unsigned int *err)
+int vstr_nx_parse_int(const Vstr_base *base, size_t pos, size_t len,
+                      unsigned int flags, size_t *ret_len, unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned int, INT_MAX); }
 
-unsigned int vstr_parse_uint(const Vstr_base *base, size_t pos, size_t len,
-                             unsigned int flags, size_t *ret_len,
-                             unsigned int *err)
+unsigned int vstr_nx_parse_uint(const Vstr_base *base, size_t pos, size_t len,
+                                unsigned int flags, size_t *ret_len,
+                                unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned int); }
 
-long vstr_parse_long(const Vstr_base *base, size_t pos, size_t len,
-                     unsigned int flags, size_t *ret_len,
-                     unsigned int *err)
+long vstr_nx_parse_long(const Vstr_base *base, size_t pos, size_t len,
+                        unsigned int flags, size_t *ret_len,
+                        unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned long, LONG_MAX); }
 
-unsigned long vstr_parse_ulong(const Vstr_base *base, size_t pos, size_t len,
-                               unsigned int flags, size_t *ret_len,
-                               unsigned int *err)
+unsigned long vstr_nx_parse_ulong(const Vstr_base *base, size_t pos, size_t len,
+                                  unsigned int flags, size_t *ret_len,
+                                  unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned long); }
 
-intmax_t vstr_parse_intmax(const struct Vstr_base *base,
-                           size_t pos, size_t len,
-                           unsigned int flags, size_t *ret_len,
-                           unsigned int *err)
+intmax_t vstr_nx_parse_intmax(const struct Vstr_base *base,
+                              size_t pos, size_t len,
+                              unsigned int flags, size_t *ret_len,
+                              unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(uintmax_t, INTMAX_MAX); }
 
-uintmax_t vstr_parse_uintmax(const struct Vstr_base *base,
-                             size_t pos, size_t len,
-                             unsigned int flags, size_t *ret_len,
-                             unsigned int *err)
+uintmax_t vstr_nx_parse_uintmax(const struct Vstr_base *base,
+                                size_t pos, size_t len,
+                                unsigned int flags, size_t *ret_len,
+                                unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(uintmax_t); }
 
 static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
@@ -506,10 +507,10 @@ static int vstr__parse_ipv4_cidr(const struct Vstr_base *base,
   return (TRUE);
 }
 
-int vstr_parse_ipv4(const struct Vstr_base *base,
-                    size_t pos, size_t len,
-                    unsigned char *ips, unsigned int *cidr, unsigned int flags,
-                    size_t *ret_len, unsigned int *err)
+int vstr_nx_parse_ipv4(const struct Vstr_base *base,
+                       size_t pos, size_t len,
+                       unsigned char *ips, unsigned int *cidr,
+                       unsigned int flags, size_t *ret_len, unsigned int *err)
 {
   size_t orig_len = len;
   unsigned char sym_slash = 0x2F;

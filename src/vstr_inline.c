@@ -21,11 +21,12 @@
 /* functions which are inlined */
 #include "main.h"
 
-/* everything is done in vstr-inline.h
+/* everything is done in vstr-inline.h.pre and vstr-internal.h
  * This works with gcc */
 # undef extern
 # define extern /* nothing */
 # undef inline
 # define inline /* nothing */
-# include "vstr-internal-inline.h"
+
+# include "vstr-internal-inc-inline.h"
 

@@ -21,14 +21,3 @@ TESTS = $(tst)
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
 
-tst_char_SOURCES = tst_char.c
-tst_short_SOURCES = tst_short.c
-tst_int_SOURCES = tst_int.c
-tst_long_SOURCES = tst_long.c
-tst_intmax_t_SOURCES = tst_intmax_t.c
-tst_double_SOURCES = tst_double.c
-tst_long_double_SOURCES = tst_long_double.c
-tst_str_norm_SOURCES = tst_str_norm.c
-tst_num_SOURCES = tst_num.c
-
-

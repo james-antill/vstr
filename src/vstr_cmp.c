@@ -22,8 +22,8 @@
 #include "main.h"
 
 /* compare 2 vector strings */
-int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-             const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+                const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
  Vstr_node *scan_1 = NULL;
  Vstr_node *scan_2 = NULL;
@@ -86,8 +86,8 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 }
 
 /* compare with a "normal" C string */
-int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
-                 const void *str, size_t str_len)
+int vstr_nx_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
+                    const void *str, size_t str_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -163,8 +163,8 @@ static int vstr__cmp_memcasecmp(const char *str1, const char *str2, size_t len)
 }
 
 /* don't include ASCII case when comparing */
-int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-                  const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_nx_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+                     const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
   Vstr_node *scan_1 = NULL;
   Vstr_node *scan_2 = NULL;
@@ -226,8 +226,8 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   return (0);
 }
 
-int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
-                      const void *str, size_t str_len)
+int vstr_nx_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
+                         const void *str, size_t str_len)
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;
@@ -411,8 +411,8 @@ static int vstr__cmp_vers(const char *scan_str_1,
 /* Compare strings while treating digits characters numerically. *
  * However digits starting with a 0 are clasified as fractional (Ie. 0.x)
  */
-int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-                  const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+                     const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
  Vstr_node *scan_1 = NULL;
  Vstr_node *scan_2 = NULL;

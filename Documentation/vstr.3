@@ -46,7 +46,7 @@ size_t \fBvstr_export_iovec_cpy_ptr\fR(const struct Vstr_base *, size_t, size_t,
 .br
 .in \w'  size_t \fBvstr_export_buf\fR('u
 .ti \w'  'u
-size_t \fBvstr_export_buf\fR(const struct Vstr_base *, size_t, size_t, void *);
+size_t \fBvstr_export_buf\fR(const struct Vstr_base *, size_t, size_t, void *, size_t);
 .br
 .in \w'  char \fBvstr_export_chr\fR('u
 .ti \w'  'u
@@ -673,7 +673,7 @@ Type\fB[3]\fR: size_t
 .br
   Any _NON data in the Vstr will be uninitialised data in the "C string".
 .br
-  If there is any 0 bytes in the Vstr these will make the string look shorter than it really is to normal C/POSIX string functions.
+  If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
 
 .ti -2
 .br
@@ -719,7 +719,7 @@ Type\fB[5]\fR: size_t
 .br
   Data from nodes of type NON are exported by not doing anything to the underlying data array (Ie. It'll have whatever data was in there to start with).
 .br
-  If there is any 0 bytes in the Vstr these will make the "C string" look shorter than it really is to normal C/POSIX string functions.
+  If there are any 0 bytes in the Vstr they will make the "C string" look shorter than it really is to normal C/POSIX string functions.
 
 .ti -2
 .br
@@ -766,7 +766,7 @@ Type\fB[4]\fR: size_t *
 .br
   Any _NON data in the Vstr will be uninitialised data in the "C string".
 .br
-  If there is any 0 bytes in the Vstr these will make the string look shorter than it really is to normal C/POSIX string functions.
+  If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
 
 .ti -2
 .br
@@ -839,7 +839,7 @@ Parameter\fB[4]\fR: Pointer to array of initialized iovec structures
 Type\fB[4]\fR: struct iovec *
 
 .br
-Parameter\fB[5]\fR: Length of iovec structures (Parameter[4])
+Parameter\fB[5]\fR: Number of iovec structures (Parameter[4])
 .br
 Type\fB[5]\fR: unsigned int
 
@@ -849,7 +849,6 @@ Parameter\fB[6]\fR: Returns the number of iovec structures used in the array
 Type\fB[6]\fR: unsigned int *
 
 .br
-           .br
 \fBExplanation:\fR
 
 .br
@@ -895,7 +894,7 @@ Parameter\fB[4]\fR: Pointer to array of iovec structures
 Type\fB[4]\fR: struct iovec *
 
 .br
-Parameter\fB[5]\fR: Length of iovec structures (Parameter[4])
+Parameter\fB[5]\fR: Number of iovec structures (Parameter[4])
 .br
 Type\fB[5]\fR: unsigned int
 
@@ -918,6 +917,7 @@ Type\fB[6]\fR: unsigned int *
   Nodes of type NON are represented by a iov_base set to NULL.
 .br
   Altering the data in the iovec structure isn't a good idea as it isn't easy for the programer to know if the data is shared/read-only. If you need to do this you should use either the vstr_sub_* functions instead or vstr_export_iovec_cpy_buf() (the later does a copy).
+
 .ti -2
 .br
 \fBFunction: \fR vstr_export_buf()
@@ -947,12 +947,17 @@ Parameter\fB[4]\fR: Data array to export to
 Type\fB[4]\fR: void *
 
 .br
+Parameter\fB[5]\fR: Length of data (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
 \fBExplanation:\fR
 
 .br
   This function is used to export a copy of the data in the Vstr string to a data array.
 .br
-  Think of this function as doing a read() from a Vstr string.
+  Think of this function as doing a read() from a Vstr string. However the data will be limited to the minimum of the length of the vstr (Parameter[3]) and the length of thedata (Parameter[5]).
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .sp
@@ -2003,7 +2008,6 @@ Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
 Type\fB[2]\fR: size_t
 
 .br
-           .br
 \fBExplanation:\fR
 
 .br

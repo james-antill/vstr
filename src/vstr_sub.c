@@ -31,8 +31,8 @@
 } while (FALSE)
 
 
-int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
-                 const void *buf, size_t buf_len)
+int vstr_nx_sub_buf(Vstr_base *base, size_t pos, size_t len,
+                    const void *buf, size_t buf_len)
 {
   Vstr_node *scan = NULL;
   unsigned int num = 0;
@@ -225,8 +225,8 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   return (TRUE);
 }
 
-int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
-                 const void *ptr, size_t ptr_len)
+int vstr_nx_sub_ptr(Vstr_base *base, size_t pos, size_t len,
+                    const void *ptr, size_t ptr_len)
 {
   int ret = vstr_nx_add_ptr(base, pos - 1, ptr, ptr_len);
   
@@ -244,7 +244,7 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
   return (ret);
 }
 
-int vstr_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
+int vstr_nx_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
 {
   int ret = vstr_nx_add_non(base, pos - 1, non_len);
 
@@ -262,8 +262,8 @@ int vstr_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
   return (ret);
 }
 
-int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
-                 Vstr_ref *ref, size_t off, size_t ref_len)
+int vstr_nx_sub_ref(Vstr_base *base, size_t pos, size_t len,
+                    Vstr_ref *ref, size_t off, size_t ref_len)
 {
   int ret = vstr_nx_add_ref(base, pos - 1, ref, off, ref_len);
 
@@ -281,9 +281,9 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
   return (ret);
 }
 
-int vstr_sub_vstr(Vstr_base *base, size_t pos, size_t len,
-                  const Vstr_base *from_base, size_t from_pos, size_t from_len,
-                  unsigned int type)
+int vstr_nx_sub_vstr(Vstr_base *base, size_t pos, size_t len,
+                     const Vstr_base *from_base,
+                     size_t from_pos, size_t from_len, unsigned int type)
 { /* this is inefficient compared to vstr_sub_buf() because of atomic
    * guarantees - could be made to work with _ALL_BUF */
   int ret = vstr_nx_add_vstr(base, pos - 1, from_base, from_pos, from_len,

@@ -113,11 +113,6 @@ TESTS = $(tst)
 
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
-
-tst_vstr_SOURCES = tst_vstr.c
-tst_vstr_case_SOURCES = tst_vstr_case.c
-tst_vstr_vers_SOURCES = tst_vstr_vers.c
-tst_vstr_non_SOURCES = tst_vstr_non.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
@@ -125,18 +120,22 @@ check_PROGRAMS =  tst_vstr$(EXEEXT) tst_vstr_case$(EXEEXT) \
 tst_vstr_vers$(EXEEXT) tst_vstr_non$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
+tst_vstr_SOURCES = tst_vstr.c
 tst_vstr_OBJECTS =  tst_vstr.$(OBJEXT)
 tst_vstr_LDADD = $(LDADD)
 tst_vstr_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_vstr_LDFLAGS = 
+tst_vstr_case_SOURCES = tst_vstr_case.c
 tst_vstr_case_OBJECTS =  tst_vstr_case.$(OBJEXT)
 tst_vstr_case_LDADD = $(LDADD)
 tst_vstr_case_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_vstr_case_LDFLAGS = 
+tst_vstr_vers_SOURCES = tst_vstr_vers.c
 tst_vstr_vers_OBJECTS =  tst_vstr_vers.$(OBJEXT)
 tst_vstr_vers_LDADD = $(LDADD)
 tst_vstr_vers_DEPENDENCIES =  ../../src/.libs/libvstr.a
 tst_vstr_vers_LDFLAGS = 
+tst_vstr_non_SOURCES = tst_vstr_non.c
 tst_vstr_non_OBJECTS =  tst_vstr_non.$(OBJEXT)
 tst_vstr_non_LDADD = $(LDADD)
 tst_vstr_non_DEPENDENCIES =  ../../src/.libs/libvstr.a
@@ -152,8 +151,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(tst_vstr_SOURCES) $(tst_vstr_case_SOURCES) $(tst_vstr_vers_SOURCES) $(tst_vstr_non_SOURCES)
-OBJECTS = $(tst_vstr_OBJECTS) $(tst_vstr_case_OBJECTS) $(tst_vstr_vers_OBJECTS) $(tst_vstr_non_OBJECTS)
+SOURCES = tst_vstr.c tst_vstr_case.c tst_vstr_vers.c tst_vstr_non.c
+OBJECTS = tst_vstr.$(OBJEXT) tst_vstr_case.$(OBJEXT) tst_vstr_vers.$(OBJEXT) tst_vstr_non.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:

@@ -73,28 +73,6 @@ int FIX_SYMBOL(memcmp)(const void *dest, const void *src, size_t n)
 }
 #endif
 
-#ifndef HAVE_MEMCASECMP
-int FIX_SYMBOL(memcasecmp)(const void *dest, const void *src, size_t n)
-{
- unsigned const char *to = dest;
- unsigned const char *from = src;
- 
- if (!n)
-   return (0);
- 
- while (n--)
- {
-  if (tolower(*to) - tolower(*from))
-    return (tolower(*to) - tolower(*from));
-  
-  ++to;
-  ++from;
- }
- 
- return (0);
-}
-#endif
-
 #ifndef HAVE_MEMMEM
 void *FIX_SYMBOL(memmem)(const void *src, size_t src_len,
                          const void *needle, size_t needle_len)

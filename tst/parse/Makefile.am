@@ -6,6 +6,13 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_ip tst_int
 
+# FIXME
+#   tst_short
+#   tst_long
+#   tst_intmax_t
+#   tst_netstr
+#   tst_netstr2
+
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)

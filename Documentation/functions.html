@@ -79,7 +79,7 @@
  free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
  instead.
 </p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
-</p><p>  If there is any 0 bytes in the Vstr these will make the string look shorter
+</p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
 
@@ -102,7 +102,7 @@
 </p><p>  Data from nodes of type NON are exported by not doing anything to the
  underlying data array (Ie. It'll have whatever data was in there to
  start with).
-</p><p>  If there is any 0 bytes in the Vstr these will make the "C string" look
+</p><p>  If there are any 0 bytes in the Vstr they will make the "C string" look
  shorter than it really is to normal C/POSIX string functions.
 
 
@@ -126,7 +126,7 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
-</p><p>  If there is any 0 bytes in the Vstr these will make the string look shorter
+</p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
 
 
@@ -161,8 +161,8 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of initialized iovec structures<br>Type<strong>[4]</strong>: struct iovec *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of iovec structures (Parameter[4])<br>Type<strong>[5]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures used in the array<br>Type<strong>[6]</strong>: unsigned int *</p><p>           
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Number of iovec structures (Parameter[4])<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures used in the array<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a copy of the data in the Vstr string to an
  array of iovec structures this can then be passed directly to writev() 
@@ -186,7 +186,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to array of iovec structures<br>Type<strong>[4]</strong>: struct iovec *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of iovec structures (Parameter[4])<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Number of iovec structures (Parameter[4])<br>Type<strong>[5]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures used in the array<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a set of pointer/length pairs to the data
@@ -201,6 +201,7 @@
  this you should use either the vstr_sub_* functions instead or
  vstr_export_iovec_cpy_buf() (the later does a copy).
 
+
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_buf()
 <br>Returns: Size of bytes exported from the Vstr string<br>Type: size_t
@@ -208,10 +209,13 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Data array to export to<br>Type<strong>[4]</strong>: void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to export a copy of the data in the Vstr string to a
  data array.
-</p><p>  Think of this function as doing a read() from a Vstr string.
+</p><p>  Think of this function as doing a read() from a Vstr string. However the
+ data will be limited to the minimum of the length of the vstr (Parameter[3])
+ and the length of thedata (Parameter[5]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
@@ -693,7 +697,7 @@
 <strong>Function: </strong> vstr_add_netstr2_beg()
 <br>Returns: Position of start of netstr (Parameter[2]) + 1<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t</p><p>           
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function creates the start of a netstring2 which is like a netstring
  http://cr.yp.to/proto/netstrings.txt but can have leading zeros, this can be

@@ -56,9 +56,9 @@ static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 #define THOUSAND_SEP (1 << 15) /* split at grouping marks according to locale */
 
 
-#define IS_USR_PREC (1 << 28) /* user specified precision */
-#define IS_ZERO (1 << 29) /* is the number zero */
-#define IS_NEGATIVE (1 << 30) /* is the number negative */
+#define PREC_USR (1 << 28) /* user specified precision */
+#define NUM_IS_ZERO (1 << 29) /* is the number zero */
+#define NUM_IS_NEGATIVE (1 << 30) /* is the number negative */
 
 #define VSTR__FMT_ADD(x, y, z) vstr_nx_add_buf((x), ((x)->len - pos_diff), y, z)
 
@@ -119,7 +119,7 @@ static int vstr__add_zeros(Vstr_base *base, size_t pos_diff, size_t len)
 /* deals well with INT_MIN */
 #define VSTR__FMT_ABS_NUM(unum, snum) do { \
  if (snum < 0) { \
-   spec->flags |= IS_NEGATIVE; \
+   spec->flags |= NUM_IS_NEGATIVE; \
    ++snum; unum = -snum; ++unum; \
  } else \
    unum = snum; \
@@ -212,10 +212,11 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  
  /* hacky spec, if precision == 0 and num ==0, then don't display anything,
   * apart from if it's in octal and they specified the '#' modifier */
- if (!precision && (flags & IS_ZERO) && (flags & SPECIAL) && (num_base == 8))
+ if (!precision && (flags & NUM_IS_ZERO) &&
+     (flags & SPECIAL) && (num_base == 8))
    ++precision;
  /* if the usr specified a precision the '0' flag is ignored */
- if (flags & IS_USR_PREC)
+ if (flags & PREC_USR)
    flags &= ~ZEROPAD;
  
  if (flags & LARGE)
@@ -238,7 +239,7 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  
  if (flags & SIGN)
  {
-  if (flags & IS_NEGATIVE)
+  if (flags & NUM_IS_NEGATIVE)
     sign = '-';
   else
   {
@@ -320,7 +321,7 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
    switch (num_base)
    {
      case 16: /* only append 0x if it is a non-zero value */
-       if (!(flags & IS_ZERO) && precision)
+       if (!(flags & NUM_IS_ZERO) && precision)
        {
          if (!vstr__add_zeros(base, pos_diff, 1))
            goto failed_alloc;
@@ -330,7 +331,7 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
        break;
        
      case 8: /* just print number if 0 */
-       if (!(flags & IS_ZERO) && precision)
+       if (!(flags & NUM_IS_ZERO) && precision)
        {
          if (!vstr__add_zeros(base, pos_diff, 1))
            goto failed_alloc;
@@ -417,7 +418,7 @@ struct Vstr__fmt_spec
  unsigned int precision_param;
 
  /* these two needed for double, not used elsewhere */
- /* unsigned int precision_usr : 1; done with the IS_USR_PREC flag */
+ /* unsigned int precision_usr : 1; done with the PREC_USR flag */
  unsigned int field_width_usr : 1; /* did the usr specify a field width */
  
  struct Vstr__fmt_spec *next;
@@ -610,7 +611,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         size_t len = 0;
         const char *str = spec->u.data_ptr;
         
-        if (spec->flags & IS_USR_PREC)
+        if (spec->flags & PREC_USR)
           len = strnlen(str, spec->precision);
         else
           len = strlen(str);
@@ -902,7 +903,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_c = (unsigned char) va_arg(ap, unsigned int);
-            if (!u.data_c) spec->flags |= IS_ZERO; 
+            if (!u.data_c) spec->flags |= NUM_IS_ZERO; 
             break;
           case SHORT_TYPE:
             if (spec->flags & SIGN)
@@ -912,7 +913,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_s = (unsigned short) va_arg(ap, unsigned int);
-            if (!u.data_s) spec->flags |= IS_ZERO;
+            if (!u.data_s) spec->flags |= NUM_IS_ZERO;
             break;
           case INT_TYPE:
             if (spec->flags & SIGN)
@@ -922,7 +923,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_i = va_arg(ap, unsigned int);
-            if (!u.data_i) spec->flags |= IS_ZERO;
+            if (!u.data_i) spec->flags |= NUM_IS_ZERO;
             break;
           case LONG_TYPE:
             if (spec->flags & SIGN)
@@ -932,7 +933,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_l = va_arg(ap, unsigned long);
-            if (!u.data_l) spec->flags |= IS_ZERO;
+            if (!u.data_l) spec->flags |= NUM_IS_ZERO;
             break;
 #ifdef HAVE_LONG_LONG
           case LONG_DOUBLE_TYPE:
@@ -943,7 +944,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_L = va_arg(ap, unsigned long long);
-            if (!u.data_L) spec->flags |= IS_ZERO;
+            if (!u.data_L) spec->flags |= NUM_IS_ZERO;
             break;
 #endif
           case SIZE_T_TYPE:
@@ -954,7 +955,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_sz = va_arg(ap, size_t);
-            if (!u.data_sz) spec->flags |= IS_ZERO;
+            if (!u.data_sz) spec->flags |= NUM_IS_ZERO;
             break;
           case PTRDIFF_T_TYPE:
             if (1)
@@ -962,7 +963,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
              intmax_t tmp = va_arg(ap, ptrdiff_t);
              VSTR__FMT_ABS_NUM(u.data_m, tmp);
             }
-            if (!u.data_m) spec->flags |= IS_ZERO;
+            if (!u.data_m) spec->flags |= NUM_IS_ZERO;
             spec->int_type = INTMAX_T_TYPE;
             break;
           case INTMAX_T_TYPE:
@@ -973,7 +974,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
             }
             else
               u.data_m = va_arg(ap, uintmax_t);
-            if (!u.data_m) spec->flags |= IS_ZERO;
+            if (!u.data_m) spec->flags |= NUM_IS_ZERO;
             break;
             
           default:
@@ -1045,7 +1046,8 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
  return (TRUE);
 }
 
-size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
+size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
+                        const char *fmt, va_list ap)
 {
  size_t start_pos = pos + 1;
  size_t orig_len = base->len;
@@ -1085,7 +1087,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
    {
      size_t len = next_percent - fmt;
      spec->precision = len;
-     spec->flags |= IS_USR_PREC;
+     spec->flags |= PREC_USR;
      fmt = fmt + len - 1;
    }
    else
@@ -1187,7 +1189,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   /* get the precision */
   if (*fmt == '.')
   {
-    spec->flags |= IS_USR_PREC;
+    spec->flags |= PREC_USR;
     
     ++fmt;
     if (vstr__fmt_isdigit(*fmt))
@@ -1325,7 +1327,8 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
     case 'a': /* print like [-]x.xxxpxx -- in hex using abcdef */
     case 'A': /* print like [-]x.xxxPxx -- in hex using ABCDEF */
       spec->fmt_code = *fmt;
-      spec->precision = numb_precision;
+      if (spec->flags & PREC_USR)
+        spec->precision = numb_precision;
       VSTR__FMT_MV_SPEC(TRUE);
       continue;
       
@@ -1366,7 +1369,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
  return (0);
 }
 
-size_t vstr_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
+size_t vstr_nx_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
 {
  size_t len = 0;
  va_list ap;

@@ -88,9 +88,8 @@ static int vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
   return (TRUE);
 }
 
-static Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos,
-                                      unsigned int *num,
-                                      size_t *orig_scan_len)
+Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
+                               size_t *orig_scan_len)
 {
  Vstr_node *scan = NULL;
 
@@ -139,20 +138,30 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  assert(vstr__check_spare_nodes(base->conf)); \
  assert(vstr__check_real_nodes(base)); \
  \
- num = (len / max) + 2; \
- if (num > base->conf-> spare_num) \
+ if (pos && base->len) \
  { \
-   num -= base->conf-> spare_num; \
-   if (vstr_nx_make_spare_nodes(base->conf, int_type, num) != num) \
+   scan = vstr__add_setup_pos(base, &pos, &num, o_p_s_l); \
+   if (!scan) \
      return (FALSE); \
+ } \
+ \
+ if ((int_type != VSTR_TYPE_NODE_BUF) || !scan || \
+     (scan->type != VSTR_TYPE_NODE_BUF) || (pos != scan->len) || \
+     (len > (base->conf->buf_sz - scan->len))) \
+ { \
+   unsigned int alloc_num = (len / max) + !!(len % max); \
+   \
+   if (alloc_num > base->conf-> spare_num) \
+   { \
+     alloc_num -= base->conf-> spare_num; \
+     if (vstr_nx_make_spare_nodes(base->conf, int_type, \
+                                  alloc_num) != alloc_num) \
+       return (FALSE); \
+   } \
  } \
  \
  if (pos && base->len) \
  { \
-  scan = vstr__add_setup_pos(base, &pos, &num, o_p_s_l); \
-  if (!scan) \
-    return (FALSE); \
-  \
   pos_scan = scan; \
   pos_scan_next = scan->next \
 
@@ -221,8 +230,8 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  assert(vstr__check_real_nodes(base)); \
 } while (FALSE)
 
-int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
-                               const void *buffer, size_t len)
+int vstr_nx_extern_inline_add_buf(Vstr_base *base, size_t pos,
+                                  const void *buffer, size_t len)
 {
   unsigned int num = 0;
   size_t orig_pos = pos;
@@ -277,7 +286,8 @@ int vstr_extern_inline_add_buf(Vstr_base *base, size_t pos,
  return (TRUE);
 }
 
-int vstr_add_ptr(Vstr_base *base, size_t pos, const void *pass_ptr, size_t len)
+int vstr_nx_add_ptr(Vstr_base *base, size_t pos,
+                    const void *pass_ptr, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -329,7 +339,7 @@ int vstr_add_ptr(Vstr_base *base, size_t pos, const void *pass_ptr, size_t len)
  return (TRUE);
 }
 
-int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
+int vstr_nx_add_non(Vstr_base *base, size_t pos, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -376,8 +386,8 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  return (TRUE);
 }
 
-int vstr_add_ref(Vstr_base *base, size_t pos, 
-                 Vstr_ref *ref, size_t off, size_t len)
+int vstr_nx_add_ref(Vstr_base *base, size_t pos, 
+                    Vstr_ref *ref, size_t off, size_t len)
 {
  unsigned int num = 0;
  size_t orig_pos = pos;
@@ -653,9 +663,9 @@ static size_t vstr__add_vstr_nodes(Vstr_base *base, size_t pos,
     assert(vstr__check_real_nodes((Vstr_base *)from_base)); \
 } while (FALSE)
     
-int vstr_add_vstr(Vstr_base *base, size_t pos, 
-                  const Vstr_base *from_base, size_t from_pos, size_t len,
-                  unsigned int add_type)
+int vstr_nx_add_vstr(Vstr_base *base, size_t pos, 
+                     const Vstr_base *from_base, size_t from_pos, size_t len,
+                     unsigned int add_type)
 {
   size_t orig_pos = pos;
   size_t orig_from_pos = from_pos;
@@ -740,9 +750,6 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
                                      scan, from_pos, before, add_type)))
       goto fail;
     
-    assert(1 || !vstr_cmp(base, orig_pos + 1,  before,
-                          base, orig_from_pos, before));
-    
     len -= before;
     from_pos = orig_from_pos + (before * 2);
     if (!(scan = vstr__base_pos(from_base, &from_pos, &dummy_num, TRUE)))
@@ -771,10 +778,10 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
 }
 # undef DO_VALID_CHK
 
-size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
-                              unsigned int min, unsigned int max,
-                              struct iovec **ret_iovs,
-                              unsigned int *num)
+size_t vstr_nx_add_iovec_buf_beg(Vstr_base *base, size_t pos,
+                                 unsigned int min, unsigned int max,
+                                 struct iovec **ret_iovs,
+                                 unsigned int *num)
 {
   unsigned int sz = max;
   struct iovec *iovs = NULL;
@@ -782,12 +789,12 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   size_t bytes = 0;
   Vstr_node *scan = NULL;
   
-  assert(min && (min != UINT_MAX) && (max >= min));
+  assert(min && (max >= min));
 
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
   
-  if (!(min && (min != UINT_MAX) && (max >= min)))
+  if (!(min && (max >= min)))
     return (0);
   
   if (pos != base->len)
@@ -886,7 +893,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   return (bytes);
 }
 
-void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
+void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
 {
   size_t orig_pos = pos;
   size_t orig_bytes = bytes;

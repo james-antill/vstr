@@ -34,7 +34,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   
   if (spec->flags & SIGN)
   {
-    if (spec->flags & IS_NEGATIVE)
+    if (spec->flags & NUM_IS_NEGATIVE)
       sign = '-';
     else
     {

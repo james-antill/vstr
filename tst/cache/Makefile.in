@@ -109,14 +109,13 @@ TESTS = $(tst)
 
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
-
-tst_usr_SOURCES = tst_usr.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
 check_PROGRAMS =  tst_usr$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
+tst_usr_SOURCES = tst_usr.c
 tst_usr_OBJECTS =  tst_usr.$(OBJEXT)
 tst_usr_LDADD = $(LDADD)
 tst_usr_DEPENDENCIES =  ../../src/.libs/libvstr.a
@@ -132,8 +131,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(tst_usr_SOURCES)
-OBJECTS = $(tst_usr_OBJECTS)
+SOURCES = tst_usr.c
+OBJECTS = tst_usr.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:

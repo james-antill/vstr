@@ -39,12 +39,14 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_parse.c \
                         vstr_parse_netstr.c \
                         vstr_ref.c \
+                        vstr_sc.c \
+                        $(POSIX_HOST_SRC) \
                         vstr_sect.c \
                         vstr_spn.c \
                         vstr_split.c \
                         vstr_srch.c \
                         vstr_sub.c \
-                        vstr_version.c $(POSIX_HOST_SRC)
+                        vstr_version.c
 
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \

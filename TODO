@@ -1,4 +1,31 @@
 
+ For 1.0
+ -------
+
+. ASN.1 (International Standard 8824)
+
+. only using _NON and _BUF nodes flag for sub functions optomisation.
+
+. Allow 0 len vstrs everywhere.
+
+. use enum's for types so gcc can warn on switch ?
+
+. At least a minimal make check case for each function.
+
+. Finish glibc dbl
+		Add vstr_parse_double()/long_double()
+
+. vstr__base_scan_fwd_* use iovec for a fast case.
+
+ Not needed for 1.0
+ ------------------
+
+. Way to delete from a section and have section pos/len updates.
+
+. _SEF type ... like a _REF but you can do substitution on it ?
+   Will do "strange" things on mmap() read/write areas on _conv_ functions
+  as it's not obvious what it should/could do on expantion.
+
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 
 . Max and Min ammounts for spare nodes.
@@ -9,16 +36,10 @@
 
 . vstr_conv_encode_qp (quoted printable rfc2045.txt)
 . vstr_conv_encode_b64 (base64 rfc2045.txt)
-. ASN.1 (International Standard 8824)
-
-. only using _NON and _BUF nodes flag for sub functions optomisation.
-
-. Allow 0 len vstrs everywhere.
-
-. use enum's for types so gcc can warn on switch ?
 
 . vstr_x_* for external usage, 
 	Ie. vstr_x_pcre_*
 	vstr_x_hash_md5 vstr_x_hash_sha1
 
-. vstr_ref_add/del go inline.
+. depreciated attribute (only supported in gcc-3.x).
+

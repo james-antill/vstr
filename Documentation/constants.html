@@ -16,6 +16,48 @@
   </head>
   <body>
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- constants</h1>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Compile switch constants</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_COMPILE_ATTRIBUTES
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This switch controls whether gcc type __attribute__() statments are used in
+ the public headers headers for the library. If the value is 1 then if they are
+ supported by the compiler that built the library they will be used, if the
+ value is 0 they won't be used at all.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_COMPILE_INCLUDE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This switch controls whether including <vstr.h> will include all the system
+ headers needed for the exported interfaces. If the value is 1 then if they are
+ included, if the value is 0 they won't be included.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_COMPILE_INLINE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This switch controls whether inline functions will be used in the public
+ headers for the library. If the value is 1 then if they are supported by the
+ compiler that built the library they will be used, if the value is 0 they
+ won't be used at all.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_COMPILE_TYPEDEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This switch controls whether typedef will be used for the structs in the
+ public headers for the library. If the value is 1 then they will be used,
+ if the value is 0 they won't be used at all (and your code will have to use
+ struct tags instead -- note all libraries using vstr should compile with
+ this option set).
+
+
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Global constants</h2>
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

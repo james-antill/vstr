@@ -21,8 +21,8 @@
 /* functions for searching within a vstr */
 #include "main.h"
 
-size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
-                         char srch)
+size_t vstr_nx_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
+                            char srch)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -75,8 +75,8 @@ static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
   return (ret);
 }
 
-size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
-                         char srch)
+size_t vstr_nx_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
+                            char srch)
 { /* FIXME: this needs to use iovec to walk backwards */
 
   /* if (base->iovec_upto_date)
@@ -85,8 +85,8 @@ size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__srch_chr_rev_slow(base, pos, len, srch));
 }
 
-size_t vstr_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
-                          const char *srch, size_t chrs_len)
+size_t vstr_nx_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                             const char *srch, size_t chrs_len)
 {
   size_t num = vstr_nx_cspn_buf_fwd(base, pos, len, srch, chrs_len);
 
@@ -96,8 +96,8 @@ size_t vstr_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   return (pos + num);
 }
 
-size_t vstr_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
-                          const char *srch, size_t chrs_len)
+size_t vstr_nx_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                             const char *srch, size_t chrs_len)
 {
   size_t num = vstr_nx_cspn_buf_rev(base, pos, len, srch, chrs_len);
 
@@ -107,8 +107,8 @@ size_t vstr_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
   return (pos + ((len - num) - 1));
 }
 
-size_t vstr_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
-                           const char *srch, size_t chrs_len)
+size_t vstr_nx_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                              const char *srch, size_t chrs_len)
 {
   size_t num = vstr_nx_spn_buf_fwd(base, pos, len, srch, chrs_len);
 
@@ -118,8 +118,8 @@ size_t vstr_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   return (pos + num);
 }
 
-size_t vstr_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
-                           const char *srch, size_t chrs_len)
+size_t vstr_nx_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                              const char *srch, size_t chrs_len)
 {
   size_t num = vstr_nx_spn_buf_rev(base, pos, len, srch, chrs_len);
 
@@ -129,8 +129,8 @@ size_t vstr_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
   return (pos + ((len - num) - 1));
 }
 
-size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
-                         const void *const str, const size_t str_len)
+size_t vstr_nx_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
+                            const void *const str, const size_t str_len)
 {
  Vstr_node *scan = NULL;
  unsigned int num = 0;
@@ -230,8 +230,8 @@ static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
   return (ret);
 }
 
-size_t vstr_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
-                         const void *const str, const size_t str_len)
+size_t vstr_nx_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
+                            const void *const str, const size_t str_len)
 {
   /* FIXME: this needs to use iovec to walk backwards */
   
@@ -241,9 +241,9 @@ size_t vstr_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__srch_buf_rev_slow(base, pos, len, str, str_len));
 }
 
-size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
-                          const Vstr_base *ndl_base,
-                          size_t ndl_pos, size_t ndl_len)
+size_t vstr_nx_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
+                             const Vstr_base *ndl_base,
+                             size_t ndl_pos, size_t ndl_len)
 { /* TODO: this could be faster, esp. with NON nodes */
   size_t scan_pos = pos;
   size_t scan_len = len;
@@ -296,18 +296,18 @@ static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
   return (ret);
 }
 
-size_t vstr_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
-                          const Vstr_base *ndl_base,
-                          size_t ndl_pos, size_t ndl_len)
+size_t vstr_nx_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
+                             const Vstr_base *ndl_base,
+                             size_t ndl_pos, size_t ndl_len)
 {  /* FIXME: iovec walk backwards */
   return (vstr__srch_vstr_rev_slow(base, pos, len, ndl_base, ndl_pos, ndl_len));
 }
 
-unsigned int vstr_srch_sects_add_buf_fwd(const Vstr_base *base,
-                                         size_t pos, size_t len,
-                                         Vstr_sects *sects,
-                                         const void *const str,
-                                         const size_t str_len)    
+unsigned int vstr_nx_srch_sects_add_buf_fwd(const Vstr_base *base,
+                                            size_t pos, size_t len,
+                                            Vstr_sects *sects,
+                                            const void *const str,
+                                            const size_t str_len)    
 {
   unsigned int orig_num = sects->num;
   size_t srch_pos = 0;

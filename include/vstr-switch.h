@@ -22,8 +22,8 @@
  */
 
 
-#ifndef VSTR_COMPILE_TYPEDEF
-# define VSTR_COMPILE_TYPEDEF 1
+#ifndef VSTR_COMPILE_ATTRIBUTES
+# define VSTR_COMPILE_ATTRIBUTES 1
 #endif
 
 #ifndef VSTR_COMPILE_INCLUDE
@@ -33,6 +33,12 @@
 #ifndef VSTR_COMPILE_INLINE
 # define VSTR_COMPILE_INLINE 1
 #endif
+
+#ifndef VSTR_COMPILE_TYPEDEF
+# define VSTR_COMPILE_TYPEDEF 1
+#endif
+
+/* end of user defineable switches */
 
 #if VSTR_COMPILE_TYPEDEF
 # define VSTR__DECL_TYPEDEF1(x) typedef x
@@ -62,11 +68,22 @@
 # endif
 #endif
 
-#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_FMT(x, y) \
  __attribute__ ((__format__ (__printf__, x, y)))
 #else
 # define VSTR__COMPILE_ATTR_FMT(x, y) /* nothing */
+#endif
+
+#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_NONNULL) && \
+    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+# define VSTR__COMPILE_ATTR_NONNULL_A() \
+ __attribute__ ((__nonnull__))
+# define VSTR__COMPILE_ATTR_NONNULL_L(x) \
+ __attribute__ ((__nonnull__ x))
+#else
+# define VSTR__COMPILE_ATTR_NONNULL_A() /* nothing */
+# define VSTR__COMPILE_ATTR_NONNULL_L(x) /* nothing */
 #endif
 
 #ifdef VSTR_AUTOCONF_NDEBUG

@@ -101,15 +101,11 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_char \
-    tst_short \
-    tst_int \
-    tst_long \
-    tst_intmax_t \
-    tst_double \
-    tst_long_double \
-    tst_str_norm \
-    tst_num 
+tst = tst_empty \
+    tst_all \
+    tst_beg \
+    tst_mid \
+    tst_end
 
 
 check_PROGRAMS = $(tst)
@@ -118,60 +114,38 @@ TESTS = $(tst)
 
 CFLAGS = @WARNS@
 LDADD = ../../src/.libs/libvstr.a
-
-tst_char_SOURCES = tst_char.c
-tst_short_SOURCES = tst_short.c
-tst_int_SOURCES = tst_int.c
-tst_long_SOURCES = tst_long.c
-tst_intmax_t_SOURCES = tst_intmax_t.c
-tst_double_SOURCES = tst_double.c
-tst_long_double_SOURCES = tst_long_double.c
-tst_str_norm_SOURCES = tst_str_norm.c
-tst_num_SOURCES = tst_num.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../include/autoconf.h
 CONFIG_CLEAN_FILES = 
-check_PROGRAMS =  tst_char$(EXEEXT) tst_short$(EXEEXT) tst_int$(EXEEXT) \
-tst_long$(EXEEXT) tst_intmax_t$(EXEEXT) tst_double$(EXEEXT) \
-tst_long_double$(EXEEXT) tst_str_norm$(EXEEXT) tst_num$(EXEEXT)
+check_PROGRAMS =  tst_empty$(EXEEXT) tst_all$(EXEEXT) tst_beg$(EXEEXT) \
+tst_mid$(EXEEXT) tst_end$(EXEEXT)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../../include
-tst_char_OBJECTS =  tst_char.$(OBJEXT)
-tst_char_LDADD = $(LDADD)
-tst_char_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_char_LDFLAGS = 
-tst_short_OBJECTS =  tst_short.$(OBJEXT)
-tst_short_LDADD = $(LDADD)
-tst_short_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_short_LDFLAGS = 
-tst_int_OBJECTS =  tst_int.$(OBJEXT)
-tst_int_LDADD = $(LDADD)
-tst_int_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_int_LDFLAGS = 
-tst_long_OBJECTS =  tst_long.$(OBJEXT)
-tst_long_LDADD = $(LDADD)
-tst_long_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_long_LDFLAGS = 
-tst_intmax_t_OBJECTS =  tst_intmax_t.$(OBJEXT)
-tst_intmax_t_LDADD = $(LDADD)
-tst_intmax_t_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_intmax_t_LDFLAGS = 
-tst_double_OBJECTS =  tst_double.$(OBJEXT)
-tst_double_LDADD = $(LDADD)
-tst_double_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_double_LDFLAGS = 
-tst_long_double_OBJECTS =  tst_long_double.$(OBJEXT)
-tst_long_double_LDADD = $(LDADD)
-tst_long_double_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_long_double_LDFLAGS = 
-tst_str_norm_OBJECTS =  tst_str_norm.$(OBJEXT)
-tst_str_norm_LDADD = $(LDADD)
-tst_str_norm_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_str_norm_LDFLAGS = 
-tst_num_OBJECTS =  tst_num.$(OBJEXT)
-tst_num_LDADD = $(LDADD)
-tst_num_DEPENDENCIES =  ../../src/.libs/libvstr.a
-tst_num_LDFLAGS = 
+tst_empty_SOURCES = tst_empty.c
+tst_empty_OBJECTS =  tst_empty.$(OBJEXT)
+tst_empty_LDADD = $(LDADD)
+tst_empty_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_empty_LDFLAGS = 
+tst_all_SOURCES = tst_all.c
+tst_all_OBJECTS =  tst_all.$(OBJEXT)
+tst_all_LDADD = $(LDADD)
+tst_all_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_all_LDFLAGS = 
+tst_beg_SOURCES = tst_beg.c
+tst_beg_OBJECTS =  tst_beg.$(OBJEXT)
+tst_beg_LDADD = $(LDADD)
+tst_beg_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_beg_LDFLAGS = 
+tst_mid_SOURCES = tst_mid.c
+tst_mid_OBJECTS =  tst_mid.$(OBJEXT)
+tst_mid_LDADD = $(LDADD)
+tst_mid_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_mid_LDFLAGS = 
+tst_end_SOURCES = tst_end.c
+tst_end_OBJECTS =  tst_end.$(OBJEXT)
+tst_end_LDADD = $(LDADD)
+tst_end_DEPENDENCIES =  ../../src/.libs/libvstr.a
+tst_end_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -183,14 +157,14 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(tst_char_SOURCES) $(tst_short_SOURCES) $(tst_int_SOURCES) $(tst_long_SOURCES) $(tst_intmax_t_SOURCES) $(tst_double_SOURCES) $(tst_long_double_SOURCES) $(tst_str_norm_SOURCES) $(tst_num_SOURCES)
-OBJECTS = $(tst_char_OBJECTS) $(tst_short_OBJECTS) $(tst_int_OBJECTS) $(tst_long_OBJECTS) $(tst_intmax_t_OBJECTS) $(tst_double_OBJECTS) $(tst_long_double_OBJECTS) $(tst_str_norm_OBJECTS) $(tst_num_OBJECTS)
+SOURCES = tst_empty.c tst_all.c tst_beg.c tst_mid.c tst_end.c
+OBJECTS = tst_empty.$(OBJEXT) tst_all.$(OBJEXT) tst_beg.$(OBJEXT) tst_mid.$(OBJEXT) tst_end.$(OBJEXT)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu tst/fmt/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu tst/del/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -250,41 +224,25 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-tst_char$(EXEEXT): $(tst_char_OBJECTS) $(tst_char_DEPENDENCIES)
-	@rm -f tst_char$(EXEEXT)
-	$(LINK) $(tst_char_LDFLAGS) $(tst_char_OBJECTS) $(tst_char_LDADD) $(LIBS)
+tst_empty$(EXEEXT): $(tst_empty_OBJECTS) $(tst_empty_DEPENDENCIES)
+	@rm -f tst_empty$(EXEEXT)
+	$(LINK) $(tst_empty_LDFLAGS) $(tst_empty_OBJECTS) $(tst_empty_LDADD) $(LIBS)
 
-tst_short$(EXEEXT): $(tst_short_OBJECTS) $(tst_short_DEPENDENCIES)
-	@rm -f tst_short$(EXEEXT)
-	$(LINK) $(tst_short_LDFLAGS) $(tst_short_OBJECTS) $(tst_short_LDADD) $(LIBS)
+tst_all$(EXEEXT): $(tst_all_OBJECTS) $(tst_all_DEPENDENCIES)
+	@rm -f tst_all$(EXEEXT)
+	$(LINK) $(tst_all_LDFLAGS) $(tst_all_OBJECTS) $(tst_all_LDADD) $(LIBS)
 
-tst_int$(EXEEXT): $(tst_int_OBJECTS) $(tst_int_DEPENDENCIES)
-	@rm -f tst_int$(EXEEXT)
-	$(LINK) $(tst_int_LDFLAGS) $(tst_int_OBJECTS) $(tst_int_LDADD) $(LIBS)
+tst_beg$(EXEEXT): $(tst_beg_OBJECTS) $(tst_beg_DEPENDENCIES)
+	@rm -f tst_beg$(EXEEXT)
+	$(LINK) $(tst_beg_LDFLAGS) $(tst_beg_OBJECTS) $(tst_beg_LDADD) $(LIBS)
 
-tst_long$(EXEEXT): $(tst_long_OBJECTS) $(tst_long_DEPENDENCIES)
-	@rm -f tst_long$(EXEEXT)
-	$(LINK) $(tst_long_LDFLAGS) $(tst_long_OBJECTS) $(tst_long_LDADD) $(LIBS)
+tst_mid$(EXEEXT): $(tst_mid_OBJECTS) $(tst_mid_DEPENDENCIES)
+	@rm -f tst_mid$(EXEEXT)
+	$(LINK) $(tst_mid_LDFLAGS) $(tst_mid_OBJECTS) $(tst_mid_LDADD) $(LIBS)
 
-tst_intmax_t$(EXEEXT): $(tst_intmax_t_OBJECTS) $(tst_intmax_t_DEPENDENCIES)
-	@rm -f tst_intmax_t$(EXEEXT)
-	$(LINK) $(tst_intmax_t_LDFLAGS) $(tst_intmax_t_OBJECTS) $(tst_intmax_t_LDADD) $(LIBS)
-
-tst_double$(EXEEXT): $(tst_double_OBJECTS) $(tst_double_DEPENDENCIES)
-	@rm -f tst_double$(EXEEXT)
-	$(LINK) $(tst_double_LDFLAGS) $(tst_double_OBJECTS) $(tst_double_LDADD) $(LIBS)
-
-tst_long_double$(EXEEXT): $(tst_long_double_OBJECTS) $(tst_long_double_DEPENDENCIES)
-	@rm -f tst_long_double$(EXEEXT)
-	$(LINK) $(tst_long_double_LDFLAGS) $(tst_long_double_OBJECTS) $(tst_long_double_LDADD) $(LIBS)
-
-tst_str_norm$(EXEEXT): $(tst_str_norm_OBJECTS) $(tst_str_norm_DEPENDENCIES)
-	@rm -f tst_str_norm$(EXEEXT)
-	$(LINK) $(tst_str_norm_LDFLAGS) $(tst_str_norm_OBJECTS) $(tst_str_norm_LDADD) $(LIBS)
-
-tst_num$(EXEEXT): $(tst_num_OBJECTS) $(tst_num_DEPENDENCIES)
-	@rm -f tst_num$(EXEEXT)
-	$(LINK) $(tst_num_LDFLAGS) $(tst_num_OBJECTS) $(tst_num_LDADD) $(LIBS)
+tst_end$(EXEEXT): $(tst_end_OBJECTS) $(tst_end_DEPENDENCIES)
+	@rm -f tst_end$(EXEEXT)
+	$(LINK) $(tst_end_LDFLAGS) $(tst_end_OBJECTS) $(tst_end_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -317,7 +275,7 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = tst/fmt
+subdir = tst/del
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
