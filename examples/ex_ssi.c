@@ -1,6 +1,7 @@
 /* quick but useful static ssi processor.
 */
 #include "ex_utils.h"
+#include "opt.h"
 
 #include <stdio.h>
 
@@ -616,7 +617,7 @@ static void cl_cmd_line(int *passed_argc, char ***passed_argv)
   char **argv = *passed_argv;
   
   char optchar = 0;
-  const char *program_name = "jssi";
+  const char *program_name = NULL;
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
@@ -626,14 +627,8 @@ static void cl_cmd_line(int *passed_argc, char ***passed_argv)
    {NULL, 0, NULL, 0}
   };
   
-  if (argv[0])
-  {
-    if ((program_name = strrchr(argv[0], '/')))
-      ++program_name;
-    else
-      program_name = argv[0];
-  }
-
+  program_name = opt_program_name(argv[0], "jssi");
+  
   while ((optchar = getopt_long(argc, argv, "hV", long_options, NULL)) != EOF)
   {
     switch (optchar)

@@ -2,6 +2,10 @@ HEAD / HTTP / 1 . 1
 Host:
  blah            
 
+TRACE / HTTP / 1 . 1
+Host:
+ blah            
+
 GET / HTTP/1.1
 Host:
              foo.example.com
@@ -27,6 +31,26 @@ Range:      bytes = 2-9
 GET http://foo.example.com/../ HTTP/1.1
 Connection: Keep-Alive
 Range:      bytes = 2-9
+
+GET http://FOO.example.com/index.html HTTP/1.1
+Range: bytes = ,,  ,-8,   ,,
+
+GET http://FOO.example.com/index.html HTTP/1.1
+Range: bytes = ,
+	    ,
+  ,
+ -8
+ ,
+	   ,,
+
+GET http://FOO.example.com/index.html HTTP/1.1
+Range: bytes = 151 -  ,
+
+GET http://FOO.example.com/index.html HTTP/1.1
+Range: bytes = 151 -   
+
+GET http://FOO.example.com/index.html#blah HTTP/1.1
+If-None-Match: *
 
 HEAD http://FOO.example.com/index.html HTTP/1.1
 Range:      bytes = 2-9

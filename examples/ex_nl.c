@@ -1,5 +1,7 @@
-/* Unix nl command -- no arguments */
+/* Unix nl command */
 #include "ex_utils.h"
+
+#define CONF_USE_MMAP_DEF FALSE
 
 #define EX_NL_SECTS_LOOP 32 /* how many sections to split into per loop */
 #define EX_NL_USE_SRCH_MOV 0
@@ -133,7 +135,7 @@ static void ex_nl_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 
     io_w_state = io_put(s1, 1);
 
-    io_limit(io_r_state, fd, io_w_state, 1, s1);
+    io_limit(io_r_state, fd, io_w_state, STDOUT_FILENO, s1);
   }
 }
 
@@ -147,12 +149,53 @@ static void ex_nl_process_limit(Vstr_base *s1, Vstr_base *s2, unsigned int lim)
   }
 }
 
-
 int main(int argc, char *argv[])
 {
   Vstr_base *s2 = NULL;
   Vstr_base *s1 = ex_init(&s2);
   int count = 1;
+  int use_mmap = CONF_USE_MMAP_DEF;
+  
+  /* parse command line arguments... */
+  while (count < argc)
+  { /* quick hack getopt_long */
+    if (!strcmp("--", argv[count]))
+    {
+      ++count;
+      break;
+    }
+    else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
+      use_mmap = !use_mmap;
+    else if (!strcmp("--version", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+jnl 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+");
+      goto out;
+    }
+    else if (!strcmp("--help", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+Usage: jnl [FILENAME]...\n\
+   or: jnl OPTION\n\
+Output filenames.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill <james@and.org>.\n\
+");
+      goto out;
+    }
+    else
+      break;
+    ++count;
+  }  
 
   /* if no arguments are given just do stdin to stdout */
   if (count >= argc)
@@ -167,10 +210,11 @@ int main(int argc, char *argv[])
   {
     unsigned int ern = 0;
 
-    if (s2->len <= EX_MAX_R_DATA_INCORE)
+    if (use_mmap)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
-    if ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+    if (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
@@ -191,6 +235,7 @@ int main(int argc, char *argv[])
 
   ex_nl_process_limit(s1, s2, 0);
 
+ out:
   io_put_all(s1, STDOUT_FILENO);
 
   exit (ex_exit(s1, s2));

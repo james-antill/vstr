@@ -8,6 +8,7 @@
 #define EX_UTILS_NO_USE_PUT    1
 #define EX_UTILS_NO_USE_PUTALL 1
 #include "ex_utils.h"
+#include "opt.h"
 
 #include <timer_q.h>
 #include <getopt.h>
@@ -135,7 +136,7 @@ static void ex_slowcat_timer_func(int type, void *data)
 static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
 {
  char optchar = 0;
- const char *program_name = "talker";
+ const char *program_name = NULL;
  struct option long_options[] =
    {
     {"bytes", required_argument, NULL, 'b'},
@@ -149,13 +150,7 @@ static int ex_slowcat_init_cmd_line(ex_slowcat_vars *v, int argc, char *argv[])
 
  help_stdout = stdout;
 
- if (argv[0])
- {
-  if ((program_name = strrchr(argv[0], '/')))
-    ++program_name;
-  else
-    program_name = argv[0];
- }
+ program_name = opt_program_name(argv[0], "slowcat");
 
  while ((optchar = getopt_long(argc, argv, "b:hs:u:vHV",
                                long_options, NULL)) != EOF)

@@ -3,8 +3,6 @@
 use strict;
 use File::Path;
 
-use IO::Socket;
-
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
 
@@ -12,65 +10,81 @@ sub sub_http_tst
   {
     my $io_r = shift;
     my $io_w = shift;
-    my $xtra = shift;
+    my $xtra = shift || {};
     my $sz   = shift;
 
-    my $sock = new IO::Socket::INET->new(PeerAddr => daemon_addr(),
-					 PeerPort => daemon_port(),
-					 Proto    => "tcp",
-					 Type     => SOCK_STREAM,
-					 Timeout  => 2) || failure("connect");
+    my $sock = daemon_connect_tcp();
+    my $data = daemon_get_io_r($sock, $io_r);
 
-    my $data_r = "";
-    my $data_w = "";
-    { local ($/);
-      open(INFO, "< $io_r") || failure("open $io_r: $!");
-      $data_r = <INFO>;
-      close(INFO);
-    }
-    $data_r =~ s/\n/\r\n/g;
+    $data =~ s/\n/\r\n/g;
 
-    my $len_r = length($data_r);
-    my $off_r = 0;
-
-    while (1)
-      {
-	if ($len_r)
-	  {
-	    my $len = $sock->syswrite($data_r, $len_r, $off_r);
-	    $len_r -= $len; $off_r += $len;
-	  }
-
-	$sock->sysread(my($buff), 4096);
-	last if ( !$buff);
-	$data_w .= $buff;
-      }
+    my $output = daemon_io($sock, $data,
+			   $xtra->{shutdown_w}, $xtra->{slow_write});
 
     # Remove date, because that changes each time
-    $data_w =~ s/^(Date:).*$/$1/gm;
+    $output =~ s/^(Date:).*$/$1/gm;
     # Remove last-modified = start date for error messages
-    $data_w =~
-      s!(HTTP/1[.]1 \s (?:400|403|404|405|412|414|416|417|501|505) .*)$ (\n)
+    $output =~
+      s!(HTTP/1[.]1 \s (?:301|400|403|404|405|412|414|416|417|501|505) .*)$ (\n)
 	^(Date:)$ (\n)
 	^(Server:.*)$ (\n)
 	^(Last-Modified:) .*$
 	!$1$2$3$4$5$6$7!gmx;
+    # Remove last modified for trace ops
+    $output =~
+      s!^(Last-Modified:).*$ (\n)
+        ^(Accept-Ranges:.*)$ (\n)
+        ^(Content-Type: \s message/http.*)$
+	!$1$2$3$4$5!gmx;
+    daemon_put_io_w($io_w, $output);
+  }
 
-    open(OUT, "> $io_w") || failure("open $io_w: $!");
-    print OUT $data_w;
-    close(OUT);
+sub all_vhost_tsts()
+  {
+    sub_tst(\&sub_http_tst, "ex_httpd");
+    sub_tst(\&sub_http_tst, "ex_httpd_errs");
+    sub_tst(\&sub_http_tst, "ex_httpd",
+	    {shutdown_w => 0});
+    sub_tst(\&sub_http_tst, "ex_httpd_errs",
+	    {shutdown_w => 0});
+    sub_tst(\&sub_http_tst, "ex_httpd",
+	    {slow_write => 1});
+    sub_tst(\&sub_http_tst, "ex_httpd_errs",
+	    {slow_write => 1});
+  }
+
+sub all_nonvhost_tsts()
+  {
+    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts");
+    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
+	    {shutdown_w => 0});
+    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
+	    {slow_write => 1});
+  }
+
+if (@ARGV)
+  {
+    daemon_status(shift);
+    if (@ARGV && ($ARGV[0] eq "non-virtual-hosts"))
+      {
+	all_nonvhost_tsts();
+      }
+    else
+      {
+	all_vhost_tsts();
+      }
+    success();
   }
 
 my $root = "ex_httpd_root";
 my $args = $root;
 
+rmtree($root);
 mkpath([$root . "/default",
 	$root . "/foo.example.com",
 	$root . "/foo.example.com:1234"]);
 
-daemon_init("ex_httpd", $root);
-
-sub make_index_html
+sub make_html
   {
     my $num   = shift;
     my $val   = shift;
@@ -98,13 +112,26 @@ EOL
     utime $atime, $mtime, $fname;
   }
 
-make_index_html(1, "root",    "$root/index.html");
-make_index_html(2, "default", "$root/default/index.html");
-make_index_html(3, "norm",    "$root/foo.example.com/index.html");
-make_index_html(4, "port",    "$root/foo.example.com:1234/index.html");
+make_html(1, "root",    "$root/index.html");
+make_html(2, "default", "$root/default/index.html");
+make_html(3, "norm",    "$root/foo.example.com/index.html");
+make_html(4, "port",    "$root/foo.example.com:1234/index.html");
+make_html(0, "",        "$root/default/noprivs.html");
+chmod(0, "$root/default/noprivs.html");
 
-sub_tst(\&sub_http_tst, "ex_httpd");
+run_tst("ex_httpd", "ex_httpd_help", "--help");
+run_tst("ex_httpd", "ex_httpd_version", "--version");
 
+daemon_init("ex_httpd", $root);
+all_vhost_tsts();
+daemon_exit("ex_httpd");
+
+daemon_init("ex_httpd", $root, "--mmap");
+all_vhost_tsts();
+daemon_exit("ex_httpd");
+
+daemon_init("ex_httpd", $root, "--virtual-hosts=false");
+all_nonvhost_tsts();
 daemon_exit("ex_httpd");
 
 rmtree($root);

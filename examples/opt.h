@@ -4,18 +4,12 @@
 #include <getopt.h>
 #include <string.h>
 
-static int opt_toggle(int val, const char *opt)
-{
-  if (!opt)
-  { val = !val; }
-  else if (!strcasecmp("true", optarg))  val = 1;
-  else if (!strcasecmp("1", optarg))     val = 1;
-  else if (!strcasecmp("false", optarg)) val = 0;
-  else if (!strcasecmp("0", optarg))     val = 0;
-
-  return (val);
-}
-
 #define OPT_TOGGLE_ARG(val) (val = opt_toggle(val, optarg))
+
+extern int opt_toggle(int val, const char *opt);
+
+/* get program name ... but ignore "lt-" libtool prefix */
+extern const char *opt_program_name(const char *argv0, const char *def);
+
 
 #endif

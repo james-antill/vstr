@@ -1,0 +1,20 @@
+HTTP/1.1 501 Not Implemented
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Connection: close
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 241
+Allow: GET, HEAD, TRACE
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>501 Not Implemented</title>
+  </head>
+  <body>
+    <h1>501 Not Implemented</h1>
+    <p>The request method is not implemented.</p>
+  </body>
+</html>

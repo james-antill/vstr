@@ -20,9 +20,9 @@
 </html>\r\n\
 "
 
-#define CONF_MSG_LEN_301(s1, p, l) ((l) +                               \
-                                    strlen(CONF_MSG__FMT_301_BEG) +     \
-                                    strlen(CONF_MSG__FMT_301_END))
+#define CONF_MSG_LEN_301(s1) (((s1)->len) +                             \
+                              strlen(CONF_MSG__FMT_301_BEG) +           \
+                              strlen(CONF_MSG__FMT_301_END))
 
 #define CONF_LINE_RET_400 "Bad Request"
 #define CONF_MSG_RET_400 "\
@@ -178,39 +178,39 @@
 </html>\r\n\
 "
 
-#define HTTPD_ERR(code, skip_msg) do {                          \
-      http_error_code  = (code);                                \
-      http_error_line  = CONF_LINE_RET_ ## code ;               \
-      http_error_len   = strlen( CONF_MSG_RET_ ## code );       \
-      if (!(skip_msg))                                          \
-        http_error_msg = CONF_MSG_RET_ ## code ;                \
+#define HTTPD_ERR(req, code) do {                                    \
+      req->http_error_code  = (code);                                \
+      req->http_error_line  = CONF_LINE_RET_ ## code ;               \
+      req->http_error_len   = strlen( CONF_MSG_RET_ ## code );       \
+      if (!req->head_op)                                             \
+        req->http_error_msg = CONF_MSG_RET_ ## code ;                \
     } while (0)
 
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar
 */
-#define HTTP_REQ_CHK_DIR(s1, head_op, goto_label) do {            \
-      if (VSUFFIX((s1), 1, (s1)->len, "/.."))                     \
-      {                                                           \
-        HTTPD_ERR(403, head_op);                                  \
-        goto goto_label ;                                         \
-      }                                                           \
-      else if (!VSUFFIX((s1), 1, (s1)->len, "/"))                 \
-      {                                                           \
-        vstr_del((s1), 1, vhost_prefix_len);                      \
-        vhost_prefix_len = 0;                                     \
-                                                                  \
-        vstr_conv_encode_uri((s1), 1, (s1)->len);                 \
-        vstr_add_cstr_buf((s1), (s1)->len, "/");                  \
-        http_error_code = 301;                                    \
-        http_error_line = CONF_LINE_RET_301;                      \
-        http_error_len  = CONF_MSG_LEN_301(s1, 1, s1->len);       \
-        if (!head_op)                                             \
-          redirect_http_error_msg = TRUE;                         \
-        goto goto_label ;                                         \
-      }                                                           \
-      else                                                        \
-        vstr_add_cstr_ptr(fname, fname->len, "index.html");       \
+#define HTTP_REQ_CHK_DIR(req, goto_label) do {                          \
+      if (VSUFFIX((req)->fname, 1, (req)->fname->len, "/.."))           \
+      {                                                                 \
+        HTTPD_ERR(req, 403);                                            \
+        goto goto_label ;                                               \
+      }                                                                 \
+      else if (!VSUFFIX((req)->fname, 1, (req)->fname->len, "/"))       \
+      {                                                                 \
+        vstr_del((req)->fname, 1, req->vhost_prefix_len);               \
+        req->vhost_prefix_len = 0;                                      \
+                                                                        \
+        vstr_conv_encode_uri((req)->fname, 1, (req)->fname->len);       \
+        vstr_add_cstr_buf((req)->fname, (req)->fname->len, "/");        \
+        req->http_error_code = 301;                                     \
+        req->http_error_line = CONF_LINE_RET_301;                       \
+        req->http_error_len  = CONF_MSG_LEN_301((req)->fname);          \
+        if (!req->head_op)                                              \
+          req->redirect_http_error_msg = TRUE;                          \
+        goto goto_label ;                                               \
+      }                                                                 \
+      else                                                              \
+        vstr_add_cstr_ptr((req)->fname, (req)->fname->len, "index.html"); \
     } while (0)
       
 #endif

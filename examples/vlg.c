@@ -20,7 +20,7 @@
 #define VLG_COMPILE_INLINE 0
 #include "vlg.h"
 
-#ifndef NDEBUG
+#ifndef VSTR_AUTOCONF_NDEBUG
 # define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
 # define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
 #else
@@ -328,6 +328,19 @@ void vlg_debug(Vlg *vlg)
 /* ================== actual logging functions ================== */
 
 /* ---------- va_list ---------- */
+void vlg_vabort(Vlg *vlg, const char *fmt, va_list ap)
+{
+  Vstr_base *dlg = vlg->out_vstr;
+
+  if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
+    errno = ENOMEM, err(EXIT_FAILURE, "vlog_vabort");
+  
+  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+    vlg__flush(vlg, LOG_ALERT, TRUE);
+  
+  abort();
+}
+
 void vlg_verr(Vlg *vlg, int exit_code, const char *fmt, va_list ap)
 {
   Vstr_base *dlg = vlg->out_vstr;
@@ -399,6 +412,17 @@ void vlg_vdbg3(Vlg *vlg, const char *fmt, va_list ap)
 }
 
 /* ---------- ... ---------- */
+
+void vlg_abort(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  vlg_vabort(vlg, fmt, ap);
+  va_end(ap);
+  
+  ASSERT_NOT_REACHED();
+}
 
 void vlg_err(Vlg *vlg, int exit_code, const char *fmt, ... )
 {

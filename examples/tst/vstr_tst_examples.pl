@@ -36,11 +36,15 @@ sub sub_tst
     print "DBG: files=@files\n" if ($tst_DBG);
     @files = undef;
 
+    if (!$sz)
+      { failure("NO files: ${prefix}"); }
+
     for my $num (1..$sz)
       {
-	if (! -f "$dir/${prefix}_tst_$num" ||
-	    ! -f "$dir/${prefix}_out_$num")
-	  { failure("files $dir/${prefix}_tst_$num $dir/${prefix}_out_$num"); }
+	if (! -f "$dir/${prefix}_tst_$num")
+	  { failure("NO file: $dir/${prefix}_tst_$num"); }
+	if (! -f "$dir/${prefix}_out_$num")
+	  { failure("NO file $dir/${prefix}_out_$num"); }
 
 	my $fsz = -s "$dir/${prefix}_out_$num";
 
@@ -49,7 +53,7 @@ sub sub_tst
 	$func->("$dir/${prefix}_tst_$num", "${prefix}_tmp_$num", $xtra, $fsz);
 
 	if (compare("$dir/${prefix}_out_$num", "${prefix}_tmp_$num") != 0)
-	  { failure("tst $dir/${prefix}_tst_$num ${prefix}_tmp_$num"); }
+	  { failure("tst ${prefix} $num"); }
 	unlink("${prefix}_tmp_$num");
       }
   }
@@ -57,9 +61,8 @@ sub sub_tst
 sub run_tst
   {
     my $cmd    = shift;
-    my $prefix = shift;
-
-    if (!defined($prefix)) { $prefix = $cmd; }
+    my $prefix = shift || $cmd;
+    my $opts   = shift || "";
 
     sub sub_run_tst
       {
@@ -84,7 +87,6 @@ sub run_tst
 	system("./ex_cat $io_r | ./${cmd} $opts > $io_w");
       }
 
-    my $opts = $main::opts || "";
     sub_tst(\&sub_run_tst,      $prefix, {cmd => $cmd, opts => $opts});
     sub_tst(\&sub_run_pipe_tst, $prefix, {cmd => $cmd, opts => $opts});
   }
@@ -92,20 +94,12 @@ sub run_tst
 {
 my $daemon_addr = undef;
 my $daemon_port = undef;
-sub daemon_init
+sub daemon_status
   {
-    my $cmd    = shift;
+    my $cntl = shift;
 
-    my $args   = shift || '';
-    my $opts   = shift || "";
-
-    my $cntl = "--cntl-file=${cmd}_cntl";
-    my $port = "--port=0"; # Rand
-
-    system("./${cmd} $port $opts $cntl -- $args >/dev/null 2>/dev/null &");
-
-    open(INFO, "./ex_cntl -e status ${cmd}_cntl |") ||
-      failure("Can't open control for ${cmd}.");
+    open(INFO, "./ex_cntl -e status ${cntl} |") ||
+      failure("Can't open control ${cntl}.");
 
     while (<INFO>)
       {
@@ -119,7 +113,34 @@ sub daemon_init
 	last;
       }
 
-    close(INFO);
+    close(INFO) || failure("Problem with cntl ${cntl}.");
+  }
+
+sub daemon_init
+  {
+    my $cmd    = shift;
+
+    my $args   = shift || '';
+    my $opts   = shift || "";
+
+    my $cntl = "--cntl-file=${cmd}_cntl";
+    my $port = "--port=0"; # Rand
+
+    my $dbg = "";
+    my $no_out = ">/dev/null";
+    if ($tst_DBG)
+      {
+	$dbg    = '-d -d -d';
+	$no_out = '';
+      }
+
+    system("./${cmd} $port $opts $cntl $dbg -- $args $no_out &");
+
+    # Wait for it...
+    while (! -e "${cmd}_cntl")
+      { sleep(1); }
+
+    daemon_status("${cmd}_cntl");
   }
 
 sub daemon_addr
@@ -130,6 +151,100 @@ sub daemon_port
   {
     return $daemon_port;
   }
+
+use POSIX;
+use IO::Socket;
+
+sub nonblock {
+    my $socket = shift;
+    my $flags;
+
+    $flags = fcntl($socket, F_GETFL, 0)
+      or failure("Can't get flags for socket: $!");
+    fcntl($socket, F_SETFL, $flags | O_NONBLOCK)
+      or failure("Can't make socket nonblocking: $!");
+}
+sub daemon_connect_tcp
+  {
+    my $sock = new IO::Socket::INET->new(PeerAddr => daemon_addr(),
+					 PeerPort => daemon_port(),
+					 Proto    => "tcp",
+					 Type     => SOCK_STREAM,
+					 Timeout  => 2) || failure("connect");
+    nonblock($sock);
+    return $sock;
+  }
+
+sub daemon_get_io_r
+  {
+    my $sock = shift;
+    my $io_r = shift;
+
+    my $data_r = "";
+    { local ($/);
+      open(IO_R, "< $io_r") || failure("open $io_r: $!");
+      $data_r = <IO_R>;
+      close(IO_R);
+    }
+
+    return $data_r;
+  }
+
+sub daemon_put_io_w
+  {
+    my $io_w   = shift;
+    my $output = shift;
+
+    open(IO_W, "> $io_w") || failure("open $io_w: $!");
+    print IO_W $output;
+    close(IO_W) || failure("close $io_w: $!");
+  }
+
+sub daemon_io
+  {
+    my $sock = shift;
+    my $data = shift;
+    my $done_shutdown = shift;
+    my $slow_write = shift;
+    my $len = length($data);
+    my $off = 0;
+    my $output = '';
+
+    # don't do shutdown by default....
+    if (!defined($done_shutdown)) { $done_shutdown = 1; }
+
+# This busy spins ... fuckit...
+    while (1)
+      {
+	if ($len)
+	  {
+	    my $tmp = $len;
+
+	    if ($slow_write)
+	      { $tmp = 1; }
+	    $tmp = $sock->syswrite($data, $tmp, $off);
+	    failure("write: $!") if (!defined($tmp));
+	    $len -= $tmp; $off += $tmp;
+	  }
+	elsif (!$done_shutdown)
+	  {
+	    if ($slow_write) # Makes this _slow_
+	      { sleep(1); }
+	    $sock->shutdown(1);
+	    $done_shutdown = 1;
+	  }
+
+	my $ret = $sock->sysread(my($buff), 4096);
+	failure("read: $!") if (!defined($buff));
+
+	next if (!defined($ret));
+	last if (!$ret);
+
+	$output .= $buff;
+      }
+
+    return $output;
+}
 
 sub daemon_exit
   {

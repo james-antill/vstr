@@ -11,6 +11,9 @@ GEN_CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 
 
+CMDLINE_FILES_SRCS = opt.c date.c evnt.c vlg.c
+CMDLINE_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h
+
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD  = $(GEN_LDLIBS)
@@ -43,8 +46,8 @@ ex_html_dir_list_DEPENDENCIES = ex_utils.h
 ex_html_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_html_dir_list_LDADD  = $(GEN_LDLIBS)
 
-ex_dir_filter_SOURCES = ex_dir_filter.c bag.c
-ex_dir_filter_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_filter_SOURCES = opt.c ex_dir_filter.c bag.c
+ex_dir_filter_DEPENDENCIES = opt.h ex_utils.h bag.h
 ex_dir_filter_CFLAGS = $(GEN_CFLAGS)
 ex_dir_filter_LDADD  = $(GEN_LDLIBS)
 
@@ -52,8 +55,8 @@ ex_dir_list_DEPENDENCIES = ex_utils.h
 ex_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_dir_list_LDADD  = $(GEN_LDLIBS)
 
-ex_dir_sort_SOURCES = ex_dir_sort.c bag.c
-ex_dir_sort_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_sort_SOURCES = opt.c ex_dir_sort.c bag.c
+ex_dir_sort_DEPENDENCIES = opt.h ex_utils.h bag.h
 ex_dir_sort_CFLAGS = $(GEN_CFLAGS)
 ex_dir_sort_LDADD  = $(GEN_LDLIBS)
 
@@ -89,7 +92,8 @@ ex_highlight_DEPENDENCIES = ex_utils.h
 ex_highlight_CFLAGS = $(GEN_CFLAGS)
 ex_highlight_LDADD  = $(GEN_LDLIBS)
 
-ex_ssi_DEPENDENCIES = ex_utils.h
+ex_ssi_SOURCES = ex_ssi.c opt.c
+ex_ssi_DEPENDENCIES = opt.h ex_utils.h
 ex_ssi_CFLAGS = $(GEN_CFLAGS)
 ex_ssi_LDADD  = $(GEN_LDLIBS)
 
@@ -101,12 +105,10 @@ ex_changelog_diff_DEPENDENCIES = ex_utils.h
 ex_changelog_diff_CFLAGS = $(GEN_CFLAGS)
 ex_changelog_diff_LDADD  = $(GEN_LDLIBS)
 
-ex_slowcat_DEPENDENCIES = ex_utils.h
+ex_slowcat_SOURCES = ex_slowcat.c opt.c
+ex_slowcat_DEPENDENCIES = opt.h ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
-
-CMDLINE_FILES_SRCS = date.c evnt.c vlg.c
-CMDLINE_FILES_HDRS = date.h evnt.h vlg.h
 
 ex_dns_SOURCES = ex_dns.c dns.c $(CMDLINE_FILES_SRCS)
 ex_dns_DEPENDENCIES =     dns.h $(CMDLINE_FILES_HDRS)
@@ -118,8 +120,8 @@ ex_cntl_DEPENDENCIES =      $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS =       date.c evnt.c vlg.c cntl.c
-DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h cntl.h
+DAEMON_FILES_SRCS = opt.c date.c evnt.c vlg.c              cntl.c
+DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h cntl.h
 
 ex_httpd_SOURCES = ex_httpd.c $(DAEMON_FILES_SRCS)
 ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h $(DAEMON_FILES_HDRS)
@@ -240,7 +242,8 @@ endif
 
 if PERL_USR_BIN_AVAIL
 TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
-TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_httpd.pl
+TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
+        tst/tst_echod.pl tst/tst_httpd.pl
 endif
 
 else
@@ -260,6 +263,8 @@ htmldir   = $(EX_INST_DIR)/html
 html_DATA = \
   html/f_c.css \
   html/app.h.html \
+  html/bag.c.html \
+  html/bag.h.html \
   html/cntl.c.html \
   html/cntl.h.html \
   html/date.c.html \

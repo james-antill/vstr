@@ -12,11 +12,12 @@ struct Evnt;
 
 struct Evnt_cbs
 {
- struct Evnt *(*cb_func_accept)(int, struct sockaddr *, socklen_t);
- int (*cb_func_connect)(struct Evnt *);
- int (*cb_func_recv)(struct Evnt *);
- int (*cb_func_send)(struct Evnt *);
- void (*cb_func_free)(struct Evnt *);
+ struct Evnt *(*cb_func_accept)    (int, struct sockaddr *, socklen_t);
+ int          (*cb_func_connect)   (struct Evnt *);
+ int          (*cb_func_recv)      (struct Evnt *);
+ int          (*cb_func_send)      (struct Evnt *);
+ void         (*cb_func_free)      (struct Evnt *);
+ int          (*cb_func_shutdown_r)(struct Evnt *);
 };
 
 struct Evnt
@@ -70,6 +71,7 @@ extern struct Evnt *evnt_cb_func_accept(int, struct sockaddr *, socklen_t);
 extern int evnt_cb_func_recv(struct Evnt *);
 extern int evnt_cb_func_send(struct Evnt *);
 extern void evnt_cb_func_free(struct Evnt *);
+extern int evnt_cb_func_shutdown_r(struct Evnt *);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
 extern int evnt_make_con_local(struct Evnt *, const char *);
@@ -85,6 +87,7 @@ extern void evnt_add(struct Evnt **, struct Evnt *);
 extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
+extern void evnt_shutdown_r(struct Evnt *);
 extern int evnt_recv(struct Evnt *, unsigned int *ern);
 extern int evnt_send(struct Evnt *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);

@@ -241,6 +241,9 @@ EX_INST_DIR = $(libdir)/vstr-$(VERSION)/examples
 GEN_CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 
+CMDLINE_FILES_SRCS = opt.c date.c evnt.c vlg.c
+CMDLINE_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h
+
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD = $(GEN_LDLIBS)
@@ -273,8 +276,8 @@ ex_html_dir_list_DEPENDENCIES = ex_utils.h
 ex_html_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_html_dir_list_LDADD = $(GEN_LDLIBS)
 
-ex_dir_filter_SOURCES = ex_dir_filter.c bag.c
-ex_dir_filter_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_filter_SOURCES = opt.c ex_dir_filter.c bag.c
+ex_dir_filter_DEPENDENCIES = opt.h ex_utils.h bag.h
 ex_dir_filter_CFLAGS = $(GEN_CFLAGS)
 ex_dir_filter_LDADD = $(GEN_LDLIBS)
 
@@ -282,8 +285,8 @@ ex_dir_list_DEPENDENCIES = ex_utils.h
 ex_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_dir_list_LDADD = $(GEN_LDLIBS)
 
-ex_dir_sort_SOURCES = ex_dir_sort.c bag.c
-ex_dir_sort_DEPENDENCIES = ex_utils.h bag.h
+ex_dir_sort_SOURCES = opt.c ex_dir_sort.c bag.c
+ex_dir_sort_DEPENDENCIES = opt.h ex_utils.h bag.h
 ex_dir_sort_CFLAGS = $(GEN_CFLAGS)
 ex_dir_sort_LDADD = $(GEN_LDLIBS)
 
@@ -319,7 +322,8 @@ ex_highlight_DEPENDENCIES = ex_utils.h
 ex_highlight_CFLAGS = $(GEN_CFLAGS)
 ex_highlight_LDADD = $(GEN_LDLIBS)
 
-ex_ssi_DEPENDENCIES = ex_utils.h
+ex_ssi_SOURCES = ex_ssi.c opt.c
+ex_ssi_DEPENDENCIES = opt.h ex_utils.h
 ex_ssi_CFLAGS = $(GEN_CFLAGS)
 ex_ssi_LDADD = $(GEN_LDLIBS)
 
@@ -331,12 +335,10 @@ ex_changelog_diff_DEPENDENCIES = ex_utils.h
 ex_changelog_diff_CFLAGS = $(GEN_CFLAGS)
 ex_changelog_diff_LDADD = $(GEN_LDLIBS)
 
-ex_slowcat_DEPENDENCIES = ex_utils.h
+ex_slowcat_SOURCES = ex_slowcat.c opt.c
+ex_slowcat_DEPENDENCIES = opt.h ex_utils.h
 ex_slowcat_CFLAGS = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
-
-CMDLINE_FILES_SRCS = date.c evnt.c vlg.c
-CMDLINE_FILES_HDRS = date.h evnt.h vlg.h
 
 ex_dns_SOURCES = ex_dns.c dns.c $(CMDLINE_FILES_SRCS)
 ex_dns_DEPENDENCIES = dns.h $(CMDLINE_FILES_HDRS)
@@ -348,8 +350,8 @@ ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS = date.c evnt.c vlg.c cntl.c
-DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h cntl.h
+DAEMON_FILES_SRCS = opt.c date.c evnt.c vlg.c              cntl.c
+DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h cntl.h
 
 ex_httpd_SOURCES = ex_httpd.c $(DAEMON_FILES_SRCS)
 ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h $(DAEMON_FILES_HDRS)
@@ -422,7 +424,9 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@hi_APP = ./ex_highlight
 
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_httpd.pl
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl tst/tst_httpd.pl
+
 
 otherdir = $(EX_INST_DIR)
 other_DATA = \
@@ -433,6 +437,8 @@ htmldir = $(EX_INST_DIR)/html
 html_DATA = \
   html/f_c.css \
   html/app.h.html \
+  html/bag.c.html \
+  html/bag.h.html \
   html/cntl.c.html \
   html/cntl.h.html \
   html/date.c.html \
@@ -8769,33 +8775,35 @@ ex_changelog_diff_SOURCES = ex_changelog_diff.c
 ex_changelog_diff_OBJECTS = \
 	ex_changelog_diff-ex_changelog_diff.$(OBJEXT)
 ex_changelog_diff_LDFLAGS =
-am__objects_1 = ex_cntl-date.$(OBJEXT) ex_cntl-evnt.$(OBJEXT) \
-	ex_cntl-vlg.$(OBJEXT)
+am__objects_1 = ex_cntl-opt.$(OBJEXT) ex_cntl-date.$(OBJEXT) \
+	ex_cntl-evnt.$(OBJEXT) ex_cntl-vlg.$(OBJEXT)
 am_ex_cntl_OBJECTS = ex_cntl-ex_cntl.$(OBJEXT) $(am__objects_1)
 ex_cntl_OBJECTS = $(am_ex_cntl_OBJECTS)
 ex_cntl_LDFLAGS =
 ex_csv_SOURCES = ex_csv.c
 ex_csv_OBJECTS = ex_csv-ex_csv.$(OBJEXT)
 ex_csv_LDFLAGS =
-am_ex_dir_filter_OBJECTS = ex_dir_filter-ex_dir_filter.$(OBJEXT) \
+am_ex_dir_filter_OBJECTS = ex_dir_filter-opt.$(OBJEXT) \
+	ex_dir_filter-ex_dir_filter.$(OBJEXT) \
 	ex_dir_filter-bag.$(OBJEXT)
 ex_dir_filter_OBJECTS = $(am_ex_dir_filter_OBJECTS)
 ex_dir_filter_LDFLAGS =
 ex_dir_list_SOURCES = ex_dir_list.c
 ex_dir_list_OBJECTS = ex_dir_list-ex_dir_list.$(OBJEXT)
 ex_dir_list_LDFLAGS =
-am_ex_dir_sort_OBJECTS = ex_dir_sort-ex_dir_sort.$(OBJEXT) \
-	ex_dir_sort-bag.$(OBJEXT)
+am_ex_dir_sort_OBJECTS = ex_dir_sort-opt.$(OBJEXT) \
+	ex_dir_sort-ex_dir_sort.$(OBJEXT) ex_dir_sort-bag.$(OBJEXT)
 ex_dir_sort_OBJECTS = $(am_ex_dir_sort_OBJECTS)
 ex_dir_sort_LDFLAGS =
-am__objects_2 = ex_dns-date.$(OBJEXT) ex_dns-evnt.$(OBJEXT) \
-	ex_dns-vlg.$(OBJEXT)
+am__objects_2 = ex_dns-opt.$(OBJEXT) ex_dns-date.$(OBJEXT) \
+	ex_dns-evnt.$(OBJEXT) ex_dns-vlg.$(OBJEXT)
 am_ex_dns_OBJECTS = ex_dns-ex_dns.$(OBJEXT) ex_dns-dns.$(OBJEXT) \
 	$(am__objects_2)
 ex_dns_OBJECTS = $(am_ex_dns_OBJECTS)
 ex_dns_LDFLAGS =
-am__objects_3 = ex_echod-date.$(OBJEXT) ex_echod-evnt.$(OBJEXT) \
-	ex_echod-vlg.$(OBJEXT) ex_echod-cntl.$(OBJEXT)
+am__objects_3 = ex_echod-opt.$(OBJEXT) ex_echod-date.$(OBJEXT) \
+	ex_echod-evnt.$(OBJEXT) ex_echod-vlg.$(OBJEXT) \
+	ex_echod-cntl.$(OBJEXT)
 am_ex_echod_OBJECTS = ex_echod-ex_echod.$(OBJEXT) $(am__objects_3)
 ex_echod_OBJECTS = $(am_ex_echod_OBJECTS)
 ex_echod_LDFLAGS =
@@ -8833,8 +8841,9 @@ ex_highlight_LDFLAGS =
 ex_html_dir_list_SOURCES = ex_html_dir_list.c
 ex_html_dir_list_OBJECTS = ex_html_dir_list-ex_html_dir_list.$(OBJEXT)
 ex_html_dir_list_LDFLAGS =
-am__objects_4 = ex_httpd-date.$(OBJEXT) ex_httpd-evnt.$(OBJEXT) \
-	ex_httpd-vlg.$(OBJEXT) ex_httpd-cntl.$(OBJEXT)
+am__objects_4 = ex_httpd-opt.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
+	ex_httpd-evnt.$(OBJEXT) ex_httpd-vlg.$(OBJEXT) \
+	ex_httpd-cntl.$(OBJEXT)
 am_ex_httpd_OBJECTS = ex_httpd-ex_httpd.$(OBJEXT) $(am__objects_4)
 ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_httpd_LDFLAGS =
@@ -8873,11 +8882,12 @@ ex_rainbow_LDFLAGS =
 ex_rot13_SOURCES = ex_rot13.c
 ex_rot13_OBJECTS = ex_rot13-ex_rot13.$(OBJEXT)
 ex_rot13_LDFLAGS =
-ex_slowcat_SOURCES = ex_slowcat.c
-ex_slowcat_OBJECTS = ex_slowcat-ex_slowcat.$(OBJEXT)
+am_ex_slowcat_OBJECTS = ex_slowcat-ex_slowcat.$(OBJEXT) \
+	ex_slowcat-opt.$(OBJEXT)
+ex_slowcat_OBJECTS = $(am_ex_slowcat_OBJECTS)
 ex_slowcat_LDFLAGS =
-ex_ssi_SOURCES = ex_ssi.c
-ex_ssi_OBJECTS = ex_ssi-ex_ssi.$(OBJEXT)
+am_ex_ssi_OBJECTS = ex_ssi-ex_ssi.$(OBJEXT) ex_ssi-opt.$(OBJEXT)
+ex_ssi_OBJECTS = $(am_ex_ssi_OBJECTS)
 ex_ssi_LDFLAGS =
 ex_yes_SOURCES = ex_yes.c
 ex_yes_OBJECTS = ex_yes-ex_yes.$(OBJEXT)
@@ -8908,12 +8918,12 @@ DIST_SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c \
 	$(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c \
 	ex_nl.c ex_perf_add.c ex_perf_nodesize.c \
 	ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c \
-	ex_rainbow.c ex_rot13.c ex_slowcat.c ex_ssi.c ex_yes.c \
-	ex_zcat.c
+	ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) $(ex_ssi_SOURCES) \
+	ex_yes.c ex_zcat.c
 DATA = $(html_DATA) $(other_DATA)
 
 DIST_COMMON = README $(srcdir)/Makefile.in Makefile.am
-SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) ex_csv.c $(ex_dir_filter_SOURCES) ex_dir_list.c $(ex_dir_sort_SOURCES) $(ex_dns_SOURCES) $(ex_echod_SOURCES) ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c ex_hello_world_x.c ex_hexdump.c ex_highlight.c ex_html_dir_list.c $(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c ex_slowcat.c ex_ssi.c ex_yes.c ex_zcat.c
+SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) ex_csv.c $(ex_dir_filter_SOURCES) ex_dir_list.c $(ex_dir_sort_SOURCES) $(ex_dns_SOURCES) $(ex_echod_SOURCES) ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c ex_hello_world_x.c ex_hexdump.c ex_highlight.c ex_html_dir_list.c $(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
 
 all: all-am
 
@@ -9136,6 +9146,15 @@ ex_cntl-ex_cntl.obj: ex_cntl.c
 ex_cntl-ex_cntl.lo: ex_cntl.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_cntl_CFLAGS) $(CFLAGS) -c -o ex_cntl-ex_cntl.lo `test -f 'ex_cntl.c' || echo '$(srcdir)/'`ex_cntl.c
 
+ex_cntl-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_cntl_CFLAGS) $(CFLAGS) -c -o ex_cntl-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_cntl-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_cntl_CFLAGS) $(CFLAGS) -c -o ex_cntl-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_cntl-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_cntl_CFLAGS) $(CFLAGS) -c -o ex_cntl-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
 ex_cntl-date.o: date.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_cntl_CFLAGS) $(CFLAGS) -c -o ex_cntl-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
 
@@ -9172,6 +9191,15 @@ ex_csv-ex_csv.obj: ex_csv.c
 ex_csv-ex_csv.lo: ex_csv.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_csv_CFLAGS) $(CFLAGS) -c -o ex_csv-ex_csv.lo `test -f 'ex_csv.c' || echo '$(srcdir)/'`ex_csv.c
 
+ex_dir_filter-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_filter_CFLAGS) $(CFLAGS) -c -o ex_dir_filter-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_dir_filter-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_filter_CFLAGS) $(CFLAGS) -c -o ex_dir_filter-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_dir_filter-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_filter_CFLAGS) $(CFLAGS) -c -o ex_dir_filter-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
 ex_dir_filter-ex_dir_filter.o: ex_dir_filter.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_filter_CFLAGS) $(CFLAGS) -c -o ex_dir_filter-ex_dir_filter.o `test -f 'ex_dir_filter.c' || echo '$(srcdir)/'`ex_dir_filter.c
 
@@ -9198,6 +9226,15 @@ ex_dir_list-ex_dir_list.obj: ex_dir_list.c
 
 ex_dir_list-ex_dir_list.lo: ex_dir_list.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_list_CFLAGS) $(CFLAGS) -c -o ex_dir_list-ex_dir_list.lo `test -f 'ex_dir_list.c' || echo '$(srcdir)/'`ex_dir_list.c
+
+ex_dir_sort-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_sort_CFLAGS) $(CFLAGS) -c -o ex_dir_sort-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_dir_sort-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_sort_CFLAGS) $(CFLAGS) -c -o ex_dir_sort-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_dir_sort-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_sort_CFLAGS) $(CFLAGS) -c -o ex_dir_sort-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
 ex_dir_sort-ex_dir_sort.o: ex_dir_sort.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dir_sort_CFLAGS) $(CFLAGS) -c -o ex_dir_sort-ex_dir_sort.o `test -f 'ex_dir_sort.c' || echo '$(srcdir)/'`ex_dir_sort.c
@@ -9235,6 +9272,15 @@ ex_dns-dns.obj: dns.c
 ex_dns-dns.lo: dns.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-dns.lo `test -f 'dns.c' || echo '$(srcdir)/'`dns.c
 
+ex_dns-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_dns-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_dns-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
 ex_dns-date.o: date.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
 
@@ -9270,6 +9316,15 @@ ex_echod-ex_echod.obj: ex_echod.c
 
 ex_echod-ex_echod.lo: ex_echod.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-ex_echod.lo `test -f 'ex_echod.c' || echo '$(srcdir)/'`ex_echod.c
+
+ex_echod-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_echod-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_echod-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
 ex_echod-date.o: date.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
@@ -9415,6 +9470,15 @@ ex_httpd-ex_httpd.obj: ex_httpd.c
 ex_httpd-ex_httpd.lo: ex_httpd.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-ex_httpd.lo `test -f 'ex_httpd.c' || echo '$(srcdir)/'`ex_httpd.c
 
+ex_httpd-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_httpd-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_httpd-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
 ex_httpd-date.o: date.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
 
@@ -9559,6 +9623,15 @@ ex_slowcat-ex_slowcat.obj: ex_slowcat.c
 ex_slowcat-ex_slowcat.lo: ex_slowcat.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_slowcat_CFLAGS) $(CFLAGS) -c -o ex_slowcat-ex_slowcat.lo `test -f 'ex_slowcat.c' || echo '$(srcdir)/'`ex_slowcat.c
 
+ex_slowcat-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_slowcat_CFLAGS) $(CFLAGS) -c -o ex_slowcat-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_slowcat-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_slowcat_CFLAGS) $(CFLAGS) -c -o ex_slowcat-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_slowcat-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_slowcat_CFLAGS) $(CFLAGS) -c -o ex_slowcat-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
 ex_ssi-ex_ssi.o: ex_ssi.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_ssi_CFLAGS) $(CFLAGS) -c -o ex_ssi-ex_ssi.o `test -f 'ex_ssi.c' || echo '$(srcdir)/'`ex_ssi.c
 
@@ -9567,6 +9640,15 @@ ex_ssi-ex_ssi.obj: ex_ssi.c
 
 ex_ssi-ex_ssi.lo: ex_ssi.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_ssi_CFLAGS) $(CFLAGS) -c -o ex_ssi-ex_ssi.lo `test -f 'ex_ssi.c' || echo '$(srcdir)/'`ex_ssi.c
+
+ex_ssi-opt.o: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_ssi_CFLAGS) $(CFLAGS) -c -o ex_ssi-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
+
+ex_ssi-opt.obj: opt.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_ssi_CFLAGS) $(CFLAGS) -c -o ex_ssi-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
+
+ex_ssi-opt.lo: opt.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_ssi_CFLAGS) $(CFLAGS) -c -o ex_ssi-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
 ex_yes-ex_yes.o: ex_yes.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_yes_CFLAGS) $(CFLAGS) -c -o ex_yes-ex_yes.o `test -f 'ex_yes.c' || echo '$(srcdir)/'`ex_yes.c

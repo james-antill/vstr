@@ -21,6 +21,8 @@ extern void vlg_free(Vlg *);
 extern void vlg_daemon(Vlg *, const char *);
 extern void vlg_debug(Vlg *);
 
+extern void vlg_vabort(Vlg *, const char *fmt, va_list )
+   VSTR__COMPILE_ATTR_FMT(2, 0);
 extern void vlg_verr(Vlg *, int, const char *fmt, va_list )
    VSTR__COMPILE_ATTR_FMT(3, 0);
 extern void vlg_vwarn(Vlg *, const char *fmt, va_list )
@@ -34,6 +36,8 @@ extern void vlg_vdbg2(Vlg *, const char *fmt, va_list )
 extern void vlg_vdbg3(Vlg *, const char *fmt, va_list )
    VSTR__COMPILE_ATTR_FMT(2, 0);
 
+extern void vlg_abort(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
 extern void vlg_err(Vlg *, int, const char *fmt, ... )
       VSTR__COMPILE_ATTR_FMT(3, 4);
 extern void vlg_warn(Vlg *, const char *fmt, ... )

@@ -190,8 +190,10 @@ static void ex_html_dir_list_process_limit(Vstr_base *s1, Vstr_base *s2,
 
 static void ex_html_dir_list_beg(Vstr_base *s1, const char *fname)
 {
+  /* DTD from: http://www.w3.org/QA/2002/04/valid-dtd-list.html */
   vstr_add_fmt(s1, s1->len, "\
-<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\
+<!doctype html public \"-//W3C//DTD HTML 4.01//EN\"\n\
+                      \"http://www.w3.org/TR/html4/strict.dtd\">\n\
 <html>\n\
  <head>\n\
   <title>Directory listing of %s</title>\n\

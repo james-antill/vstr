@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
   Vstr_base *s1 = ex_init(NULL); /* init the library etc. */
   int count = 1; /* skip the program name */
   int use_mmap = CONF_USE_MMAP_DEF;  
-  unsigned int ern = 0;
   
   /* parse command line arguments... */
   while (count < argc)
@@ -99,6 +98,8 @@ Report bugs to James Antill <james@and.org>.\n\
    * and do the read/write loop */
   while (count < argc)
   {
+    unsigned int ern = 0;
+
     if (use_mmap)
       vstr_sc_mmap_file(s1, s1->len, argv[count], 0, 0, &ern);
 

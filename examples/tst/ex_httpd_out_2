@@ -9,6 +9,18 @@ Content-Length: 228
 HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: message/http
+Content-Length: 50
+
+TRACE / HTTP / 1 . 1
+Host:
+ blah            
+
+HTTP/1.1 200 OK
+Date:
+Server: jhttpd/0.7.1 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
 Content-Type: text/html
@@ -93,6 +105,54 @@ Content-Length: 216
     <p>The request is forbidden.</p>
   </body>
 </html>
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 151-158/159
+
+</html>
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 151-158/159
+
+</html>
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 151-158/159
+
+</html>
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 151-158/159
+
+</html>
+HTTP/1.1 304 NOT MODIFIED
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 159
+
 HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.7.1 (Vstr)

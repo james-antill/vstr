@@ -1,0 +1,37 @@
+HTTP/1.1 412 Precondition Failed
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 297
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>412 Precondition Failed</title>
+  </head>
+  <body>
+    <h1>412 Precondition Failed</h1>
+    <p>The precondition given in one or more of the request-header fields evaluated to false.</p>
+  </body>
+</html>
+HTTP/1.1 412 Precondition Failed
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Connection: close
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 297
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>412 Precondition Failed</title>
+  </head>
+  <body>
+    <h1>412 Precondition Failed</h1>
+    <p>The precondition given in one or more of the request-header fields evaluated to false.</p>
+  </body>
+</html>

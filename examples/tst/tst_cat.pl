@@ -1,15 +1,15 @@
 #! /usr/bin/perl -w
 
-my @tsts = ("ex_cat");
-
 use strict;
 
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
 
-run_tst($_) for @tsts;
+run_tst("ex_cat");
 
-my $opts = "--mmap";
-run_tst($_) for @tsts;
+run_tst("ex_cat", undef, "--mmap");
+
+run_tst("ex_cat", "ex_cat_help", "--help");
+run_tst("ex_cat", "ex_cat_version", "--version");
 
 success();

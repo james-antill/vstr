@@ -2,6 +2,8 @@
 
 #include "ex_utils.h"
 
+#define CONF_USE_MMAP_DEF FALSE
+
 /* configuration:
    how to do it ... */
 #define EX_ROT13_USE_ITER        1
@@ -136,7 +138,6 @@ static int ex_rot13_process(Vstr_base *s1, Vstr_base *s2)
   return (TRUE);
 }
 
-
 static void ex_rot13_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 {
   while (TRUE)
@@ -166,13 +167,54 @@ static void ex_rot13_process_limit(Vstr_base *s1, Vstr_base *s2,
   }
 }
 
-
 int main(int argc, char *argv[])
 {
   Vstr_base *s1 = NULL;
   Vstr_base *s2 = ex_init(&s1);
   int count = 1;
-
+  int use_mmap = CONF_USE_MMAP_DEF;  
+  
+  /* parse command line arguments... */
+  while (count < argc)
+  { /* quick hack getopt_long */
+    if (!strcmp("--", argv[count]))
+    {
+      ++count;
+      break;
+    }
+    else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
+      use_mmap = !use_mmap;
+    else if (!strcmp("--version", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+jrot13 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+");
+      goto out;
+    }
+    else if (!strcmp("--help", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+Usage: jrot13 [FILENAME]...\n\
+   or: jrot13 OPTION\n\
+Output filenames.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill <james@and.org>.\n\
+");
+      goto out;
+    }
+    else
+      break;
+    ++count;
+  }
+  
   if (count >= argc)  /* use stdin */
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
@@ -185,10 +227,11 @@ int main(int argc, char *argv[])
   {
     unsigned int ern = 0;
 
-    if (s2->len < EX_MAX_R_DATA_INCORE)
+    if (use_mmap)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
-    if ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+    if (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
@@ -209,6 +252,7 @@ int main(int argc, char *argv[])
 
   ex_rot13_process_limit(s1, s2, 0);
 
+ out:
   io_put_all(s1, STDOUT_FILENO);
 
   exit (ex_exit(s1, s2));

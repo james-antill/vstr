@@ -462,14 +462,14 @@ static const char *ex_hl_ctime(time_t val)
 
 static const char *base_fname(const char *s1)
 {
-      const char *sname = strrchr(s1, '/');
+  const char *sname = strrchr(s1, '/');
 
-      if (sname)
-        ++sname;
-      else
-         sname = s1;
+  if (sname)
+    ++sname;
+  else
+    sname = s1;
 
-      return (sname);
+  return (sname);
 }
 
 static void ex_hl_block_beg(Vstr_base *s1, const char *block_type,

@@ -1,6 +1,7 @@
 
 #include "bag.h"
 
+/* need to use vlg etc. */
 #include <assert.h>
 #define ASSERT assert
 

@@ -24,9 +24,6 @@
 #include <time.h>
 #include <signal.h>
 
-/* #define NDEBUG 1 -- done via. ./configure */
-#include <assert.h>
-
 #include <err.h>
 
 
@@ -51,6 +48,8 @@
 #include "dns.h"
 #include "app.h"
 
+#include "vlg_assert.h"
+
 #define CL_DNS_INIT(x, y) do {                  \
       (x)->io_w_serv = (y);                     \
       (x)->io_w_user = io_w;                    \
@@ -60,6 +59,8 @@
 
 
 #include "evnt.h"
+
+#include "opt.h"
 
 struct con
 {
@@ -278,7 +279,7 @@ static struct con *cl_make(const char *ipv4_string, short port)
   if (!ret)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   if (!evnt_make_con_ipv4(ret->ev, ipv4_string, port))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, __func__);
 
   ret->ev->cbs->cb_func_connect = cl_cb_func_connect;
   ret->ev->cbs->cb_func_recv = cl_cb_func_recv;
@@ -313,7 +314,7 @@ static void cl_connect(void)
 
 static unsigned int cl_scan_io_fds(unsigned int ready)
 {
-  const int bad_poll_flags = (POLLERR | POLLHUP | POLLNVAL);
+  const int bad_poll_flags = (POLLERR | /* POLLHUP | */ POLLNVAL);
 
   vlg_dbg2(vlg, "BEG ready = %u\n", ready);
   if (io_ind_r &&
@@ -405,7 +406,7 @@ static void usage(const char *program_name, int tst_err)
 static void cl_cmd_line(int argc, char *argv[])
 {
   char optchar = 0;
-  const char *program_name = "dns";
+  const char *program_name = NULL;
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
@@ -421,13 +422,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {NULL, 0, NULL, 0}
   };
   
-  if (argv[0])
-  {
-    if ((program_name = strrchr(argv[0], '/')))
-      ++program_name;
-    else
-      program_name = argv[0];
-  }
+  program_name = opt_program_name(argv[0], "dns");
 
   while ((optchar = getopt_long(argc, argv, "c:de:hH:nP:Rt:V",
                                 long_options, NULL)) != EOF)

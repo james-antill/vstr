@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <getopt.h>
 
+#include "opt.h"
+
 #include "bag.h"
 
 static Bag *filters = NULL;
@@ -210,7 +212,7 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
   int    argc = *passed_argc;
   char **argv = *passed_argv;
   char optchar = 0;
-  const char *program_name = "jdir_filter";
+  const char *program_name = NULL;
   struct option long_options[] =
   {
    /* allow filtering on size etc. */
@@ -232,14 +234,8 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
-  
-  if (argv[0])
-  {
-    if ((program_name = strrchr(argv[0], '/')))
-      ++program_name;
-    else
-      program_name = argv[0];
-  }
+
+  program_name = opt_program_name(argv[0], "jdir_filter");
 
   if (!(filters = bag_make(argc, bag_cb_free_nothing, bag_cb_free_nothing)))
     errno = ENOMEM, err(EXIT_FAILURE, "init");

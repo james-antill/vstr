@@ -8,14 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 
-#ifndef NDEBUG
-# define ASSERT(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u\n", __FILE__, __LINE__); } while (FALSE)
-# define assert(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u\n", __FILE__, __LINE__); } while (FALSE)
-#else
-# define ASSERT(x)
-# define assert(x)
-#endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
+#include "vlg_assert.h"
 
 static Vlg *vlg = NULL;
 static struct Evnt *acpt_evnt = NULL;

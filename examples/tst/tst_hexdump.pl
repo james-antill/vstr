@@ -7,10 +7,11 @@ require 'vstr_tst_examples.pl';
 
 run_tst("ex_hexdump");
 
-our $opts = "--mmap";
-run_tst("ex_hexdump");
+run_tst("ex_hexdump", undef, "--mmap");
 
-$opts = "--none";
-run_tst("ex_hexdump", "ex_hexdump_none");
+run_tst("ex_hexdump", "ex_hexdump_none", "--none");
+
+run_tst("ex_hexdump", "ex_hexdump_help", "--help");
+run_tst("ex_hexdump", "ex_hexdump_version", "--version");
 
 success();

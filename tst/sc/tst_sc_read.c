@@ -4,8 +4,9 @@
 static const char *rf = __FILE__;
 
 #ifndef HAVE_POSIX_HOST
-#define pipe(x) 1
-#define write(x, y, z) (z)
+# define pipe(x) 1
+# define write(x, y, z) (z)
+# define O_RDONLY 0
 #endif
 
 int tst(void)

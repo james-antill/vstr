@@ -28,7 +28,7 @@ int tst(void)
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len,
                                       "1 two <   3> <    four>"));
 
-  TST_I18N("<%6$*5$s> <%-4$4ju> %3$.*2$s %1$d");
+  TST_I18N("<%6$*5$s> <%4$-4ju> %3$.*2$s %1$d");
   TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len,
                                       "<    four> <3   > two 1"));
 

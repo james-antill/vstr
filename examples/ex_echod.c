@@ -24,10 +24,6 @@
 # define prctl(x1, x2, x3, x4, x5) 0
 #endif
 
-/* #define NDEBUG 1 -- done via. ./configure */
-#include <assert.h>
-#define ASSERT assert
-
 #include <err.h>
 
 #include <socket_poll.h>
@@ -35,9 +31,12 @@
 
 #include "opt.h"
 
+#include "cntl.h"
 #include "date.h"
 
 #include "evnt.h"
+
+#include "vlg_assert.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -58,14 +57,9 @@ struct con
  struct Evnt ev[1];
 };
 
-struct con_listen
-{
- struct Evnt ev[1];
-};
-
 static Timer_q_base *cl_timeout_base = NULL;
 
-static struct con_listen *acpt_sock = NULL;
+static struct Evnt *acpt_evnt = NULL;
 
 static unsigned int client_timeout = (2 * 60); /* 2 minutes */
 
@@ -107,13 +101,11 @@ static void serv_cb_func_free(struct Evnt *evnt)
 
 static void serv_cb_func_acpt_free(struct Evnt *evnt)
 {
-  struct con_listen *con = (struct con_listen *)evnt;
+  free(evnt);
 
-  free(con);
-
-  ASSERT(acpt_sock == con);
+  ASSERT(acpt_evnt == evnt);
   
-  acpt_sock = NULL;
+  acpt_evnt = NULL;
 }
 
 static struct Evnt *serv_cb_func_accept(int fd,
@@ -152,22 +144,16 @@ static struct Evnt *serv_cb_func_accept(int fd,
   VLG_WARNNOMEM_RET(NULL, (vlg, __func__));
 }
 
-static int serv_make_bind(const char *acpt_addr, short acpt_port)
+static void serv_make_bind(const char *acpt_addr, short acpt_port)
 {
-  struct con_listen *con = malloc(sizeof(struct con_listen));
-
-  if (!con || !evnt_make_bind_ipv4(con->ev, acpt_addr, acpt_port))
-  {
-    free(con);
-    return (FALSE);
-  }
-
-  acpt_sock = con;
+  if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
+    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
   
-  con->ev->cbs->cb_func_accept = serv_cb_func_accept;
-  con->ev->cbs->cb_func_free   = serv_cb_func_acpt_free;
-
-  return (TRUE);
+  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port))
+    vlg_err(vlg, 2, "%s: %m\n", __func__);
+  
+  acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
+  acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 }
 
 static void usage(const char *program_name, int tst_err)
@@ -187,7 +173,7 @@ static void usage(const char *program_name, int tst_err)
     --nagle -n        - Enable/disable nagle TCP option.\n\
     --timeout -t      - Timeout (usecs) for connections.\n\
     --version -V      - Print the version string.\n\
-          ",
+",
           program_name);
   if (tst_err)
     exit (EXIT_FAILURE);
@@ -199,7 +185,7 @@ static void usage(const char *program_name, int tst_err)
 static void serv_cmd_line(int argc, char *argv[])
 {
   char optchar = 0;
-  const char *program_name = "jechod";
+  const char *program_name = NULL;
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
@@ -209,6 +195,7 @@ static void serv_cmd_line(int argc, char *argv[])
    {"priv-uid", required_argument, NULL, 4},
    {"priv-gid", required_argument, NULL, 5},
    {"pid-file", required_argument, NULL, 6},
+   {"cntl-file", required_argument, NULL, 7},
    {"debug", required_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
@@ -220,18 +207,13 @@ static void serv_cmd_line(int argc, char *argv[])
   };
   int become_daemon      = FALSE;
   const char *pid_file   = NULL;
+  const char *cntl_file  = NULL;
   const char *chroot_dir = NULL;
   int drop_privs         = FALSE;
   uid_t priv_gid         = 60001;
   uid_t priv_uid         = 60001; /* NFS nobody */
   
-  if (argv[0])
-  {
-    if ((program_name = strrchr(argv[0], '/')))
-      ++program_name;
-    else
-      program_name = argv[0];
-  }
+  program_name = opt_program_name(argv[0], "jechod");
 
   while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
                                 long_options, NULL)) != EOF)
@@ -244,7 +226,7 @@ static void serv_cmd_line(int argc, char *argv[])
         usage(program_name, 'h' != optchar);
         
       case 'V':
-        printf(" %s version 0.7.1, compiled on %s.\n", program_name, __DATE__);
+        printf(" %s version 0.7.1.\n", program_name);
         exit (EXIT_SUCCESS);
 
       case 't': client_timeout      = atoi(optarg); break;
@@ -262,6 +244,7 @@ static void serv_cmd_line(int argc, char *argv[])
       case 4: priv_uid = atoi(optarg);                break;
       case 5: priv_gid = atoi(optarg);                break;
       case 6: pid_file = optarg;                      break;
+      case 7: cntl_file  = optarg;                    break;
         
       default:
         abort();
@@ -281,8 +264,13 @@ static void serv_cmd_line(int argc, char *argv[])
     vlg_daemon(vlg, program_name);
   }
   
+  serv_make_bind(server_ipv4_address, server_port);
+
   if (pid_file)
     vlg_pid_file(vlg, pid_file);
+  
+  if (cntl_file)
+    cntl_init(vlg, cntl_file, acpt_evnt);
   
   if (chroot_dir) /* so syslog can log in localtime */
   {
@@ -294,9 +282,6 @@ static void serv_cmd_line(int argc, char *argv[])
   if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
     vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
   
-  if (!serv_make_bind(server_ipv4_address, server_port))
-    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
-
   if (drop_privs)
   {
     if (setgroups(1, &priv_gid) == -1)
@@ -362,7 +347,8 @@ static void serv_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
-      !vstr_sc_fmt_add_all(NULL))
+      !vstr_sc_fmt_add_all(NULL) ||
+      !vlg_sc_fmt_add_all(NULL))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
@@ -412,7 +398,7 @@ int main(int argc, char *argv[])
   
   serv_cmd_line(argc, argv);
   
-  vlg_info(vlg, "READY\n");
+  vlg_info(vlg, "READY [$<sa:%p>]\n", acpt_evnt->sa);
   
   while (evnt_waiting())
   {

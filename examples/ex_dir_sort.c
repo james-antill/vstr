@@ -11,6 +11,8 @@
 #include <getopt.h>
 #include <locale.h>
 
+#include "opt.h"
+
 #include "bag.h"
 
 static Bag *names = NULL;
@@ -179,7 +181,7 @@ static void ex_dir_sort_cmd_line(int *passed_argc, char **passed_argv[])
   int    argc = *passed_argc;
   char **argv = *passed_argv;
   char optchar = 0;
-  const char *program_name = "jdir_sort";
+  const char *program_name = NULL;
   struct option long_options[] =
   { /* allow sorting by size etc. */
    {"help", no_argument, NULL, 'h'},
@@ -188,13 +190,7 @@ static void ex_dir_sort_cmd_line(int *passed_argc, char **passed_argv[])
    {NULL, 0, NULL, 0}
   };
   
-  if (argv[0])
-  {
-    if ((program_name = strrchr(argv[0], '/')))
-      ++program_name;
-    else
-      program_name = argv[0];
-  }
+  program_name = opt_program_name(argv[0], "jdir_sort");
 
   while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
                                 long_options, NULL)) != EOF)
