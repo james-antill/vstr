@@ -1,3 +1,15 @@
+2002-04-17  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.3
+
+2002-04-16  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr__cache_iovec_valid): Move upto date assignment for
+	the iovec cache.
+
+	* src/vstr_cache.c (vstr__cache_iovec_alloc): Don't memmove() iovec
+	cache if it isn't valid ... Duh!
+
 2002-04-05  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.2

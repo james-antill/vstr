@@ -342,13 +342,15 @@ int vstr__cache_iovec_valid(Vstr_base *base)
  if (base->iovec_upto_date)
    return (TRUE);
 
- if (base->cache_available && VSTR__CACHE(base) && VSTR__CACHE(base)->vec &&
-     VSTR__CACHE(base)->vec->sz)
-   base->iovec_upto_date = TRUE;
-
  if (!base->beg)
+ {
+   if (base->cache_available && VSTR__CACHE(base) && VSTR__CACHE(base)->vec &&
+       VSTR__CACHE(base)->vec->sz)
+     base->iovec_upto_date = TRUE;
+   
    return (TRUE);
-      
+ }
+ 
  if (!vstr__cache_iovec_alloc(base, base->num))
    return (FALSE);
 
@@ -395,6 +397,7 @@ static int vstr__cache_iovec_check(Vstr_base *base)
  scan = base->beg;
 
  assert(scan->len > base->used);
+ assert(VSTR__CACHE(base)->vec->sz >= base->num);
  assert(VSTR__CACHE(base)->vec->v[count].iov_len == (size_t)(scan->len - base->used));
  if (scan->type == VSTR_TYPE_NODE_NON)
    assert(!VSTR__CACHE(base)->vec->v[count].iov_base);
