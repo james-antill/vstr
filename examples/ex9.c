@@ -11,7 +11,8 @@
 const unsigned int FLAGS = (VSTR_FLAG_SPLIT_BEG_NULL | 
                             VSTR_FLAG_SPLIT_MID_NULL | 
                             VSTR_FLAG_SPLIT_END_NULL | 
-                            VSTR_FLAG_SPLIT_NO_RET
+                            VSTR_FLAG_SPLIT_NO_RET |
+                            VSTR_FLAG_SPLIT_REMAIN
                             );
 
 #define ALLOC_LIM 8
@@ -29,16 +30,16 @@ static unsigned int foreach_func(const Vstr_base *base, size_t pos, size_t len,
   ++count;
   
   if (count == PASS_LIM) 
-    vstr_add_fmt(str1, str1->len, "Rest %s = ::", "   ");
+    vstr_add_fmt(str1, str1->len, "Rest %s = ::\t", "   ");
   else
-    vstr_add_fmt(str1, str1->len, "Ent %4u = ::", count);
+    vstr_add_fmt(str1, str1->len, "Ent %4u = ::\t", count);
   
   if (!len)
     vstr_add_fmt(str1, str1->len, "%s", ".");
   else
     vstr_add_vstr(str1, str1->len, base, pos, len, 0);
   
-  vstr_add_fmt(str1, str1->len, ":: len(%u)\n", len);
+  vstr_add_fmt(str1, str1->len, "\t::len(%u)\n", len);
 
   return (0);
 }

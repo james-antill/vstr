@@ -103,6 +103,28 @@
 #define VSTR_SUB_CSTR_BUF(x, y, z, buf) vstr_sub_buf(x, y, z, buf, strlen(buf))
 #define VSTR_SUB_CSTR_PTR(x, y, z, ptr) vstr_sub_ptr(x, y, z, ptr, strlen(ptr))
 
+#define VSTR_SRCH_CSTR_BUF_FWD(x, y, z, buf) \
+ vstr_srch_buf_fwd(x, y, z, buf, strlen(buf))
+
+#define VSTR_SRCH_CSTR_BUF_REV(x, y, z, buf) \
+ vstr_srch_buf_rev(x, y, z, buf, strlen(buf))
+
+#define VSTR_SRCH_SECTS_ADD_CSTR_BUF_FWD(x, y, z, S, buf) \
+ vstr_srch_sects_add_buf_fwd(x, y, z, S, buf, strlen(buf))
+
+
+#define VSTR_SPN_CSTR_BUF_FWD(x, y, z, buf) \
+ vstr_spn_buf_fwd(x, y, z, buf, strlen(buf))
+
+#define VSTR_SPN_CSTR_BUF_REV(x, y, z, buf) \
+ vstr_spn_buf_rev(x, y, z, buf, strlen(buf))
+
+#define VSTR_CSPN_CSTR_BUF_FWD(x, y, z, buf) \
+ vstr_cspn_buf_fwd(x, y, z, buf, strlen(buf))
+
+#define VSTR_CSPN_CSTR_BUF_REV(x, y, z, buf) \
+ vstr_cspn_buf_rev(x, y, z, buf, strlen(buf))
+
 /* == real functions == */
 
 /* not really vectored string functions ... just stuff needed */
@@ -204,6 +226,9 @@ extern int vstr_cntl_conf(struct Vstr_conf *, int, ...);
 /* --------------------------------------------------------------------- */
 /* constant base functions below here */
 /* --------------------------------------------------------------------- */
+
+/* data about the vstr */
+extern unsigned int vstr_num(const struct Vstr_base *, size_t, size_t);
 
 /* comparing functions */
 extern int vstr_cmp(const struct Vstr_base *, size_t, size_t,

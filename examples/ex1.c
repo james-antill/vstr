@@ -22,8 +22,8 @@
 
 #include "ex_utils.h"
 
-#define EX1_CUSTOM_BUF_SZ 2
-#define EX1_CUSTOM_DEL_SZ 1
+#define EX1_CUSTOM_BUF_SZ 4
+#define EX1_CUSTOM_DEL_SZ 3
 
 static void do_test(Vstr_base *str2, const char *filename)
 {
@@ -196,17 +196,18 @@ int main(int argc, char *argv[])
   Vstr_base *str1 = NULL;
   Vstr_base *str2 = NULL;
   
-  /* export LC_ALL=en_US to see thousands_sep in action */
-  /* before vstr_init() so that the default conf has the locale info. */
-  setlocale(LC_ALL, "");
-  
   if (!vstr_init())
     errno = ENOMEM, DIE("vstr_init:");
+
   
-  setlocale(LC_ALL, "C"); /* the default conf has the locale... but not the
-                           * one we make. Or the rest of the program. */
+  vstr_cntl_opt(VSTR_CNTL_OPT_GET_CONF, &conf);
   
-  if (!(conf = vstr_make_conf()))
+  if (!vstr_cntl_conf(conf,
+                      VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
+                      setlocale(LC_ALL, "")))
+    errno = ENOMEM, DIE("locale:");
+  
+  if (!(conf = vstr_make_conf())) /* all new conf's are in "C" locale */
     errno = ENOMEM, DIE("vstr_make_conf:");
   
   /* have only 2 character per _buf node */
@@ -260,6 +261,8 @@ int main(int argc, char *argv[])
   if (!str2)
     errno = ENOMEM, DIE("vstr_make_base:");
   
+  setlocale(LC_ALL, "C"); /* this doesn't do anything */
+
   do_test(str2, (argc > 1) ? argv[1] : NULL);
   do_test(str1, (argc > 1) ? argv[1] : NULL);
 

@@ -11,7 +11,7 @@
 #undef assert
 #define assert(x) /* nothing */
 
-#if 1 /* does inline do anything ... */
+#if 0 /* does inline do anything ... */
 
 extern void vstr__cache_iovec_add_node_end(Vstr_base *, unsigned int,
                                            unsigned int);

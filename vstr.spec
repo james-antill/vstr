@@ -1,6 +1,6 @@
 # This is hacked from glib
 # Note that this is NOT a relocatable package
-%define ver      0.9.5
+%define ver      0.9.6
 %define libver  0.9
 %define  RELEASE 1
 %define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
@@ -65,7 +65,7 @@ make
 %install
 if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
 make DESTDIR=$RPM_BUILD_ROOT install
-cp BUGS $RPM_BUILD_ROOT/%{devdoco}/
+cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 
 %clean
 if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
@@ -91,6 +91,7 @@ if [ -d $RPM_BUILD_ROOT ]; then rm -rf $RPM_BUILD_ROOT; fi
 
 %doc
 %{devdoco}/BUGS
+%{devdoco}/TODO
 %{devdoco}/functions.txt
 %{_mandir}/man3/vstr.3.gz
 %{devdoco}/functions.html

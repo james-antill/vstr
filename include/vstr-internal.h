@@ -21,7 +21,8 @@
  *  email: james@and.org
  */
 
-    /* ISO C magic, converts a ptr to ->next into ->next->prev */
+/* ISO C magic, converts a ptr to ->next into ->next->prev
+ *   (even though ->prev doesn't exist) */
 #define VSTR__CONV_PTR_NEXT_PREV(x) \
  ((Vstr_node *)(((char *)(x)) - offsetof(Vstr_node, next)))
 
@@ -153,6 +154,7 @@ extern void vstr__ref_cb_free_bufnode_ref(struct Vstr_ref *);
 
 extern char *vstr__export_node_ptr(const Vstr_node *);
 
+extern void vstr__base_zero_used(Vstr_base *base);
 extern Vstr_node *vstr__base_split_node(Vstr_base *, Vstr_node *, size_t);
 
 extern unsigned int vstr__num_node(Vstr_base *, Vstr_node *);

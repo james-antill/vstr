@@ -179,12 +179,14 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
     return (FALSE);
   }
   
-  vec->sz = sz;
+  vec->sz = alloc_sz;
   assert(!vec->off);
  }
 
  if (!base->iovec_upto_date)
-   vec->off = base->conf->iov_min_offset;
+ {
+   vec->off = 0;
+ }
  else if ((vec->off > base->conf->iov_min_offset) &&
           (sz > (vec->sz - vec->off)))
    vstr__cache_iovec_memmove(base);
@@ -193,6 +195,8 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
  {
   struct iovec *tmp_iovec = NULL;
   unsigned char *tmp_types = NULL;
+
+  alloc_sz = sz + base->conf->iov_min_offset;
  
   tmp_iovec = realloc(vec->v, sizeof(struct iovec) * alloc_sz);
 
@@ -213,11 +217,10 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
   }
   
   vec->t = tmp_types;
+  vec->sz = alloc_sz;
   
   if (vec->off < base->conf->iov_min_offset)
     vstr__cache_iovec_memmove(base);
-  
-  vec->sz = sz;
  }
 
  return (TRUE);

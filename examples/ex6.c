@@ -58,17 +58,18 @@ int main(void)
  
  vstr_del(str1, strlen("Hello vstr, World "), strlen(" is"));
  vstr_del(str1, 1, 1);
- if (0)
-   VSTR_SUB_CSTR_BUF(str1, 1, strlen("ello"), "Hello");
- else
-   VSTR_ADD_CSTR_BUF(str1, 0, "H");
+ VSTR_SUB_CSTR_BUF(str1, 1, strlen("ello"), "Xello");
+ vstr_sub_vstr(str1, 1, 1,
+               str1, VSTR_SRCH_CSTR_BUF_FWD(str1, 1, str1->len, "Hello this"),1,
+               0);
+ 
  VSTR_SUB_CSTR_BUF(str1, strlen("Hello "), strlen(" vstr,"),
                    " ** Vstr subed **");
 
  ex_utils_cpy_write_all(str1, 1);
  
  vstr_del(str1, str1->len - strlen("ello this is a constant message.\n\n"),
-              strlen("Hello this is a constant message.\n\n"));
+          strlen("Hello this is a constant message.\n\n"));
  
  ex_utils_cpy_write_all(str1, 1);
  

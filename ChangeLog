@@ -1,3 +1,50 @@
+2002-06-24  James Antill  <james@and.org>
+
+	* NEWS: Relase 0.9.6
+
+2002-06-24  James Antill  <james@and.org>
+
+	* configure.in (enable-nonposix-host): Added option to remove all
+	dependancies on POSIX, so the library can be compiled just using C89.
+
+2002-06-20  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_SRCH_CSTR_BUF_FWD): Added function macro.
+	(VSTR_SRCH_CSTR_BUF_REV): Added function macro.
+	(VSTR_SRCH_SECTS_ADD_CSTR_BUF_FWD): Added function macro.
+	(VSTR_SPN_CSTR_BUF_FWD): Added function macro.
+	(VSTR_SPN_CSTR_BUF_REV): Added function macro.
+	(VSTR_CSPN_CSTR_BUF_FWD): Added function macro.
+	(VSTR_CSPN_CSTR_BUF_REV): Added function macro.
+
+	* src/vstr.c (vstr_num): Added function.
+
+2002-06-19  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr_add_vstr): Allow a vstr_add_vstr() to be used
+	with a single vstr.
+
+	* src/vstr_mov.c (vstr_mov): Allow a vstr_mov() to be used
+	with a single vstr.
+	(vstr_mov): Add code for "quick" move operations between compatible
+	vstrs.
+
+	* src/vstr_sub.c (vstr_sub_vstr): Allow a vstr_sub_vstr() to be used
+	with a single vstr.
+
+	* src/vstr_del.c (vstr__del_beg): Only use ->used for _BUF type nodes.
+	(vstr_del): Fix accounting of nodes on delete.
+
+2002-06-18  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr__make_conf_loc_numeric): Minor memory leak if 
+	deciaml_point_str allocation failed.
+
+2002-06-13  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_make_conf): Change behavour of vstr_make_conf() and
+	hence vstr_init() so that they both default to the C locale.
+
 2002-06-04  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.5

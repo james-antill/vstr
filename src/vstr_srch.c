@@ -235,7 +235,7 @@ size_t vstr_srch_buf_rev(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
                           const Vstr_base *ndl_base,
                           size_t ndl_pos, size_t ndl_len)
-{ /* FIXME: this could be faster, esp. with NON nodes */
+{ /* TODO: this could be faster, esp. with NON nodes */
   size_t scan_pos = pos;
   size_t scan_len = len;
   
@@ -290,7 +290,7 @@ static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
 size_t vstr_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
                           const Vstr_base *ndl_base,
                           size_t ndl_pos, size_t ndl_len)
-{ 
+{  /* FIXME: iovec walk backwards */
   return (vstr__srch_vstr_rev_slow(base, pos, len, ndl_base, ndl_pos, ndl_len));
 }
 

@@ -3,8 +3,12 @@
 
 #include "autoconf.h"
 
-#define USE_MMAP 1
-#include "main_system.h"
+#ifdef HAVE_POSIX_HOST
+# define USE_MMAP 1
+# include "main_system.h"
+#else
+# include "main_noposix_system.h"
+#endif
 
 #define FIX_NAMESPACE_SYMBOL vstr_autoconf_
 

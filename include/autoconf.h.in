@@ -168,3 +168,5 @@
 #undef FMT_DBL_none
 
 #undef HAVE_LINKER_SCRIPT
+
+#undef HAVE_POSIX_HOST

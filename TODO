@@ -11,10 +11,13 @@
   base = 24 bytes could be 20
          (num disappears ? ... becomes part of iovec ? [4]).
 
-. Allow conf to say don't allocate a cache.
-
 . Optionaly use Timer_q to delete old cache entries ?
 
 . vstr_conv_encode_qp (quoted printable rfc2045.txt)
+. vstr_conv_encode_ASN.1 (International Standard 8824)
 
 . only using _NON and _BUF nodes flag for sub functions optomisation.
+
+. Allow 0 len vstrs everywhere.
+
+. --without-posix configure option to remove POSIX APIs in vstr_sc.c

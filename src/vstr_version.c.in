@@ -42,6 +42,12 @@ void vstr_version_func(void)
  "    No debugging (CFLAGS = @CFLAGS@)\n"
 #endif
 
+#ifdef HAVE_POSIX_HOST
+ "    Running on a POSIX host.\n"
+#else
+ "    No POSIX host (iovec is manually defined, and vstr_sc_* are stubs)\n"
+#endif
+
     
 #if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
  "    Formatting floats using -- glibc -- code.\n"

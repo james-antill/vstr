@@ -1,6 +1,6 @@
 #define VSTR_DEL_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -256,7 +256,29 @@ static void vstr__del_beg(Vstr_base *base, size_t len)
   
   if (len < (*scan)->len)
   {
-   base->used = len;
+    switch ((*scan)->type)
+    {
+      case VSTR_TYPE_NODE_BUF:
+        base->used = len;
+        break;
+      case VSTR_TYPE_NODE_NON:
+        (*scan)->len -= len;
+        break;
+      case VSTR_TYPE_NODE_PTR:
+      {
+        char *tmp = ((Vstr_node_ptr *)(*scan))->ptr;
+        ((Vstr_node_ptr *)(*scan))->ptr = tmp + len;
+        (*scan)->len -= len;
+      }
+      break;
+      case VSTR_TYPE_NODE_REF:
+        ((Vstr_node_ref *)(*scan))->off += len;
+        (*scan)->len -= len;
+        break;
+      default:
+        assert(FALSE);
+    }
+
    break;
   }
   
@@ -453,8 +475,6 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
  num = 1;
  while (*pscan && (len >= (*pscan)->len))
  {
-  ++num;
-  
   if ((*pscan)->type == VSTR_TYPE_NODE_REF)
     vstr_ref_del(((Vstr_node_ref *)(*pscan))->ref);
   
@@ -472,6 +492,7 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
    continue;
   }
   
+  ++num;
   pscan = &(*pscan)->next;
  }
  

@@ -59,10 +59,16 @@ static void do_test(Vstr_base *str1, Vstr_base *str2)
 
   vstr_add_iovec_buf_end(str2, strlen("Hello"), 1);
 
-  vstr_add_buf(str1, 0, " ", 1);
+  vstr_add_buf(str1, str1->len, " ", 1);
+  vstr_mov(str1, 0, str1, str1->len, 1);
+  
   vstr_mov(str2, strlen("Hello"), str1, 1, 1);
   
   vstr_mov(str2, 0, str1, 1, str1->len);
+
+  vstr_mov(str2, 0, str2, 1, str2->len);
+
+  vstr_sub_vstr(str2, 1, str2->len, str2, 1, str2->len, 0);
 
   while (str2->len)
     ex_utils_write(str2, 1);

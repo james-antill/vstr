@@ -108,6 +108,8 @@ lib_LTLIBRARIES = libvstr.la
 INCLUDES = -I$(top_srcdir)/include
 @HAVE_LINKER_MAIN_RELOCATE_TRUE@CFLAGS = @HAVE_LINKER_MAIN_RELOCATE_TRUE@@CFLAGS@ @WARNS@
 @HAVE_LINKER_MAIN_RELOCATE_FALSE@CFLAGS = @HAVE_LINKER_MAIN_RELOCATE_FALSE@@CFLAGS@ @WARNS@ -DHAVE_NO_RELOC_MAIN
+@HAVE_POSIX_HOST_TRUE@POSIX_HOST_SRC = @HAVE_POSIX_HOST_TRUE@vstr_sc_posix.c
+@HAVE_POSIX_HOST_FALSE@POSIX_HOST_SRC = @HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.c
 
 libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr.c \
@@ -133,7 +135,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_split.c \
                         vstr_srch.c \
                         vstr_sub.c \
-                        vstr_version.c
+                        vstr_version.c $(POSIX_HOST_SRC)
 
 
 libvstr_la_LDFLAGS = \
@@ -149,12 +151,26 @@ LTLIBRARIES =  $(lib_LTLIBRARIES)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../include
 libvstr_la_LIBADD = 
-libvstr_la_OBJECTS =  assert_loop.lo fix.lo vstr.lo vstr_add.lo \
-vstr_add_fmt.lo vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
-vstr_cntl.lo vstr_conv.lo vstr_cstr.lo vstr_del.lo vstr_dup.lo \
-vstr_export.lo vstr_join.lo vstr_mov.lo vstr_parse.lo \
-vstr_parse_netstr.lo vstr_ref.lo vstr_sc.lo vstr_sect.lo vstr_spn.lo \
-vstr_split.lo vstr_srch.lo vstr_sub.lo vstr_version.lo
+@HAVE_POSIX_HOST_TRUE@libvstr_la_OBJECTS =  assert_loop.lo fix.lo \
+@HAVE_POSIX_HOST_TRUE@vstr.lo vstr_add.lo vstr_add_fmt.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_del.lo vstr_dup.lo vstr_export.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_join.lo vstr_mov.lo vstr_parse.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_parse_netstr.lo vstr_ref.lo vstr_sc.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_sect.lo vstr_spn.lo vstr_split.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_srch.lo vstr_sub.lo vstr_version.lo \
+@HAVE_POSIX_HOST_TRUE@vstr_sc_posix.lo
+@HAVE_POSIX_HOST_FALSE@libvstr_la_OBJECTS =  assert_loop.lo fix.lo \
+@HAVE_POSIX_HOST_FALSE@vstr.lo vstr_add.lo vstr_add_fmt.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_del.lo vstr_dup.lo vstr_export.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_join.lo vstr_mov.lo vstr_parse.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_parse_netstr.lo vstr_ref.lo vstr_sc.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_sect.lo vstr_spn.lo vstr_split.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_srch.lo vstr_sub.lo vstr_version.lo \
+@HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.lo
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)

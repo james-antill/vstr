@@ -33,10 +33,21 @@ extern "C"
 # include <stdlib.h>
 # include <stdarg.h>
 # include <string.h> /* strlen() in headers */
-# include <sys/uio.h>
+
+# ifdef VSTR_AUTOCONF_HAVE_POSIX_HOST
+#  include <sys/uio.h>
+# else
+struct iovec
+{
+ void *iov_base;
+ size_t iov_len;
+};
+# endif
+
 # ifdef VSTR__AUTOCONF_NEED_INTTYPES_H
 #  include <stdint.h>
 # endif
+
 #endif
 
 #include <vstr-const.h>

@@ -1,10 +1,15 @@
 CC=gcc
 WARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-# CFLAGS=`pkg-config --cflags vstr` $(WARNS)
+LOCAL=1
+
+ifeq ($(LOCAL),1)
 CFLAGS=-I../include $(WARNS)
-# LDFLAGS=`pkg-config --libs vstr`
 LDFLAGS=../src/.libs/libvstr.a
+else
+CFLAGS=`pkg-config --cflags vstr` $(WARNS)
+LDFLAGS=`pkg-config --libs vstr`
+endif
 
 # Isn't converted to pkg-config yet...
 TQ_CFLAGS=`gnome-config --cflags timer_q`

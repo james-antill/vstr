@@ -57,6 +57,40 @@ size_t vstr__loc_thou_grp_strlen(const char *passed_str)
   return (len);
 }
 
+static int vstr__make_conf_loc_def_numeric(Vstr_locale *loc)
+{
+  if (!(loc->name_lc_numeric_str = calloc(2, 1)))
+    goto fail_numeric;
+  
+  if (!(loc->grouping = calloc(1, 1)))
+    goto fail_grp;
+  
+  if (!(loc->thousands_sep_str = calloc(1, 1)))
+    goto fail_thou;
+  
+  if (!(loc->decimal_point_str = calloc(2, 1)))
+    goto fail_deci;
+  
+  *loc->name_lc_numeric_str = 'C'; 
+  loc->name_lc_numeric_len = 1;
+
+  *loc->name_lc_numeric_str = '.'; 
+  loc->decimal_point_len = 0;
+  
+  loc->thousands_sep_len = 0;
+
+  return (TRUE);
+  
+ fail_deci:
+  free(loc->thousands_sep_str);
+ fail_thou:
+  free(loc->grouping);
+ fail_grp:
+  free(loc->name_lc_numeric_str);
+ fail_numeric:
+  
+  return (FALSE);
+}
 
 int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
 {
@@ -69,24 +103,8 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
   
   if (!(sys_loc = localeconv()))
   {
-    if (!(loc->name_lc_numeric_str = calloc(2, 1)))
+    if (!vstr__make_conf_loc_def_numeric(loc))
       goto fail_numeric;
-    
-    if (!(loc->grouping = calloc(1, 1)))
-      goto fail_grp;
-
-    if (!(loc->thousands_sep_str = calloc(1, 1)))
-      goto fail_thou;
-
-    if (!(loc->decimal_point_str = calloc(1, 1)))
-      goto fail_deci;
-
-    *loc->name_lc_numeric_str = 'C'; 
-    loc->name_lc_numeric_len = 1;
-    
-    loc->decimal_point_len = 0;
-    
-    loc->thousands_sep_len = 0;
   }
   else
   {
@@ -110,7 +128,7 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
       goto fail_thou;
 
     if (!(loc->decimal_point_str = malloc(deci_len + 1)))
-      goto fail_thou;
+      goto fail_deci;
 
     memcpy(loc->name_lc_numeric_str, name_numeric, numeric_len + 1);
     loc->name_lc_numeric_len = numeric_len;
@@ -177,7 +195,7 @@ Vstr_conf *vstr_make_conf(void)
   conf->loc->thousands_sep_str = NULL;
   conf->loc->decimal_point_str = NULL;
   
-  if (!vstr__make_conf_loc_numeric(conf, NULL))
+  if (!vstr__make_conf_loc_def_numeric(conf->loc))
     goto fail_numeric;
   
   conf->spare_buf_num = 0;
@@ -790,6 +808,9 @@ int vstr__check_real_nodes(Vstr_base *base)
  size_t num = 0;
  Vstr_node *scan = base->beg;
  
+ assert(!base->used || (base->used < base->beg->len));
+ assert(!base->used || (base->beg->type == VSTR_TYPE_NODE_BUF));
+ 
  while (scan)
  {
   len += scan->len;
@@ -800,7 +821,6 @@ int vstr__check_real_nodes(Vstr_base *base)
  }
 
  assert(!!base->beg == !!base->end);
- assert(!base->used || (base->used < base->beg->len));
  assert(((len - base->used) == base->len) && (num == base->num));
 
  vstr__cache_iovec_check(base);
@@ -891,6 +911,20 @@ static int vstr__base_cache_pos(const Vstr_base *base,
   data->num = num;
   
   return (TRUE);
+}
+
+/* zero ->used and normalise first node */
+void vstr__base_zero_used(Vstr_base *base)
+{
+  if (base->used)
+  {
+    assert(base->beg->type == VSTR_TYPE_NODE_BUF);
+    base->beg->len -= base->used;
+    memmove(((Vstr_node_buf *)base->beg)->buf,
+            ((Vstr_node_buf *)base->beg)->buf + base->used,
+            base->beg->len);
+    base->used = 0;
+  }
 }
 
 Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
@@ -1067,4 +1101,37 @@ int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
     *scan_str = ((char *) (iovs[*num - 1].iov_base)) + pos;
   
   return (TRUE);
+}
+
+unsigned int vstr_num(const Vstr_base *base, size_t pos, size_t len)
+{
+  Vstr_node *scan = NULL;
+  unsigned int ret = 0;
+
+  if (pos == 1 && len == base->len)
+    return (base->num);
+
+  {
+    unsigned int num = 0; /* ignore */
+    char *scan_str = NULL; /* ignore */
+    size_t scan_len = 0; /* ignore */
+    
+    scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  }
+  if (!scan)
+    return (0);
+  if (!len)
+    return (1);
+
+  ret = 2;
+  scan = scan->next;
+  while (len > scan->len)
+  {
+    len -= scan->len;
+    ++ret;
+    
+    scan = scan->next;
+  }
+
+  return (ret);
 }
