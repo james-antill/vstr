@@ -182,7 +182,7 @@ Constant: VSTR_TYPE_FMT_INT
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect a "int" type from
+  This flag means that vstr_add_vfmt() should expect a "int" type from
  the argument list passed to it
 
 
@@ -190,7 +190,7 @@ Constant: VSTR_TYPE_FMT_UINT
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "unsigned int" type from
+  This flag means that vstr_add_vfmt() should expect an "unsigned int" type from
  the argument list passed to it
 
 
@@ -198,7 +198,7 @@ Constant: VSTR_TYPE_FMT_LONG
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "long" type from
+  This flag means that vstr_add_vfmt() should expect a "long" type from
  the argument list passed to it
 
 
@@ -206,15 +206,15 @@ Constant: VSTR_TYPE_FMT_ULONG
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "unsigned long" type from
- the argument list passed to it
+  This flag means that vstr_add_vfmt() should expect an "unsigned long" type
+ from the argument list passed to it
 
 
 Constant: VSTR_TYPE_FMT_LONG_LONG
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "long long" type from
+  This flag means that vstr_add_vfmt() should expect a "long long" type from
  the argument list passed to it
 
 
@@ -222,15 +222,15 @@ Constant: VSTR_TYPE_FMT_ULONG_LONG
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "unsigned long long" type
- from the argument list passed to it
+  This flag means that vstr_add_vfmt() should expect an "unsigned long long"
+ type from the argument list passed to it
 
 
 Constant: VSTR_TYPE_FMT_SSIZE_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "ssize_t" type
+  This flag means that vstr_add_vfmt() should expect a "ssize_t" type
  from the argument list passed to it
 
 
@@ -238,7 +238,7 @@ Constant: VSTR_TYPE_FMT_SIZE_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "size_t" type
+  This flag means that vstr_add_vfmt() should expect a "size_t" type
  from the argument list passed to it
 
 
@@ -246,7 +246,7 @@ Constant: VSTR_TYPE_FMT_PTRDIFF_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "ptrdiff_t" type
+  This flag means that vstr_add_vfmt() should expect a "ptrdiff_t" type
  from the argument list passed to it
 
 
@@ -254,7 +254,7 @@ Constant: VSTR_TYPE_FMT_INTMAX_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "intmax_t" type
+  This flag means that vstr_add_vfmt() should expect a "intmax_t" type
  from the argument list passed to it
 
 
@@ -262,7 +262,7 @@ Constant: VSTR_TYPE_FMT_UINTMAX_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "uintmax_t" type
+  This flag means that vstr_add_vfmt() should expect a "uintmax_t" type
  from the argument list passed to it
 
 
@@ -270,7 +270,7 @@ Constant: VSTR_TYPE_FMT_DOUBLE
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "double" type
+  This flag means that vstr_add_vfmt() should expect a "double" type
  from the argument list passed to it
 
 
@@ -278,7 +278,7 @@ Constant: VSTR_TYPE_FMT_DOUBLE_LONG
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "long double" type
+  This flag means that vstr_add_vfmt() should expect a "long double" type
  from the argument list passed to it
 
 
@@ -286,7 +286,7 @@ Constant: VSTR_TYPE_FMT_PTR_VOID
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "void *" type
+  This flag means that vstr_add_vfmt() should expect a "void *" type
  from the argument list passed to it
 
 
@@ -294,7 +294,7 @@ Constant: VSTR_TYPE_FMT_PTR_CHAR
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "char *" type
+  This flag means that vstr_add_vfmt() should expect a "char *" type
  from the argument list passed to it
 
 
@@ -302,8 +302,46 @@ Constant: VSTR_TYPE_FMT_PTR_WCHAR_T
 
  Explanation:
 
-  This flag means that vstr_add_vfmt should expect an "wchar_t *" type
+  This flag means that vstr_add_vfmt() should expect a "wchar_t *" type
  from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_ERRNO
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should not expect any arguments passed,
+ but should set the value of errno, just before calling the user callback, to
+ the value upon entering vstr_add_vfmt().
+
+
+Section: Constants used with vstr_sc_fmt_cb_beg()
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_NONE
+
+ Explanation:
+
+  This flag is 0, and is generally only used as programmer documentation to mean
+ no flags are applied to this function.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM
+
+ Explanation:
+
+  This flag indicates that the object you are printing should be treated as a
+ number. For instance setting a precision will truncate the lengfth of the
+ object, unless it is a number. Also +/-/<space> leaders and zero padding will
+ only be done for numbers.
+
+
+Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
+
+ Explanation:
+
+  This flag indicates that the number object you are printing should be
+ treated as negative number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
 Section: Constants passed to vstr_conv_unprintable_*()
@@ -317,9 +355,11 @@ Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE
 
  Note:
 
-  Because it is sometimes are to notice certain characters, they are clasified
- as "unprintable" in by default, the value VSTR_FLAG_CONV_UNPRINTABLE_DEF is
- a default that is what most people would expect.
+  Because it is sometimes hard are to notice certain characters, they are
+ clasified as "unprintable" by default, the value
+ VSTR_FLAG_CONV_UNPRINTABLE_DEF is a default that is what most people would
+ expect to be classified as unprintable.
+
 
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL
 

@@ -12,10 +12,12 @@
  *   3. The last two words may be written as IPv4 address
   include CIDR
 
-. find_case
+. VSTR_FLAG_PARSE_NUM_LOC_SEP
 
  Not needed for 1.0
  ------------------
+
+. Fast inline parsing of ints when using certain flags.
 
 . Add --with-libc=diet,host,klibc -- put into test framework.
 

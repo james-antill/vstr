@@ -442,6 +442,30 @@ size_t \fBvstr_srch_vstr_fwd\fR(const struct Vstr_base *, size_t, size_t, const 
 .ti \w'  'u
 size_t \fBvstr_srch_vstr_rev\fR(const struct Vstr_base *, size_t, size_t, const struct Vstr_base *, size_t, size_t);
 .br
+.in \w'  size_t \fBvstr_srch_case_chr_fwd\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_chr_fwd\fR(const struct Vstr_base *, size_t, size_t, char);
+.br
+.in \w'  size_t \fBvstr_srch_case_chr_rev\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_chr_rev\fR(const struct Vstr_base *, size_t, size_t, char);
+.br
+.in \w'  size_t \fBvstr_srch_case_buf_fwd\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_buf_fwd\fR(const struct Vstr_base *, size_t, size_t, const void *, size_t);
+.br
+.in \w'  size_t \fBvstr_srch_case_buf_rev\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_buf_rev\fR(const struct Vstr_base *, size_t, size_t, const void *, size_t);
+.br
+.in \w'  size_t \fBvstr_srch_case_vstr_fwd\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_vstr_fwd\fR(const struct Vstr_base *, size_t, size_t, const struct Vstr_base *, size_t, size_t);
+.br
+.in \w'  size_t \fBvstr_srch_case_vstr_rev\fR('u
+.ti \w'  'u
+size_t \fBvstr_srch_case_vstr_rev\fR(const struct Vstr_base *, size_t, size_t, const struct Vstr_base *, size_t, size_t);
+.br
 .in \w'  size_t \fBVSTR_SRCH_CSTR_BUF_FWD\fR('u
 .ti \w'  'u
 size_t \fBVSTR_SRCH_CSTR_BUF_FWD\fR(const struct Vstr_base *, size_t, size_t, const char *);
@@ -449,6 +473,30 @@ size_t \fBVSTR_SRCH_CSTR_BUF_FWD\fR(const struct Vstr_base *, size_t, size_t, co
 .in \w'  size_t \fBVSTR_SRCH_CSTR_BUF_REV\fR('u
 .ti \w'  'u
 size_t \fBVSTR_SRCH_CSTR_BUF_REV\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_SRCH_CSTR_CHRS_FWD\fR('u
+.ti \w'  'u
+size_t \fBVSTR_SRCH_CSTR_CHRS_FWD\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_SRCH_CSTR_CHRS_REV\fR('u
+.ti \w'  'u
+size_t \fBVSTR_SRCH_CSTR_CHRS_REV\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_CSRCH_CSTR_CHRS_FWD\fR('u
+.ti \w'  'u
+size_t \fBVSTR_CSRCH_CSTR_CHRS_FWD\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_CSRCH_CSTR_CHRS_REV\fR('u
+.ti \w'  'u
+size_t \fBVSTR_CSRCH_CSTR_CHRS_REV\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_SRCH_CASE_CSTR_BUF_FWD\fR('u
+.ti \w'  'u
+size_t \fBVSTR_SRCH_CASE_CSTR_BUF_FWD\fR(const struct Vstr_base *, size_t, size_t, const char *);
+.br
+.in \w'  size_t \fBVSTR_SRCH_CASE_CSTR_BUF_REV\fR('u
+.ti \w'  'u
+size_t \fBVSTR_SRCH_CASE_CSTR_BUF_REV\fR(const struct Vstr_base *, size_t, size_t, const char *);
 .sp
 .br
 .in \w'  size_t \fBvstr_spn_chrs_fwd\fR('u
@@ -660,7 +708,7 @@ unsigned int \fBvstr_cache_srch\fR(struct Vstr_conf *, const char *);
 .br
 .in \w'  int \fBvstr_sc_fmt_cb_beg\fR('u
 .ti \w'  'u
-int \fBvstr_sc_fmt_cb_beg\fR(struct Vstr_base *, size_t *, struct Vstr_fmt_spec *, size_t *);
+int \fBvstr_sc_fmt_cb_beg\fR(struct Vstr_base *, size_t *, struct Vstr_fmt_spec *, size_t *, unsigned int);
 .br
 .in \w'  int \fBvstr_sc_fmt_cb_end\fR('u
 .ti \w'  'u
@@ -685,6 +733,22 @@ int \fBvstr_sc_fmt_add_non\fR(struct Vstr_conf *, const char *);
 .in \w'  int \fBvstr_sc_fmt_add_ref\fR('u
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_ref\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_Byte_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_Byte_uint\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_Bytes_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_Bytes_uint\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_bit_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_bit_uint\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_bits_uint\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_bits_uint\fR(struct Vstr_conf *, const char *);
 .br
 .in \w'  int \fBvstr_sc_fmt_add_ipv4_ptr\fR('u
 .ti \w'  'u
@@ -4740,6 +4804,251 @@ Type\fB[6]\fR: size_t
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
   If the data cannot be found 0 is returned.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_chr_fwd()
+.br
+Returns: Position in the Vstr string of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Character to search for
+.br
+Type\fB[4]\fR: char
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_chr_fwd() but uppercase and lowercase ASCII values are treated equivalently.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_chr_rev()
+.br
+Returns: Position in the Vstr string of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Character
+.br
+Type\fB[4]\fR: char
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_chr_rev() but uppercase and lowercase ASCII values are treated equivalently.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_buf_fwd()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const void *
+
+.br
+Parameter\fB[5]\fR: Length of data (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_buf_fwd() but uppercase and lowercase ASCII values are treated equivalently.
+.sp
+\fBNote:\fR
+
+.br
+  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_buf_rev()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const void *
+
+.br
+Parameter\fB[5]\fR: Length of data (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_buf_fwd() but uppercase and lowercase ASCII values are treated equivalently.
+.sp
+\fBNote:\fR
+
+.br
+  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified size (Paramter[5]) will be searched for.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_vstr_fwd()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Vstr string
+.br
+Type\fB[4]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[5]\fR: Start position in the Vstr string (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Length in the Vstr string (Parameter[4])
+.br
+Type\fB[6]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_vstr_fwd() but uppercase and lowercase ASCII values are treated equivalently.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_srch_case_vstr_rev()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Vstr string
+.br
+Type\fB[4]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[5]\fR: Start position in the Vstr string (Parameter[4])
+.br
+Type\fB[5]\fR: size_t
+
+.br
+Parameter\fB[6]\fR: Length in the Vstr string (Parameter[4])
+.br
+Type\fB[6]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is the same as vstr_srch_vstr_rev() but uppercase and lowercase ASCII values are treated equivalently.
+
 .ti -2
 .br
 \fBFunction: \fR VSTR_SRCH_CSTR_BUF_FWD()
@@ -4807,6 +5116,210 @@ Type\fB[4]\fR: const char *
 
 .br
   This macro function calls vstr_srch_buf_rev() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SRCH_CSTR_CHRS_FWD()
+.br
+Returns: Position in the Vstr string of the start of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_srch_chrs_fwd() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SRCH_CSTR_CHRS_REV()
+.br
+Returns: Position in the Vstr string of the start of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_srch_chrs_rev() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_CSRCH_CSTR_CHRS_FWD()
+.br
+Returns: Position in the Vstr string of the start of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_csrch_chrs_fwd() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_CSRCH_CSTR_CHRS_REV()
+.br
+Returns: Position in the Vstr string of the start of the character
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_csrch_chrs_rev() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SRCH_CASE_CSTR_BUF_FWD()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_srch_case_buf_fwd() with the length being the value of strlen() on the data parameter (Parameter[4]).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SRCH_CASE_CSTR_BUF_REV()
+.br
+Returns: Position in the Vstr string of the start of the data
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Pointer to data
+.br
+Type\fB[4]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls vstr_srch_case_buf_rev() with the length being the value of strlen() on the data parameter (Parameter[4]).
 
 .SH Functions to calculate spanning in a Vstr string
 
@@ -5144,6 +5657,7 @@ Type\fB[3]\fR: size_t
 
 .br
   This function converts all the uppercase ASCII characters into lowercase ASCII characters.
+
 .ti -2
 .br
 \fBFunction: \fR vstr_conv_uppercase()
@@ -5171,7 +5685,7 @@ Type\fB[3]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function converts all the lowercase ASCII characters into upperrcase ASCII characters.
+  This function converts all the lowercase ASCII characters into uppercase ASCII characters.
 
 .ti -2
 .br
@@ -6434,7 +6948,7 @@ Type\fB[4]\fR: ...
 .br
   If the user escape character is '%', then you can override system specifiers by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but is done so that you can have specifier names like "igloo" and it not be taken as a system specifier, however if you then did "%igoo" that would be interpreted as a "%i" (int) specification followed by the string "goo".
 .br
-  You can register multiple names with one callback, so you can register say "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%', will do the right thing with current printf warning checks with gcc. We can all hope that the former will be as usable eventually.
+  You can register multiple names with one callback, so you can register say "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%', will do the right thing with current printf warning checks in gcc. We can all hope that the former will be as usable eventually.
 
 .ti -2
 .br
@@ -6724,10 +7238,15 @@ Parameter\fB[4]\fR: Length of data you are going to add, updated due to precisio
 Type\fB[4]\fR: size_t *
 
 .br
+Parameter\fB[5]\fR: Flags starting VSTR_FLAG_SC_FMT_CB_BEG_*
+.br
+Type\fB[5]\fR: unsigned int
+
+.br
 \fBExplanation:\fR
 
 .br
-  This function is a helper function for any custom format specifiers you write, it takes care of doing the standard transforms to your data before it is output as if you were printing a string.
+  This function is a helper function for any custom format specifiers you write, it takes care of truncation of length due to precision (on strings only) and printing initial output for numbers or strings.
 .sp
 \fBNote:\fR
 
@@ -6926,6 +7445,138 @@ Type\fB[2]\fR: const char *
 
 .br
   As you would expect the precision and field width values are used from the format, so the length of the memory block printed is the lower bound of the length passed and the precision.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_Byte_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "B" for bytes.
+.sp
+\fBNote:\fR
+
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_Bytes_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "B/s" for bytes per second.
+.sp
+\fBNote:\fR
+
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_bit_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "b" for bits.
+.sp
+\fBNote:\fR
+
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_bits_uint()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "b/s" for bits per second.
+.sp
+\fBNote:\fR
+
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
 

@@ -115,22 +115,22 @@ install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_num
+tst = tst_typedef
 
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 LDADD = ../../src/.libs/libvstr.a
-subdir = tst/loc
+subdir = tst/x
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = tst_num$(EXEEXT)
-tst_num_SOURCES = tst_num.c
-tst_num_OBJECTS = tst_num.$(OBJEXT)
-tst_num_LDADD = $(LDADD)
-tst_num_DEPENDENCIES = ../../src/.libs/libvstr.a
-tst_num_LDFLAGS =
+check_PROGRAMS = tst_typedef$(EXEEXT)
+tst_typedef_SOURCES = tst_typedef.c
+tst_typedef_OBJECTS = tst_typedef.$(OBJEXT)
+tst_typedef_LDADD = $(LDADD)
+tst_typedef_DEPENDENCIES = ../../src/.libs/libvstr.a
+tst_typedef_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -143,9 +143,9 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_num.c
+DIST_SOURCES = tst_typedef.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_num.c
+SOURCES = tst_typedef.c
 
 all: all-am
 
@@ -153,7 +153,7 @@ all: all-am
 .SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tst/loc/Makefile
+	  $(AUTOMAKE) --gnu  tst/x/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
@@ -163,9 +163,9 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-tst_num$(EXEEXT): $(tst_num_OBJECTS) $(tst_num_DEPENDENCIES) 
-	@rm -f tst_num$(EXEEXT)
-	$(LINK) $(tst_num_LDFLAGS) $(tst_num_OBJECTS) $(tst_num_LDADD) $(LIBS)
+tst_typedef$(EXEEXT): $(tst_typedef_OBJECTS) $(tst_typedef_DEPENDENCIES) 
+	@rm -f tst_typedef$(EXEEXT)
+	$(LINK) $(tst_typedef_LDFLAGS) $(tst_typedef_OBJECTS) $(tst_typedef_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

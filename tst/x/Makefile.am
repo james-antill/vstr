@@ -4,14 +4,8 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_buf \
-      tst_chr \
-      tst_case_buf \
-      tst_case_chr \
-      tst_chrs \
-      tst_csrch_chrs \
-      tst_vstr \
-      tst_case_vstr
+tst = tst_typedef
+
 
 check_PROGRAMS = $(tst)
 

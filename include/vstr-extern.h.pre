@@ -104,9 +104,9 @@
 #define VSTR_CMP_CASE_CSTR_EQ(x, p1, l1, y) (((l1) == strlen(y)) && \
  !@@@@vstr_cmp_case_buf(x, p1, l1, y, l1))
 #define VSTR_CMP_VERS_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
- !@@@@vstr_cmp_vers(x, p1, l1, y, p2, l1))
+ !@@@@vstr_cmp(x, p1, l1, y, p2, l1))
 #define VSTR_CMP_VERS_BUF_EQ(x, p1, l1, y, l2) (((l1) == (l2)) && \
- !@@@@vstr_cmp_vers_buf(x, p1, l1, y, l1))
+ !@@@@vstr_cmp_buf(x, p1, l1, y, l1))
 #define VSTR_CMP_VERS_CSTR(x, p1, l1, y) \
   @@@@vstr_cmp_vers_buf(x, p1, l1, y, strlen(y))
 #define VSTR_CMP_VERS_CSTR_EQ(x, p1, l1, y) (((l1) == strlen(y)) && \
@@ -138,8 +138,20 @@
 #define VSTR_SRCH_CSTR_BUF_REV(x, y, z, buf) \
  @@@@vstr_srch_buf_rev(x, y, z, buf, strlen(buf))
 
-#define VSTR_SRCH_SECTS_ADD_CSTR_BUF_FWD(x, y, z, S, buf) \
- @@@@vstr_srch_sects_add_buf_fwd(x, y, z, S, buf, strlen(buf))
+#define VSTR_SRCH_CSTR_CHRS_FWD(x, y, z, chrs) \
+ @@@@vstr_srch_chrs_fwd(x, y, z, chrs, strlen(chrs))
+#define VSTR_SRCH_CSTR_CHRS_REV(x, y, z, chrs) \
+ @@@@vstr_srch_chrs_rev(x, y, z, chrs, strlen(chrs))
+
+#define VSTR_CSRCH_CSTR_CHRS_FWD(x, y, z, chrs) \
+ @@@@vstr_csrch_chrs_fwd(x, y, z, chrs, strlen(chrs))
+#define VSTR_CSRCH_CSTR_CHRS_REV(x, y, z, chrs) \
+ @@@@vstr_csrch_chrs_rev(x, y, z, chrs, strlen(chrs))
+
+#define VSTR_SRCH_CASE_CSTR_BUF_FWD(x, y, z, buf) \
+ @@@@vstr_srch_case_buf_fwd(x, y, z, buf, strlen(buf))
+#define VSTR_SRCH_CASE_CSTR_BUF_REV(x, y, z, buf) \
+ @@@@vstr_srch_case_buf_rev(x, y, z, buf, strlen(buf))
 
 
 #define VSTR_SPN_CSTR_CHRS_FWD(x, y, z, chrs) \
@@ -374,12 +386,27 @@ extern size_t @@@@vstr_srch_vstr_fwd(const struct Vstr_base *, size_t, size_t,
 extern size_t @@@@vstr_srch_vstr_rev(const struct Vstr_base *, size_t, size_t,
                                  const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
-extern unsigned int @@@@vstr_srch_sects_add_buf_fwd(const struct Vstr_base *,
-                                                size_t, size_t,
-                                                struct Vstr_sects *,
-                                                const void *,
-                                                size_t)
-    VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) @@@@;
+
+extern size_t @@@@vstr_srch_case_chr_fwd(const struct Vstr_base *, size_t, size_t, 
+                                     char)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern size_t @@@@vstr_srch_case_chr_rev(const struct Vstr_base *, size_t, size_t,
+                                     char)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+
+extern size_t @@@@vstr_srch_case_buf_fwd(const struct Vstr_base *, size_t, size_t,
+                                     const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern size_t @@@@vstr_srch_case_buf_rev(const struct Vstr_base *, size_t, size_t,
+                                     const void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+
+extern size_t @@@@vstr_srch_case_vstr_fwd(const struct Vstr_base *, size_t, size_t,
+                                      const struct Vstr_base *, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern size_t @@@@vstr_srch_case_vstr_rev(const struct Vstr_base *, size_t, size_t,
+                                      const struct Vstr_base *, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
 
 /* spanning and compliment spanning */
 extern size_t @@@@vstr_spn_chrs_fwd(const struct Vstr_base *, size_t, size_t,
@@ -536,7 +563,7 @@ extern int @@@@vstr_fmt_srch(struct Vstr_conf *, const char *)
 
 /* shortcut functions ... */
 extern int @@@@vstr_sc_fmt_cb_beg(struct Vstr_base *, size_t *,
-                              struct Vstr_fmt_spec *, size_t *)
+                              struct Vstr_fmt_spec *, size_t *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
 extern int @@@@vstr_sc_fmt_cb_end(struct Vstr_base *, size_t,
                               struct Vstr_fmt_spec *, size_t)
@@ -550,6 +577,14 @@ extern int @@@@vstr_sc_fmt_add_ptr(struct Vstr_conf *, const char *)
 extern int @@@@vstr_sc_fmt_add_non(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
 extern int @@@@vstr_sc_fmt_add_ref(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern int @@@@vstr_sc_fmt_add_bkmg_Byte_uint(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern int @@@@vstr_sc_fmt_add_bkmg_bit_uint(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern int @@@@vstr_sc_fmt_add_bkmg_Bytes_uint(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
+extern int @@@@vstr_sc_fmt_add_bkmg_bits_uint(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A() @@@@;
 
 extern int @@@@vstr_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)

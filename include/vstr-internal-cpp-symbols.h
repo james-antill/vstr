@@ -55,6 +55,12 @@
 #define vstr_nx_cmp_case_buf vstr_cmp_case_buf
 #define vstr_nx_cmp_vers vstr_cmp_vers
 #define vstr_nx_cmp_vers_buf vstr_cmp_vers_buf
+#define vstr_nx_srch_case_chr_fwd vstr_srch_case_chr_fwd
+#define vstr_nx_srch_case_chr_rev vstr_srch_case_chr_rev
+#define vstr_nx_srch_case_buf_fwd vstr_srch_case_buf_fwd
+#define vstr_nx_srch_case_buf_rev vstr_srch_case_buf_rev
+#define vstr_nx_srch_case_vstr_fwd vstr_srch_case_vstr_fwd
+#define vstr_nx_srch_case_vstr_rev vstr_srch_case_vstr_rev
 #define vstr_nx_srch_chr_fwd vstr_srch_chr_fwd
 #define vstr_nx_srch_chr_rev vstr_srch_chr_rev
 #define vstr_nx_srch_chrs_fwd vstr_srch_chrs_fwd
@@ -65,7 +71,6 @@
 #define vstr_nx_srch_buf_rev vstr_srch_buf_rev
 #define vstr_nx_srch_vstr_fwd vstr_srch_vstr_fwd
 #define vstr_nx_srch_vstr_rev vstr_srch_vstr_rev
-#define vstr_nx_srch_sects_add_buf_fwd vstr_srch_sects_add_buf_fwd
 #define vstr_nx_spn_chrs_fwd vstr_spn_chrs_fwd
 #define vstr_nx_spn_chrs_rev vstr_spn_chrs_rev
 #define vstr_nx_cspn_chrs_fwd vstr_cspn_chrs_fwd
@@ -109,6 +114,10 @@
 #define vstr_nx_sc_fmt_add_ptr vstr_sc_fmt_add_ptr
 #define vstr_nx_sc_fmt_add_non vstr_sc_fmt_add_non
 #define vstr_nx_sc_fmt_add_ref vstr_sc_fmt_add_ref
+#define vstr_nx_sc_fmt_add_bkmg_Byte_uint vstr_sc_fmt_add_bkmg_Byte_uint
+#define vstr_nx_sc_fmt_add_bkmg_Bytes_uint vstr_sc_fmt_add_bkmg_Bytes_uint
+#define vstr_nx_sc_fmt_add_bkmg_bit_uint vstr_sc_fmt_add_bkmg_bit_uint
+#define vstr_nx_sc_fmt_add_bkmg_bits_uint vstr_sc_fmt_add_bkmg_bits_uint
 #define vstr_nx_sc_fmt_add_ipv4_ptr vstr_sc_fmt_add_ipv4_ptr
 #define vstr_nx_sc_fmt_add_ipv6_ptr vstr_sc_fmt_add_ipv6_ptr
 #define vstr_nx_sc_fmt_cb_beg vstr_sc_fmt_cb_beg

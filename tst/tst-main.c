@@ -23,10 +23,10 @@ static int tst(void); /* fwd */
 
 #define TST_BUF_SZ (1024 * 512)
 
-static Vstr_base *s1 = NULL; /* normal */
-static Vstr_base *s2 = NULL; /* locale en_US */
-static Vstr_base *s3 = NULL; /* buf size = 4 */
-static Vstr_base *s4 = NULL; /* no cache */
+static struct Vstr_base *s1 = NULL; /* normal */
+static struct Vstr_base *s2 = NULL; /* locale en_US */
+static struct Vstr_base *s3 = NULL; /* buf size = 4 */
+static struct Vstr_base *s4 = NULL; /* no cache */
 static char buf[TST_BUF_SZ];
 
 static const char *rf;
@@ -37,13 +37,53 @@ static void die(void)
   abort();
 }
 
-#define PRNT_CSTR(s) \
- fprintf(stderr, "cstr(%s):%zu%*s = %s\n", #s , strlen(s), \
-         ((4 - strlen(#s)) > 0) ? (4 - (int)strlen(#s)) : 0,"",s)
-#define PRNT_VSTR(s) \
- fprintf(stderr, "vstr(%s):%zu%*s = %s\n", #s , (s)->len, \
-         ((4 - strlen(#s)) > 0) ? (4 - (int)strlen(#s)) : 0,"", \
-         vstr_export_cstr_ptr((s), 1, (s)->len))
+#define PRNT_CSTR(s) do { \
+ int pad = 0; \
+ fprintf(stderr, "cstr(%s):%zu%n", #s , strlen(s), &pad); \
+ if (pad > 12) pad = 0; else pad = 12 - pad; \
+ fprintf(stderr, "%*s = %s\n", pad, "", s); \
+ } while (FALSE)
+#define PRNT_VSTR(s) do { \
+ int pad = 0; \
+ fprintf(stderr, "vstr(%s):%zu%n", #s , (s)->len, &pad); \
+ if (pad > 12) pad = 0; else pad = 12 - pad; \
+ fprintf(stderr, "%*s = %s\n", pad, "", \
+         vstr_export_cstr_ptr((s), 1, (s)->len)); \
+ } while (FALSE)
+
+#define PRNT_DEBUG_VSTR(s) do { \
+  int pad = 0; \
+  unsigned int count = 1; \
+  struct Vstr_node *scan = (s)->beg; \
+  \
+  fprintf(stderr, "vstr(%s)%n:%zu NUM=%u\n", #s , &pad, (s)->len, (s)->num); \
+  while (scan) \
+  { \
+    fprintf(stderr, "%*u:%zu", pad, count, scan->len); \
+    \
+    switch (scan->type) \
+    { \
+      case VSTR_TYPE_NODE_BUF: \
+      fprintf(stderr, " (%s) = %.*s\n", "BUF", (int)scan->len, \
+              ((Vstr_node_buf *)scan)->buf); break; \
+      case VSTR_TYPE_NODE_NON: \
+      fprintf(stderr, " (%s) = %.*s\n", "NON", (int)scan->len, \
+              ""); break; \
+      case VSTR_TYPE_NODE_PTR: \
+      fprintf(stderr, " (%s) = %.*s\n", "PTR", (int)scan->len, \
+              (const char *)((Vstr_node_ptr *)scan)->ptr); break; \
+      case VSTR_TYPE_NODE_REF: \
+      fprintf(stderr, " (%s) = %.*s\n", "REF", (int)scan->len, \
+              (const char *)((Vstr_node_ref *)scan)->ref->ptr + \
+              ((Vstr_node_ref *)scan)->off); break; \
+      default: assert(FALSE); break; \
+    } \
+    \
+    scan = scan->next; \
+    ++count; \
+  } \
+ } while (FALSE)
+
 #define EXIT_FAILED_OK 77
 
 #define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * (tst))
@@ -54,9 +94,9 @@ static void die(void)
 int main(void)
 {
   int ret = 0;
-  Vstr_conf *conf1 = NULL;
-  Vstr_conf *conf2 = NULL;
-  Vstr_conf *conf3 = NULL;
+  struct Vstr_conf *conf1 = NULL;
+  struct Vstr_conf *conf2 = NULL;
+  struct Vstr_conf *conf3 = NULL;
 
   buf[0] = 0; /* make sure the compiler thinks buf is used ... */
   
@@ -65,7 +105,24 @@ int main(void)
 
 #ifndef USE_RESTRICTED_HEADERS
   if (!setlocale(LC_ALL, "en_US"))
-    die();
+  {
+    fprintf(stderr,
+" This library does things with the locale.\n"
+" So to run a \"make check\" the locale en_US needs to be available\n"
+" on your system.\n"
+"\n"
+" You can install the en_US locale on your system by doing:\n"
+"\n"
+"Debian: \"dpkg-reconfigure locales\" (choose 54 and 55)\n"
+"Red Hat: Choose the locale in the installer.\n" /* FIXME: */
+"\n"
+" You can check that it is installed by running \"locale -a\"\n"
+"\n"
+"\n"
+            );
+    exit (EXIT_FAILURE);
+    /* FIXME: # warning "rpm thing for redhat" */
+  }
 #endif
   
   if (!(conf1 = vstr_make_conf()))

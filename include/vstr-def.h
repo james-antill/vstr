@@ -116,6 +116,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_cache_cb)
                    unsigned int, void *);
 } VSTR__DECL_TYPEDEF2(Vstr_cache_cb);
 
+struct Vstr__fmt_usr_name_node; /* opaque */
+
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
  unsigned int spare_buf_num; /* private */
@@ -145,7 +147,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  unsigned int cache_pos_cb_cstr; /* private */
 
  unsigned char fmt_usr_escape; /* private */
- void *fmt_usr_names; /* private */
+ struct Vstr__fmt_usr_name_node *fmt_usr_names; /* private */
+ size_t fmt_name_max; /* private */
  
  int ref; /* private */
  int user_ref; /* private */

@@ -12,11 +12,13 @@ int tst(void)
   int ret = 0;
   unsigned int count = 0;
 
+  TEST_CMP_EQ_0("",           "");
   TEST_CMP_EQ_0("AbCd",       "abcd");
   TEST_CMP_EQ_0("AbCd1",      "abcd1");
   TEST_CMP_EQ_0("AbCd12345",  "abcd12345");
   TEST_CMP_EQ_0("AbCd012345", "abcd012345");
   
+  TEST_CMP_GT_0("Ab",           "");
   TEST_CMP_GT_0("AbCd1234",   "abcd123");
   TEST_CMP_GT_0("AbCd01234",  "abcd0123");
   TEST_CMP_GT_0("AbCd00",     "abcd0");

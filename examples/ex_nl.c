@@ -134,6 +134,9 @@ int main(int argc, char *argv[])
   if (!(conf = vstr_make_conf()))
     errno = ENOMEM, DIE("vstr_make_conf:");
 
+  if (!stat_buf.st_blksize)
+    stat_buf.st_blksize = 4 * 1024;
+  
   vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
   
   str1 = vstr_make_base(conf);

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-aclocal && automake && autoconf
+libtoolize -c --force && aclocal && automake -a -c --force-missing && autoconf
 
 # Gather internal symbols...
 rm -f include/vstr-internal-alias-symbols.h

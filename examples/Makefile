@@ -1,6 +1,6 @@
 
-#CC=gcc
-CC=gcc3
+CC=gcc
+#CC=gcc3
 #CC=diet gcc
 #CC=diet gcc3
 
@@ -45,7 +45,7 @@ endif
 TQ_CFLAGS=`gnome-config --cflags timer_q`
 TQ_LDFLAGS=`gnome-config --libs timer_q`
 
-FILES= ex_cat ex_hexdump ex_nl ex_slowcat # ex_tst1
+FILES= ex_cat ex_hexdump ex_nl ex_mon_cp ex_slowcat # ex_tst1
 
 all: $(FILES)
 

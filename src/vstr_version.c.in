@@ -48,73 +48,80 @@ void vstr_version_func(void)
        "This is free software; see the source for copying conditions.\n"
        "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n"
        "PARTICULAR PURPOSE.\n\n"
-       "Configured as follows:\n"
-       "    Compiled on " __DATE__ " at " __TIME__ ".\n"
-
+       "Built as follows:\n"
+       "  Compiled on " __DATE__ " at " __TIME__ ".\n"
+#ifdef __VERSION__
+       "  Compiled by CC version " __VERSION__ ".\n"
+#endif
     
 #ifndef NDEBUG
- "    Debugging enabled (CFLAGS = @CFLAGS@).\n"
+ "  Debugging enabled (CFLAGS = @CFLAGS@).\n"
 #else
- "    No debugging (CFLAGS = @CFLAGS@)\n"
+ "  No debugging (CFLAGS = @CFLAGS@)\n"
 #endif
 
 #ifdef HAVE_POSIX_HOST
- "    Running on a POSIX host.\n"
+ "  Running on a POSIX host.\n"
 #else
- "    No POSIX host (iovec is manually defined, and vstr_sc_* are stubs)\n"
+ "  No POSIX host (iovec is manually defined, and vstr_sc_* are stubs)\n"
 #endif
 
 #ifdef HAVE_MMAP
- "    Have mmap system call.\n"
+ "  Have mmap system call.\n"
+#endif
+
+#ifdef HAVE_LONG_LONG
+ "  Have long long type.\n"
 #endif
     
 #ifdef USE_RESTRICTED_HEADERS
- "    Compiled with restricted functionality in lib C.\n"
+ "  Compiled with restricted functionality in lib C.\n"
 #endif
     
 #if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
- "    Formatting floats using -- glibc -- code.\n"
+ "  Formatting floats using -- glibc -- code.\n"
 #elif defined(VSTR_AUTOCONF_FMT_DBL_none)
- "    Formatting floats using -- none -- code (all floats are treated as zero).\n"
+ "  Formatting floats using -- none -- code (all floats are zero).\n"
 #elif defined(VSTR_AUTOCONF_FMT_DBL_host)
- "    Formatting floats using -- host -- code.\n"
+ "  Formatting floats using -- host -- code.\n"
 #else
 # error "Please configure properly..."
 #endif
 
     
+ "  Compiler supports attributes:\n"
 #ifdef HAVE_ATTRIB_NONNULL
- "    Compiler supports -- nonnull -- attribute.\n"
+ "    nonnull\n"
 #endif
 
 #ifdef HAVE_ATTRIB_ALIAS
- "    Compiler supports -- alias -- attribute.\n"
+ "    alias\n"
 #endif
 
 #ifdef HAVE_ATTRIB_DEPRECATED
- "    Compiler supports -- deprecated -- attribute.\n"
+ "    deprecated\n"
 #endif
 
 #ifdef HAVE_ATTRIB_VISIBILITY
- "    Compiler supports -- visibility -- attribute.\n"
+ "    visibility\n"
 #endif
 
 #ifdef HAVE_INLINE
- "    Functions can be inlined for speed.\n"
+ "  Functions can be inlined for speed.\n"
 #else
- "    Functions cannot be inlined by the environment.\n"
+ "  Functions cannot be inlined.\n"
 #endif
 
 #ifdef HAVE_LINKER_SCRIPT
- "    Linker script enabled (suppresses internal symbols).\n"
+ "  Linker script enabled.\n"
 #endif
 
     
  "\n"
-"Information can be found at:                          http://www.and.org/vstr/"
+"Information can be found at:\t\t\t\thttp://www.and.org/vstr/"
        "\n"
-"Bug reports should be sent to:                    James Antill <james@and.org>"
-       "\n\n"
+"Bug reports should be sent to:\t\t\t    James Antill <james@and.org>"
+       "\n\n\0\0\0\0"
     ;
 
   const char *scan = NULL;
@@ -156,10 +163,11 @@ int     $0x80\n\t\
 #endif
 
   scan = msg;
-  while (*scan++) ++len;
+  while (*scan) ++scan;
+  len = (scan - msg);
   scan = msg;
 
-  while (len)
+  while (len > 0)
   {
     int ret = -1;
 

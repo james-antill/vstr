@@ -593,7 +593,8 @@ static int vstr__sc_fmt_add_cb_ipv4_ptr(Vstr_base *base, size_t pos,
 
   obj_len = strlen(ptr);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len))
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
+                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
     return (FALSE);
 
   if (!vstr_nx_add_buf(base, pos, ptr, obj_len))
@@ -621,7 +622,8 @@ static int vstr__sc_fmt_add_cb_ipv6_ptr(Vstr_base *base, size_t pos,
 
   obj_len = strlen(ptr);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len))
+  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
+                             VSTR_FLAG_SC_FMT_CB_BEG_NONE))
     return (FALSE);
 
   if (!vstr_nx_add_buf(base, pos, ptr, obj_len))

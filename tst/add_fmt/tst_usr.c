@@ -31,11 +31,39 @@ static int tst_usr_pid_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
   return (TRUE);
 }
 
-static int tst_usr_strerror(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
+static int tst_usr_blank_errno1_cb(Vstr_base *st, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  assert(st && !pos);
+  assert(!strcmp(spec->name, "{BLANK_ERRNO1}"));
+
+  assert(tst_errno == ERANGE);
+  assert(errno == ERANGE);
+  tst_errno = 0;
+  errno = 0;
+
+  return (TRUE);
+}
+
+static int tst_usr_blank_errno2_cb(Vstr_base *st, size_t pos,
+                                   Vstr_fmt_spec *spec)
+{
+  assert(st && pos);
+  assert(!strcmp(spec->name, "{BLANK_ERRNO2}"));
+
+  assert(!tst_errno);
+  assert(errno == ERANGE);
+  tst_errno = 0;
+  errno = 0;
+
+  return (TRUE);
+}
+
+static int tst_usr_strerror_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 {
   assert(!strcmp(spec->name, "m"));
   
-  if (!vstr_add_fmt(st, pos, "%s", strerror(tst_errno)))
+  if (!VSTR_ADD_CSTR_PTR(st, pos, strerror(tst_errno)))
     return (FALSE);
 
   return (TRUE);
@@ -109,8 +137,12 @@ int tst(void)
   vstr_sc_fmt_add_ptr(s3->conf, "{ptr:%s%zu}");
   ASSERT(vstr_fmt_srch(s3->conf, "{ptr:%s%zu}"));
   vstr_fmt_add(s3->conf, "{PID}", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s3->conf, "{BLANK_ERRNO1}", tst_usr_blank_errno1_cb,
+               VSTR_TYPE_FMT_ERRNO, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s3->conf, "{BLANK_ERRNO2}", tst_usr_blank_errno2_cb,
+               VSTR_TYPE_FMT_ERRNO, VSTR_TYPE_FMT_END);
   
-  vstr_fmt_add(s4->conf, "m", tst_usr_strerror, VSTR_TYPE_FMT_END);  
+  vstr_fmt_add(s4->conf, "m", tst_usr_strerror_cb, VSTR_TYPE_FMT_END);  
 
   /* output */
   
@@ -210,12 +242,37 @@ int tst(void)
   tst_errno = ERANGE;
   
   vstr_del(s4, 1, s4->len);
+  errno = 0;
   vstr_add_fmt(s4, 0, "%m");
 
   assert(tst_errno == ERANGE);
   
-  TST_B_TST(ret, 9, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(tst_errno)));
+  TST_B_TST(ret, 9, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
+
+  vstr_del(s3, 1, s3->len);
+  errno = tst_errno;
+  vstr_add_fmt(s3, 0, "%m");
   
+  TST_B_TST(ret, 10, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, strerror(ERANGE)));
+  
+  vstr_del(s3, 1, s3->len);
+  errno = tst_errno;
+  vstr_add_fmt(s3, 0,
+               "${BLANK_ERRNO1}"
+               "%m"
+               "${BLANK_ERRNO2}");
+  assert(!tst_errno);
+  assert(!errno && !tst_errno);
+  
+  TST_B_TST(ret, 11, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, strerror(ERANGE)));
+
+  vstr_del(s4, 1, s4->len);
+  tst_errno = 0;
+  errno = ERANGE;
+  vstr_add_sysfmt(s4, 0, "%m");
+  
+  TST_B_TST(ret, 12, !VSTR_CMP_CSTR_EQ(s4, 1, s4->len, strerror(ERANGE)));
+
   vstr_fmt_del(s1->conf, "{Vstr:%p%u}");
   assert(!vstr_fmt_srch(s1->conf, "{Vstr:%p%u}"));
   vstr_fmt_del(s3->conf, "{Vstr:%p%zu%zu%u}");

@@ -5,8 +5,8 @@ static const char *rf = __FILE__;
 int tst(void)
 {
   int ret = 0;
-  ptrdiff_t sn[4] = {INT_MAX, INT_MIN};
-  ptrdiff_t un[4] = {INT_MAX, INT_MIN};
+  ptrdiff_t sn[2] = {INT_MAX, INT_MIN};
+  ptrdiff_t un[2] = {INT_MAX, INT_MIN};
   
 #ifdef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */
   return (EXIT_FAILED_OK);

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-export CC=gcc3
+# export CC=gcc3
 
 rm -f config.cache
 ./configure --enable-debug --with-fmt-float=glibc $@ && make clean && make check

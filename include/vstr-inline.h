@@ -32,7 +32,7 @@ extern inline void vstr_ref_del(struct Vstr_ref *tmp)
     (*tmp->func)(tmp);
 }
 
-extern inline Vstr_ref *vstr_ref_add(struct Vstr_ref *tmp)
+extern inline struct Vstr_ref *vstr_ref_add(struct Vstr_ref *tmp)
 {
   ++tmp->ref;
   
@@ -66,20 +66,21 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
       (len <= (base->conf->buf_sz - base->end->len)) &&
       (!base->cache_available || base->cache_internal))
   {
-    Vstr_node *scan = base->end;
+    struct Vstr_node *scan = base->end;
     const char *buf = buffer;
 
     switch (len)
     { /* Don't do a memcpy() on small values */
-      case 7:  ((Vstr_node_buf *)scan)->buf[scan->len + 6] = buf[6];
-      case 6:  ((Vstr_node_buf *)scan)->buf[scan->len + 5] = buf[5];
-      case 5:  ((Vstr_node_buf *)scan)->buf[scan->len + 4] = buf[4];
-      case 4:  ((Vstr_node_buf *)scan)->buf[scan->len + 3] = buf[3];
-      case 3:  ((Vstr_node_buf *)scan)->buf[scan->len + 2] = buf[2];
-      case 2:  ((Vstr_node_buf *)scan)->buf[scan->len + 1] = buf[1];
-      case 1:  ((Vstr_node_buf *)scan)->buf[scan->len + 0] = buf[0];
+      case 7:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 6] = buf[6];
+      case 6:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 5] = buf[5];
+      case 5:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 4] = buf[4];
+      case 4:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 3] = buf[3];
+      case 3:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 2] = buf[2];
+      case 2:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 1] = buf[1];
+      case 1:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 0] = buf[0];
                break;
-      default: memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, len);
+      default: memcpy(((struct Vstr_node_buf *)scan)->buf + scan->len, buffer,
+                      len);
                break;
     }
     scan->len += len;
@@ -123,13 +124,13 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
         break;
       case VSTR_TYPE_NODE_PTR:
       {
-        char *tmp = ((Vstr_node_ptr *)scan)->ptr;
-        ((Vstr_node_ptr *)scan)->ptr = tmp + len;
+        char *tmp = ((struct Vstr_node_ptr *)scan)->ptr;
+        ((struct Vstr_node_ptr *)scan)->ptr = tmp + len;
         scan->len -= len;
       }
       break;
       case VSTR_TYPE_NODE_REF:
-        ((Vstr_node_ref *)scan)->off += len;
+        ((struct Vstr_node_ref *)scan)->off += len;
         scan->len -= len;
         break;
     }
@@ -193,19 +194,19 @@ extern inline int vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
       (len <= (base->conf->buf_sz - base->end->len)) &&
       (!base->cache_available || base->cache_internal))
   {
-    Vstr_node *scan = base->end;
+    struct Vstr_node *scan = base->end;
 
     switch (len)
     { /* Don't do a memset() on small values */
-      case 7:  ((Vstr_node_buf *)scan)->buf[scan->len + 6] = chr;
-      case 6:  ((Vstr_node_buf *)scan)->buf[scan->len + 5] = chr;
-      case 5:  ((Vstr_node_buf *)scan)->buf[scan->len + 4] = chr;
-      case 4:  ((Vstr_node_buf *)scan)->buf[scan->len + 3] = chr;
-      case 3:  ((Vstr_node_buf *)scan)->buf[scan->len + 2] = chr;
-      case 2:  ((Vstr_node_buf *)scan)->buf[scan->len + 1] = chr;
-      case 1:  ((Vstr_node_buf *)scan)->buf[scan->len + 0] = chr;
+      case 7:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 6] = chr;
+      case 6:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 5] = chr;
+      case 5:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 4] = chr;
+      case 4:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 3] = chr;
+      case 3:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 2] = chr;
+      case 2:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 1] = chr;
+      case 1:  ((struct Vstr_node_buf *)scan)->buf[scan->len + 0] = chr;
                break;
-      default: memset(((Vstr_node_buf *)scan)->buf + scan->len, chr, len);
+      default: memset(((struct Vstr_node_buf *)scan)->buf + scan->len, chr,len);
                break;
     }
     scan->len += len;

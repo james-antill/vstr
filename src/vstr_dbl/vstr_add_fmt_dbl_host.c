@@ -68,7 +68,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     fmt_buffer[tmp++] = 'L';
   
   fmt_buffer[tmp++] = spec->fmt_code;
-  assert(tmp <= sizeof(fmt_buffer));
+  assert(tmp < sizeof(fmt_buffer));
   fmt_buffer[tmp] = 0;
   
   sys_loc = localeconv();

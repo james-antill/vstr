@@ -63,13 +63,15 @@
 #define VSTR__IS_ASCII_LOWER(x) ((VSTR__UC(x) >= 0x61) && (VSTR__UC(x) <= 0x7A))
 #define VSTR__IS_ASCII_UPPER(x) ((VSTR__UC(x) >= 0x41) && (VSTR__UC(x) <= 0x5A))
 #define VSTR__IS_ASCII_DIGIT(x) ((VSTR__UC(x) >= 0x30) && (VSTR__UC(x) <= 0x39))
+#define VSTR__IS_ASCII_ALPHA(x) (VSTR__IS_ASCII_LOWER(x) || \
+                                 VSTR__IS_ASCII_UPPER(x))
 
 #define VSTR__TO_ASCII_LOWER(x) (VSTR__UC(x) + 0x20) /* must be IS_ASCII_U */
 #define VSTR__TO_ASCII_UPPER(x) (VSTR__UC(x) - 0x20) /* must be IS_ASCII_L */
 
 #define VSTR__ASCII_DIGIT_0() (0x30)
-#define VSTR__ASCII_COLON() (0x3A)
-#define VSTR__ASCII_COMMA() (0x2C)
+#define VSTR__ASCII_COLON()   (0x3A)
+#define VSTR__ASCII_COMMA()   (0x2C)
 
 #define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
@@ -106,7 +108,6 @@ typedef struct Vstr__sc_mmap_ref
 typedef struct Vstr__fmt_usr_name_node
 {
  struct Vstr__fmt_usr_name_node *next;
- struct Vstr__fmt_usr_name_node *prev;
 
  const char *name_str;
  size_t      name_len;
@@ -197,6 +198,9 @@ extern int vstr__make_conf_loc_numeric(Vstr_conf *, const char *)
     VSTR__ATTR_I();
 
 extern void vstr__add_fmt_cleanup_spec(void) VSTR__ATTR_I();
+
+extern Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *, const char *)
+    VSTR__ATTR_I();
 
 /* so the linker-script does the right thing */
 extern void vstr_version_func(void);

@@ -13,9 +13,11 @@ tst = tst_char \
     tst_long_double \
     tst_ptrdiff_t \
     tst_size_t \
+    tst_m \
     tst_n \
     tst_str_norm \
     tst_num \
+    tst_bkmg \
     tst_usr
 
 check_PROGRAMS = $(tst)

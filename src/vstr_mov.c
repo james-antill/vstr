@@ -44,6 +44,43 @@ static int vstr__mov_slow(Vstr_base *base, size_t pos,
   return (ret);
 }
 
+static int vstr__mov_single_node(Vstr_base *base, size_t pos,
+                                 size_t from_pos, size_t len)
+{
+  Vstr_node *scan = NULL;
+  char tbuf[64];
+  unsigned int num = 0;
+
+  if (len > sizeof(tbuf))
+    return (FALSE);
+
+  /* XX>XXXFFX = cp T, F1, FL; mv P1+FL, P1, F1-P1; cp P1, T, FL */
+  /* 123456789 */
+  /* XXFFXX>XX = cp T, F1, FL; mv F1, F1+FL, P1-F1; cp P1, T, FL */
+  
+  scan = vstr__base_pos(base, &pos, &num, TRUE);
+  if ((vstr__base_pos(base, &from_pos, &num, TRUE) == scan) &&
+      (scan->len > len) &&
+      ((scan->len - len) >= pos) &&
+      ((scan->len - len) >= from_pos))
+  {
+    char *ptr = vstr__export_node_ptr(scan);
+
+    memcpy(tbuf, ptr + from_pos - 1, len);
+    if (pos > from_pos)
+      memmove(ptr + from_pos + len - 1,
+              ptr + from_pos - 1, (pos + 1) - from_pos);
+    else
+      memmove(ptr + pos + len,
+              ptr + pos, from_pos - (pos + 1));
+    memmove(ptr + pos, tbuf, len);
+    
+    return (TRUE);
+  }
+  
+  return (FALSE);
+}
+
 /* *ret == start of data */
 static Vstr_node **vstr__mov_setup_beg(Vstr_base *base, size_t pos,
                                        unsigned int *num, Vstr_node **prev)
@@ -122,6 +159,7 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   unsigned int from_node_non_used = FALSE;
   unsigned int from_node_ptr_used = FALSE;
   unsigned int from_node_ref_used = FALSE;
+  unsigned int count = 0;
   
   if (!len)
     return (TRUE);
@@ -132,21 +170,40 @@ int vstr_nx_mov(Vstr_base *base, size_t pos,
   if (base->conf->buf_sz != from_base->conf->buf_sz)
     return (vstr__mov_slow(base, pos, from_base, from_pos, len));
 
-  if ((base == from_base) && (pos >= from_pos) && (pos < (from_pos + len)))
-    return (TRUE); /* move a string anywhere into itself doesn't do anything */
+  if (base == from_base)
+  {
+    if ((pos >= (from_pos - 1)) && (pos < (from_pos + len)))
+      return (TRUE); /* move a string anywhere into itself -- nop */
+
+    if (vstr__mov_single_node(base, pos, from_pos, len))
+      return (TRUE);
+  }
   
   assert(vstr__check_real_nodes(base));
   assert((from_base == base) || vstr__check_real_nodes(from_base));
 
-  if (!(beg = vstr__mov_setup_beg(from_base, from_pos, &beg_num, &from_prev)))
-    return (FALSE);
+  if (pos > from_pos)
+    goto move_up;
   
-  if (!(end = vstr__mov_setup_end(from_base, from_pos + len - 1, &end_num)))
-    return (FALSE);
+  while (count < 2)
+  { /* have to get the pointers in the right order,
+     * depending on which is first */
+    if (!(con = vstr__mov_setup_end(base, pos, NULL)))
+      return (FALSE);
+    ++count;
 
-  if (!(con = vstr__mov_setup_end(base, pos, NULL)))
-    return (FALSE);
-
+    if (count >= 2)
+      break;
+   move_up:
+    if (!(beg = vstr__mov_setup_beg(from_base, from_pos, &beg_num, &from_prev)))
+      return (FALSE);
+    
+    if (!(end = vstr__mov_setup_end(from_base, from_pos + len - 1, &end_num)))
+      return (FALSE);
+    ++count;
+  }
+  assert(count == 2);
+  
   from_node_buf_used = from_base->node_buf_used;
   from_node_non_used = from_base->node_non_used;
   from_node_ptr_used = from_base->node_ptr_used;

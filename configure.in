@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=15
+VSTR_MICRO_VERSION=16
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -97,6 +97,12 @@ AC_ISC_POSIX
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_EXEEXT
+
+# No idea if this is right...
+CCAS=gcc
+AC_SUBST(CCAS)
+CCASFLAGS=
+AC_SUBST(CCASFLAGS)
 
 TWOCAN_CONF_MSG(Libtool stuff)
 
@@ -1334,6 +1340,7 @@ AC_OUTPUT([Makefile
            tst/spn/Makefile
            tst/srch/Makefile
            tst/sub/Makefile
+           tst/x/Makefile
            src/vstr_version.c
            vstr.spec
            VERSION

@@ -66,6 +66,12 @@
 <li><a href="#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>
 <li><a href="#VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>
 <li><a href="#VSTR_TYPE_FMT_PTR_WCHAR_T">VSTR_TYPE_FMT_PTR_WCHAR_T</a>
+<li><a href="#VSTR_TYPE_FMT_ERRNO">VSTR_TYPE_FMT_ERRNO</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_sc_fmt_cb_beg%28%29">Constants used with vstr_sc_fmt_cb_beg()</a>
+<ul>
+<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_NONE">VSTR_FLAG_SC_FMT_CB_BEG_NONE</a>
+<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a>
+<li><a href="#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG</a>
 </ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29">Constants passed to vstr_conv_unprintable_*()</a>
 <ul>
 <li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE</a>
@@ -410,7 +416,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_INT
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect a "int" type from
+</p><p>  This flag means that vstr_add_vfmt() should expect a "int" type from
  the argument list passed to it
 
 
@@ -418,7 +424,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_UINT
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "unsigned int" type from
+</p><p>  This flag means that vstr_add_vfmt() should expect an "unsigned int" type from
  the argument list passed to it
 
 
@@ -426,7 +432,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_LONG
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "long" type from
+</p><p>  This flag means that vstr_add_vfmt() should expect a "long" type from
  the argument list passed to it
 
 
@@ -434,15 +440,15 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_ULONG
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "unsigned long" type from
- the argument list passed to it
+</p><p>  This flag means that vstr_add_vfmt() should expect an "unsigned long" type
+ from the argument list passed to it
 
 
 <a name="VSTR_TYPE_FMT_LONG_LONG"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_FMT_LONG_LONG
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "long long" type from
+</p><p>  This flag means that vstr_add_vfmt() should expect a "long long" type from
  the argument list passed to it
 
 
@@ -450,15 +456,15 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_ULONG_LONG
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "unsigned long long" type
- from the argument list passed to it
+</p><p>  This flag means that vstr_add_vfmt() should expect an "unsigned long long"
+ type from the argument list passed to it
 
 
 <a name="VSTR_TYPE_FMT_SSIZE_T"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_FMT_SSIZE_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "ssize_t" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "ssize_t" type
  from the argument list passed to it
 
 
@@ -466,7 +472,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_SIZE_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "size_t" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "size_t" type
  from the argument list passed to it
 
 
@@ -474,7 +480,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_PTRDIFF_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "ptrdiff_t" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "ptrdiff_t" type
  from the argument list passed to it
 
 
@@ -482,7 +488,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_INTMAX_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "intmax_t" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "intmax_t" type
  from the argument list passed to it
 
 
@@ -490,7 +496,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_UINTMAX_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "uintmax_t" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "uintmax_t" type
  from the argument list passed to it
 
 
@@ -498,7 +504,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_DOUBLE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "double" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "double" type
  from the argument list passed to it
 
 
@@ -506,7 +512,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_DOUBLE_LONG
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "long double" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "long double" type
  from the argument list passed to it
 
 
@@ -514,7 +520,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_PTR_VOID
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "void *" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "void *" type
  from the argument list passed to it
 
 
@@ -522,7 +528,7 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_PTR_CHAR
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "char *" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "char *" type
  from the argument list passed to it
 
 
@@ -530,8 +536,46 @@
 <strong>Constant: </strong> VSTR_TYPE_FMT_PTR_WCHAR_T
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that vstr_add_vfmt should expect an "wchar_t *" type
+</p><p>  This flag means that vstr_add_vfmt() should expect a "wchar_t *" type
  from the argument list passed to it
+
+
+<a name="VSTR_TYPE_FMT_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_FMT_ERRNO
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that vstr_add_vfmt() should not expect any arguments passed,
+ but should set the value of errno, just before calling the user callback, to
+ the value upon entering vstr_add_vfmt().
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sc_fmt_cb_beg%28%29"><h2>Constants used with vstr_sc_fmt_cb_beg()</h2>
+</a>
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_NONE
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag is 0, and is generally only used as programmer documentation to mean
+ no flags are applied to this function.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the object you are printing should be treated as a
+ number. For instance setting a precision will truncate the lengfth of the
+ object, unless it is a number. Also +/-/<space> leaders and zero padding will
+ only be done for numbers.
+
+
+<a name="VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag indicates that the number object you are printing should be
+ treated as negative number. This flag has no meaning if
+ VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29"><h2>Constants passed to vstr_conv_unprintable_*()</h2>
@@ -544,9 +588,11 @@
  no flags are applied to this function.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Because it is sometimes are to notice certain characters, they are clasified
- as "unprintable" in by default, the value VSTR_FLAG_CONV_UNPRINTABLE_DEF is
- a default that is what most people would expect.
+</p><p>  Because it is sometimes hard are to notice certain characters, they are
+ clasified as "unprintable" by default, the value
+ VSTR_FLAG_CONV_UNPRINTABLE_DEF is a default that is what most people would
+ expect to be classified as unprintable.
+
 
 <a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL

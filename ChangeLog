@@ -1,3 +1,56 @@
+2002-09-28  James Antill  <james@and.org>
+
+	* NEWS: Relase 0.9.16
+
+2002-09-25  James Antill  <james@and.org>
+
+	* include/vstr-inline.h: Fixup uses of typedef's.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_bkmg_bit_uint_buf): Added function.
+	(vstr_sc_fmt_add_bkmg_bits_uint_buf): Added function.
+
+	* src/vstr_mov.c (vstr__mov_single_node): Add optimisation for moving
+	a small ammount of data in a single node.
+
+2002-09-24  James Antill  <james@and.org>
+
+	* examples/ex_mon_cp.c (main): Added example for monitoring copies.
+
+	* src/vstr_mov.c (vstr_mov): Fix move, when moving data in the vstr down
+	inside a single node.
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_bkmg_Byte_uint_buf): Added function.
+	(vstr_sc_fmt_add_bkmg_Bytes_uint_buf): Added function.
+
+2002-09-22  James Antill  <james@and.org>
+
+	* src/vstr_version.c (vstr_version_func): Added compiler version of gcc
+	to the about output when you run the library.
+
+	* include/vstr-extern.h (VSTR_SRCH_CSTR_CHRS_FWD): Added macro function.
+	(VSTR_SRCH_CSTR_CHRS_REV): Added macro function.
+	(VSTR_CSRCH_CSTR_CHRS_FWD): Added macro function.
+	(VSTR_CSRCH_CSTR_CHRS_REV): Added macro function.
+	(VSTR_SRCH_CASE_CSTR_BUF_FWD): Added macro function.
+	(VSTR_SRCH_CASE_CSTR_BUF_REV): Added macro function.
+
+	* src/vstr_srch_case.c (vstr_srch_case_chr_fwd): Added function.
+	(vstr_srch_case_chr_rev): Added function.
+	(vstr_srch_case_buf_fwd): Added function.
+	(vstr_srch_case_buf_rev): Added function.
+	(vstr_srch_case_vstr_fwd): Added function.
+	(vstr_srch_case_vstr_rev): Added function.
+
+	* src/vstr_add_fmt.c (vstr_add_vfmt): Added "%m" formatter as standard.
+
+	* include/vstr-const.h (VSTR_TYPE_FMT_ERRNO): Added constant.
+
+2002-09-21  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_CMP_VERS_BUF_EQ): Changed macro to call
+	vstr_cmp() as that's faster.
+	(VSTR_CMP_VERS_EQ): Changed macro to call vstr_cmp() as that's faster.
+
 2002-09-21  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.15

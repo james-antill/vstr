@@ -55,6 +55,12 @@ cmp_case
 cmp_case_buf
 cmp_vers
 cmp_vers_buf
+srch_case_chr_fwd
+srch_case_chr_rev
+srch_case_buf_fwd
+srch_case_buf_rev
+srch_case_vstr_fwd
+srch_case_vstr_rev
 srch_chr_fwd
 srch_chr_rev
 srch_chrs_fwd
@@ -65,7 +71,6 @@ srch_buf_fwd
 srch_buf_rev
 srch_vstr_fwd
 srch_vstr_rev
-srch_sects_add_buf_fwd
 spn_chrs_fwd
 spn_chrs_rev
 cspn_chrs_fwd
@@ -109,6 +114,10 @@ sc_fmt_add_buf
 sc_fmt_add_ptr
 sc_fmt_add_non
 sc_fmt_add_ref
+sc_fmt_add_bkmg_Byte_uint
+sc_fmt_add_bkmg_Bytes_uint
+sc_fmt_add_bkmg_bit_uint
+sc_fmt_add_bkmg_bits_uint
 sc_fmt_add_ipv4_ptr
 sc_fmt_add_ipv6_ptr
 sc_fmt_cb_beg

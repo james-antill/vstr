@@ -917,7 +917,8 @@ __printf_fp (FILE *fp,
 	   || (fracdig_no < fracdig_max && (fracsize > 1 || frac[0] != 0)))
       {
 	++fracdig_no;
-	*wcp = hack_digit ();
+        /* FIXME: volatile to work around a bug in gcc 3.2 */
+	*(volatile wchar_t *)wcp = hack_digit ();
 	if (*wcp != L'0')
 	  significant = 1;
 	else if (significant == 0)

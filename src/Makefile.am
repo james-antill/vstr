@@ -9,10 +9,11 @@ lib_LTLIBRARIES = libvstr.la
 INCLUDES = -I$(top_srcdir)/include
 
 if HAVE_LINKER_MAIN_RELOCATE
-CFLAGS = @CFLAGS@ @WARNS@
+VSTR__RELOC_MAIN =
 else
-CFLAGS = @CFLAGS@ @WARNS@ -DHAVE_NO_RELOC_MAIN
+VSTR__RELOC_MAIN =  -DHAVE_NO_RELOC_MAIN
 endif
+CFLAGS = @CFLAGS@ @WARNS@ $(VSTR__RELOC_MAIN)
 
 if HAVE_POSIX_HOST
 POSIX_HOST_SRC = vstr_sc_posix.c
@@ -38,6 +39,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \
+                        vstr_fmt.c \
                         vstr_inline.c \
                         vstr_mov.c \
                         vstr_parse.c \
@@ -49,10 +51,11 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_spn.c \
                         vstr_split.c \
                         vstr_srch.c \
+                        vstr_srch_case.c \
                         vstr_sub.c \
                         vstr_version.c
 
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
         -release $(LT_RELEASE) \
-        -export-dynamic $(VSTR__LINKER_RELOC_MAIN)
+        -export-dynamic
