@@ -29,6 +29,7 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
+	condrestart doesn't work?
 	man page
 	Documentation/httpd.html
 	jhttpd -> vstr-httpd

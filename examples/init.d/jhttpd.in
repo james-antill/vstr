@@ -50,7 +50,7 @@ function start()
         do
           jhttpd_dirs
           U__CALL_ARGS="JHTTPD${i}_ARGS"
-          I_ARGS="$GLOB_I_ARGS --daemon --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
+          I_ARGS="$GLOB_I_ARGS --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
           U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
           echo -n $"Starting $prog_name(${REAL_DIR}): "
           daemon --check $prog_name$i $prog_exe $I_ARGS $U_ARGS
