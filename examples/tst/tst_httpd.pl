@@ -133,11 +133,15 @@ chmod(0, "$root/default/noprivs.html");
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-daemon_init("ex_httpd", $root);
+daemon_init("ex_httpd", $root, "--mmap=false --sendfile=false");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--mmap");
+daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=false");
+all_vhost_tsts();
+daemon_exit("ex_httpd");
+
+daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 

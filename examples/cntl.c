@@ -165,12 +165,12 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
     }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "LIST"))
     {
-      cntl__scan_events(evnt->io_w, "CONNECT",   q_connect);
-      cntl__scan_events(evnt->io_w, "ACCEPT",    q_accept);
-      cntl__scan_events(evnt->io_w, "SEND/RECV", q_send_recv);
-      cntl__scan_events(evnt->io_w, "RECV",      q_recv);
-      cntl__scan_events(evnt->io_w, "NONE",      q_none);
-      cntl__scan_events(evnt->io_w, "SEND_NOW",  q_send_now);
+      cntl__scan_events(evnt->io_w, "CONNECT",   evnt_queue("connect"));
+      cntl__scan_events(evnt->io_w, "ACCEPT",    evnt_queue("accept"));
+      cntl__scan_events(evnt->io_w, "SEND/RECV", evnt_queue("send_recv"));
+      cntl__scan_events(evnt->io_w, "RECV",      evnt_queue("recv"));
+      cntl__scan_events(evnt->io_w, "NONE",      evnt_queue("none"));
+      cntl__scan_events(evnt->io_w, "SEND_NOW",  evnt_queue("send_now"));
       cntl__fin(evnt->io_w);
     }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "STATUS"))

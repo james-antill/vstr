@@ -7,6 +7,7 @@
     --priv-gid        - Drop privilages to this gid.
     --pid-file        - Log pid to file.
     --cntl-file       - Create control file.
+    --sendfile        - Toggle use of sendfile() to load files.
     --mmap            - Toggle use of mmap() to load files.
     --keep-alive      - Toggle use of Keep-Alive handling.
     --keep-alive-1.0  - Toggle use of Keep-Alive handling for 1.0.
@@ -15,6 +16,7 @@
     --range-1.0       - Toggle use of partial responces for 1.0.
     --public-only     - Toggle use of public only privilages.
     --dir-filename    - Filename to use when requesting directories.
+    --server-name     - Contents of server header used in replies.
     --debug -d        - Enable debug info.
     --host -H         - IPv4 address to bind (def: "all").
     --help -h         - Print this message.

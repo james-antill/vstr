@@ -311,7 +311,9 @@ AC_CHECK_HEADER(malloc.h, AC_DEFINE(HAVE_MALLOC_H))
 
 # This needs to be a _lot_ better
 #  For instance... doesn't work on 2.0.x kernels, with glibc-2.x.x
-AC_CHECK_HEADER(sys/poll.h, AC_DEFINE(HAVE_SYS_POLL_H))
+AC_CHECK_HEADER(poll.h, AC_DEFINE(HAVE_POLL_H))
+
+AC_CHECK_HEADER(sys/epoll.h, AC_DEFINE(HAVE_SYS_EPOLL_H))
 
 AC_CHECK_HEADER(sys/mman.h, AC_DEFINE(HAVE_SYS_MMAN_H))
 
@@ -611,7 +613,7 @@ esac
 AC_MSG_CHECKING(for a _WORKING_ implementation of poll())
 AC_CACHE_VAL(local_cv_has_poll,[
 AC_TRY_RUN([
-#include <sys/poll.h>
+#include <poll.h>
 int main() {
  struct pollfd fds[3];
  fds[0].fd = 1;

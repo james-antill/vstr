@@ -51,7 +51,6 @@
 #define CONF_SERV_DEF_PORT   80
 
 #define CONF_SERV_VERSION "0.7.1"
-#define CONF_SERV_NAME "jhttpd/" CONF_SERV_VERSION " (Vstr)"
 
 #if !defined(SO_DETACH_FILTER) || !defined(SO_ATTACH_FILTER)
 # define CONF_SERV_USE_SOCKET_FILTERS FALSE
@@ -78,8 +77,9 @@ struct sock_fprog
 #endif
 
 /* defaults for runtime conf */
+#define CONF_SERV_DEF_NAME "jhttpd/" CONF_SERV_VERSION " (Vstr)"
 #define CONF_SERV_USE_MMAP FALSE
-#define CONF_SERV_USE_SENDFILE FALSE
+#define CONF_SERV_USE_SENDFILE TRUE
 #define CONF_SERV_USE_KEEPA TRUE
 #define CONF_SERV_USE_KEEPA_1_0 TRUE
 #define CONF_SERV_USE_VHOST TRUE
@@ -224,6 +224,7 @@ static Vstr_base *err_404_msg = NULL;
 
 static struct 
 {
+ const char * server_name;
  unsigned int use_mmap : 1;
  unsigned int use_sendfile : 1;
  unsigned int use_keep_alive : 1;
@@ -233,7 +234,8 @@ static struct
  unsigned int use_range_1_0 : 1;
  unsigned int use_public_only : 1;
  const char * dir_filename;
-} serv[1] = {{CONF_SERV_USE_MMAP, CONF_SERV_USE_SENDFILE,
+} serv[1] = {{CONF_SERV_DEF_NAME,
+              CONF_SERV_USE_MMAP, CONF_SERV_USE_SENDFILE,
               CONF_SERV_USE_KEEPA, CONF_SERV_USE_KEEPA_1_0,
               CONF_SERV_USE_VHOST,
               CONF_SERV_USE_RANGE, CONF_SERV_USE_RANGE_1_0,
@@ -253,6 +255,7 @@ static void usage(const char *program_name, int ret)
     --priv-gid        - Drop privilages to this gid.\n\
     --pid-file        - Log pid to file.\n\
     --cntl-file       - Create control file.\n\
+    --sendfile        - Toggle use of sendfile() to load files.\n\
     --mmap            - Toggle use of mmap() to load files.\n\
     --keep-alive      - Toggle use of Keep-Alive handling.\n\
     --keep-alive-1.0  - Toggle use of Keep-Alive handling for 1.0.\n\
@@ -261,6 +264,7 @@ static void usage(const char *program_name, int ret)
     --range-1.0       - Toggle use of partial responces for 1.0.\n\
     --public-only     - Toggle use of public only privilages.\n\
     --dir-filename    - Filename to use when requesting directories.\n\
+    --server-name     - Contents of server header used in replies.\n\
     --debug -d        - Enable debug info.\n\
     --host -H         - IPv4 address to bind (def: \"all\").\n\
     --help -h         - Print this message.\n\
@@ -383,10 +387,11 @@ static void serv_init(void)
   if (!(vlg = vlg_make()))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-  evnt_logger(vlg);
-  
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
+  
+  evnt_logger(vlg);
+  evnt_epoll_init();
   
   serv_signals();
 
@@ -540,7 +545,7 @@ static void app_def_hdrs(struct Con *con, struct Http_req_data *req,
   Vstr_base *out = con->ev->io_w;
 
   app_header_cstr(out, "Date", date_rfc1123(now));
-  app_header_cstr(out, "Server", CONF_SERV_NAME);
+  app_header_cstr(out, "Server", serv->server_name);
   
   if (difftime(now, mtime) < 0) /* if mtime in future, chop it #14.29 */
     mtime = now;
@@ -972,12 +977,18 @@ static int serv_http_parse_range(Vstr_base *data, size_t pos, size_t len,
   return (200);
 }
 
-static void serv__mmap_chk(struct Http_req_data *req,
+static void serv_conf_file(struct Con *con, struct Http_req_data *req,
+                           VSTR_AUTOCONF_uintmax_t f_off,
                            VSTR_AUTOCONF_uintmax_t f_len)
 {
-  if ((f_len >= CONF_HTTP_MMAP_LIMIT_MIN) &&
-      (f_len <= CONF_HTTP_MMAP_LIMIT_MAX) && serv->use_mmap)
-    req->use_mmap = TRUE;
+  ASSERT(!req->head_op);
+  ASSERT(!req->use_mmap);
+  
+  if (!con->use_sendfile)
+    return;
+  
+  con->f_off = f_off;
+  con->f_len = f_len;
 }
 
 static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
@@ -990,22 +1001,20 @@ static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
   
   ASSERT(!req->fname->len);
   ASSERT(!req->use_mmap);
+  ASSERT(!req->head_op);
 
-  if (req->head_op)
-  {
-    con->f_len = f_len;    
+  if (con->use_sendfile)
     return;
-  }
 
+  if (!serv->use_mmap ||
+      (f_len < CONF_HTTP_MMAP_LIMIT_MIN) || (f_len > CONF_HTTP_MMAP_LIMIT_MAX))
+    return;
+  
   /* mmap offset needs to be aligned - so tweak offset before and after */
   mmoff /= 4096;
   mmoff *= 4096;
   ASSERT(mmoff <= off);
   mmlen += off - mmoff;
-  
-  serv__mmap_chk(req, f_len);
-  if (!req->use_mmap)
-    return;
   
   if (vstr_sc_mmap_fd(req->fname, 0, con->f_fd, mmoff, mmlen, NULL))
     vstr_del(req->fname, 1, off - mmoff);
@@ -1018,51 +1027,44 @@ static void serv_call_mmap(struct Con *con, struct Http_req_data *req,
   }
 
   ASSERT(req->fname->len == f_len);
-  ASSERT(con->f_len      >= f_len);
   
   /* possible range request successful, alter response length */
   con->f_len = f_len;
 }
 
-static void serv_call_seek(struct Con *con, struct Http_req_data *req,
-                           VSTR_AUTOCONF_uintmax_t f_off,
-                           VSTR_AUTOCONF_uintmax_t f_len)
+static int serv_call_seek(struct Con *con, struct Http_req_data *req,
+                          VSTR_AUTOCONF_uintmax_t f_off,
+                          VSTR_AUTOCONF_uintmax_t f_len)
 {
   Vstr_base *data = con->ev->io_r;
   
-  if (req->head_op)
-  {
-    con->f_len = f_len;    
-    return;
-  }
+  ASSERT(!req->head_op);
   
-  if (req->use_mmap)
-    return;
+  if (req->use_mmap || con->use_sendfile)
+    return (FALSE);
 
-  if (con->use_sendfile)
-    con->f_off = f_off;
-  else if (lseek64(con->f_fd, f_off, SEEK_SET) == -1)
+  if (f_off && (lseek64(con->f_fd, f_off, SEEK_SET) == -1))
   {
     vlg_warn(vlg, "lseek($<vstr.sect:%p%p%u>,off=%ju): %m\n",
              data, req->sects, 2, f_off);
     con->http_hdrs->hdr_range->pos = 0;
     req->advertise_accept_ranges = FALSE;
-    return;
+    return (FALSE);
   }
-
-  ASSERT(con->f_len >= f_len);
   
-  /* range request successful, alter response length */
   con->f_len = f_len;
+
+  return (TRUE);
 }
 
 static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
-                             const char *content_type,
-                             VSTR_AUTOCONF_uintmax_t range_beg,
-                             VSTR_AUTOCONF_uintmax_t range_end)
+                             const char *content_type)
 {
   Vstr_base *data = con->ev->io_r;
   Vstr_base *out = con->ev->io_w;
+  VSTR_AUTOCONF_uintmax_t range_beg = 0;
+  VSTR_AUTOCONF_uintmax_t range_end = 0;
+  VSTR_AUTOCONF_uintmax_t f_len     = 0;
   time_t now = time(NULL);
   
   if (req->ver_1_1 && con->http_hdrs->hdr_expect->len)
@@ -1093,16 +1095,24 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
   if (!app_response_ok(con, req, now))
     HTTPD_ERR_RET(req, 412, FALSE);
 
-  if (!con->http_hdrs->hdr_range->pos)
-    serv_call_mmap(con, req, 0, con->f_len);
+  if (con->http_hdrs->hdr_range->pos)
+    f_len = (range_end - range_beg) + 1;
   else
   {
-    VSTR_AUTOCONF_uintmax_t f_len = (range_end - range_beg) + 1;
+    range_beg = 0;
+    f_len     = con->f_len;
+  }
+  ASSERT(con->f_len >= f_len);
 
+  if (req->head_op)
+    con->f_len = f_len;
+  else
+  {
+    serv_conf_file(con, req, range_beg, f_len);
     serv_call_mmap(con, req, range_beg, f_len);
     serv_call_seek(con, req, range_beg, f_len);
   }
-        
+  
   app_def_hdrs(con, req, now, req->f_stat->st_mtime, content_type, con->f_len);
   if (con->http_hdrs->hdr_range->pos)
     vstr_add_fmt(out, out->len, "%s: %s %ju-%ju/%ju\r\n",
@@ -1138,14 +1148,19 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req,
   Vstr_base *fname = req->fname;
 
   ASSERT(!fname->len);
+
+  assert(VPREFIX(data, url_pos, url_len, "/"));
+
+  /* don't allow encoded slashes */
+  if (vstr_srch_case_cstr_buf_fwd(data, url_pos, url_len, "%2f"))
+    HTTPD_ERR_RET(req, 403, FALSE);
+  
   vstr_add_vstr(fname, 0, data, url_pos, url_len, VSTR_TYPE_ADD_BUF_PTR);
   vstr_conv_decode_uri(fname, 1, fname->len);
 
   if (fname->conf->malloc_bad) /* dealt with in req_op_get */
     return (TRUE);
   
-  assert(VPREFIX(fname, 1, fname->len, "/"));
-
   /* FIXME: maybe call stat() to see if vhost dir exists ? ---
    * maybe when have stat() cache */
 
@@ -1198,8 +1213,9 @@ static int http_parse_wait_io_r(struct Con *con)
 {
   if (con->io_r_shutdown)
     return (FALSE);
-  else
-    return (TRUE);
+
+  evnt_io_cork(con->ev, FALSE);
+  return (TRUE);
 }
 
 static struct Http_req_data *http_make_req(struct Con *con)
@@ -1288,15 +1304,15 @@ static int http_fin_req(struct Con *con, struct Http_req_data *req)
 
   if (!con->keep_alive) /* all input is here */
   {
-    SOCKET_POLL_INDICATOR(con->ev->ind)->events  &= ~POLLIN;
-    SOCKET_POLL_INDICATOR(con->ev->ind)->revents &= ~POLLIN;
+    evnt_wait_cntl_del(con->ev, POLLIN);
     req->len = con->ev->io_r->len; /* delete it all */
   }
   
   vstr_del(con->ev->io_r, 1, req->len);
   
   http_req_free(req);
-  
+
+  evnt_io_cork(con->ev, TRUE);
   return (serv_send(con));
 }
 
@@ -1393,8 +1409,6 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   Vstr_base *out = con->ev->io_w;
   const char *http_req_content_type = "application/octet-stream";
   const char *fname_cstr = NULL;
-  VSTR_AUTOCONF_uintmax_t range_beg = 0;
-  VSTR_AUTOCONF_uintmax_t range_end = 0;
       
   if (req->fname->conf->malloc_bad)
     VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "fname: %m\n"));
@@ -1450,9 +1464,11 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   vstr_del(req->fname, 1, req->fname->len);
 
   if (req->ver_0_9)
+  {
+    serv_conf_file(con, req, 0, con->f_len);
     serv_call_mmap(con, req, 0, con->f_len);
-  else if (!serv_http_req_1_x(con, req, http_req_content_type,
-                              range_beg, range_end))
+  }
+  else if (!serv_http_req_1_x(con, req, http_req_content_type))
     return (http_fin_err_close_req(con, req));
   
   if (out->conf->malloc_bad)
@@ -1622,6 +1638,18 @@ static int serv_q_send(struct Con *con)
   return (TRUE);
 }
 
+static int serv_fin_send(struct Con *con)
+{
+  if (con->keep_alive)
+  { /* need to try immediately, as we might have already got the next req */
+    if (!con->io_r_shutdown)
+      evnt_wait_cntl_add(con->ev, POLLIN);
+    return (http_parse_req(con));
+  }
+    
+  return (FALSE);
+}
+
 /* try sending a bunch of times, bail out if we've done a few ... or
  * if we have too much data */
 #define SERV__SEND(x)                         \
@@ -1663,30 +1691,36 @@ static int serv_send(struct Con *con)
   {
     while (con->ev->io_w->len)
       SERV__SEND("end");
-
-    if (con->keep_alive)
-    { /* need to try immediately, as we might have already got the next req */
-      if (!con->io_r_shutdown)
-        SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
-      return (http_parse_req(con));
-    }
-    
-    return (FALSE);
+    return (serv_fin_send(con));
   }
 
   if (con->use_sendfile)
   {
     unsigned int ern = 0;
     
-    while (--num)
+    while (con->f_len)
+    {
+      if (!--num)
+        return (serv_q_send(con));
+      
       if (!evnt_sendfile(con->ev, con->f_fd, &con->f_off, &con->f_len, &ern))
       {
+        VSTR_AUTOCONF_uintmax_t f_off = con->f_off;
+
+        if (errno == ENOSYS) /* also logs it */
+          serv->use_sendfile = FALSE;
         if (errno != EPIPE)
           vlg_warn(vlg, "sendfile: %m\n");
-        return (FALSE);
+
+        if (lseek64(con->f_fd, f_off, SEEK_SET) == -1)
+          VLG_WARN_RET(FALSE, (vlg, "lseek(<sendfile>,off=%ju): %m\n", f_off));
+
+        return (serv_send(con));
       }
+    }
     
-    return (serv_q_send(con));
+    serv_fd_close(con);
+    return (serv_fin_send(con));
   }
   
   ASSERT(con->f_len);
@@ -1717,7 +1751,6 @@ static int serv_send(struct Con *con)
     con->ev->io_w->conf->malloc_bad = FALSE;
   
   serv_fd_close(con);
-
   return (serv_send(con));
 }
 
@@ -1768,7 +1801,7 @@ static int serv_recv(struct Con *con)
     ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
     
     if (server_max_header_sz && (data->len > server_max_header_sz))
-      SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
+      evnt_wait_cntl_del(con->ev, POLLIN);
   }
   
   if (http_parse_req(con))
@@ -1947,6 +1980,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {"cntl-file", required_argument, NULL, 7},
    {"acpt-filter-file", required_argument, NULL, 8},
    {"mmap", optional_argument, NULL, 30},
+   {"sendfile", optional_argument, NULL, 21},
    {"keep-alive", optional_argument, NULL, 29},
    {"keep-alive-1.0", optional_argument, NULL, 28},
    {"vhosts", optional_argument, NULL, 27},
@@ -1955,6 +1989,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {"range-1.0", optional_argument, NULL, 25},
    {"public-only", optional_argument, NULL, 24},
    {"dir-filename", required_argument, NULL, 23},
+   {"server-name", required_argument, NULL, 22},
    /* {"404-file", required_argument, NULL, 0}, */
    {"debug", no_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
@@ -2010,6 +2045,7 @@ static void cl_cmd_line(int argc, char *argv[])
       case 7: cntl_file        = optarg;              break;
       case 8: acpt_filter_file = optarg;              break;
       case 30: OPT_TOGGLE_ARG(serv->use_mmap);        break;
+      case 21: OPT_TOGGLE_ARG(serv->use_sendfile);    break;
       case 29: OPT_TOGGLE_ARG(serv->use_keep_alive);  break;
       case 28: OPT_TOGGLE_ARG(serv->use_keep_alive_1_0); break;
       case 27: OPT_TOGGLE_ARG(serv->use_vhosts);      break;
@@ -2017,6 +2053,7 @@ static void cl_cmd_line(int argc, char *argv[])
       case 25: OPT_TOGGLE_ARG(serv->use_range_1_0);   break;
       case 24: OPT_TOGGLE_ARG(serv->use_public_only); break;
       case 23: serv->dir_filename = optarg;           break;
+      case 22: serv->server_name  = optarg;           break;
         
       default:
         abort();
@@ -2045,8 +2082,7 @@ static void cl_cmd_line(int argc, char *argv[])
     cntl_init(vlg, cntl_file, acpt_evnt);
   
   if (acpt_filter_file)
-    serv_filter_attach(SOCKET_POLL_INDICATOR(acpt_evnt->ind)->fd,
-                       acpt_filter_file);
+    serv_filter_attach(evnt_fd(acpt_evnt), acpt_filter_file);
   
   if (chroot_dir)
   { /* preload locale info. so syslog can log in localtime */

@@ -163,7 +163,7 @@ static void cl_app_recq1_pkt(struct con *con,
   SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
   evnt_put_pkt(con->ev);
   
-  if (con->ev != q_connect)
+  if (!con->ev->flag_q_connect)
     evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND); /* does write */
 }
 
@@ -188,32 +188,15 @@ static void ui_parse(void)
 {
   size_t len = 0;
   unsigned int count = 64;
-  struct Evnt *con = q_none;
+  struct Evnt *con = NULL;
 
   if (!io_r->len)
     return; /* don't start more connections for nothing */
 
-  /*  Find a usable connection, tries to find the least used connection
-   * preferring ones not blocking on send IO */
-  if (!con) con = q_recv;
-  if (!con) con = q_send_recv;
-  if (!con)
+  if (!(con = evnt_find_least_used()))
   {
     cl_connect();
     return;
-  }
-
-  else
-  { /* FIXME: not optimal, only want to change after a certain level */
-    struct Evnt *con_min = con;
-
-    while (con)
-    {
-      if (con_min->io_w->len > con->io_w->len)
-        con_min = con;
-      con = con->next;
-    }
-    con = con_min;
   }
   
   while ((len = vstr_srch_chr_fwd(io_r, 1, io_r->len, '\n')) && --count)

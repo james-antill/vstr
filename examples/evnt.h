@@ -56,6 +56,9 @@ struct Evnt
  unsigned int flag_q_none      : 1;
  
  unsigned int flag_q_send_now  : 1;
+
+ unsigned int flag_io_nagle    : 1;
+ unsigned int flag_io_cork     : 1;
 };
 
 #define EVNT_SA(x)    (                      (x)->sa)
@@ -65,6 +68,11 @@ struct Evnt
 extern void evnt_logger(Vlg *);
 
 extern void evnt_fd_set_nonblock(int, int);
+
+extern int evnt_fd(struct Evnt *);
+
+extern void evnt_wait_cntl_add(struct Evnt *, int);
+extern void evnt_wait_cntl_del(struct Evnt *, int);
 
 extern int evnt_cb_func_connect(struct Evnt *);
 extern struct Evnt *evnt_cb_func_accept(int, struct sockaddr *, socklen_t);
@@ -95,23 +103,35 @@ extern int evnt_sendfile(struct Evnt *, int,
                          unsigned int *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);
-extern int evnt_poll(void);
 extern void evnt_scan_fds(unsigned int, size_t);
 extern void evnt_scan_send_fds(void);
 
 extern unsigned int evnt_num_all(void);
 extern int evnt_waiting(void);
 
+extern void evnt_io_cork(struct Evnt *, int);
+
+extern int evnt_epoll_init(void);
+extern int evnt_epoll_enabled(void);
+
+extern unsigned int evnt_poll_add(struct Evnt *, int);
+extern void evnt_poll_del(struct Evnt *);
+extern int evnt_poll(void);
+
+extern struct Evnt *evnt_find_least_used(void);
+
+extern struct Evnt *evnt_queue(const char *);
+
 extern void evnt_out_dbg3(const char *);
 
 extern int evnt_opt_nagle;
 
-extern struct Evnt *q_send_now;  /* Try a send "now" */
+#ifndef EVNT_COMPILE_INLINE
+#define EVNT_COMPILE_INLINE 1
+#endif
 
-extern struct Evnt *q_none;      /* nothing */
-extern struct Evnt *q_accept;    /* connections - recv */
-extern struct Evnt *q_connect;   /* connections - send */
-extern struct Evnt *q_recv;      /* recv */
-extern struct Evnt *q_send_recv; /* recv + send */
+#if defined(VSTR_AUTOCONF_HAVE_INLINE) && EVNT_COMPILE_INLINE
+#endif
+
 
 #endif
