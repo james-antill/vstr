@@ -240,7 +240,7 @@ endif
 
 if PERL_USR_BIN_AVAIL
 TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
-TESTS = tst/tst_cat.pl tst/tst_hexdump.pl
+TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_httpd.pl
 endif
 
 else

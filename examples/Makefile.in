@@ -422,7 +422,7 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@hi_APP = ./ex_highlight
 
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_httpd.pl
 
 otherdir = $(EX_INST_DIR)
 other_DATA = \
@@ -432,13 +432,19 @@ other_DATA = \
 htmldir = $(EX_INST_DIR)/html
 html_DATA = \
   html/f_c.css \
-  html/dns.h.html \
+  html/app.h.html \
+  html/cntl.c.html \
+  html/cntl.h.html \
+  html/date.c.html \
+  html/date.h.html \
   html/dns.c.html \
-  html/evnt.h.html \
+  html/dns.h.html \
   html/evnt.c.html \
+  html/evnt.h.html \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
+  html/ex_cntl.c.html \
   html/ex_csv.c.html \
   html/ex_dir_filter.c.html \
   html/ex_dir_list.c.html \
@@ -477,9 +483,6 @@ html_DATA = \
   html/ex_yes.c.html \
   html/ex_ypservd.c.html \
   html/ex_zcat.c.html \
-  html/date.c.html \
-  html/date.h.html \
-  html/vlg.c.html \
   html/opt.h.html \
   html/vlg.c.html \
   html/vlg.h.html

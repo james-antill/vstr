@@ -1,3 +1,12 @@
+2004-10-14  James Antill  <james@and.org>
+
+	* tst/regression/tst_regression_conv.c (tst): Added testcase for conv
+	bug.
+
+	* src/vstr_conv.c (vstr_conv_lowercase): Fixed major logic bug in conv
+	helper macro, where function could return having done nothing when it
+	should have done something.
+
 2004-10-06  James Antill  <james@and.org>
 
 	* src/vstr_sc_posix.c (vstr_sc_write_fd): Fixed bug when UIO_MAXIOV is

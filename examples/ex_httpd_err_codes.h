@@ -66,6 +66,20 @@
 </html>\r\n\
 "
 
+#define CONF_LINE_RET_405 "Method Not Allowed"
+#define CONF_MSG_RET_405 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
+<html>\r\n\
+  <head>\r\n\
+    <title>405 Method Not Allowed</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>405 Method Not Allowed</h1>\r\n\
+    <p>The method specified is not allowed.</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
 #define CONF_LINE_RET_412 "Precondition Failed"
 #define CONF_MSG_RET_412 "\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
@@ -177,7 +191,10 @@
 */
 #define HTTP_REQ_CHK_DIR(s1, head_op, goto_label) do {            \
       if (VSUFFIX((s1), 1, (s1)->len, "/.."))                     \
-        HTTPD_ERR(404, head_op);                                  \
+      {                                                           \
+        HTTPD_ERR(403, head_op);                                  \
+        goto goto_label ;                                         \
+      }                                                           \
       else if (!VSUFFIX((s1), 1, (s1)->len, "/"))                 \
       {                                                           \
         vstr_del((s1), 1, vhost_prefix_len);                      \

@@ -1,18 +1,16 @@
 #! /usr/bin/perl -w
 
-my @tsts = ("ex_hexdump");
-
 use strict;
 
 push @INC, "$ENV{SRCDIR}/tst";
 require 'vstr_tst_examples.pl';
 
-run_tst($_) for @tsts;
+run_tst("ex_hexdump");
 
-my $opts = "--mmap";
-run_tst($_) for @tsts;
+our $opts = "--mmap";
+run_tst("ex_hexdump");
 
 $opts = "--none";
-run_tst($_, "ex_hexdump_none") for @tsts;
+run_tst("ex_hexdump", "ex_hexdump_none");
 
 success();

@@ -8,7 +8,8 @@ tst_regression = \
     regression/tst_regression_vec1 \
     regression/tst_regression_cstr1 \
     regression/tst_regression_cstr2 \
-    regression/tst_regression_fmt1
+    regression/tst_regression_fmt1 \
+    regression/tst_regression_conv
 
 xfail_tst_regression =
 

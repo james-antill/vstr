@@ -33,6 +33,7 @@
     return (FALSE);                                                     \
                                                                         \
   if (base->node_ptr_used || base->node_ref_used ||                     \
+      ( (sub) && base->node_non_used) ||                                \
       (!(sub) && !base->conf->split_buf_del))                           \
     do                                                                  \
     {                                                                   \
@@ -67,7 +68,7 @@
           do                                                            \
           {                                                             \
             --iter->len;                                                \
-          ++iter->ptr;                                                  \
+            ++iter->ptr;                                                \
           } while ((iter->len > 0) &&                                   \
                    (!(sub) ||                                           \
                     ((start_scan_len - iter->len) <= base->conf->buf_sz)) && \
@@ -89,30 +90,36 @@
       ((sub) || base->conf->split_buf_del) &&                           \
       !extra_nodes[0] && !extra_nodes[1] &&                             \
       !extra_nodes[2] && !extra_nodes[3])                               \
-    return (TRUE);                                                      \
+  { }                                                                   \
+  else                                                                  \
+  {                                                                     \
+    ++extra_nodes[VSTR_TYPE_NODE_BUF - 1];                              \
                                                                         \
-  ++extra_nodes[VSTR_TYPE_NODE_BUF - 1];                                \
-                                                                        \
-  if (FALSE ||                                                          \
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, \
-                      extra_nodes[VSTR_TYPE_NODE_BUF - 1], UINT_MAX) || \
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR, \
-                      extra_nodes[VSTR_TYPE_NODE_PTR - 1], UINT_MAX) || \
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, \
-                      extra_nodes[VSTR_TYPE_NODE_REF - 1], UINT_MAX) || \
-      FALSE)                                                            \
-    return (FALSE);                                                     \
-  \
+    if (FALSE ||                                                        \
+        !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, \
+                        extra_nodes[VSTR_TYPE_NODE_BUF - 1], UINT_MAX) || \
+        !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR, \
+                        extra_nodes[VSTR_TYPE_NODE_PTR - 1], UINT_MAX) || \
+        !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, \
+                        extra_nodes[VSTR_TYPE_NODE_REF - 1], UINT_MAX) || \
+        FALSE)                                                          \
+      return (FALSE);                                                   \
+  }                                                                     \
 } while (FALSE)
 
 int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t len)
 {
+  Vstr_iter miter[1];
+  int ret = FALSE;
+  
   VSTR__BUF_NEEDED(!VSTR__IS_ASCII_UPPER(*iter->ptr), TRUE);
 
+  ret = vstr_iter_fwd_beg(base, pos, len, miter);
+  ASSERT(ret);
+  
   while (len)
   {
-    char tmp = vstr_export_chr(base, pos);
-    int ret = FALSE;
+    char tmp = vstr_iter_fwd_chr(miter, NULL);
     
     if (VSTR__IS_ASCII_UPPER(tmp))
     {
@@ -120,6 +127,8 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t len)
 
       ret = vstr_sub_buf(base, pos, 1, &tmp, 1);
       ASSERT(ret);
+      ret = vstr_iter_fwd_beg(base, pos + 1, len - 1, miter);
+      ASSERT(ret || (len == 1));
     }
 
     ++pos;

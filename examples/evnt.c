@@ -382,7 +382,9 @@ int evnt_make_acpt(struct Evnt *evnt, int fd,struct sockaddr *sa, socklen_t len)
     setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
   }
 
-  SOCKET_POLL_INDICATOR(evnt->ind)->events |= POLLIN;
+  /* assume there is some data */
+  SOCKET_POLL_INDICATOR(evnt->ind)->events  = POLLIN;
+  SOCKET_POLL_INDICATOR(evnt->ind)->revents = POLLIN;
   
   evnt->flag_q_recv = TRUE;
   return (evnt__make_true(&q_recv, evnt));
@@ -633,12 +635,9 @@ void evnt_got_pkt(struct Evnt *evnt)
 static int evnt__call_send(struct Evnt *evnt, unsigned int *ern)
 {
   size_t tmp = evnt->io_w->len;
-
-#warning "fixup for 1.0.13"
-  if (evnt->io_w->len && /* FIXME: pre 1.0.14 libvstr return 0 on no length */
-      !vstr_sc_write_fd(evnt->io_w, 1, evnt->io_w->len,
-                        SOCKET_POLL_INDICATOR(evnt->ind)->fd, ern) &&
-      (errno != EAGAIN))
+  int fd = SOCKET_POLL_INDICATOR(evnt->ind)->fd;
+  
+  if (!vstr_sc_write_fd(evnt->io_w, 1, tmp, fd, ern) && (errno != EAGAIN))
     return (FALSE);
 
   evnt->acct.bytes_w += (tmp - evnt->io_w->len);
@@ -892,8 +891,8 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       }
       
       done = FALSE; /* swap the accept() for a read */
-      SOCKET_POLL_INDICATOR(tmp->ind)->events  = POLLIN;
-      SOCKET_POLL_INDICATOR(tmp->ind)->revents = POLLIN;
+      assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
+      assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
     }
     assert(!(SOCKET_POLL_INDICATOR(scan->ind)->revents & POLLOUT));
 

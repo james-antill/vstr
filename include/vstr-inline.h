@@ -371,7 +371,8 @@ extern inline int vstr_iter_fwd_beg(const struct Vstr_base *base,
   iter->node = NULL;
 
   VSTR__ASSERT_RET(pos && (((pos <= base->len) &&
-                            (vstr_sc_poslast(pos, len) <= base->len)) || !len), 0);
+                            (vstr_sc_poslast(pos, len) <= base->len)) || !len),
+                   VSTR__FALSE);
 
   if (!len)
     return (VSTR__FALSE);

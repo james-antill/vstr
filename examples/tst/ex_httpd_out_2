@@ -1,0 +1,105 @@
+HTTP/1.1 404 Not Found
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 228
+
+HTTP/1.1 200 OK
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 159
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>Foo norm</title>
+  </head>
+  <body>
+    <h1>Foo norm</h1>
+  </body>
+</html>
+HTTP/1.1 304 NOT MODIFIED
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 159
+
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 2-9/159
+
+DOCTYPE HTTP/1.1 200 OK
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 159
+
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 2-9/159
+
+DOCTYPE HTTP/1.1 403 Forbidden
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 216
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>403 Forbidden</title>
+  </head>
+  <body>
+    <h1>403 Forbidden</h1>
+    <p>The request is forbidden.</p>
+  </body>
+</html>
+HTTP/1.1 403 Forbidden
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified:
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 216
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <title>403 Forbidden</title>
+  </head>
+  <body>
+    <h1>403 Forbidden</h1>
+    <p>The request is forbidden.</p>
+  </body>
+</html>
+HTTP/1.1 206 Partial content
+Date:
+Server: jhttpd/0.7.1 (Vstr)
+Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
+Connection: close
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 8
+Content-Range: bytes 2-9/159
+
