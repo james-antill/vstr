@@ -14,7 +14,7 @@ sub sub_http_tst
     my $sz   = shift;
 
     my $sock = daemon_connect_tcp();
-    my $data = daemon_get_io_r($sock, $io_r);
+    my $data = daemon_get_io_r($io_r);
 
     $data =~ s/\n/\r\n/g;
 
@@ -71,6 +71,19 @@ sub all_nonvhost_tsts()
 	    {shutdown_w => 0});
     sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
 	    {slow_write => 1});
+    sub_tst(\&sub_http_tst, "ex_httpd_non-virtual-hosts",
+	    {shutdown_w => 0, slow_write => 1});
+  }
+
+sub all_public_only_tsts()
+  {
+    sub_tst(\&sub_http_tst, "ex_httpd_public-only");
+    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
+	    {shutdown_w => 0});
+    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
+	    {slow_write => 1});
+    sub_tst(\&sub_http_tst, "ex_httpd_public-only",
+	    {shutdown_w => 0, slow_write => 1});
   }
 
 if (@ARGV)
@@ -128,7 +141,9 @@ make_html(2, "default", "$root/default/index.html");
 make_html(3, "norm",    "$root/foo.example.com/index.html");
 make_html(4, "port",    "$root/foo.example.com:1234/index.html");
 make_html(0, "",        "$root/default/noprivs.html");
-chmod(0, "$root/default/noprivs.html");
+make_html(0, "privs",   "$root/default/noallprivs.html");
+chmod(0000, "$root/default/noprivs.html");
+chmod(0600, "$root/default/noallprivs.html");
 
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
@@ -145,7 +160,14 @@ daemon_init("ex_httpd", $root, "--mmap=true  --sendfile=true");
 all_vhost_tsts();
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, "--virtual-hosts=false");
+daemon_init("ex_httpd", $root, "--public-only");
+all_public_only_tsts();
+daemon_exit("ex_httpd");
+
+daemon_init("ex_httpd", $root, "--virtual-hosts=false --pid-file=$root/abcd");
+my $abcd = daemon_get_io_r("$root/abcd");
+chomp $abcd;
+if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }
 all_nonvhost_tsts();
 daemon_exit("ex_httpd");
 

@@ -1442,6 +1442,7 @@ Constant: VSTR_TYPE_SC_READ_FILE_ERR_CLOSE_ERRNO
 
 
 Constant: VSTR_TYPE_SC_READ_FD_ERR_EOF
+Constant: VSTR_TYPE_SC_READ_FILE_ERR_EOF
 
  Explanation:
 
@@ -1449,6 +1450,8 @@ Constant: VSTR_TYPE_SC_READ_FD_ERR_EOF
 
  Note:
 
+  If you pass 0 as the length to the read_*_file functions, you can still get
+ the _EOF error if the file is truncated while it is being read.
   To help the programer unify error paths errno is set to ENOSPC.
 
 

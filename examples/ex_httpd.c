@@ -88,6 +88,9 @@ struct sock_fprog
 #define CONF_SERV_USE_PUBLIC_ONLY FALSE
 #define CONF_SERV_DEF_DIR_FILENAME "index.html"
 
+/* only get accept() events when there is readable data, or seconds expire */
+#define CONF_SERV_DEF_TCP_DEFER_ACCEPT 16
+
 #include "ex_httpd_err_codes.h"
 #include "ex_httpd_mime_types.h"
 
@@ -174,6 +177,8 @@ struct Http_req_data
 
  unsigned int using_req : 1;
  unsigned int done_once : 1;
+
+ unsigned int malloc_bad : 1;
 };
     
 
@@ -856,14 +861,18 @@ static int serv_http_absolute_uri(struct Con *con,
     if ((tmp = vstr_srch_chr_fwd(data, pos, len, ':')))
     { /* NOTE: not sure if we have to 400 if the port doesn't match
        * or if it's an "invalid" port number (Ie. == 0 || > 65535) */
-      len -= vstr_sc_posdiff(pos, tmp); pos += vstr_sc_posdiff(pos, tmp);
+      len -= tmp - pos; pos = tmp;
 
       /* if it's port 80, pretend it's not there */
-      if (VPREFIX(data, pos, len, ":80") ||
+      if (vstr_cmp_cstr_eq(data, pos, len, ":80") ||
           vstr_cmp_cstr_eq(data, pos, len, ":"))
         con->http_hdrs->hdr_host->len -= len;
-      else if (vstr_spn_cstr_chrs_fwd(data, pos, len, "0123456789") != len)
-        return (FALSE);
+      else
+      {
+        len -= 1; pos += 1; /* skip the ':' */
+        if (vstr_spn_cstr_chrs_fwd(data, pos, len, "0123456789") != len)
+          return (FALSE);
+      }
     }
   }
 
@@ -1247,14 +1256,16 @@ static struct Http_req_data *http_make_req(struct Con *con)
 
   req->redirect_http_error_msg = FALSE;
   req->advertise_accept_ranges = CONF_SERV_USE_RANGE;
-  req->ver_0_9      = FALSE;
-  req->ver_1_1      = FALSE;
-  req->use_mmap     = FALSE;
-  req->head_op      = FALSE;
+  req->ver_0_9    = FALSE;
+  req->ver_1_1    = FALSE;
+  req->use_mmap   = FALSE;
+  req->head_op    = FALSE;
 
-  req->done_once = TRUE;
-  req->using_req = TRUE;
-  
+  req->done_once  = TRUE;
+  req->using_req  = TRUE;
+
+  req->malloc_bad = FALSE;
+
   return (req);
 }
 
@@ -1333,7 +1344,7 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   else
     vlg_info(vlg, "%s", "\n");
 
-  if (req->http_error_code == 500)
+  if (req->malloc_bad)
   {
     ASSERT(!con->keep_alive);
     vstr_del(con->ev->io_r, 1, req->len);
@@ -1392,7 +1403,10 @@ static int http_fin_errmem_req(struct Con *con, struct Http_req_data *req)
   
   con->ev->io_r->conf->malloc_bad = FALSE;
   con->ev->io_w->conf->malloc_bad = FALSE;
+  req->malloc_bad = TRUE;
+  
   HTTPD_ERR(req, 500);
+  
   con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   
   return (http_fin_err_req(con, req));
@@ -1909,6 +1923,8 @@ static void serv_make_bind(const char *acpt_addr, short acpt_port)
   
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
+
+  evnt_io_defer_accept(acpt_evnt, CONF_SERV_DEF_TCP_DEFER_ACCEPT);
 }
 
 static void serv_filter_attach(int fd, const char *fname)

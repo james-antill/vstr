@@ -151,6 +151,25 @@ int tst(void)
 #endif
 
   TST_B_TST(ret, 24, !vstr_sc_write_fd(s1, 1, 0, 444, NULL));
+  TST_B_TST(ret, 25, !vstr_sc_write_file(s1, 1, 0, "/dev/null", 0, 0, 0, NULL));
+
+  vstr_del(s1, 1, s1->len);
+  {
+    Vstr_ref *ref = vstr_ref_make_malloc(VSTR_MAX_NODE_ALL);
+
+    if (!ref)
+      return (EXIT_FAILED_OK);
+
+    while (s1->len <= SSIZE_MAX) /* assumes it will work */
+      vstr_add_ref(s1, s1->len, ref, 0, VSTR_MAX_NODE_ALL);
+
+    vstr_ref_del(ref);
+
+    /* if this is passed all at once, we have EINVAL */
+    ASSERT(vstr_sc_write_file(s1, 1, s1->len, "/dev/null",
+                              O_WRONLY, 0, 0, &err));
+    ASSERT(!s1->len);
+  }
   
   return (TST_B_RET(ret));
 }

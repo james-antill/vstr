@@ -14,7 +14,7 @@ sub sub_http_tst
     my $sz   = shift;
 
     my $sock = daemon_connect_tcp();
-    my $data = daemon_get_io_r($sock, $io_r);
+    my $data = daemon_get_io_r($io_r);
 
     my $output = daemon_io($sock, $data,
 			   $xtra->{shutdown_w}, $xtra->{slow_write});

@@ -1,4 +1,6 @@
 
+#include <vstr.h>
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <syslog.h>
@@ -482,21 +484,15 @@ void vlg_dbg3(Vlg *vlg, const char *fmt, ... )
 
 void vlg_pid_file(Vlg *vlg, const char *pid_file)
 {
-  int fd = open(pid_file, O_WRONLY | O_CREAT | O_TRUNC);
   Vstr_base *out = vlg->out_vstr;
   
-  if (fd == -1)
-    vlg_err(vlg, EXIT_FAILURE, "open(%s): %m\n", pid_file);
-
   if (out->len)
     vlg_err(vlg, EXIT_FAILURE, "Data in vlg for pid_file\n");
   
   if (!vstr_add_fmt(out, out->len, "%lu", (unsigned long)getpid()))
     vlg_err(vlg, EXIT_FAILURE, "vlg_pid_file: %m\n");
 
-  while (out->len)
-    if (!vstr_sc_write_fd(out, 1, out->len, fd, NULL) && (errno != EAGAIN))
-      vlg_err(vlg, EXIT_FAILURE, "write(%s): %m\n", pid_file);
-
-  close(fd);
+  if (!vstr_sc_write_file(out, 1, out->len,
+                          pid_file, O_WRONLY | O_CREAT | O_TRUNC, 0644, 0,NULL))
+    vlg_err(vlg, EXIT_FAILURE, "write_file(%s): %m\n", pid_file);
 }

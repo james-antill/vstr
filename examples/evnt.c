@@ -1291,6 +1291,26 @@ void evnt_io_cork(struct Evnt *evnt, int val)
   evnt->flag_io_cork = !!val;
 }
 
+#ifdef TCP_DEFER_ACCEPT
+# define USE_TCP_DEFER_ACCEPT 1
+#else
+# define USE_TCP_DEFER_ACCEPT 0
+# define TCP_DEFER_ACCEPT 0
+#endif
+
+void evnt_io_defer_accept(struct Evnt *evnt, int val)
+{
+  socklen_t len = sizeof(int);
+
+  ASSERT(evnt__valid(evnt));
+
+  if (!USE_TCP_DEFER_ACCEPT)
+    return;
+  
+  /* ignore return val */
+  setsockopt(evnt_fd(evnt), IPPROTO_TCP, TCP_DEFER_ACCEPT, &val, len);
+}
+
 #ifndef  EVNT_USE_EPOLL
 # ifdef  VSTR_AUTOCONF_HAVE_SYS_EPOLL_H
 #  define EVNT_USE_EPOLL 1

@@ -487,11 +487,12 @@ int vstr_sc_read_iov_file(Vstr_base *base, size_t pos,
       max -= num;
       pos += base->len - tmp;
     }
-    if (*err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-      *err = 0;
-    
-    if (*err)
-      vstr_del(base, orig_pos, base->len - orig_len);  
+    if (*err) /* shouldn't change errno */
+    {
+      ASSERT((saved_errno =  errno));
+      vstr_del(base, orig_pos, base->len - orig_len);
+      ASSERT( saved_errno == errno);
+    }
   }
 
   if (*err)
@@ -557,11 +558,13 @@ int vstr_sc_read_len_file(Vstr_base *base, size_t pos,
       len -= base->len - tmp;
       pos += base->len - tmp;
     }
-    if (*err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-      *err = 0;
     
     if (*err)
-      vstr_del(base, orig_pos, base->len - orig_len);  
+    {
+      ASSERT((saved_errno =  errno));
+      vstr_del(base, orig_pos, base->len - orig_len);
+      ASSERT( saved_errno == errno);
+    }
   }
   
   if (*err)

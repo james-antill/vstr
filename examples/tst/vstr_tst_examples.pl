@@ -92,6 +92,7 @@ sub run_tst
   }
 
 {
+my $daemon_pid  = undef;
 my $daemon_addr = undef;
 my $daemon_port = undef;
 sub daemon_status
@@ -103,8 +104,8 @@ sub daemon_status
 
     while (<INFO>)
       {
-	/^PID: \d+ ADDR (\d+[.]\d+[.]\d+[.]\d+)@(\d+)$/ || next;
-	($daemon_addr, $daemon_port) = ($1, $2);
+	/^PID: (\d+) ADDR (\d+[.]\d+[.]\d+[.]\d+)@(\d+)$/ || next;
+	($daemon_pid, $daemon_addr, $daemon_port) = ($1, $2, $3);
 
 	if ($daemon_addr eq '0.0.0.0')
 	  {
@@ -143,6 +144,10 @@ sub daemon_init
     daemon_status("${cmd}_cntl");
   }
 
+sub daemon_pid
+  {
+    return $daemon_pid;
+  }
 sub daemon_addr
   {
     return $daemon_addr;
@@ -177,7 +182,6 @@ sub daemon_connect_tcp
 
 sub daemon_get_io_r
   {
-    my $sock = shift;
     my $io_r = shift;
 
     my $data_r = "";
