@@ -14,6 +14,9 @@ GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD  = $(GEN_LDLIBS)
+ex_ccount_DEPENDENCIES = ex_utils.h
+ex_ccount_CFLAGS = $(GEN_CFLAGS)
+ex_ccount_LDADD  = $(GEN_LDLIBS)
 ex_hello_world_DEPENDENCIES = ex_utils.h
 ex_hello_world_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_LDADD  = $(GEN_LDLIBS)
@@ -64,6 +67,9 @@ ex_slowcat_DEPENDENCIES = ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
+ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
+ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
+
 ex_zcat_DEPENDENCIES = ex_utils.h
 ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
 ex_zcat_LDADD  = $(GEN_LDLIBS) $(ZLIB_LDLIBS) $(BZ2_LDLIBS)
@@ -103,7 +109,6 @@ ex_perf_add_LDADD  = $(GEN_LDLIBS)
 # Turn on Programs we can compile...
 
 if HAVE_POSIX_HOST
-# if SOCKET_POLL_AVAIL
 
 hi_DEP =   ex_highlight
 hi_APP = ./ex_highlight
@@ -117,6 +122,11 @@ norm_APPS = \
 
 if TIMER_Q_AVAIL
 timer_q_APPS = ex_slowcat
+
+if SOCKET_POLL_AVAIL
+dns_APP = ex_dns
+endif
+# Timer_q
 endif
 
 if BZ2_AVAIL
@@ -125,12 +135,10 @@ zcat_APPS = ex_zcat
 endif
 endif
 
-# Socket poll
-# endif
-
-# HAVE_POSIX_HOST
+# !HAVE_POSIX_HOST
 else
 
+# Use pre-installed version...
 hi_DEP =
 hi_APP = jhighlight
 
@@ -157,8 +165,8 @@ examples_PROGRAMS = \
   $(zcat_APPS) \
   $(openssl_APPS) \
   $(gmp_APPS) \
-  $(glib_APPS)
-
+  $(glib_APPS) \
+  $(dns_APP)
 
 otherdir   = $(EX_INST_DIR)
 other_DATA = \
@@ -170,6 +178,7 @@ html_DATA = \
   html/ex_cat.c.html \
   html/ex_changelog_diff.c.html \
   html/ex_csv.c.html \
+  html/ex_dns.c.html \
   html/ex_gmp_factorials.c.html \
   html/ex_gmp_num_roman.c.html \
   html/ex_gmp_nums.c.html \
@@ -203,7 +212,7 @@ CLEANFILES=$(html_DATA) html
 
 html/f_c.css: ../Documentation/f_c.css
 		-@mkdir html
-		$(LN_S) $< html
+		-$(LN_S) ../$< html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --cssfile=f_c.css $< > $@

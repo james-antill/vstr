@@ -242,9 +242,9 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     
     ex_hexdump_process(s1, s2, FALSE);
 
-    io_w_state = io_put(s1, 1);
+    io_w_state = io_put(s1, STDOUT_FILENO);
 
-    io_limit(io_r_state, fd, io_w_state, 1, s1);
+    io_limit(io_r_state, fd, io_w_state, STDOUT_FILENO, s1);
   }
 
   /* write out all of the end of the file,

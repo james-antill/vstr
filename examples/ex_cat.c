@@ -22,9 +22,9 @@ static void ex_cat_read_fd_write_stdout(Vstr_base *s1, int fd)
     if (io_r_state == IO_EOF)
       break;
     
-    io_w_state = io_put(s1, 1);
+    io_w_state = io_put(s1, STDOUT_FILENO);
 
-    io_limit(io_r_state, fd, io_w_state, 1, s1);    
+    io_limit(io_r_state, fd, io_w_state, STDOUT_FILENO, s1);    
   }
 }
 
