@@ -551,9 +551,8 @@ int tst(void)
     {
       int tmp = 0;
 
-      vstr_del(s2, 1, s2->len); /* note gcc doesn't like "%1$n" */
-      vstr_add_fmt(s2, 0, "$1$[intptr]%n$1$3[intptr] %n$1$[intptr]",
-                   &tmp, &tmp);
+      vstr_del(s2, 1, s2->len);
+      vstr_add_fmt(s2, 0, "$1$[intptr]%1$n$1$3[intptr] %1$n$1$[intptr]", &tmp);
       ASSERT(VSTR_CMP_CSTR_EQ(s2, 1, s2->len, "0  1 5"));
       vstr_del(s2, 1, s2->len);
       vstr_add_fmt(s2, 0, "$[sizptr:%p]$1$3[sizptr] $1$[sizptr]",
