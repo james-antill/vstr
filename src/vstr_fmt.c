@@ -1,6 +1,6 @@
 #define VSTR_ADD_FMT_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -189,6 +189,14 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
            (scan_type == VSTR_TYPE_FMT_PTR_CHAR) ||
            (scan_type == VSTR_TYPE_FMT_PTR_WCHAR_T) ||
            (scan_type == VSTR_TYPE_FMT_ERRNO) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_SIGNED_CHAR) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_SHORT) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_INT) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_LONG) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_LONG_LONG) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_SSIZE_T) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_PTRDIFF_T) ||
+           (scan_type == VSTR_TYPE_FMT_PTR_INTMAX_T) ||
            FALSE);
 
     node->types[count - 2] = scan_type;
