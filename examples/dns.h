@@ -65,18 +65,27 @@
 
 #define DNS_LABEL_IS_PTR(x) ((0xC0 & (x)) == 0xC0)
 
-extern unsigned int dns_dbg_opt;
-extern Vstr_base *dns_dbg_log;
-extern int dns_dbg_fd;
-extern int dns_opt_recur;
+struct Dns_base
+{
+ struct Vstr_base *io_w_serv;
+ struct Vstr_base *io_w_user;
+
+ struct Vstr_base *io_dbg;
+ 
+ int dbg_fd;
+ unsigned int dbg_opt : 7;
+ int opt_recur : 1;
+};
+
+typedef struct Dns_base Dns_base;
 
 extern const char *dns_name_type_ch(unsigned int num);
 extern const char *dns_name_type_in(unsigned int num);
 extern const char *dns_name_class(unsigned int num);
 extern const char *dns_name_hdr_r(unsigned int num);
 
-extern void dns_app_recq_pkt(struct Vstr_base *io_w, unsigned int qcount, ...);
-extern void dns_dbg_prnt_pkt(Vstr_base *pkt);
-extern void dns_sc_ui_out(Vstr_base *io_w, Vstr_base *pkt);
+extern void dns_app_recq_pkt(struct Dns_base *, unsigned int qcount, ...);
+extern void dns_dbg_prnt_pkt(struct Dns_base *, Vstr_base *pkt);
+extern void dns_sc_ui_out(struct Dns_base *, Vstr_base *pkt);
 
 #endif

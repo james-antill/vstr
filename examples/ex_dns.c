@@ -50,6 +50,15 @@
 
 #include "dns.h"
 
+#define CL_DNS_INIT(x, y) do {                  \
+      (x)->io_w_serv = (y);                     \
+      (x)->io_w_user = io_w;                    \
+      (x)->io_dbg    = cl_dbg_log;              \
+      (x)->dbg_fd    = cl_dbg_fd;               \
+      (x)->dbg_opt   = cl_dbg_opt;              \
+      (x)->opt_recur = cl_opt_recur;            \
+    } while (FALSE)
+
 struct con
 {
  struct con *next;
@@ -60,6 +69,8 @@ struct con
  Vstr_base *io_r;
  Vstr_base *io_w;
 
+ Dns_base d1[1];
+ 
  Timer_q_node *tm_o;
 
  struct con *s_next;
@@ -101,16 +112,22 @@ static unsigned int server_timeout = (2 * 60); /* 2 minutes */
 static const char *server_ipv4_address = "127.0.0.1";
 static short server_port = 53;
 
+static unsigned int cl_dbg_opt = FALSE;
+static Vstr_base *cl_dbg_log = NULL;
+static int cl_dbg_fd = STDERR_FILENO;;
+
 static int cl_opt_nagle = TRUE;
+static int cl_opt_recur = TRUE;
+
 
 static void dbg(const char *fmt, ... )
    VSTR__COMPILE_ATTR_FMT(1, 2);
 static void dbg(const char *fmt, ... )
 {
-  Vstr_base *dlog = dns_dbg_log;
+  Vstr_base *dlog = cl_dbg_log;
   va_list ap;
 
-  if (!dns_dbg_opt)
+  if (!cl_dbg_opt)
     return;
   
   va_start(ap, fmt);
@@ -326,6 +343,8 @@ static struct con *cl_make(const char *ipv4_string, short port)
 
   if (!(ret->io_w = vstr_make_base(NULL)))
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
+
+  CL_DNS_INIT(ret->d1, ret->io_w);
   
   if ((fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
     err(EXIT_FAILURE, __func__);
@@ -429,12 +448,12 @@ static int cl_send(struct con *con)
   return (TRUE);
 }
 
-static void ui_out(Vstr_base *pkt)
+static void ui_out(Dns_base *d1, Vstr_base *pkt)
 {
   if (!io_ind_w)
     return;
-
-  dns_sc_ui_out(io_w, pkt);
+  
+  dns_sc_ui_out(d1, pkt);
   SOCKET_POLL_INDICATOR(io_ind_w)->events |=  POLLOUT;
 }
 
@@ -447,15 +466,15 @@ static void cl_parse(struct con *con, size_t msg_len)
   if (!pkt)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
-  if (dns_dbg_opt > 1)
+  if (cl_dbg_opt > 1)
   {
     dbg("${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
         '=', 33, msg_len, '=', 33);
-    dns_dbg_prnt_pkt(pkt);
+    dns_dbg_prnt_pkt(con->d1, pkt);
     dbg("${rep_chr:%c%zu}\n", '-', 79);
   }
   
-  ui_out(pkt);
+  ui_out(con->d1, pkt);
   vstr_free_base(pkt);
   vstr_del(con->io_r, 1, msg_len);
 
@@ -577,10 +596,6 @@ static void cl_connect(void)
                                        TIMER_Q_FLAG_NODE_DEFAULT)))
       errno = ENOMEM, err(EXIT_FAILURE, __func__);
   }
-  
-  //  dns_app_recq1_pkt(con, "www.and.org", DNS_CLASS_IN, DNS_TYPE_IN_A);
-  //  dns_app_recq1_pkt(con, "and.org", DNS_CLASS_IN, DNS_TYPE_IN_TXT);
-  //  dns_app_recq1_pkt(con, "version.bind", DNS_CLASS_CH, DNS_TYPE_CH_TXT);
 }
 
 static void cl_app_recq1_pkt(struct con *con,
@@ -588,7 +603,7 @@ static void cl_app_recq1_pkt(struct con *con,
                              unsigned int dns_class,
                              unsigned int dns_type)
 {
-  dns_app_recq_pkt(con->io_w, 1, name, dns_class, dns_type);
+  dns_app_recq_pkt(con->d1, 1, name, dns_class, dns_type);
   
   cl_put_pkt(con);
   
@@ -1008,7 +1023,7 @@ static void cl_cmd_line(int argc, char *argv[])
         exit (EXIT_SUCCESS);
 
       case 'c': server_clients      = atoi(optarg); break;
-      case 'd': dns_dbg_opt         = atoi(optarg); break;
+      case 'd': cl_dbg_opt          = atoi(optarg); break;
       case 't': server_timeout      = atoi(optarg); break;
       case 'H': server_ipv4_address = optarg;       break;
       case 'P': server_port         = atoi(optarg); break;
@@ -1020,8 +1035,8 @@ static void cl_cmd_line(int argc, char *argv[])
         break;
         
       case 'o':
-        dns_dbg_fd = open(optarg, O_WRONLY | O_CREAT | O_APPEND, 0600);
-        if (dns_dbg_fd == -1)
+        cl_dbg_fd = open(optarg, O_WRONLY | O_CREAT | O_APPEND, 0600);
+        if (cl_dbg_fd == -1)
           err(EXIT_FAILURE, "open(%s)", optarg);
         break;
 
@@ -1036,11 +1051,11 @@ static void cl_cmd_line(int argc, char *argv[])
 
       case 'R':
         if (!optarg)
-        { dns_opt_recur = !dns_opt_recur; }
-        else if (!strcasecmp("true", optarg))   dns_opt_recur = TRUE;
-        else if (!strcasecmp("1", optarg))      dns_opt_recur = TRUE;
-        else if (!strcasecmp("false", optarg))  dns_opt_recur = FALSE;
-        else if (!strcasecmp("0", optarg))      dns_opt_recur = FALSE;
+        { cl_opt_recur = !cl_opt_recur; }
+        else if (!strcasecmp("true", optarg))   cl_opt_recur = TRUE;
+        else if (!strcasecmp("1", optarg))      cl_opt_recur = TRUE;
+        else if (!strcasecmp("false", optarg))  cl_opt_recur = FALSE;
+        else if (!strcasecmp("0", optarg))      cl_opt_recur = FALSE;
         break;
 
       default:
@@ -1183,7 +1198,7 @@ int main(int argc, char *argv[])
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_sc_fmt_add_all(NULL);
   
-  if (!(dns_dbg_log = vstr_make_base(NULL)))
+  if (!(cl_dbg_log = vstr_make_base(NULL)))
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   
   if (!(io_r = vstr_make_base(NULL))) /* used in cmd line */
@@ -1228,7 +1243,7 @@ int main(int argc, char *argv[])
   timer_q_del_base(cl_timeout_base);
   timer_q_del_base(cl_timer_connect_base);
   
-  vstr_free_base(dns_dbg_log);
+  vstr_free_base(cl_dbg_log);
   vstr_free_base(io_r);
   vstr_free_base(io_w);
 

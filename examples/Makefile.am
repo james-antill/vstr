@@ -72,10 +72,8 @@ ex_dns_DEPENDENCIES = dns.h
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_tdns_SOURCES = ex_tdns.c dns.c
-ex_tdns_DEPENDENCIES = dns.h
-ex_tdns_CFLAGS   = -pthread $(ex_dns_CFLAGS)
-ex_tdns_LDADD    = $(ex_dns_LDADD)
+ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
+ex_tdns_LDADD    = $(GEN_LDLIBS)
 ex_tdns_LDFLAGS  = -pthread
 
 ex_zcat_DEPENDENCIES = ex_utils.h
@@ -132,7 +130,7 @@ if TIMER_Q_AVAIL
 timer_q_APPS = ex_slowcat
 
 if SOCKET_POLL_AVAIL
-dns_APP = ex_dns ex_tdns
+dns_APP = ex_dns # ex_tdns
 endif
 # Timer_q
 endif
@@ -215,10 +213,10 @@ html_DATA = \
   html/ex_rot13.c.html \
   html/ex_slowcat.c.html \
   html/ex_ssi.c.html \
-  html/ex_tdns.c.html \
   html/ex_utils.h.html \
   html/ex_yes.c.html \
   html/ex_zcat.c.html
+#  html/ex_tdns.c.html 
 
 CLEANFILES=$(html_DATA) html
 

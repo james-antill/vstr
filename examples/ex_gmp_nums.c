@@ -25,7 +25,7 @@ static int ex__usr_mpz_cb(Vstr_base *base, size_t pos, Vstr_fmt_spec *spec,
   int flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; /* it's a number */
   size_t len = 0;
   int ret = FALSE;
-  char ui_buf[sizeof(unsigned long) * CHAR_BIT];
+  char ui_buf[(sizeof(unsigned long) * CHAR_BIT) + 1];
   char *buf = NULL;
   char *out_buf = ui_buf;
   
@@ -144,8 +144,18 @@ int main(int argc, char *argv[])
   if (!vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
                       loc_num_name))
     errx(EXIT_FAILURE, "Couldn't change numeric locale info");
-  
-  mpz_init_set_str(bignum, argv[1], 0);
+
+  if (0) { }
+  else if (!strncmp(argv[1], "0x", 2) ||
+           !strncmp(argv[1], "0X", 2))
+    mpz_init_set_str(bignum, argv[1] + 2, 16);
+  else if (!strncmp(argv[1], "0b", 2) ||
+           !strncmp(argv[1], "0B", 2))
+    mpz_init_set_str(bignum, argv[1] + 2,  2);
+  else if (!strncmp(argv[1], "0", 1))
+    mpz_init_set_str(bignum, argv[1] + 1,  8);
+  else
+    mpz_init_set_str(bignum, argv[1],  0);
 
   if (EX_GMP_NUMS_USE_TST)
   {

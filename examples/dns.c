@@ -99,19 +99,11 @@ static const char *dns_map_hdr_r2name[DNS_HDR_RSZ] = {
 };
 #undef MAP_MAKE_ENTRY
 
-/* FIXME: variables... */
-unsigned int dns_dbg_opt = FALSE;
-Vstr_base *dns_dbg_log = NULL;
-int dns_dbg_fd = STDERR_FILENO;
-
-int dns_opt_recur = TRUE;
-
-
-static void dns_dbg(const char *fmt, ... )
-   VSTR__COMPILE_ATTR_FMT(1, 2);
-static void dns_dbg(const char *fmt, ... )
+static void dns_dbg(Dns_base *base, const char *fmt, ... )
+   VSTR__COMPILE_ATTR_FMT(2, 3);
+static void dns_dbg(Dns_base *base, const char *fmt, ... )
 {
-  Vstr_base *dlog = dns_dbg_log;
+  Vstr_base *dlog = base->io_dbg;
   va_list ap;
 
   if (!dlog)
@@ -130,6 +122,7 @@ static void dns_dbg(const char *fmt, ... )
   }
 }
 
+/* FIXME: should be somewhere else esp. the binary stuff */
 static int app_fmt(Vstr_base *s1, const char *fmt, ... )
    VSTR__COMPILE_ATTR_FMT(2, 3);
 static inline int app_fmt(Vstr_base *s1, const char *fmt, ... )
@@ -325,7 +318,7 @@ static size_t dns_app_txt(Vstr_base *out,
   return (pos);
 }
 
-static size_t dns_app_label(Vstr_base *out,
+static size_t dns_app_label(Dns_base *base, Vstr_base *out,
                             Vstr_base *pkt, size_t pos, size_t msg_len)
 {
   unsigned char tmp = 0;
@@ -334,7 +327,7 @@ static size_t dns_app_label(Vstr_base *out,
   {
     if (DNS_LABEL_IS_PTR(tmp))
     { /* ptr */
-      if (out == dns_dbg_log) app_cstr_buf(out, " <BAD END>");
+      if (out == base->io_dbg) app_cstr_buf(out, " <BAD END>");
       return (msg_len);
     }
 
@@ -352,7 +345,7 @@ static size_t dns_app_label(Vstr_base *out,
   return (pos);
 }
 
-static size_t dns_app_name(Vstr_base *out,
+static size_t dns_app_name(Dns_base *base, Vstr_base *out,
                            Vstr_base *pkt, size_t pos, size_t msg_len)
 {
   size_t orig_pos = pos;
@@ -368,9 +361,9 @@ static size_t dns_app_name(Vstr_base *out,
       ++off; /* offset is 0 indexed, position is 1 indexed */
       
       if ((off != orig_pos) && (off < pos))
-        dns_app_name(out, pkt, off, msg_len);
+        dns_app_name(base, out, pkt, off, msg_len);
       else
-        if (out == dns_dbg_log) app_cstr_buf(out, " <BAD END>");
+        if (out == base->io_dbg) app_cstr_buf(out, " <BAD END>");
       
       return (pos + 2);
     }
@@ -406,12 +399,13 @@ static size_t dns_app_ttl(Vstr_base *out,
   return (pos + 4);
 }
 
-static size_t dns_app_rr_unknown_data(Vstr_base *pkt, size_t pos,
+static size_t dns_app_rr_unknown_data(Dns_base *base,
+                                      Vstr_base *pkt, size_t pos,
                                       size_t msg_len, unsigned int len)
 {
   (void)pkt;
   
-  dns_dbg("  RD: %u %zu\n", len, vstr_sc_posdiff(pos, msg_len));
+  dns_dbg(base, "  RD: %u %zu\n", len, vstr_sc_posdiff(pos, msg_len));
   
   if (len <= vstr_sc_posdiff(pos, msg_len))
     return (pos + len);
@@ -419,7 +413,7 @@ static size_t dns_app_rr_unknown_data(Vstr_base *pkt, size_t pos,
   return (msg_len);
 }
 
-static size_t dns_app_rr_data(Vstr_base *out,
+static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
                               Vstr_base *pkt, size_t pos, size_t msg_len,
                               unsigned int dns_class,
                               unsigned int dns_type)
@@ -432,13 +426,13 @@ static size_t dns_app_rr_data(Vstr_base *out,
   len = get_i_be2(pkt, pos); pos += 2;
   
   if (!len)
-    return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+    return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
 
   if (len > (vstr_sc_posdiff(pos, msg_len)))
-    return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+    return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
 
   if ((dns_class != DNS_CLASS_IN) && (dns_class != DNS_CLASS_CH))
-    return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+    return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
 
   msg_len = vstr_sc_poslast(pos, len);
   if (dns_class == DNS_CLASS_CH)
@@ -448,25 +442,25 @@ static size_t dns_app_rr_data(Vstr_base *out,
     {
       unsigned int num  = 0;
 
-      if (out == dns_dbg_log) app_cstr_buf(out, "  NAME: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
+      if (out == base->io_dbg) app_cstr_buf(out, "  NAME: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
       
       if (2 > vstr_sc_posdiff(pos, msg_len))
-        return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+        return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
       num  = get_i_be2(pkt, pos); pos += 2;
-      if (out == dns_dbg_log) app_cstr_buf(out, " A: ");
+      if (out == base->io_dbg) app_cstr_buf(out, " A: ");
       if (out) app_fmt(out, " %u", num);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_CH_TXT)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  TXT: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "  TXT: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else
-      return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+      return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
   }
   
   if (dns_class == DNS_CLASS_IN)
@@ -477,24 +471,24 @@ static size_t dns_app_rr_data(Vstr_base *out,
       unsigned char buf[4];
 
       if (len != 4)
-        return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+        return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
       vstr_export_buf(pkt, pos, 4, buf, sizeof(buf)); pos += 4;
-      if (out == dns_dbg_log) app_cstr_buf(out, "  A: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "  A: ");
       if (out) app_fmt(out, "%u.%u.%u.%u", buf[0],buf[1],buf[2],buf[3]);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_NS)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  NS: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "  NS: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_CNAME)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  CNAME: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "  CNAME: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_SOA)
     {
@@ -504,31 +498,31 @@ static size_t dns_app_rr_data(Vstr_base *out,
       unsigned int num_expire  = 0;
       unsigned int num_min     = 0;
       
-      if (out == dns_dbg_log) app_cstr_buf(out, "  SOA:\n");
-      if (out == dns_dbg_log) app_cstr_buf(out, "    NS: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log)
+      if (out == base->io_dbg) app_cstr_buf(out, "  SOA:\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "    NS: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg)
         app_cstr_buf(out, "\n");
       else if (out)
         app_cstr_buf(out, " ");
-      if (out == dns_dbg_log) app_cstr_buf(out, "    ROOT: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log)
+      if (out == base->io_dbg) app_cstr_buf(out, "    ROOT: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg)
         app_cstr_buf(out, "\n");
       else if (out)
         app_cstr_buf(out, " ");
       
       if (16 > vstr_sc_posdiff(pos, msg_len))
-        return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+        return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
       num_serial  = get_i_be4(pkt, pos); pos += 4;
       num_refresh = get_i_be4(pkt, pos); pos += 4;
       num_retry   = get_i_be4(pkt, pos); pos += 4;
       num_expire  = get_i_be4(pkt, pos); pos += 4;
       num_min     = get_i_be4(pkt, pos); pos += 4;
-      if (out == dns_dbg_log)
+      if (out == base->io_dbg)
       {
-        if (out == dns_dbg_log)
+        if (out == base->io_dbg)
           app_fmt(out, "    SERIAL: %u REFRESH: %u"
                   " RETRY: %u EXPIRE: %u MIN: %u\n",
                   num_serial, num_refresh, num_retry, num_expire, num_min);
@@ -540,47 +534,47 @@ static size_t dns_app_rr_data(Vstr_base *out,
     }
     else if (dns_type == DNS_TYPE_IN_PTR)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  PTR: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "  PTR: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_HINFO)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  CPU: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "  CPU: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
       if (out) app_cstr_buf(out, " ");
-      if (out == dns_dbg_log) app_cstr_buf(out, "OS: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "OS: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_MX)
     {
       unsigned int num = 0;
 
       if (len < 4)
-        return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+        return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
       num = get_i_be2(pkt, pos); pos += 2;
-      if (out == dns_dbg_log) app_cstr_buf(out, "  PREF: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "  PREF: ");
       if (out) app_fmt(out, "%u ", num);
-      if (out == dns_dbg_log) app_cstr_buf(out, "NAME: ");
-      pos = dns_app_name(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "NAME: ");
+      pos = dns_app_name(base, out, pkt, pos, msg_len);
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_TXT)
     {
-      if (out == dns_dbg_log) app_cstr_buf(out, "  TXT: ");
+      if (out == base->io_dbg) app_cstr_buf(out, "  TXT: ");
       pos = dns_app_txt(out, pkt, pos, msg_len);
-      if (out == dns_dbg_log) app_cstr_buf(out, "\n");
+      if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else
-      return (dns_app_rr_unknown_data(pkt, pos, msg_len, len));
+      return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
   }
   
   return (pos);
 }
 
-void dns_dbg_prnt_pkt(Vstr_base *pkt)
+void dns_dbg_prnt_pkt(Dns_base *base, Vstr_base *pkt)
 {
   size_t pos = 1;
   unsigned int id = 0;
@@ -592,7 +586,7 @@ void dns_dbg_prnt_pkt(Vstr_base *pkt)
   unsigned int scan= 0;
   const size_t msg_len = pkt->len;
   
-  if (!dns_dbg_opt)
+  if (!base->dbg_opt)
     return;
   
   if (12 <= msg_len)
@@ -604,7 +598,7 @@ void dns_dbg_prnt_pkt(Vstr_base *pkt)
     nsc   = get_i_be2(pkt, pos); pos += 2;
     arc   = get_i_be2(pkt, pos); pos += 2;
     
-    dns_dbg(" id=%u\n %*s: op=%u |%s|%s|%s|%s| z=%d ret=%d ->"
+    dns_dbg(base, " id=%u\n %*s: op=%u |%s|%s|%s|%s| z=%d ret=%d ->"
         " qd=%u an=%u ns=%u ar=%u\n",
         id,
         (int)strlen("Response"),
@@ -619,16 +613,16 @@ void dns_dbg_prnt_pkt(Vstr_base *pkt)
         qdc, anc, nsc, arc);
   }
   else
-    dns_dbg("<NO HDR>\n");
+    dns_dbg(base, "<NO HDR>\n");
   
   scan = 0;
   while ((scan++ < qdc) && (6 <= vstr_sc_posdiff(pos, msg_len)))
   {
-    dns_dbg(" QUERY(%u/%u): ", scan, qdc);
-    pos = dns_app_label(dns_dbg_log, pkt, pos, msg_len); /* name? */
-    dns_dbg(" ");
-    pos = dns_app_class_type(dns_dbg_log, pkt, pos, msg_len, NULL, NULL);
-    dns_dbg("\n");
+    dns_dbg(base, " QUERY(%u/%u): ", scan, qdc);
+    pos = dns_app_label(base, base->io_dbg, pkt, pos, msg_len); /* name? */
+    dns_dbg(base, " ");
+    pos = dns_app_class_type(base->io_dbg, pkt, pos, msg_len, NULL, NULL);
+    dns_dbg(base, "\n");
   }
       
   scan = 0;
@@ -639,22 +633,25 @@ void dns_dbg_prnt_pkt(Vstr_base *pkt)
 
     if (0) { }
     else if (anc && (scan <= (anc)))
-      dns_dbg(" AN-RR(%u/%u): ", scan, anc);
+      dns_dbg(base, " AN-RR(%u/%u): ", scan, anc);
     else if (nsc && (scan <= (anc + nsc)))
-      dns_dbg(" NS-RR(%u/%u): ", scan - anc, nsc);
+      dns_dbg(base, " NS-RR(%u/%u): ", scan - anc, nsc);
     else
-      dns_dbg(" AR-RR(%u/%u): ", scan - (anc + nsc), arc);
-    pos = dns_app_name(dns_dbg_log, pkt, pos, msg_len);
-    dns_dbg(" ");
-    pos = dns_app_class_type(dns_dbg_log, pkt, pos, msg_len, &dns_class, &dns_type);
-    pos = dns_app_ttl(dns_dbg_log, pkt, pos, msg_len);
-    dns_dbg("\n");
-    pos = dns_app_rr_data(dns_dbg_log, pkt, pos, msg_len, dns_class, dns_type);
+      dns_dbg(base, " AR-RR(%u/%u): ", scan - (anc + nsc), arc);
+    pos = dns_app_name(base, base->io_dbg, pkt, pos, msg_len);
+    dns_dbg(base, " ");
+    pos = dns_app_class_type(base->io_dbg, pkt, pos, msg_len,
+                             &dns_class, &dns_type);
+    pos = dns_app_ttl(base->io_dbg, pkt, pos, msg_len);
+    dns_dbg(base, "\n");
+    pos = dns_app_rr_data(base, base->io_dbg, pkt, pos, msg_len,
+                          dns_class, dns_type);
   }
 }
 
-void dns_app_recq_pkt(Vstr_base *io_w, unsigned int qcount, ...)
+void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
 {
+  Vstr_base *io_w = base->io_w_serv;
   va_list ap;
   size_t pos1 = 0;
   size_t len1 = 0;
@@ -671,7 +668,7 @@ void dns_app_recq_pkt(Vstr_base *io_w, unsigned int qcount, ...)
 
   id = rand(); id &= 0xFFFF;
   app_i_be2(io_w, id);
-  app_i_be2(io_w, DNS_HDR_OPC_QUERY | (dns_opt_recur ? DNS_HDR_RD : 0));
+  app_i_be2(io_w, DNS_HDR_OPC_QUERY | (base->opt_recur ? DNS_HDR_RD : 0));
   
   app_i_be2(io_w, qcount);
   app_i_be2(io_w, 0);
@@ -766,21 +763,22 @@ void dns_app_recq_pkt(Vstr_base *io_w, unsigned int qcount, ...)
   len1 = io_w->len - (pos1 - 1);
   sub_i_be2(io_w, pos1, len1 - 2);
   
-  if (dns_dbg_opt > 1)
+  if (base->dbg_opt > 1)
   {
-    dns_dbg("${rep_chr:%c%zu} send ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
+    dns_dbg(base, "${rep_chr:%c%zu} send ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
         '=', 33, len1 - 2, '=', 33);
     vstr_sub_vstr(s1, 1, s1->len,
                   io_w, pos1 + 2, len1 - 2, VSTR_TYPE_ADD_BUF_PTR);
-    dns_dbg_prnt_pkt(s1);
-    dns_dbg("${rep_chr:%c%zu}\n", '-', 79);
+    dns_dbg_prnt_pkt(base, s1);
+    dns_dbg(base, "${rep_chr:%c%zu}\n", '-', 79);
   }
   vstr_free_base(s1);
   io_w->conf->malloc_bad = FALSE;
 }
 
-void dns_sc_ui_out(Vstr_base *io_w, Vstr_base *pkt)
+void dns_sc_ui_out(Dns_base *base, Vstr_base *pkt)
 {
+  Vstr_base *io_w = base->io_w_user;
   size_t pos = 1;
   unsigned int id = 0;
   unsigned int flags = 0;
@@ -812,7 +810,7 @@ void dns_sc_ui_out(Vstr_base *io_w, Vstr_base *pkt)
     {
       unsigned int hdr_r_code = ((flags & DNS_HDR_RMASK) >> DNS_HDR_ROFF);
       
-      pos = dns_app_label(io_w, pkt, pos, msg_len);
+      pos = dns_app_label(base, io_w, pkt, pos, msg_len);
       app_cstr_buf(io_w, " ");
       pos = dns_app_class_type(io_w, pkt, pos, msg_len, NULL, NULL);
       app_fmt(io_w, ":ret=%d#%s\n", hdr_r_code, dns_name_hdr_r(hdr_r_code));
@@ -823,7 +821,7 @@ void dns_sc_ui_out(Vstr_base *io_w, Vstr_base *pkt)
   scan = 0;
   while ((scan++ < qdc) && (6 <= vstr_sc_posdiff(pos, msg_len)))
   {
-    pos = dns_app_label(NULL, pkt, pos, msg_len);
+    pos = dns_app_label(base, NULL, pkt, pos, msg_len);
     pos = dns_app_class_type(NULL, pkt, pos, msg_len, NULL, NULL);
   }
   
@@ -833,12 +831,12 @@ void dns_sc_ui_out(Vstr_base *io_w, Vstr_base *pkt)
     unsigned int dns_class = 0;
     unsigned int dns_type  = 0;
 
-    pos = dns_app_name(io_w, pkt, pos, msg_len);
+    pos = dns_app_name(base, io_w, pkt, pos, msg_len);
     app_cstr_buf(io_w, " ");
     pos = dns_app_class_type(io_w, pkt, pos, msg_len, &dns_class, &dns_type);
     app_cstr_buf(io_w, " ");
     pos = dns_app_ttl(NULL, pkt, pos, msg_len);
-    pos = dns_app_rr_data(io_w, pkt, pos, msg_len, dns_class, dns_type);
+    pos = dns_app_rr_data(base, io_w, pkt, pos, msg_len, dns_class, dns_type);
     app_cstr_buf(io_w, "\n");
   }
 }

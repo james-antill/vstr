@@ -239,10 +239,19 @@ static const char *ex_ssi_strftime(time_t val, int use_gmt)
 {
   static char ret[4096];
   const char *spec = timespec;
+  struct tm *tm_val = NULL;
   
   if (!spec)  spec = "%c";
 
-  strftime(ret, sizeof(ret), spec, use_gmt ? gmtime(&val) : localtime(&val));
+  if (use_gmt)
+    tm_val = gmtime(&val);
+  else
+    tm_val = localtime(&val);
+  
+  if (!tm_val)
+    err(EXIT_FAILURE, "gmtime");
+      
+  strftime(ret, sizeof(ret), spec, tm_val);
 
   return (ret);
 }
