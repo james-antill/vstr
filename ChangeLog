@@ -1,3 +1,33 @@
+2002-08-12  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.11
+
+	* examples/ex_hexdump.c (main): Made example better.
+
+	* tst/conv/tst_uppercase.c (tst): Added test.
+
+	* tst/conv/tst_lowercase.c (tst): Added test.
+
+	* src/vstr_add.c (vstr_add_ptr): Allow zero lengths.
+	(vstr_add_non): Allow zero lengths.
+	(vstr_add_ref): Allow zero lengths.
+	
+	* include/vstr-inline.h (vstr_add_buf: Allow zero lengths.
+
+2002-08-11  James Antill  <james@and.org>
+
+	* include/vstr-internal.h (VSTR__ATTR_D): Fix definition of macro,
+	worked anyway for std. compliant compilers.
+
+	* src/vstr_version.c.in: Cleanup version printing function.
+
+	* Documentation/txt2html.pl (convert_index()): Added functions to the 
+	index.
+
+2002-08-10  James Antill  <james@and.org>
+
+	* Fixup references to vstr_nx_ in the ChangeLog.
+
 2002-08-10  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.10
@@ -32,9 +62,9 @@
 	* src/vstr_sub.c (VSTR__SUB_BUF): Add small copy calls outside of
 	memcpy() for speed.
 
-	* src/vstr_srch.c (vstr_nx_srch_buf_fwd): Fix return value when
+	* src/vstr_srch.c (vstr_srch_buf_fwd): Fix return value when
 	searching for _NON data.
-	(vstr_nx_srch_buf_fwd): Fix test for is there enough room left.
+	(vstr_srch_buf_fwd): Fix test for is there enough room left.
 
 	* include/vstr-const.h (VSTR_FLAG01): Added macro function.
 	(VSTR_FLAG02): Added macro function.
@@ -71,11 +101,11 @@
 
 2002-08-04  James Antill  <james@and.org>
 
-	* src/vstr_sub.c (vstr_nx_sub_buf): Allowed Vstr to be empty.
-	(vstr_nx_sub_ptr): Allowed Vstr to be empty.
-	(vstr_nx_sub_non): Allowed Vstr to be empty.
-	(vstr_nx_sub_ref): Allowed Vstr to be empty.
-	(vstr_nx_sub_vstr): Allowed both Vstrs to be empty.
+	* src/vstr_sub.c (vstr_sub_buf): Allowed Vstr to be empty.
+	(vstr_sub_ptr): Allowed Vstr to be empty.
+	(vstr_sub_non): Allowed Vstr to be empty.
+	(vstr_sub_ref): Allowed Vstr to be empty.
+	(vstr_sub_vstr): Allowed both Vstrs to be empty.
 
 	* src/vstr_dup.c (vstr_dup_ref): Added function.
 
@@ -87,7 +117,7 @@
 
 	* examples/ex_hexdump.c (main): Fixed a couple of semi-bugs.
 
-	* src/vstr_conv.c (vstr_nx_conv_unprintable_del): Fixed bugs found by
+	* src/vstr_conv.c (vstr_conv_unprintable_del): Fixed bugs found by
 	test.
 
 	* tst/conv/tst_unprintable.c (tst): Added test.
@@ -136,7 +166,7 @@
 	data ... probably not needed most of the time, but it's better than
 	having people get it wrong.
 	(vstr_export_iovec_cpy_buf): Fixed return value to be correct.
-	(vstr_nx_export_iovec_cpy_buf): Fixed major bug of using the wrong
+	(vstr_export_iovec_cpy_buf): Fixed major bug of using the wrong
 	int causing an infinite loop.
 
 2002-07-26  James Antill  <james@and.org>

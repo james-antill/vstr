@@ -9,6 +9,9 @@ tst = tst_buf \
     tst_ref \
     tst_vstr
 
+# FIXME
+#   tst_non
+
 check_PROGRAMS = $(tst)
 
 TESTS = $(tst)

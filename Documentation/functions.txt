@@ -803,6 +803,160 @@ Function: vstr_free_base()
   This function will free a Vstr string, allocated by vstr_make_base().
 
 
+Function: vstr_dup_buf()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const void *
+
+ Parameter[3]: Length of data (Parameter[2])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_buf().
+
+
+Function: vstr_dup_ptr()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const void *
+
+ Parameter[3]: Length of data (Parameter[2])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_ptr().
+
+
+Function: vstr_dup_non()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Length of non data
+ Type[2]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_non().
+
+
+Function: vstr_dup_ref()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Vstr memory reference
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Offset of Vstr memory refernce (Parameter[2])
+ Type[3]: size_t
+
+ Parameter[4]: Length of Vstr memory refernce (Parameter[2])
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_ref().
+
+
+Function: vstr_dup_vstr()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Vstr string
+ Type[2]: const struct Vstr_base *
+
+ Parameter[3]: Start position in the Vstr string (Parameter[2])
+ Type[3]: size_t
+
+ Parameter[4]: Length in the Vstr string (Parameter[2])
+ Type[4]: size_t
+
+ Parameter[6]: Flags for Vstr add (VSTR_TYPE_ADD_*)
+ Type[6]: unsigned int
+
+ Explanation:
+
+  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_vstr().
+
+
+Function: VSTR_DUP_CSTR_BUF()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_dup_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
+Function: VSTR_DUP_CSTR_PTR()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_dup_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
+Function: VSTR_DUP_CSTR_REF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Vstr memory reference
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Offset of Vstr memory refernce (Parameter[3])
+ Type[3]: size_t
+
+
+ Explanation:
+
+  This macro function calls vstr_dup_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 Function: vstr_make_ref_malloc()
  Returns: Vstr memory reference
  Type: struct Vstr_ref *
@@ -884,7 +1038,7 @@ Function: vstr_free_spare_nodes()
  more unused nodes of that type (Parameter[2]).
 
 
-Section: Functions to add data to a Vstr string
+Section: Functions to add and delete data to a Vstr string
 
 
 Function: vstr_add_buf()
@@ -1099,160 +1253,6 @@ Function: VSTR_ADD_CSTR_REF()
  Explanation:
 
   This macro function calls vstr_add_ref() with the length being the value of
- strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
- at the offset (Parameter[4]).
-
-
-Function: vstr_dup_buf()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Pointer to data
- Type[2]: const void *
-
- Parameter[3]: Length of data (Parameter[2])
- Type[3]: size_t
-
- Explanation:
-
-  This function is equivilent to calling vstr_make_base() and then
- vstr_add_buf().
-
-
-Function: vstr_dup_ptr()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Pointer to data
- Type[2]: const void *
-
- Parameter[3]: Length of data (Parameter[2])
- Type[3]: size_t
-
- Explanation:
-
-  This function is equivilent to calling vstr_make_base() and then
- vstr_add_ptr().
-
-
-Function: vstr_dup_non()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Length of non data
- Type[2]: size_t
-
- Explanation:
-
-  This function is equivilent to calling vstr_make_base() and then
- vstr_add_non().
-
-
-Function: vstr_dup_ref()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Vstr memory reference
- Type[2]: struct Vstr_ref *
-
- Parameter[3]: Offset of Vstr memory refernce (Parameter[2])
- Type[3]: size_t
-
- Parameter[4]: Length of Vstr memory refernce (Parameter[2])
- Type[4]: size_t
-
- Explanation:
-
-  This function is equivilent to calling vstr_make_base() and then
- vstr_add_ref().
-
-
-Function: vstr_dup_vstr()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Vstr string
- Type[2]: const struct Vstr_base *
-
- Parameter[3]: Start position in the Vstr string (Parameter[2])
- Type[3]: size_t
-
- Parameter[4]: Length in the Vstr string (Parameter[2])
- Type[4]: size_t
-
- Parameter[6]: Flags for Vstr add (VSTR_TYPE_ADD_*)
- Type[6]: unsigned int
-
- Explanation:
-
-  This function is equivilent to calling vstr_make_base() and then
- vstr_add_vstr().
-
-
-Function: VSTR_DUP_CSTR_BUF()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Pointer to data
- Type[2]: const char *
-
- Explanation:
-
-  This macro function calls vstr_dup_buf() with the length being the value of
- strlen() on the data parameter (Parameter[2]).
-
-
-Function: VSTR_DUP_CSTR_PTR()
- Returns: Vstr string
- Type: struct Vstr_base *
-
- Parameter[1]: Vstr configuration
- Type[1]: struct Vstr_conf *
-
- Parameter[2]: Pointer to data
- Type[2]: const char *
-
- Explanation:
-
-  This macro function calls vstr_dup_ptr() with the length being the value of
- strlen() on the data parameter (Parameter[2]).
-
-
-Function: VSTR_DUP_CSTR_REF()
- Returns: TRUE on success and FALSE on failure
- Type: int
-
- Parameter[1]: Vstr string
- Type[1]: struct Vstr_base *
-
- Parameter[2]: Vstr memory reference
- Type[2]: struct Vstr_ref *
-
- Parameter[3]: Offset of Vstr memory refernce (Parameter[3])
- Type[3]: size_t
-
-
- Explanation:
-
-  This macro function calls vstr_dup_ref() with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -1490,8 +1490,6 @@ Function: vstr_add_netstr2_end()
  cause problems if you know how big the Vstr string is and can't have it lose
  data from the begining/middle.
 
-
-Section: Function to delete data from a Vstr string
 
 Function: vstr_del()
  Returns: TRUE on success and FALSE on failure
@@ -2778,7 +2776,7 @@ Function: vstr_conv_lowercase()
  Type: int
 
  Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
+ Type[1]: struct Vstr_base *
 
  Parameter[2]: Start position in the Vstr string (Parameter[1])
  Type[2]: size_t
@@ -2796,7 +2794,7 @@ Function: vstr_conv_uppercase()
  Type: int
 
  Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
+ Type[1]: struct Vstr_base *
 
  Parameter[2]: Start position in the Vstr string (Parameter[1])
  Type[2]: size_t

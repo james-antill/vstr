@@ -12,7 +12,7 @@ int tst(void)
   
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
 
-  ref = vstr_export_cstr_ref(s1, 1, s1->len, &off);
+  ref = vstr_export_ref(s1, 1, s1->len, &off);
 
   ret |= !!memcmp(buf, ((char *)ref->ptr) + off, s1->len);
 

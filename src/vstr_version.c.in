@@ -23,6 +23,23 @@
 
 #include "main.h"
 
+#include <syscall.h>
+
+/* syscall on Linux x86 is weird and gives one of...
+ * 
+   fixed or forbidden register 3 (bx) was spilled for class BREG.
+   can't find a register in class `BREG' while reloading `asm' 
+ * 
+ * ...so just do inline asm for i386 Linux */
+#define TST_SYSCALL 0
+
+#if TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
+# define write(x, y, z) vstr__sys_write(x, y, z)
+static _syscall3(int, write, int, fd, const void *, buf, int, count)
+# define exit(x) vstr__sys_exit(x)
+static _syscall1(int, exit, int, ret)
+#endif
+
 void vstr_version_func(void)
 {
   int fd = 1;
@@ -78,56 +95,59 @@ void vstr_version_func(void)
        "\n\n"
     ;
 
-#if defined(__linux__) && defined(__i386__)
-  /* this is sick, but works. glibc doesn't seem to load properly if you
-   * just run the shared lib. So this uses nothing from glibc. */
-  const char *scan = msg;
+  const char *scan = NULL;
   int len = 0;
-  int ret = -1;
-  
-  while (*scan++) ++len;
 
-  /* write syscall for Linux x86 */
+#if (!TST_SYSCALL) && (defined(__linux__) && defined(__i386__))
+ /* this is sick, but works. */
+
+ /* write syscall for Linux x86 */
+#  define VSTR__SYS_WRITE(ret, fd, msg, len) \
   __asm__ __volatile__ ("\
 mov     $4, %%eax\n\t\
 mov     %1, %%ebx\n\t\
 mov     %2, %%ecx\n\t\
 mov     %3, %%edx\n\t\
 int     $0x80\n\t\
-" : "=a"(ret) : "m"(fd), "m"(msg), "m"(len));
+" : "=a"(ret) : "m"(fd), "m"(msg), "m"(len))
 
-  if (ret == len)
-    ret = 0;
-  else
-    ret = 1;
-  
   /* exit syscall for Linux x86 */
+#  define VSTR__SYS_EXIT(ret) do { int num = (ret); \
   __asm__ __volatile__ ("\
 mov     $1, %%eax\n\t\
 mov     %0, %%ebx\n\t\
 int     $0x80\n\t\
-" : : "m"(ret));
+" : : "m"(num)); } while (FALSE)
+
+#elif TST_SYSCALL || (defined(HAVE_SYSCALL_H) && defined(USE_SYSCALL))
+ /* syscall code for write/exit */
+ /* See above for actual syscall implimentations */
+
+#  define VSTR__SYS_WRITE(ret, fd, msg, len) ret = vstr__sys_write(fd, msg, len)
+#  define VSTR__SYS_EXIT(ret) vstr__sys_exit(ret)
 
 #else
-  /* this is obvious, well apart from munging everything above into one string,
-   * but can only be run via. ld.so */
- Vstr_base *str = NULL;
-
- vstr_nx_init();
-
- str = vstr_nx_make_base(NULL);
- if (!str)
-   _exit (EXIT_FAILURE);
-
- vstr_nx_add_ptr(str, 0, msg, strlen(msg));
-
- while (str->len && vstr_nx_sc_write_fd(str, 1, str->len, fd, NULL))
- { /* do nothing */; }
-
- vstr_nx_free_base(str);
-
- vstr_nx_exit();
-
- _exit (EXIT_SUCCESS);
+  /* this is obvious, well apart from the fact that it doesn't work unless
+   * run via. ld.so */
+#  define VSTR__SYS_WRITE(ret, fd, msg, len) ret = write(fd, msg, len)
+#  define VSTR__SYS_EXIT(ret) _exit(ret)
 #endif
+
+  scan = msg;
+  while (*scan++) ++len;
+  scan = msg;
+
+  while (len)
+  {
+    int ret = -1;
+
+    VSTR__SYS_WRITE(ret, fd, scan, len);
+
+    if (ret < 0)
+      VSTR__SYS_EXIT(EXIT_FAILURE);
+
+    len -= ret;
+  }
+
+  VSTR__SYS_EXIT(EXIT_SUCCESS);
 }

@@ -18,9 +18,178 @@
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- constants</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h3>Index of sections</h3>
-<a href="#Compile%20switch%20constants">Compile switch constants</a><br><a href="#Global%20constants">Global constants</a><br><a href="#Constants%20for%20making%2ffreeing%20type%20of%20nodes">Constants for making/freeing type of nodes</a><br><a href="#Constants%20passed%20to%20vstr%5fadd%5fvstr%28%29%20and%20vstr%5fsub%5fvstr%28%29">Constants passed to vstr_add_vstr() and vstr_sub_vstr()</a><br><a href="#Constants%20passed%20to%20vstr%5fconv%5funprintable%5f%2a%28%29">Constants passed to vstr_conv_unprintable_*()</a><br><a href="#Constants%20used%20with%20vstr%5fparse%5f%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29">Constants used with vstr_parse_[u](short|int|long|intmax)()</a><br><a href="#Constants%20used%20with%20vstr%5fparse%5fipv4%28%29">Constants used with vstr_parse_ipv4()</a><br><a href="#Constants%20passed%20to%20vstr%5fsplit%5f%2a%28%29">Constants passed to vstr_split_*()</a><br><a href="#Constants%20used%20with%20vstr%5fsects%5f%2a%28%29">Constants used with vstr_sects_*()</a><br><a href="#Constants%20passed%20to%20the%20cache%20callback%20function%20%28vstr%5fcache%5fadd%5fcb%28%29%29">Constants passed to the cache callback function (vstr_cache_add_cb())</a><br><a href="#Constants%20used%20with%20vstr%5fsc%5fadd%5ffd%28%29%20and%20vstr%5fsc%5fadd%5ffile%28%29">Constants used with vstr_sc_add_fd() and vstr_sc_add_file()</a><br><a href="#Constants%20used%20with%20vstr%5fsc%5fread%5ffd%28%29">Constants used with vstr_sc_read_fd()</a><br><a href="#Constants%20used%20with%20vstr%5fsc%5fwrite%5ffd%28%29%20and%20vstr%5fsc%5fwrite%5ffile%28%29">Constants used with vstr_sc_write_fd() and vstr_sc_write_file()</a><br><a href="#Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fbase%28%29%20function">Constants you pass to the vstr_cntl_base() function</a><br><a href="#Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fconf%28%29%20function">Constants you pass to the vstr_cntl_conf() function</a><br><a href="#Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fopt%28%29%20function">Constants you pass to the vstr_cntl_opt() function</a><br></td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Compile%20switch%20constants"><h2>Compile switch constants</h2>
+<ul>
+<li><a href="#Compile%20switch%20constants">Compile switch constants</a>
+<ul>
+<li><a href="#VSTR_COMPILE_ATTRIBUTES">VSTR_COMPILE_ATTRIBUTES</a>
+<li><a href="#VSTR_COMPILE_INCLUDE">VSTR_COMPILE_INCLUDE</a>
+<li><a href="#VSTR_COMPILE_INLINE">VSTR_COMPILE_INLINE</a>
+<li><a href="#VSTR_COMPILE_TYPEDEF">VSTR_COMPILE_TYPEDEF</a>
+</ul><li><a href="#Global%20constants">Global constants</a>
+<ul>
+<li><a href="#VSTR_MAX_NODE_ALL">VSTR_MAX_NODE_ALL</a>
+<li><a href="#VSTR_MAX_NODE_BUF">VSTR_MAX_NODE_BUF</a>
+</ul><li><a href="#Constants%20for%20making%2ffreeing%20type%20of%20nodes">Constants for making/freeing type of nodes</a>
+<ul>
+<li><a href="#VSTR_TYPE_NODE_BUF">VSTR_TYPE_NODE_BUF</a>
+<li><a href="#VSTR_TYPE_NODE_NON">VSTR_TYPE_NODE_NON</a>
+<li><a href="#VSTR_TYPE_NODE_PTR">VSTR_TYPE_NODE_PTR</a>
+<li><a href="#VSTR_TYPE_NODE_REF">VSTR_TYPE_NODE_REF</a>
+</ul><li><a href="#Constants%20passed%20to%20vstr_add_vstr%28%29%20and%20vstr_sub_vstr%28%29">Constants passed to vstr_add_vstr() and vstr_sub_vstr()</a>
+<ul>
+<li><a href="#VSTR_TYPE_ADD_DEF">VSTR_TYPE_ADD_DEF</a>
+<li><a href="#VSTR_TYPE_SUB_DEF">VSTR_TYPE_SUB_DEF</a>
+<li><a href="#VSTR_TYPE_ADD_BUF_PTR">VSTR_TYPE_ADD_BUF_PTR</a>
+<li><a href="#VSTR_TYPE_SUB_BUF_PTR">VSTR_TYPE_SUB_BUF_PTR</a>
+<li><a href="#VSTR_TYPE_ADD_BUF_REF">VSTR_TYPE_ADD_BUF_REF</a>
+<li><a href="#VSTR_TYPE_SUB_BUF_REF">VSTR_TYPE_SUB_BUF_REF</a>
+<li><a href="#VSTR_TYPE_ADD_ALL_REF">VSTR_TYPE_ADD_ALL_REF</a>
+<li><a href="#VSTR_TYPE_SUB_ALL_REF">VSTR_TYPE_SUB_ALL_REF</a>
+<li><a href="#VSTR_TYPE_ADD_ALL_BUF">VSTR_TYPE_ADD_ALL_BUF</a>
+<li><a href="#VSTR_TYPE_SUB_ALL_BUF">VSTR_TYPE_SUB_ALL_BUF</a>
+</ul><li><a href="#Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29">Constants passed to vstr_conv_unprintable_*()</a>
+<ul>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH</a>
+<li><a href="#VSTR_FLAG_CONV_UNPRINTABLE_DEF">VSTR_FLAG_CONV_UNPRINTABLE_DEF</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29">Constants used with vstr_parse_[u](short|int|long|intmax)()</a>
+<ul>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_NONE">VSTR_TYPE_PARSE_NUM_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_ONLY_S">VSTR_TYPE_PARSE_NUM_ERR_ONLY_S</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM">VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX">VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_OOB">VSTR_TYPE_PARSE_NUM_ERR_OOB</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW">VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE">VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE</a>
+<li><a href="#VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO">VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_DEF">VSTR_FLAG_PARSE_NUM_DEF</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_LOCAL">VSTR_FLAG_PARSE_NUM_LOCAL</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_SEP">VSTR_FLAG_PARSE_NUM_SEP</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_OVERFLOW">VSTR_FLAG_PARSE_NUM_OVERFLOW</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_SPACE">VSTR_FLAG_PARSE_NUM_SPACE</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO">VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO</a>
+<li><a href="#VSTR_FLAG_PARSE_NUM_NO_BEG_PM">VSTR_FLAG_PARSE_NUM_NO_BEG_PM</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_parse_ipv4%28%29">Constants used with vstr_parse_ipv4()</a>
+<ul>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_NONE">VSTR_TYPE_PARSE_IPV4_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_IPV4_OOB">VSTR_TYPE_PARSE_IPV4_ERR_IPV4_OOB</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL">VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_ONLY">VSTR_TYPE_PARSE_IPV4_ERR_ONLY</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_CIDR_OOB">VSTR_TYPE_PARSE_IPV4_ERR_CIDR_OOB</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_CIDR_FULL">VSTR_TYPE_PARSE_IPV4_ERR_CIDR_FULL</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_OOB">VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_OOB</a>
+<li><a href="#VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL">VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_DEF">VSTR_FLAG_PARSE_IPV4_DEF</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_LOCAL">VSTR_FLAG_PARSE_IPV4_LOCAL</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_ZEROS">VSTR_FLAG_PARSE_IPV4_ZEROS</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_FULL">VSTR_FLAG_PARSE_IPV4_FULL</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_CIDR">VSTR_FLAG_PARSE_IPV4_CIDR</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_CIDR_FULL">VSTR_FLAG_PARSE_IPV4_CIDR_FULL</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_NETMASK">VSTR_FLAG_PARSE_IPV4_NETMASK</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_NETMASK_FULL">VSTR_FLAG_PARSE_IPV4_NETMASK_FULL</a>
+<li><a href="#VSTR_FLAG_PARSE_IPV4_ONLY">VSTR_FLAG_PARSE_IPV4_ONLY</a>
+</ul><li><a href="#Constants%20passed%20to%20vstr_split_%2a%28%29">Constants passed to vstr_split_*()</a>
+<ul>
+<li><a href="#VSTR_FLAG_SPLIT_DEF">VSTR_FLAG_SPLIT_DEF</a>
+<li><a href="#VSTR_FLAG_SPLIT_BEG_NULL">VSTR_FLAG_SPLIT_BEG_NULL</a>
+<li><a href="#VSTR_FLAG_SPLIT_MID_NULL">VSTR_FLAG_SPLIT_MID_NULL</a>
+<li><a href="#VSTR_FLAG_SPLIT_END_NULL">VSTR_FLAG_SPLIT_END_NULL</a>
+<li><a href="#VSTR_FLAG_SPLIT_POST_NULL">VSTR_FLAG_SPLIT_POST_NULL</a>
+<li><a href="#VSTR_FLAG_SPLIT_NO_RET">VSTR_FLAG_SPLIT_NO_RET</a>
+<li><a href="#VSTR_FLAG_SPLIT_REMAIN">VSTR_FLAG_SPLIT_REMAIN</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_sects_%2a%28%29">Constants used with vstr_sects_*()</a>
+<ul>
+<li><a href="#VSTR_FLAG_SECTS_FOREACH_DEF">VSTR_FLAG_SECTS_FOREACH_DEF</a>
+<li><a href="#VSTR_FLAG_SECTS_FOREACH_BACKWARDS">VSTR_FLAG_SECTS_FOREACH_BACKWARDS</a>
+<li><a href="#VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL">VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL</a>
+<li><a href="#VSTR_TYPE_SECTS_FOREACH_DEF">VSTR_TYPE_SECTS_FOREACH_DEF</a>
+<li><a href="#VSTR_TYPE_SECTS_FOREACH_DEL">VSTR_TYPE_SECTS_FOREACH_DEL</a>
+<li><a href="#VSTR_TYPE_SECTS_FOREACH_RET">VSTR_TYPE_SECTS_FOREACH_RET</a>
+</ul><li><a href="#Constants%20passed%20to%20the%20cache%20callback%20function%20%28vstr_cache_add_cb%28%29%29">Constants passed to the cache callback function (vstr_cache_add_cb())</a>
+<ul>
+<li><a href="#VSTR_TYPE_CACHE_ADD">VSTR_TYPE_CACHE_ADD</a>
+<li><a href="#VSTR_TYPE_CACHE_DEL">VSTR_TYPE_CACHE_DEL</a>
+<li><a href="#VSTR_TYPE_CACHE_SUB">VSTR_TYPE_CACHE_SUB</a>
+<li><a href="#VSTR_TYPE_CACHE_FREE">VSTR_TYPE_CACHE_FREE</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_sc_add_fd%28%29%20and%20vstr_sc_add_file%28%29">Constants used with vstr_sc_add_fd() and vstr_sc_add_file()</a>
+<ul>
+<li><a href="#VSTR_TYPE_SC_ADD_FD_ERR_NONE">VSTR_TYPE_SC_ADD_FD_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_NONE">VSTR_TYPE_SC_ADD_FILE_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO">VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO">VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO">VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO">VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO">VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO">VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FD_ERR_MEM">VSTR_TYPE_SC_ADD_FD_ERR_MEM</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_MEM">VSTR_TYPE_SC_ADD_FILE_ERR_MEM</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE">VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE</a>
+<li><a href="#VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE">VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_sc_read_fd%28%29">Constants used with vstr_sc_read_fd()</a>
+<ul>
+<li><a href="#VSTR_TYPE_SC_READ_FD_ERR_NONE">VSTR_TYPE_SC_READ_FD_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO">VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_READ_FD_ERR_EOF">VSTR_TYPE_SC_READ_FD_ERR_EOF</a>
+<li><a href="#VSTR_TYPE_SC_READ_FD_ERR_MEM">VSTR_TYPE_SC_READ_FD_ERR_MEM</a>
+</ul><li><a href="#Constants%20used%20with%20vstr_sc_write_fd%28%29%20and%20vstr_sc_write_file%28%29">Constants used with vstr_sc_write_fd() and vstr_sc_write_file()</a>
+<ul>
+<li><a href="#VSTR_TYPE_SC_WRITE_FD_ERR_NONE">VSTR_TYPE_SC_WRITE_FD_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FILE_ERR_NONE">VSTR_TYPE_SC_WRITE_FILE_ERR_NONE</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO">VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO">VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO">VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO">VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FD_ERR_MEM">VSTR_TYPE_SC_WRITE_FD_ERR_MEM</a>
+<li><a href="#VSTR_TYPE_SC_WRITE_FILE_ERR_MEM">VSTR_TYPE_SC_WRITE_FILE_ERR_MEM</a>
+</ul><li><a href="#Constants%20you%20pass%20to%20the%20vstr_cntl_base%28%29%20function">Constants you pass to the vstr_cntl_base() function</a>
+<ul>
+<li><a href="#VSTR_CNTL_BASE_GET_CONF">VSTR_CNTL_BASE_GET_CONF</a>
+<li><a href="#VSTR_CNTL_BASE_SET_CONF">VSTR_CNTL_BASE_SET_CONF</a>
+</ul><li><a href="#Constants%20you%20pass%20to%20the%20vstr_cntl_conf%28%29%20function">Constants you pass to the vstr_cntl_conf() function</a>
+<ul>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_BUF_SZ">VSTR_CNTL_CONF_GET_NUM_BUF_SZ</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_BUF_SZ">VSTR_CNTL_CONF_SET_NUM_BUF_SZ</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC">VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC">VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET">VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET">VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_REF">VSTR_CNTL_CONF_GET_NUM_REF</a>
+<li><a href="#VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC">VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC</a>
+<li><a href="#VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC">VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC</a>
+<li><a href="#VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC">VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC</a>
+<li><a href="#VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT">VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT</a>
+<li><a href="#VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT">VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT</a>
+<li><a href="#VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP">VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP</a>
+<li><a href="#VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP">VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP</a>
+<li><a href="#VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP">VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP</a>
+<li><a href="#VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP">VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP</a>
+<li><a href="#VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE">VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE</a>
+<li><a href="#VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE">VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE</a>
+<li><a href="#VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT">VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT</a>
+<li><a href="#VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT">VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT</a>
+</ul><li><a href="#Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function">Constants you pass to the vstr_cntl_opt() function</a>
+<ul>
+<li><a href="#VSTR_CNTL_OPT_GET_CONF">VSTR_CNTL_OPT_GET_CONF</a>
+<li><a href="#VSTR_CNTL_OPT_SET_CONF">VSTR_CNTL_OPT_SET_CONF</a>
+</ul></ul>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Compile%20switch%20constants"><h2>Compile switch constants</h2>
 </a>
-<a name="VSTR%5fCOMPILE%5fATTRIBUTES"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_COMPILE_ATTRIBUTES"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_COMPILE_ATTRIBUTES
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -30,7 +199,7 @@
  value is 0 they won't be used at all.
 
 
-<a name="VSTR%5fCOMPILE%5fINCLUDE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_COMPILE_INCLUDE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_COMPILE_INCLUDE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -39,7 +208,7 @@
  included, if the value is 0 they won't be included.
 
 
-<a name="VSTR%5fCOMPILE%5fINLINE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_COMPILE_INLINE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_COMPILE_INLINE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -49,7 +218,7 @@
  won't be used at all.
 
 
-<a name="VSTR%5fCOMPILE%5fTYPEDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_COMPILE_TYPEDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_COMPILE_TYPEDEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -62,7 +231,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Global%20constants"><h2>Global constants</h2>
 </a>
-<a name="VSTR%5fMAX%5fNODE%5fALL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_MAX_NODE_ALL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_MAX_NODE_ALL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -70,7 +239,7 @@
  to vstr_add_ptr() etc. then multiple nodes will be allocated.
 
 
-<a name="VSTR%5fMAX%5fNODE%5fBUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_MAX_NODE_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_MAX_NODE_BUF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -80,7 +249,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20for%20making%2ffreeing%20type%20of%20nodes"><h2>Constants for making/freeing type of nodes</h2>
 </a>
-<a name="VSTR%5fTYPE%5fNODE%5fBUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_NODE_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_NODE_BUF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -94,7 +263,7 @@
  that data will be substituted inplace.
 
 
-<a name="VSTR%5fTYPE%5fNODE%5fNON"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_NODE_NON"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_NODE_NON
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -103,7 +272,7 @@
  for data, and are added into a Vstr string by the vstr_add_non() function.
 
 
-<a name="VSTR%5fTYPE%5fNODE%5fPTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_NODE_PTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_NODE_PTR
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -111,7 +280,7 @@
  which are nodes that contain a memory pointer to an area of memory.
 
 
-<a name="VSTR%5fTYPE%5fNODE%5fREF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_NODE_REF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_NODE_REF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -119,20 +288,20 @@
  which are nodes that contain a Vstr memory reference.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr%5fadd%5fvstr%28%29%20and%20vstr%5fsub%5fvstr%28%29"><h2>Constants passed to vstr_add_vstr() and vstr_sub_vstr()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_add_vstr%28%29%20and%20vstr_sub_vstr%28%29"><h2>Constants passed to vstr_add_vstr() and vstr_sub_vstr()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fADD%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_ADD_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_ADD_DEF
-</a><a name="VSTR%5fTYPE%5fSUB%5fDEF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_DEF
+</a><a name="VSTR_TYPE_SUB_DEF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
  that all types of nodes are added as their respective type.
 
 
-<a name="VSTR%5fTYPE%5fADD%5fBUF%5fPTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_ADD_BUF_PTR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_ADD_BUF_PTR
-</a><a name="VSTR%5fTYPE%5fSUB%5fBUF%5fPTR"><br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_PTR
+</a><a name="VSTR_TYPE_SUB_BUF_PTR"><br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_PTR
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
@@ -143,9 +312,9 @@
  data is only pointers to the old data, life may become intereesting for you.
 
 
-<a name="VSTR%5fTYPE%5fADD%5fBUF%5fREF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_ADD_BUF_REF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_ADD_BUF_REF
-</a><a name="VSTR%5fTYPE%5fSUB%5fBUF%5fREF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_REF
+</a><a name="VSTR_TYPE_SUB_BUF_REF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_REF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
@@ -159,9 +328,9 @@
  happens if you deleted them.
 
 
-<a name="VSTR%5fTYPE%5fADD%5fALL%5fREF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_ADD_ALL_REF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_ADD_ALL_REF
-</a><a name="VSTR%5fTYPE%5fSUB%5fALL%5fREF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_REF
+</a><a name="VSTR_TYPE_SUB_ALL_REF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_REF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
@@ -169,9 +338,9 @@
  original Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fADD%5fALL%5fBUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_ADD_ALL_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_ADD_ALL_BUF
-</a><a name="VSTR%5fTYPE%5fSUB%5fALL%5fBUF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_BUF
+</a><a name="VSTR_TYPE_SUB_ALL_BUF"><br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_BUF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
@@ -179,9 +348,9 @@
 
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr%5fconv%5funprintable%5f%2a%28%29"><h2>Constants passed to vstr_conv_unprintable_*()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_conv_unprintable_%2a%28%29"><h2>Constants passed to vstr_conv_unprintable_*()</h2>
 </a>
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -193,7 +362,7 @@
  as "unprintable" in by default, the value VSTR_FLAG_CONV_UNPRINTABLE_DEF is
  a default that is what most people would expect.
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fNUL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -201,7 +370,7 @@
  character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fBEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -209,7 +378,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fBS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -217,7 +386,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fHT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -225,7 +394,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fLF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -233,7 +402,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fVT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -241,7 +410,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fFF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -249,7 +418,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fCR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -257,7 +426,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fSP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_SP
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -265,7 +434,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fCOMMA"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_COMMA
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -273,7 +442,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fDOT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DOT
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -281,7 +450,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5f%5f"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW__
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -289,7 +458,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fESC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -297,7 +466,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fDEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -305,7 +474,7 @@
  "printable" character.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fHSP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -316,7 +485,7 @@
  printed as space when in an ASCII like encoding.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fALLOW%5fHIGH"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -328,7 +497,7 @@
  when in an ASCII like encoding.
 
 
-<a name="VSTR%5fFLAG%5fCONV%5fUNPRINTABLE%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_CONV_UNPRINTABLE_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -337,9 +506,9 @@
  to do.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fparse%5f%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29"><h2>Constants used with vstr_parse_[u](short|int|long|intmax)()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29"><h2>Constants used with vstr_parse_[u](short|int|long|intmax)()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -347,14 +516,14 @@
  number from the Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fONLY%5fS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_ONLY_S"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_S
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the Vstr string consisted only of spaces.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fONLY%5fSPM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -362,7 +531,7 @@
  or minus sign.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fONLY%5fSPMX"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -370,7 +539,7 @@
  or minus sign and a "0x" base 16 prefix.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fOOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_OOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_OOB
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -382,7 +551,7 @@
  parsing in a base less than 11.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fOVERFLOW"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -391,7 +560,7 @@
  VSTR_FLAG_PARSE_NUM_OVERFLOW flag was passed to the parse function.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fNEGATIVE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -399,7 +568,7 @@
  with a '-' (Hyphen) character when it is supposed to be an unsigned type.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fNUM%5fERR%5fBEG%5fZERO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -408,7 +577,7 @@
  flag was passed to the parse function.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -416,7 +585,7 @@
  no flags are applied to this function.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fLOCAL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_LOCAL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_LOCAL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -425,7 +594,7 @@
  by anyone not using an EBCD character set, or something equally weird.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fSEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_SEP
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -438,7 +607,7 @@
  woudl fail as would "_1234".
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fOVERFLOW"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_OVERFLOW"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_OVERFLOW
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -453,7 +622,7 @@
  4 without.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fSPACE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_SPACE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_SPACE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -461,23 +630,23 @@
  number prefix (Plus Sign, Hyphen).
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fNO%5fBEG%5fZERO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag disallows one or more '0' (Digit Zero) characters before the number.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fNUM%5fNO%5fBEG%5fPM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_NUM_NO_BEG_PM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_NO_BEG_PM
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag disallows a plus or a minus character before the number.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fparse%5fipv4%28%29"><h2>Constants used with vstr_parse_ipv4()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_parse_ipv4%28%29"><h2>Constants used with vstr_parse_ipv4()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -485,7 +654,7 @@
  ipv4 address from the Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fIPV4%5fOOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_IPV4_OOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_IPV4_OOB
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -493,7 +662,7 @@
  Vstr string where out of bounds.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fIPV4%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_IPV4_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -501,7 +670,7 @@
  full ipv4 address with cidr mask).
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fONLY"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_ONLY"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_ONLY
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -513,7 +682,7 @@
  usable as if no error had occured.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fCIDR%5fOOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_CIDR_OOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_CIDR_OOB
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -521,7 +690,7 @@
  Vstr string where out of bounds.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fCIDR%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_CIDR_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_CIDR_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -529,7 +698,7 @@
  an ipv4 address with a non full ipv4 cidr mask).
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fNETMASK%5fOOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_OOB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_OOB
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -537,7 +706,7 @@
  Vstr string where out of bounds.
 
 
-<a name="VSTR%5fTYPE%5fPARSE%5fIPV4%5fERR%5fNETMASK%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -545,7 +714,7 @@
  127.0.0.1/255.0 is an ipv4 address with a non full ipv4 netmask).
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -553,7 +722,7 @@
  no flags are applied to this function.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fLOCAL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_LOCAL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_LOCAL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -562,14 +731,14 @@
  by anyone not using an EBCD character set, or something equally weird.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fZEROS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_ZEROS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_ZEROS
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag allows the use of leading zeros in the ipv4 address and masks.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -577,14 +746,14 @@
  non full ipv4 address is given (Ie. 127/8 is a non full ipv4 with a cidr mask).
  If this flag isn't given the missing numbers are assumed to be zero.
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fCIDR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_CIDR"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_CIDR
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag allows the parsing out of a cidr mask, if one is present.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fCIDR%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_CIDR_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_CIDR_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -594,7 +763,7 @@
  be 32.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fNETMASK"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_NETMASK"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_NETMASK
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -606,7 +775,7 @@
  prefix.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fNETMASK%5fFULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_NETMASK_FULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_NETMASK_FULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -616,7 +785,7 @@
  be zero.
 
 
-<a name="VSTR%5fFLAG%5fPARSE%5fIPV4%5fONLY"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_PARSE_IPV4_ONLY"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_PARSE_IPV4_ONLY
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -628,9 +797,9 @@
  usable as if no error had occured.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr%5fsplit%5f%2a%28%29"><h2>Constants passed to vstr_split_*()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20vstr_split_%2a%28%29"><h2>Constants passed to vstr_split_*()</h2>
 </a>
-<a name="VSTR%5fFLAG%5fSPLIT%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -638,7 +807,7 @@
  no flags are applied to this function.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fBEG%5fNULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_BEG_NULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_BEG_NULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -649,7 +818,7 @@
  length 4.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fMID%5fNULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_MID_NULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_MID_NULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -660,7 +829,7 @@
  length 4.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fEND%5fNULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_END_NULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_END_NULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -670,7 +839,7 @@
  of length 0, without this flag there would only be one section added.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fPOST%5fNULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_POST_NULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_POST_NULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -680,7 +849,7 @@
  of length 0, without this flag there would only be one section added.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fNO%5fRET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_NO_RET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_NO_RET
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -690,7 +859,7 @@
  in the Vstr sections.
 
 
-<a name="VSTR%5fFLAG%5fSPLIT%5fREMAIN"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SPLIT_REMAIN"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SPLIT_REMAIN
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -699,9 +868,9 @@
 
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fsects%5f%2a%28%29"><h2>Constants used with vstr_sects_*()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sects_%2a%28%29"><h2>Constants used with vstr_sects_*()</h2>
 </a>
-<a name="VSTR%5fFLAG%5fSECTS%5fFOREACH%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SECTS_FOREACH_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -709,7 +878,7 @@
  no flags are applied to this function.
 
 
-<a name="VSTR%5fFLAG%5fSECTS%5fFOREACH%5fBACKWARDS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SECTS_FOREACH_BACKWARDS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_BACKWARDS
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -717,7 +886,7 @@
  backwards (from the end to the begining).
 
 
-<a name="VSTR%5fFLAG%5fSECTS%5fFOREACH%5fALLOW%5fNULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -725,7 +894,7 @@
  on sections of null length (a non zero position with a zero length).
 
 
-<a name="VSTR%5fTYPE%5fSECTS%5fFOREACH%5fDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SECTS_FOREACH_DEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_DEF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -734,7 +903,7 @@
  callback.
 
 
-<a name="VSTR%5fTYPE%5fSECTS%5fFOREACH%5fDEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SECTS_FOREACH_DEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_DEL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -742,7 +911,7 @@
  before the next callback is called.
 
 
-<a name="VSTR%5fTYPE%5fSECTS%5fFOREACH%5fRET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SECTS_FOREACH_RET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_RET
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -750,9 +919,9 @@
  the same thing as a break statment in a C for loop.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20the%20cache%20callback%20function%20%28vstr%5fcache%5fadd%5fcb%28%29%29"><h2>Constants passed to the cache callback function (vstr_cache_add_cb())</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20passed%20to%20the%20cache%20callback%20function%20%28vstr_cache_add_cb%28%29%29"><h2>Constants passed to the cache callback function (vstr_cache_add_cb())</h2>
 </a>
-<a name="VSTR%5fTYPE%5fCACHE%5fADD"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_CACHE_ADD"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_CACHE_ADD
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -761,7 +930,7 @@
  functions.
 
 
-<a name="VSTR%5fTYPE%5fCACHE%5fDEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_CACHE_DEL"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_CACHE_DEL
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -769,7 +938,7 @@
  the position and length arguments are as taken from the vstr_del() function.
 
 
-<a name="VSTR%5fTYPE%5fCACHE%5fSUB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_CACHE_SUB"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_CACHE_SUB
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -778,7 +947,7 @@
  vstr_sub_* functions.
 
 
-<a name="VSTR%5fTYPE%5fCACHE%5fFREE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_CACHE_FREE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_CACHE_FREE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -787,41 +956,41 @@
 </p><p>  The position and length arguments are undefined.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fsc%5fadd%5ffd%28%29%20and%20vstr%5fsc%5fadd%5ffile%28%29"><h2>Constants used with vstr_sc_add_fd() and vstr_sc_add_file()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sc_add_fd%28%29%20and%20vstr_sc_add_file%28%29"><h2>Constants used with vstr_sc_add_fd() and vstr_sc_add_file()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFD%5fERR%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FD_ERR_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_NONE
-</a><a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fNONE"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_NONE
+</a><a name="VSTR_TYPE_SC_ADD_FILE_ERR_NONE"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occured adding the
  mapping into the Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fOPEN%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to open() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFD%5fERR%5fFSTAT%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO
-</a><a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fFSTAT%5fERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO
+</a><a name="VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to fstat() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFD%5fERR%5fMMAP%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO
-</a><a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fMMAP%5fERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO
+</a><a name="VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to mmap() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fCLOSE%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -834,9 +1003,9 @@
  hidden.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFD%5fERR%5fMEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FD_ERR_MEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_MEM
-</a><a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fMEM"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MEM
+</a><a name="VSTR_TYPE_SC_ADD_FILE_ERR_MEM"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MEM
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that memory could not be allocated.
@@ -846,9 +1015,9 @@
  TRUE, and errno is set to ENOMEM.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fADD%5fFD%5fERR%5fTOO%5fLARGE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE
-</a><a name="VSTR%5fTYPE%5fSC%5fADD%5fFILE%5fERR%5fTOO%5fLARGE"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE
+</a><a name="VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE"><br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_TOO_LARGE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the memory mapping was too big to fit in the
@@ -859,9 +1028,9 @@
 </p><p>  To help the programer unify error paths errno is set to EFBIG.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fsc%5fread%5ffd%28%29"><h2>Constants used with vstr_sc_read_fd()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sc_read_fd%28%29"><h2>Constants used with vstr_sc_read_fd()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fSC%5fREAD%5fFD%5fERR%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_READ_FD_ERR_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -869,14 +1038,14 @@
  read() data into the Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fREAD%5fFD%5fERR%5fREAD%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to readv() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fREAD%5fFD%5fERR%5fEOF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_READ_FD_ERR_EOF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_EOF
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -886,7 +1055,7 @@
 </p><p>  To help the programer unify error paths errno is set to ENOSPC.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fREAD%5fFD%5fERR%5fMEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_READ_FD_ERR_MEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_MEM
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -897,33 +1066,33 @@
  TRUE, and errno is set to ENOMEM.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr%5fsc%5fwrite%5ffd%28%29%20and%20vstr%5fsc%5fwrite%5ffile%28%29"><h2>Constants used with vstr_sc_write_fd() and vstr_sc_write_file()</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20used%20with%20vstr_sc_write_fd%28%29%20and%20vstr_sc_write_file%28%29"><h2>Constants used with vstr_sc_write_fd() and vstr_sc_write_file()</h2>
 </a>
-<a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFD%5fERR%5fNONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_WRITE_FD_ERR_NONE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_NONE
-</a><a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFILE%5fERR%5fNONE"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_NONE
+</a><a name="VSTR_TYPE_SC_WRITE_FILE_ERR_NONE"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_NONE
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occured adding the
  read() data into the Vstr string.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFILE%5fERR%5fOPEN%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to open() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFD%5fERR%5fWRITE%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO
-</a><a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFILE%5fERR%5fWRITE%5fERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO
+</a><a name="VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the call to writev() returned -1, errno is set.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFILE%5fERR%5fCLOSE%5fERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -936,9 +1105,9 @@
  hidden.
 
 
-<a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFD%5fERR%5fMEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_TYPE_SC_WRITE_FD_ERR_MEM"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_MEM
-</a><a name="VSTR%5fTYPE%5fSC%5fWRITE%5fFILE%5fERR%5fMEM"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
+</a><a name="VSTR_TYPE_SC_WRITE_FILE_ERR_MEM"><br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
 </a>
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that memory could not be allocated.
@@ -948,16 +1117,16 @@
  TRUE, and errno is set to ENOMEM.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fbase%28%29%20function"><h2>Constants you pass to the vstr_cntl_base() function</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr_cntl_base%28%29%20function"><h2>Constants you pass to the vstr_cntl_base() function</h2>
 </a>
-<a name="VSTR%5fCNTL%5fBASE%5fGET%5fCONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_BASE_GET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_BASE_GET_CONF
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Return Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the Vstr configuration for the Vstr string
 
-<a name="VSTR%5fCNTL%5fBASE%5fSET%5fCONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_BASE_SET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_BASE_SET_CONF
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -970,9 +1139,9 @@
 </p><p>  If the Vstr configuration (Parameter[1]) is NULL, then the default
  Vstr configuration will be used.
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fconf%28%29%20function"><h2>Constants you pass to the vstr_cntl_conf() function</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr_cntl_conf%28%29%20function"><h2>Constants you pass to the vstr_cntl_conf() function</h2>
 </a>
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fNUM%5fBUF%5fSZ"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_NUM_BUF_SZ"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_BUF_SZ
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int *
@@ -980,7 +1149,7 @@
 </p><p>  This option will get the size of the allocated portion of a _BUF type node.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fNUM%5fBUF%5fSZ"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_NUM_BUF_SZ"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_BUF_SZ
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int
@@ -992,7 +1161,7 @@
 </p><p>  The value cannot be higher than VSTR_MAX_NODE_BUF.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fNUM%5fIOV%5fMIN%5fALLOC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns size of minimum iovec allocation<br>Type<strong>[1]</strong>: unsigned int *
@@ -1001,7 +1170,7 @@
  the iovec cache.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fNUM%5fIOV%5fMIN%5fALLOC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Size of minimum iovec allocation<br>Type<strong>[1]</strong>: unsigned int
@@ -1010,7 +1179,7 @@
  the iovec cache.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fNUM%5fIOV%5fMIN%5fOFFSET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns post allocation offset for iovec cache<br>Type<strong>[1]</strong>: unsigned int *
@@ -1018,7 +1187,7 @@
 </p><p>  This option will get the offset on the iovec cache after an iovec allocation.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fNUM%5fIOV%5fMIN%5fOFFSET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Post allocation offset for iovec cache<br>Type<strong>[1]</strong>: unsigned int
@@ -1026,7 +1195,7 @@
 </p><p>  This option will set the offset on the iovec cache after an iovec allocation.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fNUM%5fREF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_NUM_REF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_REF
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns number of references<br>Type<strong>[1]</strong>: unsigned int *
@@ -1034,7 +1203,7 @@
 </p><p>  This option will get the number of references to the Vstr configuration.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fLOC%5fCSTR%5fAUTO%5fNAME%5fNUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of system LC_NUMERIC locale<br>Type<strong>[1]</strong>: const char *
@@ -1046,7 +1215,7 @@
 </p><p>  Passing NULL as the name will use the current system LC_NUMERIC locale.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fLOC%5fCSTR%5fNAME%5fNUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns name of current LC_NUMERIC locale.<br>Type<strong>[1]</strong>: const char **
@@ -1054,7 +1223,7 @@
 </p><p>  This option will get the name of the LC_NUMERIC locale.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fLOC%5fCSTR%5fNAME%5fNUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of LC_NUMERIC locale in Vstr configuration<br>Type<strong>[1]</strong>: const char *
@@ -1062,7 +1231,7 @@
 </p><p>  This option will set the name of the LC_NUMERIC locale.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fLOC%5fCSTR%5fDEC%5fPOINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns decimal point C string<br>Type<strong>[1]</strong>: const char **
@@ -1071,7 +1240,7 @@
  variable.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fLOC%5fCSTR%5fDEC%5fPOINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Decimal point C string<br>Type<strong>[1]</strong>: const char *
@@ -1080,7 +1249,7 @@
  variable.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fLOC%5fCSTR%5fTHOU%5fSEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns thousands separator C string<br>Type<strong>[1]</strong>: const char **
@@ -1089,7 +1258,7 @@
  variable.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fLOC%5fCSTR%5fTHOU%5fSEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Thousands separator C string<br>Type<strong>[1]</strong>: const char *
@@ -1098,7 +1267,7 @@
  variable.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fLOC%5fCSTR%5fTHOU%5fGRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns <br>Type<strong>[1]</strong>: const char **
@@ -1107,7 +1276,7 @@
  variable.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fLOC%5fCSTR%5fTHOU%5fGRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: const char *
@@ -1116,7 +1285,7 @@
  variable. 
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fFLAG%5fIOV%5fUPDATE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of flag<br>Type<strong>[1]</strong>: int *
@@ -1125,7 +1294,7 @@
  to update the iovec cache when doing add/del operations on Vstr strings.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fFLAG%5fIOV%5fUPDATE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Value of flag<br>Type<strong>[1]</strong>: int
@@ -1134,7 +1303,7 @@
  doing add/del operations on Vstr strings.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fGET%5fFLAG%5fDEL%5fSPLIT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of flag<br>Type<strong>[1]</strong>: int *
@@ -1143,7 +1312,7 @@
  to split _BUF nodes on del operations to Vstr strings.
 
 
-<a name="VSTR%5fCNTL%5fCONF%5fSET%5fFLAG%5fDEL%5fSPLIT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Value of flag<br>Type<strong>[1]</strong>: int
@@ -1152,9 +1321,9 @@
  del operations to Vstr strings.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr%5fcntl%5fopt%28%29%20function"><h2>Constants you pass to the vstr_cntl_opt() function</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function"><h2>Constants you pass to the vstr_cntl_opt() function</h2>
 </a>
-<a name="VSTR%5fCNTL%5fOPT%5fGET%5fCONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_OPT_GET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_OPT_GET_CONF
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Return Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
@@ -1162,7 +1331,7 @@
 </p><p>  This option will get the default Vstr configuration.
 
 
-<a name="VSTR%5fCNTL%5fOPT%5fSET%5fCONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CNTL_OPT_SET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_OPT_SET_CONF
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *

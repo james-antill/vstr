@@ -26,9 +26,9 @@
 #endif
 
 #if defined(HAVE_ATTRIB_DEPRECATED)
-# define VSTR__ATTR_D(x) __attribute__((deprecated))
+# define VSTR__ATTR_D() __attribute__((deprecated))
 #else
-# define VSTR__ATTR_D(x) 
+# define VSTR__ATTR_D() 
 #endif
 
 #if defined(HAVE_ATTRIB_VISIBILITY)

@@ -297,9 +297,12 @@ int vstr_nx_add_ptr(Vstr_base *base, size_t pos,
  Vstr_node *pos_scan = NULL;
  Vstr_node *pos_scan_next = NULL;
  
- assert(!(!base || !len || (pos > base->len)));
- if (!base || !len || (pos > base->len))
+ assert(!(!base || (pos > base->len)));
+ if (!base || (pos > base->len))
    return (FALSE);
+
+ if (!len)
+   return (TRUE);
  
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_ptr_num, VSTR_TYPE_NODE_PTR, NULL);
 
@@ -349,10 +352,13 @@ int vstr_nx_add_non(Vstr_base *base, size_t pos, size_t len)
  Vstr_node *pos_scan_next = NULL;
  size_t orig_pos_scan_len = 0;
 
- assert(!(!base || !len || (pos > base->len)));
- if (!base || !len || (pos > base->len))
+ assert(!(!base || (pos > base->len)));
+ if (!base || (pos > base->len))
    return (FALSE);
 
+ if (!len)
+   return (TRUE);
+ 
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_non_num, VSTR_TYPE_NODE_NON,
                &orig_pos_scan_len);
  
@@ -396,9 +402,12 @@ int vstr_nx_add_ref(Vstr_base *base, size_t pos,
  Vstr_node *pos_scan = NULL;
  Vstr_node *pos_scan_next = NULL;
 
- assert(!(!base || !ref || !len || (pos > base->len)));
- if (!base || !ref || !len || (pos > base->len))
+ assert(!(!base || !ref || (pos > base->len)));
+ if (!base || !ref || (pos > base->len))
    return (FALSE);
+
+ if (!len)
+   return (TRUE);
  
  VSTR__ADD_BEG(VSTR_MAX_NODE_ALL, spare_ref_num, VSTR_TYPE_NODE_REF, NULL);
 

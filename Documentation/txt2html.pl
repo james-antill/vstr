@@ -30,19 +30,35 @@ sub convert_index()
 
     OUT->print("</td></tr></table><table width=\"90%\"><tr><td>\n");
     OUT->print("<h3>Index of sections</h3>\n");
+    OUT->print("<ul>\n");
+
+    my $done = 0;
 
     while (<IN>)
       {
-        if (/^Section:\s*(.*)$/)
-        {
-          my $section = $1;
-          my $uri = $1;
-          $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+	if (/^(Constant|Function|Member): (.*)$/)
+	  {
+	    my $name = $2;
+	    my $uri = $2;
+	    $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
-          $_ = "<a href=\"#$uri\">$section</a><br>";
-          print OUT;
-        }
+	    print OUT "<li><a href=\"#$uri\">$name</a>\n";
+	  }
+        elsif (/^Section:\s*(.*)$/)
+	  {
+	    my $section = $1;
+	    my $uri = $1;
+	    $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
+
+	    if ($done)
+	      { print OUT "</ul>"; }
+	    $done = 1;
+
+	    print OUT "<li><a href=\"#$uri\">$section</a>\n<ul>\n";
+	  }
       }
+
+    OUT->print("</ul></ul>\n");
   }
 
 sub convert()
@@ -74,7 +90,7 @@ EOL
               if ($1 eq "Constant")
 	      {
                 my $uri = $2;
-                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+                $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
 		$next_in_const = 1;
 
@@ -83,7 +99,7 @@ EOL
               elsif ($1 eq "Function")
               {
                 my $uri = $2;
-                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+                $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
                 $_ = "<a name=\"$uri\">" . $_ . "</a>";
               }
@@ -92,7 +108,7 @@ EOL
               else
               { # Section...
                 my $uri = $1;
-                $uri =~ s/([^[:alnum:]:])/sprintf("%%%02x", ord($1))/eg;
+                $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
                 s/<h2>/<a name="$uri"><h2>/;
                 $_ .= "</a>";

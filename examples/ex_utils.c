@@ -16,51 +16,77 @@
 
 
 /* die with error */
-void ex_utils_die(const char *err, const char *msg, ...)
+void ex_utils_die(const char *fl, unsigned int l, const char *fu,
+                  const char *msg, ...)
 {
   int saved_errno = errno;
-  Vstr_base *str = NULL;
-  struct iovec *vec;
-  unsigned int num = 0;
-  size_t len = 0;
-  ssize_t bytes = 0;
+  Vstr_base *s1 = NULL;
+  unsigned int err = 0;
   
-  str = vstr_make_base(NULL);
-  if (str)
+  s1 = vstr_make_base(NULL);
+  if (s1)
   {
     va_list ap;
     
+    vstr_add_fmt(s1, s1->len, "\nDIE: at %s%s%s%s:%u\n     ",
+                 fl, *fu ? "(" : "", fu, *fu ? ")" : "", l);
+    
     va_start(ap, msg);
-    vstr_add_vfmt(str, str->len, msg, ap);
+    vstr_add_vfmt(s1, s1->len, msg, ap);
     va_end(ap);
+    
+    if (msg[strlen(msg) - 1] == ':')
+      vstr_add_fmt(s1, s1->len, " %d %s", saved_errno, strerror(saved_errno));
+    
+    vstr_add_buf(s1, s1->len, "\n", 1);
 
-    VSTR_ADD_CSTR_BUF(str, str->len, err);
-    
-    if (msg[strlen(err) - 1] == ':')
-      vstr_add_fmt(str, str->len, " %d %s", saved_errno, strerror(saved_errno));
-    
-    vstr_add_buf(str, str->len, "\n", 1);
-    
-    len = vstr_export_iovec_ptr_all(str, &vec, &num);
-    if (!len)
-      _exit (EXIT_FAILURE);
-    
-    while ((size_t)(bytes = writev(2, vec, num)) != len)
+    while (s1->len)
     {
-      if ((bytes == -1) && (errno != EAGAIN))
-        break;
-      if (bytes == -1)
-        continue;
-      
-      vstr_del(str, 1, (size_t)bytes);
-      
-      len = vstr_export_iovec_ptr_all(str, &vec, &num);
+      if (!vstr_sc_write_fd(s1, 1, s1->len, STDERR_FILENO, &err))
+        if ((errno != EAGAIN) && (errno != EINTR))
+          break;
     }
-
-    vstr_free_base(str);
+    
+    vstr_free_base(s1);
   }
   
   _exit (EXIT_FAILURE);
+}
+
+/* warn about error */
+void ex_utils_warn(const char *fl, unsigned int l, const char *fu,
+                   const char *msg, ...)
+{
+  int saved_errno = errno;
+  Vstr_base *s1 = NULL;
+  unsigned int err = 0;
+  
+  s1 = vstr_make_base(NULL);
+  if (s1)
+  {
+    va_list ap;
+    
+    vstr_add_fmt(s1, s1->len, "\nWARN: at %s%s%s%s:%u\n      ",
+                 fl, *fu ? "(" : "", fu, *fu ? ")" : "", l);
+    
+    va_start(ap, msg);
+    vstr_add_vfmt(s1, s1->len, msg, ap);
+    va_end(ap);
+    
+    if (msg[strlen(msg) - 1] == ':')
+      vstr_add_fmt(s1, s1->len, " %d %s", saved_errno, strerror(saved_errno));
+    
+    vstr_add_buf(s1, s1->len, "\n", 1);
+
+    while (s1->len)
+    {
+      if (!vstr_sc_write_fd(s1, 1, s1->len, STDERR_FILENO, &err))
+        if ((errno != EAGAIN) && (errno != EINTR))
+          DIE("write:");
+    }
+    
+    vstr_free_base(s1);
+  }
 }
 
 /* io */

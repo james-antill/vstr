@@ -16,9 +16,7 @@ function conf()
  echo >> autocheck1.log
 
  echo >> autocheck2.log
- echo >> autocheck2.log
  echo "==== BEG: CC=$CC CFLAGS=$CFLAGS $@ ====" >> autocheck2.log
- echo >> autocheck2.log
 
  ./configure $@ \
 	>> autocheck1.log 2>> autocheck2.log && \

@@ -179,13 +179,15 @@ static void ex_slowcat_timer_func(int type, void *data)
     
     v->finished_reading_file = FALSE;
     
-    v->fd = open(v->argv[v->arg_count++], O_RDONLY);
+    v->fd = open(v->argv[v->arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
     
     if (v->fd == -1)
-      ex_utils_die("open(%s):", v->argv[v->arg_count - 1]);
+      DIE("open(%s):", v->argv[v->arg_count]);
     
     if (fstat(v->fd, &stat_buf) == -1)
-      DIE("fstat:");
+      DIE("fstat(%s):", v->argv[v->arg_count]);
+    
+    ++v->arg_count;
     
     if (S_ISREG(stat_buf.st_mode))
     {

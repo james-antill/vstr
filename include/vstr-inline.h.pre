@@ -58,6 +58,8 @@ extern inline void *@@@@vstr_cache_get_data(const struct Vstr_base *base,
 extern inline int @@@@vstr_add_buf(struct Vstr_base *base, size_t pos,
                                const void *buffer, size_t len)
 {
+  if (!len) return (1);
+
   if (base->len && (pos == base->len) &&
       (base->end->type == VSTR_TYPE_NODE_BUF) &&
       (len <= (base->conf->buf_sz - base->end->len)) &&

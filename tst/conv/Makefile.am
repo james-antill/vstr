@@ -6,11 +6,10 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst = tst_encode \
       tst_decode \
+      tst_lowercase \
+      tst_uppercase \
       tst_unprintable
 
-# FIXME
-# 	tst_lowercase
-# 	tst_uppercase
 
 check_PROGRAMS = $(tst)
 

@@ -18,8 +18,32 @@
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- structs</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h3>Index of sections</h3>
-<a href="#struct%20Vstr%5fref%20%28aka%2e%20Vstr%20reference%29">struct Vstr_ref (aka. Vstr reference)</a><br><a href="#struct%20Vstr%5fconf%20%28aka%2e%20Vstr%20configuration%29">struct Vstr_conf (aka. Vstr configuration)</a><br><a href="#struct%20Vstr%5fbase%20%28aka%2e%20Vstr%20string%29">struct Vstr_base (aka. Vstr string)</a><br><a href="#struct%20Vstr%5fsects%20%28aka%2e%20Vstr%20sections%29">struct Vstr_sects (aka. Vstr sections)</a><br>
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr%5fref%20%28aka%2e%20Vstr%20reference%29"><h2>struct Vstr_ref (aka. Vstr reference)</h2>
+<ul>
+<li><a href="#struct%20Vstr_ref%20%28aka%2e%20Vstr%20reference%29">struct Vstr_ref (aka. Vstr reference)</a>
+<ul>
+<li><a href="#func">func</a>
+<li><a href="#ptr">ptr</a>
+<li><a href="#ref">ref</a>
+</ul><li><a href="#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">struct Vstr_conf (aka. Vstr configuration)</a>
+<ul>
+<li><a href="#malloc_bad">malloc_bad</a>
+</ul><li><a href="#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">struct Vstr_base (aka. Vstr string)</a>
+<ul>
+<li><a href="#len">len</a>
+<li><a href="#conf">conf</a>
+</ul><li><a href="#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">struct Vstr_sects (aka. Vstr sections)</a>
+<ul>
+<li><a href="#num">num</a>
+<li><a href="#sz">sz</a>
+<li><a href="#malloc_bad">malloc_bad</a>
+<li><a href="#free_ptr">free_ptr</a>
+<li><a href="#can_add_sz">can_add_sz</a>
+<li><a href="#can_del_sz">can_del_sz</a>
+<li><a href="#alloc_double">alloc_double</a>
+<li><a href="#ptr">ptr</a>
+</ul></ul>
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_ref%20%28aka%2e%20Vstr%20reference%29"><h2>struct Vstr_ref (aka. Vstr reference)</h2>
 </a>
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Member: </strong> func
@@ -52,7 +76,7 @@
  the reference reaches zero.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr%5fconf%20%28aka%2e%20Vstr%20configuration%29"><h2>struct Vstr_conf (aka. Vstr configuration)</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29"><h2>struct Vstr_conf (aka. Vstr configuration)</h2>
 </a>
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Member: </strong> malloc_bad
@@ -63,7 +87,7 @@
  programmer to call multiple allocation functions and then do a single test.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr%5fbase%20%28aka%2e%20Vstr%20string%29"><h2>struct Vstr_base (aka. Vstr string)</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29"><h2>struct Vstr_base (aka. Vstr string)</h2>
 </a>
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Member: </strong> len
@@ -79,7 +103,7 @@
 </p><p>  This is a pointer to the Vstr configuration used by the Vstr string.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr%5fsects%20%28aka%2e%20Vstr%20sections%29"><h2>struct Vstr_sects (aka. Vstr sections)</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29"><h2>struct Vstr_sects (aka. Vstr sections)</h2>
 </a>
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Member: </strong> num

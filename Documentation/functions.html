@@ -18,10 +18,200 @@
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- functions</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h3>Index of sections</h3>
-<a href="#Initialization%20function">Initialization function</a><br><a href="#Functions%20to%20choose%20multiple%20VSTR%5fFLAG%5f%2a%20constants">Functions to choose multiple VSTR_FLAG_* constants</a><br><a href="#Functions%20to%20get%20specific%20data%20about%20the%20vstr">Functions to get specific data about the vstr</a><br><a href="#Functions%20to%20export%20vstr%20data">Functions to export vstr data</a><br><a href="#Functions%20to%20use%20as%20callbacks%20in%20a%20Vstr%20memory%20reference">Functions to use as callbacks in a Vstr memory reference</a><br><a href="#Functions%20to%20reference%20and%20dereference%20a%20Vstr%20memory%20reference">Functions to reference and dereference a Vstr memory reference</a><br><a href="#Creation%2fdestruction%20of%20core%20objects">Creation/destruction of core objects</a><br><a href="#Functions%20to%20add%20data%20to%20a%20Vstr%20string">Functions to add data to a Vstr string</a><br><a href="#Function%20to%20delete%20data%20from%20a%20Vstr%20string">Function to delete data from a Vstr string</a><br><a href="#Functions%20to%20substitute%20data%20in%20a%20Vstr%20string%20with%20other%20data">Functions to substitute data in a Vstr string with other data</a><br><a href="#Functions%20to%20move%20data%20from%20a%20Vstr%20string%20to%20another%20Vstr%20string">Functions to move data from a Vstr string to another Vstr string</a><br><a href="#Functions%20for%20miscellaneous%20control%20of%20options">Functions for miscellaneous control of options</a><br><a href="#Functions%20to%20compare%20with%20a%20Vstr%20string">Functions to compare with a Vstr string</a><br><a href="#Functions%20to%20search%20in%20a%20Vstr%20string">Functions to search in a Vstr string</a><br><a href="#Functions%20to%20calculate%20spanning%20in%20a%20Vstr%20string">Functions to calculate spanning in a Vstr string</a><br><a href="#Functions%20for%20converting%20data%20in%20a%20vstr">Functions for converting data in a vstr</a><br><a href="#Functions%20for%20dealing%20with%20a%20section%20of%20a%20vstr">Functions for dealing with a section of a vstr</a><br><a href="#Functions%20for%20splitting%20data%20in%20a%20Vstr%20into%20sections">Functions for splitting data in a Vstr into sections</a><br><a href="#Functions%20for%20parsing%20data%20from%20a%20vstr">Functions for parsing data from a vstr</a><br><a href="#Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string">Functions for hooking into the cache system for the Vstr string</a><br><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a><br>
+<ul>
+<li><a href="#Initialization%20function">Initialization function</a>
+<ul>
+<li><a href="#vstr_init%28%29">vstr_init()</a>
+<li><a href="#vstr_exit%28%29">vstr_exit()</a>
+</ul><li><a href="#Functions%20to%20choose%20multiple%20VSTR_FLAG_%2a%20constants">Functions to choose multiple VSTR_FLAG_* constants</a>
+<ul>
+<li><a href="#VSTR_FLAG10%28%29">VSTR_FLAG10()</a>
+<li><a href="#VSTR_FLAG09%28%29">VSTR_FLAG09()</a>
+<li><a href="#VSTR_FLAG08%28%29">VSTR_FLAG08()</a>
+<li><a href="#VSTR_FLAG07%28%29">VSTR_FLAG07()</a>
+<li><a href="#VSTR_FLAG06%28%29">VSTR_FLAG06()</a>
+<li><a href="#VSTR_FLAG05%28%29">VSTR_FLAG05()</a>
+<li><a href="#VSTR_FLAG04%28%29">VSTR_FLAG04()</a>
+<li><a href="#VSTR_FLAG03%28%29">VSTR_FLAG03()</a>
+<li><a href="#VSTR_FLAG02%28%29">VSTR_FLAG02()</a>
+<li><a href="#VSTR_FLAG01%28%29">VSTR_FLAG01()</a>
+</ul><li><a href="#Functions%20to%20get%20specific%20data%20about%20the%20vstr">Functions to get specific data about the vstr</a>
+<ul>
+<li><a href="#vstr_num%28%29">vstr_num()</a>
+</ul><li><a href="#Functions%20to%20export%20vstr%20data">Functions to export vstr data</a>
+<ul>
+<li><a href="#vstr_export_cstr_ptr%28%29">vstr_export_cstr_ptr()</a>
+<li><a href="#vstr_export_cstr_buf%28%29">vstr_export_cstr_buf()</a>
+<li><a href="#vstr_export_cstr_ref%28%29">vstr_export_cstr_ref()</a>
+<li><a href="#vstr_export_iovec_ptr_all%28%29">vstr_export_iovec_ptr_all()</a>
+<li><a href="#vstr_export_iovec_cpy_buf%28%29">vstr_export_iovec_cpy_buf()</a>
+<li><a href="#vstr_export_iovec_cpy_ptr%28%29">vstr_export_iovec_cpy_ptr()</a>
+<li><a href="#vstr_export_buf%28%29">vstr_export_buf()</a>
+<li><a href="#vstr_export_chr%28%29">vstr_export_chr()</a>
+<li><a href="#vstr_export_ref%28%29">vstr_export_ref()</a>
+</ul><li><a href="#Functions%20to%20use%20as%20callbacks%20in%20a%20Vstr%20memory%20reference">Functions to use as callbacks in a Vstr memory reference</a>
+<ul>
+<li><a href="#vstr_ref_cb_free_nothing%28%29">vstr_ref_cb_free_nothing()</a>
+<li><a href="#vstr_ref_cb_free_ref%28%29">vstr_ref_cb_free_ref()</a>
+<li><a href="#vstr_ref_cb_free_ptr%28%29">vstr_ref_cb_free_ptr()</a>
+<li><a href="#vstr_ref_cb_free_ptr_ref%28%29">vstr_ref_cb_free_ptr_ref()</a>
+</ul><li><a href="#Functions%20to%20reference%20and%20dereference%20a%20Vstr%20memory%20reference">Functions to reference and dereference a Vstr memory reference</a>
+<ul>
+<li><a href="#vstr_ref_add%28%29">vstr_ref_add()</a>
+<li><a href="#vstr_ref_del%28%29">vstr_ref_del()</a>
+</ul><li><a href="#Creation%2fdestruction%20of%20core%20objects">Creation/destruction of core objects</a>
+<ul>
+<li><a href="#vstr_make_conf%28%29">vstr_make_conf()</a>
+<li><a href="#vstr_free_conf%28%29">vstr_free_conf()</a>
+<li><a href="#vstr_make_base%28%29">vstr_make_base()</a>
+<li><a href="#vstr_free_base%28%29">vstr_free_base()</a>
+<li><a href="#vstr_dup_buf%28%29">vstr_dup_buf()</a>
+<li><a href="#vstr_dup_ptr%28%29">vstr_dup_ptr()</a>
+<li><a href="#vstr_dup_non%28%29">vstr_dup_non()</a>
+<li><a href="#vstr_dup_ref%28%29">vstr_dup_ref()</a>
+<li><a href="#vstr_dup_vstr%28%29">vstr_dup_vstr()</a>
+<li><a href="#VSTR_DUP_CSTR_BUF%28%29">VSTR_DUP_CSTR_BUF()</a>
+<li><a href="#VSTR_DUP_CSTR_PTR%28%29">VSTR_DUP_CSTR_PTR()</a>
+<li><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
+<li><a href="#vstr_make_ref_malloc%28%29">vstr_make_ref_malloc()</a>
+<li><a href="#vstr_make_ref_ptr%28%29">vstr_make_ref_ptr()</a>
+<li><a href="#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a>
+<li><a href="#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>
+</ul><li><a href="#Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string">Functions to add and delete data to a Vstr string</a>
+<ul>
+<li><a href="#vstr_add_buf%28%29">vstr_add_buf()</a>
+<li><a href="#vstr_add_ptr%28%29">vstr_add_ptr()</a>
+<li><a href="#vstr_add_non%28%29">vstr_add_non()</a>
+<li><a href="#vstr_add_ref%28%29">vstr_add_ref()</a>
+<li><a href="#vstr_add_vstr%28%29">vstr_add_vstr()</a>
+<li><a href="#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a>
+<li><a href="#VSTR_ADD_CSTR_PTR%28%29">VSTR_ADD_CSTR_PTR()</a>
+<li><a href="#VSTR_ADD_CSTR_REF%28%29">VSTR_ADD_CSTR_REF()</a>
+<li><a href="#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>
+<li><a href="#vstr_add_fmt%28%29">vstr_add_fmt()</a>
+<li><a href="#vstr_add_iovec_buf_beg%28%29">vstr_add_iovec_buf_beg()</a>
+<li><a href="#vstr_add_iovec_buf_end%28%29">vstr_add_iovec_buf_end()</a>
+<li><a href="#vstr_add_netstr_beg%28%29">vstr_add_netstr_beg()</a>
+<li><a href="#vstr_add_netstr_end%28%29">vstr_add_netstr_end()</a>
+<li><a href="#vstr_add_netstr2_beg%28%29">vstr_add_netstr2_beg()</a>
+<li><a href="#vstr_add_netstr2_end%28%29">vstr_add_netstr2_end()</a>
+<li><a href="#vstr_del%28%29">vstr_del()</a>
+</ul><li><a href="#Functions%20to%20substitute%20data%20in%20a%20Vstr%20string%20with%20other%20data">Functions to substitute data in a Vstr string with other data</a>
+<ul>
+<li><a href="#vstr_sub_buf%28%29">vstr_sub_buf()</a>
+<li><a href="#vstr_sub_ptr%28%29">vstr_sub_ptr()</a>
+<li><a href="#vstr_sub_non%28%29">vstr_sub_non()</a>
+<li><a href="#vstr_sub_ref%28%29">vstr_sub_ref()</a>
+<li><a href="#vstr_sub_vstr%28%29">vstr_sub_vstr()</a>
+<li><a href="#VSTR_SUB_CSTR_BUF%28%29">VSTR_SUB_CSTR_BUF()</a>
+<li><a href="#VSTR_SUB_CSTR_PTR%28%29">VSTR_SUB_CSTR_PTR()</a>
+<li><a href="#VSTR_SUB_CSTR_REF%28%29">VSTR_SUB_CSTR_REF()</a>
+</ul><li><a href="#Functions%20to%20move%20data%20from%20a%20Vstr%20string%20to%20another%20Vstr%20string">Functions to move data from a Vstr string to another Vstr string</a>
+<ul>
+<li><a href="#vstr_mov%28%29">vstr_mov()</a>
+</ul><li><a href="#Functions%20for%20miscellaneous%20control%20of%20options">Functions for miscellaneous control of options</a>
+<ul>
+<li><a href="#vstr_cntl_opt%28%29">vstr_cntl_opt()</a>
+<li><a href="#vstr_cntl_base%28%29">vstr_cntl_base()</a>
+<li><a href="#vstr_cntl_conf%28%29">vstr_cntl_conf()</a>
+</ul><li><a href="#Functions%20to%20compare%20with%20a%20Vstr%20string">Functions to compare with a Vstr string</a>
+<ul>
+<li><a href="#vstr_cmp%28%29">vstr_cmp()</a>
+<li><a href="#vstr_cmp_buf%28%29">vstr_cmp_buf()</a>
+<li><a href="#vstr_cmp_case%28%29">vstr_cmp_case()</a>
+<li><a href="#vstr_cmp_case_buf%28%29">vstr_cmp_case_buf()</a>
+<li><a href="#vstr_cmp_vers%28%29">vstr_cmp_vers()</a>
+<li><a href="#VSTR_CMP_EQ%28%29">VSTR_CMP_EQ()</a>
+<li><a href="#VSTR_CMP_CSTR%28%29">VSTR_CMP_CSTR()</a>
+<li><a href="#VSTR_CMP_BUF_EQ%28%29">VSTR_CMP_BUF_EQ()</a>
+<li><a href="#VSTR_CMP_CSTR_EQ%28%29">VSTR_CMP_CSTR_EQ()</a>
+<li><a href="#VSTR_CMP_CASE_EQ%28%29">VSTR_CMP_CASE_EQ()</a>
+<li><a href="#VSTR_CMP_CASE_CSTR%28%29">VSTR_CMP_CASE_CSTR()</a>
+<li><a href="#VSTR_CMP_CASE_BUF_EQ%28%29">VSTR_CMP_CASE_BUF_EQ()</a>
+<li><a href="#VSTR_CMP_CASE_CSTR_EQ%28%29">VSTR_CMP_CASE_CSTR_EQ()</a>
+</ul><li><a href="#Functions%20to%20search%20in%20a%20Vstr%20string">Functions to search in a Vstr string</a>
+<ul>
+<li><a href="#vstr_srch_chr_fwd%28%29">vstr_srch_chr_fwd()</a>
+<li><a href="#vstr_srch_chr_rev%28%29">vstr_srch_chr_rev()</a>
+<li><a href="#vstr_srch_chrs_fwd%28%29">vstr_srch_chrs_fwd()</a>
+<li><a href="#vstr_srch_chrs_rev%28%29">vstr_srch_chrs_rev()</a>
+<li><a href="#vstr_csrch_chrs_fwd%28%29">vstr_csrch_chrs_fwd()</a>
+<li><a href="#vstr_csrch_chrs_rev%28%29">vstr_csrch_chrs_rev()</a>
+<li><a href="#vstr_srch_buf_fwd%28%29">vstr_srch_buf_fwd()</a>
+<li><a href="#vstr_srch_buf_rev%28%29">vstr_srch_buf_rev()</a>
+<li><a href="#vstr_srch_vstr_fwd%28%29">vstr_srch_vstr_fwd()</a>
+<li><a href="#vstr_srch_vstr_rev%28%29">vstr_srch_vstr_rev()</a>
+<li><a href="#VSTR_SRCH_CSTR_BUF_FWD%28%29">VSTR_SRCH_CSTR_BUF_FWD()</a>
+<li><a href="#VSTR_SRCH_CSTR_BUF_REV%28%29">VSTR_SRCH_CSTR_BUF_REV()</a>
+</ul><li><a href="#Functions%20to%20calculate%20spanning%20in%20a%20Vstr%20string">Functions to calculate spanning in a Vstr string</a>
+<ul>
+<li><a href="#vstr_spn_chrs_fwd%28%29">vstr_spn_chrs_fwd()</a>
+<li><a href="#vstr_spn_chrs_rev%28%29">vstr_spn_chrs_rev()</a>
+<li><a href="#vstr_cspn_chrs_fwd%28%29">vstr_cspn_chrs_fwd()</a>
+<li><a href="#vstr_cspn_chrs_rev%28%29">vstr_cspn_chrs_rev()</a>
+<li><a href="#VSTR_SPN_CSTR_CHRS_FWD%28%29">VSTR_SPN_CSTR_CHRS_FWD()</a>
+<li><a href="#VSTR_SPN_CSTR_CHRS_REV%28%29">VSTR_SPN_CSTR_CHRS_REV()</a>
+<li><a href="#VSTR_CSPN_CSTR_CHRS_FWD%28%29">VSTR_CSPN_CSTR_CHRS_FWD()</a>
+<li><a href="#VSTR_CSPN_CSTR_CHRS_REV%28%29">VSTR_CSPN_CSTR_CHRS_REV()</a>
+</ul><li><a href="#Functions%20for%20converting%20data%20in%20a%20vstr">Functions for converting data in a vstr</a>
+<ul>
+<li><a href="#vstr_conv_lowercase%28%29">vstr_conv_lowercase()</a>
+<li><a href="#vstr_conv_uppercase%28%29">vstr_conv_uppercase()</a>
+<li><a href="#vstr_conv_unprintable_chr%28%29">vstr_conv_unprintable_chr()</a>
+<li><a href="#vstr_conv_unprintable_del%28%29">vstr_conv_unprintable_del()</a>
+<li><a href="#vstr_conv_encode_uri%28%29">vstr_conv_encode_uri()</a>
+<li><a href="#vstr_conv_decode_uri%28%29">vstr_conv_decode_uri()</a>
+</ul><li><a href="#Functions%20for%20dealing%20with%20a%20section%20of%20a%20vstr">Functions for dealing with a section of a vstr</a>
+<ul>
+<li><a href="#VSTR_SECTS_DECL%28%29">VSTR_SECTS_DECL()</a>
+<li><a href="#VSTR_SECTS_EXTERN_DECL%28%29">VSTR_SECTS_EXTERN_DECL()</a>
+<li><a href="#VSTR_SECTS_DECL_INIT%28%29">VSTR_SECTS_DECL_INIT()</a>
+<li><a href="#VSTR_SECTS_INIT%28%29">VSTR_SECTS_INIT()</a>
+<li><a href="#VSTR_SECTS_NUM%28%29">VSTR_SECTS_NUM()</a>
+<li><a href="#vstr_sects_make%28%29">vstr_sects_make()</a>
+<li><a href="#vstr_sects_free%28%29">vstr_sects_free()</a>
+<li><a href="#vstr_sects_add%28%29">vstr_sects_add()</a>
+<li><a href="#vstr_sects_del%28%29">vstr_sects_del()</a>
+<li><a href="#vstr_sects_foreach%28%29">vstr_sects_foreach()</a>
+<li><a href="#vstr_sects_srch%28%29">vstr_sects_srch()</a>
+</ul><li><a href="#Functions%20for%20splitting%20data%20in%20a%20Vstr%20into%20sections">Functions for splitting data in a Vstr into sections</a>
+<ul>
+<li><a href="#vstr_split_buf%28%29">vstr_split_buf()</a>
+<li><a href="#vstr_split_chrs%28%29">vstr_split_chrs()</a>
+<li><a href="#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>
+<li><a href="#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a>
+</ul><li><a href="#Functions%20for%20parsing%20data%20from%20a%20vstr">Functions for parsing data from a vstr</a>
+<ul>
+<li><a href="#vstr_parse_short%28%29">vstr_parse_short()</a>
+<li><a href="#vstr_parse_ushort%28%29">vstr_parse_ushort()</a>
+<li><a href="#vstr_parse_int%28%29">vstr_parse_int()</a>
+<li><a href="#vstr_parse_uint%28%29">vstr_parse_uint()</a>
+<li><a href="#vstr_parse_long%28%29">vstr_parse_long()</a>
+<li><a href="#vstr_parse_ulong%28%29">vstr_parse_ulong()</a>
+<li><a href="#vstr_parse_intmax%28%29">vstr_parse_intmax()</a>
+<li><a href="#vstr_parse_uintmax%28%29">vstr_parse_uintmax()</a>
+<li><a href="#vstr_parse_netstr%28%29">vstr_parse_netstr()</a>
+<li><a href="#vstr_parse_netstr2%28%29">vstr_parse_netstr2()</a>
+<li><a href="#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a>
+</ul><li><a href="#Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string">Functions for hooking into the cache system for the Vstr string</a>
+<ul>
+<li><a href="#vstr_cache_sub%28%29">vstr_cache_sub()</a>
+<li><a href="#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a>
+<li><a href="#vstr_cache_get_data%28%29">vstr_cache_get_data()</a>
+<li><a href="#vstr_cache_set_data%28%29">vstr_cache_set_data()</a>
+<li><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
+</ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
+<ul>
+<li><a href="#vstr_sc_add_fd%28%29">vstr_sc_add_fd()</a>
+<li><a href="#vstr_sc_add_file%28%29">vstr_sc_add_file()</a>
+<li><a href="#vstr_sc_read_fd%28%29">vstr_sc_read_fd()</a>
+<li><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
+<li><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
+</ul></ul>
+
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Initialization%20function"><h2>Initialization function</h2>
 </a>
-<a name="vstr%5finit%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_init%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_init()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -32,7 +222,7 @@
 </p><p>  The function can be called multiple times, without any problems.
 
 
-<a name="vstr%5fexit%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_exit%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_exit()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -44,9 +234,9 @@
  used with a memory checker.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20choose%20multiple%20VSTR%5fFLAG%5f%2a%20constants"><h2>Functions to choose multiple VSTR_FLAG_* constants</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20choose%20multiple%20VSTR_FLAG_%2a%20constants"><h2>Functions to choose multiple VSTR_FLAG_* constants</h2>
 </a>
-<a name="VSTR%5fFLAG10%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG10%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG10()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -86,7 +276,7 @@
 </pre> ...this becomes a lot more readable as the number of flags increases.
 
 
-<a name="VSTR%5fFLAG09%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG09%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG09()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -106,7 +296,7 @@
  9 flags.
 
 
-<a name="VSTR%5fFLAG08%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG08%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG08()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -123,7 +313,7 @@
  8 flags.
 
 
-<a name="VSTR%5fFLAG07%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG07%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG07()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -139,7 +329,7 @@
  7 flags.
 
 
-<a name="VSTR%5fFLAG06%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG06%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG06()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -154,7 +344,7 @@
  6 flags.
 
 
-<a name="VSTR%5fFLAG05%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG05%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG05()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -168,7 +358,7 @@
  5 flags.
 
 
-<a name="VSTR%5fFLAG04%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG04%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG04()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -181,7 +371,7 @@
  4 flags.
 
 
-<a name="VSTR%5fFLAG03%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG03%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG03()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -193,7 +383,7 @@
  3 flags.
 
 
-<a name="VSTR%5fFLAG02%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG02%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG02()
 </a><br>Returns: The value of the flags combined<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -204,7 +394,7 @@
  2 flags.
 
 
-<a name="VSTR%5fFLAG01%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_FLAG01%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FLAG01()
 </a><br>Returns: The value of the flag<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of flag type to use.<br>Type<strong>[1]</strong>: <symbol>
@@ -216,7 +406,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20get%20specific%20data%20about%20the%20vstr"><h2>Functions to get specific data about the vstr</h2>
 </a>
-<a name="vstr%5fnum%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_num%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_num()
 </a><br>Returns: Number of nodes used in the vstr<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -232,7 +422,7 @@
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20export%20vstr%20data"><h2>Functions to export vstr data</h2>
 </a>
 
-<a name="vstr%5fexport%5fcstr%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_ptr()
 </a><br>Returns: a pointer to an array of characters<br>Type: char *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -255,7 +445,7 @@
  than it really is to normal C/POSIX string functions.
 
 
-<a name="vstr%5fexport%5fcstr%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_buf()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -278,7 +468,7 @@
  shorter than it really is to normal C/POSIX string functions.
 
 
-<a name="vstr%5fexport%5fcstr%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_cstr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_ref()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -302,7 +492,7 @@
  than it really is to normal C/POSIX string functions.
 
 
-<a name="vstr%5fexport%5fiovec%5fptr%5fall%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_iovec_ptr_all%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_iovec_ptr_all()
 </a><br>Returns: Size of bytes in the Vstr string<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -326,7 +516,7 @@
  vstr_export_iovec_cpy_buf() (the later does a copy).
 
 
-<a name="vstr%5fexport%5fiovec%5fcpy%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_iovec_cpy_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_iovec_cpy_buf()
 </a><br>Returns: Size of bytes exported from the Vstr string<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -351,7 +541,7 @@
  the number of bytes copied into the iov_base arrays in the iovec structures.
 
 
-<a name="vstr%5fexport%5fiovec%5fcpy%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_iovec_cpy_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_iovec_cpy_ptr()
 </a><br>Returns: Size of bytes exported from the Vstr string<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -374,7 +564,7 @@
  vstr_export_iovec_cpy_buf() (the later does a copy).
 
 
-<a name="vstr%5fexport%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_buf()
 </a><br>Returns: Size of bytes exported from the Vstr string<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -397,7 +587,7 @@
  start with).
 
 
-<a name="vstr%5fexport%5fchr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_chr()
 </a><br>Returns: Character exported from the Vstr string<br>Type: char
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -411,7 +601,7 @@
  and real data that is equal to the value 0.
 
 
-<a name="vstr%5fexport%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_export_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_ref()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -436,28 +626,28 @@
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20use%20as%20callbacks%20in%20a%20Vstr%20memory%20reference"><h2>Functions to use as callbacks in a Vstr memory reference</h2>
 </a>
 
-<a name="vstr%5fref%5fcb%5ffree%5fnothing%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_cb_free_nothing%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_nothing()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function does nothing.
 
-<a name="vstr%5fref%5fcb%5ffree%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_cb_free_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ref()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the Vstr_ref (Parameter[1]).
 
-<a name="vstr%5fref%5fcb%5ffree%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_cb_free_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
 
-<a name="vstr%5fref%5fcb%5ffree%5fptr%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_cb_free_ptr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_cb_free_ptr_ref()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
@@ -468,7 +658,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20reference%20and%20dereference%20a%20Vstr%20memory%20reference"><h2>Functions to reference and dereference a Vstr memory reference</h2>
 </a>
-<a name="vstr%5fref%5fadd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_add()
 </a><br>Returns: Vstr memory reference (Parameter[1])<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
@@ -476,7 +666,7 @@
 </p><p>  This function will add a reference count to the Vstr_ref (Parameter[1]).
 
 
-<a name="vstr%5fref%5fdel%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_ref_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_ref_del()
 </a><br>Returns: <br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr memory reference<br>Type<strong>[1]</strong>: struct Vstr_ref *
@@ -487,7 +677,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Creation%2fdestruction%20of%20core%20objects"><h2>Creation/destruction of core objects</h2>
 </a>
-<a name="vstr%5fmake%5fconf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_make_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_conf()
 </a><br>Returns: Vstr configuration<br>Type: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: nothing<br>Type<strong>[1]</strong>: void
@@ -495,7 +685,7 @@
 </p><p>  This function will make a Vstr configuration, or return NULL.
 
 
-<a name="vstr%5ffree%5fconf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_free_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_free_conf()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -503,7 +693,7 @@
 </p><p>  This function will free a Vstr configuration, allocated by vstr_make_conf().
 
 
-<a name="vstr%5fmake%5fbase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_make_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_base()
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -512,7 +702,7 @@
 </p><p>  This function will make a Vstr string, or return NULL.
 
 
-<a name="vstr%5ffree%5fbase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_free_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_free_base()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -520,7 +710,97 @@
 </p><p>  This function will free a Vstr string, allocated by vstr_make_base().
 
 
-<a name="vstr%5fmake%5fref%5fmalloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_dup_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_buf()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_buf().
+
+
+<a name="vstr_dup_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_ptr()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_ptr().
+
+
+<a name="vstr_dup_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_non()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of non data<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_non().
+
+
+<a name="vstr_dup_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_ref()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of Vstr memory refernce (Parameter[2])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_ref().
+
+
+<a name="vstr_dup_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_vstr()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr string<br>Type<strong>[2]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Start position in the Vstr string (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length in the Vstr string (Parameter[2])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (VSTR_TYPE_ADD_*)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is equivilent to calling vstr_make_base() and then
+ vstr_add_vstr().
+
+
+<a name="VSTR_DUP_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_DUP_CSTR_BUF()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls vstr_dup_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
+<a name="VSTR_DUP_CSTR_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_DUP_CSTR_PTR()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls vstr_dup_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
+<a name="VSTR_DUP_CSTR_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_DUP_CSTR_REF()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[3])<br>Type<strong>[3]</strong>: size_t
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls vstr_dup_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
+<a name="vstr_make_ref_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_ref_malloc()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Size of malloc'd area to create in the memory reference<br>Type<strong>[1]</strong>: size_t
@@ -530,7 +810,7 @@
  reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
 
 
-<a name="vstr%5fmake%5fref%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_make_ref_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_ref_ptr()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to memory<br>Type<strong>[1]</strong>: void *
@@ -541,7 +821,7 @@
  (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
 
 
-<a name="vstr%5fmake%5fspare%5fnodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_make_spare_nodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_make_spare_nodes()
 </a><br>Returns: Number of nodes created<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr configuration<br>Type<strong>[2]</strong>: struct Vstr_conf *
@@ -557,7 +837,7 @@
  (Parameter[1])->malloc_bad.
 
 
-<a name="vstr%5ffree%5fspare%5fnodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_free_spare_nodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_free_spare_nodes()
 </a><br>Returns: Number of nodes destroyed<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -573,10 +853,10 @@
  more unused nodes of that type (Parameter[2]).
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20add%20data%20to%20a%20Vstr%20string"><h2>Functions to add data to a Vstr string</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string"><h2>Functions to add and delete data to a Vstr string</h2>
 </a>
 
-<a name="vstr%5fadd%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_buf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -594,7 +874,7 @@
  is atomic).
 
 
-<a name="vstr%5fadd%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_ptr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -615,7 +895,7 @@
  is often easier to create a memory reference and use vstr_add_ref() instead.
 
 
-<a name="vstr%5fadd%5fnon%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_non()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -630,7 +910,7 @@
  is atomic).
 
 
-<a name="vstr%5fadd%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_ref()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -647,7 +927,7 @@
  is atomic).
 
 
-<a name="vstr%5fadd%5fvstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_vstr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -674,7 +954,7 @@
  (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
 
 
-<a name="VSTR%5fADD%5fCSTR%5fBUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_ADD_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_ADD_CSTR_BUF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -685,7 +965,7 @@
  strlen() on the data parameter (Parameter[3]).
 
 
-<a name="VSTR%5fADD%5fCSTR%5fPTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_ADD_CSTR_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_ADD_CSTR_PTR()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -696,7 +976,7 @@
  strlen() on the data parameter (Parameter[3]).
 
 
-<a name="VSTR%5fADD%5fCSTR%5fREF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_ADD_CSTR_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_ADD_CSTR_REF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -710,97 +990,7 @@
  at the offset (Parameter[4]).
 
 
-<a name="vstr%5fdup%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_dup_buf()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
- vstr_add_buf().
-
-
-<a name="vstr%5fdup%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_dup_ptr()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
- vstr_add_ptr().
-
-
-<a name="vstr%5fdup%5fnon%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_dup_non()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of non data<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
- vstr_add_non().
-
-
-<a name="vstr%5fdup%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_dup_ref()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[2])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of Vstr memory refernce (Parameter[2])<br>Type<strong>[4]</strong>: size_t
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
- vstr_add_ref().
-
-
-<a name="vstr%5fdup%5fvstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_dup_vstr()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr string<br>Type<strong>[2]</strong>: const struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Start position in the Vstr string (Parameter[2])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Length in the Vstr string (Parameter[2])<br>Type<strong>[4]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (VSTR_TYPE_ADD_*)<br>Type<strong>[6]</strong>: unsigned int
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivilent to calling vstr_make_base() and then
- vstr_add_vstr().
-
-
-<a name="VSTR%5fDUP%5fCSTR%5fBUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_DUP_CSTR_BUF()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_buf() with the length being the value of
- strlen() on the data parameter (Parameter[2]).
-
-
-<a name="VSTR%5fDUP%5fCSTR%5fPTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_DUP_CSTR_PTR()
-</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_ptr() with the length being the value of
- strlen() on the data parameter (Parameter[2]).
-
-
-<a name="VSTR%5fDUP%5fCSTR%5fREF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> VSTR_DUP_CSTR_REF()
-</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory refernce (Parameter[3])<br>Type<strong>[3]</strong>: size_t
-
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_ref() with the length being the value of
- strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
- at the offset (Parameter[4]).
-
-
-<a name="vstr%5fadd%5fvfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_vfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_vfmt()
 </a><br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -823,7 +1013,7 @@
  then that won't work for doubles.
 
 
-<a name="vstr%5fadd%5ffmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_fmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_fmt()
 </a><br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -847,7 +1037,7 @@
 </p><p>  vstr_add_fmt() calls vstr_add_buf() to get data into the Vstr string.
 
 
-<a name="vstr%5fadd%5fiovec%5fbuf%5fbeg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_iovec_buf_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_iovec_buf_beg()
 </a><br>Returns: Number of bytes in the iovec array<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -877,7 +1067,7 @@
  of wasted space.
 
 
-<a name="vstr%5fadd%5fiovec%5fbuf%5fend%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_iovec_buf_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_iovec_buf_end()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -892,7 +1082,7 @@
  anything to add to the Vstr string it is often more efficient to call this
  function with Parameter[3] as 0.
 
-<a name="vstr%5fadd%5fnetstr%5fbeg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_netstr_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr_beg()
 </a><br>Returns: Position of start of netstr (Parameter[2]) + 1<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -903,7 +1093,7 @@
  vstr_add_netstr_end() to easily create netstrings.
 
 
-<a name="vstr%5fadd%5fnetstr%5fend%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_netstr_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr_end()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -925,7 +1115,7 @@
  you can use the vstr_add_netstr2_* functions to solve both problems.
 
 
-<a name="vstr%5fadd%5fnetstr2%5fbeg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_netstr2_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr2_beg()
 </a><br>Returns: Position of start of netstr (Parameter[2]) + 1<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -936,7 +1126,7 @@
  used in conjunction with vstr_add_netstr2_end() to easily create netstring2s.
 
 
-<a name="vstr%5fadd%5fnetstr2%5fend%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_add_netstr2_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr2_end()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -958,9 +1148,7 @@
  data from the begining/middle.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Function%20to%20delete%20data%20from%20a%20Vstr%20string"><h2>Function to delete data from a Vstr string</h2>
-</a>
-<a name="vstr%5fdel%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_del()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -985,7 +1173,7 @@
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20substitute%20data%20in%20a%20Vstr%20string%20with%20other%20data"><h2>Functions to substitute data in a Vstr string with other data</h2>
 </a>
 
-<a name="vstr%5fsub%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sub_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sub_buf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1013,7 +1201,7 @@
  happen).
 
 
-<a name="vstr%5fsub%5fptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sub_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sub_ptr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1036,7 +1224,7 @@
  vstr_del() and then a vstr_add_ptr() (but it's atomic).
 
 
-<a name="vstr%5fsub%5fnon%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sub_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sub_non()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1058,7 +1246,7 @@
  vstr_del() and then a vstr_add_non() (but it's atomic).
 
 
-<a name="vstr%5fsub%5fref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sub_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sub_ref()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1082,7 +1270,7 @@
  vstr_del() and then a vstr_add_ref() (but it's atomic).
 
 
-<a name="vstr%5fsub%5fvstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sub_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sub_vstr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1111,7 +1299,7 @@
  VSTR_TYPE_SUB_* constants.
 
 
-<a name="VSTR%5fSUB%5fCSTR%5fBUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SUB_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SUB_CSTR_BUF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1123,7 +1311,7 @@
  strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fSUB%5fCSTR%5fPTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SUB_CSTR_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SUB_CSTR_PTR()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1135,7 +1323,7 @@
  strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fSUB%5fCSTR%5fREF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SUB_CSTR_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SUB_CSTR_REF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1151,7 +1339,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20move%20data%20from%20a%20Vstr%20string%20to%20another%20Vstr%20string"><h2>Functions to move data from a Vstr string to another Vstr string</h2>
 </a>
-<a name="vstr%5fmov%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_mov%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_mov()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -1171,19 +1359,19 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20miscellaneous%20control%20of%20options"><h2>Functions for miscellaneous control of options</h2>
 </a>
-<a name="vstr%5fcntl%5fopt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cntl_opt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_opt()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Option type starting VSTR_CNTL_OPT_<br>Type<strong>[1]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[1]<br>Type<strong>[ ... ]</strong>: ...
-<a name="vstr%5fcntl%5fbase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cntl_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_base()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting VSTR_CNTL_BASE_<br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
 
-<a name="vstr%5fcntl%5fconf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cntl_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_conf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -1192,7 +1380,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20compare%20with%20a%20Vstr%20string"><h2>Functions to compare with a Vstr string</h2>
 </a>
-<a name="vstr%5fcmp%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cmp%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1215,7 +1403,7 @@
  as greater than it.
 
 
-<a name="vstr%5fcmp%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cmp_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_buf()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1228,7 +1416,7 @@
  (Parameter[4]) and then calling vstr_cmp().
 
 
-<a name="vstr%5fcmp%5fcase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cmp_case%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1246,7 +1434,7 @@
  as greater than it.
 
 
-<a name="vstr%5fcmp%5fcase%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cmp_case_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case_buf()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1259,7 +1447,7 @@
  (Parameter[4]) and then calling vstr_cmp_case().
 
 
-<a name="vstr%5fcmp%5fvers%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cmp_vers%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_vers()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1284,7 +1472,7 @@
  as greater than it.
 
 
-<a name="VSTR%5fCMP%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1298,7 +1486,7 @@
  (Parameter[3] Parameter[6]) are equal.
 
 
-<a name="VSTR%5fCMP%5fCSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CSTR()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1310,7 +1498,7 @@
  the value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fCMP%5fBUF%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_BUF_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_BUF_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1323,7 +1511,7 @@
  (Parameter[3] Parameter[5]) are equal.
 
 
-<a name="VSTR%5fCMP%5fCSTR%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CSTR_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CSTR_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1336,7 +1524,7 @@
  parameter (Parameter[4]).
 
 
-<a name="VSTR%5fCMP%5fCASE%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CASE_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CASE_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1350,7 +1538,7 @@
  values (Parameter[3] Parameter[6]) are equal.
 
 
-<a name="VSTR%5fCMP%5fCASE%5fCSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CASE_CSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CASE_CSTR()
 </a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1362,7 +1550,7 @@
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fCMP%5fCASE%5fBUF%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CASE_BUF_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CASE_BUF_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1375,7 +1563,7 @@
  values (Parameter[3] Parameter[5]) are equal.
 
 
-<a name="VSTR%5fCMP%5fCASE%5fCSTR%5fEQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CMP_CASE_CSTR_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CMP_CASE_CSTR_EQ()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1390,7 +1578,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20search%20in%20a%20Vstr%20string"><h2>Functions to search in a Vstr string</h2>
 </a>
-<a name="vstr%5fsrch%5fchr%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_chr_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_chr_fwd()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1407,7 +1595,7 @@
 </p><p>  If the character cannot be found 0 is returned.
 
 
-<a name="vstr%5fsrch%5fchr%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_chr_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_chr_rev()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1423,7 +1611,7 @@
 </p><p>  If the character cannot be found 0 is returned.
 
 
-<a name="vstr%5fsrch%5fchrs%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_chrs_fwd()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1439,7 +1627,7 @@
 </p><p>  If any of the characters cannot be found 0 is returned.
 
 
-<a name="vstr%5fsrch%5fchrs%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_chrs_rev()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1455,7 +1643,7 @@
 </p><p>  If any of the characters cannot be found 0 is returned.
 
 
-<a name="vstr%5fcsrch%5fchrs%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_csrch_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_csrch_chrs_fwd()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1471,7 +1659,7 @@
 </p><p>  If any of the characters cannot be found 0 is returned.
 
 
-<a name="vstr%5fcsrch%5fchrs%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_csrch_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_csrch_chrs_rev()
 </a><br>Returns: Position in the Vstr string of the character<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1487,7 +1675,7 @@
 </p><p>  If any of the characters cannot be found 0 is returned.
 
 
-<a name="vstr%5fsrch%5fbuf%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_buf_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_buf_fwd()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1510,7 +1698,7 @@
  size (Paramter[5]) will be searched for.
 
 
-<a name="vstr%5fsrch%5fbuf%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_buf_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_buf_rev()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1530,7 +1718,7 @@
  size (Paramter[5]) will be searched for.
 
 
-<a name="vstr%5fsrch%5fvstr%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_vstr_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_vstr_fwd()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1550,7 +1738,7 @@
 </p><p>  If the data cannot be found 0 is returned.
 
 
-<a name="vstr%5fsrch%5fvstr%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_srch_vstr_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_srch_vstr_rev()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1566,7 +1754,7 @@
  function will return 0 to indicate an error.
 </p><p>  If the data cannot be found 0 is returned.
 
-<a name="VSTR%5fSRCH%5fCSTR%5fBUF%5fFWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SRCH_CSTR_BUF_FWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SRCH_CSTR_BUF_FWD()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1578,7 +1766,7 @@
  value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fSRCH%5fCSTR%5fBUF%5fREV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SRCH_CSTR_BUF_REV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SRCH_CSTR_BUF_REV()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1592,7 +1780,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20calculate%20spanning%20in%20a%20Vstr%20string"><h2>Functions to calculate spanning in a Vstr string</h2>
 </a>
-<a name="vstr%5fspn%5fchrs%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_spn_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_spn_chrs_fwd()
 </a><br>Returns: Number of characters in the span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1610,7 +1798,7 @@
  function will return 0 to indicate an error.
 
 
-<a name="vstr%5fspn%5fchrs%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_spn_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_spn_chrs_rev()
 </a><br>Returns: Number of characters in the span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1625,7 +1813,7 @@
  function will return 0 to indicate an error.
 
 
-<a name="vstr%5fcspn%5fchrs%5ffwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cspn_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cspn_chrs_fwd()
 </a><br>Returns: Number of characters in the compliment span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1643,7 +1831,7 @@
  function will return 0 to indicate an error.
 
 
-<a name="vstr%5fcspn%5fchrs%5frev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cspn_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cspn_chrs_rev()
 </a><br>Returns: Number of characters in the compliment span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1658,7 +1846,7 @@
  function will return 0 to indicate an error.
 
 
-<a name="VSTR%5fSPN%5fCSTR%5fCHRS%5fFWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SPN_CSTR_CHRS_FWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SPN_CSTR_CHRS_FWD()
 </a><br>Returns: Number of characters in the span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1670,7 +1858,7 @@
  value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fSPN%5fCSTR%5fCHRS%5fREV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SPN_CSTR_CHRS_REV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SPN_CSTR_CHRS_REV()
 </a><br>Returns: Number of characters in the span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1682,7 +1870,7 @@
  value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fCSPN%5fCSTR%5fCHRS%5fFWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CSPN_CSTR_CHRS_FWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CSPN_CSTR_CHRS_FWD()
 </a><br>Returns: Number of characters in the compliment span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1694,7 +1882,7 @@
  value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fCSPN%5fCSTR%5fCHRS%5fREV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_CSPN_CSTR_CHRS_REV%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_CSPN_CSTR_CHRS_REV()
 </a><br>Returns: Number of characters in the compliment span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1708,7 +1896,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20converting%20data%20in%20a%20vstr"><h2>Functions for converting data in a vstr</h2>
 </a>
-<a name="vstr%5fconv%5flowercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_lowercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_lowercase()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1718,7 +1906,7 @@
 </p><p>  This function converts all the uppercase ASCII characters into lowercase
  ASCII characters.
 
-<a name="vstr%5fconv%5fuppercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_uppercase%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_uppercase()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1729,7 +1917,7 @@
  ASCII characters.
 
 
-<a name="vstr%5fconv%5funprintable%5fchr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_unprintable_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_unprintable_chr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1742,7 +1930,7 @@
  character (Paramter[5]).
 
 
-<a name="vstr%5fconv%5funprintable%5fdel%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_unprintable_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_unprintable_del()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1753,7 +1941,7 @@
 </p><p>  This function deletes all unprintable characters.
 
 
-<a name="vstr%5fconv%5fencode%5furi%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_encode_uri%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_encode_uri()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1768,7 +1956,7 @@
  form (that's all of the control, space, unwise and high ASCII characters).
 
 
-<a name="vstr%5fconv%5fdecode%5furi%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_conv_decode_uri%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_conv_decode_uri()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1781,7 +1969,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20dealing%20with%20a%20section%20of%20a%20vstr"><h2>Functions for dealing with a section of a vstr</h2>
 </a>
-<a name="VSTR%5fSECTS%5fDECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SECTS_DECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_DECL()
 </a><br>Returns: Declaration of a Vstr sections<br>Type: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: <symbol>
@@ -1795,7 +1983,7 @@
  be used.
 
 
-<a name="VSTR%5fSECTS%5fEXTERN%5fDECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SECTS_EXTERN_DECL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_EXTERN_DECL()
 </a><br>Returns: Extern declaration of a Vstr sections<br>Type: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of variable to declare<br>Type<strong>[1]</strong>: <symbol>
@@ -1805,7 +1993,7 @@
  (Parameter[2]), that is usable after an extern keyword.
 
 
-<a name="VSTR%5fSECTS%5fDECL%5fINIT%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SECTS_DECL_INIT%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_DECL_INIT()
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1815,7 +2003,7 @@
 </p><p>  This macro function can be called multiple times without causing any problems.
 
 
-<a name="VSTR%5fSECTS%5fINIT%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SECTS_INIT%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_INIT()
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1830,7 +2018,7 @@
  initialisation.
 
 
-<a name="VSTR%5fSECTS%5fNUM%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SECTS_NUM%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SECTS_NUM()
 </a><br>Returns: The ith Vstr section node in the Vstr sections<br>Type: struct Vstr_sect_node *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1839,7 +2027,7 @@
 </p><p>  Simple way to goto the Vstr section node in a Vstr sections.
 
 
-<a name="vstr%5fsects%5fmake%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_make%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_make()
 </a><br>Returns: Vstr sections<br>Type: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Size of the Vstr sections<br>Type<strong>[1]</strong>: unsigned int
@@ -1847,7 +2035,7 @@
 </p><p>  This function will make a Vstr sections, or return NULL.
 
 
-<a name="vstr%5fsects%5ffree%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_free%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_free()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1855,7 +2043,7 @@
 </p><p>  This function will free a Vstr sections, allocated by vstr_sects_make().
 
 
-<a name="vstr%5fsects%5fadd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_add()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1867,7 +2055,7 @@
  (Paramter[1])->can_add_sz is TRUE, then space try to be allocated.
 
 
-<a name="vstr%5fsects%5fdel%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_del()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1877,7 +2065,7 @@
  (Paramter[1])->can_del_sz is TRUE then space may be compated.
 
 
-<a name="vstr%5fsects%5fforeach%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_foreach%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_foreach()
 </a><br>Returns: Number of the times the foreach function ran the callback<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1894,7 +2082,7 @@
  VSTR_TYPE_SECT_FOREACH_.
 
 
-<a name="vstr%5fsects%5fsrch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sects_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sects_srch()
 </a><br>Returns: Number of the section in the Vstr sections (Parameter[1])<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
@@ -1907,7 +2095,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20splitting%20data%20in%20a%20Vstr%20into%20sections"><h2>Functions for splitting data in a Vstr into sections</h2>
 </a>
-<a name="vstr%5fsplit%5fbuf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_split_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_split_buf()
 </a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1930,7 +2118,7 @@
  of 2 will split into "a" and ":".
 
 
-<a name="vstr%5fsplit%5fchrs%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_split_chrs%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_split_chrs()
 </a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1947,7 +2135,7 @@
  character buffer (Parameter[4]).
 
 
-<a name="VSTR%5fSPLIT%5fCSTR%5fBUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SPLIT_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SPLIT_CSTR_BUF()
 </a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1962,7 +2150,7 @@
  value of strlen() on the data parameter (Parameter[4]).
 
 
-<a name="VSTR%5fSPLIT%5fCSTR%5fCHRS%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="VSTR_SPLIT_CSTR_CHRS%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SPLIT_CSTR_CHRS()
 </a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -1980,7 +2168,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20parsing%20data%20from%20a%20vstr"><h2>Functions for parsing data from a vstr</h2>
 </a>
-<a name="vstr%5fparse%5fshort%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_short%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_short()
 </a><br>Returns: Number pared from Vstr string<br>Type: short
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2001,7 +2189,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5fushort%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_ushort%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ushort()
 </a><br>Returns: Number pared from Vstr string<br>Type: unsigned short
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2022,7 +2210,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5fint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_int%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_int()
 </a><br>Returns: Number pared from Vstr string<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2043,7 +2231,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5fuint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_uint()
 </a><br>Returns: Number pared from Vstr string<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2064,7 +2252,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5flong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_long%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_long()
 </a><br>Returns: Number pared from Vstr string<br>Type: long
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2085,7 +2273,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5fulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ulong()
 </a><br>Returns: Number pared from Vstr string<br>Type: unsigned long
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2106,7 +2294,7 @@
  with a 0 and defaulting to base 10 otherwise.
 
 
-<a name="vstr%5fparse%5fintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_intmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_intmax()
 </a><br>Returns: Number pared from Vstr string<br>Type: intmax_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2129,7 +2317,7 @@
  act the same as vstr_parse_long().
 
 
-<a name="vstr%5fparse%5fuintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_uintmax()
 </a><br>Returns: Number pared from Vstr string<br>Type: uintmax_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2152,7 +2340,7 @@
  act the same as vstr_parse_ulong().
 
 
-<a name="vstr%5fparse%5fnetstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_netstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_netstr()
 </a><br>Returns: Returns the length of the netstring<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2177,7 +2365,7 @@
  start position in the Vstr string (Parameter[2]).
 
 
-<a name="vstr%5fparse%5fnetstr2%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_netstr2%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_netstr2()
 </a><br>Returns: Position in the Vstr string of the start of the netstring2<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2204,7 +2392,7 @@
  netstring, so this function will find either.
 
 
-<a name="vstr%5fparse%5fipv4%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_parse_ipv4%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ipv4()
 </a><br>Returns: Number pared from Vstr string<br>Type: uintmax_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2222,7 +2410,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string"><h2>Functions for hooking into the cache system for the Vstr string</h2>
 </a>
-<a name="vstr%5fcache%5fsub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cache_sub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_sub()
 </a><br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2238,7 +2426,7 @@
  vstr_sub_*() functions instead.
 
 
-<a name="vstr%5fcache%5fadd%5fcb%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cache_add_cb%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_add_cb()
 </a><br>Returns: Cookie reference for cache function<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -2261,7 +2449,7 @@
  is NULL.
 
 
-<a name="vstr%5fcache%5fget%5fdata%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cache_get_data%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_get_data()
 </a><br>Returns: Data for cache function<br>Type: void *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2270,7 +2458,7 @@
 </p><p>  This function will get the data for the cache function.
 
 
-<a name="vstr%5fcache%5fset%5fdata%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cache_set_data%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_set_data()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -2284,7 +2472,7 @@
  is NULL.
 
 
-<a name="vstr%5fcache%5fsrch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_cache_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_srch()
 </a><br>Returns: Cookie reference for cache function<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -2296,7 +2484,7 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>
 </a>
-<a name="vstr%5fsc%5fadd%5ffd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sc_add_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_add_fd()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -2316,7 +2504,7 @@
  minus the offset (Parameter[4]).
 
 
-<a name="vstr%5fsc%5fadd%5ffile%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sc_add_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_add_file()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -2328,7 +2516,7 @@
  (Parameter[3]) to a Vstr string.
 
 
-<a name="vstr%5fsc%5fread%5ffd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sc_read_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_read_fd()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -2343,7 +2531,7 @@
  before returning.
 
 
-<a name="vstr%5fsc%5fwrite%5ffd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sc_write_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_write_fd()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -2361,7 +2549,7 @@
  vstr_export_iovec_ptr_all(), writev() and then vstr_del() were called.
 
 
-<a name="vstr%5fsc%5fwrite%5ffile%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<a name="vstr_sc_write_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_write_file()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *

@@ -104,7 +104,7 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-SUBDIRS = add add_fmt cache cmp conv del export loc mov parse spn split srch sub # sc
+SUBDIRS = add add_fmt cache cmp conv del export loc mov parse spn split srch sub # sects sc
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../include/autoconf.h
 CONFIG_CLEAN_FILES = 

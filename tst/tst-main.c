@@ -82,7 +82,7 @@ int main(void)
   vstr_free_conf(conf1);
   vstr_free_conf(conf2);
   
-  if ((ret = tst()))
+  if ((ret = tst()) && (ret != EXIT_FAILED_OK))
     fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
 
   vstr_free_base(s1);
