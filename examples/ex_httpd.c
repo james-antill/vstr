@@ -168,7 +168,8 @@ struct Http_hdrs
 
  /* can have multiple headers... */
  struct Http_hdrs__multi {
-  Vstr_base *combiner;
+  Vstr_base *combiner_store;
+  Vstr_base *comb;
   Vstr_sect_node hdr_accept[1];
   Vstr_sect_node hdr_accept_encoding[1];
   Vstr_sect_node hdr_accept_language[1];
@@ -729,8 +730,6 @@ static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
   
   if (VPREFIX(s1, pos, len, HTTP_EOL))
     return; /* end of headers */
-  
-  vlg_dbg1(vlg, "%s", " -- HEADERS --\n");
 
   ASSERT(vstr_srch_cstr_buf_fwd(s1, pos, len, HTTP_END_OF_REQUEST));
   /* split headers */
@@ -746,7 +745,6 @@ static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
       continue;
 
     vstr_sects_add(req->sects, hpos, el - hpos);
-    vlg_dbg1(vlg, "$<http-esc.vstr:%p%zu%zu>\n", s1, hpos, el - hpos);
     
     hpos = pos;
   }
@@ -1090,10 +1088,27 @@ static void http__multi_hdr_fixup(Vstr_sect_node *hdr_ignore,
   hdr->pos += len;
 }
 
+static int http__multi_hdr_cp(Vstr_base *comb,
+                              Vstr_base *data, Vstr_sect_node *hdr)
+{
+  size_t pos = comb->len + 1;
+
+  if (!hdr->len)
+    return (TRUE);
+  
+  if (!vstr_add_vstr(comb, comb->len,
+                     data, hdr->pos, hdr->len, VSTR_TYPE_ADD_BUF_PTR))
+    return (FALSE);
+
+  hdr->pos = pos;
+  
+  return (TRUE);
+}
+
 static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
                                Vstr_sect_node *hdr, size_t pos, size_t len)
 {
-  Vstr_base *comb = hdrs->multi->combiner;
+  Vstr_base *comb = hdrs->multi->comb;
   
   ASSERT(comb);
   
@@ -1102,6 +1117,28 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
          (hdr == hdrs->multi->hdr_accept_language) ||
          (hdr == hdrs->multi->hdr_connection) ||
          (hdr == hdrs->multi->hdr_range));
+
+  ASSERT((comb == data) || (comb == hdrs->multi->combiner_store));
+  
+  if ((data == comb) && !hdr->pos)
+  { /* Do the fast thing... */
+    hdr->pos = pos;
+    hdr->len = len;
+    return (TRUE);
+  }
+
+  if (data == comb)
+  { /* OK, so we have a crap request and need to JOIN multiple headers... */
+    comb = hdrs->multi->comb = hdrs->multi->combiner_store;
+  
+    if (!http__multi_hdr_cp(comb, data, hdrs->multi->hdr_accept) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_accept_encoding) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_accept_language) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_connection) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_range) ||
+        FALSE)
+      return (FALSE);
+  }
   
   if (!hdr->pos)
   {
@@ -1114,16 +1151,17 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
   /* reverses the order, but that doesn't matter */
   if (!vstr_add_cstr_ptr(comb, hdr->pos - 1, ","))
     return (FALSE);
-
   if (!vstr_add_vstr(comb, hdr->pos - 1,
                      data, pos, len, VSTR_TYPE_ADD_BUF_PTR))
     return (FALSE);
   hdr->len += ++len;
 
+  /* now need to "move" any hdrs after this one */
   pos = hdr->pos - 1;
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept,          pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_encoding, pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_language, pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_connection,      pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_range,           pos, len);
     
   return (TRUE);
@@ -1230,7 +1268,7 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
 
 static void http__clear_hdrs(struct Http_req_data *req)
 {
-  Vstr_base *tmp = req->http_hdrs->multi->combiner;
+  Vstr_base *tmp = req->http_hdrs->multi->combiner_store;
 
   ASSERT(tmp);
   
@@ -1324,7 +1362,7 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req)
       } while (FALSE)
 static void http__parse_connection(struct Con *con, struct Http_req_data *req)
 {
-  Vstr_base *data = req->http_hdrs->multi->combiner;
+  Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
 
@@ -1401,6 +1439,18 @@ static int http__parse_1_x(struct Con *con, struct Http_req_data *req)
   return (TRUE);
 }
 
+/* because we only parse for a combined CRLF, and some proxies/clients parse for
+ * either ... make sure we don't have enbedded ones to remove possability
+ * of request splitting */
+static int http__chk_single_crlf(Vstr_base *data, size_t pos, size_t len)
+{
+  if (vstr_srch_chr_fwd(data, pos, len, '\r') ||
+      vstr_srch_chr_fwd(data, pos, len, '\n'))
+    return (TRUE);
+
+  return (FALSE);
+}
+
 /* convert a http://abcd/foo into /foo with host=abcd ...
  * also do sanity checking on the URI and host for valid characters */
 static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
@@ -1454,11 +1504,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     if (vstr_srch_chr_fwd(data, pos, len, '/'))
       return (FALSE);
 
-    /* because we only parse for single ones, and some proxies/clients parse for
-     * either ... make sure we don't have enbedded ones to remove possability
-     * of request splitting */
-    if (vstr_srch_chr_fwd(data, pos, len, '\r') ||
-        vstr_srch_chr_fwd(data, pos, len, '\n'))
+    if (http__chk_single_crlf(data, pos, len))
       return (FALSE);
 
     if ((tmp = vstr_srch_chr_fwd(data, pos, len, ':')))
@@ -1478,9 +1524,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     }
   }
 
-  /* do similar request splitting checks */
-  if (vstr_srch_chr_fwd(data, op_pos, op_len, '\r') ||
-      vstr_srch_chr_fwd(data, op_pos, op_len, '\n'))
+  if (http__chk_single_crlf(data, op_pos, op_len))
     return (FALSE);
   
   /* uri#fragment ... craptastic clients pass this and assume it is ignored */
@@ -1524,7 +1568,7 @@ static int http_parse_range(struct Http_req_data *req,
                             VSTR_AUTOCONF_uintmax_t *range_beg,
                             VSTR_AUTOCONF_uintmax_t *range_end)
 {
-  Vstr_base *data     = req->http_hdrs->multi->combiner;
+  Vstr_base *data     = req->http_hdrs->multi->comb;
   Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
   size_t pos = h_r->pos;
   size_t len = h_r->len;
@@ -1781,7 +1825,7 @@ static int http_parse_quality(Vstr_base *data,
 
 static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
 {
-  Vstr_base *data = req->http_hdrs->multi->combiner;
+  Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
   unsigned int gzip_val     = 1001;
@@ -1981,7 +2025,7 @@ static int http__skip_parameters(Vstr_base *data, size_t *pos, size_t *len)
 * this does mean that if we fail to parse the "Accept:" line, we return TRUE */
 static int http_parse_accept(struct Http_req_data *req)
 {
-  Vstr_base *data = req->http_hdrs->multi->combiner;
+  Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
   unsigned int val = 0;
@@ -2309,11 +2353,13 @@ static struct Http_req_data *http_make_req(struct Con *con)
       conf = con->evnt->io_w->conf;
       
     if (!(req->fname = vstr_make_base(conf)) ||
-        !(req->http_hdrs->multi->combiner = vstr_make_base(conf)) ||
+        !(req->http_hdrs->multi->combiner_store = vstr_make_base(conf)) ||
         !(req->sects = vstr_sects_make(8)))
       return (NULL);
   }
   
+  req->http_hdrs->multi->comb = con->evnt->io_r;
+
   http__clear_hdrs(req);
   
   vstr_del(req->fname, 1, req->fname->len);
@@ -2366,12 +2412,14 @@ static void http_req_free(struct Http_req_data *req)
 
   /* we do vstr deletes here to return the nodes back to the pool */
   vstr_del(req->fname, 1, req->fname->len);
-  ASSERT(!req->http_hdrs->multi->combiner->len);
+  ASSERT(!req->http_hdrs->multi->combiner_store->len);
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
   
   req->content_type_vs1 = NULL;
     
+  req->http_hdrs->multi->comb = NULL;
+
   req->using_req = FALSE;
 }
 
@@ -2383,8 +2431,8 @@ static void http_req_exit(void)
     return;
   
   vstr_free_base(req->fname);  req->fname  = NULL;
-  vstr_free_base(req->http_hdrs->multi->combiner);
-                               req->http_hdrs->multi->combiner = NULL;
+  vstr_free_base(req->http_hdrs->multi->combiner_store);
+                 req->http_hdrs->multi->combiner_store = NULL;
   vstr_free_base(req->f_mmap); req->f_mmap = NULL;
   vstr_sects_free(req->sects); req->sects  = NULL;
   
@@ -2845,8 +2893,6 @@ static int http_parse_req(struct Con *con)
                con->evnt->io_r, req->sects, 1, con->evnt->io_r, req->sects, 2);
     else
     { /* need to get all headers */
-      Vstr_base *s1 = con->evnt->io_r;
-      
       if (!con->parsed_method_ver_1_0)
       {
         con->parsed_method_ver_1_0 = TRUE;
@@ -2857,10 +2903,13 @@ static int http_parse_req(struct Con *con)
       vlg_dbg1(vlg, "Method(1.x):"
                " $<http-esc.vstr.sect:%p%p%u> $<http-esc.vstr.sect:%p%p%u>"
                " $<http-esc.vstr.sect:%p%p%u>\n",
-               s1, req->sects, 1, s1, req->sects, 2, s1, req->sects, 3);
+               data, req->sects, 1, data, req->sects, 2, data, req->sects, 3);
       http_req_split_hdrs(con, req);
     }
     evnt_got_pkt(con->evnt);
+
+    vlg_dbg3(vlg, "REQ:\n$<vstr.hexdump:%p%zu%zu>",
+             data, (size_t)1, data->len);
     
     assert(((req->sects->num >= 3) && !req->ver_0_9) || (req->sects->num == 2));
     
@@ -3421,27 +3470,7 @@ int main(int argc, char *argv[])
 
   while (evnt_waiting() && !child_exited)
   {
-    int ready = evnt_poll();
-    struct timeval tv;
-    
-    if ((ready == -1) && (errno != EINTR))
-      vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "poll");
-    if (ready == -1)
-      continue;
-    
-    evnt_out_dbg3("1");
-    evnt_scan_fds(ready, CL_MAX_WAIT_SEND);
-    evnt_out_dbg3("2");
-    evnt_scan_send_fds();
-    evnt_out_dbg3("3");
-    
-    gettimeofday(&tv, NULL);
-    timer_q_run_norm(&tv);
-
-    evnt_out_dbg3("4");
-    evnt_scan_send_fds();
-    evnt_out_dbg3("5");
-
+    evnt_sc_main_loop(CL_MAX_WAIT_SEND);
     serv_cntl_resources();
   }
   evnt_out_dbg3("E");

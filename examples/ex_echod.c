@@ -1,3 +1,23 @@
+/*
+ *  Copyright (C) 2004, 2005  James Antill
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  email: james@and.org
+ */
+/* "simple" echo server */
 
 #define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
@@ -89,6 +109,9 @@ static int serv_recv(struct con *con)
       break;
     else
       goto malloc_bad;
+
+  vlg_dbg3(vlg, "DATA:\n$<vstr.hexdump:%p%zu%zu>",
+           con->evnt->io_r, (size_t)1, con->evnt->io_r->len);
   
   vstr_mov(con->evnt->io_w, con->evnt->io_w->len,
            con->evnt->io_r, 1, con->evnt->io_r->len);
@@ -159,7 +182,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
   if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
     goto make_acpt_fail;
   
-  if (!evnt_sc_timeout_via_mtime(con->evnt, client_timeout))
+  if (!evnt_sc_timeout_via_mtime(con->evnt, client_timeout * 1000))
     goto timer_add_fail;
 
   vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);

@@ -34,6 +34,8 @@ static struct Evnt *acpt_cntl_evnt = NULL;
 static Bag *childs  = NULL;
 static Bag *waiters = NULL;
 
+static int cntl__is_child = FALSE;
+
 static unsigned int potential_waiters = 0;
 
 static void cntl__fin(Vstr_base *out)
@@ -194,7 +196,7 @@ static void cntl__close(Vstr_base *out)
   vlg_dbg3(vlg, "evnt_close acpt %p\n", acpt_evnt);
   evnt_close(acpt_evnt);
 
-  if (childs)
+  if (!cntl__is_child)
   {
     vlg_dbg3(vlg, "evnt_close acpt cntl %p\n", acpt_cntl_evnt);
     evnt_close(acpt_cntl_evnt);
@@ -466,6 +468,8 @@ static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
 /* used to get death sig or pass through cntl data */
 void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
 {
+  cntl__is_child = TRUE;
+
   if (acpt_cntl_evnt)
   {
     int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;

@@ -235,9 +235,9 @@ sub all_nonvhost_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
-sub all_public_only_tsts()
+sub all_public_only_tsts
   {
-    gen_tsts(1);
+    if (!@_) { gen_tsts(1); }
     sub_tst(\&httpd_file_tst, "ex_httpd_public-only");
     sub_tst(\&httpd_file_tst, "ex_httpd_public-only",
 	    {shutdown_w => 0});
@@ -382,7 +382,7 @@ daemon_exit("ex_httpd");
 
 my $largs = "--mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 daemon_init("ex_httpd", $root, $largs . "-d -d -d --virtual-hosts=true  --public-only=true");
-all_public_only_tsts();
+all_public_only_tsts("no gen tsts");
 daemon_exit("ex_httpd");
 
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=false --pid-file=$root/abcd");

@@ -1,3 +1,26 @@
+/*
+ *  Copyright (C) 2004, 2005  James Antill
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  email: james@and.org
+ */
+/* Vectored logging APIs */
+
+#define CONF_USE_HEXDUMP TRUE
+
 
 #include <vstr.h>
 
@@ -54,6 +77,13 @@
 
 #ifndef TRUE
 # define TRUE 1
+#endif
+
+#if CONF_USE_HEXDUMP
+# include "hexdump.h"
+#else
+# define ex_hexdump_reset() /* do nothing */
+# define ex_hexdump_process(x1, x2, x3, x4, x5, x6, x7, x8, x9) FALSE
 #endif
 
 static Vstr_conf *vlg__conf = NULL;
@@ -144,17 +174,17 @@ static int vlg__fmt__add_vstr_add_vstr(Vstr_base *base, size_t pos,
   size_t sf_pos          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
   size_t sf_len          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
   unsigned int sf_flags  = VSTR_TYPE_ADD_BUF_PTR;
-                                                                                
+  
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-                                                                                
+  
   if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
     return (FALSE);
-                                                                                
+  
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-                                                                                
+  
   return (TRUE);
 }
 
@@ -178,17 +208,17 @@ static int vlg__fmt__add_vstr_add_sect_vstr(Vstr_base *base, size_t pos,
   size_t sf_pos          = VSTR_SECTS_NUM(sects, num)->pos;
   size_t sf_len          = VSTR_SECTS_NUM(sects, num)->len;
   unsigned int sf_flags  = VSTR_TYPE_ADD_BUF_PTR;
-                                                                                
+  
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
-                                                                                
+  
   if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
     return (FALSE);
-                                                                                
+  
   if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
-                                                                                
+  
   return (TRUE);
 }
 
@@ -198,6 +228,41 @@ static int vlg__fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_PTR_VOID,
                        VSTR_TYPE_FMT_PTR_VOID,
                        VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
+}
+
+static int vlg__fmt__add_vstr_add_hexdump_vstr(Vstr_base *base, size_t pos,
+                                               Vstr_fmt_spec *spec)
+{
+  Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_pos          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+  size_t sf_len          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
+  size_t orig_len = base->len;
+  
+  ex_hexdump_reset();
+  ex_hexdump_process(base, pos, sf, sf_pos, sf_len, PRNT_NONE,
+                     UINT_MAX, FALSE, TRUE);
+  if (base->conf->malloc_bad)
+    return (FALSE);
+
+  sf_len = base->len - orig_len;
+  
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+    return (FALSE);
+  
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+static int vlg__fmt_add_vstr_add_hexdump_vstr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vlg__fmt__add_vstr_add_hexdump_vstr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_SIZE_T,
                        VSTR_TYPE_FMT_END));
 }
 
@@ -287,6 +352,8 @@ int vlg_sc_fmt_add_all(Vstr_conf *conf)
 {
   return (VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_vstr,
                           "<vstr", "p%zu%zu", ">") &&
+          VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_hexdump_vstr,
+                          "<vstr.hexdump", "p%zu%zu", ">") &&
           VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sect_vstr,
                           "<vstr.sect", "p%p%u", ">") &&
           VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sa,

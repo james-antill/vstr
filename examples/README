@@ -26,6 +26,7 @@ happily work on win32 etc.
 http://www.sans.org/top20/#u2
 
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
+	Allow POST without data?
 	public/symlinks path checking
 	 fd cache
 	 stat cache

@@ -12,9 +12,6 @@ GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 CFLAGS = @CFLAGS@ @WARNS@
 
 
-CMDLINE_FILES_SRCS = date.c evnt.c opt.c vlg.c
-CMDLINE_FILES_HDRS = date.h evnt.h opt.h vlg.h vlg_assert.h
-
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD  = $(GEN_LDLIBS)
@@ -39,7 +36,8 @@ ex_hello_world_x_DEPENDENCIES = ex_utils.h
 ex_hello_world_x_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_x_LDADD  = $(GEN_LDLIBS)
 
-ex_hexdump_DEPENDENCIES = ex_utils.h
+ex_hexdump_SOURCES      = hexdump.c ex_hexdump.c
+ex_hexdump_DEPENDENCIES = hexdump.h ex_utils.h
 ex_hexdump_CFLAGS = $(GEN_CFLAGS)
 ex_hexdump_LDADD  = $(GEN_LDLIBS)
 
@@ -47,8 +45,8 @@ ex_dir_list2html_DEPENDENCIES = ex_utils.h
 ex_dir_list2html_CFLAGS = $(GEN_CFLAGS)
 ex_dir_list2html_LDADD  = $(GEN_LDLIBS)
 
-ex_dir_filter_SOURCES = opt.c ex_dir_filter.c bag.c
-ex_dir_filter_DEPENDENCIES = opt.h ex_utils.h bag.h
+ex_dir_filter_SOURCES      = opt.c bag.c ex_dir_filter.c
+ex_dir_filter_DEPENDENCIES = opt.h bag.h ex_utils.h
 ex_dir_filter_CFLAGS = $(GEN_CFLAGS)
 ex_dir_filter_LDADD  = $(GEN_LDLIBS)
 
@@ -56,8 +54,8 @@ ex_dir_list_DEPENDENCIES = ex_utils.h
 ex_dir_list_CFLAGS = $(GEN_CFLAGS)
 ex_dir_list_LDADD  = $(GEN_LDLIBS)
 
-ex_dir_sort_SOURCES = opt.c ex_dir_sort.c bag.c
-ex_dir_sort_DEPENDENCIES = opt.h ex_utils.h bag.h
+ex_dir_sort_SOURCES      = opt.c bag.c ex_dir_sort.c
+ex_dir_sort_DEPENDENCIES = opt.h bag.h ex_utils.h
 ex_dir_sort_CFLAGS = $(GEN_CFLAGS)
 ex_dir_sort_LDADD  = $(GEN_LDLIBS)
 
@@ -93,7 +91,7 @@ ex_highlight_DEPENDENCIES = ex_utils.h
 ex_highlight_CFLAGS = $(GEN_CFLAGS)
 ex_highlight_LDADD  = $(GEN_LDLIBS)
 
-ex_ssi_SOURCES = ex_ssi.c opt.c
+ex_ssi_SOURCES      = opt.c ex_ssi.c
 ex_ssi_DEPENDENCIES = opt.h ex_utils.h
 ex_ssi_CFLAGS = $(GEN_CFLAGS)
 ex_ssi_LDADD  = $(GEN_LDLIBS)
@@ -106,36 +104,41 @@ ex_changelog_diff_DEPENDENCIES = ex_utils.h
 ex_changelog_diff_CFLAGS = $(GEN_CFLAGS)
 ex_changelog_diff_LDADD  = $(GEN_LDLIBS)
 
-ex_slowcat_SOURCES = ex_slowcat.c opt.c
+ex_slowcat_SOURCES      = opt.c ex_slowcat.c
 ex_slowcat_DEPENDENCIES = opt.h ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_dns_SOURCES = ex_dns.c dns.c $(CMDLINE_FILES_SRCS)
-ex_dns_DEPENDENCIES =     dns.h $(CMDLINE_FILES_HDRS)
+# For command line stuff that uses events...
+CMDLINE_FILES_SRCS = date.c evnt.c hexdump.c opt.c vlg.c
+CMDLINE_FILES_HDRS = date.h evnt.h hexdump.h opt.h vlg.h vlg_assert.h
+
+ex_dns_SOURCES      = dns.c $(CMDLINE_FILES_SRCS) ex_dns.c
+ex_dns_DEPENDENCIES = dns.h $(CMDLINE_FILES_HDRS)
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_cntl_SOURCES = ex_cntl.c $(CMDLINE_FILES_SRCS)
-ex_cntl_DEPENDENCIES =      $(CMDLINE_FILES_HDRS)
+ex_cntl_SOURCES      = $(CMDLINE_FILES_SRCS) ex_cntl.c
+ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS = bag.c cntl.c date.c evnt.c opt.c vlg.c
-DAEMON_FILES_HDRS = bag.h cntl.h date.h evnt.h opt.h vlg.h vlg_assert.h
+DAEMON_FILES_SRCS = bag.c cntl.c date.c evnt.c hexdump.c opt.c vlg.c
+DAEMON_FILES_HDRS = bag.h cntl.h date.h evnt.h hexdump.h opt.h vlg.h \
+                    vlg_assert.h
 
-ex_httpd_SOURCES = ex_httpd.c mime_types.c $(DAEMON_FILES_SRCS)
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h mime_types.h $(DAEMON_FILES_HDRS)
+ex_httpd_SOURCES      = mime_types.c $(DAEMON_FILES_SRCS) ex_httpd.c
+ex_httpd_DEPENDENCIES = mime_types.h $(DAEMON_FILES_HDRS) ex_httpd_err_codes.h
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_echod_SOURCES = ex_echod.c $(DAEMON_FILES_SRCS)
+ex_echod_SOURCES      = $(DAEMON_FILES_SRCS) ex_echod.c
 ex_echod_DEPENDENCIES = $(DAEMON_FILES_HDRS)
 ex_echod_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_echod_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_ypservd_SOURCES = ex_ypservd.c # evnt.c
-#ex_ypservd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h
+ex_ypservd_SOURCES      = $(DAEMON_FILES_SRCS) ex_ypservd.c
+ex_ypservd_DEPENDENCIES = $(DAEMON_FILES_HDRS)
 ex_ypservd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_ypservd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -330,6 +333,8 @@ example_code_html = \
   html/ex_yes.c.html \
   html/ex_ypservd.c.html \
   html/ex_zcat.c.html \
+  html/hexdump.c.html \
+  html/hexdump.h.html \
   html/opt.h.html \
   html/vlg.c.html \
   html/vlg.h.html

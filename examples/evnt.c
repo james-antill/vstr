@@ -1,3 +1,23 @@
+/*
+ *  Copyright (C) 2002, 2003, 2004, 2005  James Antill
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  email: james@and.org
+ */
+/* IO events, and some help with timed events */
 #include <vstr.h>
 
 #include <stdio.h>
@@ -1187,7 +1207,9 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
           break;
       }
       /* FIXME: apache seems to assume certain errors are really bad and we
-       * should just kill the listen socket and wait to die */
+       * should just kill the listen socket and wait to die. But for instance.
+       * we can't just kill the socket on EMFILE, as we might have hit our
+       * resource limit */
       
       goto next_accept;
     }
@@ -1533,6 +1555,8 @@ static Timer_q_node *evnt__timeout_mtime_make(struct Evnt *evnt,
                                               unsigned long msecs)
 {
   Timer_q_node *tm_o = NULL;
+
+  vlg_dbg2(vlg, "mtime_make(%lu)\n", msecs);
   
   if (0) { }
   else if (msecs >= ( 99 * 1000))
@@ -1574,7 +1598,7 @@ static void evnt__timer_cb_mtime(int type, void *data)
   gettimeofday(tv, NULL);
 
   /* find out time elapsed */
-  diff = timer_q_timeval_udiff_secs(tv, &evnt->mtime);
+  diff = timer_q_timeval_udiff_msecs(tv, &evnt->mtime);
   if (diff >= evnt->msecs_tm_mtime)
   {
     vlg_dbg2(vlg, "timeout = %p[$<sa:%p>] (%lu, %lu)\n",
@@ -1623,7 +1647,7 @@ void evnt_timeout_exit(void)
   timer_q_del_base(evnt__timeout_100); evnt__timeout_100 = NULL;
 }
 
-int evnt_sc_timeout_via_mtime(struct Evnt *evnt, unsigned int msecs)
+int evnt_sc_timeout_via_mtime(struct Evnt *evnt, unsigned long msecs)
 {
   struct timeval tv[1];
 
@@ -1635,6 +1659,30 @@ int evnt_sc_timeout_via_mtime(struct Evnt *evnt, unsigned int msecs)
     return (FALSE);
 
   return (TRUE);
+}
+
+void evnt_sc_main_loop(size_t max_sz)
+{
+  int ready = evnt_poll();
+  struct timeval tv;
+    
+  if ((ready == -1) && (errno != EINTR))
+    vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "poll");
+  if (ready == -1)
+    return;
+  
+  evnt_out_dbg3("1");
+  evnt_scan_fds(ready, max_sz);
+  evnt_out_dbg3("2");
+  evnt_scan_send_fds();
+  evnt_out_dbg3("3");
+  
+  gettimeofday(&tv, NULL);
+  timer_q_run_norm(&tv);
+  
+  evnt_out_dbg3("4");
+  evnt_scan_send_fds();
+  evnt_out_dbg3("5");
 }
 
 void evnt_vlg_stats_info(struct Evnt *evnt, const char *prefix)

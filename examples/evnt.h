@@ -132,7 +132,8 @@ extern int  evnt_fd_set_filter(struct Evnt *, const char *);
 extern void evnt_timeout_init(void);
 extern void evnt_timeout_exit(void);
 
-extern int evnt_sc_timeout_via_mtime(struct Evnt *, unsigned int);
+extern int evnt_sc_timeout_via_mtime(struct Evnt *, unsigned long);
+extern void evnt_sc_main_loop(size_t);
 
 extern void evnt_vlg_stats_info(struct Evnt *, const char *);
 

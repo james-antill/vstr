@@ -12,218 +12,25 @@
 
 #include "ex_utils.h"
 
-/* hexdump in "readable" format ... note this is a bit more fleshed out than
- * some of the other examples mainly because I actually use it */
-
-/* this is roughly equiv. to the Linux hexdump command...
-% rpm -qf /usr/bin/hexdump
-util-linux-2.11r-10
-% hexdump -e '"%08_ax:"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"
-            " " 2/1 "%02X"'
-        -e '"  " 16 "%_p" "\n"'
-
-       
- * ...except that it prints the address in big hex digits, and it doesn't take
- * you 30 minutes to remember how to type it out.
- *  It also acts differently in that seperate files aren't merged
- * into one output line (Ie. in this version each file starts on a new line,
- * however the addresses are continuious).
-
- * It's also similar to "xxd" in vim, and "od -tx1z -Ax".
- */
-
 #define CONF_USE_MMAP_DEF FALSE
 #define CONF_PRNT_TYPE    PRNT_SPAC
 
-#define PRNT_NONE 0
-#define PRNT_SPAC 1
-#define PRNT_HIGH 2
-
-
-/* number of characters we output per line (assumes 80 char width screen)... */
-#define EX_HEXDUMP_CHRS_PER_LINE 16
+#include "hexdump.h"
 
 /* configure what ASCII characters we print */
 static unsigned int prnt_high_chars = CONF_PRNT_TYPE;
-
-#if 0
-/* simple print of a number */
-
-/* print the address */
-# define EX_HEXDUMP_X8(s1, num) \
-  vstr_add_fmt(s1, (s1)->len, "0x%08X:", (num))
-/* print a set of two bytes */
-# define EX_HEXDUMP_X2X2(s1, num1, num2) \
-  vstr_add_fmt(s1, (s1)->len, " %02X%02X", (num1), (num2))
-/* print a byte and spaces for the missing byte */
-# define EX_HEXDUMP_X2__(s1, num1) \
-  vstr_add_fmt(s1, (s1)->len, " %02X  ",   (num1))
-#else
-/* fast print of a number ... used because I actually use this program
- */
-static const char *hexnums = "0123456789ABCDEF";
-
-# define EX_HEXDUMP_BYTE(buf, b) do { \
-  (buf)[1] = hexnums[((b) >> 0) & 0xf]; \
-  (buf)[0] = hexnums[((b) >> 4) & 0xf]; \
- } while (FALSE)
-
-# define EX_HEXDUMP_UINT(buf, i) do { \
-  EX_HEXDUMP_BYTE((buf) + 6, (i) >>  0); \
-  EX_HEXDUMP_BYTE((buf) + 4, (i) >>  8); \
-  EX_HEXDUMP_BYTE((buf) + 2, (i) >> 16); \
-  EX_HEXDUMP_BYTE((buf) + 0, (i) >> 24); \
- } while (FALSE)
-
-/* print the address */
-# define EX_HEXDUMP_X8(s1, num) do { unsigned char xbuf[9]; \
-  xbuf[8] = ':'; \
-  EX_HEXDUMP_UINT(xbuf, num); \
-  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
-/* print a set of two bytes */
-# define EX_HEXDUMP_X2X2(s1, num1, num2) do { unsigned char xbuf[5]; \
-  xbuf[0] = ' '; \
-  EX_HEXDUMP_BYTE(xbuf + 3, num2); \
-  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
-  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
-/* print a byte and spaces for the missing byte */
-# define EX_HEXDUMP_X2__(s1, num1) do { unsigned char xbuf[5]; \
-  xbuf[4] = ' '; \
-  xbuf[3] = ' '; \
-  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
-  xbuf[0] = ' '; \
-  vstr_add_buf(s1, (s1)->len, xbuf, sizeof(xbuf)); } while (FALSE)
-#endif
-
-
-static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
-{
-  static unsigned int addr = 0;
-  /* normal ASCII chars, just allow COMMA and DOT flags */
-  unsigned int flags = VSTR_FLAG02(CONV_UNPRINTABLE_ALLOW, COMMA, DOT);
-  /* allow spaces, allow COMMA, DOT, underbar _, and space */
-  unsigned int flags_sp = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
-                                      COMMA, DOT, _, SP);
-  /* high ascii too, allow
-   * COMMA, DOT, underbar _, space, high space and other high characters */
-  unsigned int flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW,
-                                       COMMA, DOT, _, SP, HSP, HIGH);
-  unsigned char buf[EX_HEXDUMP_CHRS_PER_LINE];
-
-  switch (prnt_high_chars)
-  {
-    case PRNT_HIGH: flags = flags_hsp; break;
-    case PRNT_SPAC: flags = flags_sp;  break;
-    case PRNT_NONE:                    break;
-    default: ASSERT(FALSE);            break;
-  }
-
-  /* we don't want to create more data, if we are over our limit */
-  if (s1->len > EX_MAX_W_DATA_INCORE)
-    return (FALSE);
-
-  /* while we have a hexdump line ... */
-  while (s2->len >= EX_HEXDUMP_CHRS_PER_LINE)
-  {
-    unsigned int count = 0;
-    
-    /* get a hexdump line from the vstr */
-    vstr_export_buf(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, buf, sizeof(buf));
-
-    /* write out a hexdump line address */
-    EX_HEXDUMP_X8(s1, addr);
-
-    /* write out hex values */
-    while (count < EX_HEXDUMP_CHRS_PER_LINE)
-    {
-      EX_HEXDUMP_X2X2(s1, buf[count], buf[count + 1]);
-      count += 2;
-    }
-
-    vstr_add_rep_chr(s1, s1->len, ' ', 2);
-
-    /* convert unprintable characters to the '.' character */
-    vstr_conv_unprintable_chr(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, flags, '.');
-
-    /* write out characters, converting reference and pointer nodes to
-     * _BUF nodes */
-    vstr_add_vstr(s1, s1->len, s2, 1, EX_HEXDUMP_CHRS_PER_LINE,
-                  VSTR_TYPE_ADD_ALL_BUF);
-    vstr_add_rep_chr(s1, s1->len, '\n', 1);
-
-    addr += EX_HEXDUMP_CHRS_PER_LINE;
-    
-    /* delete the set of characters just processed */
-    vstr_del(s2, 1, EX_HEXDUMP_CHRS_PER_LINE);
-
-    /* if any of the above memory mgmt failed, error */
-    if (s1->conf->malloc_bad)
-      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
-
-    /* note that we don't want to create data indefinitely, so stop
-     * according to in core configuration */
-    if (s1->len > EX_MAX_W_DATA_INCORE)
-      return (TRUE);
-  }
-
-  if (last && s2->len)
-  { /* do the same as above, but print the partial line for
-     * the end of a file */
-    size_t got = s2->len;
-    size_t missing = EX_HEXDUMP_CHRS_PER_LINE - s2->len;
-    const char *ptr = buf;
-
-    missing -= (missing % 2);
-    vstr_export_buf(s2, 1, s2->len, buf, sizeof(buf));
-
-    EX_HEXDUMP_X8(s1, addr);
-
-    while (got >= 2)
-    {
-      EX_HEXDUMP_X2X2(s1, ptr[0], ptr[1]);
-      got -= 2;
-      ptr += 2;
-    }
-    if (got)
-    {
-      EX_HEXDUMP_X2__(s1, ptr[0]);
-      got -= 2;
-    }
-
-    /* Add spaces until the point where the characters should start */
-    vstr_add_rep_chr(s1, s1->len, ' ', (missing * 2) + (missing / 2) + 2);
-
-    vstr_conv_unprintable_chr(s2, 1, s2->len, flags, '.');
-    vstr_add_vstr(s1, s1->len, s2, 1, s2->len, VSTR_TYPE_ADD_ALL_BUF);
-
-    vstr_add_cstr_buf(s1, s1->len, "\n");
-
-    addr += s2->len;
-    vstr_del(s2, 1, s2->len);
-
-    /* if any of the above memory mgmt failed, error */
-    if (s1->conf->malloc_bad)
-      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
-
-    return (TRUE);
-  }
-
-  return (FALSE);
-}
 
 static void ex_hexdump_process_limit(Vstr_base *s1, Vstr_base *s2,
                                      unsigned int lim)
 {
   while (s2->len > lim)
   { /* Finish processing read data (try writing if we need memory) */
-    int proc_data = ex_hexdump_process(s1, s2, !lim);
+    int proc_data = ex_hexdump_process(s1, s1->len, s2, 1, s2->len,
+                                       prnt_high_chars, EX_MAX_W_DATA_INCORE,
+                                       TRUE, !lim);
+
+    if (s1->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
 
     if (!proc_data && (io_put(s1, STDOUT_FILENO) == IO_BLOCK))
       io_block(-1, STDOUT_FILENO);
@@ -243,7 +50,12 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     if (io_r_state == IO_EOF)
       break;
     
-    ex_hexdump_process(s1, s2, FALSE);
+    ex_hexdump_process(s1, s1->len, s2, 1, s2->len,
+                       prnt_high_chars, EX_MAX_W_DATA_INCORE,
+                       TRUE, FALSE);
+
+    if (s1->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "adding data");
 
     io_w_state = io_put(s1, STDOUT_FILENO);
 
