@@ -36,7 +36,8 @@ HTTP/1.1 after implementing a server is
      LFS
      TCP_CORK
      DEFER_ACCEPT
-     chroot, privilage de-escalation (can easily be started as non-root)
+     chroot, privilage de-escalation (can also easily be started as non-root)
+     does a bind mount for /dev/log when in a chroot.
      socket filters
      IP binding
 
@@ -49,6 +50,7 @@ HTTP/1.1 after implementing a server is
      if-modified-since/if-unmodified-since
      single byte ranges, if-range
      accept-encoding/content-encoding for gzip (via. pre-generated files)
+      Also obeys identity
 
     /etc/mime.types file
       plus extensions for disallowing certain file types.
@@ -83,7 +85,7 @@ HTTP/1.1 after implementing a server is
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Mon Feb 14 01:48:19 EST 2005
+Last modified: Sat Feb 19 17:26:07 EST 2005
 <!-- hhmts end -->
   </body>
 </html>

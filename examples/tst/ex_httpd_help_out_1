@@ -28,9 +28,11 @@
     --mime-types-xtra - Additional mime types filename.
     --processes       - Number of processes to use (default: 1).
     --send-err-406    - Toggle sending 406 responses (default: on).
+    --canonize-host   - Strip leading 'www.', strip trailing '.' (default: off).
+    --err-host-400    - Give an 400 error for a bad host (default: on).
     --defer-accept    - Time to defer dataless connections (default: 16s).
     --default-hostname
-                      - hostname used when none supplied (default is hostname).
+                      - Hostname used when not supplied (default is hostname).
     --debug -d        - Raise debug level (can be used upto 3 times).
     --host -H         - IPv4 address to bind (default: "all").
     --help -h         - Print this message.

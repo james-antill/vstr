@@ -27,7 +27,6 @@ http://www.sans.org/top20/#u2
 
         syslog2apache, do merge/catchup
 	Check config, Ie. --dir-filename="foo bar"
-	condrestart doesn't work?
 	man page
 	jhttpd -> vstr-httpd?
 	O(1) timer_q_add_node

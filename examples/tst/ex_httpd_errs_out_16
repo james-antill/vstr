@@ -1,9 +1,10 @@
 HTTP/1.1 405 Method Not Allowed
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 356
 Allow: GET, HEAD, OPTIONS, TRACE

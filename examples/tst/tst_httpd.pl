@@ -44,8 +44,9 @@ sub httpd__munge_ret
     $output =~
       s!^(Last-Modified:).*$ (\n)
         ^(Accept-Ranges:.*)$ (\n)
+        ^(Vary:.*)$ (\n)
         ^(Content-Type: \s message/http.*)$
-	!$1$2$3$4$5!gmx;
+	!$1$2$3$4$5$6$7!gmx;
 
     return $output;
   }
@@ -391,6 +392,7 @@ daemon_exit("ex_httpd");
 my $nargs  = "--default-hostname=default ";
    $nargs .= "--mime-types-main=$ENV{SRCDIR}/mime_types_extra.txt ";
    $nargs .= "--mime-types-xtra=$ENV{SRCDIR}/tst/ex_httpd_bad_mime ";
+   $nargs .= "--virtual-hosts=true ";
    $nargs .= "--keep-alive=false ";
    $nargs .= "--range=false ";
    $nargs .= "--gzip-content-replacement=false ";
@@ -405,8 +407,10 @@ my $nargs  = "--default-hostname=default ";
    $nargs .= "--default-mime-type=bar/baz ";
    $nargs .= "--dir-filename=welcome.html ";
    $nargs .= "--accept-filter-file=$ENV{SRCDIR}/tst/ex_httpd_null_tst_1 ";
-   $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)'";
-daemon_init("ex_httpd", $root, $nargs . " --virtual-hosts=true");
+   $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)' ";
+   $nargs .= "--canonize-host=true ";
+   $nargs .= "--err-host-400=false ";
+daemon_init("ex_httpd", $root, $nargs);
 tst_proc_limit(30);
 $list_pid = http_cntl_list_beg();
 all_none_tsts();

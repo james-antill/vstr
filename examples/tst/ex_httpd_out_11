@@ -1,8 +1,9 @@
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 
@@ -17,9 +18,10 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 
@@ -34,9 +36,10 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 
@@ -51,9 +54,10 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 
@@ -68,9 +72,10 @@ Content-Length: 165
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 
@@ -85,9 +90,10 @@ Content-Length: 165
 </html>
 HTTP/1.1 406 Not Acceptable
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 501
 
@@ -105,9 +111,10 @@ Content-Length: 501
 </html>
 HTTP/1.1 406 Not Acceptable
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 501
 
@@ -125,10 +132,11 @@ Content-Length: 501
 </html>
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.1 (Vstr)
+Server: jhttpd/0.9.4 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Connection: close
 Accept-Ranges: bytes
+Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 165
 

@@ -70,7 +70,7 @@
 #define CONF_SERV_DEF_ADDR NULL
 #define CONF_SERV_DEF_PORT   80
 
-#define CONF_SERV_VERSION "0.9.1"
+#define CONF_SERV_VERSION "0.9.4"
 
 /* **** compile time conf **** */
 
@@ -106,12 +106,6 @@ struct sock_fprog
 };
 #endif
 
-/* strip leading "www.", strip trailing '.' */
-#define CONF_SERV_USE_CANONIZE_HOST FALSE
-/* allow any old host header, if it fails fall back to default */
-#define CONF_SERV_USE_NON_HOST_ERR_400 TRUE
-
-
 /* **** defaults for runtime conf **** */
 #define CONF_SERV_DEF_NAME "jhttpd/" CONF_SERV_VERSION " (Vstr)"
 #define CONF_SERV_USE_MMAP FALSE
@@ -131,6 +125,8 @@ struct sock_fprog
 #define CONF_SERV_MIME_TYPE_MAIN "/etc/mime.types"
 #define CONF_SERV_MIME_TYPE_XTRA NULL
 #define CONF_SERV_USE_ERR_406 TRUE
+#define CONF_SERV_USE_CANONIZE_HOST FALSE
+#define CONF_SERV_USE_NON_HOST_ERR_400 TRUE
 
 #include "ex_httpd_err_codes.h"
 
@@ -239,10 +235,11 @@ struct Http_req_data
  unsigned int ver_1_1 : 1;
  unsigned int use_mmap : 1;
  unsigned int head_op : 1;
- unsigned int advertise_accept_ranges : 1;
 
  unsigned int content_encoding_gzip  : 1;
  unsigned int content_encoding_xgzip : 1; /* only valid if gzip is TRUE */
+ 
+ unsigned int content_encoding_identity : 1;
 
  unsigned int using_req : 1;
  unsigned int done_once : 1;
@@ -309,7 +306,10 @@ static struct
  unsigned int num_procs : 8; /* 1 => 255 (10th-18th bitfields) */
  unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (18th-30th bitfields) */
  unsigned int use_err_406 : 1; /* 31st bitfield */
-
+ 
+ unsigned int canonize_host : 1; /* 1st bitfield */
+ unsigned int non_host_err_400 : 1;
+ 
  const char * dir_filename;
  const char * mime_types_default_type;
  const char * mime_types_main;
@@ -326,6 +326,8 @@ static struct
               CONF_SERV_DEF_PROCS,
               CONF_SERV_DEF_TCP_DEFER_ACCEPT,
               CONF_SERV_USE_ERR_406,
+              CONF_SERV_USE_CANONIZE_HOST,
+              CONF_SERV_USE_NON_HOST_ERR_400,
               CONF_SERV_DEF_DIR_FILENAME,
               CONF_SERV_DEF_MIME_TYPE,
               CONF_SERV_MIME_TYPE_MAIN,
@@ -371,9 +373,11 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --mime-types-xtra - Additional mime types filename.\n\
     --processes       - Number of processes to use (default: 1).\n\
     --send-err-406    - Toggle sending 406 responses%s.\n\
+    --canonize-host   - Strip leading 'www.', strip trailing '.'%s.\n\
+    --err-host-400    - Give an 400 error for a bad host%s.\n\
     --defer-accept    - Time to defer dataless connections (default: 16s).\n\
     --default-hostname\n\
-                      - hostname used when none supplied (default is hostname).\n\
+                      - Hostname used when not supplied (default is hostname).\n\
     --debug -d        - Raise debug level (can be used upto 3 times).\n\
     --host -H         - IPv4 address to bind (default: \"all\").\n\
     --help -h         - Print this message.\n\
@@ -397,6 +401,8 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT),
                opt_def_toggle(CONF_SERV_USE_DEFAULT_MIME_TYPE),
                opt_def_toggle(CONF_SERV_USE_ERR_406),
+               opt_def_toggle(CONF_SERV_USE_CANONIZE_HOST),
+               opt_def_toggle(CONF_SERV_USE_NON_HOST_ERR_400),
                opt_def_toggle(evnt_opt_nagle));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
@@ -882,8 +888,10 @@ static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
       ASSERT_NO_SWITCH_DEF();
   }
   
-  if (req->advertise_accept_ranges)
+  if (serv->use_range)
     http_app_header_cstr(out, "Accept-Ranges", "bytes");
+  if (serv->use_gzip_content_replacement)
+    http_app_header_cstr(out, "Vary", "Accept-Encoding");
   
   if (custom_content_type)
     http_app_header_cstr(out, "Content-Type", custom_content_type);
@@ -1723,7 +1731,7 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
   { /* this should be impossible for normal files AFAIK */
     vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
              req->fname, 1, req->fname->len, f_off);
-    /* req->advertise_accept_ranges = FALSE; - turn off? */
+    /* serv->use_range - turn off? */
     req->http_hdrs->multi->hdr_range->pos = 0;
     *http_ret_code = 200;
     *http_ret_line = "OK - Range Failed";
@@ -1735,7 +1743,7 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
-#define HTTP__PARSE_CHECK_RET_OK() do {                 \
+#define HTTP__PARSE_CHK_RET_OK() do {                   \
       HTTP_SKIP_LWS(data, pos, len);                    \
                                                         \
       if (!len ||                                       \
@@ -1798,7 +1806,7 @@ static int http_parse_quality(Vstr_base *data,
     
     len -= 1; pos += 1;
     
-    HTTP__PARSE_CHECK_RET_OK();
+    HTTP__PARSE_CHK_RET_OK();
 
     if (!VPREFIX(data, pos, len, "."))
       return (FALSE);
@@ -1811,12 +1819,12 @@ static int http_parse_quality(Vstr_base *data,
       return (FALSE);
     len -= num_len; pos += num_len;
     
-    HTTP__PARSE_CHECK_RET_OK();
+    HTTP__PARSE_CHK_RET_OK();
   }
   
   return (FALSE);
 }
-#undef HTTP__PARSE_CHECK_RET_OK
+#undef HTTP__PARSE_CHK_RET_OK
 
 static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
 {
@@ -1827,12 +1835,12 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
   unsigned int identity_val = 1001;
   unsigned int star_val     = 1001;
   
-  if (!serv->use_gzip_content_replacement)
-    return (FALSE);
-
   pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
   len = req->http_hdrs->multi->hdr_accept_encoding->len;
 
+  if (!serv->use_err_406 && !serv->use_gzip_content_replacement)
+    return (FALSE);
+  
   if (!len)
     return (FALSE);
   
@@ -1850,18 +1858,22 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
       if (!http_parse_quality(data, &pos, &len, FALSE, &identity_val))
         return (FALSE);
     }
-    else if (vstr_cmp_cstr_eq(data, pos, tmp, "gzip"))
+    else if (serv->use_gzip_content_replacement &&
+             vstr_cmp_cstr_eq(data, pos, tmp, "gzip"))
     {
       len -= tmp; pos += tmp;
+      req->content_encoding_xgzip = FALSE;
       if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
         return (FALSE);
     }
-    else if (vstr_cmp_cstr_eq(data, pos, tmp, "x-gzip"))
+    else if (serv->use_gzip_content_replacement &&
+             vstr_cmp_cstr_eq(data, pos, tmp, "x-gzip"))
     {
       len -= tmp; pos += tmp;
       req->content_encoding_xgzip = TRUE;
-      /* ignore quality on x-gzip - just parse for errors */
-      return (http_parse_quality(data, &pos, &len, FALSE, &gzip_val));
+      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
+        return (FALSE);
+      gzip_val = 1000; /* ignore quality on x-gzip - just parse for errors */
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "*"))
     { /* "*;q=0,gzip" means TRUE ... and "*;q=1.0,gzip;q=0" means FALSE */
@@ -1884,10 +1896,17 @@ static int http_parse_accept_encoding_gzip(struct Http_req_data *req)
     HTTP_SKIP_LWS(data, pos, len);
   }
 
-  if ((gzip_val == 1001) && (star_val == 1001))
-    return (FALSE);
+  if (!serv->use_gzip_content_replacement)
+    gzip_val = 0;
+  
+  if (gzip_val     == 1001) gzip_val     = star_val;
+  if (identity_val == 1001) identity_val = star_val;
+
+  if (!identity_val)
+    req->content_encoding_identity = FALSE;
+  
   if (gzip_val == 1001)
-    gzip_val = star_val;
+    return (FALSE);
 
   if (identity_val != 1001)
     if (identity_val > gzip_val)
@@ -2099,6 +2118,9 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
    * http://www.w3.org/TR/chips/#gl6 says that's bad */
   if (http_parse_accept_encoding_gzip(req))
     http__try_gzip_content(con, req);
+  if (serv->use_err_406 &&
+      !req->content_encoding_identity && !req->content_encoding_gzip)
+    HTTPD_ERR_RET(req, 406, FALSE);
   
   if (h_r->pos)
   {
@@ -2192,7 +2214,7 @@ static int serv_add_default_hostname(Vstr_base *lfn, size_t pos)
   return (vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF));
 }
 
-static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
+static int serv_chk_vhost(Vstr_base *lfn, size_t pos, size_t len)
 {
   const char *vhost = vstr_export_cstr_ptr(lfn, pos, len);
   struct stat64 v_stat[1];
@@ -2214,37 +2236,37 @@ static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
   Vstr_base *data = con->ev->io_r;
   Vstr_base *fname = req->fname;
   Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
+  size_t h_h_pos = h_h->pos;
   size_t h_h_len = h_h->len;
     
-  if (h_h_len && CONF_SERV_USE_CANONIZE_HOST)
+  if (h_h_len && serv->canonize_host)
   {
-    size_t h_h_pos = h_h->pos;
     size_t dots = 0;
     
-    if (VIPREFIX(fname, 1, fname->len, "www."))
+    if (VIPREFIX(data, h_h_pos, h_h_len, "www."))
     { h_h_len -= strlen("www."); h_h_pos += strlen("www."); }
     
-    dots = vstr_spn_cstr_chrs_rev(fname, 1, fname->len, ".");
+    dots = vstr_spn_cstr_chrs_rev(data, h_h_pos, h_h_len, ".");
     h_h_len -= dots;
   }
   
   if (!h_h_len)
     serv_add_default_hostname(fname, 0);
   else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
-                         h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
+                         h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
   {
-    vstr_conv_lowercase(fname, 1, h_h->len);
+    vstr_conv_lowercase(fname, 1, h_h_len);
     
-    if (!serv_check_vhost(fname, 1, h_h->len))
+    if (!serv_chk_vhost(fname, 1, h_h_len))
     {
-      if (CONF_SERV_USE_NON_HOST_ERR_400)
+      if (serv->non_host_err_400)
         HTTPD_ERR_RET(req, 400, FALSE); /* rfc 5.2 */
       else
       { /* what everything else does ... *sigh* */
         if (fname->conf->malloc_bad)
           return (TRUE);
       
-        vstr_del(fname, 1, h_h->len);
+        vstr_del(fname, 1, h_h_len);
         serv_add_default_hostname(fname, 0);
       }  
     }
@@ -2367,9 +2389,9 @@ static struct Http_req_data *http_make_req(struct Con *con)
 
   req->sects->malloc_bad = FALSE;
 
-  req->advertise_accept_ranges = CONF_SERV_USE_RANGE;
-  req->content_encoding_gzip   = FALSE;
-  
+  req->content_encoding_gzip     = FALSE;
+  req->content_encoding_identity = TRUE;
+    
   req->ver_0_9    = FALSE;
   req->ver_1_1    = FALSE;
   req->use_mmap   = FALSE;
@@ -3303,26 +3325,29 @@ static void cl_cmd_line(int argc, char *argv[])
    {"accept-filter-file", required_argument, NULL, 8},
    {"sendfile", optional_argument, NULL, 31},
    {"mmap", optional_argument, NULL, 30},
-   {"keep-alive", optional_argument, NULL, 29},
-   {"keep-alive-1.0", optional_argument, NULL, 28},
-   {"vhosts", optional_argument, NULL, 27},
-   {"virtual-hosts", optional_argument, NULL, 27},
-   {"range", optional_argument, NULL, 26},
-   {"range-1.0", optional_argument, NULL, 25},
-   {"public-only", optional_argument, NULL, 24}, /* FIXME: rm ? */
-   {"dir-filename", required_argument, NULL, 23},
-   {"server-name", required_argument, NULL, 22},
-   {"gzip-content-replacement", optional_argument, NULL, 21},
-   {"send-default-mime-type", optional_argument, NULL, 20},
-   {"send-err-406", optional_argument, NULL, 19},
-   {"default-mime-type", required_argument, NULL, 18},
-   {"mime-types-main", required_argument, NULL, 17},
-   {"mime-types-extra", required_argument, NULL, 16},
-   {"mime-types-xtra", required_argument, NULL, 16},
-   {"processes", required_argument, NULL, 15},
-   {"procs", required_argument, NULL, 15},
-   {"defer-accept", required_argument, NULL, 14},
-   {"default-hostname", required_argument, NULL, 13},
+   
+   {"keep-alive", optional_argument, NULL, 129},
+   {"keep-alive-1.0", optional_argument, NULL, 130},
+   {"vhosts", optional_argument, NULL, 131},
+   {"virtual-hosts", optional_argument, NULL, 131},
+   {"range", optional_argument, NULL, 132},
+   {"range-1.0", optional_argument, NULL, 133},
+   {"public-only", optional_argument, NULL, 134}, /* FIXME: rm ? */
+   {"dir-filename", required_argument, NULL, 135},
+   {"server-name", required_argument, NULL, 136},
+   {"gzip-content-replacement", optional_argument, NULL, 137},
+   {"send-default-mime-type", optional_argument, NULL, 138},
+   {"send-err-406", optional_argument, NULL, 139},
+   {"default-mime-type", required_argument, NULL, 140},
+   {"mime-types-main", required_argument, NULL, 141},
+   {"mime-types-extra", required_argument, NULL, 142},
+   {"mime-types-xtra", required_argument, NULL, 142},
+   {"processes", required_argument, NULL, 143},
+   {"procs", required_argument, NULL, 143},
+   {"defer-accept", required_argument, NULL, 144},
+   {"default-hostname", required_argument, NULL, 145},
+   {"canonize-host", optional_argument, NULL, 146},
+   {"err-host-400", optional_argument, NULL, 147},
    /* {"404-file", required_argument, NULL, 0}, */
    {"debug", no_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
@@ -3376,47 +3401,35 @@ static void cl_cmd_line(int argc, char *argv[])
         
       case 'd': vlg_debug(vlg);                       break;
         
-      case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle); break;
+      case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle);       break;
 
         OPT_SC_SERV_OPTS();
         
-      case 31: OPT_TOGGLE_ARG(serv->use_sendfile);                 break;
-      case 30: OPT_TOGGLE_ARG(serv->use_mmap);                     break;
-      case 29: OPT_TOGGLE_ARG(serv->use_keep_alive);               break;
-      case 28: OPT_TOGGLE_ARG(serv->use_keep_alive_1_0);           break;
-      case 27: OPT_TOGGLE_ARG(serv->use_vhosts);                   break;
-      case 26: OPT_TOGGLE_ARG(serv->use_range);                    break;
-      case 25: OPT_TOGGLE_ARG(serv->use_range_1_0);                break;
-      case 24: OPT_TOGGLE_ARG(serv->use_public_only);              break;
-      case 23: serv->dir_filename = optarg;                        break;
-      case 22: serv->server_name  = optarg;                        break;
-      case 21: OPT_TOGGLE_ARG(serv->use_gzip_content_replacement); break;
-      case 20: OPT_TOGGLE_ARG(serv->use_default_mime_type);        break;
-      case 19: OPT_TOGGLE_ARG(serv->use_err_406);                  break;
-      case 18: serv->mime_types_default_type = optarg;             break;
-      case 17: serv->mime_types_main = optarg;                     break;
-      case 16: serv->mime_types_xtra = optarg;                     break;
-      case 15:
-      {
-        unsigned int num = atoi(optarg);
-        if (!num || (num > 255))
-          usage(program_name, TRUE,
-                " The number of processes must be in the range 1 to 255.\n");
-        serv->num_procs = num;
-      }
-      break;
-      
-      case 14:
-      {
-        unsigned int num = atoi(optarg);
-        if (num >= 4906)
-          usage(program_name, TRUE,
-                " The seconds to defer connections must be in the range 0 to 4905 (1 hour 8 minutes).\n");
-        serv->defer_accept = num;
-      }
-      break;
-
-      case 13: default_hostname = optarg;
+      case 31: OPT_TOGGLE_ARG(serv->use_sendfile);    break;
+      case 30: OPT_TOGGLE_ARG(serv->use_mmap);        break;
+        
+      case 129: OPT_TOGGLE_ARG(serv->use_keep_alive);              break;
+      case 130: OPT_TOGGLE_ARG(serv->use_keep_alive_1_0);          break;
+      case 131: OPT_TOGGLE_ARG(serv->use_vhosts);                   break;
+      case 132: OPT_TOGGLE_ARG(serv->use_range);                    break;
+      case 133: OPT_TOGGLE_ARG(serv->use_range_1_0);                break;
+      case 134: OPT_TOGGLE_ARG(serv->use_public_only);              break;
+      case 135: serv->dir_filename = optarg;                        break;
+      case 136: serv->server_name  = optarg;                        break;
+      case 137: OPT_TOGGLE_ARG(serv->use_gzip_content_replacement); break;
+      case 138: OPT_TOGGLE_ARG(serv->use_default_mime_type);        break;
+      case 139: OPT_TOGGLE_ARG(serv->use_err_406);                  break;
+      case 140: serv->mime_types_default_type = optarg;             break;
+      case 141: serv->mime_types_main = optarg;                     break;
+      case 142: serv->mime_types_xtra = optarg;                     break;
+      case 143: OPT_NUM_ARG(serv->num_procs, "number of processes",
+                            1, 255, "");                            break;
+      case 144: OPT_NUM_ARG(serv->defer_accept, "seconds to defer connections",
+                            0, 4906, " (1 hour 8 minutes)");        break;
+      case 145: default_hostname = optarg;                          break;
+      case 146: OPT_TOGGLE_ARG(serv->canonize_host);                break;
+      case 147: OPT_TOGGLE_ARG(serv->non_host_err_400);
+        
       
       ASSERT_NO_SWITCH_DEF();
     }

@@ -5,6 +5,23 @@
 #include <string.h>
 
 #define OPT_TOGGLE_ARG(val) (val = opt_toggle(val, optarg))
+#define OPT_NUM_ARG(val, desc, min, max, range_desc) do {               \
+      Vstr_base *opt__parse_num = vstr_dup_cstr_ptr(NULL, optarg);      \
+      int opt__num = 0;                                                 \
+                                                                        \
+      if  (!opt__parse_num)                                             \
+        errno = ENOMEM, err(EXIT_FAILURE, "parse_num(%s)", desc);       \
+                                                                        \
+      opt__num = vstr_parse_int(opt__parse_num, 1, opt__parse_num->len, \
+                                VSTR_FLAG_PARSE_NUM_SEP, NULL, NULL);   \
+      if ((opt__num < min) || (opt__num > max))                         \
+        usage(program_name, TRUE,                                       \
+              " The value for " desc " must be in the range "           \
+              #min " to " #max range_desc ".\n");                       \
+      val = opt__num;                                                   \
+                                                                        \
+      vstr_free_base(opt__parse_num);                                   \
+    } while (FALSE)
 
 extern int opt_toggle(int, const char *);
 
