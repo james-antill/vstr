@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_perf_add.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_perf_add.c</h1>
+<pre class="c2html">
+<span class="comment">/* -*- mode: c -*-
+ *
+ * Alternatve version of the strcat test using the vstr string library ...
+ *    http://www.and.org/vstr/
+ * gcc -Wall -W -O2 -o tst tst.c `pkg-config --cflags --libs vstr`
+ *
+ * http://www.bagley.org/~doug/shootout/
+ */</span>
+<span class="comment">/* #define VSTR_COMPILE_INLINE 0 */</span>
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
+
+#<span class="cppinclude">include</span> &lt;errno.h&gt;
+#<span class="cppinclude">include</span> &lt;err.h&gt;
+#<span class="cppinclude">include</span> &lt;assert.h&gt;
+
+#<span class="cppinclude">include</span> <span class="str">"ex_perf.h"</span>
+
+#<span class="cppdefine">define</span> HAVE_IOV <span class="num0">0</span>
+#<span class="cppdefine">define</span> FMT_ALL <span class="num0">0</span>
+
+#<span class="cppdefine">define</span> MCPY_TYPE MCPY_GCC
+
+<span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *mcpy_type_map[3] = {
+#<span class="cppdefine">define</span> MCPY_LIBC <span class="num0">0</span>
+ <span class="str">"MCPY_LIBC"</span>,
+#<span class="cppdefine">define</span> MCPY_GCC  1
+ <span class="str">"MCPY_GCC"</span>,
+#<span class="cppdefine">define</span> MCPY_VSTR 2
+ <span class="str">"MCPY_VSTR"</span>,
+};
+
+#<span class="cppif">if</span>   MCPY_TYPE == MCPY_LIBC
+# <span class="cppdefine">define</span> MCPY(x, y, z) memcpy(x, y, z)
+#<span class="cppelif">elif</span> MCPY_TYPE == MCPY_GCC
+# <span class="cppdefine">define</span> MCPY(x, y, z) __builtin_memcpy(x, y, z)
+#<span class="cppelif">elif</span> MCPY_TYPE == MCPY_VSTR
+# <span class="cppdefine">define</span> MCPY(x, y, z) vstr_wrap_memcpy(x, y, z)
+#<span class="cppelse">else</span>
+# error <span class="str">"Not a valid MCPY_TYPE"</span>
+#<span class="cppendif">endif</span>
+
+#<span class="cppdefine">define</span> BUF_SZ (4 * 1024) <span class="comment">/* size of node */</span>
+
+#<span class="cppdefine">define</span> STUFF <span class="str">"hello\n"</span> <span class="comment">/* size of data to append each time -- from shootout */</span>
+
+#<span class="cppdefine">define</span> YES_NO(x) ((x) ? <span class="str">"yes"</span> : <span class="str">"no"</span>)
+
+<span class="static">static</span> <span class="void">void</span> hand_inline(<span class="vstrbase">Vstr_base</span> *tst, <span class="unsigned">unsigned</span> <span class="int">int</span> num)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> scan = <span class="num0">0</span>;
+  
+  <span class="while">while</span> (scan &lt; num)
+  {
+    <span class="sizet">size_t</span> len = tst-&gt;end ? (BUF_SZ - tst-&gt;end-&gt;len) : <span class="num0">0</span>;
+    
+    <span class="if">if</span> (len &gt;= strlen(STUFF))
+    { <span class="comment">/* hand inline of vstr_add_cstr_buf()...
+       *   massive hack -- DO NOT rely on this working this is just so we can
+       *   mesure the best possible inline perf. */</span>
+      <span class="unsigned">unsigned</span> <span class="int">int</span> orig = scan;
+      <span class="char">char</span> *buf = ((Vstr_node_buf *)tst-&gt;end)-&gt;buf;
+      
+      buf += tst-&gt;end-&gt;len;
+      <span class="while">while</span> (len &gt;= strlen(STUFF))
+      {
+        MCPY(buf, STUFF, strlen(STUFF));
+        buf += strlen(STUFF);
+        len -= strlen(STUFF);
+
+        <span class="if">if</span> (++scan == num)
+          <span class="break">break</span>;
+      }
+
+      len = (scan - orig) * strlen(STUFF);
+      tst-&gt;len      += len;
+      tst-&gt;end-&gt;len += len;
+      <span class="if">if</span> (tst-&gt;iovec_upto_date)
+      {
+        <span class="unsigned">unsigned</span> <span class="int">int</span> num = tst-&gt;num + VSTR__CACHE(tst)-&gt;vec-&gt;off - 1;
+        VSTR__CACHE(tst)-&gt;vec-&gt;v[num].iov_len += len;
+      }
+    }
+    
+    vstr_add_cstr_buf(tst, tst-&gt;len, STUFF);
+    ++scan;
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> hand_iov(<span class="vstrbase">Vstr_base</span> *tst, <span class="unsigned">unsigned</span> <span class="int">int</span> num)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> scan = <span class="num0">0</span>;
+  
+  <span class="while">while</span> (scan &lt; num)
+  {
+    struct iovec *iov = <span class="null">NULL</span>;
+    <span class="unsigned">unsigned</span> <span class="int">int</span> iov_num = <span class="num0">0</span>;
+    <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+
+    <span class="if">if</span> (!vstr_add_iovec_buf_beg(tst, tst-&gt;len, 1, 2, &amp;iov, &amp;iov_num))
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"iovec_buf_beg"</span>);
+
+    <span class="assert">assert</span>(iov_num);
+    
+    len = iov[0].iov_len;
+    
+    <span class="if">if</span> (len &lt; strlen(STUFF))
+      vstr_add_cstr_buf(tst, tst-&gt;len, STUFF);
+    <span class="else">else</span>
+    { <span class="comment">/* hand inline using iovectors */</span>
+      <span class="unsigned">unsigned</span> <span class="int">int</span> orig = scan;
+      <span class="char">char</span> *buf = iov[0].iov_base;
+      
+      <span class="while">while</span> (len &gt;= strlen(STUFF))
+      {
+        MCPY(buf, STUFF, strlen(STUFF));
+        buf += strlen(STUFF);
+        len -= strlen(STUFF);
+
+        <span class="if">if</span> (++scan &gt;= num)
+          <span class="break">break</span>;
+      }
+      <span class="assert">assert</span>(scan &lt;= num);
+      
+      len = (scan - orig) * strlen(STUFF);
+      vstr_add_iovec_buf_end(tst, tst-&gt;len, len);
+    }
+
+    ++scan;
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> del(<span class="vstrbase">Vstr_base</span> *tst)
+{
+  vstr_del(tst, 1, tst-&gt;len);
+}
+<span class="static">static</span> <span class="void">void</span> del_alloc(<span class="vstrbase">Vstr_base</span> *tst)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> num = tst-&gt;num;
+  vstr_del(tst, 1, tst-&gt;len);
+  vstr_free_spare_nodes(tst-&gt;conf, VSTR_TYPE_NODE_BUF, num);
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> num = ((argc == 2) ? atoi(argv[1]) : 1);
+  <span class="vstrbase">Vstr_base</span> *tst = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *out = <span class="null">NULL</span>;
+                                                                                
+  <span class="if">if</span> (!vstr_init())
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"vstr_init"</span>);
+                                                                                
+  vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, BUF_SZ);
+  
+  <span class="if">if</span> (!(tst = vstr_make_base(<span class="null">NULL</span>)))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"vstr_make_base"</span>);
+  <span class="if">if</span> (!(out = vstr_make_base(<span class="null">NULL</span>)))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"vstr_make_base"</span>);
+
+  vstr_cntl_conf(out-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+
+  <span class="if">if</span> (FMT_ALL)
+    vstr_sc_fmt_add_all(out-&gt;conf);
+  <span class="else">else</span>
+  {
+    vstr_sc_fmt_add_buf(out-&gt;conf,     <span class="str">"{buf:%s%zu}"</span>);
+    vstr_sc_fmt_add_rep_chr(out-&gt;conf, <span class="str">"{rep_chr:%c%zu}"</span>); <span class="comment">/* for TST_HDR */</span>
+  }
+  
+  vstr_cntl_conf(out-&gt;conf, VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP, <span class="str">"_"</span>);
+  vstr_cntl_conf(out-&gt;conf, VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP, <span class="str">"\3"</span>);
+
+  <span class="if">if</span> (HAVE_IOV)
+  {
+    vstr_add_rep_chr(tst, <span class="num0">0</span>, <span class="chr">'-'</span>, strlen(STUFF) * num);
+    vstr_export_iovec_ptr(tst, <span class="null">NULL</span>, <span class="null">NULL</span>);
+  }
+  vstr_del(tst, 1, tst-&gt;len);
+  vstr_free_spare_nodes(tst-&gt;conf, VSTR_TYPE_NODE_BUF, 1000 * 1000 * 1000);
+  
+  TST_HDR_BEG();
+
+  <span class="if">if</span> (<span class="num0">0</span>) {
+  del_alloc(tst); TST_BEG(1, 1);
+  hand_inline(tst, num);
+  TST_END(<span class="str">"hand inline (alloc)"</span>);
+  del(tst);       TST_BEG(1, 1);
+  hand_inline(tst, num);
+  TST_END(<span class="str">"hand inline"</span>); 
+  
+  del_alloc(tst); TST_BEG(1, 1);
+  hand_iov(tst, num);
+  TST_END(<span class="str">"iov inline (alloc)"</span>);
+  del(tst);       TST_BEG(1, 1);
+  hand_iov(tst, num);
+  TST_END(<span class="str">"iov inline"</span>); 
+  
+  del_alloc(tst); TST_BEG(1, num);
+  vstr_add_cstr_buf(tst, tst-&gt;len, STUFF);
+  TST_END(<span class="str">"add_cstr_buf (alloc)"</span>);
+  del(tst);       TST_BEG(1, num);
+  vstr_add_cstr_buf(tst, tst-&gt;len, STUFF);
+  TST_END(<span class="str">"add_cstr_buf"</span>);
+  }
+  
+  del_alloc(tst); TST_BEG(1, num);
+  vstr_add_fmt(tst, tst-&gt;len, <span class="str">"%s"</span>, STUFF);
+  TST_END(<span class="str">"add_fmt(%s) (alloc)"</span>);
+  del(tst);       TST_BEG(1, num);
+  vstr_add_fmt(tst, tst-&gt;len, <span class="str">"%s"</span>, STUFF);
+  TST_END(<span class="str">"add_fmt(%s)"</span>);
+  
+  del_alloc(tst); TST_BEG(1, num);
+  vstr_add_fmt(tst, tst-&gt;len, <span class="str">"${buf:%s%zu}"</span>, STUFF, strlen(STUFF));
+  TST_END(<span class="str">"add_fmt(${buf}) (alloc)"</span>);
+  del(tst);       TST_BEG(1, num);
+  vstr_add_fmt(tst, tst-&gt;len, <span class="str">"${buf:%s%zu}"</span>, STUFF, strlen(STUFF));
+  TST_END(<span class="str">"add_fmt(${buf})"</span>);
+  
+  TST_HDR_END();
+  
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"data        = %c%s%c\n"</span>, <span class="chr">'"'</span>, STUFF, <span class="chr">'"'</span>);
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"iter        = %'13u\n"</span>, num);
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"len         = %'13zu\n"</span>, tst-&gt;len);
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"num         = %'13u\n"</span>, tst-&gt;num);
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"hand inline = %s\n"</span>, mcpy_type_map[MCPY_TYPE]);
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"have iov    = %s\n"</span>, YES_NO(HAVE_IOV));
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"vstr inline = %s\n"</span>,
+               YES_NO(VSTR_COMPILE_INLINE));
+
+  <span class="if">if</span> (out-&gt;conf-&gt;malloc_bad)
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"tst"</span>);
+  
+  <span class="while">while</span> (out-&gt;len)
+    <span class="if">if</span> (!vstr_sc_write_fd(out, 1, out-&gt;len, 1, <span class="null">NULL</span>))
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
+  
+  vstr_free_base(tst);
+  vstr_free_base(out);
+  vstr_exit();
+  
+  <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+}
+</pre>
+<!-- C to html convertion of ex_perf_add.c -->
+<!--   done on Thu May 13 03:35:35 2004 -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

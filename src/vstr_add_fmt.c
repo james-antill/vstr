@@ -702,7 +702,6 @@ struct Vstr__fmt_spec *
 vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
                              struct Vstr__fmt_spec *spec, int sve_errno)
 {
-  struct Vstr__fmt_spec *beg  = spec;
   struct Vstr__fmt_spec *last = NULL;
   struct
   {
@@ -711,11 +710,15 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   } dummy;
   Vstr_fmt_spec *usr_spec = NULL;
   unsigned int scan = 0;
-
+  int (*func)(Vstr_base *, size_t, struct Vstr_fmt_spec *) =
+    spec->usr_spec->func;
+  unsigned int *types = spec->usr_spec->types;
+  unsigned int sz     = spec->usr_spec->sz;
+  
   assert(spec->escape_usr);
   assert(spec->usr_spec);
 
-  if (beg->usr_spec->sz <= VSTR__FMT_USR_SZ)
+  if (sz <= VSTR__FMT_USR_SZ)
     usr_spec = &dummy.usr_spec;
   else
   {
@@ -743,7 +746,7 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   usr_spec->fmt_quote = !!(spec->flags & THOUSAND_SEP);
   usr_spec->fmt_I =     !!(spec->flags & ALT_DIGITS);
 
-  if (!beg->usr_spec->types[scan])
+  if (!types[scan])
   {
     assert(spec->escape_usr && !!spec->usr_spec);
 
@@ -751,9 +754,9 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
     spec = spec->next;
   }
 
-  while (beg->usr_spec->types[scan])
+  while (types[scan])
   {
-    switch (beg->usr_spec->types[scan])
+    switch (types[scan])
     {
       case VSTR_TYPE_FMT_INT:
       case VSTR_TYPE_FMT_UINT:
@@ -788,10 +791,10 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   assert(!spec || !spec->escape_usr || spec->usr_spec);
   usr_spec->data_ptr[scan] = NULL;
 
-  if (!(*beg->usr_spec->func)(base, base->len - pos_diff, usr_spec))
+  if (!(*func)(base, base->len - pos_diff, usr_spec))
     last = NULL;
   
-  if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
+  if (sz > VSTR__FMT_USR_SZ)
     VSTR__F(usr_spec);
 
   return (last);
@@ -1063,11 +1066,8 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
               break;
               
             case 'p':
-            {
-              void *tmp = va_arg(ap, void *);
-              u.data_ptr = tmp;
-            }
-            break;
+              u.data_ptr = va_arg(ap, void *);
+              break;
             
             case 'n':
               switch (spec->int_type)

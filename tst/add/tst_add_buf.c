@@ -81,10 +81,9 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   ASSERT(((0) == s1->len) && (vstr_num(s1, 1, s1->len) == 0));
   TST_B_TST(ret, 19, !s1->iovec_upto_date);
-  vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE, FALSE);
   VSTR_ADD_CSTR_BUF(s1, s1->len, "abcdX");
   ASSERT(((5) == s1->len) && (vstr_num(s1, 1, s1->len) == 1));
-  TST_B_TST(ret, 20,  s1->iovec_upto_date);
+  TST_B_TST(ret, 20, !s1->iovec_upto_date);
   
   vstr_add_non(s1, 0, 2);
   ASSERT(((2 + 5) == s1->len) && (vstr_num(s1, 1, s1->len) == 2));

@@ -460,6 +460,25 @@
   ex_hl_process_limit(s1, s2, <span class="num0">0</span>);
 }
 
+<span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *ex_hl_ctime(time_t val)
+{
+  <span class="static">static</span> <span class="char">char</span> ret[4096];
+
+  strftime(ret, sizeof(ret), <span class="str">"%c"</span>, localtime(&amp;val));
+
+  <span class="return">return</span> (ret);
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_hl_fin(<span class="vstrbase">Vstr_base</span> *s1, time_t timestamp, <span class="const">const</span> <span class="char">char</span> *fname)
+{
+  vstr_add_fmt(s1, s1-&gt;len,
+               <span class="str">"&lt;/pre&gt;\n"</span>
+               <span class="str">"&lt;!-- C to html convertion of %s --&gt;\n"</span>
+               <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+               <span class="str">"&lt;!--   done by ex_highlight --&gt;\n"</span>,
+               fname, ex_hl_ctime(timestamp));
+}
+
 <span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
 {
   <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
@@ -573,12 +592,7 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
     first_time = <span class="true">TRUE</span>;
     vstr_add_rep_chr(s2, s2-&gt;len, <span class="chr">'\n'</span>, 1);
     ex_hl_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
-    vstr_add_fmt(s1, s1-&gt;len,
-                 <span class="str">"&lt;/pre&gt;\n"</span>
-                 <span class="str">"&lt;!-- C to html convertion of %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done by jhighlight --&gt;\n"</span>,
-                 <span class="str">"stdin"</span>, ctime(&amp;now));
+    ex_hl_fin(s1, now, <span class="str">"stdin"</span>);
   }
 
   <span class="comment">/* loop through all arguments, open the file specified
@@ -615,13 +629,8 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
       <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"mmap"</span>);
     <span class="else">else</span>
       ex_hl_process_limit(s1, s2, <span class="num0">0</span>);
-    
-    vstr_add_fmt(s1, s1-&gt;len,
-                 <span class="str">"&lt;/pre&gt;\n"</span>
-                 <span class="str">"&lt;!-- C to html convertion of %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done by ex_highlight --&gt;\n"</span>,
-                 argv[count], ctime(&amp;now));
+
+    ex_hl_fin(s1, now, argv[count]);
     
     ++count;
   }
@@ -630,7 +639,7 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
   {
     vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"\n\
   &lt;/body&gt;\n\
-&lt;/html&gt;"</span>);
+&lt;/html&gt;\n"</span>);
   }
   
  out:
@@ -640,8 +649,7 @@ Report bugs to James Antill &lt;james@and.org&gt;.\n\
 }
 </pre>
 <!-- C to html convertion of ex_highlight.c -->
-<!--   done on Sun May  9 02:29:53 2004
- -->
+<!--   done on Thu May 13 03:35:34 2004 -->
 <!--   done by ex_highlight -->
 
   </body>

@@ -44,9 +44,6 @@ int tst(void)
   TST_B_TST(ret, 18, !s3->iovec_upto_date);
   vstr_del(s3, 1, s3->len);
   TST_B_TST(ret, 19, !s3->iovec_upto_date);
-  vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE, FALSE);
-  VSTR_ADD_CSTR_PTR(s3, s3->len, "abcdX");
-  TST_B_TST(ret, 20,  s3->iovec_upto_date);
   
   return (TST_B_RET(ret));
 }

@@ -5,8 +5,8 @@ CC=gcc
 #CC=diet gcc3
 
 VSTR_LOCAL_DIR=../
-# VSTR_LOCAL_DIR=../j
-VSTR_LOCAL_DIR=../dbg
+VSTR_LOCAL_DIR=../j
+# VSTR_LOCAL_DIR=../dbg
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -Wno-format-zero-length -Wformat-nonliteral -Wformat-security -O1 -ggdb3 # -ansi -pedantic
@@ -18,10 +18,11 @@ HAVE_LIBBZ2=1
 HAVE_GMP=1
 
 LOCAL=1
-PROFILE=0
+PROFILE=1
 # 1 == Static with libvstr, 2 == really static
-STATIC=0
-FAST=0
+STATIC=1
+# 1 = opt, 0 = debug
+FAST=1
 
 ifeq ($(PROFILE),1)
 PROF=-pg
@@ -91,7 +92,8 @@ NORM_APPS = \
   ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
   ex_csv ex_highlight ex_ssi ex_netstr ex_rainbow ex_changelog_diff \
   ex_perf_nodesize \
-  ex_perf_nodesize_foreach
+  ex_perf_nodesize_foreach \
+  ex_perf_add
 
 APPS = \
   $(NORM_APPS) \

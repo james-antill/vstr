@@ -31,6 +31,7 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   size_t zero_len = 0;
   size_t xobj_len = 0;
   size_t quote_len = 0;
+  int num_p = FALSE;
   
   if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR)
   {
@@ -43,15 +44,13 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   }
   
   if (!(flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
-  {
     spec->fmt_zero = FALSE;
-    flags &= ~VSTR_FLAG05(SC_FMT_CB_BEG_OBJ,
-                          HEXNUM_L, HEXNUM_H, OCTNUM, BINNUM_L, BINNUM_H);
-  }
   else
   {
     unsigned int num_base = 10;
 
+    num_p = TRUE;
+    
     if (0) { }
     else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
       num_base = 16;
@@ -126,55 +125,58 @@ int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
     space_len = 0;
   }
 
-  if (sign)
+  if (num_p)
   {
-    if (!vstr_add_rep_chr(base, *pos, sign, 1))
-      return (FALSE);
-    ++*pos;
-  }
+    if (sign)
+    {
+      if (!vstr_add_rep_chr(base, *pos, sign, 1))
+        return (FALSE);
+      ++*pos;
+    }
 
-  if (0) { }
-  else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
-  {
-    char hexout = 'x';
-
-    if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H)
-      hexout = 'X';
+    if (0) { }
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, HEXNUM_L, HEXNUM_H))
+    {
+      char hexout = 'x';
+      
+      if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H)
+        hexout = 'X';
+      
+      if (!vstr_add_rep_chr(base, *pos, '0', 1))
+        return (FALSE);
+      ++*pos;
+      if (!vstr_add_rep_chr(base, *pos, hexout, 1))
+        return (FALSE);
+      ++*pos;
+    }
+    else if (flags & VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
+    {
+      if (!vstr_add_rep_chr(base, *pos, '0', 1))
+        return (FALSE);
+      ++*pos;
+    }
+    else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
+    {
+      char binout = 'b';
+      
+      if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H)
+        binout = 'B';
+      
+      if (!vstr_add_rep_chr(base, *pos, '0', 1))
+        return (FALSE);
+      ++*pos;
+      if (!vstr_add_rep_chr(base, *pos, binout, 1))
+        return (FALSE);
+      ++*pos;
+    }
     
-    if (!vstr_add_rep_chr(base, *pos, '0', 1))
-      return (FALSE);
-    ++*pos;
-    if (!vstr_add_rep_chr(base, *pos, hexout, 1))
-      return (FALSE);
-    ++*pos;
-  }
-  else if (flags & VSTR_FLAG01(SC_FMT_CB_BEG_OBJ, OCTNUM))
-  {
-    if (!vstr_add_rep_chr(base, *pos, '0', 1))
-      return (FALSE);
-    ++*pos;
-  }
-  else if (flags & VSTR_FLAG02(SC_FMT_CB_BEG_OBJ, BINNUM_L, BINNUM_H))
-  {
-    char binout = 'b';
-
-    if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_H)
-      binout = 'B';
-    
-    if (!vstr_add_rep_chr(base, *pos, '0', 1))
-      return (FALSE);
-    ++*pos;
-    if (!vstr_add_rep_chr(base, *pos, binout, 1))
-      return (FALSE);
-    ++*pos;
-  }
-  
-  if (zero_len)
-  {
-    if (!vstr_add_rep_chr(base, *pos, '0', zero_len))
-      return (FALSE);
-    *pos += zero_len;
-    zero_len = 0;
+    if (zero_len)
+    {
+      if (!vstr_add_rep_chr(base, *pos, '0', zero_len))
+        return (FALSE);
+      *pos += zero_len;
+      zero_len = 0;
+    }
   }
   
   spec->obj_precision    = quote_len;

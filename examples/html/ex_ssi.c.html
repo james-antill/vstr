@@ -548,6 +548,18 @@
   ex_ssi_process_limit(s1, s2, last_modified, <span class="num0">0</span>);
 }
 
+<span class="static">static</span> <span class="void">void</span> ex_ssi_fin(<span class="vstrbase">Vstr_base</span> *s1, time_t timestamp, <span class="const">const</span> <span class="char">char</span> *fname)
+{
+  free(timespec);
+  timespec = <span class="null">NULL</span>;
+
+  vstr_add_fmt(s1, s1-&gt;len,
+               <span class="str">"&lt;!-- SSI processing of %s --&gt;\n"</span>
+               <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+               <span class="str">"&lt;!--   done by jssi --&gt;\n"</span>,
+               fname, ex_ssi_strftime(timestamp, <span class="false">FALSE</span>));
+}
+
 <span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
 {
   <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
@@ -565,11 +577,7 @@
   {
     io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
     ex_ssi_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
-    vstr_add_fmt(s1, s1-&gt;len,
-                 <span class="str">"&lt;!-- SSI processing of %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done by jssi --&gt;\n"</span>,
-                 <span class="str">"stdin"</span>, ctime(&amp;now));
+    ex_ssi_fin(s1, now, <span class="str">"stdin"</span>);    
   }
   
   <span class="while">while</span> (count &lt; argc)
@@ -594,16 +602,11 @@
     vstr_del(s1, s1-&gt;len - len + 1, len);
     
     ex_ssi_read_fd_write_stdout(s1, s2, fd);
+    ex_ssi_fin(s1, now, argv[count]);    
 
     <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
       <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
 
-    vstr_add_fmt(s1, s1-&gt;len,
-                 <span class="str">"&lt;!-- SSI processing of %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
-                 <span class="str">"&lt;!--   done by jssi --&gt;\n"</span>,
-                 argv[count], ctime(&amp;now));
-    
     ++count;
   }
 
@@ -615,8 +618,7 @@
 }
 </pre>
 <!-- C to html convertion of ex_ssi.c -->
-<!--   done on Sun May  9 02:29:54 2004
- -->
+<!--   done on Thu May 13 03:35:35 2004 -->
 <!--   done by ex_highlight -->
 
   </body>

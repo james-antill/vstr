@@ -441,7 +441,7 @@ extern inline unsigned char vstr_iter_fwd_chr(struct Vstr_iter *iter,
 extern inline size_t vstr_iter_pos(struct Vstr_iter *iter,
                                    size_t pos, size_t len)
 {
-  ASSERT_RET((len >= (iter->len + iter->remaining)), 0);
+  VSTR__ASSERT_RET((len >= (iter->len + iter->remaining)), 0);
     
   return (pos + (len - (iter->len + iter->remaining)));
 }

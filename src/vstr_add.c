@@ -68,9 +68,6 @@ void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
 static void vstr__cache_iovec_maybe_add(Vstr_base *base, Vstr_node *node,
                                         int at_end, unsigned int len)
 {
-  if (!base->conf->iovec_auto_update)
-    base->iovec_upto_date = FALSE;
-
   if (!base->iovec_upto_date)
     return;
   

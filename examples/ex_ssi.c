@@ -539,6 +539,18 @@ static void ex_ssi_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
   ex_ssi_process_limit(s1, s2, last_modified, 0);
 }
 
+static void ex_ssi_fin(Vstr_base *s1, time_t timestamp, const char *fname)
+{
+  free(timespec);
+  timespec = NULL;
+
+  vstr_add_fmt(s1, s1->len,
+               "<!-- SSI processing of %s -->\n"
+               "<!--   done on %s -->\n"
+               "<!--   done by jssi -->\n",
+               fname, ex_ssi_strftime(timestamp, FALSE));
+}
+
 int main(int argc, char *argv[])
 {
   Vstr_base *s2 = NULL;
@@ -556,11 +568,7 @@ int main(int argc, char *argv[])
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
     ex_ssi_read_fd_write_stdout(s1, s2, STDIN_FILENO);
-    vstr_add_fmt(s1, s1->len,
-                 "<!-- SSI processing of %s -->\n"
-                 "<!--   done on %s -->\n"
-                 "<!--   done by jssi -->\n",
-                 "stdin", ctime(&now));
+    ex_ssi_fin(s1, now, "stdin");    
   }
   
   while (count < argc)
@@ -585,16 +593,11 @@ int main(int argc, char *argv[])
     vstr_del(s1, s1->len - len + 1, len);
     
     ex_ssi_read_fd_write_stdout(s1, s2, fd);
+    ex_ssi_fin(s1, now, argv[count]);    
 
     if (close(fd) == -1)
       warn("close(%s)", argv[count]);
 
-    vstr_add_fmt(s1, s1->len,
-                 "<!-- SSI processing of %s -->\n"
-                 "<!--   done on %s -->\n"
-                 "<!--   done by jssi -->\n",
-                 argv[count], ctime(&now));
-    
     ++count;
   }
 

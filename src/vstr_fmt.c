@@ -59,11 +59,15 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
     char *ptr = NULL;
     size_t len = 0;
 
-    if (*fmt == '{') ptr = strchr(fmt, '}');
-    if (*fmt == '[') ptr = strchr(fmt, ']');
-    if (*fmt == '<') ptr = strchr(fmt, '>');
-    if (*fmt == '(') ptr = strchr(fmt, ')');
-
+    switch (*fmt)
+    {
+      case '{': ptr = strchr(fmt, '}'); break;
+      case '[': ptr = strchr(fmt, ']'); break;
+      case '<': ptr = strchr(fmt, '>'); break;
+      case '(': ptr = strchr(fmt, ')');
+        ASSERT_NO_SWITCH_DEF();
+    }
+    
     if (!ptr)
       return (NULL);
 

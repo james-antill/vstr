@@ -451,6 +451,25 @@ static void ex_hl_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
   ex_hl_process_limit(s1, s2, 0);
 }
 
+static const char *ex_hl_ctime(time_t val)
+{
+  static char ret[4096];
+
+  strftime(ret, sizeof(ret), "%c", localtime(&val));
+
+  return (ret);
+}
+
+static void ex_hl_fin(Vstr_base *s1, time_t timestamp, const char *fname)
+{
+  vstr_add_fmt(s1, s1->len,
+               "</pre>\n"
+               "<!-- C to html convertion of %s -->\n"
+               "<!--   done on %s -->\n"
+               "<!--   done by ex_highlight -->\n",
+               fname, ex_hl_ctime(timestamp));
+}
+
 int main(int argc, char *argv[])
 {
   Vstr_base *s2 = NULL;
@@ -564,12 +583,7 @@ Report bugs to James Antill <james@and.org>.\n\
     first_time = TRUE;
     vstr_add_rep_chr(s2, s2->len, '\n', 1);
     ex_hl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
-    vstr_add_fmt(s1, s1->len,
-                 "</pre>\n"
-                 "<!-- C to html convertion of %s -->\n"
-                 "<!--   done on %s -->\n"
-                 "<!--   done by jhighlight -->\n",
-                 "stdin", ctime(&now));
+    ex_hl_fin(s1, now, "stdin");
   }
 
   /* loop through all arguments, open the file specified
@@ -606,13 +620,8 @@ Report bugs to James Antill <james@and.org>.\n\
       err(EXIT_FAILURE, "mmap");
     else
       ex_hl_process_limit(s1, s2, 0);
-    
-    vstr_add_fmt(s1, s1->len,
-                 "</pre>\n"
-                 "<!-- C to html convertion of %s -->\n"
-                 "<!--   done on %s -->\n"
-                 "<!--   done by ex_highlight -->\n",
-                 argv[count], ctime(&now));
+
+    ex_hl_fin(s1, now, argv[count]);
     
     ++count;
   }
@@ -621,7 +630,7 @@ Report bugs to James Antill <james@and.org>.\n\
   {
     vstr_add_cstr_ptr(s1, s1->len, "\n\
   </body>\n\
-</html>");
+</html>\n");
   }
   
  out:

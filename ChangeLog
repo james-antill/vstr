@@ -1,3 +1,8 @@
+2004-05-12  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr__cache_iovec_maybe_add): Remove old use of
+	iovec_auto_update flag.
+
 2004-05-04  James Antill  <james@and.org>
 
 	* src/vstr_add_fmt.c (vstr__add_fmt_number): Added uintptr_t as the

@@ -386,7 +386,7 @@ extern void vstr__debug_free(void *)
 # define VSTR__CONF_REF_LINKED_SZ 2
 # define VSTR__SECTS_SZ 2
 # define VSTR__STACK_BUF_SZ 2
-# define VSTR__FMT_USR_SZ 2
+# define VSTR__FMT_USR_SZ 3
 # define VSTR__REF_GRP_MAKE_SZ 2
 # define VSTR__SC_VEC_SZ 2
 #endif

@@ -102,7 +102,7 @@ static void die(void)
 
 #define EXIT_FAILED_OK 77
 
-#define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * !!(tst))
+#define TST_B_TST(val, num, tst) ASSERT(!val && (num) && !(tst))
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
 
