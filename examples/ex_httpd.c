@@ -1143,27 +1143,55 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
   return (TRUE);
 }
 
-/* vprefix, with local knowledge */
-#define HDR__EQ(x)                                                      \
-    ((len >= (name_len = strlen(x ":"))) &&                             \
-     vstr_cmp_case_buf_eq(data, pos, name_len, x ":", name_len))
+/* viprefix, with local knowledge */
+static int http__hdr_eq(Vstr_base *data, size_t pos, size_t len,
+                        const char *hdr, size_t *hdr_val_pos)
+{
+  if (!VIPREFIX(data, pos, len, hdr))
+    return (FALSE);
+  len -= strlen(hdr); pos += strlen(hdr);
+
+  HTTP_SKIP_LWS(data, pos, len);
+  if (!len)
+    return (FALSE);
+  
+  if (vstr_export_chr(data, pos) != ':')
+    return (FALSE);
+  --len; ++pos;
+  
+  *hdr_val_pos = pos;
+  
+  return (TRUE);
+}
+
 /* remove LWS from front and end... what a craptastic std. */
-#define HDR__BEG_SET() do {                                             \
-      len -= name_len; pos += name_len;                                 \
-                                                                        \
-      HTTP_SKIP_LWS(data, pos, len);                                    \
-      len -= vstr_spn_cstr_chrs_rev(data, pos, len, HTTP_LWS);          \
-      if (VSUFFIX(data, pos, len, HTTP_EOL))                            \
-        len -= strlen(HTTP_EOL);                                        \
-    } while (FALSE)
+static void http__hdr_fixup(Vstr_base *data, size_t *pos, size_t *len,
+                            size_t hdr_val_pos)
+{
+  size_t tmp = 0;
+  
+  *len -= hdr_val_pos - *pos; *pos += hdr_val_pos - *pos;
+  HTTP_SKIP_LWS(data, *pos, *len);
+
+  /* hand coding for a HTTP_SKIP_LWS() going backwards... */
+  while ((tmp = vstr_spn_cstr_chrs_rev(data, *pos, *len, HTTP_LWS)))
+  {
+    *len -= tmp;
+  
+    if (VSUFFIX(data, *pos, *len, HTTP_EOL))
+      *len -= strlen(HTTP_EOL);
+  }  
+}
+
+#define HDR__EQ(x) http__hdr_eq(data, pos, len, x, &hdr_val_pos)
 #define HDR__SET(h) do {                                                \
-      HDR__BEG_SET();                                                   \
+      http__hdr_fixup(data, &pos, &len, hdr_val_pos);                   \
       http_hdrs-> hdr_ ## h ->pos = pos;                                \
       http_hdrs-> hdr_ ## h ->len = len;                                \
     } while (FALSE)
 #define HDR__MULTI_SET(h) do {                                          \
-      HDR__BEG_SET();                                                   \
-      if (!http__app_multi_hdr(data, http_hdrs, \
+      http__hdr_fixup(data, &pos, &len, hdr_val_pos);                   \
+      if (!http__app_multi_hdr(data, http_hdrs,                         \
                                http_hdrs->multi-> hdr_ ## h, pos, len)) \
         HTTPD_ERR_RET(req, 500, FALSE);                                 \
     } while (FALSE)
@@ -1178,7 +1206,7 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
   {
     size_t pos = VSTR_SECTS_NUM(req->sects, num)->pos;
     size_t len = VSTR_SECTS_NUM(req->sects, num)->len;
-    size_t name_len = 0;
+    size_t hdr_val_pos = 0;
 
     if (0) { /* nothing */ }
     /* single headers, isn't allowed ... we do last one wins */
@@ -1204,14 +1232,13 @@ static int http__parse_hdrs(struct Con *con, struct Http_req_data *req)
     /* in theory 0 bytes is ok ... who cares */
     else if (HDR__EQ("Content-Length"))      HTTPD_ERR_RET(req, 413, FALSE);
 
-    /* in theory identity is ok? ... who cares */
+    /* in theory identity is ok ... who cares */
     else if (HDR__EQ("Transfer-Encoding"))   HTTPD_ERR_RET(req, 413, FALSE);
   }
 
   return (TRUE);
 }
 #undef HDR__EQ
-#undef HDR__BEG_SET
 #undef HDR__SET
 #undef HDR__MUTLI_SET
 
