@@ -70,7 +70,7 @@ static int vstr__netstr_end_start(Vstr_base *base,
   if (!VSTR__ULONG_MAX_LEN)
     return (FALSE);
 
-  if (netstr_beg_pos >= (netstr_end_pos - VSTR__ULONG_MAX_LEN + 1))
+  if (vstr_sc_posdiff(netstr_beg_pos, netstr_end_pos) <= VSTR__ULONG_MAX_LEN)
     return (FALSE);
 
   if (netstr_end_pos > base->len)
@@ -79,7 +79,7 @@ static int vstr__netstr_end_start(Vstr_base *base,
   assert(vstr_export_chr(base, netstr_beg_pos + VSTR__ULONG_MAX_LEN) ==
          VSTR__ASCII_COLON());
  
-  /* + 1 because of the ':' */
+  /* includes the ':' */
   netstr_len = netstr_end_pos - (netstr_beg_pos + VSTR__ULONG_MAX_LEN);
 
   if (!vstr_add_buf(base, netstr_end_pos, comma, 1))

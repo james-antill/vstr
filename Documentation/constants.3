@@ -1,4 +1,4 @@
-.TH vstr_const 3 "12-Feb-2003" "Vstr 1.0.1" "Vstr String Library"
+.TH vstr_const 3 "21-Feb-2003" "Vstr 1.0.2" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -721,7 +721,7 @@
 .br
   This is the largest size a node _BUF type can be, if you pass values greater than this to vstr_add_buf() etc. then multiple nodes will be allocated.
 
-.SH Constants for making/freeing type of nodes
+.SH Constants passed to vstr_make_spare_nodes() and vstr_free_spare_nodes()
 
 .br
 \fBConstant: \fR VSTR_TYPE_NODE_BUF
@@ -834,7 +834,7 @@
 .br
   This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies that the data should all be added via. vstr_add_buf().
 
-.SH Constants used with vstr_fmt_add()
+.SH Constants passed to vstr_fmt_add()
 
 .br
 \fBConstant: \fR VSTR_TYPE_FMT_END
@@ -1005,7 +1005,7 @@
 .br
   This flag means that vstr_add_vfmt() should not expect any arguments passed, but should set the value of errno, just before calling the user callback, to the value upon entering vstr_add_vfmt().
 
-.SH Constants used with vstr_sc_fmt_cb_beg()
+.SH Constants passed to vstr_sc_fmt_cb_beg()
 
 .br
 \fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_DEF
@@ -1052,7 +1052,7 @@
 .br
   This flag indicates that the number object you are printing should be treated as negative number. This flag has no meaning if VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
-.SH Constants passed to vstr_conv_unprintable_*()
+.SH Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()
 
 .br
 \fBConstant: \fR VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE
@@ -1231,7 +1231,7 @@
 .br
   This flag is the same as using the flags for space, comma, dot and underbar. Using just this flag is probably what you'd expect an "unprintable" function to do.
 
-.SH Constants used with vstr_parse_[u](short|int|long|intmax)()
+.SH Constants passed to vstr_parse_[u](short|int|long|intmax)()
 
 .br
 \fBConstant: \fR VSTR_TYPE_PARSE_NUM_ERR_NONE
@@ -1385,7 +1385,7 @@
 .br
   This flag disallows a plus or a minus character before the number.
 
-.SH Constants used with vstr_parse_ipv4()
+.SH Constants passed to vstr_parse_ipv4()
 
 .br
 \fBConstant: \fR VSTR_TYPE_PARSE_IPV4_ERR_NONE
@@ -1555,7 +1555,7 @@
 .br
   When this error code is returned, the ip address is still parsed out and as usable as if no error had occurred.
 
-.SH Constants used with vstr_parse_ipv6()
+.SH Constants passed to vstr_parse_ipv6()
 
 .br
 \fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_NONE
@@ -1731,7 +1731,7 @@
 .br
   This flag outputs the ipv6 address in the same way as VSTR_TYPE_SC_FMT_CB_IPV6_STD, except that the last 2 groups of hexadecimal values (the last 4 octets) are replaced with an ipv4 address.
 
-.SH Constants passed to vstr_split_*()
+.SH Constants passed to vstr_split_buf(), vstr_split_cstr_buf(), VSTR_SPLIT_CSTR_BUF(), vstr_split_chrs(), vstr_split_cstr_chrs() and VSTR_SPLIT_CSTR_CHRS()
 
 .br
 \fBConstant: \fR VSTR_FLAG_SPLIT_DEF
@@ -1796,8 +1796,7 @@
 .br
   This flag changes the split functions, when used with a limit, so that the last section added is for the remainder of the input.
 
-
-.SH Constants used with vstr_sects_*()
+.SH Constants passed to vstr_sects_foreach()
 
 .br
 \fBConstant: \fR VSTR_FLAG_SECTS_FOREACH_DEF
@@ -1853,7 +1852,7 @@
 .br
   This return value tells the foreach function to return immediately (it does the same thing as a break statement in a C for loop.
 
-.SH Constants passed to the cache callback function (vstr_cache_add_cb())
+.SH Constants used with the callback from vstr_cache_add_cb()
 
 .br
 \fBConstant: \fR VSTR_TYPE_CACHE_ADD
@@ -1893,7 +1892,7 @@
 .br
   The position and length arguments are undefined.
 
-.SH Constants used with vstr_sc_add_fd() and vstr_sc_add_file()
+.SH Constants passed to vstr_sc_mmap_fd() and vstr_sc_mmap_file()
 
 .br
 \fBConstant: \fR VSTR_TYPE_SC_MMAP_FD_ERR_NONE
@@ -1985,7 +1984,7 @@
 .br
   To help the programer unify error paths errno is set to EFBIG.
 
-.SH Constants used with vstr_sc_read_fd()
+.SH Constants passed to vstr_sc_read_iov_fd(), vstr_sc_read_len_fd(), vstr_sc_read_iov_file() and vstr_sc_read_len_file()
 
 .br
 \fBConstant: \fR VSTR_TYPE_SC_READ_FD_ERR_NONE
@@ -2102,7 +2101,7 @@
 .br
   To help the programer unify error paths errno is set to EFBIG.
 
-.SH Constants used with vstr_sc_write_fd() and vstr_sc_write_file()
+.SH Constants passed to vstr_sc_write_fd() and vstr_sc_write_file()
 
 .br
 \fBConstant: \fR VSTR_TYPE_SC_WRITE_FD_ERR_NONE
@@ -2176,7 +2175,7 @@
 .br
   To help the programer unify error paths base->conf->malloc_bad is set to TRUE, and errno is set to ENOMEM.
 
-.SH Constants you pass to the vstr_cntl_base() function
+.SH Constants passed to vstr_cntl_base()
 
 .br
 \fBConstant: \fR VSTR_CNTL_BASE_GET_CONF
@@ -2211,7 +2210,7 @@ Type\fB[1]\fR: struct Vstr_conf *
   This will only return successfully if either the Vstr string is empty, or the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
 .br
   If the Vstr configuration (Parameter[1]) is NULL, then the default Vstr configuration will be used.
-.SH Constants you pass to the vstr_cntl_conf() function
+.SH Constants passed to vstr_cntl_conf()
 
 .br
 \fBConstant: \fR VSTR_CNTL_CONF_GET_NUM_BUF_SZ
@@ -2684,7 +2683,7 @@ Type\fB[2]\fR: unsigned int
 .br
   When the value specified is higher and it calls vstr_make_spare_nodes() then a return value of FALSE means that there was a malloc error, just as if you called vstr_make_nodes directly.
 
-.SH Constants you pass to the vstr_cntl_opt() function
+.SH Constants passed to vstr_cntl_opt()
 
 .br
 \fBConstant: \fR VSTR_CNTL_OPT_GET_CONF

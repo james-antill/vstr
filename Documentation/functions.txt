@@ -126,7 +126,7 @@ Function: vstr_export_cstr_ptr()
  free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
  instead.
   If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+ cache then you can call vstr_cache_cb_free() on the cookie from "/vstr__/cstr".
   Any _NON data in the Vstr will be uninitialized data in the "C string".
   If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -230,7 +230,7 @@ Function: vstr_export_cstr_ref()
  Note:
 
   If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+ cache then you can call vstr_cache_cb_free() on the cookie from "/vstr__/cstr".
   Any _NON data in the Vstr will be uninitialized data in the "C string".
   If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -2066,7 +2066,7 @@ Function: vstr_cntl_opt()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
- Parameter[1]: Option type starting VSTR_CNTL_OPT_
+ Parameter[1]: Option type starting VSTR_CNTL_OPT_*
  Type[1]: int
 
  Parameter[ ... ]: Options depending on value of Parameter[1]
@@ -2084,7 +2084,7 @@ Function: vstr_cntl_base()
  Parameter[1]: Vstr string
  Type[1]: const struct Vstr_base *
 
- Parameter[2]: Option type starting VSTR_CNTL_BASE_
+ Parameter[2]: Option type starting VSTR_CNTL_BASE_*
  Type[2]: int
 
  Parameter[ ... ]: Options depending on value of Parameter[2]
@@ -2102,7 +2102,7 @@ Function: vstr_cntl_conf()
  Parameter[1]: 
  Type[1]: struct Vstr_conf *
 
- Parameter[2]: Option type starting VSTR_CNTL_CONF_
+ Parameter[2]: Option type starting VSTR_CNTL_CONF_*
  Type[2]: int
 
  Parameter[ ... ]: Options depending on value of Parameter[2]
@@ -2331,8 +2331,8 @@ Function: vstr_cmp_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp() if both of the length values
- (Parameter[3] Parameter[6]) are equal.
+  This function returns !vstr_cmp() if both of the length values
+ (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_cstr()
@@ -2378,8 +2378,8 @@ Function: vstr_cmp_buf_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_buf() if both of the length values
- (Parameter[3] Parameter[5]) are equal.
+  This function returns !vstr_cmp_buf() if both of the length values
+ (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_cstr_eq()
@@ -2429,8 +2429,8 @@ Function: vstr_cmp_case_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+  This function returns !vstr_cmp_case() if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_case_cstr()
@@ -2476,8 +2476,8 @@ Function: vstr_cmp_case_buf_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+  This function returns !vstr_cmp_case_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_case_cstr_eq()
@@ -2527,8 +2527,8 @@ Function: vstr_cmp_vers_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+  This function returns !vstr_cmp_vers() if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_vers_cstr()
@@ -2574,8 +2574,8 @@ Function: vstr_cmp_vers_buf_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+  This function returns !vstr_cmp_vers_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: vstr_cmp_vers_cstr_eq()
@@ -2685,7 +2685,7 @@ Function: vstr_cmp_bod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_bod().
+  This function returns !vstr_cmp_bod().
 
 
 Function: vstr_cmp_eod_eq()
@@ -2712,7 +2712,7 @@ Function: vstr_cmp_eod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_eod().
+  This function returns !vstr_cmp_eod().
 
 
 Function: vstr_cmp_bod_buf()
@@ -2766,7 +2766,7 @@ Function: vstr_cmp_eod_buf()
 
 
 Function: vstr_cmp_bod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -2786,11 +2786,11 @@ Function: vstr_cmp_bod_buf_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_bod_buf().
+  This function returns !vstr_cmp_bod_buf().
 
 
 Function: vstr_cmp_eod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -2810,7 +2810,7 @@ Function: vstr_cmp_eod_buf_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_eod_buf().
+  This function returns !vstr_cmp_eod_buf().
 
 
 Function: vstr_cmp_bod_cstr()
@@ -2858,7 +2858,7 @@ Function: vstr_cmp_eod_cstr()
 
 
 Function: vstr_cmp_bod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -2880,7 +2880,7 @@ Function: vstr_cmp_bod_cstr_eq()
 
 
 Function: vstr_cmp_eod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -2985,7 +2985,7 @@ Function: vstr_cmp_case_bod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case_bod().
+  This function returns !vstr_cmp_case_bod().
 
 
 Function: vstr_cmp_case_eod_eq()
@@ -3012,7 +3012,7 @@ Function: vstr_cmp_case_eod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case_eod().
+  This function returns !vstr_cmp_case_eod().
 
 
 Function: vstr_cmp_case_bod_buf()
@@ -3028,8 +3028,8 @@ Function: vstr_cmp_case_bod_buf()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
@@ -3053,8 +3053,8 @@ Function: vstr_cmp_case_eod_buf()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
@@ -3066,7 +3066,7 @@ Function: vstr_cmp_case_eod_buf()
 
 
 Function: vstr_cmp_case_bod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3078,19 +3078,19 @@ Function: vstr_cmp_case_bod_buf_eq()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case_bod_buf().
+  This function returns !vstr_cmp_case_bod_buf().
 
 
 Function: vstr_cmp_case_eod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3102,15 +3102,15 @@ Function: vstr_cmp_case_eod_buf_eq()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
 
  Explanation:
 
-  This function calls returns !vstr_cmp_case_eod_buf().
+  This function returns !vstr_cmp_case_eod_buf().
 
 
 Function: vstr_cmp_case_bod_cstr()
@@ -3158,7 +3158,7 @@ Function: vstr_cmp_case_eod_cstr()
 
 
 Function: vstr_cmp_case_bod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3180,7 +3180,7 @@ Function: vstr_cmp_case_bod_cstr_eq()
 
 
 Function: vstr_cmp_case_eod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3285,7 +3285,7 @@ Function: vstr_cmp_vers_bod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers_bod().
+  This function returns !vstr_cmp_vers_bod().
 
 
 Function: vstr_cmp_vers_eod_eq()
@@ -3312,7 +3312,7 @@ Function: vstr_cmp_vers_eod_eq()
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers_eod().
+  This function returns !vstr_cmp_vers_eod().
 
 
 Function: vstr_cmp_vers_bod_buf()
@@ -3328,8 +3328,8 @@ Function: vstr_cmp_vers_bod_buf()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
@@ -3353,8 +3353,8 @@ Function: vstr_cmp_vers_eod_buf()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
@@ -3366,7 +3366,7 @@ Function: vstr_cmp_vers_eod_buf()
 
 
 Function: vstr_cmp_vers_bod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3378,19 +3378,19 @@ Function: vstr_cmp_vers_bod_buf_eq()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers_bod_buf().
+  This function returns !vstr_cmp_vers_bod_buf().
 
 
 Function: vstr_cmp_vers_eod_buf_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3402,15 +3402,15 @@ Function: vstr_cmp_vers_eod_buf_eq()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Pointer to data
- Type[4]: const void *
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
 
  Parameter[5]: Length of data (Parameter[4])
  Type[5]: size_t
 
  Explanation:
 
-  This function calls returns !vstr_cmp_vers_eod_buf().
+  This function returns !vstr_cmp_vers_eod_buf().
 
 
 Function: vstr_cmp_vers_bod_cstr()
@@ -3458,7 +3458,7 @@ Function: vstr_cmp_vers_eod_cstr()
 
 
 Function: vstr_cmp_vers_bod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3480,7 +3480,7 @@ Function: vstr_cmp_vers_bod_cstr_eq()
 
 
 Function: vstr_cmp_vers_eod_cstr_eq()
- Returns: Less then zero, zero or greater than zero depending on comparison
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -3525,8 +3525,8 @@ Function: VSTR_CMP_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp() if both of the length values
- (Parameter[3] Parameter[6]) are equal.
+  This macro function returns !vstr_cmp() if both of the length values
+ (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_CSTR()
@@ -3572,8 +3572,8 @@ Function: VSTR_CMP_BUF_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp_buf() if both of the length values
- (Parameter[3] Parameter[5]) are equal.
+  This macro function returns !vstr_cmp_buf() if both of the length values
+ (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_CSTR_EQ()
@@ -3623,8 +3623,8 @@ Function: VSTR_CMP_CASE_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp_case() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+  This macro function returns !vstr_cmp_case() if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_CASE_CSTR()
@@ -3670,8 +3670,8 @@ Function: VSTR_CMP_CASE_BUF_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp_case_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+  This macro function returns !vstr_cmp_case_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_CASE_CSTR_EQ()
@@ -3721,8 +3721,8 @@ Function: VSTR_CMP_VERS_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp_vers() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+  This macro function returns !vstr_cmp_vers() if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_VERS_CSTR()
@@ -3768,8 +3768,8 @@ Function: VSTR_CMP_VERS_BUF_EQ()
 
  Explanation:
 
-  This macro function calls returns !vstr_cmp_vers_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+  This macro function returns !vstr_cmp_vers_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 Function: VSTR_CMP_VERS_CSTR_EQ()
@@ -4953,7 +4953,7 @@ Function: vstr_conv_unprintable_chr()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_
+ Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_*
  Type[4]: unsigned int
 
  Parameter[5]: Character to substitute in place of the unprintable character
@@ -4978,7 +4978,7 @@ Function: vstr_conv_unprintable_del()
  Parameter[3]: Length in the Vstr string (Parameter[1])
  Type[3]: size_t
 
- Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_
+ Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_*
  Type[4]: unsigned int
 
  Explanation:
@@ -5193,7 +5193,7 @@ Function: vstr_sects_foreach()
  Parameter[2]: Vstr sections
  Type[2]: struct Vstr_sects *
 
- Parameter[3]: Flags starting VSTR_FLAG_SECT_FOREACH_
+ Parameter[3]: Flags starting VSTR_FLAG_SECT_FOREACH_*
  Type[3]: unsigned int
 
  Parameter[4]: Function to run as foreach body
@@ -5300,7 +5300,7 @@ Function: vstr_split_buf()
  Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
  Type[7]: unsigned int
 
- Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_*
  Type[8]: unsigned int
 
  Explanation:
@@ -5373,7 +5373,7 @@ Function: vstr_split_cstr_buf()
  Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
  Type[6]: unsigned int
 
- Parameter[7]: Flags starting VSTR_FLAG_SPLIT_
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_*
  Type[7]: unsigned int
 
  Explanation:
@@ -5407,7 +5407,7 @@ Function: vstr_split_cstr_chrs()
  Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
  Type[7]: unsigned int
 
- Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_*
  Type[8]: unsigned int
 
  Explanation:
@@ -5438,7 +5438,7 @@ Function: VSTR_SPLIT_CSTR_BUF()
  Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
  Type[6]: unsigned int
 
- Parameter[7]: Flags starting VSTR_FLAG_SPLIT_
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_*
  Type[7]: unsigned int
 
  Explanation:
@@ -5472,7 +5472,7 @@ Function: VSTR_SPLIT_CSTR_CHRS()
  Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
  Type[7]: unsigned int
 
- Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_*
  Type[8]: unsigned int
 
  Explanation:
@@ -5866,7 +5866,7 @@ Function: vstr_parse_ipv4()
  Parameter[5]: Returns CIDR mask, if requested
  Type[5]: unsigned int *
 
- Parameter[6]: Flags starting VSTR_FLAG_PARSE_IPV4_
+ Parameter[6]: Flags starting VSTR_FLAG_PARSE_IPV4_*
  Type[6]: unsigned int
 
  Parameter[7]: Returns length of parsed ip address (Parameter[4] Parameter[5])
@@ -5900,7 +5900,7 @@ Function: vstr_parse_ipv6()
  Parameter[5]: Returns CIDR mask
  Type[5]: unsigned int *
 
- Parameter[6]: Flags starting VSTR_FLAG_PARSE_IPV6_
+ Parameter[6]: Flags starting VSTR_FLAG_PARSE_IPV6_*
  Type[6]: unsigned int
 
  Parameter[7]: Returns length of parsed ip address (Parameter[4] Parameter[5])
@@ -5936,7 +5936,7 @@ Function: vstr_fmt_add()
  Explanation:
 
   This function allows you to register arbitrary format specifiers for printing
- from vstr_fmt_vstr(). Note that these trigger off the user escape character,
+ from vstr_add_fmt(). Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
   The call back you register should return 0 (zero) if memory couldn't be 
  allocated and 1 (one) otherwise.
@@ -6181,6 +6181,61 @@ Function: vstr_cache_cb_free()
 
 
 Section: Short cut helper functions
+
+Function: vstr_sc_posdiff()
+ Returns: Length of difference between two positions
+ Type: size_t
+
+ Parameter[2]: Start position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: End position in a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used to find the length between two positions inclusive.
+
+
+Function: VSTR_SC_POSDIFF()
+ Returns: Length of difference between two positions
+ Type: size_t
+
+ Parameter[2]: Start position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: End position in a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This macro function is used to find the length between two positions
+ inclusive.
+
+
+Function: vstr_sc_reduce()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Length to reduce the Vstr string (Parameter[1])
+ Type[4]: size_t
+
+ Explanation:
+
+  This function is a helper function to reduce the Vstr string to the desired
+ length (Ie. delete by a given ammount from the end of the given Vstr string).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
 
 Function: vstr_sc_basename()
  Returns: Nothing

@@ -179,10 +179,12 @@ sc_fmt_cb_beg
 sc_fmt_cb_end
 sc_mmap_fd
 sc_mmap_file
+sc_posdiff
 sc_read_iov_fd
 sc_read_iov_file
 sc_read_len_fd
 sc_read_len_file
+sc_reduce
 sc_write_fd
 sc_write_file
 sects_add

@@ -397,8 +397,6 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
     if (type == VSTR_TYPE_CACHE_DEL)
       data->pos -= len;
     
-    /* do nothing for (type == VSTR_TYPE_CACHE_SUB) */
-    
     return (data);
   }
   

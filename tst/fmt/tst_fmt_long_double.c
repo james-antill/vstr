@@ -48,7 +48,7 @@ int tst(void)
   TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
   vstr_del(s1, 1, s1->len);
 
-#if defined (__GNUC__) && (__GNUC__ == 2)
+#if 0 /* used to work to test edge cases */
   /* this test the sign */
   ldz = ((union __convert_long_double) {__convert_long_double_i: {0x00000000, 0, 0x007ffe, 0x0}}).__convert_long_double_d;
   sprintf(buf,        "%Le %LE %Lf %LF %Lg %LG %La %LA",

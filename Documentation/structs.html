@@ -90,8 +90,8 @@
 </p><p>  When this reaches the value 0, you are free to call the func member.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  It is safest to only change this by calling either vstr_ref_add_ref() or
- vstr_ref_del_ref(). These will automatically call the cleanup function when
+</p><p>  It is safest to only change this by calling either <a href="functions.html#vstr_ref_add_ref()">vstr_ref_add_ref()</a> or
+ <a href="functions.html#vstr_ref_del_ref()">vstr_ref_del_ref()</a>. These will automatically call the cleanup function when
  the reference reaches zero.
 
 
@@ -195,7 +195,7 @@
 <strong>Member: </strong> vstr_orig_len
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This is the length of the Vstr string prior to vstr_add_vfmt() being called,
+</p><p>  This is the length of the Vstr string prior to <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a> being called,
  this allows you to work out how much data has been added to the Vstr string
  already.
 

@@ -117,11 +117,14 @@ int tst(void)
   
   TST_B_TST(ret, 20, (err != VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO));
   
+#ifdef __linux__
+  /* hangs on FreeBSD ... */
   TST_B_TST(ret, 21, !!vstr_sc_read_len_file(s1, s1->len, "/dev/stdin",
                                              1, 1, &err));
   
   TST_B_TST(ret, 22, (err != VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO));
-  
+#endif
+
   return (TST_B_RET(ret));
 }
 /* Crap for tst_coverage constants... None trivial to test.

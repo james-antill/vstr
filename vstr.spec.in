@@ -64,7 +64,7 @@ Requires: %{name} = %{ver}
 - Added chk option for doing a "make check"
 
 * Mon Jan 13 2003 James Antill <james@and.org>
-- Moved the includedir to /usr/include/%{name}-*
+- Moved the includedir to /usr/include/%%{name}-*
 
 * Sat Nov 16 2002 James Antill <james@and.org>
 - Added wrap memcpy/memset to the default configure options.

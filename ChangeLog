@@ -1,3 +1,38 @@
+2003-02-21  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.2
+
+	* include/vstr-extern.h (VSTR_SC_POSDIFF): Added macro function.
+
+	* include/vstr-inline.h (vstr_num): Moved to inline.
+	(vstr_del): Optomised delete last couple of chars case.
+	(vstr_sc_posdiff): Added function.
+	(vstr_sc_reduce): Added function.
+
+2003-02-17  James Antill  <james@and.org>
+
+	* configure.in (cmsghdr struct): Fixes for compile on broken
+	BSD headers.
+
+2003-02-16  James Antill  <james@and.org>
+
+	* include/vstr-inline.h: Fixup inline code to also compile for C++.
+
+	* include/vstr-extern.h: Fixup prototypes from void * -> char * for the
+	_case and _vers functions.
+
+2003-02-14  James Antill  <james@and.org>
+
+	* Documentation/txt2html.pl (conv_A_refs): Did cross references in the
+	html documentation.
+
+2003-02-13  James Antill  <james@and.org>
+
+	* scripts/autogen.sh: Add code to fixup the license after an automake
+	run.
+
+	* COPYING: Fix license back to LGPL, again.
+
 2003-02-12  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.1

@@ -194,6 +194,11 @@ struct vstr__fmt_printf_info
 #define __isnan vstr__fmt_dbl_isnan
 #include "glibc/sysdeps/ieee754/dbl-64/s_isnan.c"
 
+#undef    signbitf
+#undef  __signbitf
+#define __signbitf vstr__fmt_dbl_signbitf
+#include "glibc/sysdeps/ieee754/flt-32/s_signbitf.c"
+
 #undef    signbit
 #undef  __signbit
 #define __signbit vstr__fmt_dbl_signbit

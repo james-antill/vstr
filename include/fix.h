@@ -29,6 +29,10 @@ extern int prctl(int, unsigned long, unsigned long,
 # define MAP_FAILED ((void *) -1)
 #endif
 
+#ifndef O_LARGEFILE
+# define O_LARGEFILE 0
+#endif
+
 #ifndef SHUT_RD
 # define SHUT_RD 0
 #endif
@@ -196,7 +200,6 @@ struct cmsghdr
 #ifndef HAVE_CMSG_DATA
 # define CMSG_DATA(x) ((unsigned char *)((struct cmsghdr *)(x) + 1))
 #endif
-
 
 #ifndef HAVE_STRERROR
 # define strerror(x) (" ** Not available ** ")

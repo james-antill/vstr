@@ -1,3 +1,7 @@
+ Version 1.0.2 ... a couple more functions added to make life easier for
+calculating lengths given positions ... build fixes for FreeBSD ... runtime
+fixes for using code from C++.
+
  Version 1.0.1 ... first binary compatible release, more testsuite code which
 made a pile of bug fixes ... also a lot of simple functions added to make life
 easier.

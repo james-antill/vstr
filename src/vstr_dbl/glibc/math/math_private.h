@@ -17,8 +17,10 @@
 #ifndef _MATH_PRIVATE_H_
 #define _MATH_PRIVATE_H_
 
-#include <endian.h>
+#include "../include/endian.h"
+#if 0
 #include <sys/types.h>
+#endif
 
 /* The original fdlibm code used statements like:
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *
@@ -120,7 +122,7 @@ do {								\
   sl_u.parts.lsw = (v);						\
   (d) = sl_u.value;						\
 } while (0)
-
+#endif /* vstr */
 /* A union which permits us to convert between a float and a 32 bit
    int.  */
 
@@ -138,7 +140,7 @@ do {								\
   gf_u.value = (d);						\
   (i) = gf_u.word;						\
 } while (0)
-
+#if 0 /* vstr */
 /* Set a float from a 32 bit int.  */
 
 #define SET_FLOAT_WORD(d,i)					\

@@ -7,6 +7,8 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
+. Asserts in inline functions
+
 . vstr_mov() doesn't move cache information.
 
 . Make sure everything builds on different platforms.
@@ -14,17 +16,28 @@ was needed for vstr-1.0.0
 . Get rid of inet_ntop() ?
 
 . Try to find a way to test malloc() failure cases in testsuite ... last 17%
+  XFAIL_TESTS
 
- Not needed for 1.0
- ------------------
+. wcrtomb() doesn't exist on FreeBSD ... relies on LC_CTYPE
+
+. del() inline kills cache too easily ... make cb's extern inline and call
+   directly.
+
+ 1.2.x
+ -----
+
+. utf-8 character class, utf-8 searching etc.
+
+ Misc
+ ----
+
+. Vstr_ref->ptr non const. but possibly never altered, *sigh*
 
 . _diamond ... al. la. perl
 
-. Allocator
+. Allocator - seperate library
 
 . VSTR_FLAG_PARSE_NUM_LOC_SEP
-
-. Turn macro functions into inline ????
 
 . Add vstr_parse_double()/long_double()
 
@@ -33,10 +46,6 @@ was needed for vstr-1.0.0
 . _conv_sub_buf_buf() ? ...
    Ie. vstr_conv_sub_buf_buf(s1, 1, s1->len, "\t", 1, "    ", 4)
 
-. inline internal functions like vstr__export_node_ptr() base_pos()
-  vstr__base_scan_fwd_* vstr__base_scan_rev_* ...
-  possibly do first part of functions like iovec_valid etc.
-
 . http://burtleburtle.net/bob/hash/doobs.html .. vstr_x_hash ?
   vstr_x_hash_md5 vstr_x_hash_sha1
 
@@ -44,13 +53,9 @@ was needed for vstr-1.0.0
 
 . join ... ??
 
-. fast sub for ptr/ref when you can just update the ptr in the node
-
-. Document how to rm cache data other than cstr cache data.
-
 . _Bool ?
 
-. {S...:%s} for precision strings with ... at the end.
+. {S...:%s} for chopped strings to replace end with "...".
 
 . _conv_tr_buf_buf() ? ...
    Ie. vstr_conv_tr_buf_buf(s1, 1, s1->len, "\t\r", 2, " ?", 2)
@@ -84,8 +89,6 @@ was needed for vstr-1.0.0
 . Max and Min ammounts for spare nodes.
   min = when allocating a node actually do MAX(1, min_ammount - cur_ammount)
   max = when deleting a node actually do MAX(cur_ammount - max_ammount, 1)
-
-. Optionaly use Timer_q to delete old cache entries ?
 
 . vstr_conv_encode_qp (quoted printable rfc2045.txt)
 . vstr_conv_encode_b64 (base64 rfc2045.txt)

@@ -137,7 +137,7 @@ NROFF = nroff
 MANS = $(man_MANS)
 DATA = $(confexec_DATA)
 
-DIST_COMMON = Makefile.am Makefile.in
+DIST_COMMON = COPYING.LIB Makefile.am Makefile.in
 all: all-am
 
 .SUFFIXES:

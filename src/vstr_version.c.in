@@ -81,27 +81,31 @@ void vstr_version_func(void)
 #endif
 
     
- "  Compiler supports attributes:\n"
+ "  Compiler supports attributes:\n    "
 #ifdef HAVE_ATTRIB_DEPRECATED
- "    deprecated\n"
+ " deprecated"
 #endif
 
 #ifdef HAVE_ATTRIB_MALLOC
- "    malloc\n"
+ " malloc"
 #endif
 
 #ifdef HAVE_ATTRIB_NONNULL
- "    nonnull\n"
+ " nonnull"
 #endif
 
 #ifdef HAVE_ATTRIB_PURE
- "    pure\n"
+ " pure"
+#endif
+
+#ifdef HAVE_ATTRIB_PURE
+ " const"
 #endif
 
 #if VSTR__USE_INTERNAL_SYMBOLS
- "  Internal functions can be restricted for speed and API purity.\n"
+ "\n  Internal functions can be restricted for speed and API purity.\n"
 #else
- "  Internal functions are exported.\n"
+ "\n  Internal functions are exported.\n"
 #endif
 
 #ifdef HAVE_INLINE

@@ -38,7 +38,7 @@ void *FIX_SYMBOL(memchr)(const void *source, int chr, size_t num)
 #ifndef HAVE_MEMRCHR
 void *FIX_SYMBOL(memrchr)(const void *source, int chr, size_t num)
 {
-  const char *tmp = source + num;
+  const char *tmp = ((char *)source) + num;
   
   while (((tmp - (char *)source) > 0) && (*--tmp != (char) chr))
   { /* do nothing */ }
@@ -71,7 +71,7 @@ void *FIX_SYMBOL(mempcpy)(void *dest, const void *src, size_t n)
 {
   memcpy(dest, src, n);
   
-  return (dest + n);
+  return (((char *)dest) + n);
 }
 #endif
 
@@ -414,10 +414,6 @@ static char *posixly_correct;
 
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
-
-#ifndef getenv
-extern char *getenv ();
-#endif
 
 static char *
 my_index (str, chr)
@@ -1306,6 +1302,7 @@ ssize_t FIX_SYMBOL(sendfile)(int out_fd, int in_fd,
 #endif
 
 #if !defined(HAVE_WCSNRTOMBS) && USE_WIDE_CHAR_T
+#include <wchar.h>
 size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
                               size_t len, mbstate_t *ps)
 {

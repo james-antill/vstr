@@ -69,7 +69,7 @@ static int vstr__mov_single_node(Vstr_base *base, size_t pos,
     vstr_wrap_memcpy(tbuf, ptr + from_pos - 1, len);
     if (pos > from_pos)
       vstr_wrap_memmove(ptr + from_pos + len - 1,
-                        ptr + from_pos - 1, (pos + 1) - from_pos);
+                        ptr + from_pos - 1, (pos + 1) - from_pos); /* POSDIFF */
     else
       vstr_wrap_memmove(ptr + pos + len,
                         ptr + pos, from_pos - (pos + 1));

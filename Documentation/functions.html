@@ -303,6 +303,9 @@
 <li><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
+<li><a href="#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
+<li><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
+<li><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
 <li><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
 <li><a href="#vstr_sc_dirname%28%29">vstr_sc_dirname()</a>
 <li><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
@@ -389,7 +392,7 @@
     VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, NUL, BEL, BS, HT, LF, VT)
 
 </pre> ...which is a lot more readable as the number of flags increases.
-</p><p>  The Range of macro functions is from VSTR_FLAG01() to VSTR_FLAG31(), the
+</p><p>  The Range of macro functions is from <a href="functions.html#VSTR_FLAG01()">VSTR_FLAG01()</a> to <a href="functions.html#VSTR_FLAG31()">VSTR_FLAG31()</a>, the
  number at the end referring to how many flags are passed to it (not the number
  of parameters, which is one more than that).
 
@@ -428,10 +431,10 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you alter the Vstr in anyway then the returned pointer may point to
- free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
+ free()'d memory. To get a reference to this data use <a href="functions.html#vstr_export_cstr_ref()">vstr_export_cstr_ref()</a>
  instead.
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+ cache then you can call <a href="functions.html#vstr_cache_cb_free()">vstr_cache_cb_free()</a> on the cookie from "/vstr__/cstr".
 </p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -494,7 +497,7 @@
  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the
  "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be
  used to find the beginning of the block of memory to use.
-</p><p>  When you are finished with the reference you need to use vstr_ref_del() or
+</p><p>  When you are finished with the reference you need to use <a href="functions.html#vstr_ref_del()">vstr_ref_del()</a> or
  the memory will stay allocated forever.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -502,7 +505,7 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you want to make sure that the cached data is gone from the Vstr string,
- cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+ cache then you can call <a href="functions.html#vstr_cache_cb_free()">vstr_cache_cb_free()</a> on the cookie from "/vstr__/cstr".
 </p><p>  Any _NON data in the Vstr will be uninitialized data in the &quot;C string&quot;.
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -525,11 +528,11 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Nodes of type NON are represented by a iov_base set to NULL.
 </p><p>  Altering the iov_base/iov_len members will probably do very bad things, if
- you need to do this use the vstr_export_iovec_cpy_ptr()
+ you need to do this use the <a href="functions.html#vstr_export_iovec_cpy_ptr()">vstr_export_iovec_cpy_ptr()</a>
 </p><p>  Altering the data in the iovec structure isn't a good idea as it isn't easy
  for the programer to know if the data is shared/read-only. If you need to do
  this you should use either the vstr_sub_* functions instead or
- vstr_export_iovec_cpy_buf() (the later does a copy).
+ <a href="functions.html#vstr_export_iovec_cpy_buf()">vstr_export_iovec_cpy_buf()</a> (the later does a copy).
 
 
 <a name="vstr_export_iovec_cpy_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -577,7 +580,7 @@
 </p><p>  Altering the data in the iovec structure isn't a good idea as it isn't easy
  for the programer to know if the data is shared/read-only. If you need to do
  this you should use either the vstr_sub_* functions instead or
- vstr_export_iovec_cpy_buf() (the later does a copy).
+ <a href="functions.html#vstr_export_iovec_cpy_buf()">vstr_export_iovec_cpy_buf()</a> (the later does a copy).
 
 
 <a name="vstr_export_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -628,7 +631,7 @@
 </p><p>  This function is used to return a pointer to a Vstr memory reference of at 
  least length (Parameter[3]). The offset (Parameter[4]) should be used to find
  the beginning of the block of memory to use.
-</p><p>  When you are finished with the reference you need to use vstr_ref_del() or
+</p><p>  When you are finished with the reference you need to use <a href="functions.html#vstr_ref_del()">vstr_ref_del()</a> or
  the memory will stay allocated forever.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -706,7 +709,7 @@
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will free a Vstr configuration, allocated by vstr_make_conf().
+</p><p>  This function will free a Vstr configuration, allocated by <a href="functions.html#vstr_make_conf()">vstr_make_conf()</a>.
 
 
 <a name="vstr_swap_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -721,7 +724,7 @@
  returned.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Using this function allows you to use vstr_add_fmt() and vstr_add_vfmt() on
+</p><p>  Using this function allows you to use <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> and <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a> on
  a Vstr that you don't own, by doing...
 <br><pre>
      if (vstr_swap_conf(notmy_vstr_string, &my_vstr_conf))
@@ -731,7 +734,7 @@
      }
 
 </pre> ...note that the last call swaps the configuration back. However if you are
- not using any custom specifiers then you can just call vstr_add_sysfmt()
+ not using any custom specifiers then you can just call <a href="functions.html#vstr_add_sysfmt()">vstr_add_sysfmt()</a>
  instead.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 
@@ -753,7 +756,7 @@
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will free a Vstr string, allocated by vstr_make_base().
+</p><p>  This function will free a Vstr string, allocated by <a href="functions.html#vstr_make_base()">vstr_make_base()</a>.
 
 
 <a name="vstr_dup_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -763,8 +766,8 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_buf().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -778,8 +781,8 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_ptr().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -792,8 +795,8 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Length of non data<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_non().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_non()">vstr_add_non()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -808,8 +811,8 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length of Vstr memory reference (Parameter[2])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_ref().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -823,10 +826,10 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr string<br>Type<strong>[2]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Start position in the Vstr string (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length in the Vstr string (Parameter[2])<br>Type<strong>[4]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (VSTR_TYPE_ADD_*)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (<a href="constants.html#vstr_dup_vstr%28%29">VSTR_TYPE_ADD_*</a>)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_vstr().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_vstr()">vstr_add_vstr()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -840,8 +843,8 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Character to repeat<br>Type<strong>[2]</strong>: char
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of times to repeat character (Parameter[2])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is equivalent to calling vstr_make_base() and then
- vstr_add_rep_chr().
+</p><p>  This function is equivalent to calling <a href="functions.html#vstr_make_base()">vstr_make_base()</a> and then
+ <a href="functions.html#vstr_add_rep_chr()">vstr_add_rep_chr()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -854,7 +857,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_dup_buf() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_dup_buf()">vstr_dup_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -868,7 +871,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_dup_ptr() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -884,7 +887,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[3]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_dup_ref() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_dup_ref()">vstr_dup_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -899,7 +902,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_buf() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_dup_buf()">vstr_dup_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -913,7 +916,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_ptr() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -929,7 +932,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[3]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_dup_ref() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_dup_ref()">vstr_dup_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -945,7 +948,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create an area of memory, using malloc, and create a Vstr
  memory reference to that memory. The Vstr memory reference will have a
- reference count of 1 and a cleanup function of vstr_ref_cb_free_ptr_ref(). 
+ reference count of 1 and a cleanup function of <a href="functions.html#vstr_ref_cb_free_ptr_ref()">vstr_ref_cb_free_ptr_ref()</a>. 
 
 
 <a name="vstr_ref_make_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1080,7 +1083,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the data in the array needs to be free'd the programer will have to
  decide when it is no longer being used by the Vstr string and free it. It
- is often easier to create a memory reference and use vstr_add_ref() instead.
+ is often easier to create a memory reference and use <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a> instead.
 
 
 <a name="vstr_add_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1123,7 +1126,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr string<br>Type<strong>[3]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Start position in the Vstr string (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length in the Vstr string (Parameter[3])<br>Type<strong>[5]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (VSTR_TYPE_ADD_*)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr add (<a href="constants.html#vstr_add_vstr%28%29">VSTR_TYPE_ADD_*</a>)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add data in one Vstr string (Parameter[3]) to
  another Vstr string (Parameter[1]).
@@ -1167,7 +1170,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_add_buf() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[3]).
 
 
@@ -1178,7 +1181,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_add_ptr() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[3]).
 
 
@@ -1191,7 +1194,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_add_ref() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -1203,7 +1206,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_add_buf() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[3]).
 
 
@@ -1214,7 +1217,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_add_ptr() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[3]).
 
 
@@ -1227,7 +1230,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[4]</strong>: size_t
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_add_ref() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -1243,7 +1246,7 @@
 </p><p>  This function works like calling vsprintf() directly into a Vstr string,
  however this is a portable implementation which is feature complete with
  glibc-2.2.x sprintf(); implements custom specifiers, if you use the
- vstr_fmt_add() function, and doesn't require a double copy.
+ <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a> function, and doesn't require a double copy.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1256,9 +1259,9 @@
  code or simply by assuming all double's are zero. When using the host
  implementation system bugs of inaccuracy will show through, however the
  feature set remains the same (Ie. the ' flag works the same).
-</p><p>  Because specifiers can be overridden using vstr_fmt_add() if you are adding
+</p><p>  Because specifiers can be overridden using <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a> if you are adding
  data to a Vstr string that you didn't create you should use either
- vstr_add_vsysfmt() or vstr_swap_conf().
+ <a href="functions.html#vstr_add_vsysfmt()">vstr_add_vsysfmt()</a> or <a href="functions.html#vstr_swap_conf()">vstr_swap_conf()</a>.
 
 
 <a name="vstr_add_fmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1269,7 +1272,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This just calls vstr_add_vfmt() after converting the argument list
+</p><p>  This just calls <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a> after converting the argument list
  (Parameter[4]) a va_list object.
 
 
@@ -1281,8 +1284,8 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Standard argument object from va_start()<br>Type<strong>[4]</strong>: va_list
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function does the same thing as vstr_add_vfmt() but ignores custom
- specifiers (see vstr_fmt_add()).
+</p><p>  This function does the same thing as <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a> but ignores custom
+ specifiers (see <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>).
 
 
 <a name="vstr_add_sysfmt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1293,7 +1296,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Format string, a superset of the rules for C99 printf<br>Type<strong>[3]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Options depending on value of Parameter[3]<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This just calls vstr_add_vsysfmt() after converting the argument list
+</p><p>  This just calls <a href="functions.html#vstr_add_vsysfmt()">vstr_add_vsysfmt()</a> after converting the argument list
  (Parameter[4]) a va_list object.
 
 
@@ -1318,8 +1321,8 @@
  is atomic).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg()
- and vstr_add_iovec_buf_end(), unless you know that they are operating on a
+</p><p>  You shouldn't call any other vstr functions between <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a>
+ and <a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end()</a>, unless you know that they are operating on a
  different Vstr string which is using a different Vstr configuration.
 </p><p>  The reason there is a +1 on the maximum value is that data may be appended to
  a _BUF node just before the start of where the data is to go, this is almost
@@ -1334,7 +1337,7 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of bytes added to the iovec array<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used after calling vstr_add_iovec_buf_beg() and you've then
+</p><p>  This function is used after calling <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a> and you've then
  filled in a bunch of data.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -1350,17 +1353,17 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function creates the start of a netstring
  http://cr.yp.to/proto/netstrings.txt this can be used in conjunction with
- vstr_add_netstr_end() to easily create netstrings.
+ <a href="functions.html#vstr_add_netstr_end()">vstr_add_netstr_end()</a> to easily create netstrings.
 
 
 <a name="vstr_add_netstr_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr_end()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Position returned from vstr_add_netstr_beg()<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Position returned from <a href="functions.html#vstr_add_netstr_beg()">vstr_add_netstr_beg()</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: End of netstring<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is called after calling vstr_add_netstr_beg(), adding all the
+</p><p>  This function is called after calling <a href="functions.html#vstr_add_netstr_beg()">vstr_add_netstr_beg()</a>, adding all the
  data you want to the netstring and then passing the position of the end of
  that data.
 </p><p>  Upon success a valid netstring will contain all the data added between the two
@@ -1383,17 +1386,17 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function creates the start of a netstring2 which is like a netstring
  http://cr.yp.to/proto/netstrings.txt but can have leading zeros, this can be
- used in conjunction with vstr_add_netstr2_end() to easily create netstring2s.
+ used in conjunction with <a href="functions.html#vstr_add_netstr2_end()">vstr_add_netstr2_end()</a> to easily create netstring2s.
 
 
 <a name="vstr_add_netstr2_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_add_netstr2_end()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Position returned from vstr_add_netstr2_beg()<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Position returned from <a href="functions.html#vstr_add_netstr2_beg()">vstr_add_netstr2_beg()</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: End of netstring2<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is called after calling vstr_add_netstr2_beg(), adding all the
+</p><p>  This function is called after calling <a href="functions.html#vstr_add_netstr2_beg()">vstr_add_netstr2_beg()</a>, adding all the
  data you want to the netstring2 and then passing the position of the end of
  that data.
 </p><p>  Upon success a netstring2 will contain all the data added between the two
@@ -1453,7 +1456,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[5]).
-</p><p>  Think of this function as doing a vstr_del() and then a vstr_add_buf()
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a>
  (but it's atomic).
 </p><p>  If the length of the data (Parameter[5]) is less than or equal to the
  length of the Vstr string (Parameter[3]) and the data in the Vstr string is in
@@ -1481,7 +1484,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
- vstr_del() and then a vstr_add_ptr() (but it's atomic).
+ <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a> (but it's atomic).
 
 
 <a name="vstr_sub_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1503,7 +1506,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
- vstr_del() and then a vstr_add_non() (but it's atomic).
+ <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_non()">vstr_add_non()</a> (but it's atomic).
 
 
 <a name="vstr_sub_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1527,7 +1530,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
- vstr_del() and then a vstr_add_ref() (but it's atomic).
+ <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a> (but it's atomic).
 
 
 <a name="vstr_sub_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1539,7 +1542,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr sub (VSTR_TYPE_SUB_*)<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags for Vstr sub (<a href="constants.html#vstr_sub_vstr%28%29">VSTR_TYPE_SUB_*</a>)<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to substitute the data in the Vstr string
  (Parameter[1]) with the data in another Vstr string (Parameter[4]).
@@ -1552,7 +1555,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[7]), think of this function like doing a
- vstr_del() and then a vstr_add_vstr() (but it's atomic).
+ <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_vstr()">vstr_add_vstr()</a> (but it's atomic).
 </p><p>  The function can change how the data is added to the Vstr string
  (Parameter[1]) and in some cases even how the data is represented in the
  Vstr string (Parameter[3]) for more information see the documentation on the
@@ -1580,7 +1583,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The length of the Vstr string (Parameter[3]) can be larger or smaller than the
  length of the data (Parameter[5]).
-</p><p>  Think of this function as doing a vstr_del() and then a vstr_add_rep_chr()
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_del()">vstr_del()</a> and then a <a href="functions.html#vstr_add_rep_chr()">vstr_add_rep_chr()</a>
  (but it's atomic).
 </p><p>  If the length of the data (Parameter[5]) is equal to the
  length of the Vstr string (Parameter[3]) and the data in the Vstr string is in
@@ -1596,7 +1599,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_sub_buf() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_sub_buf()">vstr_sub_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[4]).
 
 
@@ -1608,7 +1611,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_sub_ptr() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_sub_ptr()">vstr_sub_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[4]).
 
 
@@ -1621,7 +1624,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr memory reference<br>Type<strong>[4]</strong>: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_sub_ref() with the length being the value of
+</p><p>  This function calls <a href="functions.html#vstr_sub_ref()">vstr_sub_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -1634,7 +1637,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_sub_buf() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_sub_buf()">vstr_sub_buf()</a> with the length being the value of
  strlen() on the data parameter (Parameter[4]).
 
 
@@ -1646,7 +1649,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_sub_ptr() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_sub_ptr()">vstr_sub_ptr()</a> with the length being the value of
  strlen() on the data parameter (Parameter[4]).
 
 
@@ -1659,7 +1662,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr memory reference<br>Type<strong>[4]</strong>: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_sub_ref() with the length being the value of
+</p><p>  This macro function calls <a href="functions.html#vstr_sub_ref()">vstr_sub_ref()</a> with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
 
@@ -1689,7 +1692,7 @@
 <a name="vstr_cntl_opt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_opt()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Option type starting VSTR_CNTL_OPT_<br>Type<strong>[1]</strong>: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Option type starting <a href="constants.html#vstr_cntl_opt%28%29">VSTR_CNTL_OPT_*</a><br>Type<strong>[1]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[1]<br>Type<strong>[ ... ]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will get or set global options.
@@ -1699,7 +1702,7 @@
 <strong>Function: </strong> vstr_cntl_base()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting VSTR_CNTL_BASE_<br>Type<strong>[2]</strong>: int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting <a href="constants.html#vstr_cntl_base%28%29">VSTR_CNTL_BASE_*</a><br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will get or set options for the Vstr string (Parameter[1]).
@@ -1709,7 +1712,7 @@
 <strong>Function: </strong> vstr_cntl_conf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting VSTR_CNTL_CONF_<br>Type<strong>[2]</strong>: int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting <a href="constants.html#vstr_cntl_conf%28%29">VSTR_CNTL_CONF_*</a><br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will get or set options for the
@@ -1735,7 +1738,7 @@
 </p><p>  This function is used to compares the data in one Vstr string (Parameter[1])
  with data in another Vstr string (Parameter[4]) byte by byte, all data is
  compared unsigned.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on each Vstr string,
  and then a call to memcmp() (although it doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -1754,8 +1757,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp()">vstr_cmp()</a>.
 
 
 <a name="vstr_cmp_case%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1768,7 +1771,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is like vstr_cmp() but uppercase and lowercase ASCII
+</p><p>  This function is like <a href="functions.html#vstr_cmp()">vstr_cmp()</a> but uppercase and lowercase ASCII
  values compare equally with each other.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -1785,8 +1788,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_case().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_case()">vstr_cmp_case()</a>.
 
 
 <a name="vstr_cmp_vers%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1803,7 +1806,7 @@
  with data in another Vstr string (Parameter[4]), however for ASCII digits the
  algorithm tests on the numbers themselves (so "10" is greater than "9" but
  "01" is greater than "012", as the later are fractions).
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on each Vstr string,
  and then a call to strverscmp() (although it doesn't allocate anything,
  _and_ it deals with 0 bytes in the data).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -1823,8 +1826,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_vers().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_vers()">vstr_cmp_vers()</a>.
 
 
 <a name="vstr_cmp_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1837,8 +1840,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp() if both of the length values
- (Parameter[3] Parameter[6]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp()">vstr_cmp()</a> if both of the length values
+ (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1849,7 +1852,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_buf() with the length of the buffer being
+</p><p>  This function calls <a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a> with the length of the buffer being
  the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -1862,8 +1865,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_buf() if both of the length values
- (Parameter[3] Parameter[5]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a> if both of the length values
+ (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1874,7 +1877,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function returns !vstr_cmp_buf(), if both of the length values are
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a>, if both of the length values are
  equal, with the length of the buffer being the value of strlen() on the data
  parameter (Parameter[4]).
 
@@ -1889,8 +1892,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case()">vstr_cmp_case()</a> if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_case_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1901,7 +1904,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -1914,8 +1917,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a> if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_case_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1926,7 +1929,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function returns !vstr_cmp_case_buf(), if both of the length
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a>, if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
 
@@ -1941,8 +1944,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers()">vstr_cmp_vers()</a> if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_vers_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1953,7 +1956,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -1966,8 +1969,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a> if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="vstr_cmp_vers_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1978,7 +1981,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function returns !vstr_cmp_vers_buf(), if both of the length
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a>, if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
 
@@ -1993,7 +1996,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp() with the both lengths as the lowest of either
+</p><p>  This function calls <a href="functions.html#vstr_cmp()">vstr_cmp()</a> with the both lengths as the lowest of either
  passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
  the beginning of the data in the two strings.
 
@@ -2008,7 +2011,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp() with the both lengths as the lowest of either
+</p><p>  This function calls <a href="functions.html#vstr_cmp()">vstr_cmp()</a> with the both lengths as the lowest of either
  passed length (Parameter[3]) or (Parameter[6]) and with the positions
  (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
  to the end of the string. Thus you get a comparison of the end of the data in
@@ -2025,7 +2028,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_bod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_bod()">vstr_cmp_bod()</a>.
 
 
 <a name="vstr_cmp_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2038,7 +2041,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_eod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_eod()">vstr_cmp_eod()</a>.
 
 
 <a name="vstr_cmp_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2050,8 +2053,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_bod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_bod()">vstr_cmp_bod()</a>.
 
 
 <a name="vstr_cmp_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2063,32 +2066,32 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_eod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_eod()">vstr_cmp_eod()</a>.
 
 
 <a name="vstr_cmp_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_bod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_bod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_bod_buf()">vstr_cmp_bod_buf()</a>.
 
 
 <a name="vstr_cmp_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_eod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_eod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_eod_buf()">vstr_cmp_eod_buf()</a>.
 
 
 <a name="vstr_cmp_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2099,7 +2102,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_bod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_bod_buf()">vstr_cmp_bod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2111,31 +2114,31 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_eod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_eod_buf()">vstr_cmp_eod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_bod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_bod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_bod_buf_eq()">vstr_cmp_bod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_eod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_eod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_eod_buf_eq()">vstr_cmp_eod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2149,7 +2152,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case() with the both lengths as the lowest of either
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case()">vstr_cmp_case()</a> with the both lengths as the lowest of either
  passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
  the beginning of the data in the two strings.
 
@@ -2164,7 +2167,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case() with the both lengths as the lowest of
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case()">vstr_cmp_case()</a> with the both lengths as the lowest of
  either passed length (Parameter[3]) or (Parameter[6]) and with the positions
  (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
  to the end of the string. Thus you get a comparison of the end of the data in
@@ -2181,7 +2184,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case_bod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_bod()">vstr_cmp_case_bod()</a>.
 
 
 <a name="vstr_cmp_case_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2194,7 +2197,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case_eod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_eod()">vstr_cmp_case_eod()</a>.
 
 
 <a name="vstr_cmp_case_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2203,11 +2206,11 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_case_bod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_case_bod()">vstr_cmp_case_bod()</a>.
 
 
 <a name="vstr_cmp_case_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2216,35 +2219,35 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_case_eod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_case_eod()">vstr_cmp_case_eod()</a>.
 
 
 <a name="vstr_cmp_case_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case_bod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case_bod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_bod_buf()">vstr_cmp_case_bod_buf()</a>.
 
 
 <a name="vstr_cmp_case_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case_eod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_case_eod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_case_eod_buf()">vstr_cmp_case_eod_buf()</a>.
 
 
 <a name="vstr_cmp_case_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2255,7 +2258,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case_bod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case_bod_buf()">vstr_cmp_case_bod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2267,31 +2270,31 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case_eod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case_eod_buf()">vstr_cmp_case_eod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_case_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case_bod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case_bod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case_bod_buf_eq()">vstr_cmp_case_bod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_case_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_case_eod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_case_eod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_case_eod_buf_eq()">vstr_cmp_case_eod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2305,7 +2308,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers() with the both lengths as the lowest of either
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers()">vstr_cmp_vers()</a> with the both lengths as the lowest of either
  passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
  the beginning of the data in the two strings.
 
@@ -2320,7 +2323,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers() with the both lengths as the lowest of
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers()">vstr_cmp_vers()</a> with the both lengths as the lowest of
  either passed length (Parameter[3]) or (Parameter[6]) and with the positions
  (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
  to the end of the string. Thus you get a comparison of the end of the data in
@@ -2337,7 +2340,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers_bod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_bod()">vstr_cmp_vers_bod()</a>.
 
 
 <a name="vstr_cmp_vers_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2350,7 +2353,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers_eod().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_eod()">vstr_cmp_vers_eod()</a>.
 
 
 <a name="vstr_cmp_vers_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2359,11 +2362,11 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_vers_bod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_vers_bod()">vstr_cmp_vers_bod()</a>.
 
 
 <a name="vstr_cmp_vers_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2372,35 +2375,35 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
- (Parameter[4]) and then calling vstr_cmp_vers_eod().
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_dup_ptr()">vstr_dup_ptr()</a> on the data array
+ (Parameter[4]) and then calling <a href="functions.html#vstr_cmp_vers_eod()">vstr_cmp_vers_eod()</a>.
 
 
 <a name="vstr_cmp_vers_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_vers_bod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers_bod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_bod_buf()">vstr_cmp_vers_bod_buf()</a>.
 
 
 <a name="vstr_cmp_vers_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_vers_eod_buf_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls returns !vstr_cmp_vers_eod_buf().
+</p><p>  This function returns !<a href="functions.html#vstr_cmp_vers_eod_buf()">vstr_cmp_vers_eod_buf()</a>.
 
 
 <a name="vstr_cmp_vers_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2411,7 +2414,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers_bod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers_bod_buf()">vstr_cmp_vers_bod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2423,31 +2426,31 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers_eod_buf() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers_eod_buf()">vstr_cmp_vers_eod_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_vers_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_vers_bod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers_bod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers_bod_buf_eq()">vstr_cmp_vers_bod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="vstr_cmp_vers_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cmp_vers_eod_cstr_eq()
-</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cmp_vers_eod_buf_eq() with the length of the buffer
+</p><p>  This function calls <a href="functions.html#vstr_cmp_vers_eod_buf_eq()">vstr_cmp_vers_eod_buf_eq()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2461,8 +2464,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp() if both of the length values
- (Parameter[3] Parameter[6]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp()">vstr_cmp()</a> if both of the length values
+ (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_CSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2473,7 +2476,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_cmp_buf() with the length of the buffer being
+</p><p>  This macro function calls <a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a> with the length of the buffer being
  the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2486,8 +2489,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp_buf() if both of the length values
- (Parameter[3] Parameter[5]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a> if both of the length values
+ (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_CSTR_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2498,7 +2501,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function returns !vstr_cmp_buf(), if both of the length values are
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_buf()">vstr_cmp_buf()</a>, if both of the length values are
  equal, with the length of the buffer being the value of strlen() on the data
  parameter (Parameter[4]).
 
@@ -2513,8 +2516,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp_case() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_case()">vstr_cmp_case()</a> if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_CASE_CSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2525,7 +2528,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_cmp_case_buf() with the length of the buffer
+</p><p>  This macro function calls <a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2538,8 +2541,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp_case_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a> if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_CASE_CSTR_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2550,7 +2553,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function returns !vstr_cmp_case_buf(), if both of the length
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_case_buf()">vstr_cmp_case_buf()</a>, if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
 
@@ -2565,8 +2568,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp_vers() if both of the length
- values (Parameter[3] Parameter[6]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_vers()">vstr_cmp_vers()</a> if both of the length
+ values (Parameter[3] Parameter[6]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_VERS_CSTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2577,7 +2580,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_cmp_vers_buf() with the length of the buffer
+</p><p>  This macro function calls <a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a> with the length of the buffer
  being the value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2590,8 +2593,8 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls returns !vstr_cmp_vers_buf() if both of the length
- values (Parameter[3] Parameter[5]) are equal.
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a> if both of the length
+ values (Parameter[3] Parameter[5]) are equal, or FALSE otherwise.
 
 
 <a name="VSTR_CMP_VERS_CSTR_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2602,7 +2605,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function returns !vstr_cmp_vers_buf(), if both of the length
+</p><p>  This macro function returns !<a href="functions.html#vstr_cmp_vers_buf()">vstr_cmp_vers_buf()</a>, if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
 
@@ -2618,7 +2621,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character to search for<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to search forward for a character in a Vstr string.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on the Vstr string,
  and then a call to memchr() (although it's much faster than doing that and
  doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -2635,7 +2638,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to search backward for a character in a Vstr string.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on the Vstr string,
  and then a call to memrchr() (although it doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2717,7 +2720,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to search forward for the data in the data array
  (Parameter[4]) in a Vstr string.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on the Vstr string,
  and then a call to memmem() (although it's much faster than doing that and
  doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -2761,7 +2764,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to search forward for the data in the Vstr string
  (Parameter[4]) in the Vstr string (Parameter[1]).
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on each Vstr string,
  and then a call to memmem() (although it's much faster than doing that and
  doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -2794,7 +2797,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character to search for<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_chr_fwd() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_chr_fwd()">vstr_srch_chr_fwd()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 
@@ -2806,7 +2809,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_chr_rev() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_chr_rev()">vstr_srch_chr_rev()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 
@@ -2819,7 +2822,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_buf_fwd() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_buf_fwd()">vstr_srch_buf_fwd()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2836,7 +2839,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_buf_fwd() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_buf_fwd()">vstr_srch_buf_fwd()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2854,7 +2857,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_vstr_fwd() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_vstr_fwd()">vstr_srch_vstr_fwd()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 
@@ -2868,7 +2871,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is the same as vstr_srch_vstr_rev() but uppercase and lowercase
+</p><p>  This function is the same as <a href="functions.html#vstr_srch_vstr_rev()">vstr_srch_vstr_rev()</a> but uppercase and lowercase
  ASCII values are treated equivalently.
 
 
@@ -2880,7 +2883,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_buf_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_buf_fwd()">vstr_srch_buf_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2892,7 +2895,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_buf_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_buf_rev()">vstr_srch_buf_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2904,7 +2907,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_chrs_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_chrs_fwd()">vstr_srch_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2916,7 +2919,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_chrs_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_chrs_rev()">vstr_srch_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2928,7 +2931,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_csrch_chrs_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_csrch_chrs_fwd()">vstr_csrch_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2940,7 +2943,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_csrch_chrs_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_csrch_chrs_rev()">vstr_csrch_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2952,7 +2955,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_case_buf_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_case_buf_fwd()">vstr_srch_case_buf_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2964,7 +2967,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_srch_case_buf_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_srch_case_buf_rev()">vstr_srch_case_buf_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2976,7 +2979,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_buf_fwd() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_buf_fwd()">vstr_srch_buf_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2988,7 +2991,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_buf_rev() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_buf_rev()">vstr_srch_buf_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3000,7 +3003,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_chrs_fwd() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_chrs_fwd()">vstr_srch_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3012,7 +3015,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_chrs_rev() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_chrs_rev()">vstr_srch_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3024,7 +3027,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_csrch_chrs_fwd() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_csrch_chrs_fwd()">vstr_csrch_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3036,7 +3039,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_csrch_chrs_rev() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_csrch_chrs_rev()">vstr_csrch_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3048,7 +3051,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_case_buf_fwd() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_case_buf_fwd()">vstr_srch_case_buf_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3060,7 +3063,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_srch_case_buf_rev() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_srch_case_buf_rev()">vstr_srch_case_buf_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3077,7 +3080,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to calculate the forward span of characters in the
  Vstr string that are in the data array.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on the Vstr string,
  and then a call to strspn() (although it's much faster than doing that and
  doesn't allocate anything, _and_ it deals with 0 bytes in the data).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -3110,7 +3113,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to calculate the forward span of characters in the
  Vstr string that are in the compliment of those in the data array.
-</p><p>  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
+</p><p>  Think of this function as doing a <a href="functions.html#vstr_export_cstr_ptr()">vstr_export_cstr_ptr()</a> on the Vstr string,
  and then a call to strcspn() (although it's much faster than doing that and
  doesn't allocate anything, _and_ it deals with 0 bytes in the data).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -3140,7 +3143,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_spn_chrs_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_spn_chrs_fwd()">vstr_spn_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3152,7 +3155,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_spn_chrs_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_spn_chrs_rev()">vstr_spn_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3164,7 +3167,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cspn_chrs_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_cspn_chrs_fwd()">vstr_cspn_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3176,7 +3179,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_cspn_chrs_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_cspn_chrs_rev()">vstr_cspn_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3188,7 +3191,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_spn_chrs_fwd() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_spn_chrs_fwd()">vstr_spn_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3200,7 +3203,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_spn_chrs_rev() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_spn_chrs_rev()">vstr_spn_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3212,7 +3215,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_cspn_chrs_fwd() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_cspn_chrs_fwd()">vstr_cspn_chrs_fwd()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3224,7 +3227,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_cspn_chrs_rev() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_cspn_chrs_rev()">vstr_cspn_chrs_rev()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3258,7 +3261,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Flags starting <a href="constants.html#vstr_conv_unprintable_chr%28%29">VSTR_FLAG_CONV_UNPRINTABLE_*</a><br>Type<strong>[4]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Character to substitute in place of the unprintable character<br>Type<strong>[5]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function substitutes all unprintable characters with the substitution
@@ -3271,7 +3274,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[4]</strong>: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Flags starting <a href="constants.html#vstr_conv_unprintable_del%28%29">VSTR_FLAG_CONV_UNPRINTABLE_*</a><br>Type<strong>[4]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function deletes all unprintable characters.
 
@@ -3314,7 +3317,7 @@
  (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  VSTR_SECTS_DECL_INIT() needs to be called on the Vstr sections before it can
+</p><p>  <a href="functions.html#VSTR_SECTS_DECL_INIT()">VSTR_SECTS_DECL_INIT()</a> needs to be called on the Vstr sections before it can
  be used.
 
 
@@ -3334,7 +3337,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function finishes initializing a Vstr sections that has been
- allocated using VSTR_SECTS_DECL().
+ allocated using <a href="functions.html#VSTR_SECTS_DECL()">VSTR_SECTS_DECL()</a>.
 </p><p>  This macro function can be called multiple times without causing any problems.
 
 
@@ -3349,7 +3352,7 @@
 </p><p>  The macro function initializes a self declared Vstr sections.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  Unlike VSTR_SECTS_DECL_INIT() this should only be called once per
+</p><p>  Unlike <a href="functions.html#VSTR_SECTS_DECL_INIT()">VSTR_SECTS_DECL_INIT()</a> this should only be called once per
  initialization.
 
 
@@ -3375,7 +3378,7 @@
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: struct Vstr_sects *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function will free a Vstr sections, allocated by vstr_sects_make().
+</p><p>  This function will free a Vstr sections, allocated by <a href="functions.html#vstr_sects_make()">vstr_sects_make()</a>.
 
 
 <a name="vstr_sects_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3405,7 +3408,7 @@
 </a><br>Returns: Number of the times the foreach function ran the callback<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr sections<br>Type<strong>[2]</strong>: struct Vstr_sects *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Flags starting VSTR_FLAG_SECT_FOREACH_<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Flags starting <a href="constants.html#vstr_sects_foreach%28%29">VSTR_FLAG_SECT_FOREACH_*</a><br>Type<strong>[3]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Function to run as foreach body<br>Type<strong>[4]</strong>: unsigned int (*)(const Vstr_base *, size_t, size_t, void *)
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Data to pass to foreach body function (Parameter[4])<br>Type<strong>[5]</strong>: void *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -3414,7 +3417,7 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The foreach callback body function returns types starting
- VSTR_TYPE_SECT_FOREACH_.
+ <a href="constants.html#VSTR_TYPE_SECT_FOREACH_">VSTR_TYPE_SECT_FOREACH_</a>.
 
 
 <a name="vstr_sects_update_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3427,11 +3430,11 @@
  updated when changes are made to the Vstr string (Parameter[1]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  You need to call vstr_sects_update_del(), before you free the
+</p><p>  You need to call <a href="functions.html#vstr_sects_update_del()">vstr_sects_update_del()</a>, before you free the
  section (Parameter[2]). However if the next thing you are going to do is call
- vstr_free_base() on the Vstr string (Parameter[1]), then you can delete them
+ <a href="functions.html#vstr_free_base()">vstr_free_base()</a> on the Vstr string (Parameter[1]), then you can delete them
  backward.
-</p><p>  This uses the vstr_cache_add() function.
+</p><p>  This uses the <a href="functions.html#vstr_cache_add()">vstr_cache_add()</a> function.
 
 
 <a name="vstr_sects_update_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3468,7 +3471,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Vstr sections<br>Type<strong>[6]</strong>: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting <a href="constants.html#vstr_split_buf%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[8]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add section nodes to the Vstr sections (Parameter[6])
  about the Vstr string (Parameter[1]). The function will add one section before
@@ -3493,7 +3496,7 @@
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[8]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function works like vstr_split_buf() except that instead of having to
+</p><p>  This function works like <a href="functions.html#vstr_split_buf()">vstr_split_buf()</a> except that instead of having to
  match all the data in the data buffer it matches any of the characters in the
  character buffer (Parameter[4]).
 
@@ -3507,9 +3510,9 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data to split on<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Vstr sections<br>Type<strong>[5]</strong>: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[6]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[7]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting <a href="constants.html#vstr_split_cstr_buf%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[7]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_split_buf() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_split_buf()">vstr_split_buf()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3523,9 +3526,9 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Vstr sections<br>Type<strong>[6]</strong>: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting <a href="constants.html#vstr_split_cstr_chrs%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[8]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function calls vstr_split_chrs() with the length being the
+</p><p>  This function calls <a href="functions.html#vstr_split_chrs()">vstr_split_chrs()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3538,9 +3541,9 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data to split on<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Vstr sections<br>Type<strong>[5]</strong>: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[6]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[7]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting <a href="constants.html#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[7]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_split_buf() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_split_buf()">vstr_split_buf()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3554,9 +3557,9 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Vstr sections<br>Type<strong>[6]</strong>: struct Vstr_sects *
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting <a href="constants.html#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_FLAG_SPLIT_*</a><br>Type<strong>[8]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_split_chrs() with the length being the
+</p><p>  This macro function calls <a href="functions.html#vstr_split_chrs()">vstr_split_chrs()</a> with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3708,7 +3711,7 @@
  choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
  with a 0 and defaulting to base 10 otherwise.
 </p><p>  If the intmax_t type is unavailable on the platform, then this function will
- act the same as vstr_parse_long().
+ act the same as <a href="functions.html#vstr_parse_long()">vstr_parse_long()</a>.
 
 
 <a name="vstr_parse_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3731,7 +3734,7 @@
  choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
  with a 0 and defaulting to base 10 otherwise.
 </p><p>  If the intmax_t type is unavailable on the platform, then this function will
- act the same as vstr_parse_ulong().
+ act the same as <a href="functions.html#vstr_parse_ulong()">vstr_parse_ulong()</a>.
 
 
 <a name="vstr_parse_netstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3788,7 +3791,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array elements 0 to 3<br>Type<strong>[4]</strong>: unsigned char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns CIDR mask, if requested<br>Type<strong>[5]</strong>: unsigned int *
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV4_<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting <a href="constants.html#vstr_parse_ipv4%28%29">VSTR_FLAG_PARSE_IPV4_*</a><br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV4_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -3804,7 +3807,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array elements 0 to 7<br>Type<strong>[4]</strong>: unsigned int *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns CIDR mask<br>Type<strong>[5]</strong>: unsigned int *
-</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV6_<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting <a href="constants.html#vstr_parse_ipv6%28%29">VSTR_FLAG_PARSE_IPV6_*</a><br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV6_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -3818,12 +3821,12 @@
 <strong>Function: </strong> vstr_fmt_add()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Function to use as callback from vstr_add_vfmt()<br>Type<strong>[3]</strong>: int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *)
-</td></tr><tr><td>Parameter<strong>[4]</strong>: List of VSTR_TYPE_FMT_* types for format specifier (Parameter[2])<br>Type<strong>[4]</strong>: ...
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Function to use as callback from <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[3]</strong>: int (*)(struct Vstr_base *, size_t, struct Vstr_fmt_spec *)
+</td></tr><tr><td>Parameter<strong>[4]</strong>: List of <a href="constants.html#vstr_fmt_add%28%29">VSTR_TYPE_FMT_*</a> types for format specifier (Parameter[2])<br>Type<strong>[4]</strong>: ...
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function allows you to register arbitrary format specifiers for printing
- from vstr_fmt_vstr(). Note that these trigger off the user escape character,
+ from <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>. Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
 </p><p>  The call back you register should return 0 (zero) if memory couldn't be 
  allocated and 1 (one) otherwise.
@@ -3849,10 +3852,10 @@
 <strong>Function: </strong> vstr_fmt_del()
 </a><br>Returns: Nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function allows you to unregister a format specifier added
- using vstr_fmt_add().
+ using <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -3863,10 +3866,10 @@
 <strong>Function: </strong> vstr_fmt_srch()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function allows you to find out if a format specifier has been added
- using vstr_fmt_add().
+ using <a href="functions.html#vstr_fmt_add()">vstr_fmt_add()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -3876,22 +3879,22 @@
 <a name="VSTR_FMT_CB_ARG_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FMT_CB_ARG_PTR()
 </a><br>Returns: Pointer to data<br>Type: void *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Number of the parameter passed to the callback<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function returns the nth (Parameter[2]) parameter passed to a
- callback of vstr_add_vfmt(), as a generic pointer.
+ callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a>, as a generic pointer.
 
 
 <a name="VSTR_FMT_CB_ARG_VAL%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_FMT_CB_ARG_VAL()
 </a><br>Returns: Data of specified type<br>Type: Parameter[2]
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Format specifier passed to a callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[1]</strong>: struct Vstr_fmt_spec *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Type of the specified value<br>Type<strong>[2]</strong>: &lt;symbol&gt;
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Number of the parameter for the callback<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function returns the nth (Parameter[3]) parameter passed to a
- callback of vstr_add_vfmt(), by value.
+ callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a>, by value.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string"><h2>Functions for hooking into the cache system for the Vstr string</h2>
@@ -3915,7 +3918,7 @@
  only the pointer to the name will be stored so you cannot malloc() the name
  and then free() it after calling the function.
 </p><p>  The callback function parameters, are the Vstr string, position, length,
- the type of callback starting VSTR_TYPE_CACHE_ and the data for the cache
+ the type of callback starting <a href="constants.html#VSTR_TYPE_CACHE_">VSTR_TYPE_CACHE_</a> and the data for the cache
  function.
 </p><p>  The callback function will not be called if the data for the cache function
  is NULL.
@@ -3993,6 +3996,39 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>
 </a>
+<a name="vstr_sc_posdiff%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_posdiff()
+</a><br>Returns: Length of difference between two positions<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a Vstr string<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: End position in a Vstr string<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to find the length between two positions inclusive.
+
+
+<a name="VSTR_SC_POSDIFF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_POSDIFF()
+</a><br>Returns: Length of difference between two positions<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a Vstr string<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: End position in a Vstr string<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function is used to find the length between two positions
+ inclusive.
+
+
+<a name="vstr_sc_reduce%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_reduce()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length to reduce the Vstr string (Parameter[1])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a helper function to reduce the Vstr string to the desired
+ length (Ie. delete by a given ammount from the end of the given Vstr string).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
 <a name="vstr_sc_basename%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_basename()
 </a><br>Returns: Nothing<br>Type: void
@@ -4007,7 +4043,7 @@
  original string
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This function, with vstr_sc_dirname(), always returns values that can be
+</p><p>  This function, with <a href="functions.html#vstr_sc_dirname()">vstr_sc_dirname()</a>, always returns values that can be
  combined to generate the original path. This means that this function will
  return an empty length for the path "/".
 
@@ -4025,7 +4061,7 @@
  is allocated and nothing is altered in the original string.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This function, with vstr_sc_basename(), always returns values that can be
+</p><p>  This function, with <a href="functions.html#vstr_sc_basename()">vstr_sc_basename()</a>, always returns values that can be
  combined to generate the original path. This means that this function will
  return an empty length for a relative filename in the current directory.
 
@@ -4035,9 +4071,9 @@
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Position in the Vstr string (Parameter[1]), updated for padding.<br>Type<strong>[2]</strong>: size_t *
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[3]</strong>: struct Vstr_fmt_spec *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format specifier passed to a callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[3]</strong>: struct Vstr_fmt_spec *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data you are going to add, updated due to precision.<br>Type<strong>[4]</strong>: size_t *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Flags starting VSTR_FLAG_SC_FMT_CB_BEG_*<br>Type<strong>[5]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Flags starting <a href="constants.html#vstr_sc_fmt_cb_beg%28%29">VSTR_FLAG_SC_FMT_CB_BEG_*</a><br>Type<strong>[5]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is a helper function for any custom format specifiers you write,
  it takes care of truncation of length due to precision (on strings only) and
@@ -4052,7 +4088,7 @@
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Position you added your data to the Vstr (Parameter[1]).<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Format specifier passed to a callback of vstr_add_vfmt()<br>Type<strong>[3]</strong>: struct Vstr_fmt_spec *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Format specifier passed to a callback of <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[3]</strong>: struct Vstr_fmt_spec *
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data you added.<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is a helper function for any custom format specifiers you write,
@@ -4060,8 +4096,8 @@
  output as if you were printing a string.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  You shouldn't alter the position between calling vstr_sc_fmt_cb_beg() and
- vstr_sc_fmt_cb_end(), if padding is added in vstr_sc_fmt_cb_end() it is added
+</p><p>  You shouldn't alter the position between calling <a href="functions.html#vstr_sc_fmt_cb_beg()">vstr_sc_fmt_cb_beg()</a> and
+ <a href="functions.html#vstr_sc_fmt_cb_end()">vstr_sc_fmt_cb_end()</a>, if padding is added in <a href="functions.html#vstr_sc_fmt_cb_end()">vstr_sc_fmt_cb_end()</a> it is added
  at position (Parameter[2]) + length (Parameter[4]).
 </p><p>  If this function returns FALSE, you should probably just return from the
  callback with FALSE.
@@ -4071,13 +4107,13 @@
 <strong>Function: </strong> vstr_sc_fmt_add_vstr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- Vstr strings. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_SIZE_T,
- VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END. These
- correspond to the last 4 arguments to vstr_add_vstr().
+ Vstr strings. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>,
+ <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. These
+ correspond to the last 4 arguments to <a href="functions.html#vstr_add_vstr()">vstr_add_vstr()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -4087,7 +4123,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{vstr}&quot;, with the gcc warning
- compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{vstr:%p%zu%zu%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
  
 
@@ -4095,12 +4131,12 @@
 <strong>Function: </strong> vstr_sc_fmt_add_buf()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- a memory block. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_CHAR, VSTR_TYPE_FMT_SIZE_T and
- VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_buf().
+ a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a> and
+ <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. These correspond to the last 2 arguments to <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -4110,7 +4146,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{buf}&quot;, with the gcc warning
- compatible alternates using "{buf:%s%zu}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{buf:%s%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4118,12 +4154,12 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ptr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- a memory block. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_CHAR, VSTR_TYPE_FMT_SIZE_T and
- VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_ptr().
+ a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a> and
+ <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. These correspond to the last 2 arguments to <a href="functions.html#vstr_add_ptr()">vstr_add_ptr()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -4133,7 +4169,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ptr}&quot;, with the gcc warning
- compatible alternates using "{ptr:%s%zu}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ptr:%s%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4141,12 +4177,12 @@
 <strong>Function: </strong> vstr_sc_fmt_add_non()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- a memory block. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_SIZE_T and VSTR_TYPE_FMT_END.
- These correspond to the last argument to vstr_add_non().
+ a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>.
+ These correspond to the last argument to <a href="functions.html#vstr_add_non()">vstr_add_non()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -4156,7 +4192,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{non}&quot;, with the gcc warning
- compatible alternates using "{non:%zu}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{non:%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4164,13 +4200,13 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ref()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- a memory block. It is equivalent to calling vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_SIZE_T, VSTR_TYPE_FMT_SIZE_T,
- VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END.
- These correspond to the last 3 arguments to vstr_add_ref().
+ a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>,
+ <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>.
+ These correspond to the last 3 arguments to <a href="functions.html#vstr_add_ref()">vstr_add_ref()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
@@ -4180,7 +4216,7 @@
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ref}&quot;, with the gcc warning
- compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ref:%p%u%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4188,7 +4224,7 @@
 <strong>Function: </strong> vstr_sc_fmt_add_bkmg_Byte_uint()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  a number in a human accessible form. Displaying either K, M or G after the
@@ -4203,7 +4239,7 @@
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{BKMG.u}&quot;, with the gcc warning
- compatible alternates using "{BKMG.u:%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{BKMG.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4211,7 +4247,7 @@
 <strong>Function: </strong> vstr_sc_fmt_add_bkmg_Bytes_uint()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  a number in a human accessible form. Displaying either K, M or G after the
@@ -4226,7 +4262,7 @@
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{BKMG/s.u}&quot;, with the gcc warning
- compatible alternates using "{BKMG/s.u:%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{BKMG/s.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4234,7 +4270,7 @@
 <strong>Function: </strong> vstr_sc_fmt_add_bkmg_bit_uint()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  a number in a human accessible form. Displaying either K, M or G after the
@@ -4249,7 +4285,7 @@
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{bKMG.u}&quot;, with the gcc warning
- compatible alternates using "{bKMG.u:%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{bKMG.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4257,7 +4293,7 @@
 <strong>Function: </strong> vstr_sc_fmt_add_bkmg_bits_uint()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  a number in a human accessible form. Displaying either K, M or G after the
@@ -4272,7 +4308,7 @@
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{bKMG/s.u}&quot;, with the gcc warning
- compatible alternates using "{bKMG/s.u:%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{bKMG/s.u:%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4280,12 +4316,12 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv4_ptr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv4 IP addresses from a struct in_addr *. It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. This pointer is
  a struct in_addr *, to be passed to inet_ntop().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4293,7 +4329,7 @@
  used.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ipv4.p}&quot;, with the gcc warning
- compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv4.p:%p}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4301,12 +4337,12 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv6_ptr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. This pointer is
  a struct in6_addr *, to be passed to inet_ntop().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4314,7 +4350,7 @@
  used.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ipv4.p}&quot;, with the gcc warning
- compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv4.p:%p}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4322,13 +4358,13 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv4 IP addresses from a vector of 4 unsigned char.
  It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>, the vector is one
  unsigned char for each part of the ipv4 address.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4336,7 +4372,7 @@
  used.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ipv4.v}&quot;, with the gcc warning
- compatible alternates using "{ipv4.v:%p}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv4.v:%p}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4344,13 +4380,13 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv6 IP addresses from a vector of 8 unsigned int.
  It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
  the vector is one unsigned int for each part of the ipv6 address, the
  second argument of flags, change how the ipv6 address is printed.
 
@@ -4359,7 +4395,7 @@
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
 </p><p>  It is recommended that you use the name &quot;{ipv6.v}&quot;, with the gcc warning
- compatible alternates using "{ipv6.v:%p%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv6.v:%p%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4367,14 +4403,14 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec_cidr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv4 IP addresses with a CIDR mask from a vector of 4 unsigned char and an
  unsigned int.
  It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a> and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
  the vector is one unsigned char for each part of the ipv4 address.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4382,7 +4418,7 @@
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
 </p><p>  It is recommended that you use the name &quot;{ipv4.v+C}&quot;, with the gcc warning
- compatible alternates using "{ipv4.v+C:%p%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv4.v+C:%p%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4390,15 +4426,15 @@
 <strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec_cidr()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
  ipv6 IP addresses with a CIDR mask from a vector of 8 unsigned int and an
  unsigned int.
  It is equivalent to calling 
- vstr_add_fmt() with the type
- arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT
- and VSTR_TYPE_FMT_END,
+ <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a>, <a href="constants.html#VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a>
+ and <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>,
  the vector is one unsigned int for each part of the ipv6 address, the
  second argument of flags, change how the ipv6 address is printed.
 
@@ -4407,7 +4443,7 @@
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
  used.
 </p><p>  It is recommended that you use the name &quot;{ipv6.v+C}&quot;, with the gcc warning
- compatible alternates using "{ipv6.v+C:%p%u%u}" etc. vstr_sc_fmt_add_all()
+ compatible alternates using "{ipv6.v+C:%p%u%u}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 
@@ -4420,7 +4456,7 @@
  specific custom formatters. The names used are as those given in the notes
  section of each custom formatter. Also 4 alternate names are given so that
  the formatter can be used in a gcc warning compatible way. For instance
- the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}",
+ the <a href="functions.html#vstr_add_buf()">vstr_add_buf()</a> formatter is "{buf}", however the names "{buf:%s%zu}",
  "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -4476,8 +4512,8 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Maximum amount of nodes to read into<br>Type<strong>[5]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+</p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a>, then readv() with
+ the file descriptor (Parameter[3]) and finally <a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end()</a>
  before returning.
 
 
@@ -4490,9 +4526,9 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Size of data to try to read<br>Type<strong>[4]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+</p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a>, then readv() with
  the file descriptor got by opening the filename (Parameter[3]) and finally
- vstr_add_iovec_buf_end() before returning.
+ <a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end()</a> before returning.
 </p><p>  However the arguments to the vstr_add_iovec_buf_* calls
  are limited so that only up to size (Parameter[4]) data will be read.
 </p><p>  If size (Parameter[4]) is zero then the entire file will try to be read.
@@ -4513,8 +4549,8 @@
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Maximum amount of nodes to read into<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[7]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+</p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a>, then readv() with
+ the file descriptor (Parameter[3]) and finally <a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end()</a>
  before returning.
 
 
@@ -4528,9 +4564,9 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Size of data to try to read<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_SC_READ_FILE_ERR_<br>Type<strong>[6]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+</p><p>  This function is used to call <a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg()</a>, then readv() with
  the file descriptor got by opening the filename (Parameter[3]) and finally
- vstr_add_iovec_buf_end() before returning.
+ <a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end()</a> before returning.
 </p><p>  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
  only up to exactly size (Parameter[4]) data will be read. If size
  (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
@@ -4556,7 +4592,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the start position is 1, the length is (Parameter[1])-&gt;len and caching is
  available for the Vstr string the data will be exported as though
- vstr_export_iovec_ptr_all(), writev() and then vstr_del() were called.
+ <a href="functions.html#vstr_export_iovec_ptr_all()">vstr_export_iovec_ptr_all()</a>, writev() and then <a href="functions.html#vstr_del()">vstr_del()</a> were called.
 
 
 <a name="vstr_sc_write_file%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

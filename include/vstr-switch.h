@@ -101,6 +101,14 @@
 # define VSTR__COMPILE_ATTR_PURE() /* nothing */
 #endif
 
+#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_CONST) && \
+    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+# define VSTR__COMPILE_ATTR_CONST() \
+ __attribute__ ((__const__))
+#else
+# define VSTR__COMPILE_ATTR_CONST() VSTR__COMPILE_ATTR_PURE()
+#endif
+
 #if defined(VSTR_AUTOCONF_HAVE_ATTRIB_MALLOC) && \
     !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
 # define VSTR__COMPILE_ATTR_MALLOC() \

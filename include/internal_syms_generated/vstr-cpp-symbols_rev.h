@@ -180,10 +180,12 @@
 #undef vstr_sc_fmt_cb_end
 #undef vstr_sc_mmap_fd
 #undef vstr_sc_mmap_file
+#undef vstr_sc_posdiff
 #undef vstr_sc_read_iov_fd
 #undef vstr_sc_read_iov_file
 #undef vstr_sc_read_len_fd
 #undef vstr_sc_read_len_file
+#undef vstr_sc_reduce
 #undef vstr_sc_write_fd
 #undef vstr_sc_write_file
 #undef vstr_sects_add

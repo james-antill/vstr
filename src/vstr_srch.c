@@ -66,7 +66,7 @@ static size_t vstr__srch_chr_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);
@@ -255,7 +255,7 @@ static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);
@@ -371,7 +371,7 @@ static size_t vstr__srch_buf_rev_fast(const Vstr_base *base,
       }
       assert(scan_str[scan_len - count] == end_str[0]);
 
-      len_end = (scan_len - count) + 1;
+      len_end = VSTR_SC_POSDIFF(count, scan_len);
       if (vstr__cmp_eq_rev_buf(base, len, num, type,
                                str,      str_len,
                                scan_str, len_end))
@@ -459,7 +459,7 @@ static size_t vstr__srch_vstr_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);

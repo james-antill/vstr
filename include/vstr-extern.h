@@ -90,6 +90,7 @@
 
 #if VSTR_COMPILE_MACRO_FUNCTIONS
 /* these are also inline functions... */
+#define VSTR_SC_POSDIFF(bp, ep) (((ep) - (bp)) + 1)
 #define VSTR_CMP_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
  !vstr_cmp(x, p1, l1, y, p2, l1))
 #define VSTR_CMP_BUF_EQ(x, p1, l1, y, l2) (((l1) == (l2)) && \
@@ -410,7 +411,7 @@ extern int vstr_cmp_case_eq(const struct Vstr_base *, size_t, size_t,
                             const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_cmp_case_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                const void *, size_t)
+                                const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_case_cstr(const struct Vstr_base *, size_t, size_t,
                               const char *)
@@ -422,7 +423,7 @@ extern int vstr_cmp_vers_eq(const struct Vstr_base *, size_t, size_t,
                             const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_cmp_vers_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                const void *, size_t)
+                                const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_vers_cstr(const struct Vstr_base *,
                               size_t, size_t, const char *)
@@ -479,16 +480,16 @@ extern int vstr_cmp_case_eod_eq(const struct Vstr_base *, size_t, size_t,
                                   const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_cmp_case_bod_buf(const struct Vstr_base *, size_t, size_t,
-                                 const void *, size_t)
+                                 const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_case_eod_buf(const struct Vstr_base *, size_t, size_t,
-                                 const void *, size_t)
+                                 const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_case_bod_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                    const void *, size_t)
+                                    const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_case_eod_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                    const void *, size_t)
+                                    const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_case_bod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
@@ -515,16 +516,16 @@ extern int vstr_cmp_vers_eod_eq(const struct Vstr_base *, size_t, size_t,
                                 const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 extern int vstr_cmp_vers_bod_buf(const struct Vstr_base *, size_t, size_t,
-                                 const void *, size_t)
+                                 const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_vers_eod_buf(const struct Vstr_base *, size_t, size_t,
-                                 const void *, size_t)
+                                 const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_vers_bod_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                    const void *, size_t)
+                                    const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_vers_eod_buf_eq(const struct Vstr_base *, size_t, size_t,
-                                    const void *, size_t)
+                                    const char *, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1));
 extern int vstr_cmp_vers_bod_cstr(const struct Vstr_base *, size_t, size_t,
                                   const char *)
@@ -827,6 +828,11 @@ extern int vstr_iter_fwd_nxt(struct Vstr_iter *)
 
 
 /* shortcut functions ... */
+extern size_t vstr_sc_posdiff(size_t, size_t)
+    VSTR__COMPILE_ATTR_CONST();
+extern int vstr_sc_reduce(struct Vstr_base *, size_t, size_t, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+
 extern int vstr_sc_fmt_cb_beg(struct Vstr_base *, size_t *,
                               struct Vstr_fmt_spec *, size_t *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A();

@@ -705,7 +705,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
      * Where a is the From vstr data, and X is the To vstr data,
      * so we have to copy the first part, skip the middle and copy the
      * second part */
-    size_t before = (orig_pos - orig_from_pos) + 1;
+    size_t before = VSTR_SC_POSDIFF(orig_from_pos, orig_pos);
 
     assert(before < len);
 

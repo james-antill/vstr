@@ -69,6 +69,10 @@
 	    <li> <a href="#examples">Examples</a> - Programs using the API,
 	      some of which are heavily commented.
 	    </li>
+
+	    <li> <a href="COPYING.LIB">License</a> - The license that 
+	      comes with the Vstr string library is the LGPL.
+	    </li>
 	  </ul>
 	</td></tr>
     </table>
@@ -265,7 +269,7 @@ there is any).
 <table width="80%"><tr><td><p>
 
  At first glace the Vstr API <b>looks huge</b> as there are over
-<b>One hundred and forty</b> functions. However the API was designed so 
+<b>Two hundred and seventy</b> functions. However the API was designed so 
 that you can mentally build functions from an API template ... so 
 instead of having to remember 140 functions you just need to remember
 10 to 20 pieces of the API template.
@@ -546,11 +550,13 @@ is <a href="vstr-latest/vstr/tst/">HERE</a>
 (<b>NOTE:</b> the test suite is written to try and break the Vstr string
 library, so although it uses all of the APIs it may not be code you want to
 copy and paste into your programs/libraries --  however given that everything in
-the test suite passes, you know that those uses do work).
+the test suite passes, you know that those uses do work). However do note that
+some of the tests do use undocumentation members of structs etc., and you
+still shouldn't use those.
 </p><p>
- There is also a full application, an FTP server, which is a version of 
-<a href="http://freshmeat.net/projects/vsftpd/">vsftpd</a> ported to use the
-Vstr string library. It can be found
+ There is also a <i>full application</i>, an FTP server,
+<a href="http://freshmeat.net/projects/vsftpd/">vsftpd</a> which I ported to
+use the Vstr string library. It can be found
 <a href="ftp://ftp.and.org/pub/james/vstr/apps/and-vsftpd/">here</a>.
 
 </p></td></tr>
@@ -561,7 +567,7 @@ Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Wed Feb 12 19:51:22 EST 2003
+Last modified: Thu Feb 13 13:29:20 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

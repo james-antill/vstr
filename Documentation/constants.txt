@@ -74,7 +74,7 @@ Constant: VSTR_MAX_NODE_BUF
  than this to vstr_add_buf() etc. then multiple nodes will be allocated.
 
 
-Section: Constants for making/freeing type of nodes
+Section: Constants passed to vstr_make_spare_nodes() and vstr_free_spare_nodes()
 
 Constant: VSTR_TYPE_NODE_BUF
 
@@ -177,7 +177,7 @@ Constant: VSTR_TYPE_SUB_ALL_BUF
  that the data should all be added via. vstr_add_buf().
 
 
-Section: Constants used with vstr_fmt_add()
+Section: Constants passed to vstr_fmt_add()
 
 Constant: VSTR_TYPE_FMT_END
 
@@ -331,7 +331,7 @@ Constant: VSTR_TYPE_FMT_ERRNO
  the value upon entering vstr_add_vfmt().
 
 
-Section: Constants used with vstr_sc_fmt_cb_beg()
+Section: Constants passed to vstr_sc_fmt_cb_beg()
 
 Constant: VSTR_FLAG_SC_FMT_CB_BEG_DEF
 
@@ -377,7 +377,7 @@ Constant: VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG
  VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM is not set.
 
 
-Section: Constants passed to vstr_conv_unprintable_*()
+Section: Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr()
 
 Constant: VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NONE
 
@@ -540,7 +540,7 @@ Constant: VSTR_FLAG_CONV_UNPRINTABLE_DEF
  to do.
 
 
-Section: Constants used with vstr_parse_[u](short|int|long|intmax)()
+Section: Constants passed to vstr_parse_[u](short|int|long|intmax)()
 
 Constant: VSTR_TYPE_PARSE_NUM_ERR_NONE
 
@@ -681,7 +681,7 @@ Constant: VSTR_FLAG_PARSE_NUM_NO_BEG_PM
   This flag disallows a plus or a minus character before the number.
 
 
-Section: Constants used with vstr_parse_ipv4()
+Section: Constants passed to vstr_parse_ipv4()
 
 Constant: VSTR_TYPE_PARSE_IPV4_ERR_NONE
 
@@ -838,7 +838,7 @@ Constant: VSTR_FLAG_PARSE_IPV4_ONLY
  usable as if no error had occurred.
 
 
-Section: Constants used with vstr_parse_ipv6()
+Section: Constants passed to vstr_parse_ipv6()
 
 Constant: VSTR_TYPE_PARSE_IPV6_ERR_NONE
 
@@ -1006,7 +1006,7 @@ Constant: VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD
  values (the last 4 octets) are replaced with an ipv4 address.
 
 
-Section: Constants passed to vstr_split_*()
+Section: Constants passed to vstr_split_buf(), vstr_split_cstr_buf(), VSTR_SPLIT_CSTR_BUF(), vstr_split_chrs(), vstr_split_cstr_chrs() and VSTR_SPLIT_CSTR_CHRS()
 
 Constant: VSTR_FLAG_SPLIT_DEF
 
@@ -1076,8 +1076,7 @@ Constant: VSTR_FLAG_SPLIT_REMAIN
  last section added is for the remainder of the input.
 
 
-
-Section: Constants used with vstr_sects_*()
+Section: Constants passed to vstr_sects_foreach()
 
 Constant: VSTR_FLAG_SECTS_FOREACH_DEF
 
@@ -1128,7 +1127,7 @@ Constant: VSTR_TYPE_SECTS_FOREACH_RET
  the same thing as a break statement in a C for loop.
 
 
-Section: Constants passed to the cache callback function (vstr_cache_add_cb())
+Section: Constants used with the callback from vstr_cache_add_cb()
 
 Constant: VSTR_TYPE_CACHE_ADD
 
@@ -1165,7 +1164,7 @@ Constant: VSTR_TYPE_CACHE_FREE
   The position and length arguments are undefined.
 
 
-Section: Constants used with vstr_sc_add_fd() and vstr_sc_add_file()
+Section: Constants passed to vstr_sc_mmap_fd() and vstr_sc_mmap_file()
 
 Constant: VSTR_TYPE_SC_MMAP_FD_ERR_NONE
 Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_NONE
@@ -1240,7 +1239,7 @@ Constant: VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE
   To help the programer unify error paths errno is set to EFBIG.
 
 
-Section: Constants used with vstr_sc_read_fd()
+Section: Constants passed to vstr_sc_read_iov_fd(), vstr_sc_read_len_fd(), vstr_sc_read_iov_file() and vstr_sc_read_len_file()
 
 Constant: VSTR_TYPE_SC_READ_FD_ERR_NONE
 Constant: VSTR_TYPE_SC_READ_FILE_ERR_NONE
@@ -1335,7 +1334,7 @@ Constant: VSTR_TYPE_SC_READ_FILE_ERR_TOO_LARGE
   To help the programer unify error paths errno is set to EFBIG.
 
 
-Section: Constants used with vstr_sc_write_fd() and vstr_sc_write_file()
+Section: Constants passed to vstr_sc_write_fd() and vstr_sc_write_file()
 
 Constant: VSTR_TYPE_SC_WRITE_FD_ERR_NONE
 Constant: VSTR_TYPE_SC_WRITE_FILE_ERR_NONE
@@ -1395,7 +1394,7 @@ Constant: VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
  TRUE, and errno is set to ENOMEM.
 
 
-Section: Constants you pass to the vstr_cntl_base() function
+Section: Constants passed to vstr_cntl_base()
 
 Constant: VSTR_CNTL_BASE_GET_CONF
 
@@ -1422,7 +1421,7 @@ Constant: VSTR_CNTL_BASE_SET_CONF
   If the Vstr configuration (Parameter[1]) is NULL, then the default
  Vstr configuration will be used.
 
-Section: Constants you pass to the vstr_cntl_conf() function
+Section: Constants passed to vstr_cntl_conf()
 
 Constant: VSTR_CNTL_CONF_GET_NUM_BUF_SZ
 
@@ -1796,7 +1795,7 @@ Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
  called vstr_make_nodes directly.
 
 
-Section: Constants you pass to the vstr_cntl_opt() function
+Section: Constants passed to vstr_cntl_opt()
 
 Constant: VSTR_CNTL_OPT_GET_CONF
 

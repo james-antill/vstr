@@ -2,6 +2,10 @@
 
 libtoolize -c --force && aclocal && automake -a -c --force-missing && autoconf
 
+# Fix automake...
+rm COPYING
+ln Documentation/COPYING.LIB COPYING
+
 gen_prefix=include/internal_syms_generated/vstr
 
 # Files for internal symbol remapping...

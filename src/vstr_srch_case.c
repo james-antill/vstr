@@ -79,7 +79,7 @@ static size_t vstr__srch_case_chr_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);
@@ -176,7 +176,7 @@ static size_t vstr__srch_case_buf_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);
@@ -254,7 +254,7 @@ static size_t vstr__srch_case_vstr_rev_slow(const Vstr_base *base,
     ret = tmp;
     
     scan_pos = ret + 1;
-    scan_len = len - ((ret - pos) + 1);
+    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
   }
 
   return (ret);

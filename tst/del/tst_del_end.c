@@ -17,12 +17,25 @@ static void tst_del(Vstr_base *t1, size_t len)
 {
   assert(len);
 
+  assert(vstr_sc_posdiff(1, t1->len) == len);
+  assert(vstr_sc_posdiff(1, t1->len) == VSTR_SC_POSDIFF(1, t1->len));
+  
+  assert(vstr_sc_posdiff(2, t1->len) == (len - 1));
+  assert(vstr_sc_posdiff(2, t1->len) == VSTR_SC_POSDIFF(2, t1->len));
+  
   ASSERT( vstr_del(t1, t1->len + 1, 0));
   ASSERT(!vstr_del(t1, t1->len + 1, 1)); /* non assert, due to inline */
   
   while (--len)
-    vstr_del(t1, t1->len, 1);
-  vstr_del(t1, 1, 1);
+    vstr_sc_reduce(t1, 1, t1->len, 1);
+
+  assert(vstr_sc_posdiff(1, t1->len) == 1);
+  assert(vstr_sc_posdiff(1, t1->len) == VSTR_SC_POSDIFF(1, t1->len));
+  
+  assert(vstr_sc_reduce(t1, 1, 1, 0) == 1);
+  assert(vstr_sc_reduce(t1, 1, 0, 0) == 1);
+  assert(vstr_sc_posdiff(1, t1->len) == 1);
+  vstr_sc_reduce(t1, 1, 1, 2);
 }
 
 int tst(void)

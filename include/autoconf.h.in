@@ -95,6 +95,8 @@
 
 #undef HAVE_WCSNRTOMBS
 
+#define USE_WIDE_CHAR_T 0
+
 #undef HAVE_GETOPT_LONG
 
 #undef HAVE_SIGEMPTYSET
@@ -117,6 +119,11 @@
 #undef HAVE_INET_ADDR
 
 #undef HAVE_PREAD
+
+#undef mmap64
+#undef lseek64
+#undef fstat64
+#undef stat64
 
 #undef ASM_GLOBAL_DIRECTIVE
 
@@ -197,6 +204,8 @@
 
 #undef HAVE_ATTRIB_PURE
 
+#undef HAVE_ATTRIB_CONST
+
 #undef HAVE_ATTRIB_VISIBILITY
 
 #undef HAVE___TYPEOF
@@ -212,3 +221,4 @@
 #undef USE_WRAP_MEMSET
 
 #undef USE_WRAP_MEMMOVE
+

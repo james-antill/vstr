@@ -180,10 +180,12 @@
 #define vstr_sc_fmt_cb_end vstr_nx_sc_fmt_cb_end
 #define vstr_sc_mmap_fd vstr_nx_sc_mmap_fd
 #define vstr_sc_mmap_file vstr_nx_sc_mmap_file
+#define vstr_sc_posdiff vstr_nx_sc_posdiff
 #define vstr_sc_read_iov_fd vstr_nx_sc_read_iov_fd
 #define vstr_sc_read_iov_file vstr_nx_sc_read_iov_file
 #define vstr_sc_read_len_fd vstr_nx_sc_read_len_fd
 #define vstr_sc_read_len_file vstr_nx_sc_read_len_file
+#define vstr_sc_reduce vstr_nx_sc_reduce
 #define vstr_sc_write_fd vstr_nx_sc_write_fd
 #define vstr_sc_write_file vstr_nx_sc_write_file
 #define vstr_sects_add vstr_nx_sects_add

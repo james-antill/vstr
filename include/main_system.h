@@ -81,7 +81,7 @@
 
 #endif /* USE_RESTRICTED_HEADERS */
 
-#ifdef HAVE_MALLOC_H
+#if 0 /* FIXME: def HAVE_MALLOC_H -- BSD produces a crappy warning... */
 # include <malloc.h>
 #endif
 

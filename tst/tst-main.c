@@ -122,11 +122,10 @@ int main(void)
 " . /etc/sysconfig/i18n\n"
 " rpm --define \"_install_langs en_US:$SUPPORTED\" -Uvh --force glibc-common*\n"
 "\n"
-" You can check that it is installed by running \"locale -a\"\n"
+"ANY: You can check that it is installed by running \"locale -a\"\n"
 "\n"
 "\n"
             );
-    exit (EXIT_FAILURE);
   }
 #endif
   

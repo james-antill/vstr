@@ -88,10 +88,31 @@ sub conv_html
 s/&/&amp;/g;        # must remember to do this one first!
 s/</&lt;/g;         # this is the most important one
 s/>/&gt;/g;         # don't close too early
-s/"/&quot;/g;       # only in embedded tags, i guess
+s/\"/&quot;/g;       # only in embedded tags, i guess
 
   return ($_);
 }
+
+my $current_function = undef;
+
+sub conv_A_refs
+  {
+    my $params = shift;
+
+    s{([^#"_0-9a-z])vstr_([_0-9a-z]+)\(\)}
+      {$1<a href="functions.html#vstr_$2()">vstr_$2()</a>}g;
+    s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+)\(\)}
+      {$1<a href="functions.html#VSTR_$2()">VSTR_$2()</a>}g;
+
+    if ($params && defined($current_function))
+      {
+	s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+[*])}
+	  {$1<a href="constants.html#$current_function">VSTR_$2</a>}g;
+      }
+
+    s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+)([^_0-9A-Z(*])}
+      {$1<a href="constants.html#VSTR_$2">VSTR_$2</a>$3}g;
+  }
 
 sub convert()
   {
@@ -122,11 +143,14 @@ EOL
               if ($1 eq "Constant")
 	      {
                 my $uri = $2;
-                $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
+		my $orig_str = $_;
 
 		$next_in_const = 1;
+		
+		$uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
+		$_ = "<a name=\"$uri\">" . $_ . "</a>";
 
-                $_ = "<a name=\"$uri\">" . $_ . "</a>";
+		$current_function = undef;
 	      }
               elsif ($1 eq "Function")
               {
@@ -134,16 +158,32 @@ EOL
                 $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
                 $_ = "<a name=\"$uri\">" . $_ . "</a>";
+
+		$current_function = $uri;
               }
               elsif ($1 eq "Member")
-              { }
+              {
+		$current_function = undef;
+	      }
               else
               { # Section...
                 my $uri = $1;
+                my $sect_str = $1;
                 $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
+
+		if (/Constants passed to /)
+		  { # More hacks...
+		    s {
+		       ([^#"_0-9a-z])(vstr_[_0-9a-z]+)\(\)
+		      }
+		      {
+			$1\t<a name=\"$2()\">$2()</a>\n
+		      }gx;
+		  }
 
                 s/<h2>/<a name="$uri"><h2>/;
                 $_ .= "</a>";
+		conv_A_refs(0);
               }
             }
 	  }
@@ -177,6 +217,8 @@ EOL
 		    $_ = "</td></tr><tr><td>$attr: $text";
 		  }
 	      }
+
+	    conv_A_refs(1);
 	  }
 	elsif (/^ \.\.\./)
 	  {
@@ -201,6 +243,12 @@ EOL
 	  {
             conv_html();
 	    $_ = "</p><p>$_";
+
+	    conv_A_refs(0);
+	  }
+	elsif (!$in_pre_tag)
+	  {
+	    conv_A_refs(0);
 	  }
 	
 	$in_const = $next_in_const;

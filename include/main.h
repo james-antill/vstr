@@ -12,10 +12,6 @@
 
 #define FIX_NAMESPACE_SYMBOL vstr__autoconf_
 
-#ifdef USE_RESTRICTED_HEADERS
-# define USE_WIDE_CHAR_T 0
-#endif
-
 #include "fix.h"
 
 #include "assert_loop-def.h"

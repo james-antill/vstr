@@ -903,8 +903,7 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
   }
   else
   {
-    len = (ls - pos) + 1;
-    ls = vstr_spn_chrs_rev(base, pos, len - 1, buf, 1);
-    *ret_len = len - ls;
+    len = VSTR_SC_POSDIFF(pos, ls);
+    *ret_len = len - vstr_spn_chrs_rev(base, pos, len - 1, buf, 1);
   }
 }

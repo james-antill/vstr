@@ -65,9 +65,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=1
-VSTR_INTERFACE_AGE=1
-VSTR_BINARY_AGE=1
+VSTR_MICRO_VERSION=2
+VSTR_INTERFACE_AGE=2
+VSTR_BINARY_AGE=2
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -147,13 +147,13 @@ AC_PATH_PROG(CHMOD_PATH, chmod, $TRUE_PATH,
 #
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test x$PKG_CONFIG = xno ; then
-  AC_MSG_ERROR([*** pkg-config not found. See http://www.freedesktop.org/software/pkgconfig/])
+  AC_MSG_WARN([*** pkg-config not found. See http://www.freedesktop.org/software/pkgconfig/])
 fi
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.5 ; then
   :
 else
-  AC_MSG_ERROR([*** pkg-config too old; version 0.5 or better required.])
+  AC_MSG_WARN([*** pkg-config too old; version 0.5 or better required. See http://www.freedesktop.org/software/pkgconfig/])
 fi
 
 WARNS=""
@@ -368,6 +368,7 @@ AC_CHECK_FUNCS(asprintf, AC_DEFINE(HAVE_ASPRINTF),)
 # Other functions...
 AC_CHECK_FUNCS(mmap64, AC_DEFINE(HAVE_MMAP64),)
 AC_CHECK_FUNCS(wcsnrtombs, AC_DEFINE(HAVE_WCSNRTOMBS),)
+AC_CHECK_FUNCS(wcrtomb, AC_DEFINE(USE_WIDE_CHAR_T),)
 AC_CHECK_FUNCS(getopt_long, AC_DEFINE(HAVE_GETOPT_LONG),)
 AC_CHECK_FUNCS(sigemptyset, AC_DEFINE(HAVE_SIGEMPTYSET),)
 AC_CHECK_FUNCS(difftime, AC_DEFINE(HAVE_DIFFTIME),)
@@ -392,6 +393,13 @@ AC_CHECK_LIB(nsl, inet_addr,
                   [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_ADDR) ]))))
 
 AC_CHECK_FUNCS(pread, AC_DEFINE(HAVE_PREAD),)
+
+# mmap repeated above for autoconf...
+AC_CHECK_FUNCS(mmap64,, AC_DEFINE(mmap64, mmap))
+AC_CHECK_FUNCS(lseek64,,AC_DEFINE(lseek64, lseek))
+AC_CHECK_FUNCS(fstat64,,AC_DEFINE(fstat64, fstat))
+# NOTE: this does the struct ... sick but works.
+AC_CHECK_FUNCS(stat64,,AC_DEFINE(stat64, stat))
 
 TWOCAN_CONF_MSG(Checking custom stuff, mainly does stuff exist/work)
 
@@ -989,13 +997,8 @@ AC_MSG_CHECKING(for cmsghdr struct)
 AC_CACHE_VAL(local_cv_have_struct_cmsghdr,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_SYS_UN_H
-# include <sys/un.h>
-#endif
 
 struct abcd
 {
@@ -1024,13 +1027,8 @@ AC_MSG_CHECKING(for fd passing in cmsghdr)
 AC_CACHE_VAL(local_cv_have_cmsghdr_rights,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_SYS_UN_H
-# include <sys/un.h>
-#endif
 
 struct abcd
 {
@@ -1059,13 +1057,8 @@ AC_MSG_CHECKING(for credentials passing in cmsghdr)
 AC_CACHE_VAL(local_cv_have_cmsghdr_credentials,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_SYS_UN_H
-# include <sys/un.h>
-#endif
 
 struct abcd
 {
@@ -1094,9 +1087,6 @@ AC_MSG_CHECKING(for credentials passing in setsockopt)
 AC_CACHE_VAL(local_cv_have_so_peercreds,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -1118,13 +1108,8 @@ AC_MSG_CHECKING(for CMSG_DATA macro)
 AC_CACHE_VAL(local_cv_have_cmsg_data,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_SYS_UN_H
-# include <sys/un.h>
-#endif
 
 struct abcd
 {
@@ -1374,6 +1359,27 @@ local_cv_has_attrib_pure=no,
 AC_MSG_RESULT($local_cv_has_attrib_pure)
 case x$local_cv_has_attrib_pure in
 xyes) AC_DEFINE(HAVE_ATTRIB_PURE) ;;
+esac
+
+AC_MSG_CHECKING(if const is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_const,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+int abcd(int n)  __attribute__((__const__)) ;
+int abcd(int n) { return (!n); }
+
+int main() {
+ return abcd(2);
+}],
+local_cv_has_attrib_const=yes,
+local_cv_has_attrib_const=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_const)
+case x$local_cv_has_attrib_const in
+xyes) AC_DEFINE(HAVE_ATTRIB_CONST) ;;
 esac
 
 case x$local_cv_have_tst_noattr_visibility in

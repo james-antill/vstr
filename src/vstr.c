@@ -975,24 +975,6 @@ Vstr_node **vstr__base_ptr_pos(const Vstr_base *base, size_t *pos,
   return ((Vstr_node **) scan);
 }
 
-unsigned int vstr_num(const Vstr_base *base, size_t pos, size_t len)
-{
-  Vstr_iter iter[1];
-  unsigned int beg_num = 0;
-  
-  if (pos == 1 && len == base->len)
-    return (base->num);
-
-  if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    return (0);
-
-  beg_num = iter->num;
-  while (vstr_iter_fwd_nxt(iter))
-  { /* do nothing */; }
-  
-  return ((iter->num - beg_num) + 1);
-}
-
 #ifndef VSTR__CONF_REF_LINKED_SZ /* FIXME: */
 # ifdef NDEBUG
 #define VSTR__CONF_REF_LINKED_SZ INT_MAX
