@@ -118,12 +118,33 @@ static int ex_usr_bmpz_cb(Vstr_base *base, size_t pos, Vstr_fmt_spec *spec)
   return (ex__usr_mpz_cb(base, pos, spec, 'b', mpz));
 }
 
+static void *vmpz_num(unsigned int base, int val,
+                      unsigned int *ern, void *bignum)
+{
+  *ern = 0;
+
+  mpz_mul_ui(bignum, bignum, base);
+
+  if (val > 0)
+    mpz_add_ui(bignum, bignum, val);
+  else
+  {
+    unsigned int uval = ++val;
+    ++uval;
+    mpz_sub_ui(bignum, bignum, uval);
+  }
+
+  return (bignum);
+}
+
 int main(int argc, char *argv[])
 {
   Vstr_base *s1 = ex_init(NULL);
   mpz_t bignum;
   const char *loc_num_name = NULL;
   Vstr_ref *ref = NULL;
+  const unsigned int num_flags = (VSTR_FLAG_PARSE_NUM_SEP |
+                                  VSTR_FLAG_PARSE_NUM_SPACE);
   
   if (argc < 2)
     errx(EXIT_FAILURE, "No count specified");
@@ -145,18 +166,14 @@ int main(int argc, char *argv[])
                       loc_num_name))
     errx(EXIT_FAILURE, "Couldn't change numeric locale info");
 
-  if (0) { }
-  else if (!strncmp(argv[1], "0x", 2) ||
-           !strncmp(argv[1], "0X", 2))
-    mpz_init_set_str(bignum, argv[1] + 2, 16);
-  else if (!strncmp(argv[1], "0b", 2) ||
-           !strncmp(argv[1], "0B", 2))
-    mpz_init_set_str(bignum, argv[1] + 2,  2);
-  else if (!strncmp(argv[1], "0", 1))
-    mpz_init_set_str(bignum, argv[1] + 1,  8);
-  else
-    mpz_init_set_str(bignum, argv[1],  0);
+  mpz_init(bignum);
+  
+  if (!vstr_add_cstr_ptr(s1, 0, argv[1]) ||
+      !vstr_parse_num(s1, 1, s1->len, num_flags, NULL, NULL, vmpz_num, bignum))
+    errno = ENOMEM, err(EXIT_FAILURE, "Couldn't init number");
 
+  vstr_del(s1, 1, s1->len);
+    
   if (EX_GMP_NUMS_USE_TST)
   {
     mpz_abs(bignum, bignum);

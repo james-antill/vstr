@@ -173,6 +173,8 @@
 #undef vstr_ref_make_vstr_base
 #undef vstr_ref_make_vstr_conf
 #undef vstr_ref_make_vstr_sects
+#undef vstr_sc_add_b_uint16
+#undef vstr_sc_add_b_uint32
 #undef vstr_sc_add_cstr_grpbasenum_buf
 #undef vstr_sc_add_cstr_grpbasenum_ptr
 #undef vstr_sc_add_cstr_grpbasenum_ref
@@ -224,6 +226,8 @@
 #undef vstr_sc_fmt_cb_end
 #undef vstr_sc_mmap_fd
 #undef vstr_sc_mmap_file
+#undef vstr_sc_parse_b_uint16
+#undef vstr_sc_parse_b_uint32
 #undef vstr_sc_posdiff
 #undef vstr_sc_poslast
 #undef vstr_sc_read_iov_fd
@@ -231,6 +235,8 @@
 #undef vstr_sc_read_len_fd
 #undef vstr_sc_read_len_file
 #undef vstr_sc_reduce
+#undef vstr_sc_sub_b_uint16
+#undef vstr_sc_sub_b_uint32
 #undef vstr_sc_write_fd
 #undef vstr_sc_write_file
 #undef vstr_sects_add

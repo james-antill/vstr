@@ -49,6 +49,7 @@
 
 
 #include "dns.h"
+#include "app.h"
 
 #define CL_DNS_INIT(x, y) do {                  \
       (x)->io_w_serv = (y);                     \
@@ -299,13 +300,6 @@ static void cl_cb_func_free(struct Evnt *evnt)
   --server_clients_count;
 }
 
-static void cl_free(struct Evnt *evnt)
-{
-  close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
-  evnt_free(evnt);
-  cl_cb_func_free(evnt);
-}
-
 static struct con *cl_make(const char *ipv4_string, short port)
 {
   struct con *ret = malloc(sizeof(struct con));
@@ -489,8 +483,7 @@ static void cl_cmd_line(int argc, char *argv[])
       case 'e':
         /* use cmd line instead of stdin */
         io_r_fd = -1;
-        vstr_add_cstr_buf(io_r, io_r->len, optarg);
-        vstr_add_cstr_buf(io_r, io_r->len, "\n");
+        app_cstr_buf(io_r, optarg); app_cstr_buf(io_r, "\n");
         break;
         
       case 'o':

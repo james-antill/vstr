@@ -55,6 +55,7 @@
 
 #include "dns.h"
 
+#include "app.h"
 
 #define MAP_MAKE_ENTRY(x) [ DNS_CLASS_ ## x ] = #x
 static const char *dns_map_class2name[DNS_CLASS_ALL + 1] = {
@@ -122,91 +123,12 @@ static void dns_dbg(Dns_base *base, const char *fmt, ... )
   }
 }
 
-/* FIXME: should be somewhere else esp. the binary stuff */
-static int app_fmt(Vstr_base *s1, const char *fmt, ... )
-   VSTR__COMPILE_ATTR_FMT(2, 3);
-static inline int app_fmt(Vstr_base *s1, const char *fmt, ... )
-{
-  va_list ap;
-  int ret = FALSE;
-  
-  va_start(ap, fmt);
-  ret = vstr_add_vfmt(s1, s1->len, fmt, ap);
-  va_end(ap);
-
-  return (ret);
-}
-static inline int app_buf(Vstr_base *s1, const void *buf, size_t len)
-{ return (vstr_add_buf(s1, s1->len, buf, len)); }
-static inline int app_cstr_buf(Vstr_base *s1, const char *buf)
-{ return (vstr_add_cstr_buf(s1, s1->len, buf)); }
-static inline int app_i_be4(Vstr_base *s1, unsigned int data)
-{
-  unsigned char buf[4];
-
-  buf[3] = data & 0xFF; data >>= 8;
-  buf[2] = data & 0xFF; data >>= 8;
-  buf[1] = data & 0xFF; data >>= 8;
-  buf[0] = data & 0xFF;
-  
-  return (app_buf(s1, buf, 4));
-}
-static inline int app_i_be2(Vstr_base *s1, unsigned int data)
-{
-  unsigned char buf[2];
-
-  buf[1] = data & 0xFF; data >>= 8;
-  buf[0] = data & 0xFF;
-  
-  return (app_buf(s1, buf, 2));
-}
-static inline int app_i_be1(Vstr_base *s1, unsigned int data)
-{
-  return (vstr_add_rep_chr(s1, s1->len, data & 0xFF, 1));
-}
-
-static inline int sub_i_be2(Vstr_base *s1, size_t pos, unsigned int data)
-{
-  unsigned char buf[2];
-
-  buf[1] = data & 0xFF; data >>= 8;
-  buf[0] = data & 0xFF;
-  
-  return (vstr_sub_buf(s1, pos, 2, buf, 2));
-}
-static inline unsigned int get_i_be4(Vstr_base *s1, size_t pos)
-{
-  unsigned char buf[4];
-  unsigned int num = 0;
-
-  vstr_export_buf(s1, pos, 4, buf, sizeof(buf));
-
-  num += buf[0]; num <<= 8;
-  num += buf[1]; num <<= 8;
-  num += buf[2]; num <<= 8;
-  num += buf[3];
-  
-  return (num);
-}
-static inline unsigned int get_i_be2(Vstr_base *s1, size_t pos)
-{
-  unsigned char buf[2];
-  unsigned int num = 0;
-  
-  vstr_export_buf(s1, pos, 2, buf, sizeof(buf));
-
-  num += buf[0]; num <<= 8;
-  num += buf[1];
-  
-  return (num);
-}
-
 unsigned int dns_get_msg_len(Vstr_base *s1, size_t pos)
 {
   if (s1->len < pos + 1)
     return (0);
 
-  return (2 + get_i_be2(s1, pos));
+  return (2 + get_b_uint16(s1, pos));
 }
 
 const char *dns_name_type_ch(unsigned int num)
@@ -264,8 +186,8 @@ static size_t dns_app_class_type(Vstr_base *out, Vstr_base *pkt,
   if (4 > vstr_sc_posdiff(pos, msg_len))
     return (msg_len);
 
-  tnum = get_i_be2(pkt, pos); pos += 2;
-  cnum = get_i_be2(pkt, pos); pos += 2;
+  tnum = get_b_uint16(pkt, pos); pos += 2;
+  cnum = get_b_uint16(pkt, pos); pos += 2;
 
   if (dns_class) *dns_class = cnum;
   if (dns_type)  *dns_type  = tnum;
@@ -359,7 +281,7 @@ static size_t dns_app_name(Dns_base *base, Vstr_base *out,
   {
     if (DNS_LABEL_IS_PTR(tmp))
     {
-      unsigned int off = get_i_be2(pkt, pos);
+      unsigned int off = get_b_uint16(pkt, pos);
 
       off &= ~0xC000; /* remove top bits that specifiy it's a ptr */
       ++off; /* offset is 0 indexed, position is 1 indexed */
@@ -393,7 +315,7 @@ static size_t dns_app_ttl(Vstr_base *out,
   if (4 > vstr_sc_posdiff(pos, msg_len))
     return (msg_len);
   
-  num = get_i_be4(pkt, pos);
+  num = get_b_uint32(pkt, pos);
   if (out) app_fmt(out, " for %ud %02u:%02u:%02u",
                    (num / (1 * 60 * 60 * 24)),
                    (num / (1 * 60 * 60)) % 24,
@@ -427,7 +349,7 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
   if (2 > vstr_sc_posdiff(pos, msg_len))
     return (msg_len);
 
-  len = get_i_be2(pkt, pos); pos += 2;
+  len = get_b_uint16(pkt, pos); pos += 2;
   
   if (!len)
     return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
@@ -452,7 +374,7 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       if (2 > vstr_sc_posdiff(pos, msg_len))
         return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
-      num  = get_i_be2(pkt, pos); pos += 2;
+      num  = get_b_uint16(pkt, pos); pos += 2;
       if (out == base->io_dbg) app_cstr_buf(out, " A: ");
       if (out) app_fmt(out, " %u", num);
       if (out == base->io_dbg) app_cstr_buf(out, "\n");
@@ -479,7 +401,7 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       
       vstr_export_buf(pkt, pos, 4, buf, sizeof(buf)); pos += 4;
       if (out == base->io_dbg) app_cstr_buf(out, "  A: ");
-      if (out) app_fmt(out, "%u.%u.%u.%u", buf[0],buf[1],buf[2],buf[3]);
+      if (out) app_fmt(out, "%u.%u.%u.%u", buf[0], buf[1], buf[2], buf[3]);
       if (out == base->io_dbg) app_cstr_buf(out, "\n");
     }
     else if (dns_type == DNS_TYPE_IN_NS)
@@ -519,11 +441,11 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       if (16 > vstr_sc_posdiff(pos, msg_len))
         return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
-      num_serial  = get_i_be4(pkt, pos); pos += 4;
-      num_refresh = get_i_be4(pkt, pos); pos += 4;
-      num_retry   = get_i_be4(pkt, pos); pos += 4;
-      num_expire  = get_i_be4(pkt, pos); pos += 4;
-      num_min     = get_i_be4(pkt, pos); pos += 4;
+      num_serial  = get_b_uint32(pkt, pos); pos += 4;
+      num_refresh = get_b_uint32(pkt, pos); pos += 4;
+      num_retry   = get_b_uint32(pkt, pos); pos += 4;
+      num_expire  = get_b_uint32(pkt, pos); pos += 4;
+      num_min     = get_b_uint32(pkt, pos); pos += 4;
       if (out == base->io_dbg)
       {
         if (out == base->io_dbg)
@@ -558,7 +480,7 @@ static size_t dns_app_rr_data(Dns_base *base, Vstr_base *out,
       if (len < 4)
         return (dns_app_rr_unknown_data(base, pkt, pos, msg_len, len));
       
-      num = get_i_be2(pkt, pos); pos += 2;
+      num = get_b_uint16(pkt, pos); pos += 2;
       if (out == base->io_dbg) app_cstr_buf(out, "  PREF: ");
       if (out) app_fmt(out, "%u ", num);
       if (out == base->io_dbg) app_cstr_buf(out, "NAME: ");
@@ -595,12 +517,12 @@ void dns_dbg_prnt_pkt(Dns_base *base, Vstr_base *pkt)
   
   if (12 <= msg_len)
   {
-    id    = get_i_be2(pkt, pos); pos += 2;
-    flags = get_i_be2(pkt, pos); pos += 2;
-    qdc   = get_i_be2(pkt, pos); pos += 2;
-    anc   = get_i_be2(pkt, pos); pos += 2;
-    nsc   = get_i_be2(pkt, pos); pos += 2;
-    arc   = get_i_be2(pkt, pos); pos += 2;
+    id    = get_b_uint16(pkt, pos); pos += 2;
+    flags = get_b_uint16(pkt, pos); pos += 2;
+    qdc   = get_b_uint16(pkt, pos); pos += 2;
+    anc   = get_b_uint16(pkt, pos); pos += 2;
+    nsc   = get_b_uint16(pkt, pos); pos += 2;
+    arc   = get_b_uint16(pkt, pos); pos += 2;
     
     dns_dbg(base, " id=%u\n %*s: op=%u |%s|%s|%s|%s| z=%d ret=%d ->"
         " qd=%u an=%u ns=%u ar=%u\n",
@@ -668,16 +590,16 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
   pos1 = io_w->len + 1;
-  app_i_be2(io_w, 0); /* TCP length */
+  app_b_uint16(io_w, 0); /* TCP length */
 
   id = rand(); id &= 0xFFFF;
-  app_i_be2(io_w, id);
-  app_i_be2(io_w, DNS_HDR_OPC_QUERY | (base->opt_recur ? DNS_HDR_RD : 0));
+  app_b_uint16(io_w, id);
+  app_b_uint16(io_w, DNS_HDR_OPC_QUERY | (base->opt_recur ? DNS_HDR_RD : 0));
   
-  app_i_be2(io_w, qcount);
-  app_i_be2(io_w, 0);
-  app_i_be2(io_w, 0);
-  app_i_be2(io_w, 0);
+  app_b_uint16(io_w, qcount);
+  app_b_uint16(io_w, 0);
+  app_b_uint16(io_w, 0);
+  app_b_uint16(io_w, 0);
 
   va_start(ap, qcount);
   while (qcount--)
@@ -702,7 +624,7 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
                                VSTR_FLAG_PARSE_IPV4_ONLY, NULL, &ern) && !ern)
       {
         vstr_del(s1, 1, s1->len);
-        vstr_add_fmt(s1, 0, "%u.%u.%u.%u.in-addr.arpa",
+        vstr_add_fmt(s1, s1->len, "%u.%u.%u.%u.in-addr.arpa",
                      ipv4[3], ipv4[2], ipv4[1], ipv4[0]);
       }
       else if (vstr_parse_ipv6(s1, 1, s1->len, ipv6, NULL,
@@ -714,7 +636,7 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
         (ipv6[(x)] >>  4) & 0xF,                                    \
         (ipv6[(x)] >>  8) & 0xF,                                    \
         (ipv6[(x)] >> 12) & 0xF
-        vstr_add_fmt(s1, 0,
+        vstr_add_fmt(s1, s1->len,
                      "%x.%x.%x.%x." "%x.%x.%x.%x."
                      "%x.%x.%x.%x." "%x.%x.%x.%x."
                      "%x.%x.%x.%x." "%x.%x.%x.%x."
@@ -741,9 +663,8 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
         difflen = vstr_spn_cstr_chrs_fwd(s1, srch_pos, srch_len, ".");
       else
       {
-        app_i_be1(io_w, difflen);
-        vstr_add_vstr(io_w, io_w->len,
-                      s1, srch_pos, difflen, VSTR_TYPE_ADD_ALL_BUF);
+        app_b_uint8(io_w, difflen);
+        app_vstr(io_w, s1, srch_pos, difflen, VSTR_TYPE_ADD_ALL_BUF);
         
         if (difflen != srch_len)
           ++difflen;
@@ -753,10 +674,10 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
       srch_len -= difflen;
       srch_pos += difflen;
     }
-    app_i_be1(io_w, 0); /* 0 length label is terminator */
+    app_b_uint8(io_w, 0); /* 0 length label is terminator */
 
-    app_i_be2(io_w, dns_type);
-    app_i_be2(io_w, dns_class);
+    app_b_uint16(io_w, dns_type);
+    app_b_uint16(io_w, dns_class);
   }
   va_end(ap);
   
@@ -765,7 +686,7 @@ void dns_app_recq_pkt(Dns_base *base, unsigned int qcount, ...)
 
   /* make the lengths correct */
   len1 = io_w->len - (pos1 - 1);
-  sub_i_be2(io_w, pos1, len1 - 2);
+  sub_b_uint16(io_w, pos1, len1 - 2);
   
   if (base->dbg_opt > 1)
   {
@@ -795,12 +716,12 @@ void dns_sc_ui_out(Dns_base *base, Vstr_base *pkt)
   
   if (12 <= msg_len)
   {
-    id    = get_i_be2(pkt, pos); pos += 2;
-    flags = get_i_be2(pkt, pos); pos += 2;
-    qdc   = get_i_be2(pkt, pos); pos += 2;
-    anc   = get_i_be2(pkt, pos); pos += 2;
-    nsc   = get_i_be2(pkt, pos); pos += 2;
-    arc   = get_i_be2(pkt, pos); pos += 2;
+    id    = get_b_uint16(pkt, pos); pos += 2;
+    flags = get_b_uint16(pkt, pos); pos += 2;
+    qdc   = get_b_uint16(pkt, pos); pos += 2;
+    anc   = get_b_uint16(pkt, pos); pos += 2;
+    nsc   = get_b_uint16(pkt, pos); pos += 2;
+    arc   = get_b_uint16(pkt, pos); pos += 2;
   }
 
   /* can't check id atm. */

@@ -7,11 +7,13 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
+. Cleanup examples to use new core functions (vstr_parse_num .. vstr_sc_add_b_*)
+
+. Fedora init.d files for httpd/echod?
+
 . examples/ypserv
 
 . examples/chatserv
-
-. Cleanup examples to use new core functions (vstr_parse_num .. vstr_sc_add_b_*)
 
 . restrict  (speed)
 

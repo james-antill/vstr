@@ -173,6 +173,8 @@
 #define vstr_ref_make_vstr_base vstr_nx_ref_make_vstr_base
 #define vstr_ref_make_vstr_conf vstr_nx_ref_make_vstr_conf
 #define vstr_ref_make_vstr_sects vstr_nx_ref_make_vstr_sects
+#define vstr_sc_add_b_uint16 vstr_nx_sc_add_b_uint16
+#define vstr_sc_add_b_uint32 vstr_nx_sc_add_b_uint32
 #define vstr_sc_add_cstr_grpbasenum_buf vstr_nx_sc_add_cstr_grpbasenum_buf
 #define vstr_sc_add_cstr_grpbasenum_ptr vstr_nx_sc_add_cstr_grpbasenum_ptr
 #define vstr_sc_add_cstr_grpbasenum_ref vstr_nx_sc_add_cstr_grpbasenum_ref
@@ -224,6 +226,8 @@
 #define vstr_sc_fmt_cb_end vstr_nx_sc_fmt_cb_end
 #define vstr_sc_mmap_fd vstr_nx_sc_mmap_fd
 #define vstr_sc_mmap_file vstr_nx_sc_mmap_file
+#define vstr_sc_parse_b_uint16 vstr_nx_sc_parse_b_uint16
+#define vstr_sc_parse_b_uint32 vstr_nx_sc_parse_b_uint32
 #define vstr_sc_posdiff vstr_nx_sc_posdiff
 #define vstr_sc_poslast vstr_nx_sc_poslast
 #define vstr_sc_read_iov_fd vstr_nx_sc_read_iov_fd
@@ -231,6 +235,8 @@
 #define vstr_sc_read_len_fd vstr_nx_sc_read_len_fd
 #define vstr_sc_read_len_file vstr_nx_sc_read_len_file
 #define vstr_sc_reduce vstr_nx_sc_reduce
+#define vstr_sc_sub_b_uint16 vstr_nx_sc_sub_b_uint16
+#define vstr_sc_sub_b_uint32 vstr_nx_sc_sub_b_uint32
 #define vstr_sc_write_fd vstr_nx_sc_write_fd
 #define vstr_sc_write_file vstr_nx_sc_write_file
 #define vstr_sects_add vstr_nx_sects_add
