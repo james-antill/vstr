@@ -50,6 +50,8 @@
 #undef uintmax_t
 #undef uintptr_t
 #undef HAVE_LONG_LONG
+#undef uint_least16_t
+#undef uint_least32_t
 
 /* auto macors... */
 #undef HAVE_UNISTD_H

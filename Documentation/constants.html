@@ -25,7 +25,7 @@
 
   </head>
   <body>
-<table width="100%"><tr><td class="title"><h1>Vstr documentation -- constants (233)</h1>
+<table width="100%"><tr><td class="title"><h1>Vstr documentation -- constants (245)</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h2 class="ind">Index of sections</h2>
 <ul>
@@ -33,10 +33,11 @@
 <li><a href="#indx-Global%20constants">Global constants (2)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_make_spare_nodes%28%29%20and%20vstr_free_spare_nodes%28%29">Constants passed to vstr_make_spare_nodes() and vstr_free_spare_nodes() (4)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_add_vstr%28%29%20and%20vstr_sub_vstr%28%29">Constants passed to vstr_add_vstr() and vstr_sub_vstr() (10)</a>
-<li><a href="#indx-Constants%20passed%20to%20vstr_fmt_add%28%29">Constants passed to vstr_fmt_add() (18)</a>
+<li><a href="#indx-Constants%20passed%20to%20vstr_fmt_add%28%29">Constants passed to vstr_fmt_add() (26)</a>
+<li><a href="#indx-Constants%20returned%20from%20vstr_iter_fwd_%2a%28%29">Constants returned from vstr_iter_fwd_*() (3)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_sc_fmt_cb_beg%28%29">Constants passed to vstr_sc_fmt_cb_beg() (10)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_conv_unprintable_del%28%29%20and%20vstr_conv_unprintable_chr%28%29">Constants passed to vstr_conv_unprintable_del() and vstr_conv_unprintable_chr() (18)</a>
-<li><a href="#indx-Constants%20passed%20to%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29">Constants passed to vstr_parse_[u](short|int|long|intmax)() (15)</a>
+<li><a href="#indx-Constants%20passed%20to%20vstr_parse_num%28%29%20etc%2e">Constants passed to vstr_parse_num() etc. (16)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_parse_ipv4%28%29">Constants passed to vstr_parse_ipv4() (17)</a>
 <li><a href="#indx-Constants%20passed%20to%20vstr_parse_ipv6%28%29">Constants passed to vstr_parse_ipv6() (12)</a>
 <li><a href="#indx-Constants%20used%20with%20the%20custom%20output%20formatter%20for%20ipv6%20addresses">Constants used with the custom output formatter for ipv6 addresses (6)</a>
@@ -100,7 +101,20 @@
 <li class="obj"><a href="#VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>
 <li class="obj"><a href="#VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>
 <li class="obj"><a href="#VSTR_TYPE_FMT_PTR_WCHAR_T">VSTR_TYPE_FMT_PTR_WCHAR_T</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_INT">VSTR_TYPE_FMT_PTR_INT</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_INTMAX_T">VSTR_TYPE_FMT_PTR_INTMAX_T</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_LONG">VSTR_TYPE_FMT_PTR_LONG</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_LONG_LONG">VSTR_TYPE_FMT_PTR_LONG_LONG</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_PTRDIFF_T">VSTR_TYPE_FMT_PTR_PTRDIFF_T</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_SHORT">VSTR_TYPE_FMT_PTR_SHORT</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_SIGNED_CHAR">VSTR_TYPE_FMT_PTR_SIGNED_CHAR</a>
+<li class="obj"><a href="#VSTR_TYPE_FMT_PTR_SSIZE_T">VSTR_TYPE_FMT_PTR_SSIZE_T</a>
 <li class="obj"><a href="#VSTR_TYPE_FMT_ERRNO">VSTR_TYPE_FMT_ERRNO</a>
+</ul><li><a id="indx-Constants%20returned%20from%20vstr_iter_fwd_%2a%28%29" href="#Constants%20returned%20from%20vstr_iter_fwd_%2a%28%29">Constants returned from vstr_iter_fwd_*()</a>
+<ul>
+<li class="obj"><a href="#VSTR_TYPE_ITER_DEF">VSTR_TYPE_ITER_DEF</a>
+<li class="obj"><a href="#VSTR_TYPE_ITER_END">VSTR_TYPE_ITER_END</a>
+<li class="obj"><a href="#VSTR_TYPE_ITER_NON">VSTR_TYPE_ITER_NON</a>
 </ul><li><a id="indx-Constants%20passed%20to%20vstr_sc_fmt_cb_beg%28%29" href="#Constants%20passed%20to%20vstr_sc_fmt_cb_beg%28%29">Constants passed to vstr_sc_fmt_cb_beg()</a>
 <ul>
 <li class="obj"><a href="#VSTR_FLAG_SC_FMT_CB_BEG_DEF">VSTR_FLAG_SC_FMT_CB_BEG_DEF</a>
@@ -133,7 +147,7 @@
 <li class="obj"><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HSP</a>
 <li class="obj"><a href="#VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH">VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH</a>
 <li class="obj"><a href="#VSTR_FLAG_CONV_UNPRINTABLE_DEF">VSTR_FLAG_CONV_UNPRINTABLE_DEF</a>
-</ul><li><a id="indx-Constants%20passed%20to%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29" href="#Constants%20passed%20to%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29">Constants passed to vstr_parse_[u](short|int|long|intmax)()</a>
+</ul><li><a id="indx-Constants%20passed%20to%20vstr_parse_num%28%29%20etc%2e" href="#Constants%20passed%20to%20vstr_parse_num%28%29%20etc%2e">Constants passed to vstr_parse_num() etc.</a>
 <ul>
 <li class="obj"><a href="#VSTR_TYPE_PARSE_NUM_ERR_NONE">VSTR_TYPE_PARSE_NUM_ERR_NONE</a>
 <li class="obj"><a href="#VSTR_TYPE_PARSE_NUM_ERR_ONLY_S">VSTR_TYPE_PARSE_NUM_ERR_ONLY_S</a>
@@ -150,6 +164,7 @@
 <li class="obj"><a href="#VSTR_FLAG_PARSE_NUM_SPACE">VSTR_FLAG_PARSE_NUM_SPACE</a>
 <li class="obj"><a href="#VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO">VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO</a>
 <li class="obj"><a href="#VSTR_FLAG_PARSE_NUM_NO_BEG_PM">VSTR_FLAG_PARSE_NUM_NO_BEG_PM</a>
+<li class="obj"><a href="#VSTR_FLAG_PARSE_NUM_NO_NEGATIVE">VSTR_FLAG_PARSE_NUM_NO_NEGATIVE</a>
 </ul><li><a id="indx-Constants%20passed%20to%20vstr_parse_ipv4%28%29" href="#Constants%20passed%20to%20vstr_parse_ipv4%28%29">Constants passed to vstr_parse_ipv4()</a>
 <ul>
 <li class="obj"><a href="#VSTR_TYPE_PARSE_IPV4_ERR_NONE">VSTR_TYPE_PARSE_IPV4_ERR_NONE</a>
@@ -663,12 +678,102 @@
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_INT">VSTR_TYPE_FMT_PTR_INT</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;int *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_INTMAX_T">VSTR_TYPE_FMT_PTR_INTMAX_T</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;intmax_t *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_LONG">VSTR_TYPE_FMT_PTR_LONG</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_LONG_LONG">VSTR_TYPE_FMT_PTR_LONG_LONG</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long long *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_PTRDIFF_T">VSTR_TYPE_FMT_PTR_PTRDIFF_T</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ptrdiff_t *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SHORT">VSTR_TYPE_FMT_PTR_SHORT</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;short *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SIGNED_CHAR">VSTR_TYPE_FMT_PTR_SIGNED_CHAR</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;signed char *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SSIZE_T">VSTR_TYPE_FMT_PTR_SSIZE_T</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ssize_t *&quot; type
+ from the argument list passed to it
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_ERRNO">VSTR_TYPE_FMT_ERRNO</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should not expect any arguments passed,
  but should set the value of errno, just before calling the user callback, to
  the value upon entering <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>.
+
+
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20returned%20from%20vstr_iter_fwd_%2a%28%29">Constants returned from vstr_iter_fwd_*()</a></h2>
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_ITER_DEF">VSTR_TYPE_ITER_DEF</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This return flag is 0, and is generally only used as programmer
+ documentation to mean nothing special is meant for this data.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_ITER_END">VSTR_TYPE_ITER_END</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This return flag means that the data is at an end.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_TYPE_ITER_NON">VSTR_TYPE_ITER_NON</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This return flag means that the data is actually from within a node of type
+ <a href="constants.html#VSTR_TYPE_NODE_NON">VSTR_TYPE_NODE_NON</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sc_fmt_cb_beg%28%29">Constants passed to
@@ -931,7 +1036,10 @@
  to do.
 
 
-</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_%5bu%5d%28short%7cint%7clong%7cintmax%29%28%29">Constants passed to vstr_parse_[u](short|int|long|intmax)()</a></h2>
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_num%28%29%20etc%2e">Constants passed to
+			 	<a id="vstr_parse_num()"><a href="functions.html#vstr_parse_num%28%29">vstr_parse_num()</a></a>
+
+		       etc.</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_NONE">VSTR_TYPE_PARSE_NUM_ERR_NONE</a>
@@ -1067,6 +1175,17 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag disallows a plus or a minus character before the number.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Constant: </strong> <a id="VSTR_FLAG_PARSE_NUM_NO_NEGATIVE">VSTR_FLAG_PARSE_NUM_NO_NEGATIVE</a>
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag disallows negative values.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  While this flag can be passed to <a href="functions.html#vstr_parse_int%28%29">vstr_parse_int()</a> etc. it is most useful when
+ passed to the generic function <a href="functions.html#vstr_parse_num%28%29">vstr_parse_num()</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_ipv4%28%29">Constants passed to

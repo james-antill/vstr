@@ -84,6 +84,7 @@ extern const char *dns_name_type_in(unsigned int num);
 extern const char *dns_name_class(unsigned int num);
 extern const char *dns_name_hdr_r(unsigned int num);
 
+extern unsigned int dns_get_msg_len(Vstr_base *s1, size_t pos);
 extern void dns_app_recq_pkt(struct Dns_base *, unsigned int qcount, ...);
 extern void dns_dbg_prnt_pkt(struct Dns_base *, Vstr_base *pkt);
 extern void dns_sc_ui_out(struct Dns_base *, Vstr_base *pkt);

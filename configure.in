@@ -385,6 +385,9 @@ AC_CHECK_TYPE(intmax_t, long)
 AC_CHECK_TYPE(uintmax_t, unsigned long)
 AC_CHECK_TYPE(uintptr_t, unsigned long)
 
+AC_CHECK_TYPE(uint_least16_t, unsigned short)
+AC_CHECK_TYPE(uint_least32_t, unsigned long)
+
 AC_MSG_CHECKING(for long long)
 AC_CACHE_VAL(local_cv_has_long_long,[
 AC_TRY_RUN([
@@ -1535,6 +1538,7 @@ TWOCAN_CONF_MSG(Output Substitution)
 
 AC_OUTPUT([Makefile
            vstr.pc
+           vstr-debug.pc
            src/Makefile
            include/Makefile
            Documentation/Makefile

@@ -6,18 +6,10 @@
 %define prefix   /usr
 %define name    vstr
 
-# Do we want to create a debug build...
-%define dbg_opt %{?dbg}%{!?dbg:0}
 # Do we want to run "make check" after the build...
 %define chk_opt %{?chk}%{!?chk:0}
 
-%if %{dbg_opt}
-%define debugopt --enable-debug
-%define RELEASE %{real_release_num}debug
-%else
-%define debugopt %nil
-%endif
-
+# Auto work out what kind of float support we want.
 %ifarch i386
 %define fmtfloatopt --with-fmt-float=%{?float}%{!?float:glibc}
 %else
@@ -35,7 +27,7 @@ Group: Development/Libraries
 Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
 BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool, gcc
-URL: http://www.and.org/vstr/
+URL: http://www.and.org/%{name}/
 
 %description
  Vstr is a string library designed for network communication, but applicable
@@ -48,6 +40,15 @@ and includes support for i18n parameter position modifiers).
 
  Development libs and headers are in %{name}-devel.
 
+%package examples
+Summary: String library, examples.
+Group: Development/Tools
+Requires: pkgconfig >= 0.8
+Requires: %{name} = %{ver}
+
+%description examples
+ Compiled example programs in %{_libdir}/%{name}-%{ver}/examples
+
 %package devel
 Summary: String library, safe, quick and easy to use. Specilizes in IO.
 Group: Development/Libraries
@@ -58,7 +59,21 @@ Requires: %{name} = %{ver}
  Static libraries and header files for the Vstr string library
  Also includes a %{name}.pc file for pkg-config.
 
+%package debug
+Summary: String library, safe, quick and easy to use. Specilizes in IO.
+Group: Development/Libraries
+Requires: pkgconfig >= 0.8
+Requires: %{name}-devel = %{ver}
+
+%description debug
+ Static libraries, header files and dynamic libraries for a debug build of
+the Vstr string library
+ Also includes a %{name}-debug.pc file for pkg-config development.
+
 %changelog
+* Tue Aug 24 2004 James Antill <james@and.org>
+- Add -examples and -debug sub packages
+
 * Fri Jun  4 2004 James Antill <james@and.org>
 - Add build requires on gcc
 
@@ -111,45 +126,53 @@ Requires: %{name} = %{ver}
 %setup
 
 %build
-# For devel releases
-if [ ! -f configure ]; then
-  ./scripts/autogen.sh
-fi
 
-%configure --prefix=%{prefix} \
-  --mandir=%{_mandir} --datadir=%{_datadir} \
-  --libdir=%{_libdir} --includedir=%{_includedir}/%{name}-%{libver} \
-  --enable-linker-script \
-  --enable-wrap-memcpy --enable-wrap-memset \
-  %{fmtfloatopt} %{debugopt}
-
-make
-
+function build()
+{
+  make
 %if %{chk_opt}
-make check
+  make check
 %endif
+}
+
+mkdir dbg opt
+cd dbg
+
+../configure --prefix=%{prefix} --mandir=%{_mandir} \
+  --datadir=%{_datadir}  --libdir=%{_libdir} \
+  --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
+  --enable-debug \
+  %{fmtfloatopt}
+build
+
+cd ../opt
+../configure  --prefix=%{prefix} --mandir=%{_mandir} \
+  --datadir=%{_datadir}  --libdir=%{_libdir} \
+  --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
+  --enable-wrap-memcpy --enable-wrap-memset \
+  %{fmtfloatopt}
+build
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
+cd opt
 make DESTDIR=$RPM_BUILD_ROOT install
+cd ..
+
+cd dbg/src
+make DESTDIR=$RPM_BUILD_ROOT libdir=%{_libdir}/%{name}-%{ver}/debug install
+cd ..
+cp -p %{name}-debug.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+cd ..
 
 cp -p TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 
-# Copy the examples somewhere...
-mkdir $RPM_BUILD_ROOT/%{devdoco}/examples
-cp -p \
- examples/Makefile \
- examples/*.c \
- examples/*.h \
- examples/hexdump_data \
-   $RPM_BUILD_ROOT/%{devdoco}/examples/
-cp -a examples/html \
-   $RPM_BUILD_ROOT/%{devdoco}/examples/
-
-rm -f $RPM_BUILD_ROOT/usr/lib/lib%{name}.la
-rm -f $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/functions.3
-rm -f $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
+rm -f  $RPM_BUILD_ROOT/%{_libdir}/lib%{name}.la
+rm -f  $RPM_BUILD_ROOT/%{_libdir}/%{name}-%{ver}/debug/lib%{name}.la
+rm -rf $RPM_BUILD_ROOT/%{_libdir}/%{name}-%{ver}/examples/html
+rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/functions.3
+rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
 
 
 %clean
@@ -166,6 +189,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_libdir}/lib%{name}-%{libver}.so.*
 
+%files debug
+%defattr(-, root, root)
+
+%{_libdir}/%{name}-%{ver}/debug
+%{_libdir}/pkgconfig/%{name}-debug.pc
+
 %files devel
 %defattr(-, root, root)
 
@@ -175,39 +204,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/%{name}-%{libver}/*.h
 
 %doc
-%{devdoco}/BUGS
-%{devdoco}/TODO
-%{_mandir}/man3/vstr.3.gz
-%{_mandir}/man3/vstr_const.3.gz
-%{devdoco}/basic_cat.c.html
-%{devdoco}/comparison.html
-%{devdoco}/compare_licenses/SafeStr.txt
-%{devdoco}/compare_licenses/bstring.txt
-%{devdoco}/compare_licenses/cords.txt
-%{devdoco}/compare_licenses/ossp-str.txt
-%{devdoco}/compare_licenses/rope.txt
-%{devdoco}/compare_licenses/sz.txt
-%{devdoco}/compare_licenses/toolbox.txt
-%{devdoco}/constants.txt
-%{devdoco}/constants.html
-%{devdoco}/design.html
-%{devdoco}/f_c.css
-%{devdoco}/functions.txt
-%{devdoco}/functions.html
-%{devdoco}/internal_structure.dia
-%{devdoco}/namespace.html
-%{devdoco}/overview.html
-%{devdoco}/printf_comparison.html
-%{devdoco}/req_trunc_io.html
-%{devdoco}/security.html
-%{devdoco}/security_problems.html
-%{devdoco}/speed.html
-%{devdoco}/structs.txt
-%{devdoco}/structs.html
-%{devdoco}/size_cmp.gnumeric
-%{devdoco}/tutorial.html
-%{devdoco}/examples/Makefile
-%{devdoco}/examples/ex_*.c
-%{devdoco}/examples/ex_*.h
-%{devdoco}/examples/html/*.html
-%{devdoco}/examples/hexdump_data
+%{devdoco}
+%{_mandir}/man3
+
+%files examples
+%defattr(-, root, root)
+
+%{_libdir}/%{name}-%{ver}/examples

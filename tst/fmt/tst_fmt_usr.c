@@ -240,6 +240,10 @@ static void tst_fmt(int ret, Vstr_base *t1)
 
   vstr_del(t1, 1, t1->len);
 
+#ifdef USE_RESTRICTED_HEADERS
+  return;
+#endif  
+  
   if (!MFAIL_NUM_OK)
   {
     succeeded = vstr_add_fmt(t1, t1->len, t_fmt,

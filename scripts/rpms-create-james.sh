@@ -1,8 +1,12 @@
-#! /bin/sh -e
+#! /bin/bash -e
 
 if [ ! -r VERSION -o ! -r vstr.spec -o ! -r configure ]; then
- echo "No VERSION, vstr.spec or configure file."
- exit 1
+  if [ -r configure ]; then
+    ./scripts/b/DOCS.sh
+  else
+    echo "No VERSION, vstr.spec or configure file." &>2
+    exit 1
+  fi
 fi
 
 v="`cat VERSION`"
@@ -13,7 +17,7 @@ rm -rf vstr-$v
 cp -a $s ./vstr-$v
 cd ./vstr-$v
 
-./scripts/clean.sh
+./scripts/clean.sh full
 
 # Perf output...
 rm -rf ./examples/perf*
@@ -38,8 +42,7 @@ bzip2 -9f vstr-$v.tar
 tar -cf vstr-$v.tar vstr-$v
 gzip -9f vstr-$v.tar
 
-sudo rpmbuild -ta                  vstr-$v.tar.gz
-sudo rpmbuild -tb --define 'dbg 1' vstr-$v.tar.gz
+sudo rpmbuild -ta --define 'chk 1' vstr-$v.tar.gz
 
 echo "/usr/src/redhat/RPMS/*/vstr*-$v-*"
 echo "/usr/src/redhat/SRPMS/vstr*-$v-*"

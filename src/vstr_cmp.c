@@ -79,7 +79,7 @@ int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 
   if (iter1->node)
     return (1);
-  if (iter2->len || vstr_iter_fwd_nxt(iter2))
+  if (vstr_iter_len(iter2))
     return (-1);
 
   return (0);
@@ -105,8 +105,8 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
     if (iter->len > buf_len)
     {
       iter->len = buf_len;
-      /* just need enough for test at end, Ie. 1 when len == 0 */
-      iter->remaining += !iter->remaining;
+      /* make sure we know iter is bigger than buf */
+      iter->remaining += 1;
     }
 
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)
@@ -200,7 +200,7 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 
   if (iter1->node)
     return (1);
-  if (iter2->len || vstr_iter_fwd_nxt(iter2))
+  if (vstr_iter_len(iter2))
     return (-1);
 
   return (0);
@@ -225,8 +225,8 @@ int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
     if (iter->len > buf_len)
     {
       iter->len = buf_len;
-      /* just need enough for test at end, Ie. 1 when len == 0 */
-      iter->remaining += !iter->remaining;
+      /* make sure we know iter is bigger than buf */
+      iter->remaining += 1;
     }
 
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)
@@ -422,7 +422,7 @@ int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 
   if (iter1->node)
     goto scan_1_longer;
-  if (iter2->len || vstr_iter_fwd_nxt(iter2))
+  if (vstr_iter_len(iter2))
     goto scan_2_longer;
 
   return (ret); /* same length, might have been different at a previous point */
@@ -463,8 +463,8 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
     if (iter->len > buf_len)
     {
       iter->len = buf_len;
-      /* just need enough for test at end, Ie. 1 when len == 0 */
-      iter->remaining += !iter->remaining;
+      /* make sure we know iter is bigger than buf */
+      iter->remaining += 1;
     }
 
     if ((iter->node->type == VSTR_TYPE_NODE_NON) &&  buf)

@@ -108,7 +108,7 @@ static inline void ex_ssi_skip_wsp(Vstr_base *s2, size_t *srch)
 }
 
 static inline void ex_ssi_skip_str(Vstr_base *s2, size_t *srch,
-                                    const char *passed_val)
+                                   const char *passed_val)
 {
   size_t val = strlen(passed_val);
   

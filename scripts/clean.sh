@@ -23,6 +23,5 @@ rm -rf autocheck?.log autom4te.cache
 rm -f  gmon.out examples/gmon.out
 
 if [ "x$1" != "x" ]; then
-  cd ..
   rm -rf dbg opt j cov
 fi

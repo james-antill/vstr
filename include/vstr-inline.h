@@ -350,6 +350,18 @@ extern inline char vstr_export_chr(const struct Vstr_base *base, size_t pos)
   return (*(tmp + --pos));
 }
 
+extern inline size_t vstr_iter_len(struct Vstr_iter *iter)
+{
+  return (iter->len + iter->remaining);
+}
+extern inline size_t vstr_iter_pos(struct Vstr_iter *iter,
+                                   size_t pos, size_t len)
+{
+  VSTR__ASSERT_RET((len >= (iter->len + iter->remaining)), 0);
+    
+  return (pos + (len - vstr_iter_len(iter)));
+}
+
 extern inline int vstr_iter_fwd_beg(const struct Vstr_base *base,
                                     size_t pos, size_t len,
                                     struct Vstr_iter *iter)
@@ -408,26 +420,23 @@ extern inline int vstr_iter_fwd_nxt(struct Vstr_iter *iter)
   return (VSTR__TRUE);
 }
 
-extern inline unsigned char vstr_iter_fwd_chr(struct Vstr_iter *iter,
-                                              unsigned int *ern)
+extern inline char vstr_iter_fwd_chr(struct Vstr_iter *iter, unsigned int *ern)
 {
   unsigned int dummy_ern;
   
   if (!ern)
     ern = &dummy_ern;
-  
-  if (!iter->len)
+
+  if (!iter->len && !vstr_iter_fwd_nxt(iter))
   {
-    int ret = vstr_iter_fwd_nxt(iter);
-
     *ern = VSTR_TYPE_ITER_END;
-    
-    VSTR__ASSERT_RET(ret, 0);
-    VSTR__ASSERT(iter->len);
+    return (0);
   }
-
+  
+  VSTR__ASSERT(iter->len);
   --iter->len;
   
+  VSTR__ASSERT(iter->node);
   if (iter->node->type == VSTR_TYPE_NODE_NON)
   {
     *ern = VSTR_TYPE_ITER_NON;
@@ -435,25 +444,79 @@ extern inline unsigned char vstr_iter_fwd_chr(struct Vstr_iter *iter,
   }
   
   *ern = VSTR_TYPE_ITER_DEF;
-  return ((unsigned char) *iter->ptr++);
+  return (*iter->ptr++);
 }
 
-extern inline size_t vstr_iter_pos(struct Vstr_iter *iter,
-                                   size_t pos, size_t len)
+extern inline size_t vstr_iter_fwd_buf(struct Vstr_iter *iter, size_t len,
+                                       void *passed_buf, size_t buf_len,
+                                       unsigned int *ern)
 {
-  VSTR__ASSERT_RET((len >= (iter->len + iter->remaining)), 0);
+  size_t orig_len = len;
+  char *buf = passed_buf;
+  unsigned int dummy_ern;
+  
+  VSTR__ASSERT(buf || !buf_len);
+
+  if (!ern)
+    ern = &dummy_ern;
+
+  if (!iter->len && !vstr_iter_fwd_nxt(iter))
+  {
+    *ern = VSTR_TYPE_ITER_END;
+    return (0);
+  }
+
+  *ern = VSTR_TYPE_ITER_DEF;
+  while ((iter->len || vstr_iter_fwd_nxt(iter)) && len)
+  {
+    size_t tmp = len;
+    size_t tmp_buf_len = 0;
     
-  return (pos + (len - (iter->len + iter->remaining)));
+    VSTR__ASSERT(iter->len);
+    VSTR__ASSERT(iter->node);
+
+    if (tmp > iter->len)
+      tmp = iter->len;
+    
+    tmp_buf_len = tmp;
+    if (tmp_buf_len > buf_len)
+      tmp_buf_len = buf_len;
+    
+    len       -= tmp;
+    iter->len -= tmp;
+    
+    if (tmp_buf_len && (iter->node->type != VSTR_TYPE_NODE_NON))
+      vstr_wrap_memcpy(buf, iter->ptr, tmp_buf_len);
+    if (tmp_buf_len)
+    {
+      buf       += tmp_buf_len;
+      buf_len   -= tmp_buf_len;
+    }
+    if (iter->node->type != VSTR_TYPE_NODE_NON)
+      iter->ptr += tmp;
+  }
+
+  return (orig_len - len);
 }
 
-extern inline size_t vstr_iter_len(struct Vstr_iter *iter)
+extern inline size_t vstr_iter_fwd_cstr(struct Vstr_iter *iter, size_t len,
+                                        char *buf, size_t buf_len,
+                                        unsigned int *ern)
 {
-  return (iter->len + iter->remaining);
-}
+  size_t ret = 0;
+  
+  VSTR__ASSERT(buf);
 
-extern inline unsigned int vstr_iter_num(struct Vstr_iter *iter)
-{
-  return (iter->num);
+  if (!buf_len)
+    return (0);
+  
+  --buf_len;
+  buf[buf_len] = 0;
+  ret = vstr_iter_fwd_buf(iter, len, buf, buf_len, ern);
+  if (ret < buf_len)
+    buf[ret] = 0;
+  
+  return (ret);
 }
 
 extern inline unsigned int vstr_num(const struct Vstr_base *base,
@@ -1111,6 +1174,86 @@ extern inline int vstr_sc_add_grpnum_buf(struct Vstr_base *s1, size_t p1,
 extern inline int vstr_sc_add_cstr_grpnum_buf(struct Vstr_base *s1, size_t p1,
                                               const char *val)
 { return (vstr_sc_add_grpnum_buf(s1, p1, val, strlen(val))); }
+
+/* binary */
+extern inline int vstr_sc_add_b_uint16(struct Vstr_base *s1, size_t p1,
+                                       VSTR_AUTOCONF_uint_least16_t data)
+{
+  unsigned char buf[2];
+
+  buf[1] = data & 0xFF; data >>= 8;
+  buf[0] = data & 0xFF;
+
+  return (vstr_add_buf(s1, p1, buf, sizeof(buf)));
+}
+extern inline int vstr_sc_add_b_uint32(struct Vstr_base *s1, size_t p1,
+                                       VSTR_AUTOCONF_uint_least32_t data)
+{
+  unsigned char buf[4];
+
+  buf[3] = data & 0xFF; data >>= 8;
+  buf[2] = data & 0xFF; data >>= 8;
+  buf[1] = data & 0xFF; data >>= 8;
+  buf[0] = data & 0xFF;
+
+  return (vstr_add_buf(s1, p1, buf, sizeof(buf)));
+}
+
+extern inline int vstr_sc_sub_b_uint16(struct Vstr_base *s1,
+                                       size_t p1, size_t l1,
+                                       VSTR_AUTOCONF_uint_least16_t data)
+{
+  unsigned char buf[2];
+
+  buf[1] = data & 0xFF; data >>= 8;
+  buf[0] = data & 0xFF;
+
+  return (vstr_sub_buf(s1, p1, l1, buf, sizeof(buf)));
+}
+extern inline int vstr_sc_sub_b_uint32(struct Vstr_base *s1,
+                                       size_t p1, size_t l1,
+                                       VSTR_AUTOCONF_uint_least32_t data)
+{
+  unsigned char buf[4];
+
+  buf[3] = data & 0xFF; data >>= 8;
+  buf[2] = data & 0xFF; data >>= 8;
+  buf[1] = data & 0xFF; data >>= 8;
+  buf[0] = data & 0xFF;
+
+  return (vstr_sub_buf(s1, p1, l1, buf, sizeof(buf)));
+}
+
+extern inline VSTR_AUTOCONF_uint_least16_t
+vstr_sc_parse_b_uint16(struct Vstr_base *s1, size_t p1)
+{
+  unsigned char buf[2];
+  VSTR_AUTOCONF_uint_least16_t num = 0;
+  
+  if (!vstr_export_buf(s1, p1, sizeof(buf), buf, sizeof(buf)))
+    return (0);
+
+  num += buf[0]; num <<= 8;
+  num += buf[1];
+  
+  return (num);
+}
+extern inline VSTR_AUTOCONF_uint_least32_t
+vstr_sc_parse_b_uint32(struct Vstr_base *s1, size_t p1)
+{
+  unsigned char buf[4];
+  VSTR_AUTOCONF_uint_least32_t num = 0;
+
+  if (!vstr_export_buf(s1, p1, sizeof(buf), buf, sizeof(buf)))
+    return (0);
+
+  num += buf[0]; num <<= 8;
+  num += buf[1]; num <<= 8;
+  num += buf[2]; num <<= 8;
+  num += buf[3];
+  
+  return (num);
+}
 
 #undef VSTR__ASSERT
 #undef VSTR__ASSERT_RET

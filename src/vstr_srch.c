@@ -25,13 +25,12 @@ size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
                          char srch)
 {
   Vstr_iter iter[1];
-  size_t ret = pos;
   char *found = NULL;
 
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
 
-  ret = iter->remaining + iter->len;
+  ASSERT(len == vstr_iter_len(iter));
 
   do
   {
@@ -39,8 +38,7 @@ size_t vstr_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
     {
       found = vstr_wrap_memchr(iter->ptr, srch, iter->len);
       if (found)
-        return (pos + ((ret - iter->remaining) - iter->len) +
-                (found - iter->ptr));
+        return (vstr_iter_pos(iter, pos, len) + (found - iter->ptr));
     }
   } while (vstr_iter_fwd_nxt(iter));
 
@@ -174,15 +172,15 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
 
-  assert(len == (iter->remaining + iter->len));
+  assert(len == vstr_iter_len(iter));
 
   do
   {
     if ((iter->node->type == VSTR_TYPE_NODE_NON) && !str)
     {
-      if (!vstr_cmp_buf(base, pos + (len - iter->remaining) - iter->len,
-                        str_len, NULL, str_len))
-        return (pos + ((len - iter->remaining) - iter->len));
+      if (!vstr_cmp_buf(base, vstr_iter_pos(iter, pos, len), str_len,
+                        NULL, str_len))
+        return (vstr_iter_pos(iter, pos, len));
       goto next_loop;
     }
     if (!str)
@@ -192,7 +190,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
       goto next_loop;
 
     /* find buf */
-    while ((iter->remaining + iter->len) >= str_len)
+    while (vstr_iter_len(iter) >= str_len)
     {
       size_t tmp = 0;
       size_t beg_pos = 0;
@@ -214,7 +212,8 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
       if (tmp > str_len)
         tmp = str_len;
 
-      beg_pos = pos + ((len - iter->remaining) - iter->len);
+      beg_pos = vstr_iter_pos(iter, pos, len);
+
       if (!vstr_wrap_memcmp(iter->ptr, str, tmp) &&
           ((tmp == str_len) ||
            !vstr_cmp_buf(base, beg_pos + tmp, str_len - tmp,
@@ -229,8 +228,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 
    next_loop:
     continue;
-  } while (vstr_iter_fwd_nxt(iter) &&
-           ((iter->remaining + iter->len) >= str_len));
+  } while (vstr_iter_fwd_nxt(iter) && (vstr_iter_len(iter) >= str_len));
 
   return (0);
 }
@@ -426,7 +424,7 @@ size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
   if (!vstr_iter_fwd_beg(ndl_base, ndl_pos, ndl_len, iter))
     return (0);
 
-  while ((scan_pos < (pos + len - 1)) && (scan_len >= ndl_len))
+  while ((scan_pos < vstr_sc_poslast(pos, len)) && (scan_len >= ndl_len))
   {
     if (!vstr_cmp(base, scan_pos, ndl_len, ndl_base, ndl_pos, ndl_len))
       return (scan_pos);

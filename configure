@@ -23319,6 +23319,121 @@ _ACEOF
 fi
 
 
+echo "$as_me:$LINENO: checking for uint_least16_t" >&5
+echo $ECHO_N "checking for uint_least16_t... $ECHO_C" >&6
+if test "${ac_cv_type_uint_least16_t+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+if ((uint_least16_t *) 0)
+  return 0;
+if (sizeof (uint_least16_t))
+  return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_type_uint_least16_t=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_type_uint_least16_t=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_type_uint_least16_t" >&5
+echo "${ECHO_T}$ac_cv_type_uint_least16_t" >&6
+if test $ac_cv_type_uint_least16_t = yes; then
+  :
+else
+
+cat >>confdefs.h <<_ACEOF
+#define uint_least16_t unsigned short
+_ACEOF
+
+fi
+
+echo "$as_me:$LINENO: checking for uint_least32_t" >&5
+echo $ECHO_N "checking for uint_least32_t... $ECHO_C" >&6
+if test "${ac_cv_type_uint_least32_t+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+if ((uint_least32_t *) 0)
+  return 0;
+if (sizeof (uint_least32_t))
+  return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_type_uint_least32_t=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_type_uint_least32_t=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_type_uint_least32_t" >&5
+echo "${ECHO_T}$ac_cv_type_uint_least32_t" >&6
+if test $ac_cv_type_uint_least32_t = yes; then
+  :
+else
+
+cat >>confdefs.h <<_ACEOF
+#define uint_least32_t unsigned long
+_ACEOF
+
+fi
+
+
 echo "$as_me:$LINENO: checking for long long" >&5
 echo $ECHO_N "checking for long long... $ECHO_C" >&6
 if test "${local_cv_has_long_long+set}" = set; then
@@ -30295,7 +30410,7 @@ echo "$as_me:$LINENO: result: ${T_MD}Output Substitution:${T_ME}" >&5
 echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 
 
-                                                                                                    ac_config_files="$ac_config_files Makefile vstr.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile examples/Makefile src/vstr_version.c vstr.spec VERSION"
+                                                                                                              ac_config_files="$ac_config_files Makefile vstr.pc vstr-debug.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile examples/Makefile src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -31112,6 +31227,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "vstr.pc" ) CONFIG_FILES="$CONFIG_FILES vstr.pc" ;;
+  "vstr-debug.pc" ) CONFIG_FILES="$CONFIG_FILES vstr-debug.pc" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "Documentation/Makefile" ) CONFIG_FILES="$CONFIG_FILES Documentation/Makefile" ;;

@@ -1,6 +1,6 @@
 #define VSTR_SRCH_CASE_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ size_t vstr_srch_case_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
                               char srch)
 {
   Vstr_iter iter[1];
-  size_t ret = pos;
 
   if (!VSTR__IS_ASCII_ALPHA(srch)) /* not searching for a case dependant char */
     return (vstr_srch_chr_fwd(base, pos, len, srch));
@@ -35,8 +34,6 @@ size_t vstr_srch_case_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
 
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
-
-  ret = iter->remaining + iter->len;
 
   do
   {
@@ -51,7 +48,7 @@ size_t vstr_srch_case_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
           scan_tmp = VSTR__TO_ASCII_UPPER(scan_tmp);
 
         if (scan_tmp == srch)
-          return (pos + ((ret - iter->remaining) - iter->len) + count);
+          return (vstr_iter_pos(iter, pos, len) + count);
 
         ++count;
       }
@@ -99,7 +96,7 @@ size_t vstr_srch_case_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
 
-  assert(len == (iter->remaining + iter->len));
+  assert(len == vstr_iter_len(iter));
 
   tmp = *(const char *)str;
   if (VSTR__IS_ASCII_LOWER(tmp))
@@ -112,12 +109,10 @@ size_t vstr_srch_case_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
       goto next_loop;
 
     /* find buf */
-    while (iter->len && ((iter->remaining + iter->len) >= str_len))
+    while (iter->len && (vstr_iter_len(iter) >= str_len))
     {
       size_t beg_pos = 0;
       char scan_tmp = 0;
-
-      assert(iter->len);
 
       scan_tmp = *iter->ptr;
       if (VSTR__IS_ASCII_LOWER(scan_tmp))
@@ -125,7 +120,7 @@ size_t vstr_srch_case_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
       if (scan_tmp != tmp)
         goto next_inc_loop;
 
-      beg_pos = pos + ((len - iter->remaining) - iter->len);
+      beg_pos = vstr_iter_pos(iter, pos, len);
       if (!vstr_cmp_case_buf(base, beg_pos, str_len,
                              (const char *)str, str_len))
         return (beg_pos);
@@ -137,8 +132,7 @@ size_t vstr_srch_case_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
 
    next_loop:
     continue;
-  } while (vstr_iter_fwd_nxt(iter) &&
-           ((iter->remaining + iter->len) >= str_len));
+  } while (vstr_iter_fwd_nxt(iter) && (vstr_iter_len(iter) >= str_len));
 
   return (0);
 }

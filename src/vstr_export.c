@@ -76,7 +76,7 @@ size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
       tmp = (iovs[ret_num].iov_len - used);
 
     if (iter->node->type != VSTR_TYPE_NODE_NON)
-      vstr_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used,iter->ptr,tmp);
+      vstr_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used, iter->ptr, tmp);
 
     used += tmp;
     iter->ptr += tmp;
@@ -143,7 +143,6 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
                        void *buf, size_t buf_len)
 {
   Vstr_iter iter[1];
-  size_t ret = 0;
 
   ASSERT_RET(buf, 0);
 
@@ -156,8 +155,8 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
   if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
 
-  ret = iter->remaining + iter->len;
-
+  ASSERT(len == vstr_iter_len(iter));
+  
   do
   {
     if (iter->node->type != VSTR_TYPE_NODE_NON)
@@ -166,7 +165,7 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
     buf = ((char *)buf) + iter->len;
   } while (vstr_iter_fwd_nxt(iter));
 
-  return (ret);
+  return (len);
 }
 
 static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,

@@ -25,7 +25,7 @@
 
   </head>
   <body>
-<table width="100%"><tr><td class="title"><h1>Vstr documentation -- functions (313)</h1>
+<table width="100%"><tr><td class="title"><h1>Vstr documentation -- functions (330)</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h2 class="ind">Index of sections</h2>
 <ul>
@@ -41,10 +41,10 @@
 <li><a href="#indx-Convertion%20of%20data%20functions">Convertion of data functions (6)</a>
 <li><a href="#indx-Section%20of%20Vstr%20string%20functions">Section of Vstr string functions (13)</a>
 <li><a href="#indx-Splitting%20data%20into%20sections%20functions">Splitting data into sections functions (6)</a>
-<li><a href="#indx-Parsing%20data%20functions">Parsing data functions (12)</a>
+<li><a href="#indx-Parsing%20data%20functions">Parsing data functions (13)</a>
 <li><a href="#indx-Custom%20formatter%20functions">Custom formatter functions (5)</a>
-<li><a href="#indx-Short%20cut%20helper%20functions">Short cut helper functions (62)</a>
-<li><a href="#indx-Interator%20functions">Interator functions (2)</a>
+<li><a href="#indx-Short%20cut%20helper%20functions">Short cut helper functions (73)</a>
+<li><a href="#indx-Interator%20functions">Interator functions (7)</a>
 <li><a href="#indx-Miscellaneous%20functions">Miscellaneous functions (17)</a></ul>
 <h2 class="ind">Index of sections, and their contents</h2>
 <ul>
@@ -289,6 +289,7 @@
 <li class="obj"><a href="#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a>
 </ul><li><a id="indx-Parsing%20data%20functions" href="#Parsing%20data%20functions">Parsing data functions</a>
 <ul>
+<li class="obj"><a href="#vstr_parse_num%28%29">vstr_parse_num()</a>
 <li class="obj"><a href="#vstr_parse_short%28%29">vstr_parse_short()</a>
 <li class="obj"><a href="#vstr_parse_ushort%28%29">vstr_parse_ushort()</a>
 <li class="obj"><a href="#vstr_parse_int%28%29">vstr_parse_int()</a>
@@ -349,6 +350,10 @@
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Bytes_uint%28%29">vstr_sc_fmt_add_bkmg_Bytes_uint()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bit_uint%28%29">vstr_sc_fmt_add_bkmg_bit_uint()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bits_uint%28%29">vstr_sc_fmt_add_bkmg_bits_uint()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Byte_uintmax%28%29">vstr_sc_fmt_add_bkmg_Byte_uintmax()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Bytes_uintmax%28%29">vstr_sc_fmt_add_bkmg_Bytes_uintmax()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bit_uintmax%28%29">vstr_sc_fmt_add_bkmg_bit_uintmax()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bits_uintmax%28%29">vstr_sc_fmt_add_bkmg_bits_uintmax()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv4_ptr%28%29">vstr_sc_fmt_add_ipv4_ptr()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv6_ptr%28%29">vstr_sc_fmt_add_ipv6_ptr()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ipv4_vec%28%29">vstr_sc_fmt_add_ipv4_vec()</a>
@@ -364,6 +369,7 @@
 <li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_size%28%29">vstr_sc_fmt_add_lower_base2_size()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_lower_base2_uintmax%28%29">vstr_sc_fmt_add_lower_base2_uintmax()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+<li class="obj"><a href="#VSTR_SC_FMT_ADD%28%29">VSTR_SC_FMT_ADD()</a>
 <li class="obj"><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
 <li class="obj"><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
 <li class="obj"><a href="#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a>
@@ -372,10 +378,21 @@
 <li class="obj"><a href="#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a>
 <li class="obj"><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
 <li class="obj"><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
+<li class="obj"><a href="#vstr_sc_add_b_uint16%28%29">vstr_sc_add_b_uint16()</a>
+<li class="obj"><a href="#vstr_sc_add_b_uint32%28%29">vstr_sc_add_b_uint32()</a>
+<li class="obj"><a href="#vstr_sc_sub_b_uint16%28%29">vstr_sc_sub_b_uint16()</a>
+<li class="obj"><a href="#vstr_sc_sub_b_uint32%28%29">vstr_sc_sub_b_uint32()</a>
+<li class="obj"><a href="#vstr_sc_parse_b_uint16%28%29">vstr_sc_parse_b_uint16()</a>
+<li class="obj"><a href="#vstr_sc_parse_b_uint32%28%29">vstr_sc_parse_b_uint32()</a>
 </ul><li><a id="indx-Interator%20functions" href="#Interator%20functions">Interator functions</a>
 <ul>
 <li class="obj"><a href="#vstr_iter_fwd_beg%28%29">vstr_iter_fwd_beg()</a>
 <li class="obj"><a href="#vstr_iter_fwd_nxt%28%29">vstr_iter_fwd_nxt()</a>
+<li class="obj"><a href="#vstr_iter_fwd_chr%28%29">vstr_iter_fwd_chr()</a>
+<li class="obj"><a href="#vstr_iter_fwd_buf%28%29">vstr_iter_fwd_buf()</a>
+<li class="obj"><a href="#vstr_iter_fwd_cstr%28%29">vstr_iter_fwd_cstr()</a>
+<li class="obj"><a href="#vstr_iter_pos%28%29">vstr_iter_pos()</a>
+<li class="obj"><a href="#vstr_iter_len%28%29">vstr_iter_len()</a>
 </ul><li><a id="indx-Miscellaneous%20functions" href="#Miscellaneous%20functions">Miscellaneous functions</a>
 <ul>
 <li class="obj"><a href="#vstr_cntl_opt%28%29">vstr_cntl_opt()</a>
@@ -3380,6 +3397,9 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will run the foreach body function (Parameter[4]) on every
  valid Vstr section node in the <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a>.
+</p><p>  The callback function (Parameter[4]) is passed the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]),
+ the position and length from the current Vstr section node and finally the
+ caller supplied data (Parameter[5]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The foreach callback body function returns types starting
@@ -3532,6 +3552,33 @@
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Parsing%20data%20functions">Parsing data functions</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_parse_num%28%29">vstr_parse_num()</a>
+<br>Returns: Data returned from callback function<br>Type: void *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns length of number (Return)<br>Type<strong>[5]</strong>: size_t *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_<br>Type<strong>[6]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Function to run as parse body<br>Type<strong>[7]</strong>: void *(*)(unsigned int, int, unsigned int *, void *)
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Data to pass to parse number callback function (Parameter[7])<br>Type<strong>[8]</strong>: void *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will parse a number, and pass it piece by piece to the callback
+ function (Parameter[7]).
+</p><p>  The callback function (Parameter[7]) is passed the base and the value of the
+ current piece of the number, the pointer to a valid error code and finally
+ the caller supplied data (Parameter[8]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If NULL is returned from the callback function, then parsing will stop at that
+ point and immediately return.
+</p><p>  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_parse_short%28%29">vstr_parse_short()</a>
 <br>Returns: Number parsed from <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type: short
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -3548,8 +3595,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3569,8 +3617,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3590,8 +3639,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3611,8 +3661,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3632,8 +3683,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3653,8 +3705,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3674,8 +3727,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 </p><p>  If the intmax_t type is unavailable on the platform, then this function will
  act the same as <a href="functions.html#vstr_parse_long%28%29">vstr_parse_long()</a>.
 
@@ -3697,8 +3751,9 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 </p><p>  If the intmax_t type is unavailable on the platform, then this function will
  act the same as <a href="functions.html#vstr_parse_ulong%28%29">vstr_parse_ulong()</a>.
 
@@ -4495,6 +4550,98 @@
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_fmt_add_bkmg_Byte_uintmax%28%29">vstr_sc_fmt_add_bkmg_Byte_uintmax()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "B" for bytes.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
+ of the number, the default precision is 2.
+</p><p>  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{BKMG.ju}&quot;, with the gcc warning
+ compatible alternates using "{BKMG.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_fmt_add_bkmg_Bytes_uintmax%28%29">vstr_sc_fmt_add_bkmg_Bytes_uintmax()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "B/s" for bytes per second.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
+ of the number, the default precision is 2.
+</p><p>  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{BKMG/s.u}&quot;, with the gcc warning
+ compatible alternates using "{BKMG/s.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_fmt_add_bkmg_bit_uintmax%28%29">vstr_sc_fmt_add_bkmg_bit_uintmax()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "b" for bits.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
+ of the number, the default precision is 2.
+</p><p>  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{bKMG.ju}&quot;, with the gcc warning
+ compatible alternates using "{bKMG.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_fmt_add_bkmg_bits_uintmax%28%29">vstr_sc_fmt_add_bkmg_bits_uintmax()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "b/s" for bits per second.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
+ of the number, the default precision is 2.
+</p><p>  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{bKMG/s.ju}&quot;, with the gcc warning
+ compatible alternates using "{bKMG/s.ju:%ju}" etc. <a href="functions.html#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_sc_fmt_add_ipv4_ptr%28%29">vstr_sc_fmt_add_ipv4_ptr()</a>
 <br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
@@ -4821,6 +4968,35 @@
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="VSTR_SC_FMT_ADD%28%29">VSTR_SC_FMT_ADD()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Function to add the custom formatter ability<br>Type<strong>[2]</strong>: int (*)(struct Vstr_conf *, const char *)
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Prefix string<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Static format check string, without the leading % sign<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Postfix string<br>Type<strong>[5]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function calls the function to add the custom formatting ability
+ (Parameter[2]), with the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> (Parameter[1]) and a string
+ composed of the values from prefix, and the postfix. It then calls the
+ function with the prefix, various middle strings with the static format
+ check string, and the postfix.
+  For example the following call...
+</p><pre>
+    VSTR_SC_FMT_ADD(NULL, func, "<foo", "p", ">");
+
+</pre><p> ...will register the format "<foo>", but also the formats "<foo:%p>",
+ "<foo:%p>", "<foo:%*p>", "<foo:%.*p>", "<foo:%*.*p>",
+ "<foo:%d%p>" and "<foo:%d%d%p>". This is all that is required to fool static
+ format string checkers, even when you are passing formating information in
+ parameters.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  No cleanup is done on failure, so if the second registration fails then the
+ first custom formatter will still be registered on return.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
 <br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -4964,6 +5140,108 @@
  and open mode (Parameter[6]).
 
 
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_add_b_uint16%28%29">vstr_sc_add_b_uint16()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Binary value to add<br>Type<strong>[3]</strong>: uint_least16_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a 16bit (two byte) binary value (Parameter[3]),
+ in Big Endian format, to the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_add_b_uint32%28%29">vstr_sc_add_b_uint32()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Binary value to add<br>Type<strong>[3]</strong>: uint_least32_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a 32bit (four byte) binary value (Parameter[3]),
+ in Big Endian format, to the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_sub_b_uint16%28%29">vstr_sc_sub_b_uint16()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Binary value to add<br>Type<strong>[4]</strong>: uint_least16_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to substitute a 16bit (two byte) binary
+ value (Parameter[4]), in Big Endian format, to the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_sub_b_uint32%28%29">vstr_sc_sub_b_uint32()</a>
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Binary value to add<br>Type<strong>[4]</strong>: uint_least32_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to substitute a 32bit (four byte) binary
+ value (Parameter[4]), in Big Endian format, to the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_parse_b_uint16%28%29">vstr_sc_parse_b_uint16()</a>
+<br>Returns: Binary value to add<br>Type: uint_least16_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to parse a 16bit (two byte) binary
+ value (Parameter[4]), in Big Endian format, from the Vstr
+ string (Parameter[1]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_parse_b_uint32%28%29">vstr_sc_parse_b_uint32()</a>
+<br>Returns: Binary value to add<br>Type: uint_least32_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to parse a 32bit (four byte) binary
+ value (Parameter[4]), in Big Endian format, from the Vstr
+ string (Parameter[1]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Interator%20functions">Interator functions</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -4993,6 +5271,78 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If you alter the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]) while using a iteration, then
  the iteration will be in an undefined state.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_iter_fwd_chr%28%29">vstr_iter_fwd_chr()</a>
+<br>Returns: Character at that point in iteration<br>Type: char
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a><br>Type<strong>[1]</strong>: struct Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a> return type  (<a href="constants.html#vstr_iter_fwd_chr%28%29">VSTR_TYPE_ITER_*</a>).<br>Type<strong>[2]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to return the current character and post increment the
+ iteration (Ie think "ret = *iter++"). However it is safe to call
+ <a href="functions.html#vstr_iter_fwd_chr%28%29">vstr_iter_fwd_chr()</a> forever, after it gets to the end of the iteration it
+ will just return 0 (and set the return type to _END).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you alter the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_iter_fwd_buf%28%29">vstr_iter_fwd_buf()</a>
+<br>Returns: Length of iteration moved<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a><br>Type<strong>[1]</strong>: struct Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length to move iteration forward (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Data array to export to<br>Type<strong>[3]</strong>: void *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a> return type  (<a href="constants.html#vstr_iter_fwd_buf%28%29">VSTR_TYPE_ITER_*</a>).<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to move the iteration forward a particular
+ length (Parameter[2]). It will also export the data for the length, if there is
+ room.
+</p><p>  It is safe to call <a href="functions.html#vstr_iter_fwd_buf%28%29">vstr_iter_fwd_buf()</a> forever, after it gets to the
+ end of the iteration it will just return 0 (and set the return type to _END).
+ If the passed length is greater than the length of the iteration left, the
+ length will be truncated and the truncated value will be returned.
+</p><p>  Passing NULL as the buffer (Parameter[3]) is only valid if the buffer length
+ (Parameter[4]) is zero.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you alter the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_iter_fwd_cstr%28%29">vstr_iter_fwd_cstr()</a>
+<br>Returns: Length of iteration moved<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a><br>Type<strong>[1]</strong>: struct Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length to move iteration forward (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Data array to export to<br>Type<strong>[3]</strong>: char *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Length of data (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[5]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a> return type  (<a href="constants.html#vstr_iter_fwd_cstr%28%29">VSTR_TYPE_ITER_*</a>).<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function works like <a href="functions.html#vstr_iter_fwd_buf%28%29">vstr_iter_fwd_buf()</a>, except that the
+ buffer (Parameter[3]) must be non-NULL and the end of the data exported using
+ the iteration will always be NIL terminated.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_iter_pos%28%29">vstr_iter_pos()</a>
+<br>Returns: Position of iteration<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a><br>Type<strong>[1]</strong>: struct Vstr_iter *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to return the current position in the iteration.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_iter_len%28%29">vstr_iter_len()</a>
+<br>Returns: Length of iteration<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">Vstr iteration</a><br>Type<strong>[1]</strong>: struct Vstr_iter *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to return the length remaining of the iteration.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Miscellaneous%20functions">Miscellaneous functions</a></h2>

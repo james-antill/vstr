@@ -5071,6 +5071,9 @@ Function: vstr_sects_foreach()
 
   This function will run the foreach body function (Parameter[4]) on every
  valid Vstr section node in the Vstr sections.
+  The callback function (Parameter[4]) is passed the Vstr string (Parameter[1]),
+ the position and length from the current Vstr section node and finally the
+ caller supplied data (Parameter[5]).
 
  Note:
 
@@ -5348,6 +5351,52 @@ Function: VSTR_SPLIT_CSTR_CHRS()
 
 Section: Parsing data functions
 
+Function: vstr_parse_num()
+ Returns: Data returned from callback function
+ Type: void *
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Parameter[7]: Function to run as parse body
+ Type[7]: void *(*)(unsigned int, int, unsigned int *, void *)
+
+ Parameter[8]: Data to pass to parse number callback function (Parameter[7])
+ Type[8]: void *
+
+ Explanation:
+
+  This function will parse a number, and pass it piece by piece to the callback
+ function (Parameter[7]).
+  The callback function (Parameter[7]) is passed the base and the value of the
+ current piece of the number, the pointer to a valid error code and finally
+ the caller supplied data (Parameter[8]).
+
+ Note:
+
+  If NULL is returned from the callback function, then parsing will stop at that
+ point and immediately return.
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
+
+
 Function: vstr_parse_short()
  Returns: Number parsed from Vstr string
  Type: short
@@ -5380,8 +5429,9 @@ Function: vstr_parse_short()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_ushort()
@@ -5416,8 +5466,9 @@ Function: vstr_parse_ushort()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_int()
@@ -5452,8 +5503,9 @@ Function: vstr_parse_int()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_uint()
@@ -5488,8 +5540,9 @@ Function: vstr_parse_uint()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_long()
@@ -5524,8 +5577,9 @@ Function: vstr_parse_long()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_ulong()
@@ -5560,8 +5614,9 @@ Function: vstr_parse_ulong()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
 
 
 Function: vstr_parse_intmax()
@@ -5596,8 +5651,9 @@ Function: vstr_parse_intmax()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
   If the intmax_t type is unavailable on the platform, then this function will
  act the same as vstr_parse_long().
 
@@ -5634,8 +5690,9 @@ Function: vstr_parse_uintmax()
  Note:
 
   A base of 0 specifies that the base should be automatically detected, by
- choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
- with a 0 and defaulting to base 10 otherwise.
+ choosing base 16 if the number starts 0x or 0X, base 2 if the number
+ starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to
+ base 10 otherwise.
   If the intmax_t type is unavailable on the platform, then this function will
  act the same as vstr_parse_ulong().
 
@@ -6895,6 +6952,126 @@ Function: vstr_sc_fmt_add_bkmg_bits_uint()
  will add this formatter using those names.
 
 
+Function: vstr_sc_fmt_add_bkmg_Byte_uintmax()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "B" for bytes.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The precision specifies how many digits are included after the "whole" part
+ of the number, the default precision is 2.
+  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+  It is recommended that you use the name "{BKMG.ju}", with the gcc warning
+ compatible alternates using "{BKMG.ju:%ju}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+Function: vstr_sc_fmt_add_bkmg_Bytes_uintmax()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "B/s" for bytes per second.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The precision specifies how many digits are included after the "whole" part
+ of the number, the default precision is 2.
+  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+  It is recommended that you use the name "{BKMG/s.u}", with the gcc warning
+ compatible alternates using "{BKMG/s.ju:%ju}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+Function: vstr_sc_fmt_add_bkmg_bit_uintmax()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "b" for bits.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The precision specifies how many digits are included after the "whole" part
+ of the number, the default precision is 2.
+  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+  It is recommended that you use the name "{bKMG.ju}", with the gcc warning
+ compatible alternates using "{bKMG.ju:%ju}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+Function: vstr_sc_fmt_add_bkmg_bits_uintmax()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a number in a human accessible form. Displaying either K, M or G after the
+ number and before a "b/s" for bits per second.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The precision specifies how many digits are included after the "whole" part
+ of the number, the default precision is 2.
+  The padding of the number can be done with spaces or zero characters, and
+ the '+' or ' ' modifiers will work as on unsigned ints.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+  It is recommended that you use the name "{bKMG/s.ju}", with the gcc warning
+ compatible alternates using "{bKMG/s.ju:%ju}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
 Function: vstr_sc_fmt_add_ipv4_ptr()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -7324,6 +7501,48 @@ Function: vstr_sc_fmt_add_all()
  however the other remaining types of formatters will be tried.
 
 
+Function: VSTR_SC_FMT_ADD()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Function to add the custom formatter ability
+ Type[2]: int (*)(struct Vstr_conf *, const char *)
+
+ Parameter[3]: Prefix string
+ Type[3]: const char *
+
+ Parameter[4]: Static format check string, without the leading % sign
+ Type[4]: const char *
+
+ Parameter[5]: Postfix string
+ Type[5]: const char *
+
+ Explanation:
+
+  This macro function calls the function to add the custom formatting ability
+ (Parameter[2]), with the Vstr configuration (Parameter[1]) and a string
+ composed of the values from prefix, and the postfix. It then calls the
+ function with the prefix, various middle strings with the static format
+ check string, and the postfix.
+  For example the following call...
+
+    VSTR_SC_FMT_ADD(NULL, func, "<foo", "p", ">");
+
+ ...will register the format "<foo>", but also the formats "<foo:%p>",
+ "<foo:%p>", "<foo:%*p>", "<foo:%.*p>", "<foo:%*.*p>",
+ "<foo:%d%p>" and "<foo:%d%d%p>". This is all that is required to fool static
+ format string checkers, even when you are passing formating information in
+ parameters.
+
+ Note:
+
+  No cleanup is done on failure, so if the second registration fails then the
+ first custom formatter will still be registered on return.
+
+
 Function: vstr_sc_mmap_fd()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -7586,6 +7805,162 @@ Function: vstr_sc_write_file()
  and open mode (Parameter[6]).
 
 
+Function: vstr_sc_add_b_uint16()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Binary value to add
+ Type[3]: uint_least16_t
+
+ Explanation:
+
+  This function is used to add a 16bit (two byte) binary value (Parameter[3]),
+ in Big Endian format, to the Vstr string (Parameter[1]).
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+Function: vstr_sc_add_b_uint32()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Binary value to add
+ Type[3]: uint_least32_t
+
+ Explanation:
+
+  This function is used to add a 32bit (four byte) binary value (Parameter[3]),
+ in Big Endian format, to the Vstr string (Parameter[1]).
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+Function: vstr_sc_sub_b_uint16()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Binary value to add
+ Type[4]: uint_least16_t
+
+ Explanation:
+
+  This function is used to substitute a 16bit (two byte) binary
+ value (Parameter[4]), in Big Endian format, to the Vstr string (Parameter[1]).
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+Function: vstr_sc_sub_b_uint32()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Binary value to add
+ Type[4]: uint_least32_t
+
+ Explanation:
+
+  This function is used to substitute a 32bit (four byte) binary
+ value (Parameter[4]), in Big Endian format, to the Vstr string (Parameter[1]).
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+Function: vstr_sc_parse_b_uint16()
+ Returns: Binary value to add
+ Type: uint_least16_t
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Explanation:
+
+  This function is used to parse a 16bit (two byte) binary
+ value (Parameter[4]), in Big Endian format, from the Vstr
+ string (Parameter[1]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
+Function: vstr_sc_parse_b_uint32()
+ Returns: Binary value to add
+ Type: uint_least32_t
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Explanation:
+
+  This function is used to parse a 32bit (four byte) binary
+ value (Parameter[4]), in Big Endian format, from the Vstr
+ string (Parameter[1]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+ Note:
+
+  This function is here because too many existing network protcols send binary
+ values, in Big Endian format. This does not mean it is a good thing to do for
+ new protcols, look at netstrings or something equally nicer.
+
+
 Section: Interator functions
 
 Function: vstr_iter_fwd_beg()
@@ -7631,6 +8006,122 @@ Function: vstr_iter_fwd_nxt()
 
   If you alter the Vstr string (Parameter[1]) while using a iteration, then
  the iteration will be in an undefined state.
+
+
+Function: vstr_iter_fwd_chr()
+ Returns: Character at that point in iteration
+ Type: char
+
+ Parameter[1]: Vstr iteration
+ Type[1]: struct Vstr_iter *
+
+ Parameter[2]: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+ Type[2]: unsigned int *
+
+ Explanation:
+
+  This function is used to return the current character and post increment the
+ iteration (Ie think "ret = *iter++"). However it is safe to call
+ vstr_iter_fwd_chr() forever, after it gets to the end of the iteration it
+ will just return 0 (and set the return type to _END).
+
+ Note:
+
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
+
+
+Function: vstr_iter_fwd_buf()
+ Returns: Length of iteration moved
+ Type: size_t
+
+ Parameter[1]: Vstr iteration
+ Type[1]: struct Vstr_iter *
+
+ Parameter[2]: Length to move iteration forward (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Data array to export to
+ Type[3]: void *
+
+ Parameter[4]: Length of data (Parameter[3])
+ Type[4]: size_t
+
+ Parameter[5]: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+ Type[5]: unsigned int *
+
+ Explanation:
+
+  This function is used to move the iteration forward a particular
+ length (Parameter[2]). It will also export the data for the length, if there is
+ room.
+  It is safe to call vstr_iter_fwd_buf() forever, after it gets to the
+ end of the iteration it will just return 0 (and set the return type to _END).
+ If the passed length is greater than the length of the iteration left, the
+ length will be truncated and the truncated value will be returned.
+  Passing NULL as the buffer (Parameter[3]) is only valid if the buffer length
+ (Parameter[4]) is zero.
+
+ Note:
+
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
+
+
+Function: vstr_iter_fwd_cstr()
+ Returns: Length of iteration moved
+ Type: size_t
+
+ Parameter[1]: Vstr iteration
+ Type[1]: struct Vstr_iter *
+
+ Parameter[2]: Length to move iteration forward (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Data array to export to
+ Type[3]: char *
+
+ Parameter[4]: Length of data (Parameter[3])
+ Type[4]: size_t
+
+ Parameter[5]: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+ Type[5]: unsigned int *
+
+ Explanation:
+
+  This function works like vstr_iter_fwd_buf(), except that the
+ buffer (Parameter[3]) must be non-NULL and the end of the data exported using
+ the iteration will always be NIL terminated.
+
+
+Function: vstr_iter_pos()
+ Returns: Position of iteration
+ Type: size_t
+
+ Parameter[1]: Vstr iteration
+ Type[1]: struct Vstr_iter *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used to return the current position in the iteration.
+
+
+Function: vstr_iter_len()
+ Returns: Length of iteration
+ Type: size_t
+
+ Parameter[1]: Vstr iteration
+ Type[1]: struct Vstr_iter *
+
+ Explanation:
+
+  This function is used to return the length remaining of the iteration.
 
 
 Section: Miscellaneous functions

@@ -221,7 +221,7 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
-CONFIG_CLEAN_FILES = vstr.pc vstr.spec VERSION
+CONFIG_CLEAN_FILES = vstr.pc vstr-debug.pc vstr.spec VERSION
 depcomp =
 am__depfiles_maybe =
 DIST_SOURCES =
@@ -237,7 +237,7 @@ DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL Makefile.am NEWS THANKS TODO \
 	VERSION.in aclocal.m4 compile config.guess config.sub configure \
 	configure.in install-sh ltconfig ltmain.sh missing \
-	mkinstalldirs vstr.pc.in vstr.spec.in
+	mkinstalldirs vstr-debug.pc.in vstr.pc.in vstr.spec.in
 DIST_SUBDIRS = $(SUBDIRS)
 all: all-recursive
 
@@ -259,6 +259,8 @@ $(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENC
 $(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 vstr.pc: $(top_builddir)/config.status vstr.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+vstr-debug.pc: $(top_builddir)/config.status vstr-debug.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 vstr.spec: $(top_builddir)/config.status vstr.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

@@ -322,6 +322,70 @@ Constant: VSTR_TYPE_FMT_PTR_WCHAR_T
  from the argument list passed to it
 
 
+Constant: VSTR_TYPE_FMT_PTR_INT
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "int *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_INTMAX_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "intmax_t *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "long *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_LONG_LONG
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "long long *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_PTRDIFF_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "ptrdiff_t *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_SHORT
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "short *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_SIGNED_CHAR
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "signed char *" type
+ from the argument list passed to it
+
+
+Constant: VSTR_TYPE_FMT_PTR_SSIZE_T
+
+ Explanation:
+
+  This flag means that vstr_add_vfmt() should expect an "ssize_t *" type
+ from the argument list passed to it
+
+
 Constant: VSTR_TYPE_FMT_ERRNO
 
  Explanation:
@@ -329,6 +393,32 @@ Constant: VSTR_TYPE_FMT_ERRNO
   This flag means that vstr_add_vfmt() should not expect any arguments passed,
  but should set the value of errno, just before calling the user callback, to
  the value upon entering vstr_add_vfmt().
+
+
+Section: Constants returned from vstr_iter_fwd_*()
+
+
+Constant: VSTR_TYPE_ITER_DEF
+
+ Explanation:
+
+  This return flag is 0, and is generally only used as programmer
+ documentation to mean nothing special is meant for this data.
+
+
+Constant: VSTR_TYPE_ITER_END
+
+ Explanation:
+
+  This return flag means that the data is at an end.
+
+
+Constant: VSTR_TYPE_ITER_NON
+
+ Explanation:
+
+  This return flag means that the data is actually from within a node of type
+ VSTR_TYPE_NODE_NON.
 
 
 Section: Constants passed to vstr_sc_fmt_cb_beg()
@@ -585,7 +675,7 @@ Constant: VSTR_FLAG_CONV_UNPRINTABLE_DEF
  to do.
 
 
-Section: Constants passed to vstr_parse_[u](short|int|long|intmax)()
+Section: Constants passed to vstr_parse_num() etc.
 
 Constant: VSTR_TYPE_PARSE_NUM_ERR_NONE
 
@@ -724,6 +814,18 @@ Constant: VSTR_FLAG_PARSE_NUM_NO_BEG_PM
  Explanation:
 
   This flag disallows a plus or a minus character before the number.
+
+
+Constant: VSTR_FLAG_PARSE_NUM_NO_NEGATIVE
+
+ Explanation:
+
+  This flag disallows negative values.
+
+ Note:
+
+  While this flag can be passed to vstr_parse_int() etc. it is most useful when
+ passed to the generic function vstr_parse_num().
 
 
 Section: Constants passed to vstr_parse_ipv4()

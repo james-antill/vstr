@@ -17,6 +17,10 @@ int tst(void)
 
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a  bc  d"));
 
+#ifdef USE_RESTRICTED_HEADERS
+  return (TST_B_RET(ret));
+#endif
+  
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%lc%3lc%-3lc%C",
                (wint_t) L'a', (wint_t) L'b', (wint_t) L'c', (wint_t) L'd');

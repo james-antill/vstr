@@ -22,10 +22,8 @@
 /* Note that this file is #include'd */
 
 #ifdef USE_RESTRICTED_HEADERS /* always use C locale */
-# define localeconv()    NULL
+# undef  SYS_LOC /* special version to "." is there */
 # define SYS_LOC(x) "."
-#else
-# define SYS_LOC(x) ((sys_loc)->x)
 #endif
 
 static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,

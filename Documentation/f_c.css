@@ -1,5 +1,7 @@
 
- pre.c2html                   { color: #111; background: #FFF; }
+/* default text/background ... */
+/* and a cute bar on the left */
+ pre.c2html { color: #111; background: #FFF; border-left: 0.4em solid #EEE; }
 
  pre.c2html  span.comment     { color: #292; }
 

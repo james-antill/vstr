@@ -21,6 +21,11 @@
  * treating the float as a zero, useful if you never need to do fp stuff */
 /* Note that this file is #include'd */
 
+#ifdef USE_RESTRICTED_HEADERS /* always use C locale */
+# undef  SYS_LOC /* special version to "." is there */
+# define SYS_LOC(x) "."
+#endif
+
 static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
                              struct Vstr__fmt_spec *spec)
 {
@@ -30,7 +35,12 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   unsigned int precision = 0;
   unsigned int have_g_or_G = FALSE;
   unsigned int have_dot = FALSE;
-
+  const char *decimal_point_str = NULL;
+  size_t decimal_point_len      = 0;
+  
+  decimal_point_str = vstr__loc_num_pnt_ptr(base->conf->loc, num_base);
+  decimal_point_len = vstr__loc_num_pnt_len(base->conf->loc, num_base);
+  
   switch (spec->fmt_code)
   {
     case 'a':
@@ -120,8 +130,13 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     have_dot = TRUE;
 
   if (have_dot)
-    if (field_width) --field_width; /* "." */
-
+  {
+    if (field_width > decimal_point_len)
+      field_width -= decimal_point_len;
+    else
+      field_width = 0;
+  }
+  
   switch (spec->fmt_code)
   {
     case 'a':
@@ -177,7 +192,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
     goto failed_alloc;
 
   if (have_dot)
-    if (!VSTR__FMT_ADD_REP_CHR(base, '.', 1))
+    if (!VSTR__FMT_ADD(base, decimal_point_str, decimal_point_len))
       goto failed_alloc;
 
   switch (spec->fmt_code)

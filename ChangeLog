@@ -1,3 +1,19 @@
+2004-08-20  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_sc_add_b_uint16): Added function.
+	(vstr_sc_add_b_uint32): Added function.
+	(vstr_sc_sub_b_uint16): Added function.
+	(vstr_sc_sub_b_uint32): Added function.
+	(vstr_sc_parse_b_uint16): Added function.
+	(vstr_sc_parse_b_uint32): Added function.
+	(vstr_iter_fwd_buf): Added function.
+	(vstr_iter_fwd_cstr): Added function.
+
+2004-07-30  James Antill  <james@and.org>
+
+	* src/vstr_dbl/vstr_add_fmt_dbl_none.c (vstr__add_fmt_dbl): Use Vstr
+	locale of decimal point.
+
 2004-06-08  James Antill  <james@and.org>
 
 	* include/fix.h: open63 -> open for FreeBSD builds.
@@ -32,7 +48,6 @@
 	* include/vstr-inline.h (vstr_iter_fwd_chr): Added function.
 	(vstr_iter_pos): Added function.
 	(vstr_iter_len): Added function.
-	(vstr_iter_num): Added function.
 
 	* src/vstr_split.c (vstr__split_hdl_null_mid): Fix null mid splitting
 	return value on malloc error cases.

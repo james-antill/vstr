@@ -136,10 +136,11 @@
 #define vstr_free_spare_nodes vstr_nx_free_spare_nodes
 #define vstr_init vstr_nx_init
 #define vstr_iter_len vstr_nx_iter_len
-#define vstr_iter_num vstr_nx_iter_num
 #define vstr_iter_pos vstr_nx_iter_pos
 #define vstr_iter_fwd_beg vstr_nx_iter_fwd_beg
+#define vstr_iter_fwd_buf vstr_nx_iter_fwd_buf
 #define vstr_iter_fwd_chr vstr_nx_iter_fwd_chr
+#define vstr_iter_fwd_cstr vstr_nx_iter_fwd_cstr
 #define vstr_iter_fwd_nxt vstr_nx_iter_fwd_nxt
 #define vstr_make_base vstr_nx_make_base
 #define vstr_make_conf vstr_nx_make_conf

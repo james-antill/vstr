@@ -7,7 +7,11 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
-. pkgconfig debug using -Wl,-R ?
+. examples/ypserv
+
+. examples/chatserv
+
+. Cleanup examples to use new core functions (vstr_parse_num .. vstr_sc_add_b_*)
 
 . restrict  (speed)
 
@@ -17,6 +21,8 @@ was needed for vstr-1.0.0
 
 . timeval custom formatter (feature)
 
+. rfc2732 for ipv4/ipv6 addresses and port
+
 . Some way to say use a _BUF if we are subbing in a _BUF and use a _PTR/_REF
   otherwise. Or a way to say how much data can I add into this _BUF node
  (Ie. currently, is it a _BUF and does it have free space). (feature/speed)
@@ -24,17 +30,10 @@ was needed for vstr-1.0.0
 . malloc_bad might be able to be set when all of the functions have worked
   (Ie. position cache allocation used to fail) (testing).
 
-. run a coverage with klibc etc. (testing).
-
-. security ... more info. on testing. (docs)
-           ... formal verification methods? (docs)
-
 . comparison.html ... portability plus ...
   can you copy and paste the code ... or need a shared lib. (docs)
 
 . vstr_mov() doesn't move cache information. (speed)
-
-. Make sure everything builds on different platforms. (build/portability)
 
 . Get rid of inet_ntop() ? (portability)
 

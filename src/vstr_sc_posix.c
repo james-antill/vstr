@@ -120,11 +120,11 @@ static int vstr__sc_get_size(size_t base_len,
 
 
 #ifndef HAVE_MMAP
-int vstr_sc_mmap_fd(Vstr_base *base __attribute__((unused)),
-                    size_t pos __attribute__((unused)),
-                    int fd __attribute__((unused)),
-                    VSTR_AUTOCONF_off64_t off __attribute__((unused)),
-                    size_t len __attribute__((unused)),
+int vstr_sc_mmap_fd(Vstr_base *VSTR__ATTR_UNUSED(base),
+                    size_t VSTR__ATTR_UNUSED(pos),
+                    int VSTR__ATTR_UNUSED(fd),
+                    VSTR_AUTOCONF_off64_t VSTR__ATTR_UNUSED(off),
+                    size_t VSTR__ATTR_UNUSED(len),
                     unsigned int *err)
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
 #else
@@ -181,11 +181,11 @@ int vstr_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
 #endif
 
 #ifndef HAVE_MMAP
-int vstr_sc_mmap_file(Vstr_base *base __attribute__((unused)),
-                      size_t pos __attribute__((unused)),
-                      const char *filename __attribute__((unused)),
-                      VSTR_AUTOCONF_off64_t off __attribute__((unused)),
-                      size_t len __attribute__((unused)),
+int vstr_sc_mmap_file(Vstr_base *VSTR__ATTR_UNUSED(base),
+                      size_t VSTR__ATTR_UNUSED(pos),
+                      const char *VSTR__ATTR_UNUSED(filename),
+                      VSTR_AUTOCONF_off64_t VSTR__ATTR_UNUSED(off),
+                      size_t VSTR__ATTR_UNUSED(len),
                       unsigned int *err)
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
 #else
@@ -750,7 +750,7 @@ int vstr_sc_fmt_add_ipv6_ptr(Vstr_conf *conf, const char *name)
 
 #define VSTR__SC_FMT_ADD(x, n, nchk)                                    \
     if (ret &&                                                          \
-        !VSTR_SC_FMT_ADD(vstr_sc_fmt_add_ ## x, conf, "{", n, nchk, "}")) \
+        !VSTR_SC_FMT_ADD(conf, vstr_sc_fmt_add_ ## x, "{" n, nchk, "}")) \
       ret = FALSE
 
 int vstr__sc_fmt_add_posix(Vstr_conf *conf)

@@ -1,4 +1,4 @@
-.TH vstr_const 3 "28-May-2004" "Vstr 1.0.13" "Vstr String Library"
+.TH vstr_const 3 "23-Aug-2004" "Vstr 1.0.13" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -125,7 +125,41 @@
 \fBVSTR_TYPE_FMT_PTR_WCHAR_T\fR
 .br
 .ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_INT\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_INTMAX_T\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_LONG\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_LONG_LONG\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_PTRDIFF_T\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_SHORT\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_SIGNED_CHAR\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_FMT_PTR_SSIZE_T\fR
+.br
+.ti \w'  'u
 \fBVSTR_TYPE_FMT_ERRNO\fR
+.sp
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_ITER_DEF\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_ITER_END\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_ITER_NON\fR
 .sp
 .br
 .ti \w'  'u
@@ -258,6 +292,9 @@
 .br
 .ti \w'  'u
 \fBVSTR_FLAG_PARSE_NUM_NO_BEG_PM\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_NUM_NO_NEGATIVE\fR
 .sp
 .br
 .ti \w'  'u
@@ -1076,6 +1113,78 @@
   This flag means that vstr_add_vfmt() should expect a "wchar_t *" type from the argument list passed to it
 
 .br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_INT
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "int *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_INTMAX_T
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "intmax_t *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_LONG
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "long *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_LONG_LONG
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "long long *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_PTRDIFF_T
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "ptrdiff_t *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_SHORT
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "short *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_SIGNED_CHAR
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "signed char *" type from the argument list passed to it
+
+.br
+\fBConstant: \fR VSTR_TYPE_FMT_PTR_SSIZE_T
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag means that vstr_add_vfmt() should expect an "ssize_t *" type from the argument list passed to it
+
+.br
 \fBConstant: \fR VSTR_TYPE_FMT_ERRNO
 
 .br
@@ -1083,6 +1192,36 @@
 
 .br
   This flag means that vstr_add_vfmt() should not expect any arguments passed, but should set the value of errno, just before calling the user callback, to the value upon entering vstr_add_vfmt().
+
+.SH Constants returned from vstr_iter_fwd_*()
+
+
+.br
+\fBConstant: \fR VSTR_TYPE_ITER_DEF
+
+.br
+\fBExplanation:\fR
+
+.br
+  This return flag is 0, and is generally only used as programmer documentation to mean nothing special is meant for this data.
+
+.br
+\fBConstant: \fR VSTR_TYPE_ITER_END
+
+.br
+\fBExplanation:\fR
+
+.br
+  This return flag means that the data is at an end.
+
+.br
+\fBConstant: \fR VSTR_TYPE_ITER_NON
+
+.br
+\fBExplanation:\fR
+
+.br
+  This return flag means that the data is actually from within a node of type VSTR_TYPE_NODE_NON.
 
 .SH Constants passed to vstr_sc_fmt_cb_beg()
 
@@ -1355,7 +1494,7 @@
 .br
   This flag is the same as using the flags for space, comma, dot and underbar. Using just this flag is probably what you'd expect an "unprintable" function to do.
 
-.SH Constants passed to vstr_parse_[u](short|int|long|intmax)()
+.SH Constants passed to vstr_parse_num() etc.
 
 .br
 \fBConstant: \fR VSTR_TYPE_PARSE_NUM_ERR_NONE
@@ -1508,6 +1647,20 @@
 
 .br
   This flag disallows a plus or a minus character before the number.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_NUM_NO_NEGATIVE
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag disallows negative values.
+.sp
+\fBNote:\fR
+
+.br
+  While this flag can be passed to vstr_parse_int() etc. it is most useful when passed to the generic function vstr_parse_num().
 
 .SH Constants passed to vstr_parse_ipv4()
 

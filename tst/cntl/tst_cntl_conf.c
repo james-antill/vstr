@@ -155,12 +155,14 @@ int tst(void)
   TST_CSTR(  28, LOC_CSTR_THOU_GRP, "abcd", "\1\2\3\255");
   TST_CSTR(  29, LOC_CSTR_THOU_SEP, "abcd", "<->");
 
+#ifndef USE_RESTRICTED_HEADERS
   mfail_count = 0;
   do
   {
     tst_mfail_num(++mfail_count);
   } while (!MFAIL_TST_CSTR(LOC_CSTR_AUTO_NAME_NUMERIC, "en_US"));
-
+#endif
+  
   mfail_count = 0;
   do
   {

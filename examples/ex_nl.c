@@ -29,9 +29,12 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
     vstr_split_buf(s2, 1, s2->len, "\n", 1, sects, sects->sz, flags);
 
     if ((sects->num != sects->sz) && !last)
+      --sects->num; /* last one isn't full line */
+
+    if (!sects->num)
       return (ret);
 
-    while ((++num < EX_NL_SECTS_LOOP) && (num <= sects->num))
+    while (++num <= sects->num)
     {
       size_t split_pos = VSTR_SECTS_NUM(sects, num)->pos;
       size_t split_len = VSTR_SECTS_NUM(sects, num)->len;
@@ -51,32 +54,36 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
     else
     {
       size_t pos = VSTR_SECTS_NUM(sects, sects->num)->pos;
-      vstr_del(s2, 1, pos - 1);
+      size_t len = VSTR_SECTS_NUM(sects, sects->num)->len;
+      vstr_del(s2, 1, vstr_sc_poslast(pos, len + 1));
     }
 
-    if (s1->len > EX_MAX_W_DATA_INCORE)
-      return (TRUE);
-
     ret = TRUE;
+    
+    if (s1->len > EX_MAX_W_DATA_INCORE)
+      return (ret);
   }
 
-  return (TRUE);
+  return (FALSE);
 }
 #else
 static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
 {
   static unsigned int count = 0;
   size_t pos = 0;
-
+  int ret = FALSE;
+  
   /* we don't want to create more data, if we are over our limit */
   if (s1->len > EX_MAX_W_DATA_INCORE)
     return (FALSE);
 
   if (!s2->len)
-    return (TRUE);
+    return (FALSE);
 
   while ((pos = vstr_srch_chr_fwd(s2, 1, s2->len, '\n')))
   {
+    ret = TRUE;
+    
     vstr_add_fmt(s1, s1->len, "% 6d\t", ++count);
 
     if (EX_NL_USE_SRCH_MOV)
@@ -91,11 +98,13 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
       errno = ENOMEM, err(EXIT_FAILURE, "adding data");
     
     if (s1->len > EX_MAX_W_DATA_INCORE)
-      return (TRUE);
+      return (ret);
   }
 
   if (s2->len && last)
   {
+    ret = TRUE;
+    
     vstr_add_fmt(s1, s1->len, "% 6d\t", ++count);
     if (s2->len)
       vstr_mov(s1, s1->len, s2, 1, s2->len);
@@ -105,7 +114,7 @@ static int ex_nl_process(Vstr_base *s1, Vstr_base *s2, int last)
       errno = ENOMEM, err(EXIT_FAILURE, "adding data");
   }
 
-  return (TRUE);
+  return (ret);
 }
 #endif
 

@@ -1,4 +1,4 @@
-.TH vstr 3 "28-May-2004" "Vstr 1.0.13" "Vstr String Library"
+.TH vstr 3 "23-Aug-2004" "Vstr 1.0.13" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -878,6 +878,10 @@ unsigned int \fBVSTR_SPLIT_CSTR_BUF\fR(const struct Vstr_base *, size_t, size_t,
 unsigned int \fBVSTR_SPLIT_CSTR_CHRS\fR(const struct Vstr_base *, size_t, size_t, const char *, size_t, struct Vstr_sects *, unsigned int, unsigned int);
 .sp
 .br
+.in \w'  void *\fBvstr_parse_num\fR('u
+.ti \w'  'u
+void *\fBvstr_parse_num\fR(const struct Vstr_base *, size_t, size_t, unsigned int, size_t *, unsigned int *, void *(*)(unsigned int, int, unsigned int *, void *), void *);
+.br
 .in \w'  short \fBvstr_parse_short\fR('u
 .ti \w'  'u
 short \fBvstr_parse_short\fR(const struct Vstr_base *, size_t, size_t, unsigned int, size_t *, unsigned int *);
@@ -1104,6 +1108,22 @@ int \fBvstr_sc_fmt_add_bkmg_bit_uint\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_bkmg_bits_uint\fR(struct Vstr_conf *, const char *);
 .br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_Byte_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_Byte_uintmax\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_Bytes_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_Bytes_uintmax\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_bit_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_bit_uintmax\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_bkmg_bits_uintmax\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_bkmg_bits_uintmax\fR(struct Vstr_conf *, const char *);
+.br
 .in \w'  int \fBvstr_sc_fmt_add_ipv4_ptr\fR('u
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_ipv4_ptr\fR(struct Vstr_conf *, const char *);
@@ -1164,6 +1184,10 @@ int \fBvstr_sc_fmt_add_lower_base2_uintmax\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_all\fR(struct Vstr_conf *);
 .br
+.in \w'  int \fBVSTR_SC_FMT_ADD\fR('u
+.ti \w'  'u
+int \fBVSTR_SC_FMT_ADD\fR(struct Vstr_conf *, int (*)(struct Vstr_conf *, const char *), const char *, const char *, const char *);
+.br
 .in \w'  int \fBvstr_sc_mmap_fd\fR('u
 .ti \w'  'u
 int \fBvstr_sc_mmap_fd\fR(struct Vstr_base *, size_t, int, off64_t, size_t, unsigned int *);
@@ -1195,6 +1219,30 @@ int \fBvstr_sc_write_fd\fR(struct Vstr_base *, size_t, size_t, int, unsigned int
 .in \w'  int \fBvstr_sc_write_file\fR('u
 .ti \w'  'u
 int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, int, mode_t, off64_t, unsigned int *);
+.br
+.in \w'  int \fBvstr_sc_add_b_uint16\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_b_uint16\fR(struct Vstr_base *, size_t, uint_least16_t);
+.br
+.in \w'  int \fBvstr_sc_add_b_uint32\fR('u
+.ti \w'  'u
+int \fBvstr_sc_add_b_uint32\fR(struct Vstr_base *, size_t, uint_least32_t);
+.br
+.in \w'  int \fBvstr_sc_sub_b_uint16\fR('u
+.ti \w'  'u
+int \fBvstr_sc_sub_b_uint16\fR(struct Vstr_base *, size_t, size_t, uint_least16_t);
+.br
+.in \w'  int \fBvstr_sc_sub_b_uint32\fR('u
+.ti \w'  'u
+int \fBvstr_sc_sub_b_uint32\fR(struct Vstr_base *, size_t, size_t, uint_least32_t);
+.br
+.in \w'  uint_least16_t \fBvstr_sc_parse_b_uint16\fR('u
+.ti \w'  'u
+uint_least16_t \fBvstr_sc_parse_b_uint16\fR(struct Vstr_base *, size_t);
+.br
+.in \w'  uint_least32_t \fBvstr_sc_parse_b_uint32\fR('u
+.ti \w'  'u
+uint_least32_t \fBvstr_sc_parse_b_uint32\fR(struct Vstr_base *, size_t);
 .sp
 .br
 .in \w'  int \fBvstr_iter_fwd_beg\fR('u
@@ -1204,6 +1252,26 @@ int \fBvstr_iter_fwd_beg\fR(struct Vstr_base *, size_t, size_t, struct Vstr_iter
 .in \w'  int \fBvstr_iter_fwd_nxt\fR('u
 .ti \w'  'u
 int \fBvstr_iter_fwd_nxt\fR(struct Vstr_iter *);
+.br
+.in \w'  char \fBvstr_iter_fwd_chr\fR('u
+.ti \w'  'u
+char \fBvstr_iter_fwd_chr\fR(struct Vstr_iter *, unsigned int *);
+.br
+.in \w'  size_t \fBvstr_iter_fwd_buf\fR('u
+.ti \w'  'u
+size_t \fBvstr_iter_fwd_buf\fR(struct Vstr_iter *, size_t, void *, size_t, unsigned int *);
+.br
+.in \w'  size_t \fBvstr_iter_fwd_cstr\fR('u
+.ti \w'  'u
+size_t \fBvstr_iter_fwd_cstr\fR(struct Vstr_iter *, size_t, char *, size_t, unsigned int *);
+.br
+.in \w'  size_t \fBvstr_iter_pos\fR('u
+.ti \w'  'u
+size_t \fBvstr_iter_pos\fR(struct Vstr_iter *, size_t, size_t);
+.br
+.in \w'  size_t \fBvstr_iter_len\fR('u
+.ti \w'  'u
+size_t \fBvstr_iter_len\fR(struct Vstr_iter *);
 .sp
 .br
 .in \w'  int \fBvstr_cntl_opt\fR('u
@@ -8744,6 +8812,8 @@ Type\fB[5]\fR: void *
 
 .br
   This function will run the foreach body function (Parameter[4]) on every valid Vstr section node in the Vstr sections.
+.br
+  The callback function (Parameter[4]) is passed the Vstr string (Parameter[1]), the position and length from the current Vstr section node and finally the caller supplied data (Parameter[5]).
 .sp
 \fBNote:\fR
 
@@ -9156,6 +9226,69 @@ Type\fB[8]\fR: unsigned int
 
 .ti -2
 .br
+\fBFunction: \fR vstr_parse_num()
+.br
+Returns: Data returned from callback function
+.br
+Type: void *
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+.br
+Type\fB[4]\fR: unsigned int
+
+.br
+Parameter\fB[5]\fR: Returns length of number (Return)
+.br
+Type\fB[5]\fR: size_t *
+
+.br
+Parameter\fB[6]\fR: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+.br
+Type\fB[6]\fR: unsigned int *
+
+.br
+Parameter\fB[7]\fR: Function to run as parse body
+.br
+Type\fB[7]\fR: void *(*)(unsigned int, int, unsigned int *, void *)
+
+.br
+Parameter\fB[8]\fR: Data to pass to parse number callback function (Parameter[7])
+.br
+Type\fB[8]\fR: void *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will parse a number, and pass it piece by piece to the callback function (Parameter[7]).
+.br
+  The callback function (Parameter[7]) is passed the base and the value of the current piece of the number, the pointer to a valid error code and finally the caller supplied data (Parameter[8]).
+.sp
+\fBNote:\fR
+
+.br
+  If NULL is returned from the callback function, then parsing will stop at that point and immediately return.
+.br
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_parse_short()
 .br
 Returns: Number parsed from Vstr string
@@ -9203,7 +9336,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9254,7 +9387,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9305,7 +9438,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9356,7 +9489,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9407,7 +9540,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9458,7 +9591,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 
 .ti -2
 .br
@@ -9509,7 +9642,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 .br
   If the intmax_t type is unavailable on the platform, then this function will act the same as vstr_parse_long().
 
@@ -9562,7 +9695,7 @@ Type\fB[6]\fR: unsigned int *
 \fBNote:\fR
 
 .br
-  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
+  A base of 0 specifies that the base should be automatically detected, by choosing base 16 if the number starts 0x or 0X, base 2 if the number starts 0b or 0B, base 8 if the number starts with a 0 and defaulting to base 10 otherwise.
 .br
   If the intmax_t type is unavailable on the platform, then this function will act the same as vstr_parse_ulong().
 
@@ -11315,6 +11448,154 @@ Type\fB[2]\fR: const char *
 
 .ti -2
 .br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_Byte_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "B" for bytes.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{BKMG.ju}", with the gcc warning compatible alternates using "{BKMG.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_Bytes_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "B/s" for bytes per second.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{BKMG/s.u}", with the gcc warning compatible alternates using "{BKMG/s.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_bit_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "b" for bits.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{bKMG.ju}", with the gcc warning compatible alternates using "{bKMG.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_bkmg_bits_uintmax()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print a number in a human accessible form. Displaying either K, M or G after the number and before a "b/s" for bits per second.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
+.br
+  The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{bKMG/s.ju}", with the gcc warning compatible alternates using "{bKMG/s.ju:%ju}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_sc_fmt_add_ipv4_ptr()
 .br
 Returns: TRUE on success and FALSE on failure
@@ -11821,6 +12102,57 @@ Type\fB[1]\fR: struct Vstr_conf *
 
 .ti -2
 .br
+\fBFunction: \fR VSTR_SC_FMT_ADD()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Function to add the custom formatter ability
+.br
+Type\fB[2]\fR: int (*)(struct Vstr_conf *, const char *)
+
+.br
+Parameter\fB[3]\fR: Prefix string
+.br
+Type\fB[3]\fR: const char *
+
+.br
+Parameter\fB[4]\fR: Static format check string, without the leading % sign
+.br
+Type\fB[4]\fR: const char *
+
+.br
+Parameter\fB[5]\fR: Postfix string
+.br
+Type\fB[5]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function calls the function to add the custom formatting ability (Parameter[2]), with the Vstr configuration (Parameter[1]) and a string composed of the values from prefix, and the postfix. It then calls the function with the prefix, various middle strings with the static format check string, and the postfix.  For example the following call...
+
+.Vb 4
+    VSTR_SC_FMT_ADD(NULL, func, "<foo", "p", ">");
+
+.Ve
+ ...will register the format "<foo>", but also the formats "<foo:%p>",
+ "<foo:%p>", "<foo:%*p>", "<foo:%.*p>", "<foo:%*.*p>", "<foo:%d%p>" and "<foo:%d%d%p>". This is all that is required to fool static format string checkers, even when you are passing formating information in parameters.
+.sp
+\fBNote:\fR
+
+.br
+  No cleanup is done on failure, so if the second registration fails then the first custom formatter will still be registered on return.
+
+.ti -2
+.br
 \fBFunction: \fR vstr_sc_mmap_fd()
 .br
 Returns: TRUE on success and FALSE on failure
@@ -12202,6 +12534,214 @@ Type\fB[8]\fR: unsigned int *
 .br
   This function is used to take data from a Vstr string and write it to a file, after open()ing the file (Parameter[4]) with open flags (Parameter[5]) and open mode (Parameter[6]).
 
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_b_uint16()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Binary value to add
+.br
+Type\fB[3]\fR: uint_least16_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a 16bit (two byte) binary value (Parameter[3]), in Big Endian format, to the Vstr string (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_add_b_uint32()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Append position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Binary value to add
+.br
+Type\fB[3]\fR: uint_least32_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a 32bit (four byte) binary value (Parameter[3]), in Big Endian format, to the Vstr string (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_sub_b_uint16()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Binary value to add
+.br
+Type\fB[4]\fR: uint_least16_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to substitute a 16bit (two byte) binary value (Parameter[4]), in Big Endian format, to the Vstr string (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_sub_b_uint32()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Binary value to add
+.br
+Type\fB[4]\fR: uint_least32_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to substitute a 32bit (four byte) binary value (Parameter[4]), in Big Endian format, to the Vstr string (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_parse_b_uint16()
+.br
+Returns: Binary value to add
+.br
+Type: uint_least16_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to parse a 16bit (two byte) binary value (Parameter[4]), in Big Endian format, from the Vstr string (Parameter[1]).
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_parse_b_uint32()
+.br
+Returns: Binary value to add
+.br
+Type: uint_least32_t
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to parse a 32bit (four byte) binary value (Parameter[4]), in Big Endian format, from the Vstr string (Parameter[1]).
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.sp
+\fBNote:\fR
+
+.br
+  This function is here because too many existing network protcols send binary values, in Big Endian format. This does not mean it is a good thing to do for new protcols, look at netstrings or something equally nicer.
+
 .SH Interator functions
 
 .ti -2
@@ -12268,6 +12808,170 @@ Type\fB[1]\fR: struct Vstr_iter *
 
 .br
   If you alter the Vstr string (Parameter[1]) while using a iteration, then the iteration will be in an undefined state.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_fwd_chr()
+.br
+Returns: Character at that point in iteration
+.br
+Type: char
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: struct Vstr_iter *
+
+.br
+Parameter\fB[2]\fR: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+.br
+Type\fB[2]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to return the current character and post increment the iteration (Ie think "ret = *iter++"). However it is safe to call vstr_iter_fwd_chr() forever, after it gets to the end of the iteration it will just return 0 (and set the return type to _END).
+.sp
+\fBNote:\fR
+
+.br
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then the iteration will be in an undefined state.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_fwd_buf()
+.br
+Returns: Length of iteration moved
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: struct Vstr_iter *
+
+.br
+Parameter\fB[2]\fR: Length to move iteration forward (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Data array to export to
+.br
+Type\fB[3]\fR: void *
+
+.br
+Parameter\fB[4]\fR: Length of data (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+Parameter\fB[5]\fR: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+.br
+Type\fB[5]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to move the iteration forward a particular length (Parameter[2]). It will also export the data for the length, if there is room.
+.br
+  It is safe to call vstr_iter_fwd_buf() forever, after it gets to the end of the iteration it will just return 0 (and set the return type to _END). If the passed length is greater than the length of the iteration left, the length will be truncated and the truncated value will be returned.
+.br
+  Passing NULL as the buffer (Parameter[3]) is only valid if the buffer length (Parameter[4]) is zero.
+.sp
+\fBNote:\fR
+
+.br
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then the iteration will be in an undefined state.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_fwd_cstr()
+.br
+Returns: Length of iteration moved
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: struct Vstr_iter *
+
+.br
+Parameter\fB[2]\fR: Length to move iteration forward (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Data array to export to
+.br
+Type\fB[3]\fR: char *
+
+.br
+Parameter\fB[4]\fR: Length of data (Parameter[3])
+.br
+Type\fB[4]\fR: size_t
+
+.br
+Parameter\fB[5]\fR: Vstr iteration return type  (VSTR_TYPE_ITER_*).
+.br
+Type\fB[5]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function works like vstr_iter_fwd_buf(), except that the buffer (Parameter[3]) must be non-NULL and the end of the data exported using the iteration will always be NIL terminated.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_pos()
+.br
+Returns: Position of iteration
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: struct Vstr_iter *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to return the current position in the iteration.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_len()
+.br
+Returns: Length of iteration
+.br
+Type: size_t
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: struct Vstr_iter *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to return the length remaining of the iteration.
 
 .SH Miscellaneous functions
 

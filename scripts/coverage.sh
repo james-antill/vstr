@@ -1,5 +1,7 @@
 #! /bin/sh -e
 
+tst_klibc=false
+
 if false; then
  echo "Not reached."
 # elif [ -f ./configure ]; then
@@ -68,3 +70,15 @@ cov ansi --enable-noposix-host \
          --enable-tst-noattr-visibility \
          --enable-tst-noattr-alias \
          --enable-tst-nosyscall-asm
+
+CFLAGS="-DUSE_RESTRICTED_HEADERS=1" cov small-libc
+
+# This doesn't work, coverage with either klibc or dietlibc are NOGO...
+# However you can compile programs linked with either and Vstr ... just not with
+# coverage.
+if $tst_klibc; then
+  export LDFLAGS="-nodefaultlibs /usr/lib/klibc/crt0.o `gcc --print-libgcc` /usr/lib/klibc/libc.a"
+  export CFLAGS="-nostdinc -iwithprefix include -I/usr/include/klibc -I/usr/include/klibc/kernel"
+  cov klibc
+fi
+

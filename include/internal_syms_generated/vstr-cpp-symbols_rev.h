@@ -136,10 +136,11 @@
 #undef vstr_free_spare_nodes
 #undef vstr_init
 #undef vstr_iter_len
-#undef vstr_iter_num
 #undef vstr_iter_pos
 #undef vstr_iter_fwd_beg
+#undef vstr_iter_fwd_buf
 #undef vstr_iter_fwd_chr
+#undef vstr_iter_fwd_cstr
 #undef vstr_iter_fwd_nxt
 #undef vstr_make_base
 #undef vstr_make_conf

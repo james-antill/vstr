@@ -5,7 +5,7 @@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 EX_B_DIR=$(top_builddir)/examples
-EX_INST_DIR=$(datadir)/doc/vstr-devel-$(VERSION)/
+EX_INST_DIR=$(libdir)/vstr-$(VERSION)/examples
 
 GEN_CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
@@ -35,6 +35,9 @@ ex_hexdump_LDADD  = $(GEN_LDLIBS)
 ex_nl_DEPENDENCIES = ex_utils.h
 ex_nl_CFLAGS = $(GEN_CFLAGS)
 ex_nl_LDADD  = $(GEN_LDLIBS)
+ex_phone_names_DEPENDENCIES = ex_utils.h
+ex_phone_names_CFLAGS = $(GEN_CFLAGS)
+ex_phone_names_LDADD  = $(GEN_LDLIBS)
 ex_rot13_DEPENDENCIES = ex_utils.h
 ex_rot13_CFLAGS = $(GEN_CFLAGS)
 ex_rot13_LDADD  = $(GEN_LDLIBS)
@@ -67,19 +70,26 @@ ex_slowcat_DEPENDENCIES = ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_dns_SOURCES = ex_dns.c dns.c
-ex_dns_DEPENDENCIES = dns.h
+ex_dns_SOURCES = ex_dns.c dns.c evnt.c
+ex_dns_DEPENDENCIES = dns.h evnt.h
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_httpd_SOURCES = ex_httpd.c
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h
+ex_httpd_SOURCES = ex_httpd.c evnt.c
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
+ex_echod_SOURCES = ex_echod.c evnt.c
+ex_echod_DEPENDENCIES = evnt.h
+ex_echod_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
+ex_echod_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
+
+# BEG: Not a Vstr app.
 ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
 ex_tdns_LDADD    = $(GEN_LDLIBS)
 ex_tdns_LDFLAGS  = -pthread
+# END: Not a Vstr app.
 
 ex_zcat_DEPENDENCIES = ex_utils.h
 ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
@@ -130,15 +140,14 @@ pthread_APP = ex_tdns
 norm_APPS = \
   ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
-  ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
+  ex_hexdump ex_nl ex_phone_names ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
   ex_csv $(hi_DEP) ex_ssi ex_rainbow ex_changelog_diff ex_ccount
 
 if TIMER_Q_AVAIL
 timer_q_APPS = ex_slowcat
 
 if SOCKET_POLL_AVAIL
-dns_APP   = ex_dns
-httpd_APP = ex_httpd
+poll_APP   = ex_dns ex_echod ex_httpd
 endif
 # Timer_q
 endif
@@ -180,8 +189,7 @@ examples_PROGRAMS = \
   $(openssl_APPS) \
   $(gmp_APPS) \
   $(glib_APPS) \
-  $(dns_APP) \
-  $(httpd_APP) \
+  $(poll_APP) \
   $(pthread_APP)
 
 
@@ -194,11 +202,14 @@ html_DATA = \
   html/f_c.css \
   html/dns.h.html \
   html/dns.c.html \
+  html/evnt.h.html \
+  html/evnt.c.html \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
   html/ex_csv.c.html \
   html/ex_dns.c.html \
+  html/ex_echod.c.html \
   html/ex_gmp_factorials.c.html \
   html/ex_gmp_num_roman.c.html \
   html/ex_gmp_nums.c.html \
@@ -221,6 +232,7 @@ html_DATA = \
   html/ex_perf_nodesize.c.html \
   html/ex_perf_nodesize_foreach.c.html \
   html/ex_perf_sgopenssl.c.html \
+  html/ex_phone_names.c.html \
   html/ex_rainbow.c.html \
   html/ex_rot13.c.html \
   html/ex_slowcat.c.html \

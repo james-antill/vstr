@@ -339,12 +339,13 @@ static int vstr__resize_cache(const Vstr_base *base, unsigned int sz)
   return (TRUE);
 }
 
-static void *vstr__cache_pos_cb(const Vstr_base *base __attribute__((unused)),
-                                size_t pos, size_t len __attribute__((unused)),
+static void *vstr__cache_pos_cb(const Vstr_base *base,
+                                size_t pos, size_t VSTR__ATTR_UNUSED(len),
                                 unsigned int type, void *passed_data)
 {
   Vstr__cache_data_pos *data = passed_data;
 
+  (void)base; /* no warnings when arsserts are off */
   ASSERT(base->grpalloc_cache >= VSTR_TYPE_CNTL_CONF_GRPALLOC_POS);
   
   if (type == VSTR_TYPE_CACHE_FREE)
@@ -367,14 +368,14 @@ static void *vstr__cache_pos_cb(const Vstr_base *base __attribute__((unused)),
   return (data);
 }
 
-static void *vstr__cache_iovec_cb(const Vstr_base *base
-                                  __attribute__((unused)),
-                                  size_t pos __attribute__((unused)),
-                                  size_t len __attribute__((unused)),
+static void *vstr__cache_iovec_cb(const Vstr_base *base,
+                                  size_t VSTR__ATTR_UNUSED(pos),
+                                  size_t VSTR__ATTR_UNUSED(len),
                                   unsigned int type, void *passed_data)
 {
   Vstr__cache_data_iovec *data = passed_data;
 
+  (void)base; /* no warnings when arsserts are off */
   assert(VSTR__CACHE(base)->vec == data);
   ASSERT(base->grpalloc_cache < VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC);
   
@@ -395,7 +396,7 @@ static void *vstr__cache_iovec_cb(const Vstr_base *base
   return (data);
 }
 
-static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
+static void *vstr__cache_cstr_cb(const Vstr_base *base,
                                  size_t pos, size_t len,
                                  unsigned int type, void *passed_data)
 {

@@ -25,25 +25,18 @@ static void tst_v(const char *msg, ...)
 int tst(void)
 {
   VSTR_SECTS_DECL(abcd, 4);
+#ifdef __GNUC__
   typeof(blahfoo[0]) *tmp = abcd;
-  Vstr_iter iter[1];
 
   assert(sizeof(blahfoo) == sizeof(abcd));
   assert(tmp->sz == 4);
+#endif
 
   vstr_make_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 8);
 
   tst_v("%s", "123456789 123456789 123456789 123456789 123456789 123456789 ");
   assert(s1->len == 120);
 
-  vstr_iter_fwd_beg(s1, 1, s1->len, iter);
-  ASSERT(iter->num == vstr_iter_num(iter));
-  ASSERT((iter->len + iter->remaining) == 120);
-  vstr_iter_fwd_nxt(iter);
-
-  ASSERT(!vstr_iter_fwd_beg(s1, 1, 0, iter));
-  ASSERT(!iter->node);
-  
   vstr_sc_fmt_add_bkmg_bits_uint(NULL, "1");
   vstr_sc_fmt_add_bkmg_bit_uint(NULL, "2");
   vstr_sc_fmt_add_bkmg_Bytes_uint(NULL, "3");

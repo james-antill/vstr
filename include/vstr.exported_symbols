@@ -135,10 +135,11 @@ free_conf
 free_spare_nodes
 init
 iter_len
-iter_num
 iter_pos
 iter_fwd_beg
+iter_fwd_buf
 iter_fwd_chr
+iter_fwd_cstr
 iter_fwd_nxt
 make_base
 make_conf
@@ -171,6 +172,8 @@ ref_make_strdup
 ref_make_vstr_base
 ref_make_vstr_conf
 ref_make_vstr_sects
+sc_add_b_uint16
+sc_add_b_uint32
 sc_add_cstr_grpbasenum_buf
 sc_add_cstr_grpbasenum_ptr
 sc_add_cstr_grpbasenum_ref
@@ -222,6 +225,8 @@ sc_fmt_cb_beg
 sc_fmt_cb_end
 sc_mmap_fd
 sc_mmap_file
+sc_parse_b_uint16
+sc_parse_b_uint32
 sc_posdiff
 sc_poslast
 sc_read_iov_fd
@@ -229,6 +234,8 @@ sc_read_iov_file
 sc_read_len_fd
 sc_read_len_file
 sc_reduce
+sc_sub_b_uint16
+sc_sub_b_uint32
 sc_write_fd
 sc_write_file
 sects_add

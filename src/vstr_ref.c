@@ -22,7 +22,7 @@
  * including callbacks */
 #include "main.h"
 
-void vstr_ref_cb_free_nothing(Vstr_ref *ref __attribute__ ((unused)))
+void vstr_ref_cb_free_nothing(Vstr_ref *VSTR__ATTR_UNUSED(ref))
 {
 }
 

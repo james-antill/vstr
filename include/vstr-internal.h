@@ -27,6 +27,14 @@
     fprintf(stderr, "DBG: %d:%s <" x ">\n", __LINE__, __FILE__ , ## args)
 #endif
 
+#ifdef __GNUC__
+# define VSTR__ATTR_UNUSED(x) vstr__UNUSED_ ## x __attribute__((unused)) 
+#elif defined(__LCLINT__)
+# define VSTR__ATTR_UNUSED(x) /*@unused@*/ vstr__UNUSED_ ## x
+#else
+# define VSTR__ATTR_UNUSED(x) vstr__UNUSED_ ## x
+#endif
+
 #if defined(HAVE_ATTRIB_DEPRECATED)
 # define VSTR__ATTR_D() __attribute__((deprecated))
 #else
@@ -187,6 +195,8 @@ typedef               long Vstr__long_long;
 # define setlocale(x, y) NULL
 # define localeconv()    NULL
 # define SYS_LOC(x) ""
+# undef  USE_WIDE_CHAR_T
+# define USE_WIDE_CHAR_T 0
 #else
 # define SYS_LOC(x) ((sys_loc)->x)
 #endif

@@ -39,6 +39,9 @@ util-linux-2.11r-10
  * It's also similar to "xxd" in vim, and "od -tx1z -Ax".
  */
 
+#define CONF_USE_MMAP_DEF FALSE
+#define CONF_PRNT_TYPE    PRNT_SPAC
+
 #define PRNT_NONE 0
 #define PRNT_SPAC 1
 #define PRNT_HIGH 2
@@ -48,7 +51,7 @@ util-linux-2.11r-10
 #define EX_HEXDUMP_CHRS_PER_LINE 16
 
 /* configure what ASCII characters we print */
-static unsigned int prnt_high_chars = PRNT_NONE;
+static unsigned int prnt_high_chars = CONF_PRNT_TYPE;
 
 #if 0
 /* simple print of a number */
@@ -258,7 +261,7 @@ int main(int argc, char *argv[])
   Vstr_base *s2 = NULL;
   Vstr_base *s1 = ex_init(&s2); /* init the library, and create two strings */
   int count = 1; /* skip the program name */
-  unsigned int use_mmap = FALSE;
+  unsigned int use_mmap = CONF_USE_MMAP_DEF;
 
   /* parse command line arguments... */
   while (count < argc)

@@ -88,14 +88,14 @@
 #define VSTR_FMT_CB_ARG_VAL(spec, T, num) \
  (*(T *)((spec)->data_ptr[(size_t) (num)]))
 
-#define VSTR_SC_FMT_ADD(func, conf, pb, n, nchk, pe)           \
-    (func (conf, pb n ":%"        nchk pe) &&                  \
-     func (conf, pb n ":%" "*"    nchk pe) &&                  \
-     func (conf, pb n ":%"  ".*"  nchk pe) &&                  \
-     func (conf, pb n ":%" "*.*"  nchk pe) &&                  \
-     func (conf, pb n ":%"  "d%"  nchk pe) &&                  \
-     func (conf, pb n ":%" "d%d%" nchk pe) &&                  \
-     func (conf, pb n                  pe))
+#define VSTR_SC_FMT_ADD(conf, func, pb, nchk, pe)              \
+    (func (conf, pb                  pe) &&                    \
+     func (conf, pb ":%"        nchk pe) &&                    \
+     func (conf, pb ":%" "*"    nchk pe) &&                    \
+     func (conf, pb ":%"  ".*"  nchk pe) &&                    \
+     func (conf, pb ":%" "*.*"  nchk pe) &&                    \
+     func (conf, pb ":%"  "d%"  nchk pe) &&                    \
+     func (conf, pb ":%" "d%d%" nchk pe))
 
 
 #if VSTR_COMPILE_MACRO_FUNCTIONS
@@ -710,9 +710,11 @@ extern struct Vstr_ref *vstr_export_cstr_ref(const struct Vstr_base *,
 extern void *vstr_parse_num(const struct Vstr_base *, size_t, size_t,
                             unsigned int, size_t *,
                             unsigned int *,
-                            void *(*)(void *, unsigned int, int),
+                            void *(*)(unsigned int, int,
+                                      unsigned int *, void *),
                             void *)
-   VSTR__COMPILE_ATTR_NONNULL_L((1, 7, 8)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+   /* don't specify warn_unused_ret as they may not use it that way */
+   VSTR__COMPILE_ATTR_NONNULL_L((1, 7, 8));
 
 extern short vstr_parse_short(const struct Vstr_base *,
                               size_t, size_t, unsigned int, size_t *,
@@ -863,15 +865,18 @@ extern int vstr_iter_fwd_beg(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_iter_fwd_nxt(struct Vstr_iter *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
-extern unsigned char vstr_iter_fwd_chr(struct Vstr_iter *, unsigned int *)
+extern char vstr_iter_fwd_chr(struct Vstr_iter *, unsigned int *)
    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_iter_fwd_buf(struct Vstr_iter *, size_t,
+                                void *, size_t, unsigned int *)
+   VSTR__COMPILE_ATTR_NONNULL_L((1));
+extern size_t vstr_iter_fwd_cstr(struct Vstr_iter *, size_t,
+                                char *, size_t, unsigned int *)
+   VSTR__COMPILE_ATTR_NONNULL_L((1, 3));
 extern size_t vstr_iter_pos(struct Vstr_iter *, size_t, size_t)
    VSTR__COMPILE_ATTR_PURE()
    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_iter_len(struct Vstr_iter *)
-   VSTR__COMPILE_ATTR_PURE()
-   VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
-extern unsigned int vstr_iter_num(struct Vstr_iter *)
    VSTR__COMPILE_ATTR_PURE()
    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
@@ -1042,6 +1047,28 @@ extern size_t vstr_sc_conv_num_uintmax(char *, size_t,
 extern size_t vstr_sc_conv_num10_uintmax(char *, size_t,
                                          VSTR_AUTOCONF_uintmax_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
+
+extern int vstr_sc_add_b_uint16(struct Vstr_base *, size_t,
+                                VSTR_AUTOCONF_uint_least16_t)
+   VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_add_b_uint32(struct Vstr_base *, size_t,
+                                VSTR_AUTOCONF_uint_least32_t)
+   VSTR__COMPILE_ATTR_NONNULL_A();
+
+extern int vstr_sc_sub_b_uint16(struct Vstr_base *, size_t, size_t,
+                                VSTR_AUTOCONF_uint_least16_t)
+   VSTR__COMPILE_ATTR_NONNULL_A();
+extern int vstr_sc_sub_b_uint32(struct Vstr_base *, size_t, size_t,
+                                VSTR_AUTOCONF_uint_least32_t)
+   VSTR__COMPILE_ATTR_NONNULL_A();
+
+extern VSTR_AUTOCONF_uint_least16_t vstr_sc_parse_b_uint16(struct Vstr_base *,
+                                                           size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern VSTR_AUTOCONF_uint_least32_t vstr_sc_parse_b_uint32(struct Vstr_base *,
+                                                           size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+
 
 /* == inline helper functions == */
 /* indented because they aren't a documented part of the API ...

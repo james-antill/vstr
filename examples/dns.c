@@ -162,11 +162,7 @@ static inline int app_i_be2(Vstr_base *s1, unsigned int data)
 }
 static inline int app_i_be1(Vstr_base *s1, unsigned int data)
 {
-  unsigned char buf[1];
-
-  buf[0] = data & 0xFF;
-  
-  return (app_buf(s1, buf, 1));
+  return (vstr_add_rep_chr(s1, s1->len, data & 0xFF, 1));
 }
 
 static inline int sub_i_be2(Vstr_base *s1, size_t pos, unsigned int data)
@@ -203,6 +199,14 @@ static inline unsigned int get_i_be2(Vstr_base *s1, size_t pos)
   num += buf[1];
   
   return (num);
+}
+
+unsigned int dns_get_msg_len(Vstr_base *s1, size_t pos)
+{
+  if (s1->len < pos + 1)
+    return (0);
+
+  return (2 + get_i_be2(s1, pos));
 }
 
 const char *dns_name_type_ch(unsigned int num)

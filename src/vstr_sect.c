@@ -104,8 +104,8 @@ static int vstr__sects_del(Vstr_sects *sects)
 }
 
 int vstr_extern_inline_sects_add(Vstr_sects *sects,
-                                 size_t pos __attribute__((unused)),
-                                 size_t len __attribute__((unused)))
+                                 size_t VSTR__ATTR_UNUSED(pos),
+                                 size_t VSTR__ATTR_UNUSED(len))
 {
   /* see vstr-extern.h for why */
   assert(sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node));

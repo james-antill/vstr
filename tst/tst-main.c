@@ -1,6 +1,7 @@
 #include <autoconf.h>
 
 #ifdef USE_RESTRICTED_HEADERS
+# undef  USE_WIDE_CHAR_T
 # define USE_WIDE_CHAR_T 0
 #endif
 
@@ -152,6 +153,7 @@ int main(void)
 "\n"
 "\n"
             );
+    exit (EXIT_SUCCESS); /* FIXME: */
   }
 #endif
 
@@ -164,7 +166,15 @@ int main(void)
 
   if (!vstr_cntl_conf(conf1,
                       VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC, "en_US"))
-    die();
+  { /* pretend - do it by hand */
+    if (!vstr_cntl_conf(conf1,
+                        VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC, "en_US") ||
+        !vstr_cntl_conf(conf1,
+                        VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP, ",") ||
+        !vstr_cntl_conf(conf1,
+                        VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP, "\3"))
+      die();
+  }
 
   {
     int tmp = 0;

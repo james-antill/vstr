@@ -228,11 +228,11 @@ static int vstr__parse_num_beg(const Vstr_base *base,
     int is_neg = FALSE;                                                 \
     int is_zeroed = FALSE;                                              \
     size_t orig_len = len;                                              \
-    unsigned char sym_sep = '_';                                        \
-    unsigned int ascii_num_end = 0x39;                                  \
-    unsigned int ascii_let_low_end = 0x7A;                              \
-    unsigned int ascii_let_high_end = 0x5A;                             \
-    unsigned int local_num_end = '9';                                   \
+    char sym_sep = '_';                                                 \
+    char ascii_num_end = 0x39;                                          \
+    char ascii_let_low_end = 0x7A;                                      \
+    char ascii_let_high_end = 0x5A;                                     \
+    char local_num_end = '9';                                           \
     const char *local_let_low  = "abcdefghijklmnopqrstuvwxyz";          \
     const char *local_let_high = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";          \
                                                                         \
@@ -272,7 +272,7 @@ static int vstr__parse_num_beg(const Vstr_base *base,
           ascii_num_end = 0x30 + num_base - 1;          \
         else if (num_base > 10)                         \
         {                                               \
-          ascii_let_low_end = 0x61 + (num_base - 11);   \
+          ascii_let_low_end  = 0x61 + (num_base - 11);  \
           ascii_let_high_end = 0x41 + (num_base - 11);  \
         }                                               \
       }                                                 \
@@ -300,7 +300,7 @@ static int vstr__parse_num_beg(const Vstr_base *base,
       ASSERT(iter_ret);                                                 \
       while (len)                                                       \
       {                                                                 \
-        unsigned char scan = vstr_iter_fwd_chr(iter, NULL);             \
+        char scan = vstr_iter_fwd_chr(iter, NULL);                      \
         const char *end = NULL;                                         \
         unsigned int add_num = 0;                                       \
                                                                         \
@@ -328,16 +328,16 @@ static int vstr__parse_num_beg(const Vstr_base *base,
         }                                                               \
         else                                                            \
         {                                                               \
-          if (scan < 0x30) break;                                       \
+          if (scan < (char)0x30) break;                                 \
                                                                         \
           if (scan <= ascii_num_end)                                    \
-            add_num = (scan - 0x30);                                    \
+            add_num = (scan - (char)0x30);                              \
           else if (num_base <= 10)                                      \
             break;                                                      \
-          else if ((scan >= 0x41) && (scan <= ascii_let_high_end))      \
-            add_num = 10 + (scan - 0x41);                               \
+          else if ((scan >= (char)0x41) && (scan <= ascii_let_high_end)) \
+            add_num = 10 + (scan - (char)0x41);                         \
           else if ((scan >= 0x61) && (scan <= ascii_let_low_end))       \
-            add_num = 10 + (scan - 0x61);                               \
+            add_num = 10 + (scan - (char)0x61);                         \
           else                                                          \
             break;                                                      \
         }                                                               \
@@ -399,15 +399,17 @@ static int vstr__parse_num_beg(const Vstr_base *base,
 void *vstr_parse_num(const Vstr_base *base, size_t pos, size_t len,
                      unsigned int flags, size_t *ret_len,
                      unsigned int *err,
-                     void *(*func)(void *, unsigned int, int),
+                     void *(*func)(unsigned int, int, unsigned int *, void *),
                      void *data)
 {
   VSTR__PARSE_NUM_BEG_S(void *);
   ret = data;
   VSTR__PARSE_NUM_ASCII();
   VSTR__PARSE_NUM_LOOP_BEG();
+
+  if (is_neg) add_num = -add_num;
   
-  if (!(ret = func(ret, num_base, is_neg ? (0 - add_num) : add_num)))
+  if (!(ret = func(num_base, add_num, err, ret)) && !*err)
     return (NULL); /* mem error */
   
   VSTR__PARSE_NUM_LOOP_END();
@@ -460,7 +462,7 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
                                     size_t pos, size_t *passed_len,
                                     unsigned int flags,
                                     unsigned int num_flags,
-                                    unsigned char sym_dot,
+                                    char sym_dot,
                                     unsigned int *cidr, unsigned int *err)
 {
   int zero_rest = FALSE;
@@ -550,7 +552,7 @@ static int vstr__parse_ipv4_cidr(const struct Vstr_base *base,
                                  size_t pos, size_t *passed_len,
                                  unsigned int flags,
                                  unsigned int num_flags,
-                                 unsigned char sym_dot,
+                                 char sym_dot,
                                  unsigned int *cidr, unsigned int *err)
 {
   size_t len = *passed_len;
@@ -599,8 +601,8 @@ int vstr_parse_ipv4(const struct Vstr_base *base,
                     unsigned int flags, size_t *ret_len, unsigned int *err)
 {
   size_t orig_len = len;
-  unsigned char sym_slash = 0x2F;
-  unsigned char sym_dot = 0x2E;
+  char sym_slash = 0x2F;
+  char sym_dot = 0x2E;
   unsigned int num_flags = VSTR_FLAG_PARSE_NUM_NO_BEG_PM;
   unsigned int scan = 0;
   unsigned int dummy_err = 0;
@@ -761,8 +763,8 @@ int vstr_parse_ipv6(const struct Vstr_base *base,
                     unsigned int flags, size_t *ret_len, unsigned int *err)
 {
   size_t orig_len = len;
-  unsigned char sym_slash = 0x2F;
-  unsigned char sym_colon = 0x3a;
+  char sym_slash = 0x2F;
+  char sym_colon = 0x3a;
   unsigned int num_flags = VSTR_FLAG_PARSE_NUM_NO_BEG_PM;
   unsigned int scan = 0;
   unsigned int dummy_err = 0;

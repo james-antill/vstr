@@ -84,8 +84,7 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   {
     size_t tmp = iter->len;
 
-    if (tmp > buf_len)
-      tmp = buf_len;
+    ASSERT(tmp <= buf_len); /* iter is capped to buffer length */
 
     if (iter->node->type != VSTR_TYPE_NODE_BUF)
       sub_add_len += tmp;

@@ -22,10 +22,12 @@ int tst(void)
 
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "1000"));
 
+#ifndef USE_RESTRICTED_HEADERS
   sprintf(buf, "%'zd %'zd %'zu %'zu", sn[0], sn[1], un[0], un[1]);
   vstr_add_fmt(s2, 0, "%'zd %'zd %'zu %'zu", sn[0], sn[1], un[0], un[1]);
 
   TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s2, 1, s2->len, buf));
-
+#endif
+  
   return (TST_B_RET(ret));
 }

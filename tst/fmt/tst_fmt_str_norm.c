@@ -34,6 +34,10 @@ int tst(void)
 
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
 
+#ifdef USE_RESTRICTED_HEADERS
+  return (TST_B_RET(ret));
+#endif
+  
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%-3ls%3ls%3.1ls%-3.1ls%.ls",
                L"a", L"b", L"cdef", L"def", L"abcd");

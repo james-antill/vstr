@@ -556,10 +556,10 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
   return (FALSE);
 }
 #else
-static int vstr__add_fmt_wide_char(Vstr_base *base __attribute__((unused)),
-                                   size_t pos_diff __attribute__((unused)),
-                                   struct Vstr__fmt_spec *spec
-                                   __attribute__((unused)))
+static int vstr__add_fmt_wide_char(Vstr_base *VSTR__ATTR_UNUSED(base),
+                                   size_t VSTR__ATTR_UNUSED(pos_diff),
+                                   struct Vstr__fmt_spec *
+                                   VSTR__ATTR_UNUSED(spec))
 {
   assert(FALSE);
   return (FALSE);
@@ -687,11 +687,13 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   return (FALSE);
 }
 #else
-static int vstr__add_fmt_wide_cstr(Vstr_base *base __attribute__((unused)),
-                                   size_t pos_diff __attribute__((unused)),
-                                   struct Vstr__fmt_spec *spec
-                                   __attribute__((unused)))
+static int vstr__add_fmt_wide_cstr(Vstr_base *base,
+                                   size_t pos_diff,
+                                   struct Vstr__fmt_spec *spec)
 {
+  if (!spec->u.data_ptr)
+    return (vstr__add_fmt_cstr(base, pos_diff, spec));
+  
   assert(FALSE);
   return (FALSE);
 }

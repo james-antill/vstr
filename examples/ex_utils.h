@@ -11,7 +11,7 @@
 
 #include <err.h> /* BSD/Linux header see: man errx */
 
-#include <sys/poll.h>
+#include <poll.h>
 
 #include <sys/types.h> /* stat + open + STDXXX_FILENO */
 #include <sys/stat.h>
@@ -135,6 +135,7 @@ static void io_block(int io_r_fd, int io_w_fd)
 #endif
 
 /* Try and move some data from Vstr string to fd */
+#ifndef EX_UTILS_NO_USE_PUT
 static int io_put(Vstr_base *io_w, int fd)
 {
   if (!io_w->len)
@@ -150,6 +151,7 @@ static int io_put(Vstr_base *io_w, int fd)
 
   return (IO_OK);
 }
+#endif
 
 #ifndef EX_UTILS_NO_USE_BLOCK
 /* loop outputting data until empty, blocking when needed */

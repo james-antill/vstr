@@ -3,7 +3,7 @@
 static const char *rf = __FILE__;
 
 /* this is a hack to make deleteing look like adding... */
-static int tst_ad(Vstr_conf *conf, const char *name)
+static int tst_del_fmt(Vstr_conf *conf, const char *name)
 {
   vstr_fmt_del(conf, name);
 
@@ -12,35 +12,38 @@ static int tst_ad(Vstr_conf *conf, const char *name)
 
 static void tst_fmt_del(Vstr_conf *conf)
 {
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "vstr", "p%zu%zu%u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "buf", "s%zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ptr", "s%zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "non", "zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ref", "p%zu%zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ref", "p%u%zu", "}"); /* 1.0.0 API */
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "rep_chr", "c%zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "BKMG.u",   "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "BKMG/s.u", "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "bKMG.u",   "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "bKMG/s.u", "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "BKMG.ju",   "ju", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "BKMG/s.ju", "ju", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "bKMG.ju",   "ju", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "bKMG/s.ju", "ju", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv4.p", "p", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv6.p", "p", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv4.v", "p", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv6.v", "p%u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv4.v+C", "p%u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "ipv6.v+C", "p%u%u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "B.u",   "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "B.lu", "lu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "B.zu", "zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "B.ju", "ju", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "b.u",   "u", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "b.lu", "lu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "b.zu", "zu", "}");
-  VSTR_SC_FMT_ADD(tst_ad, conf, "{", "b.ju", "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{vstr", "p%zu%zu%u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{buf", "s%zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ptr", "s%zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{non", "zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ref", "p%zu%zu", "}");
+  vstr_fmt_del(conf, "{ref:%p%u%zu}");    /* 1.0.0 compat. API */
+  vstr_fmt_del(conf, "{ref:%*p%u%zu}");   /* 1.0.0 compat. API */
+  vstr_fmt_del(conf, "{ref:%.*p%u%zu}");  /* 1.0.0 compat. API */
+  vstr_fmt_del(conf, "{ref:%*.*p%u%zu}"); /* 1.0.0 compat. API */
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{rep_chr", "c%zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{BKMG.u",   "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{BKMG/s.u", "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{bKMG.u",   "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{bKMG/s.u", "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{BKMG.ju",   "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{BKMG/s.ju", "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{bKMG.ju",   "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{bKMG/s.ju", "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv4.p", "p", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv6.p", "p", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv4.v", "p", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv6.v", "p%u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv4.v+C", "p%u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{ipv6.v+C", "p%u%u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{B.u",   "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{B.lu", "lu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{B.zu", "zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{B.ju", "ju", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{b.u",   "u", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{b.lu", "lu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{b.zu", "zu", "}");
+  VSTR_SC_FMT_ADD(conf, tst_del_fmt, "{b.ju", "ju", "}");
 }
 
 

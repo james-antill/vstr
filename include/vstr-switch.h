@@ -154,6 +154,14 @@
 # define VSTR_AUTOCONF_uintmax_t uintmax_t
 #endif
 
+#ifndef VSTR_AUTOCONF_uint_least16_t
+# define VSTR_AUTOCONF_uint_least16_t uint_least16_t
+#endif
+
+#ifndef VSTR_AUTOCONF_uint_least32_t
+# define VSTR_AUTOCONF_uint_least32_t uint_least32_t
+#endif
+
 #ifndef VSTR_AUTOCONF_mode_t
 # define VSTR_AUTOCONF_mode_t mode_t
 /* always include types.h */

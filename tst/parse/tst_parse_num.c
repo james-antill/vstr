@@ -10,15 +10,16 @@ unsigned int FLAGS = (0 |
                       0);
 
 #define TST_MAKE_TST_FUNC(func_T, real_T)                               \
-static void *do_test_num_ ## func_T (void *data,                        \
-                                     unsigned int base,                 \
-                                     int calcnum)                       \
+static void *do_test_num_ ## func_T (unsigned int base, int calcnum,    \
+                                     unsigned int *err,                 \
+                                     void *data)                        \
 {                                                                       \
   real_T *tmp = data;                                                   \
                                                                         \
   *tmp *= base;                                                         \
   *tmp += calcnum;                                                      \
                                                                         \
+  *err = 0;                                                             \
   return (tmp);                                                         \
 }                                                                       \
                                                                         \
@@ -85,8 +86,11 @@ TST_MAKE_TST_FUNC(uintmax, uintmax_t);
   DO_TEST_END(); \
 } while (FALSE)
 
-static void *do_test_snum_NULL(void *data, unsigned int base, int calcnum)
+static void *do_test_snum_NULL(unsigned int base, int calcnum,
+                               unsigned int *err, void *data)
 {
+  ASSERT(err);
+  
   ASSERT(data == &FLAGS);
   
   ASSERT(base == 2);
@@ -94,8 +98,11 @@ static void *do_test_snum_NULL(void *data, unsigned int base, int calcnum)
   
   return (NULL);
 }
-static void *do_test_unum_NULL(void *data, unsigned int base, int calcnum)
+static void *do_test_unum_NULL(unsigned int base, int calcnum,
+                               unsigned int *err, void *data)
 {
+  ASSERT(err);
+
   ASSERT(data == &FLAGS);
   
   ASSERT(base == 2);

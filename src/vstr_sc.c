@@ -1232,7 +1232,7 @@ int vstr_sc_fmt_add_lower_base2_uintmax(Vstr_conf *conf, const char *name)
 
 #define VSTR__SC_FMT_ADD(x, n, nchk)                                    \
     if (ret &&                                                          \
-        !VSTR_SC_FMT_ADD(vstr_sc_fmt_add_ ## x, conf, "{", n, nchk, "}")) \
+        !VSTR_SC_FMT_ADD(conf, vstr_sc_fmt_add_ ## x, "{" n, nchk, "}")) \
       ret = FALSE
 
 int vstr_sc_fmt_add_all(Vstr_conf *conf)

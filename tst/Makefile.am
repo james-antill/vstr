@@ -160,7 +160,9 @@ xfail_tst_fmt = \
     fmt/xfail_tst_fmt_invalid_fmt2 \
     fmt/xfail_tst_fmt_invalid_fmt3 \
     fmt/xfail_tst_fmt_invalid_ipv6 \
-    fmt/xfail_tst_fmt_invalid_ipv6_cidr
+    fmt/xfail_tst_fmt_invalid_ipv6_cidr \
+    fmt/xfail_tst_fmt_restricted_wide_char \
+    fmt/xfail_tst_fmt_restricted_wide_str
 
 tst_loc = \
     loc/tst_loc_num
@@ -193,7 +195,8 @@ tst_sc = \
     sc/tst_sc_overflow \
     sc/tst_sc_uio_maxiov \
     sc/tst_sc_fmt \
-    sc/tst_sc_close
+    sc/tst_sc_close \
+    sc/tst_sc_b
 
 xfail_tst_sc = \
     sc/xfail_tst_sc_write_fd_oob_pos \
@@ -206,7 +209,9 @@ xfail_tst_sc = \
     sc/xfail_tst_sc_read_len_file_slow_NULL \
     sc/xfail_tst_sc_read_len_file_fast_oob_pos \
     sc/xfail_tst_sc_conv_uint_NULL \
-    sc/xfail_tst_sc_conv_uint_len
+    sc/xfail_tst_sc_conv_uint_len \
+    sc/xfail_tst_sc_parse_b_uint16_pos \
+    sc/xfail_tst_sc_parse_b_uint32_pos
 
 tst_sects = \
     sects/tst_sects_add \
@@ -307,7 +312,8 @@ xfail_tst_x = \
     x/xfail_tst_x_exit \
     x/xfail_tst_x_make_bad_node \
     x/xfail_tst_x_free_bad_node \
-    x/xfail_tst_x_version_bad_fd
+    x/xfail_tst_x_version_bad_fd \
+    x/xfail_tst_x_iter_cstr_buf_NULL
 
 tst = \
   $(tst_regression) \
