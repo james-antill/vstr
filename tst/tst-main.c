@@ -65,13 +65,13 @@ static void die(void)
 
 #define PRNT_CSTR(s) do { \
  int pad = 0; \
- fprintf(stderr, "cstr(%s):%zu%n", #s , strlen(s), &pad); \
+ fprintf(stderr, "cstr(%s):%lu%n", #s , (unsigned long)strlen(s), &pad); \
  if (pad > 12) pad = 0; else pad = 12 - pad; \
  fprintf(stderr, "%*s = %s\n", pad, "", s); \
  } while (FALSE)
 #define PRNT_VSTR(s) do { \
  int pad = 0; \
- fprintf(stderr, "vstr(%s):%zu%n", #s , (s)->len, &pad); \
+ fprintf(stderr, "vstr(%s):%lu%n", #s , (unsigned long)(s)->len, &pad); \
  if (pad > 12) pad = 0; else pad = 12 - pad; \
  fprintf(stderr, "%*s = %s\n", pad, "", \
          vstr_export_cstr_ptr((s), 1, (s)->len)); \
@@ -82,10 +82,11 @@ static void die(void)
   unsigned int count = 1; \
   struct Vstr_node *scan = (s)->beg; \
   \
-  fprintf(stderr, "vstr(%s)%n:%zu NUM=%u\n", #s , &pad, (s)->len, (s)->num); \
+  fprintf(stderr, "vstr(%s)%n:%lu NUM=%u\n", #s , &pad, \
+          (unsigned long)(s)->len, (s)->num); \
   while (scan) \
   { \
-    fprintf(stderr, "%*u:%zu", pad, count, scan->len); \
+    fprintf(stderr, "%*u:%lu", pad, count, (unsigned long)scan->len); \
     \
     switch (scan->type) \
     { \
@@ -115,7 +116,6 @@ static void die(void)
 #define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * (tst))
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
-
 
 int main(void)
 {
@@ -181,7 +181,7 @@ int main(void)
   vstr_free_conf(conf1);
   vstr_free_conf(conf2);
   vstr_free_conf(conf3);
-  
+
   if ((ret = tst()) && (ret != EXIT_FAILED_OK))
     fprintf(stderr, "Error(%s) value = %x\n", rf, ret);
 
@@ -191,7 +191,7 @@ int main(void)
   vstr_free_base(s4);
   
   vstr_exit();
-
+  
   switch (ret)
   {
     case EXIT_FAILED_OK: exit (EXIT_FAILED_OK);

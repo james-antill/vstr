@@ -2,30 +2,22 @@
  For 1.0
  -------
 
-. Turn macro functions into inline ????
-
-. Add vstr_parse_double()/long_double()
-
-. Allow non-atomic ops.
-
-. Way to delete from a section and have section pos/len updates ... use cache ?
-
-. parse_ipv6
- *   1. hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh
- *   2. any number of 0000 may be abbreviated as "::", but only once
- *   3. The last two words may be written as IPv4 address, in this case
-        everything before is 0.
-  include CIDR
-
-. VSTR_FLAG_PARSE_NUM_LOC_SEP
-
-. $*.*{blah:%u} ... gives a gcc warning
-  $*.*{blah:%*.*u} .. is ok, but that requires 4 string entries instead of 1.
-
 . tst_coverage_diff.sh and diff_symbols.sh must print nothing.
+
+. include directory
 
  Not needed for 1.0
  ------------------
+
+. _diamond ... al. la. perl
+
+. Allocator
+
+. VSTR_FLAG_PARSE_NUM_LOC_SEP
+
+. Turn macro functions into inline ????
+
+. Add vstr_parse_double()/long_double()
 
 . vstr_conv_canon_path() Ie. /foo/bar/../abcd -=> /foo/abcd
 
@@ -55,8 +47,6 @@
    Ie. vstr_conv_tr_buf_buf(s1, 1, s1->len, "\t\r", 2, " ?", 2)
 
 . strftime() ?
-
-. Configure option to have alternate malloc conf->malloc(x) etc.
 
 . Fast inline parsing of ints when using certain flags.
 

@@ -629,3 +629,206 @@ int vstr_nx_parse_ipv4(const struct Vstr_base *base,
 
   return (TRUE);
 }
+
+static int vstr__parse_ipv6_cidr(const struct Vstr_base *base,
+                                 size_t pos, size_t *passed_len,
+                                 unsigned int flags,
+                                 unsigned int num_flags,
+                                 unsigned int *cidr, unsigned int *err)
+{
+  size_t len = *passed_len;
+  size_t num_len = 0;
+
+  if (len)
+    *cidr = vstr_nx_parse_uint(base, pos, len, 10 | num_flags,
+                               &num_len, NULL);
+  if (num_len)
+  {
+    if (*cidr <= 128)
+    {
+      pos += num_len;
+      len -= num_len;
+    }
+    else
+    {
+      *err = VSTR_TYPE_PARSE_IPV6_ERR_CIDR_OOB;
+      return (FALSE);
+    }
+  }
+  else if (flags & VSTR_FLAG_PARSE_IPV6_CIDR_FULL)
+  {
+    *err = VSTR_TYPE_PARSE_IPV6_ERR_CIDR_FULL;
+    return (FALSE);
+  }
+  else
+    *cidr = 128;
+
+  *passed_len = len;
+
+  return (TRUE);
+}
+
+/* see rfc 2373 */
+/*
+ *   1. 1 to 4 hexdigits in 8 groups: hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh
+ *                                    h:h:h:h:h:h:h:h
+ *   2. Any number of 0000 may be abbreviated as "::", but only once
+ *   3. Note this means that "::" is a valid ipv6 address (all zeros)
+ *   4. The last two words may be written as an IPv4 address ::1234:127.0.0.1
+ */
+int vstr_nx_parse_ipv6(const struct Vstr_base *base,
+                       size_t pos, size_t len,
+                       unsigned int *ips, unsigned int *cidr,
+                       unsigned int flags, size_t *ret_len, unsigned int *err)
+{
+  size_t orig_len = len;
+  unsigned char sym_slash = 0x2F;
+  unsigned char sym_colon = 0x3a;
+  unsigned int num_flags = VSTR_FLAG_PARSE_NUM_NO_BEG_PM;
+  unsigned int scan = 0;
+  unsigned int dummy_err = 0;
+  unsigned int off_null = 0;
+  VSTR_SECTS_DECL(sects, 8);
+  size_t num_len = 0;
+  
+  VSTR_SECTS_DECL_INIT(sects);
+
+  assert(ips);
+  vstr_nx_wrap_memset(ips, 0, sizeof(int) * 8);
+  
+  if (ret_len) *ret_len = 0;
+  if (!err)
+    err = &dummy_err;
+  
+  *err = 0;
+
+  if (len < 2)
+  {
+    *err = VSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL;
+    return (FALSE);
+  }
+  
+  if (flags & VSTR_FLAG_PARSE_IPV6_LOCAL)
+  {
+    num_flags |= VSTR_FLAG_PARSE_NUM_LOCAL;
+    sym_slash = '/';
+    sym_colon = ':';
+  }
+  
+  {
+    const int split_flags = (VSTR_FLAG_SPLIT_MID_NULL | VSTR_FLAG_SPLIT_NO_RET);
+    char buf[2]; buf[0] = sym_colon; buf[1] = sym_colon;
+    
+    if (VSTR_CMP_BUF_EQ(base, pos, 2, buf, 2))
+      vstr_nx_sects_add(sects, pos, 0);
+    
+    vstr_nx_split_buf(base, pos, len, buf, 1, sects, sects->sz, split_flags);
+  }
+
+  while (scan < sects->num)
+  {
+    unsigned int tmp = 0;
+    
+    ++scan;
+    if (!VSTR_SECTS_NUM(sects, scan)->len)
+    {
+      if (off_null)
+      {
+        *err = VSTR_TYPE_PARSE_IPV6_ERR_IPV6_NULL;
+        return (FALSE);
+      }
+      
+      off_null = scan;
+      ips[scan - 1] = 0;
+      continue;
+    }
+    
+    tmp = vstr_nx_parse_uint(base,
+                             VSTR_SECTS_NUM(sects, scan)->pos,
+                             VSTR_SECTS_NUM(sects, scan)->len, 16 | num_flags,
+                             &num_len, NULL);
+    if (!num_len && off_null && (off_null == (scan - 1)) &&
+        (scan == sects->num))
+      break;
+
+    if ((num_len > 4) || !num_len || (tmp > 0xFFFF))
+    {
+      *err = VSTR_TYPE_PARSE_IPV6_ERR_IPV6_OOB;
+      return (FALSE);
+    }
+    
+    ips[scan - 1] = tmp;
+  }
+
+  len -= VSTR_SECTS_NUM(sects, scan)->pos - pos;
+  pos = VSTR_SECTS_NUM(sects, scan)->pos;
+  if (scan != 8)
+  {
+    ASSERT(scan < 8);
+    
+    if ((VSTR_SECTS_NUM(sects, scan)->len > 4) && (off_null || (scan == 7)))
+    { /* try an ipv4 address at the end... */
+      unsigned char ipv4_ips[4];
+      unsigned int ipv4_flags = VSTR_FLAG_PARSE_IPV4_FULL;
+      size_t tmp_num_len = 0;
+      
+      if (flags & VSTR_FLAG_PARSE_IPV6_LOCAL)
+        ipv4_flags |= VSTR_FLAG_PARSE_IPV4_LOCAL;
+      
+      ASSERT(off_null != scan);
+      
+      if (vstr_nx_parse_ipv4(base,
+                             VSTR_SECTS_NUM(sects, scan)->pos,
+                             VSTR_SECTS_NUM(sects, scan)->len,
+                             ipv4_ips, NULL, ipv4_flags, &tmp_num_len, NULL))
+      {
+        num_len = tmp_num_len;
+        ips[scan - 1] = ipv4_ips[1] + (((unsigned int)ipv4_ips[0]) << 8);
+        ips[scan++]   = ipv4_ips[3] + (((unsigned int)ipv4_ips[2]) << 8);
+      }
+    }
+    if (scan != 8 && !off_null)
+    {
+      *err = VSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL;
+      return (FALSE);
+    }
+
+    if (off_null != scan) /* don't have to do anything for ends with :: */
+    {
+      unsigned int *beg = ips + off_null;
+      unsigned int off_end = (8 - scan);
+      unsigned int num = (scan - off_null);
+      
+      vstr_nx_wrap_memmove(beg + off_end, beg, num * sizeof(unsigned int));
+      vstr_nx_wrap_memset(beg, 0, off_end * sizeof(unsigned int));
+    }
+  }
+  
+  ASSERT(len >= num_len);
+  pos += num_len;
+  len -= num_len;
+  if (cidr)
+    *cidr = 128;
+  if (!len)
+    goto ret_len;
+  
+  if (vstr_nx_export_chr(base, pos) == sym_slash)
+  {
+    if (flags & VSTR_FLAG_PARSE_IPV6_CIDR)
+    {
+      ++pos;
+      --len;
+      
+      if (!vstr__parse_ipv6_cidr(base, pos, &len, flags, num_flags, cidr, err))
+        return (FALSE);
+    }
+  }
+
+  if ((flags & VSTR_FLAG_PARSE_IPV6_ONLY) && len)
+    *err = VSTR_TYPE_PARSE_IPV6_ERR_ONLY;
+  
+ ret_len:
+  if (ret_len)
+    *ret_len = orig_len - len;
+  return (TRUE);
+}

@@ -26,6 +26,7 @@ Vstr__options vstr__options =
 {
  NULL,
  0,
+ 0,
 };
 
 int vstr_nx_cntl_opt(int option, ...)
@@ -120,10 +121,11 @@ int vstr_nx_cntl_base(Vstr_base *base, int option, ...)
  return (ret);
 }
 
-int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
+int vstr_nx_cntl_conf(Vstr_conf *passed_conf, int option, ...)
 {
- int ret = 0;
- va_list ap;
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
+  int ret = 0;
+  va_list ap;
 
  assert(conf->user_ref <= conf->ref);
    
@@ -234,10 +236,10 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      char *tmp = NULL;
      size_t len = strlen(val);
 
-     if (!(tmp = malloc(len + 1)))
+     if (!(tmp = VSTR__MK(len + 1)))
        break;
 
-     free(conf->loc->name_lc_numeric_str);
+     VSTR__F(conf->loc->name_lc_numeric_str);
      vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->name_lc_numeric_str = tmp;
      conf->loc->name_lc_numeric_len = len;
@@ -262,10 +264,10 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      char *tmp = NULL;
      size_t len = strlen(val);
 
-     if (!(tmp = malloc(len + 1)))
+     if (!(tmp = VSTR__MK(len + 1)))
        break;
 
-     free(conf->loc->decimal_point_str);
+     VSTR__F(conf->loc->decimal_point_str);
      vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->decimal_point_str = tmp;
      conf->loc->decimal_point_len = len;     
@@ -290,10 +292,10 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      char *tmp = NULL;
      size_t len = strlen(val);
 
-     if (!(tmp = malloc(len + 1)))
+     if (!(tmp = VSTR__MK(len + 1)))
        break;
 
-     free(conf->loc->thousands_sep_str);
+     VSTR__F(conf->loc->thousands_sep_str);
      vstr_nx_wrap_memcpy(tmp, val, len + 1);
      conf->loc->thousands_sep_str = tmp;
      conf->loc->thousands_sep_len = len;
@@ -318,10 +320,10 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      char *tmp = NULL;
      size_t len = vstr__loc_thou_grp_strlen(val);
 
-     if (!(tmp = malloc(len + 1)))
+     if (!(tmp = VSTR__MK(len + 1)))
        break;
 
-     free(conf->loc->grouping);
+     VSTR__F(conf->loc->grouping);
      vstr_nx_wrap_memcpy(tmp, val, len); tmp[len] = 0;
      conf->loc->grouping = tmp;
      
@@ -475,7 +477,27 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
      ret = TRUE;
    }
    break;
-   
+
+   case VSTR_CNTL_CONF_GET_ATOMIC_OPS:
+   {
+     char *val = va_arg(ap, char *);
+     
+     *val = conf->atomic_ops;
+     
+     ret = TRUE;
+   }
+   break;
+  
+   case VSTR_CNTL_CONF_SET_ATOMIC_OPS:
+   {
+     int val = va_arg(ap, int);
+
+     conf->atomic_ops = val;
+     
+     ret = TRUE;
+   }
+   break;
+
   default:
     break;
  }

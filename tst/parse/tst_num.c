@@ -98,23 +98,25 @@ int tst(void)
   DO_TEST_NUM(ULONG_MAX, "%#lx", ulong);
   DO_TEST_NUM(ULONG_MAX, "%#lo", ulong);
   
-#ifndef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */  
-  DO_TEST_NUM(INTMAX_MIN, "%jd", intmax);
-  DO_TEST_NUM(UINTMAX_MAX, "%ju", uintmax);
-
-  DO_TEST_NUMSTR("0xFfFFFFFFFFfFFFFFFFFF",  "0XFFFFFFFFFFFFFFFF", "%#jX",
-                 uintmax);
-  DO_TEST_NUMSTR("0xFFFFFFFFffffffff",      "0XFFFFFFFFFFFFFFFF", "%#jX",
-                 uintmax);
-  DO_TEST_NUMSTR("0xffffffffFFFFFFFF",      "0x7fffffffffffffff", "%#jx",
-                 intmax);
-  DO_TEST_NUMSTR("0xFFFFFFFFFFFFFFFF",      "0X7FFFFFFFFFFFFFFF", "%#jX",
-                 intmax);
-  DO_TEST_NUMSTR("-0xFFFFFFFFFfFFFFFFFFF",  "-9223372036854775808", "%jd",
-                 intmax);
-  DO_TEST_NUMSTR("-0xFFFFFFFFFFFFFFFF",     "-9223372036854775808", "%jd",
-                 intmax);
-#endif
+  sprintf(buf, "%jd%ju", INTMAX_MAX, UINTMAX_MAX);
+  if (strcmp(buf, "jdju")) /* skip if sucky host sprintf() implemention */  
+  {
+    DO_TEST_NUM(INTMAX_MIN, "%jd", intmax);
+    DO_TEST_NUM(UINTMAX_MAX, "%ju", uintmax);
+    
+    DO_TEST_NUMSTR("0xFfFFFFFFFFfFFFFFFFFF",  "0XFFFFFFFFFFFFFFFF", "%#jX",
+                   uintmax);
+    DO_TEST_NUMSTR("0xFFFFFFFFffffffff",      "0XFFFFFFFFFFFFFFFF", "%#jX",
+                   uintmax);
+    DO_TEST_NUMSTR("0xffffffffFFFFFFFF",      "0x7fffffffffffffff", "%#jx",
+                   intmax);
+    DO_TEST_NUMSTR("0xFFFFFFFFFFFFFFFF",      "0X7FFFFFFFFFFFFFFF", "%#jX",
+                   intmax);
+    DO_TEST_NUMSTR("-0xFFFFFFFFFfFFFFFFFFF",  "-9223372036854775808", "%jd",
+                   intmax);
+    DO_TEST_NUMSTR("-0xFFFFFFFFFFFFFFFF",     "-9223372036854775808", "%jd",
+                   intmax);
+  }
   
   DO_TEST_NUMSTR("0xFFfFFF", "0XFFFF", "%#hX", ushort);
   DO_TEST_NUMSTR("0xFFff",   "0XFFFF", "%#hX", ushort);
@@ -132,3 +134,9 @@ int tst(void)
   
   return (0);
 }
+
+/* tst_coverage
+ *
+ * VSTR_FLAG_PARSE_NUM_DEF
+ *
+ */

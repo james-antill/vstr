@@ -405,7 +405,7 @@ int vstr_nx_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
  if ((pos + len) >= base->len)
    len = base->len - pos;
  
- scan = vstr__base_pos(base, &pos, &num, FALSE);
+ scan = vstr_nx_base__pos(base, &pos, &num, FALSE);
  
  base->len -= len;
 

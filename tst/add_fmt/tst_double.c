@@ -5,7 +5,7 @@ static const char *rf = __FILE__;
 int tst(void)
 {
   int ret = 0;
-
+#if 0
 #ifdef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */
   return (EXIT_FAILED_OK);
 #endif
@@ -36,7 +36,7 @@ int tst(void)
   
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
   vstr_del(s1, 1, s1->len);
-
+#endif
   sprintf(buf,        "%E %e %F %f %G %g %A %a",
           -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX,
           -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX);

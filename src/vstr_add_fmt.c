@@ -34,9 +34,6 @@
 # define wint_t  int /* doesn't matter ... fails out anyway */
 #endif
 
-static struct Vstr__fmt_spec *vstr__fmt_spec_make = NULL;
-static struct Vstr__fmt_spec *vstr__fmt_spec_list_beg = NULL;
-static struct Vstr__fmt_spec *vstr__fmt_spec_list_end = NULL;
 
 
 #define VSTR__ADD_FMT_ISDIGIT(x) (((x) >= '0') && ((x) <= '9'))
@@ -404,62 +401,70 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
  return (FALSE);
 }
 
-void vstr__add_fmt_cleanup_spec(void)
-{ /* only done so leak detection is easier */
- struct Vstr__fmt_spec *scan = vstr__fmt_spec_make;
-
- assert(!vstr__fmt_spec_list_beg && !vstr__fmt_spec_list_beg);
- 
- while (scan)
- {
-   struct Vstr__fmt_spec *scan_next = scan->next;
-   free(scan);
-   scan = scan_next;
- }
-
- vstr__fmt_spec_make = NULL;
+void vstr__add_fmt_free_conf(Vstr_conf *conf)
+{
+  struct Vstr__fmt_spec *scan = conf->vstr__fmt_spec_make;
+  
+  assert(!conf->vstr__fmt_spec_list_beg && !conf->vstr__fmt_spec_list_beg);
+  
+  while (scan)
+  {
+    struct Vstr__fmt_spec *scan_next = scan->next;
+    VSTR__F(scan);
+    scan = scan_next;
+  }
+  
+  conf->vstr__fmt_spec_make = NULL;
+  
+  while (conf->fmt_usr_names)
+  {
+    Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_names;
+    
+    vstr_nx_fmt_del(conf, tmp->name_str);
+  }
 }
 
-static int vstr__fmt_add_spec(void)
+static int vstr__fmt_add_spec(Vstr_conf *conf)
 {
   struct Vstr__fmt_spec *spec = NULL;
   
-  if (!(spec = malloc(sizeof(struct Vstr__fmt_spec))))
+  if (!(spec = VSTR__MK(sizeof(struct Vstr__fmt_spec))))
     return (FALSE);
 
   assert(vstr_nx_wrap_memset(spec, 0xeF, sizeof(struct Vstr__fmt_spec)));
   
-  spec->next = vstr__fmt_spec_make;
-  vstr__fmt_spec_make = spec;
+  spec->next = conf->vstr__fmt_spec_make;
+  conf->vstr__fmt_spec_make = spec;
   
   return (TRUE);
 }
 
-#define VSTR__FMT_MV_SPEC(x) vstr__fmt_mv_spec(spec, x, &params)
-static void vstr__fmt_mv_spec(struct Vstr__fmt_spec *spec,
+#define VSTR__FMT_MV_SPEC(conf, x) vstr__fmt_mv_spec(conf, spec, x, &params)
+static void vstr__fmt_mv_spec(Vstr_conf *conf, struct Vstr__fmt_spec *spec,
                               int main_param, int *params)
 { 
- vstr__fmt_spec_make = spec->next;
+  conf->vstr__fmt_spec_make = spec->next;
 
- if (!vstr__fmt_spec_list_beg)
- {
-   vstr__fmt_spec_list_end = spec;
-   vstr__fmt_spec_list_beg = spec;
- }
- else
- {
-  vstr__fmt_spec_list_end->next = spec;
-  vstr__fmt_spec_list_end = spec;
- }
+  if (!conf->vstr__fmt_spec_list_beg)
+  {
+    conf->vstr__fmt_spec_list_end = spec;
+    conf->vstr__fmt_spec_list_beg = spec;
+  }
+  else
+  {
+    conf->vstr__fmt_spec_list_end->next = spec;
+    conf->vstr__fmt_spec_list_end = spec;
+  }
 
- spec->next = NULL;
-
- /* does this count towards users $x numbers */
- if (main_param && !spec->main_param)
-   spec->main_param = ++*params;
+  spec->next = NULL;
+  
+  /* increment if this counts towards users $x numbers */
+  if (main_param && !spec->main_param)
+    spec->main_param = ++*params;
 }
 
-# define VSTR__FMT_ANAL_ZERO 1
+# define VSTR__FMT_ANAL_ZERO 1 /* anally zero stuff that shouldn't really need
+                                * it but seems to *sigh*/
 static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
 {
   assert(spec);
@@ -541,7 +546,7 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
     goto failed_EILSEQ;
   len_mbs += wcrtomb(NULL, L'\0', &state);
   
-  if (!(buf_mbs = malloc(len_mbs)))
+  if (!(buf_mbs = VSTR__MK(len_mbs)))
   {
     base->conf->malloc_bad = TRUE;
     goto failed_alloc;
@@ -568,11 +573,11 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
       goto C_failed_alloc_free_buf_mbs;
   }
   
-  free(buf_mbs);
+  VSTR__F(buf_mbs);
   return (TRUE);
   
  C_failed_alloc_free_buf_mbs:
-  free(buf_mbs);
+  VSTR__F(buf_mbs);
   return (FALSE);
 
  failed_alloc:
@@ -655,7 +660,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   else
     ++len_mbs;
   
-  if (!(buf_mbs = malloc(len_mbs)))
+  if (!(buf_mbs = VSTR__MK(len_mbs)))
   {
     base->conf->malloc_bad = TRUE;
     goto failed_alloc;
@@ -688,11 +693,11 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
     if (!VSTR__FMT_ADD_REP_CHR(base, ' ', spec->field_width - len_mbs))
       goto S_failed_alloc_free_buf_mbs;
   
-  free(buf_mbs);
+  VSTR__F(buf_mbs);
   return (TRUE);
   
  S_failed_alloc_free_buf_mbs:
-  free(buf_mbs);
+  VSTR__F(buf_mbs);
  failed_alloc:
  failed_EILSEQ: /* FIXME: */
   return (FALSE);
@@ -731,7 +736,7 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
     usr_spec = &dummy.usr_spec;
   else
   {
-    if (!(usr_spec = malloc(sizeof(Vstr_fmt_spec) + spec->usr_spec->sz)))
+    if (!(usr_spec = VSTR__MK(sizeof(Vstr_fmt_spec) + spec->usr_spec->sz)))
       return (NULL);
   }
 
@@ -804,7 +809,7 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   if (!(*beg->usr_spec->func)(base, base->len - pos_diff, usr_spec))
   {
     if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
-      free(usr_spec);
+      VSTR__F(usr_spec);
     
     return (NULL);
   }
@@ -823,15 +828,15 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
 static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
                                 size_t orig_len, int sve_errno)
 {
-  struct Vstr__fmt_spec *const beg  = vstr__fmt_spec_list_beg;
-  struct Vstr__fmt_spec *const end  = vstr__fmt_spec_list_end;
-  struct Vstr__fmt_spec *      spec = vstr__fmt_spec_list_beg;
+  struct Vstr__fmt_spec *const beg  = base->conf->vstr__fmt_spec_list_beg;
+  struct Vstr__fmt_spec *const end  = base->conf->vstr__fmt_spec_list_end;
+  struct Vstr__fmt_spec *      spec = base->conf->vstr__fmt_spec_list_beg;
 
   assert(beg && end);
 
   /* allow vstr_add_vfmt() to be called form a usr cb */
-  vstr__fmt_spec_list_beg = NULL;
-  vstr__fmt_spec_list_end = NULL;
+  base->conf->vstr__fmt_spec_list_beg = NULL;
+  base->conf->vstr__fmt_spec_list_end = NULL;
 
   while (spec)
   {
@@ -932,14 +937,14 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
     spec = spec->next;
   }
 
-  end->next = vstr__fmt_spec_make;
-  vstr__fmt_spec_make = beg;
+  end->next = base->conf->vstr__fmt_spec_make;
+  base->conf->vstr__fmt_spec_make = beg;
 
   return (TRUE);
   
  failed_alloc:
-  end->next = vstr__fmt_spec_make;
-  vstr__fmt_spec_make = beg;
+  end->next = base->conf->vstr__fmt_spec_make;
+  base->conf->vstr__fmt_spec_make = beg;
   
   return (FALSE);
 }
@@ -950,9 +955,9 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
             u.data_ptr = va_arg(ap, y *); \
             break
 
-static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
+static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
 {
- struct Vstr__fmt_spec *beg = vstr__fmt_spec_list_beg;
+ struct Vstr__fmt_spec *beg = conf->vstr__fmt_spec_list_beg;
  unsigned int count = 0;
  unsigned int need_to_fin_now = FALSE;
  
@@ -1170,8 +1175,6 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
          }
          break;
          
-         /* floats ... hey you can't _work_ with fp portably, you expect me to write
-          * a portable fp decoder :p :P */
        case 'e': /* print like [-]x.xxxexx */
        case 'E': /* use big E instead */
        case 'f': /* print like an int */
@@ -1308,15 +1311,15 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
 
       if (scan && (params == *passed_params))
         spec->main_param = beg_spec->main_param + scan;
-      VSTR__FMT_MV_SPEC(have_arg);
+      VSTR__FMT_MV_SPEC(conf, have_arg);
 
       /* allow _END to be the only thing passed */
       if (!node->types[scan] || !node->types[++scan])
         break;
 
-      if (!vstr__fmt_spec_make && !vstr__fmt_add_spec())
+      if (!conf->vstr__fmt_spec_make && !vstr__fmt_add_spec(conf))
         goto failed_alloc;
-      spec = vstr__fmt_spec_make;
+      spec = conf->vstr__fmt_spec_make;
       vstr__fmt_init_spec(spec);
     }
 
@@ -1474,10 +1477,10 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
   const char *fmt_orig = fmt;
   struct Vstr__fmt_spec *spec = NULL;
   
-  if (!vstr__fmt_spec_make && !vstr__fmt_add_spec())
+  if (!base->conf->vstr__fmt_spec_make && !vstr__fmt_add_spec(base->conf))
     goto failed_alloc;
 
-  spec = vstr__fmt_spec_make;
+  spec = base->conf->vstr__fmt_spec_make;
   vstr__fmt_init_spec(spec);
   
   assert(VSTR__FMT_ANAL_ZERO &&
@@ -1509,7 +1512,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     else
       fmt = "";
     
-    VSTR__FMT_MV_SPEC(FALSE);
+    VSTR__FMT_MV_SPEC(base->conf, FALSE);
     
     continue;
   }
@@ -1518,7 +1521,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
   {
    spec->u.data_c = fmt[0];
    spec->fmt_code = 'c';
-   VSTR__FMT_MV_SPEC(FALSE);
+   VSTR__FMT_MV_SPEC(base->conf, FALSE);
    fmt += 2; /* skip escs */
    continue;
   }
@@ -1547,7 +1550,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       vstr__fmt_init_spec(spec);
       spec->u.data_c = *fmt_orig;
       spec->fmt_code = 'c';
-      VSTR__FMT_MV_SPEC(FALSE);
+      VSTR__FMT_MV_SPEC(base->conf, FALSE);
       fmt = fmt_orig + 1;
     }
     else
@@ -1654,16 +1657,16 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       vstr__fmt_init_spec(spec);
       spec->u.data_c = *fmt_orig;
       spec->fmt_code = 'c';
-      VSTR__FMT_MV_SPEC(FALSE);
+      VSTR__FMT_MV_SPEC(base->conf, FALSE);
       fmt = fmt_orig + 1;
       continue;
   }
 
-  VSTR__FMT_MV_SPEC(TRUE);
+  VSTR__FMT_MV_SPEC(base->conf, TRUE);
   ++fmt;
  }
 
- if (!vstr__fmt_fillin_spec(ap, have_dollars))
+ if (!vstr__fmt_fillin_spec(base->conf, ap, have_dollars))
    goto failed_alloc;
 
  errno = sve_errno;
@@ -1680,10 +1683,10 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
  if (0) /* already done in write_spec */
  {
   failed_alloc:
-   vstr__fmt_spec_list_end->next = vstr__fmt_spec_make;
-   vstr__fmt_spec_make = vstr__fmt_spec_list_beg;
-   vstr__fmt_spec_list_beg = NULL;
-   vstr__fmt_spec_list_end = NULL; 
+   base->conf->vstr__fmt_spec_list_end->next = base->conf->vstr__fmt_spec_make;
+   base->conf->vstr__fmt_spec_make = base->conf->vstr__fmt_spec_list_beg;
+   base->conf->vstr__fmt_spec_list_beg = NULL;
+   base->conf->vstr__fmt_spec_list_end = NULL; 
  }
  
  return (0);

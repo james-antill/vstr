@@ -18,6 +18,7 @@ tst = tst_char \
     tst_str_norm \
     tst_num \
     tst_bkmg \
+    tst_ip \
     tst_usr
 
 check_PROGRAMS = $(tst)

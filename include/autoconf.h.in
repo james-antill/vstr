@@ -1,6 +1,10 @@
 /* auto maticaly */
 #undef STDC_HEADERS
 
+#undef HAVE_INTTYPES_H
+
+#undef HAVE_STDINT_H
+
 #undef TIME_WITH_SYS_TIME
 
 #undef HAVE_SYS_TIME_H
@@ -54,7 +58,6 @@
 #undef HAVE_STRFTIME
 #undef HAVE_VFORK_H
 #undef vfork
-#undef HAVE_VPRINTF
 
 
 #undef HAVE_MEMCHR
@@ -84,8 +87,6 @@
 #undef HAVE_STRNLEN
 
 #undef HAVE_STRNCHR
-
-#undef HAVE_VSNPRINTF
 
 #undef HAVE_ASPRINTF
 
@@ -131,7 +132,10 @@
 
 #undef HAVE_DL_RTLD_GLOBAL
 
-#undef HAVE_C9X_SNPRINTF
+#undef HAVE_C9X_SNPRINTF_RET
+#undef HAVE_C9X_SPRINTF_FMT_F
+#undef HAVE_C9X_SPRINTF_FMT_A
+#undef HAVE_C9X_SPRINTF_FMT_a
 
 #undef HAVE_SETRLIMIT
 

@@ -16,7 +16,7 @@
 #include <netdb.h>
 
 /* Creates a Vstr string, prints an error message to it and dies
- * don't really need to bother free'ing things as it's only called an a
+ * don't really need to bother free'ing things as it's only called on a
  * major error -- but it's a good habit */
 static void DIE(const char *msg, ...)
 {

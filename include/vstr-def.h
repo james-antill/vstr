@@ -120,56 +120,64 @@ struct Vstr__fmt_usr_name_node; /* opaque */
 
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
- unsigned int spare_buf_num; /* private */
- struct Vstr_node_buf *spare_buf_beg; /* private */
+  unsigned int spare_buf_num; /* private */
+  struct Vstr_node_buf *spare_buf_beg; /* private */
+  
+  unsigned int spare_non_num; /* private */
+  struct Vstr_node_non *spare_non_beg; /* private */
+  
+  unsigned int spare_ptr_num; /* private */
+  struct Vstr_node_ptr *spare_ptr_beg; /* private */
+  
+  unsigned int spare_ref_num; /* private */
+  struct Vstr_node_ref *spare_ref_beg; /* private */
+  
+  struct Vstr_locale *loc; /* private */
+  
+  unsigned int iov_min_alloc; /* private */
+  unsigned int iov_min_offset; /* private */
+  
+  unsigned int buf_sz; /* private */
+  
+  struct Vstr_cache_cb *cache_cbs_ents; /* private */ 
+  unsigned int cache_cbs_sz; /* private */
+  
+  unsigned int cache_pos_cb_pos; /* private */
+  unsigned int cache_pos_cb_iovec; /* private */
+  unsigned int cache_pos_cb_cstr; /* private */
+  unsigned int cache_pos_cb_sects; /* private */
+  
+  unsigned char fmt_usr_escape; /* private */
+  struct Vstr__fmt_usr_name_node *fmt_usr_names; /* private */
+  size_t fmt_name_max; /* private */
+  
+  struct Vstr__fmt_spec *vstr__fmt_spec_make; /* private */
+  struct Vstr__fmt_spec *vstr__fmt_spec_list_beg; /* private */
+  struct Vstr__fmt_spec *vstr__fmt_spec_list_end; /* private */
+  
+  int ref; /* private */
+  int user_ref; /* private */
+  
+  struct Vstr__conf_ref_linked *ref_link; /* private */
+  
+  unsigned int free_do : 1; /* private */
+  unsigned int malloc_bad : 1; /* public/read|write */
+  unsigned int iovec_auto_update : 1; /* private */
+  unsigned int split_buf_del : 1; /* private */
+  
+  unsigned int no_cache : 1; /* private */
+  unsigned int fmt_usr_curly_braces : 1; /* private */
+  unsigned int atomic_ops : 1; /* private */
 
- unsigned int spare_non_num; /* private */
- struct Vstr_node_non *spare_non_beg; /* private */
-
- unsigned int spare_ptr_num; /* private */
- struct Vstr_node_ptr *spare_ptr_beg; /* private */
-
- unsigned int spare_ref_num; /* private */
- struct Vstr_node_ref *spare_ref_beg; /* private */
-
- struct Vstr_locale *loc; /* private */
- 
- unsigned int iov_min_alloc; /* private */
- unsigned int iov_min_offset; /* private */
- 
- unsigned int buf_sz; /* private */
-
- struct Vstr_cache_cb *cache_cbs_ents; /* private */ 
- unsigned int cache_cbs_sz; /* private */
-
- unsigned int cache_pos_cb_pos; /* private */
- unsigned int cache_pos_cb_iovec; /* private */
- unsigned int cache_pos_cb_cstr; /* private */
- unsigned int cache_pos_cb_sects; /* private */
-
- unsigned char fmt_usr_escape; /* private */
- struct Vstr__fmt_usr_name_node *fmt_usr_names; /* private */
- size_t fmt_name_max; /* private */
- 
- int ref; /* private */
- int user_ref; /* private */
-
- void *ref_link; /* private */
- 
- unsigned int free_do : 1; /* private */
- unsigned int malloc_bad : 1; /* public/read|write */
- unsigned int iovec_auto_update : 1; /* private */
- unsigned int split_buf_del : 1; /* private */
-
- unsigned int no_cache : 1; /* private */
- unsigned int unused04 : 1; /* private */
-
- VSTR__DEF_BITFLAG_1_4(3); /* private */
- VSTR__DEF_BITFLAG_1_4(4); /* private */
- VSTR__DEF_BITFLAG_1_4(5); /* private */
- VSTR__DEF_BITFLAG_1_4(6); /* private */
- VSTR__DEF_BITFLAG_1_4(7); /* private */
- VSTR__DEF_BITFLAG_1_4(8); /* private */
+  unsigned int unused3_1 : 1; /* private */
+  unsigned int unused3_2 : 1; /* private */
+  unsigned int unused3_3 : 1; /* private */
+  
+  VSTR__DEF_BITFLAG_1_4(4); /* private */
+  VSTR__DEF_BITFLAG_1_4(5); /* private */
+  VSTR__DEF_BITFLAG_1_4(6); /* private */
+  VSTR__DEF_BITFLAG_1_4(7); /* private */
+  VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)
@@ -231,6 +239,14 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sects)
   struct Vstr_sect_node VSTR__STRUCT_ARRAY_HACK_ARRAY(integrated_objs); /* priavte */
 } VSTR__DECL_TYPEDEF2(Vstr_sects);
 
+VSTR__DECL_TYPEDEF1(struct Vstr_iter)
+{
+  const char *ptr; /* public/read|write */
+  size_t len; /* public/read|write */
+  unsigned int num; /* public/read */
+  struct Vstr_node *node; /* private */
+  size_t remaining; /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_iter);
 
 /* internal defines ... */
 

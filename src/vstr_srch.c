@@ -24,29 +24,24 @@
 size_t vstr_nx_srch_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
                             char srch)
 {
- Vstr_node *scan = NULL;
- unsigned int num = 0;
- size_t ret = pos;
- char *scan_str = NULL;
- size_t scan_len = 0;
- char *found = NULL;
+  Vstr_iter iter[1];
+  size_t ret = pos;
+  char *found = NULL;
+  
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+  
+  ret = iter->remaining + iter->len;
 
- scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
- if (!scan)
-   return (0);
- 
- ret = len + scan_len;
-
- do
- {
-  if (scan->type != VSTR_TYPE_NODE_NON)
+  do
   {
-   found = vstr_nx_wrap_memchr(scan_str, srch, scan_len);
-   if (found)
-     return (pos + ((ret - len) - scan_len) + (found - scan_str));
-  }
- } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                          scan, &scan_str, &scan_len)));
+    if (iter->node->type != VSTR_TYPE_NODE_NON)
+    {
+      found = vstr_nx_wrap_memchr(iter->ptr, srch, iter->len);
+      if (found)
+        return (pos + ((ret - iter->remaining) - iter->len) + (found - iter->ptr));
+    }
+  } while (vstr_nx_iter_fwd_nxt(iter));
  
  return (0);
 }
@@ -161,87 +156,82 @@ size_t vstr_nx_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
 size_t vstr_nx_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
                             const void *const str, const size_t str_len)
 {
- Vstr_node *scan = NULL;
- unsigned int num = 0;
- size_t orig_len = len;
- char *scan_str = NULL;
- size_t scan_len = 0;
-
- if (!len || (str_len > len))
-   return (0);
-
- if (!str_len)
-   return (pos);
-
- if (!str && !base->node_non_used)
-   return (0);
-
- if (str_len == 1)
-   return (vstr_nx_srch_chr_fwd(base, pos, len, *(const char *)str));
- 
- scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
- if (!scan)
-   return (0);
-
- assert(orig_len == (len + scan_len));
-
- do
- {
-   if ((scan->type == VSTR_TYPE_NODE_NON) && !str)
-   {
-     if (!vstr_nx_cmp_buf(base, pos + (orig_len - len), str_len, NULL, str_len))
-       return (pos + ((orig_len - len) - scan_len));
-     goto next_loop;
-   }
-   if (!str)
-     goto next_loop;
-   
-   if (scan->type == VSTR_TYPE_NODE_NON)
-     goto next_loop;
-   
-   /* find buf */
-   while ((len + scan_len) >= str_len)
-   {
-     size_t tmp = 0;
-     size_t beg_pos = 0;
-
-     assert(scan_len);
-
-     if (*scan_str != *(const char *)str)
-     {
-       char *som = NULL; /* start of a possible match */
-       
-       if (!(som = vstr_nx_wrap_memchr(scan_str, *(const char *)str, scan_len)))
-         goto next_loop;
-       scan_len -= (som - scan_str);
-       scan_str = som;
-       continue;
-     }
-     
-     tmp = scan_len;
-     if (tmp > str_len)
-       tmp = str_len;
-
-     beg_pos = pos + ((orig_len - len) - scan_len);
-     if (!vstr_nx_wrap_memcmp(scan_str, str, tmp) &&
-         ((tmp == str_len) ||
-          !vstr_nx_cmp_buf(base, beg_pos + tmp, str_len - tmp,
-                           (const char *)str + tmp, str_len - tmp)))
-       return (beg_pos);
-     
-     ++scan_str;
-     --scan_len;
-
-     if (!scan_len) break;
-   }
+  Vstr_iter iter[1];
   
-  next_loop:
-   continue;
- } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                          scan, &scan_str, &scan_len)) &&
-          ((len + scan_len) >= str_len));
- 
- return (0);
+  if (!len || (str_len > len))
+    return (0);
+  
+  if (!str_len)
+    return (pos);
+  
+  if (!str && !base->node_non_used)
+    return (0);
+  
+  if (str_len == 1)
+    return (vstr_nx_srch_chr_fwd(base, pos, len, *(const char *)str));
+  
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+  
+  assert(len == (iter->remaining + iter->len));
+  
+  do
+  {
+    if ((iter->node->type == VSTR_TYPE_NODE_NON) && !str)
+    {
+      if (!vstr_nx_cmp_buf(base, pos + (len - iter->remaining),
+                           str_len, NULL, str_len))
+        return (pos + ((len - iter->remaining) - iter->len));
+      goto next_loop;
+    }
+    if (!str)
+      goto next_loop;
+    
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      goto next_loop;
+    
+    /* find buf */
+    while ((iter->remaining + iter->len) >= str_len)
+    {
+      size_t tmp = 0;
+      size_t beg_pos = 0;
+      
+      assert(iter->len);
+      
+      if (*iter->ptr != *(const char *)str)
+      {
+        char *som = NULL; /* start of a possible match */
+        
+        if (!(som = vstr_nx_wrap_memchr(iter->ptr, *(const char *)str,iter->len)))
+          goto next_loop;
+        iter->len -= (som - iter->ptr);
+        iter->ptr = som;
+        continue;
+      }
+      
+      tmp = iter->len;
+      if (tmp > str_len)
+        tmp = str_len;
+
+      beg_pos = pos + ((len - iter->remaining) - iter->len);
+      if (!vstr_nx_wrap_memcmp(iter->ptr, str, tmp) &&
+          ((tmp == str_len) ||
+           !vstr_nx_cmp_buf(base, beg_pos + tmp, str_len - tmp,
+                            (const char *)str + tmp, str_len - tmp)))
+        return (beg_pos);
+      
+      ++iter->ptr;
+      --iter->len;
+      
+      if (!iter->len) break;
+    }
+    
+   next_loop:
+    continue;
+  } while (vstr_nx_iter_fwd_nxt(iter) &&
+           ((iter->remaining + iter->len) >= str_len));
+  
+  return (0);
 }
 
 static size_t vstr__srch_buf_rev_slow(const Vstr_base *base,
@@ -415,25 +405,17 @@ size_t vstr_nx_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
                              const Vstr_base *ndl_base,
                              size_t ndl_pos, size_t ndl_len)
 { /* TODO: this could be faster, esp. with NON nodes */
+  Vstr_iter iter[1];
   size_t scan_pos = pos;
   size_t scan_len = len;
-  size_t dummy_len = ndl_len;
-  Vstr_node *beg_ndl_node = NULL;
-  unsigned int dummy_num = 0;
-  char *beg_ndl_str = NULL;
-  size_t beg_ndl_len = 0;
-
+  
   if (ndl_len > len)
     return (0);
-
-  beg_ndl_node = vstr__base_scan_fwd_beg(ndl_base, ndl_pos,
-                                         &dummy_len, &dummy_num,
-                                         &beg_ndl_str, &beg_ndl_len);
-  if (!beg_ndl_node)
+  
+  if (!vstr_nx_iter_fwd_beg(ndl_base, ndl_pos, ndl_len, iter))
     return (0);
-
-  while ((scan_pos < (pos + len - 1)) &&
-         (scan_len >= ndl_len))
+  
+  while ((scan_pos < (pos + len - 1)) && (scan_len >= ndl_len))
   {
     if (!vstr_nx_cmp(base, scan_pos, ndl_len, ndl_base, ndl_pos, ndl_len))
       return (scan_pos);
@@ -441,12 +423,12 @@ size_t vstr_nx_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
     --scan_len;
     ++scan_pos;
     
-    if (beg_ndl_node->type != VSTR_TYPE_NODE_NON)
+    if (iter->node->type != VSTR_TYPE_NODE_NON)
     {
       size_t tmp = 0;
 
       if (!(tmp = vstr_nx_srch_buf_fwd(base, scan_pos, scan_len,
-                                       beg_ndl_str, beg_ndl_len)))
+                                       iter->ptr, iter->len)))
         return (0);
       
       assert(tmp > scan_pos);

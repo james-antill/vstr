@@ -26,6 +26,12 @@
 #define vstr_nx_ref_del vstr_ref_del
 #define vstr_nx_ref_add vstr_ref_add
 #define vstr_nx_cache_get vstr_cache_get
+#define vstr_nx_cache__pos vstr_cache__pos
+#define vstr_nx_base__pos vstr_base__pos
+#define vstr_nx_export__node_ptr vstr_export__node_ptr
+#define vstr_nx_export_chr vstr_export_chr
+#define vstr_nx_iter_fwd_beg vstr_iter_fwd_beg
+#define vstr_nx_iter_fwd_nxt vstr_iter_fwd_nxt
 #define vstr_nx_add_buf vstr_add_buf
 #define vstr_nx_del vstr_del
 #define vstr_nx_sects_add vstr_sects_add

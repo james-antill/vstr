@@ -24,9 +24,9 @@ static void tst_v(const char *msg, ...)
 /* misc crap for tst_covorage -- it's called by other stuff */
 int tst(void)
 {
-  Vstr_ref *ref = NULL;
   VSTR_SECTS_DECL(abcd, 4);
   typeof(blahfoo[0]) *tmp = abcd;
+  Vstr_iter iter[1];
   
   assert(sizeof(blahfoo) == sizeof(abcd));
   assert(tmp->sz == 4);
@@ -35,24 +35,27 @@ int tst(void)
   
   tst_v("%s", "123456789 123456789 123456789 123456789 123456789 123456789 ");
   assert(s1->len == 120);
-
+  vstr_iter_fwd_beg(s1, 1, s1->len, iter);
+  vstr_iter_fwd_nxt(iter);
+  
+  vstr_sc_fmt_add_bkmg_bits_uint(NULL, "1");
+  vstr_sc_fmt_add_bkmg_bit_uint(NULL, "2");
+  vstr_sc_fmt_add_bkmg_Bytes_uint(NULL, "3");
+  vstr_sc_fmt_add_bkmg_Byte_uint(NULL, "4");
+  vstr_sc_fmt_add_buf(NULL, "5");
+  vstr_sc_fmt_add_non(NULL, "6");
+  vstr_sc_fmt_add_ptr(NULL, "7");
+  vstr_sc_fmt_add_ref(NULL, "8");
+  vstr_sc_fmt_add_vstr(NULL, "9");
+  vstr_sc_fmt_add_ipv4_ptr(NULL, "a");
+  vstr_sc_fmt_add_ipv6_ptr(NULL, "b");
+  vstr_sc_fmt_add_ipv4_vec(NULL, "c");
+  vstr_sc_fmt_add_ipv6_vec(NULL, "d");
+  vstr_sc_fmt_add_ipv4_vec_cipe(NULL, "e");
+  vstr_sc_fmt_add_ipv6_vec_cipe(NULL, "f");
+  
   vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1);
 
-  ref = vstr_ref_make_malloc(4);
-  vstr_ref_add(ref);
-  vstr_ref_del(ref);
-  vstr_ref_del(ref);
-
-  ref = vstr_ref_make_ptr(NULL, vstr_ref_cb_free_ref);
-  vstr_ref_del(ref);
-
-  ref = vstr_ref_make_ptr(malloc(1), vstr_ref_cb_free_ptr_ref);
-  vstr_ref_del(ref);
-
-  ref = vstr_ref_make_ptr(malloc(1), vstr_ref_cb_free_ptr);
-  vstr_ref_del(ref);
-  free(ref);
-  
   return (!VSTR_FLAG31(CONV_UNPRINTABLE_ALLOW,
                        NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA,
                        NUL, BEL, BS, HT, LF, VT, FF, CR, SP, COMMA,

@@ -44,7 +44,7 @@ void *FIX_SYMBOL(memrchr)(const void *source, int chr, size_t num)
   { /* do nothing */ }
   
   if (*tmp == chr)
-    return (tmp);
+    return ((void *)tmp);
   else
     return (NULL);
 }
@@ -247,7 +247,7 @@ char *FIX_SYMBOL(stpcpy)(char *copy, const char *from)
 }
 #endif
 
-#ifndef HAVE_VSNPRINTF
+#ifndef HAVE_C9X_SNPRINTF_RET
 int FIX_SYMBOL(vsnprintf)(char *str, size_t size, const char *fmt, va_list ap)
 {
   static FILE *fp = NULL;
@@ -270,10 +270,8 @@ int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
  sz = vsnprintf(NULL, 0, fmt, ap);
 
  va_end(ap);
-
- ++sz; /* return value from asprintf is different */
  
- if (!(*ret = malloc(sz)))
+ if (!(*ret = malloc(sz + 1)))
    return (-1);
 
  va_start(ap, fmt);
@@ -1233,33 +1231,6 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
      }
  
  return ready;
-}
-#endif
-
-#ifndef HAVE_WRITEV
-/* There are no std limits on the number of iovec's you can have... */
-ssize_t FIX_SYMBOL(writev)(int fd, const struct iovec *iovs, int iov_num)
-{
- int count = 0;
- size_t len = 0;
- char *buff = NULL;
- 
- while (count < iov_num)
-   len += iovs[count++].iov_len;
-
-\ if (!(buff = ALLOCA(len)))
-   return (write(fd, iovs[0].iov_base, iovs[0].iov_len));
-
- count = 0;
- while (count < iov_num)
- {
-  memcpy(buff + len, iovs[count].iov_base, iovs[count].iov_len);
-  len += iovs[count++].iov_len;
- }
- 
- AFREE(buff);
-
- return (write(fd, buff, len));
 }
 #endif
 

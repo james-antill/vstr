@@ -1,25 +1,7 @@
 #ifndef FIX_H
 #define FIX_H
 
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
-#pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
-
-/* the problem is that if you define strnchr as a symbol in your library
- * then and you have multiple libraries that do this problems will occur
- * and the library may not load anymore (this may also occur if you dlload
- * a library from a program with an updated libc ?) ... anyway it's a _bad_
- * idea ... so just #define FIX_NAMSPACE_SYMBOL abcd_ (or whatever namespace
+/* so just #define FIX_NAMSPACE_SYMBOL abcd_ (or whatever namespace
  * you are taking, then everything will just work) */
 #define FIX_XSTR2(x, y) x ## y
 #define FIX_XSTR1(x, y) FIX_XSTR2(x, y)
@@ -121,6 +103,10 @@ extern int prctl(int, unsigned long, unsigned long,
 
 #ifndef UINTMAX_MAX
 # define UINTMAX_MAX ULONG_MAX
+#endif
+
+#ifndef  UIO_MAXIOV
+# define UIO_MAXIOV 1
 #endif
 
 #ifndef HAVE_VA_COPY
@@ -230,14 +216,6 @@ struct cmsghdr
 # define sigemptyset(x) (*(x) = 0)
 #endif
 
-#if defined(HAVE_ALLOCA_H) || defined(HAVE_ALLOCA)
-# define ALLOCA(x) alloca(x)
-# define AFREE(x)
-#else
-# define ALLOCA(x) MALLOC(x)
-# define AFREE(x) FREE(x)
-#endif
-
 #ifndef HAVE_MEMCHR
 # undef memchr
 extern void *FIX_SYMBOL(memchr)(const void *source, int character, size_t num);
@@ -310,7 +288,7 @@ extern char *FIX_SYMBOL(stpcpy)(char *, const char *);
 #define stpcpy(a, b) FIX_SYMBOL(stpcpy)(a, b)
 #endif
 
-#ifndef HAVE_VSNPRINTF
+#ifndef HAVE_C9X_SNPRINTF_RET
 # undef vsnprintf
 extern int FIX_SYMBOL(vsnprintf)(char *, size_t, const char *, va_list);
 #define vsnprintf(a, b, c, d) FIX_SYMBOL(vsnprintf)(a, b, c, d)
@@ -495,16 +473,12 @@ extern int FIX_SYMBOL(poll)(struct pollfd *, unsigned long int, int);
 
 #endif
 
-#ifndef HAVE_WRITEV
+#ifndef HAVE_SYS_UIO_H
 struct iovec
   {
     void *iov_base;     /* Pointer to data.  */
     size_t iov_len;     /* Length of data.  */
   };
-
-#undef writev
-ssize_t FIX_SYMBOL(writev)(int, const struct iovec *, int);
-#define writev(a, b, c) FIX_SYMBOL(writev)(a, b, c)
 #endif
 
 #ifndef HAVE_INET_NTOP

@@ -6,9 +6,9 @@ int tst(void)
 {
   int ret = 0;
   
-#ifdef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */
-  return (EXIT_FAILED_OK);
-#endif
+  sprintf(buf, "%jd%ju", INTMAX_MAX, UINTMAX_MAX);
+  if (!strcmp(buf, "jdju"))
+    return (EXIT_FAILED_OK); /* sucky host sprintf() implementions */
   
   sprintf(buf, "%jd %jd %ju %ju",
           INTMAX_MAX, INTMAX_MIN, (intmax_t)0, UINTMAX_MAX);

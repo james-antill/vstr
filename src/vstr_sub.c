@@ -34,26 +34,21 @@
 static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
                               const void *buf)
 {
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   size_t buf_len = len;
 
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  if (!scan)
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
   
   do
   {
-    const size_t tmp = scan_len;
+    const size_t tmp = iter->len;
 
-    assert(scan->type == VSTR_TYPE_NODE_BUF);
+    assert(iter->node->type == VSTR_TYPE_NODE_BUF);
     
-    vstr_nx_wrap_memcpy(scan_str, buf, tmp);
+    vstr_nx_wrap_memcpy((char *)iter->ptr, buf, tmp);
     buf = ((char *)buf) + tmp;
-  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                           scan, &scan_str, &scan_len)));
+  } while (vstr_nx_iter_fwd_nxt(iter));
 
   vstr_nx_cache_cb_sub(base, pos, buf_len);
 
@@ -63,17 +58,14 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
 static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
                               const void *buf, size_t buf_len)
 {
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   size_t orig_pos = pos;
-  size_t orig_len = 0;
   size_t orig_buf_len = buf_len;
   size_t sub_add_len = 0;
   size_t add_len = 0;
   size_t del_len = 0;
   size_t real_pos = 0;
+  unsigned int num = 0;
   
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
@@ -86,27 +78,22 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   else
     add_len = buf_len - len;
   
-  orig_len = len;
-  
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  if (!scan)
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
+  
   do
   {
-    size_t tmp = scan_len;
+    size_t tmp = iter->len;
     
     if (tmp > buf_len)
       tmp = buf_len;
     
-    if (scan->type != VSTR_TYPE_NODE_BUF)
+    if (iter->node->type != VSTR_TYPE_NODE_BUF)
       sub_add_len += tmp;
     
     buf_len -= tmp;
-  } while (buf_len &&
-           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                           scan, &scan_str, &scan_len)));
+  } while (buf_len && vstr_nx_iter_fwd_nxt(iter));
 
-  len = orig_len;
   buf_len = orig_buf_len;
   
   if (sub_add_len == buf_len)
@@ -160,11 +147,12 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   {
     size_t rm_pos = 0;
     size_t rm_len = 0;
-      
+    Vstr_node *scan = NULL;
+    
     /* loop again removing any non _BUF nodes and substituting on _BUF */
     if ((pos + len - 1) > base->len)
       len = base->len - (pos - 1);
-    scan = vstr__base_pos(base, &pos, &num, TRUE);
+    scan = vstr_nx_base__pos(base, &pos, &num, TRUE);
     assert(scan);
     
     --pos;
@@ -393,23 +381,19 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
       !base->node_ptr_used &&
       !base->node_ref_used)
   {
-    Vstr_node *scan = NULL;
-    unsigned int num = 0;
-    char *scan_str = NULL;
-    size_t scan_len = 0;
+    Vstr_iter iter[1];
     
-    scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-    if (!scan)
+    if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
       return (FALSE);
+    
     do
     {
-      const size_t tmp = scan_len;
+      const size_t tmp = iter->len;
       
-      assert(scan->type == VSTR_TYPE_NODE_BUF);
+      assert(iter->node->type == VSTR_TYPE_NODE_BUF);
       
-      vstr_nx_wrap_memset(scan_str, chr, tmp);
-    } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                             scan, &scan_str, &scan_len)));
+      vstr_nx_wrap_memset((char *)iter->ptr, chr, tmp);
+    } while (vstr_nx_iter_fwd_nxt(iter));
 
     vstr_nx_cache_cb_sub(base, pos, rep_len);
     

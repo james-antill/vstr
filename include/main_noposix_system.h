@@ -45,8 +45,12 @@ struct iovec
  size_t iov_len;
 }; /* normally part of <sys/uio.h> ... but that isn't here now */
 
-#if !defined(VSTR_AUTOCONF_intmax_t) || !defined(VSTR_AUTOCONF_uintmax_t)
+#ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
+#else
+# ifdef HAVE_STDINT_H
+#  include <stdint.h>
+# endif
 #endif
 
 /* useful */

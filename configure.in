@@ -65,7 +65,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=20
+VSTR_MICRO_VERSION=21
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -157,61 +157,61 @@ else
 fi
 
 WARNS=""
-AC_ARG_ENABLE(debug, [  --enable-debug          turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
-AC_ARG_ENABLE(ansi, [  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) [default=no]],WARNS="$WARNS -ansi -pedantic",)
+AC_ARG_ENABLE(debug, [  --enable-debug          turn on debugging (assumes gcc/gdb) [[default=no]]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
+AC_ARG_ENABLE(ansi, [  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) [[default=no]]],WARNS="$WARNS -ansi -pedantic",)
 AC_SUBST(WARNS)
 
-AC_ARG_ENABLE(noposix-host, [  --enable-noposix-host   turn off all the POSIX extentions [default=no]], local_cv_have_posix_host=false,local_cv_have_posix_host=true)
+AC_ARG_ENABLE(noposix-host, [  --enable-noposix-host   turn off all the POSIX extentions [[default=no]]], local_cv_have_posix_host=false,local_cv_have_posix_host=true)
 AM_CONDITIONAL(HAVE_POSIX_HOST, $local_cv_have_posix_host)
 case x$local_cv_have_posix_host in
  xtrue) AC_DEFINE(HAVE_POSIX_HOST) ;;
 esac
 
-AC_ARG_ENABLE(linker-script, [  --enable-linker-script  turn on linker version script [default=no]], local_cv_linker_have_version_script=true,local_cv_linker_have_version_script=false)
+AC_ARG_ENABLE(linker-script, [  --enable-linker-script  turn on linker version script [[default=no]]], local_cv_linker_have_version_script=true,local_cv_linker_have_version_script=false)
 AM_CONDITIONAL(HAVE_LINKER_VERSION_SCRIPT, $local_cv_linker_have_version_script)
 case x$local_cv_linker_have_version_script in
 xtrue) AC_DEFINE(HAVE_LINKER_SCRIPT) ;;
 esac
 
 
-AC_ARG_ENABLE(tst-noinline, [  --enable-tst-noinline   turn off use of inline [default=no]], local_cv_have_tst_noinline=true,local_cv_have_tst_noinline=false)
-AC_ARG_ENABLE(tst-noattr-visibility, [--enable-tst-noattr-visibility   turn off use of attribute visibility [default=no]], local_cv_have_tst_noattr_visibility=true,local_cv_have_tst_noattr_visibility=false)
-AC_ARG_ENABLE(tst-noattr-alias, [--enable-tst-noattr-alias   turn off use of attribute alias [default=no]], local_cv_have_tst_noattr_alias=true,local_cv_have_tst_noattr_alias=false)
+AC_ARG_ENABLE(tst-noinline, [  --enable-tst-noinline   turn off use of inline [[default=no]]], local_cv_have_tst_noinline=true,local_cv_have_tst_noinline=false)
+AC_ARG_ENABLE(tst-noattr-visibility, [  --enable-tst-noattr-visibility turn off use of attribute visibility [[default=no]]], local_cv_have_tst_noattr_visibility=true,local_cv_have_tst_noattr_visibility=false)
+AC_ARG_ENABLE(tst-noattr-alias, [  --enable-tst-noattr-alias turn off use of attribute alias [[default=no]]], local_cv_have_tst_noattr_alias=true,local_cv_have_tst_noattr_alias=false)
 
 
-AC_ARG_ENABLE(wrap-memcpy, [  --enable-wrap-memcpy  turn on wrapper for small values passed to memcpy [default=no]], local_cv_linker_use_wrap_memcpy=true,local_cv_linker_use_wrap_memcpy=false)
+AC_ARG_ENABLE(wrap-memcpy, [  --enable-wrap-memcpy    turn on wrapper memcpy [[default=no]]], local_cv_linker_use_wrap_memcpy=true,local_cv_linker_use_wrap_memcpy=false)
 AM_CONDITIONAL(USE_WRAP_MEMCPY, $local_cv_linker_use_wrap_memcpy)
 case x$local_cv_linker_use_wrap_memcpy in
 xtrue) AC_DEFINE(USE_WRAP_MEMCPY) ;;
 esac
-AC_ARG_ENABLE(wrap-memcmp, [  --enable-wrap-memcmp  turn on wrapper for small values passed to memcmp [default=no]], local_cv_linker_use_wrap_memcmp=true,local_cv_linker_use_wrap_memcmp=false)
+AC_ARG_ENABLE(wrap-memcmp, [  --enable-wrap-memcmp    turn on wrapper for memcmp [[default=no]]], local_cv_linker_use_wrap_memcmp=true,local_cv_linker_use_wrap_memcmp=false)
 AM_CONDITIONAL(USE_WRAP_MEMCMP, $local_cv_linker_use_wrap_memcmp)
 case x$local_cv_linker_use_wrap_memcmp in
 xtrue) AC_DEFINE(USE_WRAP_MEMCMP) ;;
 esac
-AC_ARG_ENABLE(wrap-memchr, [  --enable-wrap-memchr  turn on wrapper for small values passed to memchr [default=no]], local_cv_linker_use_wrap_memchr=true,local_cv_linker_use_wrap_memchr=false)
+AC_ARG_ENABLE(wrap-memchr, [  --enable-wrap-memchr    turn on wrapper for memchr [[default=no]]], local_cv_linker_use_wrap_memchr=true,local_cv_linker_use_wrap_memchr=false)
 AM_CONDITIONAL(USE_WRAP_MEMCHR, $local_cv_linker_use_wrap_memchr)
 case x$local_cv_linker_use_wrap_memchr in
 xtrue) AC_DEFINE(USE_WRAP_MEMCHR) ;;
 esac
-AC_ARG_ENABLE(wrap-memrchr, [  --enable-wrap-memrchr  turn on wrapper for small values passed to memrchr [default=no]], local_cv_linker_use_wrap_memrchr=true,local_cv_linker_use_wrap_memrchr=false)
+AC_ARG_ENABLE(wrap-memrchr, [  --enable-wrap-memrchr   turn on wrapper for memrchr [[default=no]]], local_cv_linker_use_wrap_memrchr=true,local_cv_linker_use_wrap_memrchr=false)
 AM_CONDITIONAL(USE_WRAP_MEMRCHR, $local_cv_linker_use_wrap_memrchr)
 case x$local_cv_linker_use_wrap_memrchr in
 xtrue) AC_DEFINE(USE_WRAP_MEMRCHR) ;;
 esac
-AC_ARG_ENABLE(wrap-memset, [  --enable-wrap-memset  turn on wrapper for small values passed to memset [default=no]], local_cv_linker_use_wrap_memset=true,local_cv_linker_use_wrap_memset=false)
+AC_ARG_ENABLE(wrap-memset, [  --enable-wrap-memset    turn on wrapper for memset [[default=no]]], local_cv_linker_use_wrap_memset=true,local_cv_linker_use_wrap_memset=false)
 AM_CONDITIONAL(USE_WRAP_MEMSET, $local_cv_linker_use_wrap_memset)
 case x$local_cv_linker_use_wrap_memset in
 xtrue) AC_DEFINE(USE_WRAP_MEMSET) ;;
 esac
-AC_ARG_ENABLE(wrap-memmove, [  --enable-wrap-memmove  turn on wrapper for small values passed to memmove [default=no]], local_cv_linker_use_wrap_memmove=true,local_cv_linker_use_wrap_memmove=false)
+AC_ARG_ENABLE(wrap-memmove, [  --enable-wrap-memmove   turn on wrapper for memmove [[default=no]]], local_cv_linker_use_wrap_memmove=true,local_cv_linker_use_wrap_memmove=false)
 AM_CONDITIONAL(USE_WRAP_MEMMOVE, $local_cv_linker_use_wrap_memmove)
 case x$local_cv_linker_use_wrap_memmove in
 xtrue) AC_DEFINE(USE_WRAP_MEMMOVE) ;;
 esac
 
 
-AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   how to convert floats to strings in %f etc. (glibc,none,host) [default=host]], local_cv_fmt_float=$withval,local_cv_fmt_float=host)
+AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   float conversion (glibc,none,host) [[default=host]]], local_cv_fmt_float=$withval,local_cv_fmt_float=host)
 case x$local_cv_fmt_float in
 xhost)
    AM_CONDITIONAL(FMT_DBL_host,  true)
@@ -277,16 +277,11 @@ AC_TYPE_MODE_T
 
 AC_TYPE_OFF_T
 
-AC_DEFUN(AC_TYPE_OFF64_T,
-[AC_CACHE_CHECK(for socklen_t in sys/socket.h, ac_cv_type_socklen_t,
-[AC_EGREP_HEADER(off64_t, sys/unistd.h,
-  ac_cv_type_off64_t=yes, ac_cv_type_off64_t=no)])
-if test $ac_cv_type_off64_t = no; then
-  AC_DEFINE(off64_t, off_t)
-fi
-])
-
-AC_TYPE_OFF64_T
+# New autoconf goodness... or not
+XCFLAGS=$CFLAGS
+CFLAGS="-D_LARGEFILE64_SOURCE $CFLAGS"
+AC_CHECK_TYPE(off64_t, off_t)
+CFLAGS=$XCFLAGS
 
 AC_TYPE_PID_T
 
@@ -305,25 +300,9 @@ fi
 
 AC_TYPE_SOCKLEN_T
 
-AC_DEFUN(AC_TYPE_INTMAX_T,
-[AC_CACHE_CHECK(for intmax_t in stdint.h, ac_cv_type_intmax_t,
-[AC_EGREP_HEADER(intmax_t, stdint.h,
-  ac_cv_type_intmax_t=yes, ac_cv_type_intmax_t=no)])
-if test $ac_cv_type_intmax_t = no; then
-  AC_DEFINE(intmax_t, long)
-fi
-])
-AC_DEFUN(AC_TYPE_UINTMAX_T,
-[AC_CACHE_CHECK(for uintmax_t in stdint.h, ac_cv_type_uintmax_t,
-[AC_EGREP_HEADER(uintmax_t, stdint.h,
-  ac_cv_type_uintmax_t=yes, ac_cv_type_uintmax_t=no)])
-if test $ac_cv_type_uintmax_t = no; then
-  AC_DEFINE(uintmax_t, unsigned long)
-fi
-])
-
-AC_TYPE_INTMAX_T
-AC_TYPE_UINTMAX_T
+# New autoconf goodness
+AC_CHECK_TYPE(intmax_t, long)
+AC_CHECK_TYPE(uintmax_t, unsigned long)
 
 AC_MSG_CHECKING(for long long)
 AC_CACHE_VAL(local_cv_has_long_long,[
@@ -347,8 +326,6 @@ esac
 TWOCAN_CONF_MSG(Checking for libraries to link against)
 
 
-AC_CHECK_LIB(socket, inet_ntop)
-AC_CHECK_LIB(socket, inet_addr)
 # AC_CHECK_LIB(m, log10)
 AC_SUBST(LIBS)
 
@@ -359,7 +336,6 @@ AC_FUNC_MMAP
 AC_FUNC_ALLOCA
 AC_FUNC_STRFTIME
 AC_FUNC_VFORK
-AC_FUNC_VPRINTF
 
 # L_IBOBJS is spelt with an _ because autoconf uses grep and doesn't know
 # the below are in comments...
@@ -386,7 +362,6 @@ AC_CHECK_FUNCS(strcasecmp, AC_DEFINE(HAVE_STRCASECMP),)
 AC_CHECK_FUNCS(strncasecmp, AC_DEFINE(HAVE_STRNCASECMP),)
 AC_CHECK_FUNCS(strnlen, AC_DEFINE(HAVE_STRNLEN),)
 AC_CHECK_FUNCS(strnchr, AC_DEFINE(HAVE_STRNCHR),)
-AC_CHECK_FUNCS(vsnprintf, AC_DEFINE(HAVE_VSNSPRINTF),)
 AC_CHECK_FUNCS(asprintf, AC_DEFINE(HAVE_ASPRINTF),)
 
 # Other functions...
@@ -398,11 +373,22 @@ AC_CHECK_FUNCS(difftime, AC_DEFINE(HAVE_DIFFTIME),)
 AC_CHECK_FUNCS(sigaction, AC_DEFINE(HAVE_SIGACTION), 
                           AC_MSG_ERROR(Need sigaction))
 
-AC_CHECK_FUNCS(inet_ntop, AC_DEFINE(HAVE_INET_NTOP),)
-AC_CHECK_FUNCS(inet_ntoa, AC_DEFINE(HAVE_INET_NTOA),)
-AC_CHECK_FUNCS(inet_pton, AC_DEFINE(HAVE_INET_PTON),)
-AC_CHECK_FUNCS(inet_aton, AC_DEFINE(HAVE_INET_ATON),)
-AC_CHECK_FUNCS(inet_addr, AC_DEFINE(HAVE_INET_ADDR),)
+AC_CHECK_FUNCS(inet_ntop, AC_DEFINE(HAVE_INET_NTOP),
+AC_CHECK_LIB(nsl, inet_ntop, 
+                  [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_NTOP) ]),
+AC_CHECK_FUNCS(inet_ntoa, AC_DEFINE(HAVE_INET_NTOA),
+AC_CHECK_LIB(nsl, inet_ntoa,
+                  [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_NTOA) ])))
+
+AC_CHECK_FUNCS(inet_pton, AC_DEFINE(HAVE_INET_PTON),
+AC_CHECK_LIB(nsl, inet_pton, 
+                  [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_PTON) ]),
+AC_CHECK_FUNCS(inet_aton, AC_DEFINE(HAVE_INET_ATON),
+AC_CHECK_LIB(nsl, inet_aton, 
+                  [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_ATON) ]),
+AC_CHECK_FUNCS(inet_addr, AC_DEFINE(HAVE_INET_ADDR),
+AC_CHECK_LIB(nsl, inet_addr, 
+                  [ LIBS="-lnsl $LIBS"; AC_DEFINE(HAVE_INET_ADDR) ]))))
 
 AC_CHECK_FUNCS(pread, AC_DEFINE(HAVE_PREAD),)
 
@@ -557,38 +543,6 @@ case x$local_cv_has_poll in
 xyes) AC_DEFINE(HAVE_POLL)
 esac
 
-AC_MSG_CHECKING(for a writev that we can use)
-AC_CACHE_VAL(local_cv_has_writev,[
-AC_TRY_RUN([
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/uio.h>
-#define MAX_SZ 1024
-int main() {
- struct iovec iovs[MAX_SZ];
- int count = 0;
-
- while (count < MAX_SZ)
- {
-  iovs[count].iov_base = ".";
-  iovs[count].iov_len = 1;
-  ++count;
- }
- iovs[MAX_SZ - 1].iov_base = "\n";
- iovs[MAX_SZ - 1].iov_len = 1;
-
- if (write(2, iovs, MAX_SZ) != MAX_SZ)
-   exit (1);
- return 0;
-}],
-local_cv_has_writev=yes,
-local_cv_has_writev=no,
-)])
-AC_MSG_RESULT($local_cv_has_writev)
-case x$local_cv_has_writev in
-xyes) AC_DEFINE(HAVE_WRITEV)
-esac
-
 AC_MSG_CHECKING(for a RTLD_GLOBAL def)
 AC_CACHE_VAL(local_cv_has_dl_rtld_global,[
 AC_TRY_RUN([
@@ -609,8 +563,9 @@ case x$local_cv_has_dl_rtld_global in
 xyes) AC_DEFINE(HAVE_DL_RTLD_GLOBAL)
 esac
 
-AC_MSG_CHECKING(for a C9x compat. snprintf)
-AC_CACHE_VAL(local_cv_has_C9x_snprintf,[
+# This is complicated because many sprintf()'s are broken...
+AC_MSG_CHECKING(for a C9x snprintf() return)
+AC_CACHE_VAL(local_cv_has_C9x_snprintf_ret,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -620,7 +575,7 @@ int main() {
  char buffer[4];
  int tmp = snprintf(buffer, 4, "%s", "123456");
 
- if ((tmp > 0) && (tmp < 4))
+ if (tmp != 6)
   exit (1);
 
  if (!( (buffer[0] == '1') && (buffer[1] == '2') && (buffer[2] == '3') &&
@@ -628,12 +583,91 @@ int main() {
   exit (1);
  return 0;
 }],
-local_cv_has_C9x_snprintf=yes,
-local_cv_has_C9x_snprintf=no,
+local_cv_has_C9x_snprintf_ret=yes,
+local_cv_has_C9x_snprintf_ret=no,
 )])
-AC_MSG_RESULT($local_cv_has_C9x_snprintf)
-case x$local_cv_has_C9x_snprintf in
-xyes) AC_DEFINE(HAVE_C9X_SNPRINTF)
+AC_MSG_RESULT($local_cv_has_C9x_snprintf_ret)
+case x$local_cv_has_C9x_snprintf_ret in
+xyes) AC_DEFINE(HAVE_C9X_SNPRINTF_RET)
+esac
+
+AC_MSG_CHECKING(for a C9x sprintf() format F)
+AC_CACHE_VAL(local_cv_has_C9x_sprintf_fmt_F,[
+AC_TRY_RUN([
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%F", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == '.') && (buffer[2] == '0') &&
+        (buffer[3] == '0') && (buffer[4] == '0') && (buffer[5] == '0') &&
+        (buffer[6] == '0') && (buffer[7] == '0') &&
+        (buffer[8] == 0) ))
+  exit (1);
+ return 0;
+}],
+local_cv_has_C9x_sprintf_fmt_F=yes,
+local_cv_has_C9x_sprintf_fmt_F=no,
+)])
+AC_MSG_RESULT($local_cv_has_C9x_sprintf_fmt_F)
+case x$local_cv_has_C9x_sprintf_fmt_F in
+xyes) AC_DEFINE(HAVE_C9X_SPRINTF_FMT_F)
+esac
+
+AC_MSG_CHECKING(for a C9x sprintf() format A)
+AC_CACHE_VAL(local_cv_has_C9x_sprintf_fmt_A,[
+AC_TRY_RUN([
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%A", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == 'X') && (buffer[2] == '0') &&
+        (buffer[3] == 'P') && (buffer[4] == '+') && (buffer[5] == '0') &&
+        (buffer[6] == 0) ))
+  exit (1);
+ return 0;
+}],
+local_cv_has_C9x_sprintf_fmt_A=yes,
+local_cv_has_C9x_sprintf_fmt_A=no,
+)])
+AC_MSG_RESULT($local_cv_has_C9x_sprintf_fmt_A)
+case x$local_cv_has_C9x_sprintf_fmt_A in
+xyes) AC_DEFINE(HAVE_C9X_SPRINTF_FMT_A)
+esac
+
+AC_MSG_CHECKING(for a C9x sprintf() format a)
+AC_CACHE_VAL(local_cv_has_C9x_sprintf_fmt_a,[
+AC_TRY_RUN([
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%a", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == 'x') && (buffer[2] == '0') &&
+        (buffer[3] == 'p') && (buffer[4] == '+') && (buffer[5] == '0') &&
+        (buffer[6] == 0) ))
+  exit (1);
+ return 0;
+}],
+local_cv_has_C9x_sprintf_fmt_a=yes,
+local_cv_has_C9x_sprintf_fmt_a=no,
+)])
+AC_MSG_RESULT($local_cv_has_C9x_sprintf_fmt_a)
+case x$local_cv_has_C9x_sprintf_fmt_a in
+xyes) AC_DEFINE(HAVE_C9X_SPRINTF_FMT_a)
 esac
 
 AC_MSG_CHECKING(if char works as a bitflag type)
@@ -1158,7 +1192,7 @@ esac
 XLDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -Wl,-e,relocated_main"
 
-AC_MSG_CHECKING(for linker main symbol relocation)
+AC_MSG_CHECKING(for linker main symbol redirection)
 AC_CACHE_VAL(local_cv_linker_have_relocationable_main,[
 AC_TRY_RUN([
 #define _GNU_SOURCE
@@ -1187,7 +1221,7 @@ AC_TRY_RUN([
 #include <limits.h>
 
 int main() {
- char buffer[1024];
+ char buffer[1024 + (CHAR_BIT * sizeof(unsigned long))];
  int len;
  sprintf(buffer, "%lu", ULONG_MAX);
  len = strlen(buffer);

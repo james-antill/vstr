@@ -69,6 +69,10 @@
 <li><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
 <li><a href="#vstr_ref_make_malloc%28%29">vstr_ref_make_malloc()</a>
 <li><a href="#vstr_ref_make_ptr%28%29">vstr_ref_make_ptr()</a>
+<li><a href="#vstr_ref_make_memdup%28%29">vstr_ref_make_memdup()</a>
+<li><a href="#vstr_ref_make_vstr_base%28%29">vstr_ref_make_vstr_base()</a>
+<li><a href="#vstr_ref_make_vstr_conf%28%29">vstr_ref_make_vstr_conf()</a>
+<li><a href="#vstr_ref_make_vstr_sects%28%29">vstr_ref_make_vstr_sects()</a>
 <li><a href="#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a>
 <li><a href="#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>
 </ul><li><a href="#Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string">Functions to add and delete data to a Vstr string</a>
@@ -210,6 +214,7 @@
 <li><a href="#vstr_parse_netstr%28%29">vstr_parse_netstr()</a>
 <li><a href="#vstr_parse_netstr2%28%29">vstr_parse_netstr2()</a>
 <li><a href="#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a>
+<li><a href="#vstr_parse_ipv6%28%29">vstr_parse_ipv6()</a>
 </ul><li><a href="#Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string">Functions for hooking into the fmt function for the Vstr string</a>
 <ul>
 <li><a href="#vstr_fmt_add%28%29">vstr_fmt_add()</a>
@@ -242,6 +247,11 @@
 <li><a href="#vstr_sc_fmt_add_bkmg_bits_uint%28%29">vstr_sc_fmt_add_bkmg_bits_uint()</a>
 <li><a href="#vstr_sc_fmt_add_ipv4_ptr%28%29">vstr_sc_fmt_add_ipv4_ptr()</a>
 <li><a href="#vstr_sc_fmt_add_ipv6_ptr%28%29">vstr_sc_fmt_add_ipv6_ptr()</a>
+<li><a href="#vstr_sc_fmt_add_ipv4_vec%28%29">vstr_sc_fmt_add_ipv4_vec()</a>
+<li><a href="#vstr_sc_fmt_add_ipv6_vec%28%29">vstr_sc_fmt_add_ipv6_vec()</a>
+<li><a href="#vstr_sc_fmt_add_ipv4_vec_cipe%28%29">vstr_sc_fmt_add_ipv4_vec_cipe()</a>
+<li><a href="#vstr_sc_fmt_add_ipv6_vec_cipe%28%29">vstr_sc_fmt_add_ipv6_vec_cipe()</a>
+<li><a href="#vstr_sc_fmt_add_all%28%29">vstr_sc_fmt_add_all()</a>
 <li><a href="#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a>
 <li><a href="#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a>
 <li><a href="#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a>
@@ -250,6 +260,10 @@
 <li><a href="#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a>
 <li><a href="#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a>
 <li><a href="#vstr_sc_write_file%28%29">vstr_sc_write_file()</a>
+</ul><li><a href="#Functions%20to%20step%20through%20part%20of%20a%20Vstr%20string%20in%20iterations">Functions to step through part of a Vstr string in iterations</a>
+<ul>
+<li><a href="#vstr_iter_fwd_beg%28%29">vstr_iter_fwd_beg()</a>
+<li><a href="#vstr_iter_fwd_nxt%28%29">vstr_iter_fwd_nxt()</a>
 </ul></ul>
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Initialization%20function"><h2>Initialization function</h2>
@@ -655,9 +669,12 @@
 <strong>Function: </strong> vstr_make_base()
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: <br>Type<strong>[2]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will make a Vstr string, or return NULL.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_free_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -678,6 +695,10 @@
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_buf().
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="vstr_dup_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_ptr()
@@ -689,6 +710,10 @@
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_ptr().
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="vstr_dup_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_non()
@@ -698,6 +723,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_non().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_dup_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -710,6 +739,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_ref().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_dup_vstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -724,6 +757,10 @@
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_vstr().
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="vstr_dup_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_dup_rep_chr()
@@ -735,6 +772,10 @@
 </p><p>  This function is equivilent to calling vstr_make_base() and then
  vstr_add_rep_chr().
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="VSTR_DUP_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_BUF()
@@ -745,6 +786,10 @@
 </p><p>  This macro function calls vstr_dup_buf() with the length being the value of
  strlen() on the data parameter (Parameter[2]).
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="VSTR_DUP_CSTR_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_PTR()
@@ -754,6 +799,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function calls vstr_dup_ptr() with the length being the value of
  strlen() on the data parameter (Parameter[2]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="VSTR_DUP_CSTR_REF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -783,11 +832,57 @@
 <strong>Function: </strong> vstr_ref_make_ptr()
 </a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to memory<br>Type<strong>[1]</strong>: void *
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Function callback for Vstr memory reference<br>Type<strong>[1]</strong>: void (*)(struct Vstr_ref *)
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Function callback for Vstr memory reference<br>Type<strong>[2]</strong>: void (*)(struct Vstr_ref *)
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will create a Vstr memory reference. The Vstr memory reference
  will have a reference count of 1, a pointer value of pointer passed
  (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+
+
+<a name="vstr_ref_make_memdup%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_memdup()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to memory<br>Type<strong>[1]</strong>: void *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of memory block<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1 and a copy of the memory pointed to
+ by (Parameter[1]) of length (Parameter[2]) will be the pointer value. The
+ cleanup function will point to a function to free both the reference and the
+ copy of memory.
+
+
+<a name="vstr_ref_make_vstr_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_vstr_base()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: Vstr_base *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr string (Parameter[1]). The cleanup function will point to a function to
+ free both the reference and the Vstr string.
+
+
+<a name="vstr_ref_make_vstr_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_vstr_conf()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: Vstr_conf *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr configuration (Parameter[1]). The cleanup function will point to a
+ function to free both the reference and the Vstr configuration.
+
+
+<a name="vstr_ref_make_vstr_sects%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_ref_make_vstr_sects()
+</a><br>Returns: Vstr memory reference<br>Type: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr sections<br>Type<strong>[1]</strong>: Vstr_sects *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will create a Vstr memory reference. The Vstr memory reference
+ will have a reference count of 1, a pointer value of the
+ Vstr sections (Parameter[1]). The cleanup function will point to a function to
+ free both the reference and the Vstr sections.
 
 
 <a name="vstr_make_spare_nodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -804,6 +899,8 @@
 </p><p>  The number of nodes created will be less than or equal to the number requested
  (Parameter[3]), however if it is less than then the malloc_bad flag will be set
  (Parameter[1])->malloc_bad.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_free_spare_nodes%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -817,9 +914,11 @@
  (Parameter[2]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  The number of nodes created will be less than or equal to the number requested
- (Parameter[3]), the only reason that less will be destroyed is if there are no
- more unused nodes of that type (Parameter[2]).
+</p><p>  The number of nodes destroyed will be less than or equal to the number
+ requested (Parameter[3]), the only reason that less will be destroyed is
+ if there are no more unused nodes of that type (Parameter[2]).
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20add%20and%20delete%20data%20to%20a%20Vstr%20string"><h2>Functions to add and delete data to a Vstr string</h2>
@@ -1398,12 +1497,19 @@
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Option type starting VSTR_CNTL_OPT_<br>Type<strong>[1]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[1]<br>Type<strong>[ ... ]</strong>: ...
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will get or set global options.
+
+
 <a name="vstr_cntl_base%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_base()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting VSTR_CNTL_BASE_<br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will get or set options for the Vstr string (Parameter[1]).
+
 
 <a name="vstr_cntl_conf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cntl_conf()
@@ -1411,6 +1517,14 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Option type starting VSTR_CNTL_CONF_<br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: Options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: ...
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will get or set options for the
+ Vstr configuration (Parameter[1]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20compare%20with%20a%20Vstr%20string"><h2>Functions to compare with a Vstr string</h2>
 </a>
@@ -2457,7 +2571,7 @@
 </a>
 <a name="vstr_parse_short%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_short()
-</a><br>Returns: Number pared from Vstr string<br>Type: short
+</a><br>Returns: Number parsed from Vstr string<br>Type: short
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2478,7 +2592,7 @@
 
 <a name="vstr_parse_ushort%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ushort()
-</a><br>Returns: Number pared from Vstr string<br>Type: unsigned short
+</a><br>Returns: Number parsed from Vstr string<br>Type: unsigned short
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2499,7 +2613,7 @@
 
 <a name="vstr_parse_int%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_int()
-</a><br>Returns: Number pared from Vstr string<br>Type: int
+</a><br>Returns: Number parsed from Vstr string<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2520,7 +2634,7 @@
 
 <a name="vstr_parse_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_uint()
-</a><br>Returns: Number pared from Vstr string<br>Type: unsigned int
+</a><br>Returns: Number parsed from Vstr string<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2541,7 +2655,7 @@
 
 <a name="vstr_parse_long%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_long()
-</a><br>Returns: Number pared from Vstr string<br>Type: long
+</a><br>Returns: Number parsed from Vstr string<br>Type: long
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2562,7 +2676,7 @@
 
 <a name="vstr_parse_ulong%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ulong()
-</a><br>Returns: Number pared from Vstr string<br>Type: unsigned long
+</a><br>Returns: Number parsed from Vstr string<br>Type: unsigned long
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2583,7 +2697,7 @@
 
 <a name="vstr_parse_intmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_intmax()
-</a><br>Returns: Number pared from Vstr string<br>Type: intmax_t
+</a><br>Returns: Number parsed from Vstr string<br>Type: intmax_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2606,7 +2720,7 @@
 
 <a name="vstr_parse_uintmax%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_uintmax()
-</a><br>Returns: Number pared from Vstr string<br>Type: uintmax_t
+</a><br>Returns: Number parsed from Vstr string<br>Type: uintmax_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -2675,18 +2789,34 @@
 
 <a name="vstr_parse_ipv4%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_parse_ipv4()
-</a><br>Returns: Number pared from Vstr string<br>Type: uintmax_t
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array ellements 0 to 3<br>Type<strong>[4]</strong>: unsigned char *
-</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns cidr mask<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns cidr mask, if reqested<br>Type<strong>[5]</strong>: unsigned int *
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV4_<br>Type<strong>[6]</strong>: unsigned int
 </td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
 </td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV4_ERR_<br>Type<strong>[8]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will parse an ipv4 address, or optionaly an ipv4 address and a
  cidr mask / netmask, from the Vstr string.
+
+
+<a name="vstr_parse_ipv6%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_parse_ipv6()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Returns ip in array ellements 0 to 7<br>Type<strong>[4]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns cidr mask<br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Flags starting VSTR_FLAG_PARSE_IPV6_<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Returns length of parsed ip address (Parameter[4] Parameter[5])<br>Type<strong>[7]</strong>: size_t *
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Returns error code starting VSTR_TYPE_PARSE_IPV6_ERR_<br>Type<strong>[8]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will parse an ipv6 address, or optionaly an ipv6 address and a
+ cidr mask, from the Vstr string.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20fmt%20function%20for%20the%20Vstr%20string"><h2>Functions for hooking into the fmt function for the Vstr string</h2>
@@ -2704,6 +2834,8 @@
  which may or may not be the same as the "system" escape character of '%'.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  If the user escape character is '%', then you can override system specifiers
  by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but
  is done so that you can have specifier names like "igloo" and it not be taken
@@ -2713,6 +2845,9 @@
  "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%',
  will do the right thing with current printf warning checks in gcc. We can
  all hope that the former will be as usable eventually.
+</p><p>  If you register all your custom formatter names starting with a &quot;{&quot; and
+ ending with a "}", and having no "{" or "}" character in it apart from those
+ two ... then matching custom formatters will be much faster.
 
 
 <a name="vstr_fmt_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2724,6 +2859,10 @@
 </p><p>  This function allows you to deregister a format specifier added
  using vstr_fmt_add().
 
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
 
 <a name="vstr_fmt_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_fmt_srch()
@@ -2733,6 +2872,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function allows you to find out if a format specifier has been added
  using vstr_fmt_add().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="VSTR_FMT_CB_ARG_PTR%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2771,6 +2914,8 @@
  unique, the vstr library uses names starting "/vstr__/".
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The name of the cache function should be placed in permanent storage, Ie.
  only the pointer to the name will be stored so you cannot malloc() the name
  and then free() it after calling the function.
@@ -2815,6 +2960,10 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will find a cache function name (Parameter[2]) and return the
  cookie reference for use in the other cache functions.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_cache_cb_sub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2936,11 +3085,16 @@
  correspond to the last 4 arguments to vstr_add_vstr().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  As you would expect the precision and field width values are used from the
  format, so the length of the Vstr string printed is the lower bound of the
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
-
+</p><p>  It is recommended that you use the name &quot;{vstr}&quot;, with the gcc warning
+ compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+ 
 
 <a name="vstr_sc_fmt_add_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_sc_fmt_add_buf()
@@ -2954,10 +3108,15 @@
  VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_buf().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  As you would expect the precision and field width values are used from the
  format, so the length of the memory block printed is the lower bound of the
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{buf}&quot;, with the gcc warning
+ compatible alternates using "{buf:%s%zu}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2972,10 +3131,15 @@
  VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to vstr_add_ptr().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  As you would expect the precision and field width values are used from the
  format, so the length of the memory block printed is the lower bound of the
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{ptr}&quot;, with the gcc warning
+ compatible alternates using "{ptr:%s%zu}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_non%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2990,10 +3154,15 @@
  These correspond to the last argument to vstr_add_non().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  As you would expect the precision and field width values are used from the
  format, so the length of the memory block printed is the lower bound of the
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{non}&quot;, with the gcc warning
+ compatible alternates using "{non:%zu}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3009,10 +3178,15 @@
  These correspond to the last 3 arguments to vstr_add_ref().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  As you would expect the precision and field width values are used from the
  format, so the length of the memory block printed is the lower bound of the
  length passed and the precision.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{ref}&quot;, with the gcc warning
+ compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_bkmg_Byte_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3026,11 +3200,16 @@
  number and before a "B" for bytes.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{BKMG.u}&quot;, with the gcc warning
+ compatible alternates using "{BKMG.u:%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_bkmg_Bytes_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3044,11 +3223,16 @@
  number and before a "B/s" for bytes per second.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{BKMG/s.u}&quot;, with the gcc warning
+ compatible alternates using "{BKMG/s.u:%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_bkmg_bit_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3062,11 +3246,16 @@
  number and before a "b" for bits.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{bKMG.u}&quot;, with the gcc warning
+ compatible alternates using "{bKMG.u:%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_bkmg_bits_uint%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3080,11 +3269,16 @@
  number and before a "b/s" for bits per second.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The precision specifies how many digits are included after the &quot;whole&quot; part
  of the number, the default precision is 2.
 </p><p>  The padding of the number can be done with spaces or zero characters, and
  the '+' or ' ' modifiers will work as on unsigned ints.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{bKMG/s.u}&quot;, with the gcc warning
+ compatible alternates using "{bKMG/s.u:%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_ipv4_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3100,10 +3294,12 @@
  a struct in_addr *, to be passed to inet_ntop().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  As you would expect the precision and field width values are used from the
- format, so the length of the string printed is the lower bound of the
- length passed and the precision.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{ipv4.p}&quot;, with the gcc warning
+ compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
 
 
 <a name="vstr_sc_fmt_add_ipv6_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3113,16 +3309,132 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to add a custom specifier function to print
- ipv4 IP addresses from a struct in6_addr *. It is equivalent to calling 
+ ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling 
  vstr_add_fmt() with the type
  arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is
  a struct in6_addr *, to be passed to inet_ntop().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  As you would expect the precision and field width values are used from the
- format, so the length of the string printed is the lower bound of the
- length passed and the precision.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{ipv4.p}&quot;, with the gcc warning
+ compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_ipv4_vec%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ ipv4 IP addresses from a vector of 4 unsigned char.
+ It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one
+ unsigned char for each part of the ipv4 address.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{ipv4.v}&quot;, with the gcc warning
+ compatible alternates using "{ipv4.v:%p}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_ipv6_vec%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ ipv6 IP addresses from a vector of 8 unsigned int.
+ It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
+ the vector is one unsigned int for each part of the ipv6 address, the
+ second argument of flags, change how the ipv6 address is printed.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  It is recommended that you use the name &quot;{ipv6.v}&quot;, with the gcc warning
+ compatible alternates using "{ipv6.v:%p%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_ipv4_vec_cipe%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv4_vec_cipe()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ ipv4 IP addresses with a cipe mask from a vector of 4 unsigned char and an
+ unsigned int.
+ It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END,
+ the vector is one unsigned char for each part of the ipv4 address.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  It is recommended that you use the name &quot;{ipv4.v+C}&quot;, with the gcc warning
+ compatible alternates using "{ipv4.v+C:%p%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_ipv6_vec_cipe%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_ipv6_vec_cipe()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with vstr_add_vfmt()<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ ipv6 IP addresses with a cipe mask from a vector of 8 unsigned int and an
+ unsigned int.
+ It is equivalent to calling 
+ vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT
+ and VSTR_TYPE_FMT_END,
+ the vector is one unsigned int for each part of the ipv6 address, the
+ second argument of flags, change how the ipv6 address is printed.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  It is recommended that you use the name &quot;{ipv6.v+C}&quot;, with the gcc warning
+ compatible alternates using "{ipv6.v+C:%p%u%u}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_all%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_all()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is a shotcut to adding a custom formatter for each of the
+ specific custom formatters. The names used are as those given in the notes
+ section of each custom formatter. Also 4 alternate names are given so that
+ the formatter can be used in a gcc warning compatible way. For instance
+ the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}",
+ "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  If any of the custom formatter adds fails (for example, if the name is
+ already in use) then all the rest of the names of that type will fail, 
+ however the other remaining types of formatters will be tried.
 
 
 <a name="vstr_sc_mmap_fd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3267,6 +3579,35 @@
 </p><p>  This function is used to take data from a Vstr string and write it to a
  file, after open()ing the file (Parameter[4]) with open flags (Parameter[5])
  and open mode (Parameter[6]).
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20to%20step%20through%20part%20of%20a%20Vstr%20string%20in%20iterations"><h2>Functions to step through part of a Vstr string in iterations</h2>
+</a>
+<a name="vstr_iter_fwd_beg%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_iter_fwd_beg()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr iteration<br>Type<strong>[4]</strong>: Vstr_iter *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to initialised an iteration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you alter the Vstr string (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
+
+
+<a name="vstr_iter_fwd_nxt%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_iter_fwd_nxt()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr iteration<br>Type<strong>[1]</strong>: Vstr_iter *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to step to the next iteration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you alter the Vstr string (Parameter[1]) while using a iteration, then
+ the iteration will be in an undefined state.
 
 
 

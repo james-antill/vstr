@@ -23,14 +23,14 @@
 
 Vstr_sects *vstr_nx_sects_make(unsigned int beg_num)
 {
-  Vstr_sects *sects = malloc(sizeof(Vstr_sects));
+  Vstr_sects *sects = VSTR__MK(sizeof(Vstr_sects));
   Vstr_sect_node *ptr = NULL;
   if (!sects)
     return (NULL);
 
-  if (beg_num && !(ptr = malloc(sizeof(Vstr_sect_node) * beg_num)))
+  if (beg_num && !(ptr = VSTR__MK(sizeof(Vstr_sect_node) * beg_num)))
   {
-    free(sects);
+    VSTR__F(sects);
     return (NULL);
   }
 
@@ -45,14 +45,13 @@ void vstr_nx_sects_free(Vstr_sects *sects)
     return;
 
   if (sects->free_ptr)
-    free(sects->ptr);
+    VSTR__F(sects->ptr);
 
-  free(sects);
+  VSTR__F(sects);
 }
 
 static int vstr__sects_add(Vstr_sects *sects)
 {
-  Vstr_sect_node *ptr = NULL;
   unsigned int sz = sects->sz;
   
   if (sects->alloc_double)
@@ -60,13 +59,11 @@ static int vstr__sects_add(Vstr_sects *sects)
   else
     ++sz;
   
-  if (!(ptr = realloc(sects->ptr, sizeof(Vstr_sect_node) * sz)))
+  if (!VSTR__MV(sects->ptr, sizeof(Vstr_sect_node) * sz))
   {
     sects->malloc_bad = TRUE;
     return (FALSE);
   }
-
-  sects->ptr = ptr;
   sects->sz = sz;
 
   return (TRUE);
@@ -74,19 +71,16 @@ static int vstr__sects_add(Vstr_sects *sects)
 
 static int vstr__sects_del(Vstr_sects *sects)
 {
-  Vstr_sect_node *ptr = NULL;
   unsigned int sz = sects->sz;
   
   sz >>= 1;
   assert(sz >= sects->num);
   
-  if (!(ptr = realloc(sects->ptr, sizeof(Vstr_sect_node) * sz)))
+  if (!VSTR__MV(sects->ptr, sizeof(Vstr_sect_node) * sz))
   {
     sects->malloc_bad = TRUE;
     return (FALSE);
   }
-
-  sects->ptr = ptr;
   sects->sz = sz;
 
   return (TRUE);
@@ -225,7 +219,7 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
-    free(data);
+    VSTR__F(data);
     return (NULL);
   }
 
@@ -336,7 +330,8 @@ static void vstr__sects_update_del(Vstr__sects_cache_data *data,
   --data->len;
   
   if (sects != end)
-    memmove(sects, sects + 1, (end - sects) * sizeof(Vstr_sects *));
+    vstr_nx_wrap_memmove(sects, sects + 1,
+                         (end - sects) * sizeof(Vstr_sects *));
 }
 
 int vstr_nx_sects_update_add(const Vstr_base *base,
@@ -363,7 +358,8 @@ int vstr_nx_sects_update_add(const Vstr_base *base,
     if (!vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL))
       return (FALSE);
 
-    data = malloc(sizeof(Vstr__sects_cache_data) + (sz * sizeof(Vstr_sects *)));
+    data = VSTR__MK(sizeof(Vstr__sects_cache_data) +
+                    (sz * sizeof(Vstr_sects *)));
     if (!data)
     {
       base->conf->malloc_bad = TRUE;
@@ -381,16 +377,12 @@ int vstr_nx_sects_update_add(const Vstr_base *base,
   ASSERT(data->len <= data->sz);
   if (data->len >= data->sz)
   {
-    Vstr__sects_cache_data *tmp = realloc(data,
-                                          sizeof(Vstr__sects_cache_data) +
-                                          (sz * sizeof(Vstr_sects *)));
-    if (!tmp)
+    if (!(VSTR__MV(data, sizeof(Vstr__sects_cache_data) +
+                   (sz * sizeof(Vstr_sects *)))))
     {
       base->conf->malloc_bad = TRUE;
       return (FALSE);
     }
-
-    data = tmp;
     data->sz = data->len + 1;
     
     vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, data);
@@ -426,7 +418,7 @@ int vstr_nx_sects_update_del(const Vstr_base *base,
 
   if (!data->len)
   {
-    free(data);
+    VSTR__F(data);
     vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL);
   }
   

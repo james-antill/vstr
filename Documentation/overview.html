@@ -25,7 +25,7 @@
     
     <table width="80%"><tr><td>
 	  <p>
-	    This is a string library, it's designed so you can work optimally
+	    Vstr is a string library, it's designed so you can work optimally
 	    with readv()/writev() for input/output. This means that, for 
 	    instance, you can readv() data to the end of the string and
 	    writev() data from the begining of the string without having to
@@ -42,8 +42,8 @@
 	    This model of representing the data also means that as a string gets
 	    bigger the Vstr memory usage only goes up linearly and has no 
 	    inherent copying (due to other string libraries increasing space
-	    for the string via. realloc() the memory usage can almost double and
-	    require a complete copy of the string).
+	    for the string via. realloc() the memory usage can be tripple the
+            equired size and require a complete copy of the string).
 	  </p>
 	  <p>
 	    It also means that adding, substituting or moving data anywhere in

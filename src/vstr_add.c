@@ -1,6 +1,6 @@
 #define VSTR_ADD_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ static int vstr__cache_iovec_add_end(Vstr_base *base, Vstr_node *node,
  if (!vstr__cache_iovec_alloc(base, base->num))
    return (FALSE);
 
- tmp = vstr__export_node_ptr(node);
+ tmp = vstr_nx_export__node_ptr(node);
  assert((node != base->beg) || !base->used);
  
  num = VSTR__CACHE(base)->vec->off + base->num - 1;
@@ -47,7 +47,7 @@ static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
   char *tmp = NULL;
   unsigned int num = 0;
   
-  tmp = vstr__export_node_ptr(node);
+  tmp = vstr_nx_export__node_ptr(node);
   
   num = VSTR__CACHE(base)->vec->off--;
   
@@ -95,7 +95,7 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
 
  assert(*pos);
 
- scan = vstr__base_pos(base, pos, num, TRUE);;
+ scan = vstr_nx_base__pos(base, pos, num, TRUE);;
  
  if (orig_scan_len)
    *orig_scan_len = scan->len;
@@ -455,150 +455,25 @@ int vstr_nx_add_ref(Vstr_base *base, size_t pos,
  return (TRUE);
 }
 
-#ifndef VSTR__CONF_REF_LINKED_SZ /* FIXME: */
-# ifdef NDEBUG
-#define VSTR__CONF_REF_LINKED_SZ INT_MAX
-# else /* when debugging do small ammounts so problems show up */
-#define VSTR__CONF_REF_LINKED_SZ 2
-# endif
-#endif
-
-struct Vstr__conf_ref_linked
-{
- Vstr_conf *conf;
- unsigned int l_ref;
-};
-
-/* put node on reference list */
-static int vstr__convert_buf_ref_add(Vstr_conf *conf, Vstr_node *node)
-{
-  struct Vstr__conf_ref_linked *ln_ref;
-
-  if (!(ln_ref = conf->ref_link))
-  {
-    if (!(ln_ref = malloc(sizeof(struct Vstr__conf_ref_linked))))
-      return (FALSE);
-
-    ln_ref->conf = conf;
-    ln_ref->l_ref = 0;
-
-    conf->ref_link = ln_ref;
-    ++conf->ref;
-  }
-  ASSERT(ln_ref->l_ref < VSTR__CONF_REF_LINKED_SZ);
-
-  ++ln_ref->l_ref;
-  node->next = (Vstr_node *)ln_ref;
-  
-  if (ln_ref->l_ref >= VSTR__CONF_REF_LINKED_SZ)
-    conf->ref_link = NULL;
-
-  return (TRUE);
-}
-
-/* call back ... relink */
-static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
-{
-  if (ref)
-  {
-    char *tmp = ref->ptr;
-    Vstr_node_buf *node = NULL;
-    struct Vstr__conf_ref_linked *ln_ref = NULL;
-    
-    tmp -= offsetof(Vstr_node_buf, buf);
-    node = (Vstr_node_buf *)tmp;
-    ln_ref = (struct Vstr__conf_ref_linked *)node->s.next;
-
-    node->s.next = (Vstr_node *)ln_ref->conf->spare_buf_beg;
-    ln_ref->conf->spare_buf_beg = node;
-    ++ln_ref->conf->spare_buf_num;
-  
-    if (!--ln_ref->l_ref)
-    {
-      if (ln_ref->conf->ref_link == ln_ref)
-        ln_ref->conf->ref_link = NULL;
-      
-      vstr__del_conf(ln_ref->conf);
-      free(ln_ref);
-    }
-
-    free(ref);
-  }
-}
-
 /* replace all buf nodes with ref nodes, we don't need to change the
  * vectors if they are there */
 static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
 {
   Vstr_node **scan = &base->beg;
-  Vstr_ref *ref = NULL;
-  Vstr_node *ref_node = NULL;
   unsigned int num = 0;
   
-  /* hand coded vstr__base_pos() because we need a double ptr */
-  pos += base->used;
-
-  if (base->iovec_upto_date)
-    num += VSTR__CACHE(base)->vec->off;
+  scan = vstr__base_ptr_pos(base, &pos, &num);
+  --pos;
   
-  while (*scan && (pos > (*scan)->len))
-  {
-    pos -= (*scan)->len;
-    scan = &(*scan)->next;
-    ++num;
-  }
-  len += pos - 1;
+  len += pos;
   len -= base->used;
   
   while (*scan)
   {
     if ((*scan)->type == VSTR_TYPE_NODE_BUF)
     {
-      Vstr__cache_data_pos *data = NULL;
-      Vstr_node *tmp = (*scan)->next;
-      
-      if (base->conf->spare_ref_num < 1)
-      {
-        if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
-          goto fail_malloc_nodes;
-      }
-      
-      if (!(ref = vstr_nx_ref_make_ptr(((Vstr_node_buf *)(*scan))->buf,
-                                       vstr__ref_cb_relink_bufnode_ref)))
-          goto fail_malloc_ref;
-      if (!vstr__convert_buf_ref_add(base->conf, *scan))
-          goto fail_malloc_conv_buf;
-      
-      --base->conf->spare_ref_num;
-      ref_node = (Vstr_node *)base->conf->spare_ref_beg;
-      base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
-
-      base->node_ref_used = TRUE;
-      
-      ref_node->len = (*scan)->len;
-      ((Vstr_node_ref *)ref_node)->ref = ref;
-      ((Vstr_node_ref *)ref_node)->off = 0;
-      if ((base->beg == *scan) && base->used)
-      {
-        ref_node->len -= base->used;
-        ((Vstr_node_ref *)ref_node)->off = base->used;
-        base->used = 0;
-      }
-      
-      if (!(ref_node->next = tmp))
-        base->end = ref_node;
-        
-      /* FIXME: hack alteration of type of node in cache */
-      if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)) &&
-          (data->node == *scan))
-        data->node = ref_node;
-      if (base->iovec_upto_date)
-      {
-        assert(VSTR__CACHE(base)->vec->t[num] == VSTR_TYPE_NODE_BUF);
-        VSTR__CACHE(base)->vec->t[num] = VSTR_TYPE_NODE_REF;
-      }
-      
-      *scan = ref_node;
+      if (!vstr__chg_node_buf_ref(base, scan, num))
+        return (FALSE);
     }
     
     if (len <= (*scan)->len)
@@ -611,13 +486,6 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
   assert(!len || (*scan && ((*scan)->len >= len)));
   
   return (TRUE);
-
- fail_malloc_conv_buf:
-  vstr_nx_ref_del(ref);
- fail_malloc_ref:
-  base->conf->malloc_bad = TRUE;
- fail_malloc_nodes:
-  return (FALSE);
 }
 
 static int vstr__add_all_ref(Vstr_base *base, size_t pos,
@@ -816,7 +684,7 @@ int vstr_nx_add_vstr(Vstr_base *base, size_t pos,
   }
   
   /* do the real copying */
-  if (!(scan = vstr__base_pos(from_base, &from_pos, &dummy_num, TRUE)))
+  if (!(scan = vstr_nx_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
   {
     DO_VALID_CHK();
     
@@ -824,7 +692,7 @@ int vstr_nx_add_vstr(Vstr_base *base, size_t pos,
   }
 
   if ((from_base == base) && (scan->type == VSTR_TYPE_NODE_BUF) &&
-      !vstr__base_pos(base, &pos, &dummy_num, TRUE))
+      !vstr_nx_base__pos(base, &pos, &dummy_num, TRUE))
   { /* do an initial split where it's going to be added, so that we don't
      * corrupt the data */
     DO_VALID_CHK();
@@ -834,7 +702,7 @@ int vstr_nx_add_vstr(Vstr_base *base, size_t pos,
   pos = orig_pos;
     
   if ((from_base == base) && (orig_from_pos <= orig_pos) &&
-      ((orig_from_pos + orig_len) > orig_pos))
+      ((orig_from_pos + orig_len - 1) > orig_pos))
   { /* ok the vstr has to be copied inside itself, Ie.
      *
      * aaXXXXaa
@@ -852,7 +720,7 @@ int vstr_nx_add_vstr(Vstr_base *base, size_t pos,
     
     len -= before;
     from_pos = orig_from_pos + (before * 2);
-    if (!(scan = vstr__base_pos(from_base, &from_pos, &dummy_num, TRUE)))
+    if (!(scan = vstr_nx_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
       goto fail;
   }
   
@@ -929,7 +797,7 @@ size_t vstr_nx_add_iovec_buf_beg(Vstr_base *base, size_t pos,
     if (pos > base->len)
       return (0);
     
-    scan = vstr__base_pos(base, &pos, &scan_num, TRUE);
+    scan = vstr_nx_base__pos(base, &pos, &scan_num, TRUE);
     assert(scan);
 
     if (pos != scan->len)
@@ -1011,7 +879,7 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   {
     unsigned int scan_num = 0;
     
-    scan = vstr__base_pos(base, &pos, &scan_num, TRUE);
+    scan = vstr_nx_base__pos(base, &pos, &scan_num, TRUE);
     iovs += scan_num - 1;
     types += scan_num - 1;
     
@@ -1076,7 +944,7 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
       while (scan)
       {
         iovs[count].iov_len = scan->len;
-        iovs[count].iov_base = vstr__export_node_ptr(scan);
+        iovs[count].iov_base = vstr_nx_export__node_ptr(scan);
         types[count] = scan->type;
         
         ++count;
@@ -1142,7 +1010,7 @@ void vstr_nx_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
     while (tmp)
     {
       iovs[count].iov_len = tmp->len;
-      iovs[count].iov_base = vstr__export_node_ptr(tmp);
+      iovs[count].iov_base = vstr_nx_export__node_ptr(tmp);
       types[count] = tmp->type;
       
       ++count;

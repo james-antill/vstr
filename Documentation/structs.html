@@ -55,6 +55,11 @@
 <li><a href="#fmt_zero">fmt_zero</a>
 <li><a href="#fmt_quote">fmt_quote</a>
 <li><a href="#fmt_I">fmt_I</a>
+</ul><li><a href="#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">struct Vstr_iter (aka. Vstr iterator)</a>
+<ul>
+<li><a href="#ptr">ptr</a>
+<li><a href="#len">len</a>
+<li><a href="#num">num</a>
 </ul></ul>
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_ref%20%28aka%2e%20Vstr%20reference%29"><h2>struct Vstr_ref (aka. Vstr reference)</h2>
@@ -294,6 +299,40 @@
  dependant bytes. This flag currently does nothing in vstr, apart from being
  passed to custom specifiers.
 
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29"><h2>struct Vstr_iter (aka. Vstr iterator)</h2>
+</a>
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> ptr
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This member is a pointer to the start of the current part of the iteration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  You can alter the pointer itself.
+</p><p>  You shouldn't write to the memory through this pointer, as it may be
+ read-only.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> len
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This member is the length of the current part of the iteration.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  You can alter the length.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> num
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This member is the length of the number of the current part of the entire
+ iteration of the Vstr string.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  You should not alter this value.
 
 </td></tr></table>
 </body></html>

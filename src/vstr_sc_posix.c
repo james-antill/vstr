@@ -41,9 +41,9 @@ static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
   
   munmap(mmap_ref->ref.ptr, mmap_ref->mmap_len); /* this _can't_ be -1 */
   
-  free(mmap_ref);
+  VSTR__F(mmap_ref);
 
-  assert(vstr__options.mmap_count-- > 0);
+  ASSERT(vstr__options.mmap_count-- > 0);
 }
 #endif
 
@@ -53,13 +53,13 @@ static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
 int vstr_nx_sc_mmap_fd(Vstr_base *base __attribute__((unused)),
                        size_t pos __attribute__((unused)),
                        int fd __attribute__((unused)),
-                       off64_t off __attribute__((unused)),
+                       VSTR_AUTOCONF_off64_t off __attribute__((unused)),
                        size_t len __attribute__((unused)),
                        unsigned int *err)
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
 #else
 int vstr_nx_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
-                       off64_t off, size_t len, unsigned int *err)
+                       VSTR_AUTOCONF_off64_t off, size_t len, unsigned int *err)
 {
   unsigned int dummy_err;
   void *addr = NULL;
@@ -94,14 +94,14 @@ int vstr_nx_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
     }
   }
 
-  addr = mmap64(NULL, len, PROT_READ, MAP_SHARED, fd, off);
+  addr = mmap64(NULL, len, PROT_READ, MAP_PRIVATE, fd, off);
   if (addr == MAP_FAILED)
   {
     *err = VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO;
     return (FALSE);
   }
 
-  if (!(mmap_ref = malloc(sizeof(Vstr__sc_mmap_ref))))
+  if (!(mmap_ref = VSTR__MK(sizeof(Vstr__sc_mmap_ref))))
     goto malloc_mmap_ref_failed;
   mmap_ref->mmap_len = len;
   mmap_ref->ref.func = vstr__sc_ref_munmap;
@@ -116,7 +116,7 @@ int vstr_nx_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
   return (TRUE);
 
  add_ref_failed:
-  free(mmap_ref);
+  VSTR__F(mmap_ref);
  malloc_mmap_ref_failed:
   munmap(addr, len);
   *err = VSTR_TYPE_SC_MMAP_FILE_ERR_MEM;
@@ -131,13 +131,13 @@ int vstr_nx_sc_mmap_fd(Vstr_base *base, size_t pos, int fd,
 int vstr_nx_sc_mmap_file(Vstr_base *base __attribute__((unused)),
                          size_t pos __attribute__((unused)),
                          const char *filename __attribute__((unused)),
-                         off64_t off __attribute__((unused)),
+                         VSTR_AUTOCONF_off64_t off __attribute__((unused)),
                          size_t len __attribute__((unused)),
                          unsigned int *err)
 { VSTR__SC_ENOSYS(VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO); }
 #else
-int vstr_nx_sc_mmap_file(Vstr_base *base, size_t pos,
-                         const char *filename, off64_t off, size_t len, 
+int vstr_nx_sc_mmap_file(Vstr_base *base, size_t pos, const char *filename,
+                         VSTR_AUTOCONF_off64_t off, size_t len, 
                          unsigned int *err)
 {
   int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
@@ -225,6 +225,9 @@ static int vstr__sc_read_fast_iov_fd(Vstr_base *base, size_t pos, int fd,
                                      unsigned int *err)
 {
   ssize_t bytes = -1;
+  
+  if (num > UIO_MAXIOV)
+    num = UIO_MAXIOV;
   
   do
   {
@@ -367,7 +370,7 @@ int vstr_nx_sc_read_len_fd(Vstr_base *base, size_t pos, int fd,
 }
 
 int vstr_nx_sc_read_iov_file(Vstr_base *base, size_t pos,
-                             const char *filename, off64_t off,
+                             const char *filename, VSTR_AUTOCONF_off64_t off,
                              unsigned int min, unsigned int max,
                              unsigned int *err)
 {
@@ -411,7 +414,7 @@ int vstr_nx_sc_read_iov_file(Vstr_base *base, size_t pos,
 
 int vstr_nx_sc_read_len_file(Vstr_base *base, size_t pos,
                              const char *filename,
-                             off64_t off, size_t len,
+                             VSTR_AUTOCONF_off64_t off, size_t len,
                              unsigned int *err)
 {
   int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
@@ -511,6 +514,9 @@ int vstr_nx_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     }
     assert(len == base->len);
 
+    if (num > UIO_MAXIOV)
+      num = UIO_MAXIOV;
+    
     do
     {
       bytes = writev(fd, vec, num);
@@ -532,8 +538,9 @@ int vstr_nx_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
 }
 
 int vstr_nx_sc_write_file(Vstr_base *base, size_t pos, size_t len,
-                          const char *filename, int open_flags, mode_t mode,
-                          off64_t off, unsigned int *err)
+                          const char *filename, int open_flags,
+                          VSTR_AUTOCONF_mode_t mode,
+                          VSTR_AUTOCONF_off64_t off, unsigned int *err)
 {
   int fd = -1;
   unsigned int dummy_err;

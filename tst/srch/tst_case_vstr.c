@@ -61,7 +61,7 @@ int tst(void)
   tst_srch_vstr(s3, 8);
 
   VSTR_SUB_CSTR_BUF(s2, 1, 8, "AbCd XyZ");
-  
+    
   /* make sure it's got a iovec cache */
   vstr_export_iovec_ptr_all(s1, NULL, NULL);
   vstr_export_iovec_ptr_all(s3, NULL, NULL);

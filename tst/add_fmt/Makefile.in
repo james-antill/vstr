@@ -128,6 +128,7 @@ tst = tst_char \
     tst_str_norm \
     tst_num \
     tst_bkmg \
+    tst_ip \
     tst_usr
 
 
@@ -144,7 +145,7 @@ check_PROGRAMS = tst_char$(EXEEXT) tst_short$(EXEEXT) tst_int$(EXEEXT) \
 	tst_long_double$(EXEEXT) tst_ptrdiff_t$(EXEEXT) \
 	tst_size_t$(EXEEXT) tst_m$(EXEEXT) tst_n$(EXEEXT) \
 	tst_str_norm$(EXEEXT) tst_num$(EXEEXT) tst_bkmg$(EXEEXT) \
-	tst_usr$(EXEEXT)
+	tst_ip$(EXEEXT) tst_usr$(EXEEXT)
 tst_bkmg_SOURCES = tst_bkmg.c
 tst_bkmg_OBJECTS = tst_bkmg.$(OBJEXT)
 tst_bkmg_LDADD = $(LDADD)
@@ -170,6 +171,11 @@ tst_intmax_t_OBJECTS = tst_intmax_t.$(OBJEXT)
 tst_intmax_t_LDADD = $(LDADD)
 tst_intmax_t_DEPENDENCIES =
 tst_intmax_t_LDFLAGS =
+tst_ip_SOURCES = tst_ip.c
+tst_ip_OBJECTS = tst_ip.$(OBJEXT)
+tst_ip_LDADD = $(LDADD)
+tst_ip_DEPENDENCIES =
+tst_ip_LDFLAGS =
 tst_long_SOURCES = tst_long.c
 tst_long_OBJECTS = tst_long.$(OBJEXT)
 tst_long_LDADD = $(LDADD)
@@ -233,11 +239,11 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = tst_bkmg.c tst_char.c tst_double.c tst_int.c \
-	tst_intmax_t.c tst_long.c tst_long_double.c tst_m.c tst_n.c \
-	tst_num.c tst_ptrdiff_t.c tst_short.c tst_size_t.c \
+	tst_intmax_t.c tst_ip.c tst_long.c tst_long_double.c tst_m.c \
+	tst_n.c tst_num.c tst_ptrdiff_t.c tst_short.c tst_size_t.c \
 	tst_str_norm.c tst_usr.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_bkmg.c tst_char.c tst_double.c tst_int.c tst_intmax_t.c tst_long.c tst_long_double.c tst_m.c tst_n.c tst_num.c tst_ptrdiff_t.c tst_short.c tst_size_t.c tst_str_norm.c tst_usr.c
+SOURCES = tst_bkmg.c tst_char.c tst_double.c tst_int.c tst_intmax_t.c tst_ip.c tst_long.c tst_long_double.c tst_m.c tst_n.c tst_num.c tst_ptrdiff_t.c tst_short.c tst_size_t.c tst_str_norm.c tst_usr.c
 
 all: all-am
 
@@ -270,6 +276,9 @@ tst_int$(EXEEXT): $(tst_int_OBJECTS) $(tst_int_DEPENDENCIES)
 tst_intmax_t$(EXEEXT): $(tst_intmax_t_OBJECTS) $(tst_intmax_t_DEPENDENCIES) 
 	@rm -f tst_intmax_t$(EXEEXT)
 	$(LINK) $(tst_intmax_t_LDFLAGS) $(tst_intmax_t_OBJECTS) $(tst_intmax_t_LDADD) $(LIBS)
+tst_ip$(EXEEXT): $(tst_ip_OBJECTS) $(tst_ip_DEPENDENCIES) 
+	@rm -f tst_ip$(EXEEXT)
+	$(LINK) $(tst_ip_LDFLAGS) $(tst_ip_OBJECTS) $(tst_ip_LDADD) $(LIBS)
 tst_long$(EXEEXT): $(tst_long_OBJECTS) $(tst_long_DEPENDENCIES) 
 	@rm -f tst_long$(EXEEXT)
 	$(LINK) $(tst_long_LDFLAGS) $(tst_long_OBJECTS) $(tst_long_LDADD) $(LIBS)

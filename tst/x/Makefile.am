@@ -17,7 +17,7 @@ check_PROGRAMS = $(tst)
 
 TESTS = $(tst)
 
-CFLAGS = -I../../../include -I- @CFLAGS@ @WARNS@
+CFLAGS = -I../../../include @CFLAGS@ @WARNS@
 LDADD = -L../../src/ -lvstr
 
 

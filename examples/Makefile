@@ -4,20 +4,20 @@ CC=gcc
 # CC=diet gcc
 #CC=diet gcc3
 
-VSTR_LOCAL_DIR=../jwrap
+VSTR_LOCAL_DIR=../j
 # VSTR_LOCAL_DIR=../
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-HAVE_TIMER_Q=1
+HAVE_TIMER_Q=0
 HAVE_SSL=1
 
-LOCAL=0
-PROFILE=0
+LOCAL=1
+PROFILE=1
 # 1 == Static with libvstr, 2 == really static
-STATIC=0
-FAST=1
+STATIC=1
+FAST=0
 
 ifeq ($(PROFILE),1)
 PROF=-pg
@@ -63,7 +63,7 @@ ifeq ($(HAVE_SSL),1)
 SSL_PROGS=ex_sg_compare
 endif
 
-FILES= ex_cat ex_hexdump ex_nl ex_mon_cp ex_lookup_ip \
+FILES= ex_cat ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
   $(TIMER_Q_PROGS) \
   $(SSL_PROGS)
 

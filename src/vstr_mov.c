@@ -58,13 +58,13 @@ static int vstr__mov_single_node(Vstr_base *base, size_t pos,
   /* 123456789 */
   /* XXFFXX>XX = cp T, F1, FL; mv F1, F1+FL, P1-F1; cp P1, T, FL */
   
-  scan = vstr__base_pos(base, &pos, &num, TRUE);
-  if ((vstr__base_pos(base, &from_pos, &num, TRUE) == scan) &&
+  scan = vstr_nx_base__pos(base, &pos, &num, TRUE);
+  if ((vstr_nx_base__pos(base, &from_pos, &num, TRUE) == scan) &&
       (scan->len > len) &&
       ((scan->len - len) >= pos) &&
       ((scan->len - len) >= from_pos))
   {
-    char *ptr = vstr__export_node_ptr(scan);
+    char *ptr = vstr_nx_export__node_ptr(scan);
 
     vstr_nx_wrap_memcpy(tbuf, ptr + from_pos - 1, len);
     if (pos > from_pos)
@@ -97,7 +97,7 @@ static Vstr_node **vstr__mov_setup_beg(Vstr_base *base, size_t pos,
     return (&base->beg);
   }
   
-  scan = vstr__base_pos(base, &pos, num, TRUE);
+  scan = vstr_nx_base__pos(base, &pos, num, TRUE);
   
   if ((pos != scan->len) && !(scan = vstr__base_split_node(base, scan, pos)))
     return (NULL);
@@ -125,7 +125,7 @@ static Vstr_node **vstr__mov_setup_end(Vstr_base *base, size_t pos,
     return (&base->beg);
   }
   
-  scan = vstr__base_pos(base, &pos, num, TRUE);
+  scan = vstr_nx_base__pos(base, &pos, num, TRUE);
   
   if ((pos != scan->len) && !(scan = vstr__base_split_node(base, scan, pos)))
     return (NULL);

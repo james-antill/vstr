@@ -4,7 +4,8 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_ip \
+tst = tst_ipv4 \
+      tst_ipv6 \
       tst_num \
       tst_netstr \
       tst_netstr2

@@ -114,7 +114,8 @@ install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-tst = tst_ip \
+tst = tst_ipv4 \
+      tst_ipv6 \
       tst_num \
       tst_netstr \
       tst_netstr2
@@ -128,13 +129,18 @@ subdir = tst/parse
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES =
-check_PROGRAMS = tst_ip$(EXEEXT) tst_num$(EXEEXT) tst_netstr$(EXEEXT) \
-	tst_netstr2$(EXEEXT)
-tst_ip_SOURCES = tst_ip.c
-tst_ip_OBJECTS = tst_ip.$(OBJEXT)
-tst_ip_LDADD = $(LDADD)
-tst_ip_DEPENDENCIES =
-tst_ip_LDFLAGS =
+check_PROGRAMS = tst_ipv4$(EXEEXT) tst_ipv6$(EXEEXT) tst_num$(EXEEXT) \
+	tst_netstr$(EXEEXT) tst_netstr2$(EXEEXT)
+tst_ipv4_SOURCES = tst_ipv4.c
+tst_ipv4_OBJECTS = tst_ipv4.$(OBJEXT)
+tst_ipv4_LDADD = $(LDADD)
+tst_ipv4_DEPENDENCIES =
+tst_ipv4_LDFLAGS =
+tst_ipv6_SOURCES = tst_ipv6.c
+tst_ipv6_OBJECTS = tst_ipv6.$(OBJEXT)
+tst_ipv6_LDADD = $(LDADD)
+tst_ipv6_DEPENDENCIES =
+tst_ipv6_LDFLAGS =
 tst_netstr_SOURCES = tst_netstr.c
 tst_netstr_OBJECTS = tst_netstr.$(OBJEXT)
 tst_netstr_LDADD = $(LDADD)
@@ -162,9 +168,10 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = tst_ip.c tst_netstr.c tst_netstr2.c tst_num.c
+DIST_SOURCES = tst_ipv4.c tst_ipv6.c tst_netstr.c tst_netstr2.c \
+	tst_num.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = tst_ip.c tst_netstr.c tst_netstr2.c tst_num.c
+SOURCES = tst_ipv4.c tst_ipv6.c tst_netstr.c tst_netstr2.c tst_num.c
 
 all: all-am
 
@@ -182,9 +189,12 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-tst_ip$(EXEEXT): $(tst_ip_OBJECTS) $(tst_ip_DEPENDENCIES) 
-	@rm -f tst_ip$(EXEEXT)
-	$(LINK) $(tst_ip_LDFLAGS) $(tst_ip_OBJECTS) $(tst_ip_LDADD) $(LIBS)
+tst_ipv4$(EXEEXT): $(tst_ipv4_OBJECTS) $(tst_ipv4_DEPENDENCIES) 
+	@rm -f tst_ipv4$(EXEEXT)
+	$(LINK) $(tst_ipv4_LDFLAGS) $(tst_ipv4_OBJECTS) $(tst_ipv4_LDADD) $(LIBS)
+tst_ipv6$(EXEEXT): $(tst_ipv6_OBJECTS) $(tst_ipv6_DEPENDENCIES) 
+	@rm -f tst_ipv6$(EXEEXT)
+	$(LINK) $(tst_ipv6_LDFLAGS) $(tst_ipv6_OBJECTS) $(tst_ipv6_LDADD) $(LIBS)
 tst_netstr$(EXEEXT): $(tst_netstr_OBJECTS) $(tst_netstr_DEPENDENCIES) 
 	@rm -f tst_netstr$(EXEEXT)
 	$(LINK) $(tst_netstr_LDFLAGS) $(tst_netstr_OBJECTS) $(tst_netstr_LDADD) $(LIBS)

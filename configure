@@ -997,26 +997,26 @@ Optional Features:
   --enable-static=PKGS  build static libraries default=yes
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-debug          turn on debugging (assumes gcc/gdb) default=no
-  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) default=no
-  --enable-noposix-host   turn off all the POSIX extentions default=no
-  --enable-linker-script  turn on linker version script default=no
-  --enable-tst-noinline   turn off use of inline default=no
---enable-tst-noattr-visibility   turn off use of attribute visibility default=no
---enable-tst-noattr-alias   turn off use of attribute alias default=no
-  --enable-wrap-memcpy  turn on wrapper for small values passed to memcpy default=no
-  --enable-wrap-memcmp  turn on wrapper for small values passed to memcmp default=no
-  --enable-wrap-memchr  turn on wrapper for small values passed to memchr default=no
-  --enable-wrap-memrchr  turn on wrapper for small values passed to memrchr default=no
-  --enable-wrap-memset  turn on wrapper for small values passed to memset default=no
-  --enable-wrap-memmove  turn on wrapper for small values passed to memmove default=no
+  --enable-debug          turn on debugging (assumes gcc/gdb) [default=no]
+  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) [default=no]
+  --enable-noposix-host   turn off all the POSIX extentions [default=no]
+  --enable-linker-script  turn on linker version script [default=no]
+  --enable-tst-noinline   turn off use of inline [default=no]
+  --enable-tst-noattr-visibility turn off use of attribute visibility [default=no]
+  --enable-tst-noattr-alias turn off use of attribute alias [default=no]
+  --enable-wrap-memcpy    turn on wrapper memcpy [default=no]
+  --enable-wrap-memcmp    turn on wrapper for memcmp [default=no]
+  --enable-wrap-memchr    turn on wrapper for memchr [default=no]
+  --enable-wrap-memrchr   turn on wrapper for memrchr [default=no]
+  --enable-wrap-memset    turn on wrapper for memset [default=no]
+  --enable-wrap-memmove   turn on wrapper for memmove [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
-  --with-fmt-float=TYPE   how to convert floats to strings in %f etc. (glibc,none,host) default=host
+  --with-fmt-float=TYPE   float conversion (glibc,none,host) [default=host]
 
 Some influential environment variables:
   CC          C compiler command
@@ -1420,7 +1420,7 @@ echo "${ECHO_T}${T_MD}Initial phase:${T_ME}" >&6
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=20
+VSTR_MICRO_VERSION=21
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -10762,37 +10762,68 @@ _ACEOF
 fi
 
 
-
-
-echo "$as_me:$LINENO: checking for socklen_t in sys/socket.h" >&5
-echo $ECHO_N "checking for socklen_t in sys/socket.h... $ECHO_C" >&6
-if test "${ac_cv_type_socklen_t+set}" = set; then
+# New autoconf goodness... or not
+XCFLAGS=$CFLAGS
+CFLAGS="-D_LARGEFILE64_SOURCE $CFLAGS"
+echo "$as_me:$LINENO: checking for off64_t" >&5
+echo $ECHO_N "checking for off64_t... $ECHO_C" >&6
+if test "${ac_cv_type_off64_t+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-#include <sys/unistd.h>
-
+$ac_includes_default
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+if ((off64_t *) 0)
+  return 0;
+if (sizeof (off64_t))
+  return 0;
+  ;
+  return 0;
+}
 _ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "off64_t" >/dev/null 2>&1; then
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
   ac_cv_type_off64_t=yes
 else
-  ac_cv_type_off64_t=no
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_type_off64_t=no
 fi
-rm -f conftest*
+rm -f conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_type_off64_t" >&5
+echo "${ECHO_T}$ac_cv_type_off64_t" >&6
+if test $ac_cv_type_off64_t = yes; then
+  :
+else
 
-fi
-echo "$as_me:$LINENO: result: $ac_cv_type_socklen_t" >&5
-echo "${ECHO_T}$ac_cv_type_socklen_t" >&6
-if test $ac_cv_type_off64_t = no; then
-  cat >>confdefs.h <<\_ACEOF
+cat >>confdefs.h <<_ACEOF
 #define off64_t off_t
 _ACEOF
 
 fi
 
+CFLAGS=$XCFLAGS
 
 echo "$as_me:$LINENO: checking for pid_t" >&5
 echo $ECHO_N "checking for pid_t... $ECHO_C" >&6
@@ -10980,62 +11011,118 @@ _ACEOF
 fi
 
 
-
-
-
-echo "$as_me:$LINENO: checking for intmax_t in stdint.h" >&5
-echo $ECHO_N "checking for intmax_t in stdint.h... $ECHO_C" >&6
+# New autoconf goodness
+echo "$as_me:$LINENO: checking for intmax_t" >&5
+echo $ECHO_N "checking for intmax_t... $ECHO_C" >&6
 if test "${ac_cv_type_intmax_t+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-#include <stdint.h>
-
+$ac_includes_default
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+if ((intmax_t *) 0)
+  return 0;
+if (sizeof (intmax_t))
+  return 0;
+  ;
+  return 0;
+}
 _ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "intmax_t" >/dev/null 2>&1; then
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
   ac_cv_type_intmax_t=yes
 else
-  ac_cv_type_intmax_t=no
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_type_intmax_t=no
 fi
-rm -f conftest*
-
+rm -f conftest.$ac_objext conftest.$ac_ext
 fi
 echo "$as_me:$LINENO: result: $ac_cv_type_intmax_t" >&5
 echo "${ECHO_T}$ac_cv_type_intmax_t" >&6
-if test $ac_cv_type_intmax_t = no; then
-  cat >>confdefs.h <<\_ACEOF
+if test $ac_cv_type_intmax_t = yes; then
+  :
+else
+
+cat >>confdefs.h <<_ACEOF
 #define intmax_t long
 _ACEOF
 
 fi
 
-echo "$as_me:$LINENO: checking for uintmax_t in stdint.h" >&5
-echo $ECHO_N "checking for uintmax_t in stdint.h... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for uintmax_t" >&5
+echo $ECHO_N "checking for uintmax_t... $ECHO_C" >&6
 if test "${ac_cv_type_uintmax_t+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-#include <stdint.h>
-
+$ac_includes_default
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+if ((uintmax_t *) 0)
+  return 0;
+if (sizeof (uintmax_t))
+  return 0;
+  ;
+  return 0;
+}
 _ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "uintmax_t" >/dev/null 2>&1; then
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
   ac_cv_type_uintmax_t=yes
 else
-  ac_cv_type_uintmax_t=no
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_type_uintmax_t=no
 fi
-rm -f conftest*
-
+rm -f conftest.$ac_objext conftest.$ac_ext
 fi
 echo "$as_me:$LINENO: result: $ac_cv_type_uintmax_t" >&5
 echo "${ECHO_T}$ac_cv_type_uintmax_t" >&6
-if test $ac_cv_type_uintmax_t = no; then
-  cat >>confdefs.h <<\_ACEOF
+if test $ac_cv_type_uintmax_t = yes; then
+  :
+else
+
+cat >>confdefs.h <<_ACEOF
 #define uintmax_t unsigned long
 _ACEOF
 
@@ -11104,136 +11191,6 @@ echo "$as_me:$LINENO: result: ${T_MD}Checking for libraries to link against:${T_
 echo "${ECHO_T}${T_MD}Checking for libraries to link against:${T_ME}" >&6
 
 
-
-
-echo "$as_me:$LINENO: checking for inet_ntop in -lsocket" >&5
-echo $ECHO_N "checking for inet_ntop in -lsocket... $ECHO_C" >&6
-if test "${ac_cv_lib_socket_inet_ntop+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsocket  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char inet_ntop ();
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-inet_ntop ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_socket_inet_ntop=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_cv_lib_socket_inet_ntop=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_socket_inet_ntop" >&5
-echo "${ECHO_T}$ac_cv_lib_socket_inet_ntop" >&6
-if test $ac_cv_lib_socket_inet_ntop = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSOCKET 1
-_ACEOF
-
-  LIBS="-lsocket $LIBS"
-
-fi
-
-
-echo "$as_me:$LINENO: checking for inet_addr in -lsocket" >&5
-echo $ECHO_N "checking for inet_addr in -lsocket... $ECHO_C" >&6
-if test "${ac_cv_lib_socket_inet_addr+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsocket  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char inet_addr ();
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-inet_addr ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_socket_inet_addr=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_cv_lib_socket_inet_addr=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_socket_inet_addr" >&5
-echo "${ECHO_T}$ac_cv_lib_socket_inet_addr" >&6
-if test $ac_cv_lib_socket_inet_addr = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSOCKET 1
-_ACEOF
-
-  LIBS="-lsocket $LIBS"
-
-fi
 
 # AC_CHECK_LIB(m, log10)
 
@@ -12472,155 +12429,6 @@ _ACEOF
 fi
 
 
-for ac_func in vprintf
-do
-as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_func" >&5
-echo $ECHO_N "checking for $ac_func... $ECHO_C" >&6
-if eval "test \"\${$as_ac_var+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func (); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char $ac_func ();
-char (*f) ();
-
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-f = $ac_func;
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  eval "$as_ac_var=yes"
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-eval "$as_ac_var=no"
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_var'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_var'}'`" >&6
-if test `eval echo '${'$as_ac_var'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-echo "$as_me:$LINENO: checking for _doprnt" >&5
-echo $ECHO_N "checking for _doprnt... $ECHO_C" >&6
-if test "${ac_cv_func__doprnt+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char _doprnt (); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char _doprnt ();
-char (*f) ();
-
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub__doprnt) || defined (__stub____doprnt)
-choke me
-#else
-f = _doprnt;
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_func__doprnt=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_cv_func__doprnt=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: $ac_cv_func__doprnt" >&5
-echo "${ECHO_T}$ac_cv_func__doprnt" >&6
-if test $ac_cv_func__doprnt = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_DOPRNT 1
-_ACEOF
-
-fi
-
-fi
-done
-
-
-
 # L_IBOBJS is spelt with an _ because autoconf uses grep and doesn't know
 # the below are in comments...
 # now autoconf barfs on the L_IBOBJS stuff below...
@@ -13739,85 +13547,6 @@ fi
 done
 
 
-for ac_func in vsnprintf
-do
-as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_func" >&5
-echo $ECHO_N "checking for $ac_func... $ECHO_C" >&6
-if eval "test \"\${$as_ac_var+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func (); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char $ac_func ();
-char (*f) ();
-
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-f = $ac_func;
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  eval "$as_ac_var=yes"
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-eval "$as_ac_var=no"
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_var'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_var'}'`" >&6
-if test `eval echo '${'$as_ac_var'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
- cat >>confdefs.h <<\_ACEOF
-#define HAVE_VSNSPRINTF 1
-_ACEOF
-
-fi
-done
-
-
 for ac_func in asprintf
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -14453,33 +14182,25 @@ _ACEOF
 #define HAVE_INET_NTOP 1
 _ACEOF
 
-fi
-done
-
-
-for ac_func in inet_ntoa
-do
-as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_func" >&5
-echo $ECHO_N "checking for $ac_func... $ECHO_C" >&6
-if eval "test \"\${$as_ac_var+set}\" = set"; then
+else
+  echo "$as_me:$LINENO: checking for inet_ntop in -lnsl" >&5
+echo $ECHO_N "checking for inet_ntop in -lnsl... $ECHO_C" >&6
+if test "${ac_cv_lib_nsl_inet_ntop+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  cat >conftest.$ac_ext <<_ACEOF
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnsl  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func (); below.  */
-#include <assert.h>
+
 /* Override any gcc2 internal prototype to avoid an error.  */
 #ifdef __cplusplus
 extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char $ac_func ();
-char (*f) ();
-
+char inet_ntop ();
 #ifdef F77_DUMMY_MAIN
 #  ifdef __cplusplus
      extern "C"
@@ -14489,15 +14210,7 @@ char (*f) ();
 int
 main ()
 {
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-f = $ac_func;
-#endif
-
+inet_ntop ();
   ;
   return 0;
 }
@@ -14514,26 +14227,27 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  eval "$as_ac_var=yes"
+  ac_cv_lib_nsl_inet_ntop=yes
 else
   echo "$as_me: failed program was:" >&5
 cat conftest.$ac_ext >&5
-eval "$as_ac_var=no"
+ac_cv_lib_nsl_inet_ntop=no
 fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_var'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_var'}'`" >&6
-if test `eval echo '${'$as_ac_var'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
- cat >>confdefs.h <<\_ACEOF
-#define HAVE_INET_NTOA 1
+echo "$as_me:$LINENO: result: $ac_cv_lib_nsl_inet_ntop" >&5
+echo "${ECHO_T}$ac_cv_lib_nsl_inet_ntop" >&6
+if test $ac_cv_lib_nsl_inet_ntop = yes; then
+   LIBS="-lnsl $LIBS"; cat >>confdefs.h <<\_ACEOF
+#define HAVE_INET_NTOP 1
 _ACEOF
 
 fi
+
+fi
 done
+
 
 
 for ac_func in inet_pton
@@ -14611,33 +14325,25 @@ _ACEOF
 #define HAVE_INET_PTON 1
 _ACEOF
 
-fi
-done
-
-
-for ac_func in inet_aton
-do
-as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_func" >&5
-echo $ECHO_N "checking for $ac_func... $ECHO_C" >&6
-if eval "test \"\${$as_ac_var+set}\" = set"; then
+else
+  echo "$as_me:$LINENO: checking for inet_pton in -lnsl" >&5
+echo $ECHO_N "checking for inet_pton in -lnsl... $ECHO_C" >&6
+if test "${ac_cv_lib_nsl_inet_pton+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  cat >conftest.$ac_ext <<_ACEOF
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnsl  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func (); below.  */
-#include <assert.h>
+
 /* Override any gcc2 internal prototype to avoid an error.  */
 #ifdef __cplusplus
 extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char $ac_func ();
-char (*f) ();
-
+char inet_pton ();
 #ifdef F77_DUMMY_MAIN
 #  ifdef __cplusplus
      extern "C"
@@ -14647,15 +14353,7 @@ char (*f) ();
 int
 main ()
 {
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-f = $ac_func;
-#endif
-
+inet_pton ();
   ;
   return 0;
 }
@@ -14672,102 +14370,23 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  eval "$as_ac_var=yes"
+  ac_cv_lib_nsl_inet_pton=yes
 else
   echo "$as_me: failed program was:" >&5
 cat conftest.$ac_ext >&5
-eval "$as_ac_var=no"
+ac_cv_lib_nsl_inet_pton=no
 fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_var'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_var'}'`" >&6
-if test `eval echo '${'$as_ac_var'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
- cat >>confdefs.h <<\_ACEOF
-#define HAVE_INET_ATON 1
+echo "$as_me:$LINENO: result: $ac_cv_lib_nsl_inet_pton" >&5
+echo "${ECHO_T}$ac_cv_lib_nsl_inet_pton" >&6
+if test $ac_cv_lib_nsl_inet_pton = yes; then
+   LIBS="-lnsl $LIBS"; cat >>confdefs.h <<\_ACEOF
+#define HAVE_INET_PTON 1
 _ACEOF
 
 fi
-done
-
-
-for ac_func in inet_addr
-do
-as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $ac_func" >&5
-echo $ECHO_N "checking for $ac_func... $ECHO_C" >&6
-if eval "test \"\${$as_ac_var+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func (); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char $ac_func ();
-char (*f) ();
-
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-f = $ac_func;
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  eval "$as_ac_var=yes"
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-eval "$as_ac_var=no"
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_var'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_var'}'`" >&6
-if test `eval echo '${'$as_ac_var'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
- cat >>confdefs.h <<\_ACEOF
-#define HAVE_INET_ADDR 1
-_ACEOF
 
 fi
 done
@@ -15205,75 +14824,6 @@ _ACEOF
 
 esac
 
-echo "$as_me:$LINENO: checking for a writev that we can use" >&5
-echo $ECHO_N "checking for a writev that we can use... $ECHO_C" >&6
-if test "${local_cv_has_writev+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
-echo "$as_me: error: cannot run test program while cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/uio.h>
-#define MAX_SZ 1024
-int main() {
- struct iovec iovs[MAX_SZ];
- int count = 0;
-
- while (count < MAX_SZ)
- {
-  iovs[count].iov_base = ".";
-  iovs[count].iov_len = 1;
-  ++count;
- }
- iovs[MAX_SZ - 1].iov_base = "\n";
- iovs[MAX_SZ - 1].iov_len = 1;
-
- if (write(2, iovs, MAX_SZ) != MAX_SZ)
-   exit (1);
- return 0;
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  local_cv_has_writev=yes
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-( exit $ac_status )
-local_cv_has_writev=no
-fi
-rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-fi
-
-echo "$as_me:$LINENO: result: $local_cv_has_writev" >&5
-echo "${ECHO_T}$local_cv_has_writev" >&6
-case x$local_cv_has_writev in
-xyes) cat >>confdefs.h <<\_ACEOF
-#define HAVE_WRITEV 1
-_ACEOF
-
-esac
-
 echo "$as_me:$LINENO: checking for a RTLD_GLOBAL def" >&5
 echo $ECHO_N "checking for a RTLD_GLOBAL def... $ECHO_C" >&6
 if test "${local_cv_has_dl_rtld_global+set}" = set; then
@@ -15331,9 +14881,10 @@ _ACEOF
 
 esac
 
-echo "$as_me:$LINENO: checking for a C9x compat. snprintf" >&5
-echo $ECHO_N "checking for a C9x compat. snprintf... $ECHO_C" >&6
-if test "${local_cv_has_C9x_snprintf+set}" = set; then
+# This is complicated because many sprintf()'s are broken...
+echo "$as_me:$LINENO: checking for a C9x snprintf() return" >&5
+echo $ECHO_N "checking for a C9x snprintf() return... $ECHO_C" >&6
+if test "${local_cv_has_C9x_snprintf_ret+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -15354,7 +14905,7 @@ int main() {
  char buffer[4];
  int tmp = snprintf(buffer, 4, "%s", "123456");
 
- if ((tmp > 0) && (tmp < 4))
+ if (tmp != 6)
   exit (1);
 
  if (!( (buffer[0] == '1') && (buffer[1] == '2') && (buffer[2] == '3') &&
@@ -15374,23 +14925,213 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  local_cv_has_C9x_snprintf=yes
+  local_cv_has_C9x_snprintf_ret=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 cat conftest.$ac_ext >&5
 ( exit $ac_status )
-local_cv_has_C9x_snprintf=no
+local_cv_has_C9x_snprintf_ret=no
 fi
 rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 
-echo "$as_me:$LINENO: result: $local_cv_has_C9x_snprintf" >&5
-echo "${ECHO_T}$local_cv_has_C9x_snprintf" >&6
-case x$local_cv_has_C9x_snprintf in
+echo "$as_me:$LINENO: result: $local_cv_has_C9x_snprintf_ret" >&5
+echo "${ECHO_T}$local_cv_has_C9x_snprintf_ret" >&6
+case x$local_cv_has_C9x_snprintf_ret in
 xyes) cat >>confdefs.h <<\_ACEOF
-#define HAVE_C9X_SNPRINTF 1
+#define HAVE_C9X_SNPRINTF_RET 1
+_ACEOF
+
+esac
+
+echo "$as_me:$LINENO: checking for a C9x sprintf() format F" >&5
+echo $ECHO_N "checking for a C9x sprintf() format F... $ECHO_C" >&6
+if test "${local_cv_has_C9x_sprintf_fmt_F+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%F", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == '.') && (buffer[2] == '0') &&
+        (buffer[3] == '0') && (buffer[4] == '0') && (buffer[5] == '0') &&
+        (buffer[6] == '0') && (buffer[7] == '0') &&
+        (buffer[8] == 0) ))
+  exit (1);
+ return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_C9x_sprintf_fmt_F=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_C9x_sprintf_fmt_F=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_C9x_sprintf_fmt_F" >&5
+echo "${ECHO_T}$local_cv_has_C9x_sprintf_fmt_F" >&6
+case x$local_cv_has_C9x_sprintf_fmt_F in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_C9X_SPRINTF_FMT_F 1
+_ACEOF
+
+esac
+
+echo "$as_me:$LINENO: checking for a C9x sprintf() format A" >&5
+echo $ECHO_N "checking for a C9x sprintf() format A... $ECHO_C" >&6
+if test "${local_cv_has_C9x_sprintf_fmt_A+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%A", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == 'X') && (buffer[2] == '0') &&
+        (buffer[3] == 'P') && (buffer[4] == '+') && (buffer[5] == '0') &&
+        (buffer[6] == 0) ))
+  exit (1);
+ return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_C9x_sprintf_fmt_A=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_C9x_sprintf_fmt_A=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_C9x_sprintf_fmt_A" >&5
+echo "${ECHO_T}$local_cv_has_C9x_sprintf_fmt_A" >&6
+case x$local_cv_has_C9x_sprintf_fmt_A in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_C9X_SPRINTF_FMT_A 1
+_ACEOF
+
+esac
+
+echo "$as_me:$LINENO: checking for a C9x sprintf() format a" >&5
+echo $ECHO_N "checking for a C9x sprintf() format a... $ECHO_C" >&6
+if test "${local_cv_has_C9x_sprintf_fmt_a+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+ char buffer[1024];
+
+ sprintf(buffer, "%a", 0.0);
+
+ if (!( (buffer[0] == '0') && (buffer[1] == 'x') && (buffer[2] == '0') &&
+        (buffer[3] == 'p') && (buffer[4] == '+') && (buffer[5] == '0') &&
+        (buffer[6] == 0) ))
+  exit (1);
+ return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  local_cv_has_C9x_sprintf_fmt_a=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+local_cv_has_C9x_sprintf_fmt_a=no
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+
+echo "$as_me:$LINENO: result: $local_cv_has_C9x_sprintf_fmt_a" >&5
+echo "${ECHO_T}$local_cv_has_C9x_sprintf_fmt_a" >&6
+case x$local_cv_has_C9x_sprintf_fmt_a in
+xyes) cat >>confdefs.h <<\_ACEOF
+#define HAVE_C9X_SPRINTF_FMT_a 1
 _ACEOF
 
 esac
@@ -16546,8 +16287,8 @@ esac
 XLDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -Wl,-e,relocated_main"
 
-echo "$as_me:$LINENO: checking for linker main symbol relocation" >&5
-echo $ECHO_N "checking for linker main symbol relocation... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for linker main symbol redirection" >&5
+echo $ECHO_N "checking for linker main symbol redirection... $ECHO_C" >&6
 if test "${local_cv_linker_have_relocationable_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -16630,7 +16371,7 @@ else
 #include <limits.h>
 
 int main() {
- char buffer[1024];
+ char buffer[1024 + (CHAR_BIT * sizeof(unsigned long))];
  int len;
  sprintf(buffer, "%lu", ULONG_MAX);
  len = strlen(buffer);

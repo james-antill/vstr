@@ -101,12 +101,8 @@
 # include <vfork.h>
 #endif
 
-#ifdef HAVE_WRITEV
+#ifdef HAVE_SYS_UIO_H
 # include <sys/uio.h>
-#else
-# ifdef HAVE_SYS_UIO_H
-#  warning "Detected uio.h, but haven't used writev as it might not work"
-# endif
 #endif
 
 #ifdef USE_MMAP

@@ -190,6 +190,15 @@ extern struct Vstr_ref *vstr_nx_ref_make_ptr(void *,
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
 extern struct Vstr_ref *vstr_nx_ref_make_malloc(size_t)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+extern struct Vstr_ref *vstr_nx_ref_make_memdup(void *, size_t)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+extern struct Vstr_ref *vstr_nx_ref_make_vstr_base(struct Vstr_base *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+extern struct Vstr_ref *vstr_nx_ref_make_vstr_conf(struct Vstr_conf *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+extern struct Vstr_ref *vstr_nx_ref_make_vstr_sects(struct Vstr_sects *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_H() ;
+
 
 /* real start of vector string functions */
 
@@ -208,12 +217,10 @@ extern void vstr_nx_free_base(struct Vstr_base *) VSTR__ATTR_H() ;
 
 extern unsigned int vstr_nx_make_spare_nodes(struct Vstr_conf *,
                                           unsigned int,
-                                          unsigned int)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+                                          unsigned int) VSTR__ATTR_H() ;
 extern unsigned int vstr_nx_free_spare_nodes(struct Vstr_conf *,
                                           unsigned int,
-                                          unsigned int)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+                                          unsigned int) VSTR__ATTR_H() ;
 
 /* add data functions */
 extern int vstr_nx_add_buf(struct Vstr_base *, size_t, const void *, size_t)
@@ -325,8 +332,7 @@ extern int vstr_nx_mov(struct Vstr_base *, size_t,
 extern int vstr_nx_cntl_opt(int, ...) VSTR__ATTR_H() ;
 extern int vstr_nx_cntl_base(struct Vstr_base *, int, ...)
     VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__ATTR_H() ;
-extern int vstr_nx_cntl_conf(struct Vstr_conf *, int, ...)
-    VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__ATTR_H() ;
+extern int vstr_nx_cntl_conf(struct Vstr_conf *, int, ...) VSTR__ATTR_H() ;
 
 /* --------------------------------------------------------------------- */
 /* constant base functions below here */
@@ -502,6 +508,11 @@ extern int vstr_nx_parse_ipv4(const struct Vstr_base *,
                            unsigned char *, unsigned int *, unsigned int,
                            size_t *, unsigned int *)
     VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) VSTR__ATTR_H() ;
+extern int vstr_nx_parse_ipv6(const struct Vstr_base *,
+                           size_t, size_t,
+                           unsigned int *, unsigned int *, unsigned int,
+                           size_t *, unsigned int *)
+    VSTR__COMPILE_ATTR_NONNULL_L((1, 4)) VSTR__ATTR_H() ;
 
 extern size_t vstr_nx_parse_netstr(const struct Vstr_base *, size_t, size_t,
                                 size_t *, size_t *)
@@ -554,9 +565,9 @@ extern unsigned int vstr_nx_cache_add(struct Vstr_conf *, const char *,
                                    void *(*)(const struct Vstr_base *,
                                              size_t, size_t,
                                              unsigned int, void *))
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2, 3)) VSTR__ATTR_H() ;
 extern unsigned int vstr_nx_cache_srch(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern void *vstr_nx_cache_get(const struct Vstr_base *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_cache_set(const struct Vstr_base *, unsigned int, void *)
@@ -572,10 +583,18 @@ extern void vstr_nx_cache_cb_free(const struct Vstr_base *, unsigned int)
 extern int vstr_nx_fmt_add(struct Vstr_conf *, const char *,
                         int (*)(struct Vstr_base *, size_t,
                                 struct Vstr_fmt_spec *), ...)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2, 3)) VSTR__ATTR_H() ;
 extern void vstr_nx_fmt_del(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_fmt_srch(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+
+/* scan the vstr in iteration functions */
+
+extern int vstr_nx_iter_fwd_beg(const struct Vstr_base *, size_t, size_t,
+                             struct Vstr_iter *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+extern int vstr_nx_iter_fwd_nxt(struct Vstr_iter *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
 
@@ -587,28 +606,37 @@ extern int vstr_nx_sc_fmt_cb_end(struct Vstr_base *, size_t,
                               struct Vstr_fmt_spec *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_vstr(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_buf(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_ptr(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_non(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_ref(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_bkmg_Byte_uint(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_bkmg_bit_uint(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_bkmg_Bytes_uint(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_bkmg_bits_uint(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ipv4_vec(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ipv6_vec(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ipv4_vec_cipe(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_ipv6_vec_cipe(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
+extern int vstr_nx_sc_fmt_add_all(struct Vstr_conf *) VSTR__ATTR_H() ;
 
 extern int vstr_nx_sc_fmt_add_ipv4_ptr(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 extern int vstr_nx_sc_fmt_add_ipv6_ptr(struct Vstr_conf *, const char *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
+    VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__ATTR_H() ;
 
 extern int vstr_nx_sc_mmap_fd(struct Vstr_base *, size_t, int, 
                            VSTR_AUTOCONF_off64_t, size_t, unsigned int *)
@@ -668,10 +696,13 @@ extern void vstr_nx_sc_dirname(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
  extern void *vstr_nx_wrap_memchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
- extern void *vstr_nx_wrap_memrchr(const void *, int, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
  extern void *vstr_nx_wrap_memset(void *, int, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
  extern void *vstr_nx_wrap_memmove(void *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
+ extern int vstr_nx_cache__pos(const struct Vstr_base *,
+                            struct Vstr_node *, size_t, unsigned int) VSTR__ATTR_H() ;
+ extern struct Vstr_node *vstr_nx_base__pos(const struct Vstr_base *,
+                                         size_t *, unsigned int *, int) VSTR__ATTR_H() ;
+ extern char *vstr_nx_export__node_ptr(const struct Vstr_node *) VSTR__ATTR_H() ;

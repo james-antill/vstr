@@ -31,6 +31,10 @@ extern "C"
 /* only undef the things we use externaly */
 # undef VSTR_AUTOCONF_HAVE_MMAP
 # undef VSTR_AUTOCONF_HAVE_WRITEV
+# undef  VSTR_AUTOCONF_mode_t
+# define VSTR_AUTOCONF_mode_t int
+# undef  VSTR_AUTOCONF_off64_t
+# define VSTR_AUTOCONF_off64_t long
 #endif
 
 #include <vstr-switch.h>
@@ -48,9 +52,8 @@ extern "C"
 # include <string.h> /* strlen()/memcpy()/memset() in headers */
 
 # ifdef VSTR_AUTOCONF_HAVE_POSIX_HOST
-#  include <sys/types.h>  /* mode_t */
+#  include <sys/types.h>  /* mode_t off64_t/off_t */
 #  include <sys/uio.h>    /* struct iovec */
-#  include <sys/unistd.h> /* off64_t */
 # else
 struct iovec /* need real definition, as it's used inline */
 {
@@ -60,9 +63,13 @@ struct iovec /* need real definition, as it's used inline */
 
 # endif
 
-# ifdef VSTR__AUTOCONF_NEED_INTTYPES_H
-#  include <stdint.h> /* intmax_t */
+#ifdef VSTR_AUTOCONF_HAVE_INTTYPES_H
+# include <inttypes.h>
+#else
+# ifdef VSTR_AUTOCONF_HAVE_STDINT_H
+#  include <stdint.h>
 # endif
+#endif
 
 #endif
 

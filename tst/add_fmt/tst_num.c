@@ -98,6 +98,10 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%#08x", 1);
   TST_B_TST(ret, 18, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0x000001"));
+
+  sprintf(buf, "%#.o", 0);
+  if (!buf[0])
+    return (EXIT_FAILED_OK); /* Solaris (2.8) gets this wrong at least... */
   
   {
     static const char fmts[][80] = {
@@ -136,6 +140,11 @@ int tst(void)
 
         TST_B_TST(ret, 30, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
         
+        TST(host, fmts[scan], -(int)count);
+        TST(vstr, fmts[scan], -(int)count);
+
+        TST_B_TST(ret, 30, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, buf));
+        
         ++scan;
       }
 
@@ -155,5 +164,5 @@ int tst(void)
     }
   }
   
-  return (ret);
+  return (TST_B_RET(ret));
 }

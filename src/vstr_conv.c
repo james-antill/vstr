@@ -26,40 +26,39 @@
  * Also note that if you just have _NON nodes and _BUF nodes ot doesn't do
  * anything */
 #define VSTR__BUF_NEEDED(test, val_count) do { \
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len); \
-  if (!scan) goto malloc_buf_needed_fail; \
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter)) \
+    goto malloc_buf_needed_fail; \
   \
   if (base->node_ptr_used || base->node_ref_used) { do \
   { \
-    if (scan->type == VSTR_TYPE_NODE_BUF) \
+    if (iter->node->type == VSTR_TYPE_NODE_BUF) \
       continue; \
-    if (scan->type == VSTR_TYPE_NODE_NON) \
+    if (iter->node->type == VSTR_TYPE_NODE_NON) \
       continue; \
     \
-    while (scan_len > 0) \
+    while (iter->len > 0) \
     { \
       if (test) \
       { \
-        size_t start_scan_len = scan_len; \
+        size_t start_scan_len = iter->len; \
         \
         ++ (val_count); \
         \
         do \
         { \
-          --scan_len; \
-          ++scan_str; \
-        } while ((scan_len > 0) && \
-                 ((start_scan_len - scan_len) <= base->conf->buf_sz) && \
+          --iter->len; \
+          ++iter->ptr; \
+        } while ((iter->len > 0) && \
+                 ((start_scan_len - iter->len) <= base->conf->buf_sz) && \
                  (test)); \
         \
         continue; \
       } \
       \
-      --scan_len; \
-      ++scan_str; \
+      --iter->len; \
+      ++iter->ptr; \
     } \
-  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num, \
-                                           scan, &scan_str, &scan_len))); \
+  } while (vstr_nx_iter_fwd_nxt(iter)); \
   } \
   len = passed_len; \
 } while (FALSE)
@@ -67,13 +66,10 @@
 int vstr_nx_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
 {
   size_t len = passed_len;
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   unsigned int extra_nodes = 0;
   
-  VSTR__BUF_NEEDED(VSTR__IS_ASCII_UPPER(*scan_str), extra_nodes);  
+  VSTR__BUF_NEEDED(VSTR__IS_ASCII_UPPER(*iter->ptr), extra_nodes);  
   
   if (base->conf->spare_buf_num < extra_nodes)
   {
@@ -109,13 +105,10 @@ int vstr_nx_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
 int vstr_nx_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
 {
   size_t len = passed_len;
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   unsigned int extra_nodes = 0;
 
-  VSTR__BUF_NEEDED(VSTR__IS_ASCII_LOWER(*scan_str), extra_nodes);
+  VSTR__BUF_NEEDED(VSTR__IS_ASCII_LOWER(*iter->ptr), extra_nodes);
   
   if (base->conf->spare_buf_num < extra_nodes)
   {
@@ -175,13 +168,10 @@ int vstr_nx_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
                                  unsigned int flags, char swp)
 {
   size_t len = passed_len;
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   unsigned int extra_nodes = 0;
   
-  VSTR__BUF_NEEDED(!VSTR__IS_ASCII_PRINTABLE(*scan_str, flags), extra_nodes);
+  VSTR__BUF_NEEDED(!VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags), extra_nodes);
 
   if (base->conf->spare_buf_num < extra_nodes)
   {
@@ -227,50 +217,46 @@ int vstr_nx_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
                                  unsigned int flags)
 {
   size_t len = passed_len;
-  Vstr_node *scan = NULL;
-  unsigned int num = 0;
-  char *scan_str = NULL;
-  size_t scan_len = 0;
+  Vstr_iter iter[1];
   unsigned int extra_nodes[4] = {0};
   size_t del_pos = 0;
   
-  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
-  if (!scan) goto malloc_buf_needed_fail;
+  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+    goto malloc_buf_needed_fail;
   
   do
   {
     int done = FALSE;
     
-    if ((scan->type == VSTR_TYPE_NODE_BUF) && !base->conf->split_buf_del)
+    if ((iter->node->type == VSTR_TYPE_NODE_BUF) && !base->conf->split_buf_del)
       continue;
-    if (scan->type == VSTR_TYPE_NODE_NON)
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
       continue;
     
-    while (scan_len > 0)
+    while (iter->len > 0)
     {
-      if (VSTR__IS_ASCII_PRINTABLE(*scan_str, flags))
+      if (VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags))
         done = TRUE;
       else if (done) /* deleteing from the begining of a node is always ok */
       {
-        assert((scan->type > 0) && (scan->type <= 4));
+        assert((iter->node->type > 0) && (iter->node->type <= 4));
         
-        ++extra_nodes[scan->type - 1];
+        ++extra_nodes[iter->node->type - 1];
         
         do
         {
-          --scan_len;
-          ++scan_str;
-        } while ((scan_len > 0) && !VSTR__IS_ASCII_PRINTABLE(*scan_str, flags));
+          --iter->len;
+          ++iter->ptr;
+        } while ((iter->len > 0) && !VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags));
         
         continue;
       }
       
-      --scan_len;
-      ++scan_str;
+      --iter->len;
+      ++iter->ptr;
     }
 
-  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
-                                           scan, &scan_str, &scan_len)));
+  } while (vstr_nx_iter_fwd_nxt(iter));
 
   assert(!extra_nodes[VSTR_TYPE_NODE_NON - 1]);
   assert(!extra_nodes[VSTR_TYPE_NODE_BUF - 1] || base->conf->split_buf_del);

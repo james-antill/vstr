@@ -1,4 +1,4 @@
-.TH vstr_const 3 "16-Nov-2002" "Vstr 0.9.19" "Vstr String Library"
+.TH vstr_const 3 "12-Jan-2003" "Vstr 0.9.21" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -130,6 +130,9 @@
 .br
 .ti \w'  'u
 \fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM\fR
 .br
 .ti \w'  'u
 \fBVSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM\fR
@@ -289,6 +292,62 @@
 .br
 .ti \w'  'u
 \fBVSTR_FLAG_PARSE_IPV4_ONLY\fR
+.sp
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_NONE\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_IPV6_OOB\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_ONLY\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_CIDR_OOB\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_CIDR_FULL\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_PARSE_IPV6_ERR_IPV6_NULL\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_IPV6_DEF\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_IPV6_LOCAL\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_IPV6_CIDR\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_IPV6_CIDR_FULL\fR
+.br
+.ti \w'  'u
+\fBVSTR_FLAG_PARSE_IPV6_ONLY\fR
+.sp
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_COMPACT\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_STD\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT\fR
+.br
+.ti \w'  'u
+\fBVSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD\fR
 .sp
 .br
 .ti \w'  'u
@@ -558,6 +617,12 @@
 .br
 .ti \w'  'u
 \fBVSTR_CNTL_CONF_SET_NUM_SPARE_REF\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_GET_ATOMIC_OPS\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_SET_ATOMIC_OPS\fR
 .sp
 .br
 .ti \w'  'u
@@ -929,7 +994,16 @@
 \fBExplanation:\fR
 
 .br
-  This flag is 0, and is only used as programmer documentation to mean no flags are applied to this function ... and hence the object isn't a number, and is therefore treated as a string object.
+  This flag indicates that the object should be treated as a C style string, so it is assumed that number orientated flags should be ignored and that the length of the object can be arbitrarily truncated.
+
+.br
+\fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag indicates that the object should be treated as an atomic piece of data, so it is assumed that number orientated flags should be ignored and that the length of the object can't be truncated.
 
 .br
 \fBConstant: \fR VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM
@@ -1394,6 +1468,7 @@
 
 .br
   This flag changes the parsing so that the function will return an error if a non full ipv4 address is given (Ie. 127/8 is a non full ipv4 with a cidr mask). If this flag isn't given the missing numbers are assumed to be zero.
+
 .br
 \fBConstant: \fR VSTR_FLAG_PARSE_IPV4_CIDR
 
@@ -1448,6 +1523,182 @@
 
 .br
   When this error code is returned, the ip address is still parsed out and as usable as if no error had occured.
+
+.SH Constants used with vstr_parse_ipv6()
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_NONE
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code has the value 0, and means that no error occured parsing the ipv6 address from the Vstr string.
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_IPV6_OOB
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that the numbers for the ipv6 address in the Vstr string where out of bounds.
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_IPV6_FULL
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that the ipv6 address wasn't full (Ie. FFFF/8 is a non full ipv6 address with cidr mask).
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_ONLY
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that the ipv6 address, and option mask, wasn't the only thing in the Vstr string.
+.sp
+\fBNote:\fR
+
+.br
+  When this error code is returned, the ip address is still parsed out and as usable as if no error had occured.
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_CIDR_OOB
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that the numbers for the ipv6 cidr mask in the Vstr string where out of bounds.
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_CIDR_FULL
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that the ipv6 cidr mask wasn't full (Ie. F::1/ is an ipv6 address with a non full ipv6 cidr mask).
+
+.br
+\fBConstant: \fR VSTR_TYPE_PARSE_IPV6_ERR_IPV6_NULL
+
+.br
+\fBExplanation:\fR
+
+.br
+  This error code means that there is more than one "NULL" point in the ipv6 address, for example "F::E::1" has two NULL points and is impossible to parse.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_IPV6_DEF
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag is 0, and is generally only used as programmer documentation to mean no flags are applied to this function.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_IPV6_LOCAL
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag changes the parsing from ASCII numbers into "local" numbers (whatever is generated by '0 .. '9' by the host compiler). This can be ignored by anyone not using an EBCD character set, or something equally weird.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_IPV6_CIDR
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag allows the parsing out of a cidr mask, if one is present.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_IPV6_CIDR_FULL
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag changes the parsing so that the function will return an error if a non full ipv6 cidr mask is given (Ie. ::1/ is an ipv6 with a non full ipv6 cidr mask). If this flag isn't given the missing cidr mask is assumed to be 32.
+
+.br
+\fBConstant: \fR VSTR_FLAG_PARSE_IPV6_ONLY
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag changes the parsing so that the function will return an error if the entire string isn't used to contain the ipv6 and option mask.
+.sp
+\fBNote:\fR
+
+.br
+  When this error code is returned, the ip address is still parsed out and as usable as if no error had occured.
+
+.SH Constants used with the custom output formatter for ipv6 addresses
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address as 8 groups of 4 hexidecimal values. For example "FFFF:0EEE:00DD:000C:0000:0000:0001:0002" would be an ipv6 address output in aligned mode.
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address in as small a representation as possible, for example "FFFF:EEE:DD:C::1:2" would be an ipv6 address output in compact mode.
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_STD
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address as 8 groups of hexidecimal numbers between 0 and FFFF, this is the format mostly used in stds. documents, for example "FFFF:EEE:DD:C:0:0:1:2" would be an ipv6 address output in compact mode.
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address in the same way as VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED, except that the last 2 groups of hexidecimal values (the last 4 octects) are replaced with an ipv4 address.
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address in the same way as VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT, except that the last 2 groups of hexidecimal values (the last 4 octects) are replaced with an ipv4 address.
+
+.br
+\fBConstant: \fR VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD
+
+.br
+\fBExplanation:\fR
+
+.br
+  This flag outputs the ipv6 address in the same way as VSTR_TYPE_SC_FMT_CB_IPV6_STD, except that the last 2 groups of hexidecimal values (the last 4 octects) are replaced with an ipv4 address.
 
 .SH Constants passed to vstr_split_*()
 
@@ -2288,6 +2539,7 @@ Type\fB[1]\fR: int
 
 .br
   If this option is set to 0 ('\0') then vstr_fmt_vfmt() acts like vstr_fmt_vsysfmt().
+
 .br
 \fBConstant: \fR VSTR_CNTL_CONF_GET_NUM_SPARE_BUF
 
@@ -2332,6 +2584,44 @@ Type\fB[1]\fR: unsigned int
 
 .br
   When the value specified is higher and vstr calls vstr_make_spare_nodes() then a return value of FALSE means that there was a malloc error, just as if you called vstr_make_nodes directly.
+
+.br
+\fBConstant: \fR VSTR_CNTL_CONF_GET_ATOMIC_OPS
+
+.br
+Parameter\fB[1]\fR: Returns value of flag
+.br
+Type\fB[1]\fR: int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This option will return the status of the flag that makes the vstr functions do atomic alterations to the string data. If the flag is set then all functions will either return successfully, or not alter the data of the vstr from the point of view of vstr_cmp().
+.sp
+\fBNote:\fR
+
+.br
+  This is mainly a speedup to the vstr_sub_*() functions and the functions that use them, like vstr_conv_*(). It is true by default, so all function operations are atomic.
+
+.br
+\fBConstant: \fR VSTR_CNTL_CONF_SET_ATOMIC_OPS
+
+.br
+Parameter\fB[1]\fR: Value of flag
+.br
+Type\fB[1]\fR: int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This option will set the status of the flag that makes the vstr functions do atomic alterations to the string data. If the flag is set then all functions will either return successfully, or not alter the data of the vstr from the point of view of vstr_cmp().
+.sp
+\fBNote:\fR
+
+.br
+  This is mainly a speedup to the vstr_sub_*() functions and the functions that use them, like vstr_conv_*(). It is true by default, so all function operations are atomic.
 
 .SH Constants you pass to the vstr_cntl_opt() function
 

@@ -1,4 +1,4 @@
-.TH vstr 3 "16-Nov-2002" "Vstr 0.9.19" "Vstr String Library"
+.TH vstr 3 "12-Jan-2003" "Vstr 0.9.21" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -106,7 +106,7 @@ int \fBvstr_swap_conf\fR(struct Vstr_base *, struct Vstr_conf **);
 .br
 .in \w'  struct Vstr_base *\fBvstr_make_base\fR('u
 .ti \w'  'u
-struct Vstr_base *\fBvstr_make_base\fR(struct Vstr_conf *, struct Vstr_conf *);
+struct Vstr_base *\fBvstr_make_base\fR(struct Vstr_conf *);
 .br
 .in \w'  void \fBvstr_free_base\fR('u
 .ti \w'  'u
@@ -155,6 +155,22 @@ struct Vstr_ref *\fBvstr_ref_make_malloc\fR(size_t);
 .in \w'  struct Vstr_ref *\fBvstr_ref_make_ptr\fR('u
 .ti \w'  'u
 struct Vstr_ref *\fBvstr_ref_make_ptr\fR(void *, void (*)(struct Vstr_ref *));
+.br
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_memdup\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBvstr_ref_make_memdup\fR(void *, size_t);
+.br
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBvstr_ref_make_vstr_base\fR(Vstr_base *);
+.br
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_conf\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBvstr_ref_make_vstr_conf\fR(Vstr_conf *);
+.br
+.in \w'  struct Vstr_ref *\fBvstr_ref_make_vstr_sects\fR('u
+.ti \w'  'u
+struct Vstr_ref *\fBvstr_ref_make_vstr_sects\fR(Vstr_sects *);
 .br
 .in \w'  unsigned int \fBvstr_make_spare_nodes\fR('u
 .ti \w'  'u
@@ -639,9 +655,13 @@ size_t \fBvstr_parse_netstr\fR(const struct Vstr_base *, size_t, size_t, size_t 
 .ti \w'  'u
 size_t \fBvstr_parse_netstr2\fR(const struct Vstr_base *, size_t, size_t, size_t *, size_t *);
 .br
-.in \w'  uintmax_t \fBvstr_parse_ipv4\fR('u
+.in \w'  int \fBvstr_parse_ipv4\fR('u
 .ti \w'  'u
-uintmax_t \fBvstr_parse_ipv4\fR(const struct Vstr_base *, size_t, size_t, unsigned char *, unsigned int *, unsigned int, size_t *, unsigned int *);
+int \fBvstr_parse_ipv4\fR(const struct Vstr_base *, size_t, size_t, unsigned char *, unsigned int *, unsigned int, size_t *, unsigned int *);
+.br
+.in \w'  int \fBvstr_parse_ipv6\fR('u
+.ti \w'  'u
+int \fBvstr_parse_ipv6\fR(const struct Vstr_base *, size_t, size_t, unsigned int *, unsigned int *, unsigned int, size_t *, unsigned int *);
 .sp
 .br
 .in \w'  int \fBvstr_fmt_add\fR('u
@@ -750,6 +770,26 @@ int \fBvstr_sc_fmt_add_ipv4_ptr\fR(struct Vstr_conf *, const char *);
 .ti \w'  'u
 int \fBvstr_sc_fmt_add_ipv6_ptr\fR(struct Vstr_conf *, const char *);
 .br
+.in \w'  int \fBvstr_sc_fmt_add_ipv4_vec\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv4_vec\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_ipv6_vec\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv6_vec\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_ipv4_vec_cipe\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv4_vec_cipe\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_ipv6_vec_cipe\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_ipv6_vec_cipe\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  int \fBvstr_sc_fmt_add_all\fR('u
+.ti \w'  'u
+int \fBvstr_sc_fmt_add_all\fR(struct Vstr_conf *);
+.br
 .in \w'  int \fBvstr_sc_mmap_fd\fR('u
 .ti \w'  'u
 int \fBvstr_sc_mmap_fd\fR(struct Vstr_base *, size_t, int, off64_t, size_t, unsigned int *);
@@ -781,6 +821,15 @@ int \fBvstr_sc_write_fd\fR(struct Vstr_base *, size_t, size_t, int, unsigned int
 .in \w'  int \fBvstr_sc_write_file\fR('u
 .ti \w'  'u
 int \fBvstr_sc_write_file\fR(struct Vstr_base *, size_t, size_t, const char *, int, mode_t, off64_t, unsigned int *);
+.sp
+.br
+.in \w'  int \fBvstr_iter_fwd_beg\fR('u
+.ti \w'  'u
+int \fBvstr_iter_fwd_beg\fR(struct Vstr_base *, size_t, size_t, Vstr_iter *);
+.br
+.in \w'  int \fBvstr_iter_fwd_nxt\fR('u
+.ti \w'  'u
+int \fBvstr_iter_fwd_nxt\fR(Vstr_iter *);
 
 .ti
 .HY
@@ -1593,15 +1642,15 @@ Parameter\fB[1]\fR: Vstr configuration
 Type\fB[1]\fR: struct Vstr_conf *
 
 .br
-Parameter\fB[2]\fR: 
-.br
-Type\fB[2]\fR: struct Vstr_conf *
-
-.br
 \fBExplanation:\fR
 
 .br
   This function will make a Vstr string, or return NULL.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1650,6 +1699,11 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_buf().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1679,6 +1733,11 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_ptr().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1703,6 +1762,11 @@ Type\fB[2]\fR: size_t
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_non().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1737,6 +1801,11 @@ Type\fB[4]\fR: size_t
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_ref().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1776,6 +1845,11 @@ Type\fB[6]\fR: unsigned int
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_vstr().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1805,6 +1879,11 @@ Type\fB[3]\fR: size_t
 
 .br
   This function is equivilent to calling vstr_make_base() and then vstr_add_rep_chr().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1829,6 +1908,11 @@ Type\fB[2]\fR: const char *
 
 .br
   This macro function calls vstr_dup_buf() with the length being the value of strlen() on the data parameter (Parameter[2]).
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1853,6 +1937,11 @@ Type\fB[2]\fR: const char *
 
 .br
   This macro function calls vstr_dup_ptr() with the length being the value of strlen() on the data parameter (Parameter[2]).
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1917,15 +2006,96 @@ Parameter\fB[1]\fR: Pointer to memory
 Type\fB[1]\fR: void *
 
 .br
-Parameter\fB[1]\fR: Function callback for Vstr memory reference
+Parameter\fB[2]\fR: Function callback for Vstr memory reference
 .br
-Type\fB[1]\fR: void (*)(struct Vstr_ref *)
+Type\fB[2]\fR: void (*)(struct Vstr_ref *)
 
 .br
 \fBExplanation:\fR
 
 .br
   This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of pointer passed (Parameter[1]) and a cleanup function of the function passed (Parameter[2]).
+
+.ti -2
+.br
+\fBFunction: \fR vstr_ref_make_memdup()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Pointer to memory
+.br
+Type\fB[1]\fR: void *
+
+.br
+Parameter\fB[2]\fR: Length of memory block
+.br
+Type\fB[2]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1 and a copy of the memory pointed to by (Parameter[1]) of length (Parameter[2]) will be the pointer value. The cleanup function will point to a function to free both the reference and the copy of memory.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_ref_make_vstr_base()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: Vstr_base *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of the Vstr string (Parameter[1]). The cleanup function will point to a function to free both the reference and the Vstr string.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_ref_make_vstr_conf()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: Vstr_conf *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of the Vstr configuration (Parameter[1]). The cleanup function will point to a function to free both the reference and the Vstr configuration.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_ref_make_vstr_sects()
+.br
+Returns: Vstr memory reference
+.br
+Type: struct Vstr_ref *
+
+.br
+Parameter\fB[1]\fR: Vstr sections
+.br
+Type\fB[1]\fR: Vstr_sects *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will create a Vstr memory reference. The Vstr memory reference will have a reference count of 1, a pointer value of the Vstr sections (Parameter[1]). The cleanup function will point to a function to free both the reference and the Vstr sections.
 
 .ti -2
 .br
@@ -1960,6 +2130,8 @@ Type\fB[3]\fR: unsigned int
 
 .br
   The number of nodes created will be less than or equal to the number requested (Parameter[3]), however if it is less than then the malloc_bad flag will be set (Parameter[1])->malloc_bad.
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -1993,7 +2165,9 @@ Type\fB[3]\fR: unsigned int
 \fBNote:\fR
 
 .br
-  The number of nodes created will be less than or equal to the number requested (Parameter[3]), the only reason that less will be destroyed is if there are no more unused nodes of that type (Parameter[2]).
+  The number of nodes destroyed will be less than or equal to the number requested (Parameter[3]), the only reason that less will be destroyed is if there are no more unused nodes of that type (Parameter[2]).
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .SH Functions to add and delete data to a Vstr string
 
@@ -3229,6 +3403,12 @@ Parameter\fB[ ... ]\fR: Options depending on value of Parameter[1]
 .br
 Type\fB[ ... ]\fR: ...
 
+.br
+\fBExplanation:\fR
+
+.br
+  This function will get or set global options.
+
 .ti -2
 .br
 \fBFunction: \fR vstr_cntl_base()
@@ -3252,6 +3432,11 @@ Parameter\fB[ ... ]\fR: Options depending on value of Parameter[2]
 .br
 Type\fB[ ... ]\fR: ...
 
+.br
+\fBExplanation:\fR
+
+.br
+  This function will get or set options for the Vstr string (Parameter[1]).
 
 .ti -2
 .br
@@ -3276,6 +3461,16 @@ Parameter\fB[ ... ]\fR: Options depending on value of Parameter[2]
 .br
 Type\fB[ ... ]\fR: ...
 
+.br
+\fBExplanation:\fR
+
+.br
+  This function will get or set options for the Vstr configuration (Parameter[1]).
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .SH Functions to compare with a Vstr string
 
@@ -6051,7 +6246,7 @@ Type\fB[8]\fR: unsigned int
 .br
 \fBFunction: \fR vstr_parse_short()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: short
 
@@ -6102,7 +6297,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_ushort()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: unsigned short
 
@@ -6153,7 +6348,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_int()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: int
 
@@ -6204,7 +6399,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_uint()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: unsigned int
 
@@ -6255,7 +6450,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_long()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: long
 
@@ -6306,7 +6501,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_ulong()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: unsigned long
 
@@ -6357,7 +6552,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_intmax()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: intmax_t
 
@@ -6410,7 +6605,7 @@ Type\fB[6]\fR: unsigned int *
 .br
 \fBFunction: \fR vstr_parse_uintmax()
 .br
-Returns: Number pared from Vstr string
+Returns: Number parsed from Vstr string
 .br
 Type: uintmax_t
 
@@ -6561,9 +6756,9 @@ Type\fB[5]\fR: size_t *
 .br
 \fBFunction: \fR vstr_parse_ipv4()
 .br
-Returns: Number pared from Vstr string
+Returns: TRUE on success and FALSE on failure
 .br
-Type: uintmax_t
+Type: int
 
 .br
 Parameter\fB[1]\fR: Vstr string
@@ -6586,7 +6781,7 @@ Parameter\fB[4]\fR: Returns ip in array ellements 0 to 3
 Type\fB[4]\fR: unsigned char *
 
 .br
-Parameter\fB[5]\fR: Returns cidr mask
+Parameter\fB[5]\fR: Returns cidr mask, if reqested
 .br
 Type\fB[5]\fR: unsigned int *
 
@@ -6610,6 +6805,60 @@ Type\fB[8]\fR: unsigned int *
 
 .br
   This function will parse an ipv4 address, or optionaly an ipv4 address and a cidr mask / netmask, from the Vstr string.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_parse_ipv6()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Returns ip in array ellements 0 to 7
+.br
+Type\fB[4]\fR: unsigned int *
+
+.br
+Parameter\fB[5]\fR: Returns cidr mask
+.br
+Type\fB[5]\fR: unsigned int *
+
+.br
+Parameter\fB[6]\fR: Flags starting VSTR_FLAG_PARSE_IPV6_
+.br
+Type\fB[6]\fR: unsigned int
+
+.br
+Parameter\fB[7]\fR: Returns length of parsed ip address (Parameter[4] Parameter[5])
+.br
+Type\fB[7]\fR: size_t *
+
+.br
+Parameter\fB[8]\fR: Returns error code starting VSTR_TYPE_PARSE_IPV6_ERR_
+.br
+Type\fB[8]\fR: unsigned int *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will parse an ipv6 address, or optionaly an ipv6 address and a cidr mask, from the Vstr string.
 
 .SH Functions for hooking into the fmt function for the Vstr string
 
@@ -6650,9 +6899,13 @@ Type\fB[4]\fR: ...
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   If the user escape character is '%', then you can override system specifiers by using a specifier name (Paramter[2]) of "i" etc. This isn't recommended, but is done so that you can have specifier names like "igloo" and it not be taken as a system specifier, however if you then did "%igoo" that would be interpreted as a "%i" (int) specification followed by the string "goo".
 .br
   You can register multiple names with one callback, so you can register say "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%', will do the right thing with current printf warning checks in gcc. We can all hope that the former will be as usable eventually.
+.br
+  If you register all your custom formatter names starting with a "{" and ending with a "}", and having no "{" or "}" character in it apart from those two ... then matching custom formatters will be much faster.
 
 .ti -2
 .br
@@ -6677,6 +6930,11 @@ Type\fB[2]\fR: const char *
 
 .br
   This function allows you to deregister a format specifier added using vstr_fmt_add().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -6701,6 +6959,11 @@ Type\fB[2]\fR: const char *
 
 .br
   This function allows you to find out if a format specifier has been added using vstr_fmt_add().
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -6788,6 +7051,8 @@ Type\fB[3]\fR: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int,
 .sp
 \fBNote:\fR
 
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
   The name of the cache function should be placed in permanent storage, Ie. only the pointer to the name will be stored so you cannot malloc() the name and then free() it after calling the function.
 .br
@@ -6878,6 +7143,11 @@ Type\fB[2]\fR: const char *
 
 .br
   This function will find a cache function name (Parameter[2]) and return the cookie reference for use in the other cache functions.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 
 .ti -2
 .br
@@ -7138,10 +7408,13 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   As you would expect the precision and field width values are used from the format, so the length of the Vstr string printed is the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
-
+.br
+  It is recommended that you use the name "{vstr}", with the gcc warning compatible alternates using "{vstr:%p%zu%zu%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names. 
 .ti -2
 .br
 \fBFunction: \fR vstr_sc_fmt_add_buf()
@@ -7169,9 +7442,13 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   As you would expect the precision and field width values are used from the format, so the length of the memory block printed is the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{buf}", with the gcc warning compatible alternates using "{buf:%s%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7200,9 +7477,13 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   As you would expect the precision and field width values are used from the format, so the length of the memory block printed is the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{ptr}", with the gcc warning compatible alternates using "{ptr:%s%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7231,9 +7512,13 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   As you would expect the precision and field width values are used from the format, so the length of the memory block printed is the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{non}", with the gcc warning compatible alternates using "{non:%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7262,9 +7547,13 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   As you would expect the precision and field width values are used from the format, so the length of the memory block printed is the lower bound of the length passed and the precision.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{ref}", with the gcc warning compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7293,11 +7582,15 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
 .br
   The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{BKMG.u}", with the gcc warning compatible alternates using "{BKMG.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7326,11 +7619,15 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
 .br
   The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{BKMG/s.u}", with the gcc warning compatible alternates using "{BKMG/s.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7359,11 +7656,15 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
 .br
   The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{bKMG.u}", with the gcc warning compatible alternates using "{bKMG.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7392,11 +7693,15 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
   The precision specifies how many digits are included after the "whole" part of the number, the default precision is 2.
 .br
   The padding of the number can be done with spaces or zero characters, and the '+' or ' ' modifiers will work as on unsigned ints.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{bKMG/s.u}", with the gcc warning compatible alternates using "{bKMG/s.u:%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7425,9 +7730,11 @@ Type\fB[2]\fR: const char *
 \fBNote:\fR
 
 .br
-  As you would expect the precision and field width values are used from the format, so the length of the string printed is the lower bound of the length passed and the precision.
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{ipv4.p}", with the gcc warning compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
 
 .ti -2
 .br
@@ -7451,14 +7758,176 @@ Type\fB[2]\fR: const char *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a custom specifier function to print ipv4 IP addresses from a struct in6_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in6_addr *, to be passed to inet_ntop().
+  This function is used to add a custom specifier function to print ipv6 IP addresses from a struct in6_addr *. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END. This pointer is a struct in6_addr *, to be passed to inet_ntop().
 .sp
 \fBNote:\fR
 
 .br
-  As you would expect the precision and field width values are used from the format, so the length of the string printed is the lower bound of the length passed and the precision.
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
 .br
   The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{ipv4.p}", with the gcc warning compatible alternates using "{ipv4.p:%p}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv4_vec()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv4 IP addresses from a vector of 4 unsigned char. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  It is recommended that you use the name "{ipv4.v}", with the gcc warning compatible alternates using "{ipv4.v:%p}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv6_vec()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv6 IP addresses from a vector of 8 unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
+.sp
+\fBNote:\fR
+
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  It is recommended that you use the name "{ipv6.v}", with the gcc warning compatible alternates using "{ipv6.v:%p%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv4_vec_cipe()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv4 IP addresses with a cipe mask from a vector of 4 unsigned char and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned char for each part of the ipv4 address.
+.sp
+\fBNote:\fR
+
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  It is recommended that you use the name "{ipv4.v+C}", with the gcc warning compatible alternates using "{ipv4.v+C:%p%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_ipv6_vec_cipe()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Specifier name, for use with vstr_add_vfmt()
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to add a custom specifier function to print ipv6 IP addresses with a cipe mask from a vector of 8 unsigned int and an unsigned int. It is equivalent to calling  vstr_add_fmt() with the type arguments of VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_UINT, VSTR_TYPE_FMT_UINT and VSTR_TYPE_FMT_END, the vector is one unsigned int for each part of the ipv6 address, the second argument of flags, change how the ipv6 address is printed.
+.sp
+\fBNote:\fR
+
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  It is recommended that you use the name "{ipv6.v+C}", with the gcc warning compatible alternates using "{ipv6.v+C:%p%u%u}" etc. vstr_sc_fmt_add_all() will add this formatter using those names.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_fmt_add_all()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is a shotcut to adding a custom formatter for each of the specific custom formatters. The names used are as those given in the notes section of each custom formatter. Also 4 alternate names are given so that the formatter can be used in a gcc warning compatible way. For instance the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}", "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
+.sp
+\fBNote:\fR
+
+.br
+  The function will return 0 if it needs to allocate memory and cannot do so.
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  If any of the custom formatter adds fails (for example, if the name is already in use) then all the rest of the names of that type will fail,  however the other remaining types of formatters will be tried.
 
 .ti -2
 .br
@@ -7842,6 +8311,71 @@ Type\fB[8]\fR: unsigned int *
 
 .br
   This function is used to take data from a Vstr string and write it to a file, after open()ing the file (Parameter[4]) with open flags (Parameter[5]) and open mode (Parameter[6]).
+
+.SH Functions to step through part of a Vstr string in iterations
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_fwd_beg()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+Parameter\fB[4]\fR: Vstr iteration
+.br
+Type\fB[4]\fR: Vstr_iter *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to initialised an iteration.
+.sp
+\fBNote:\fR
+
+.br
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then the iteration will be in an undefined state.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_iter_fwd_nxt()
+.br
+Returns: TRUE on success and FALSE on failure
+.br
+Type: int
+
+.br
+Parameter\fB[1]\fR: Vstr iteration
+.br
+Type\fB[1]\fR: Vstr_iter *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to step to the next iteration.
+.sp
+\fBNote:\fR
+
+.br
+  If you alter the Vstr string (Parameter[1]) while using a iteration, then the iteration will be in an undefined state.
 
 .SH "SEE ALSO"
 .BR vstr_const (3)

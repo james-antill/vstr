@@ -342,8 +342,8 @@ __printf_fphex (FILE *fp,
   /* Look for trailing zeroes.  */
   if (! zero_mantissa)
     {
-      wnumend = wnumbuf + (sizeof wnumbuf / sizeof wnumbuf[0]);
-      numend = numbuf + sizeof numbuf;
+      wnumend = &wnumbuf[sizeof wnumbuf / sizeof wnumbuf[0]];
+      numend = &numbuf[sizeof numbuf / sizeof numbuf[0]];
       while (wnumend[-1] == L'0')
 	{
 	  --wnumend;
@@ -437,16 +437,11 @@ __printf_fphex (FILE *fp,
 	    + ((expbuf + sizeof expbuf) - expstr));
 	    /* Exponent.  */
 
-  /* Count the decimal point.  */
+  /* Count the decimal point.
+     A special case when the mantissa or the precision is zero and the `#'
+     is not given.  In this case we must not print the decimal point.  */
   if (precision > 0 || info->alt)
     width -= wide ? 1 : strlen_decimal;
-
-  /* A special case when the mantissa or the precision is zero and the `#'
-     is not given.  In this case we must not print the decimal point.  */
-  if (precision == 0 && !info->alt)
-	  /* This nihilates the +1 for the decimal-point
-	     character in the following equation. If the decimal point exists */
-    width += (precision > 0 || info->alt);
 
   if (!info->left && info->pad != '0' && width > 0)
     PADN (' ', width);
@@ -492,7 +487,7 @@ __printf_fphex (FILE *fp,
 
   PRINT (expstr, wexpstr, (expbuf + sizeof expbuf) - expstr);
 
-  if (info->left && width > 0)
+  if (info->left && info->pad != '0' && width > 0)
     PADN (info->pad, width);
 
   return !fp->base->conf->malloc_bad;

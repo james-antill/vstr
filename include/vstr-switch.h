@@ -117,16 +117,10 @@
 
 #ifndef VSTR_AUTOCONF_intmax_t
 # define VSTR_AUTOCONF_intmax_t intmax_t
-# ifndef VSTR__AUTOCONF_NEED_INTTYPES_H
-#  define VSTR__AUTOCONF_NEED_INTTYPES_H 1
-# endif
 #endif
 
 #ifndef VSTR_AUTOCONF_uintmax_t
 # define VSTR_AUTOCONF_uintmax_t uintmax_t
-# ifndef VSTR__AUTOCONF_NEED_INTTYPES_H
-#  define VSTR__AUTOCONF_NEED_INTTYPES_H 1
-# endif
 #endif
 
 #ifndef VSTR_AUTOCONF_mode_t
@@ -136,5 +130,5 @@
 
 #ifndef VSTR_AUTOCONF_off64_t
 # define VSTR_AUTOCONF_off64_t off64_t
-/* always include unistd.h ... because off64_t might == off_t */
+/* always include types.h */
 #endif

@@ -1,6 +1,6 @@
 %define ver      @VERSION@
 %define libver  @LT_RELEASE@
-%define real_release_num 1
+%define real_release_num 4
 %define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   /usr
@@ -36,11 +36,13 @@ URL: http://www.and.org/vstr/
 Packager: James Antill <james@and.org>
 
 %description
- Vstr is a string library designed for network communication, but applicable 
+ Vstr is a string library designed for network communication, but applicable
 in a number of other areas. It works on the idea of separate nodes of
-information, and works on the length/ptr model and not the termination model a
-la "C strings". It can also do automatic referencing for mmap() areas of
-memory, and includes a portable version of a printf-like function. 
+information, and the length/ptr model and not the termination model of
+"C strings". It does dynamic resizing of strings as you add/delete data.
+ It can also do automatic referencing for mmap() areas, and includes a
+portable version of a printf-like function (which is ISO 9899:1999 compliant,
+and includes support for i18n parameter position modifiers).
 
  Development libs and headers are in vstr-devel.
 
@@ -55,7 +57,10 @@ Requires: %{name} = %{version}
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
-* Sat Nov 16 2002 James Antill <james@and.org> @VERSION@-%{real_release_num}
+* Mon Jan 13 2003 James Antill <james@and.org> @VERSION@-%{real_release_num}
+- Moved the includedir to /usr/include/vstr-*
+
+* Sat Nov 16 2002 James Antill <james@and.org>
 - Added wrap memcpy/memset to the default configure options.
 
 * Sat Nov  9 2002 James Antill <james@and.org>
@@ -95,7 +100,8 @@ fi
 
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
-  --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script \
+  --libdir=%{_libdir} --includedir=%{_includedir}/vstr-%{libver} \
+  --enable-linker-script \
   --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt} %{debugopt}
 
@@ -104,7 +110,7 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%makeinstall
+make DESTDIR=$RPM_BUILD_ROOT install 
 
 cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 rm -f $RPM_BUILD_ROOT/usr/lib/libvstr.la
@@ -132,7 +138,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/lib%{name}.so
 %{_libdir}/lib%{name}.a
 %{_libdir}/pkgconfig/%{name}.pc
-%{_includedir}/*.h
+%{_includedir}/vstr-%{libver}/*.h
 
 %doc
 %{devdoco}/BUGS

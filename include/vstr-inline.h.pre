@@ -174,6 +174,177 @@ extern inline void *@@@@vstr_cache_get(const struct Vstr_base *base,
   return (VSTR__CACHE(base)->data[pos]);
 }
 
+extern inline
+int @@@@vstr_cache__pos(const struct Vstr_base *base,
+                   struct Vstr_node *node, size_t pos, unsigned int num)
+{
+  struct Vstr__cache_data_pos *data = (void *)0;
+  
+  if (!base->cache_available)
+    return (0 /* FALSE */);
+
+  if (!(data = @@@@vstr_cache_get(base, 1)))
+  {
+    if (!(data = malloc(sizeof(struct Vstr__cache_data_pos))))
+      return (0 /* FALSE */);
+
+    if (!@@@@vstr_cache_set(base, 1, data))
+    {
+      free(data);
+      return (0 /* FALSE */);
+    }
+  }
+  
+  data->node = node;
+  data->pos = pos;
+  data->num = num;
+  
+  return (1 /* TRUE */);
+}
+
+extern inline
+struct Vstr_node *@@@@vstr_base__pos(const struct Vstr_base *base,
+                                 size_t *pos, unsigned int *num, int cache)
+{
+  size_t orig_pos = *pos;
+  struct Vstr_node *scan = base->beg;
+  struct Vstr__cache_data_pos *data = (void *)0;
+  unsigned int dummy_num = 0;
+
+  if (!num) num = &dummy_num;
+  
+  *pos += base->used;
+  *num = 1;
+  
+  if (*pos <= base->beg->len)
+    return (base->beg);
+  
+  /* must be more than one node */
+  
+  if (orig_pos > (base->len - base->end->len))
+  {
+    *pos = orig_pos - (base->len - base->end->len);
+    *num = base->num;
+    return (base->end);
+  }
+  
+  if ((data = @@@@vstr_cache_get(base, 1)) &&
+      data->node && (data->pos <= orig_pos))
+  {
+    scan = data->node;
+    *num = data->num;
+    *pos = (orig_pos - data->pos) + 1;
+  }
+  
+  while (*pos > scan->len)
+  {
+    *pos -= scan->len;
+    
+    scan = scan->next;
+    ++*num;
+  }
+  
+  if (cache)
+    @@@@vstr_cache__pos(base, scan, (orig_pos - *pos) + 1, *num);
+ 
+  return (scan);
+}
+
+extern inline char *@@@@vstr_export__node_ptr(const struct Vstr_node *node)
+{
+  switch (node->type)
+  {
+    case VSTR_TYPE_NODE_BUF:
+      return (((struct Vstr_node_buf *)node)->buf);
+    case VSTR_TYPE_NODE_PTR:
+      return (((const struct Vstr_node_ptr *)node)->ptr);
+    case VSTR_TYPE_NODE_REF:
+      return (((char *)((const struct Vstr_node_ref *)node)->ref->ptr) +
+              ((const struct Vstr_node_ref *)node)->off);
+    default: /* assert */
+    case VSTR_TYPE_NODE_NON:
+      break;
+ }
+  
+  return ((void *)0);
+}
+
+extern inline char @@@@vstr_export_chr(const struct Vstr_base *base, size_t pos)
+{
+  struct Vstr_node *node = @@@@vstr_base__pos(base, &pos, (void *)0, 1);
+
+  /* errors, requests for data from NON nodes and real data are all == 0 */
+  if (!node) return (0);
+
+  return (*(@@@@vstr_export__node_ptr(node) + --pos));
+}
+
+extern inline int @@@@vstr_iter_fwd_beg(const struct Vstr_base *base,
+                                   size_t pos, size_t len,
+                                   struct Vstr_iter *iter)
+{
+  /*
+   * assert(base && num && len);
+   *  
+   * assert(pos && (((pos <= base->len) &&
+   *        ((pos + *len - 1) <= base->len)) || !*len));
+   */
+
+  iter->node = (void *)0;
+  if ((pos > base->len) || !len)
+    return (0);
+
+  if ((pos + len - 1) > base->len)
+    len = base->len - (pos - 1);
+  
+  iter->node = @@@@vstr_base__pos(base, &pos, &iter->num, 1);
+  --pos;
+  
+  iter->len = iter->node->len - pos;
+  if (iter->len > len)
+    iter->len = len;
+  len -= iter->len;
+  
+  iter->remaining = len;
+    
+  iter->ptr = (void *)0;
+  if (iter->node->type != VSTR_TYPE_NODE_NON)
+    iter->ptr = @@@@vstr_export__node_ptr(iter->node) + pos;
+  
+  return (1);
+}
+
+extern inline int @@@@vstr_iter_fwd_nxt(struct Vstr_iter *iter)
+{
+  /*
+   *
+   * assert(base && num && len);
+   * assert(scan);
+   *
+   */
+  
+  if (!iter->remaining)
+  {
+    iter->node = (void *)0;
+    return (0);
+  }
+
+  iter->node = iter->node->next;
+  ++iter->num;
+  
+  iter->len = iter->node->len;
+  
+  if (iter->len > iter->remaining)
+    iter->len = iter->remaining; 
+  iter->remaining -= iter->len;
+  
+  iter->ptr = (void *)0;
+  if (iter->node->type != VSTR_TYPE_NODE_NON)
+    iter->ptr = @@@@vstr_export__node_ptr(iter->node);
+  
+  return (1);
+}
+
 extern inline int @@@@vstr_add_buf(struct Vstr_base *base, size_t pos,
                                const void *buffer, size_t len)
 {
@@ -239,7 +410,7 @@ extern inline int @@@@vstr_del(struct Vstr_base *base, size_t pos, size_t len)
         break;
     }
 
-    if ((data = @@@@vstr_cache_get(base, base->conf->cache_pos_cb_cstr)))
+    if ((data = @@@@vstr_cache_get(base, 3)))
     {
       struct Vstr__cache_data_cstr *pdata = data;
       @@@@vstr_ref_del(pdata->ref);
@@ -257,7 +428,7 @@ extern inline int @@@@vstr_del(struct Vstr_base *base, size_t pos, size_t len)
       }
       VSTR__CACHE(base)->vec->v[num].iov_len -= len;
     }
-    if ((data = @@@@vstr_cache_get(base, base->conf->cache_pos_cb_pos)))
+    if ((data = @@@@vstr_cache_get(base, 1)))
     {
       struct Vstr__cache_data_pos *pdata = data;
       pdata->node = (void *)0;
@@ -315,3 +486,4 @@ extern inline int @@@@vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
 
   return (@@@@vstr_extern_inline_add_rep_chr(base, pos, chr, len));
 }
+

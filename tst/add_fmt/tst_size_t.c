@@ -7,11 +7,11 @@ int tst(void)
   int ret = 0;
   ssize_t sn[4] = {INT_MAX,  INT_MIN};
   size_t  un[4] = {      0, UINT_MAX};
-  
-#ifdef USE_RESTRICTED_HEADERS /* sucky host sprintf() implementions */
-  return (EXIT_FAILED_OK);
-#endif
 
+  sprintf(buf, "%zd%zu", sn[0], un[1]);
+  if (!strcmp(buf, "zdzu"))
+    return (EXIT_FAILED_OK); /* sucky host sprintf() implementions */
+  
   sprintf(buf, "%zd %zd %zu %zu", sn[0], sn[1], un[0], un[1]);
   vstr_add_fmt(s1, 0, "%zd %zd %zu %zu", sn[0], sn[1], un[0], un[1]);
 

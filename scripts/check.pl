@@ -4,10 +4,10 @@ use strict;
 use FileHandle;
 
 # Do a fast check of the main options ?
-my $conf_fast_check = 1;
+my $conf_fast_check = 0;
 
 # Do a check of the linker script ?
-my $conf_linker_check = 1;
+my $conf_linker_check = 0;
 
 # Do a full check, or group all disable options together
 my $conf_full_dbl_check = 0;
@@ -15,10 +15,11 @@ my $conf_full_test_check = 0;
 my $conf_full_wrap_check = 0;
 
 my $conf_append_output = 0;
-my $conf_print_stdout_info = 0;
+my $conf_print_stdout_info = 1;
 # Skip valgrind run ... as it's broken on glibc-2.3 atm. with debugging on.
 my $conf_valgrind = 0;
 my $conf_time = 0;
+my $conf_debug = 1;
 my $conf_test = 1;
 my $conf_wrap = 1;
 
@@ -84,6 +85,11 @@ while (scalar (@ARGV))
   { $conf_wrap = 1; }
   elsif ("nowrap" eq $arg)
   { $conf_wrap = 0; }
+
+  elsif ("debug" eq $arg)
+  { $conf_debug = 1; }
+  elsif ("nodebug" eq $arg)
+  { $conf_debug = 0; }
 
   else
   { die "Unknown option $arg\n"; }
@@ -199,6 +205,10 @@ sub conf
 
   if (!$ok)
     {
+      if ($conf_print_stdout_info)
+        {
+          OLD_STDOUT->print("*" x 35 . " BAD " . "*" x 35 . "\n");
+        } 
       FOUT->print("*" x 35 . " BAD " . "*" x 35 . "\n");
       FERR->print("*" x 35 . " BAD " . "*" x 35 . "\n");
       sleep(4);
@@ -248,6 +258,7 @@ sub tst_conf_X
     sub tst_conf__X
       { # Pick all combs. of $len each
 	my $len = shift;
+	my $ret = shift;
 	my $num = shift;
 	local @a = @a;
 
@@ -260,7 +271,7 @@ sub tst_conf_X
 
 	    if ($len == 0)
 	      {
-		conf (map(@{$conf_args->[$_]}, @a));
+		push (@$ret, \@a);
 		return;
 	      }
 	  }
@@ -271,16 +282,30 @@ sub tst_conf_X
 
 	for my $i ($num..$conf_last)
 	  {
-	    tst_conf__X($len - 1, $i);
+	    tst_conf__X($len - 1, $ret, $i);
 	  }
       }
 
+    my @confs = ();
     my $tlen = $conf_last + 1;
     while ($tlen)
       {
-	tst_conf__X($tlen);
+	tst_conf__X($tlen, \@confs);
 	--$tlen;
       }
+
+    my $count = 0;
+    for my $val (@confs)
+      {
+        my $per = ((0.0 + ++$count) / scalar(@confs) * 100.0);
+
+        if ($conf_print_stdout_info)
+        {
+          STDOUT->print(sprintf("%.2f%% ", $per));
+        }
+
+	conf (map(@{$conf_args->[$_]}, @$val));
+      } 
   }
 
 # -------------------------------------------------------------
@@ -294,27 +319,28 @@ if ($conf_print_stdout_info)
     {
       my $val = shift;
       if ($val) { return ("true"); }
-      
+
       return ("false");
     }
-  
+
   STDOUT->print("-" x 79 . "\n");
 
   STDOUT->print("Running with the following config...\n");
 
-  STDOUT->print(sprintf("%16s = %s\n", "fast", tf($conf_fast_check)));
-  STDOUT->print(sprintf("%16s = %s\n", "linker", tf($conf_linker_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "fast",     tf($conf_fast_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "linker",   tf($conf_linker_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "debug",    tf($conf_debug)));
 
-  STDOUT->print(sprintf("%16s = %s\n", "dblfull", tf($conf_full_dbl_check)));
-  STDOUT->print(sprintf("%16s = %s\n", "tstfull", tf($conf_full_test_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "dblfull",  tf($conf_full_dbl_check)));
+  STDOUT->print(sprintf("%16s = %s\n", "tstfull",  tf($conf_full_test_check)));
   STDOUT->print(sprintf("%16s = %s\n", "wrapfull", tf($conf_full_wrap_check)));
 
-  STDOUT->print(sprintf("%16s = %s\n", "append", tf($conf_append_output)));
+  STDOUT->print(sprintf("%16s = %s\n", "append",   tf($conf_append_output)));
   # verbose must be on...
   STDOUT->print(sprintf("%16s = %s\n", "valgrind", tf($conf_valgrind)));
-  STDOUT->print(sprintf("%16s = %s\n", "time", tf($conf_time)));
-  STDOUT->print(sprintf("%16s = %s\n", "tst", tf($conf_test)));
-  STDOUT->print(sprintf("%16s = %s\n", "wrap", tf($conf_wrap)));
+  STDOUT->print(sprintf("%16s = %s\n", "time",     tf($conf_time)));
+  STDOUT->print(sprintf("%16s = %s\n", "test",     tf($conf_test)));
+  STDOUT->print(sprintf("%16s = %s\n", "wrap",     tf($conf_wrap)));
 
   STDOUT->print("-" x 79 . "\n");
 }
@@ -340,7 +366,12 @@ else
 
 print_cc_cflags();
 
-my @confs = (\@C_dbg);
+my @confs = ();
+
+if ($conf_debug)
+  {
+    push(@confs, \@C_dbg);
+  }
 
 if ($conf_linker_check)
   {
@@ -364,9 +395,8 @@ else
   }
 
 if ($conf_test)
-  {
-    # Group for "turn off" flags...
-    my @tmp_no = (\@C_nin, \@C_natals, \@C_natvis, \@C_np);
+  { # Group for "turn off" flags...
+    my @tmp_no = (\@C_np, \@C_nin, \@C_natals, \@C_natvis);
 
     if (!$conf_full_test_check)
       {
@@ -379,8 +409,7 @@ if ($conf_test)
   }
 
 if ($conf_wrap)
-  {
-    # Group for "wrap" flags...
+  { # Group for "wrap" flags...
     my @tmp_wr = (\@C_wr_cpy, \@C_wr_cmp, \@C_wr_chr, \@C_wr_rchr, \@C_wr_set,
 		  \@C_wr_move);
 

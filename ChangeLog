@@ -1,11 +1,108 @@
+2003-01-12  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.21
+
+2003-01-09  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr_add_vstr): Fixed bug when adding a vstr to 
+	the end of itself.
+
+2002-12-23  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_ipv6_vec_cipe): Added function.
+	(vstr_sc_fmt_add_ipv4_vec_cipe): Added function.
+	(vstr_sc_fmt_add_ipv6_vec): Added function.
+	(vstr_sc_fmt_add_ipv4_vec): Added function.
+
+	* configure.in: Add extra []'s for the default values. 
+
+2002-12-18  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_iter_fwd_beg): Add function.
+	(vstr_iter_fwd_nxt): Add function.
+
+2002-12-16  James Antill  <james@and.org>
+
+	* src/vstr_ref.c (vstr_ref_make_memdup): Add function.
+
+2002-12-14  James Antill  <james@and.org>
+
+	* src/vstr_parse.c (vstr_parse_ipv6): Add function.
+
+2002-12-13  James Antill  <james@and.org>
+
+	* src/vstr_cntl.c (vstr_cntl_conf): Allowed NULL configuration to
+	refer to global one.
+
+	* src/vstr.c (vstr_free_spare_nodes): Allowed NULL configuration to
+	refer to global one.
+	(vstr_make_spare_nodes): Dito.
+
+	* src/vstr_cache.c (vstr_cache_add): Allowed NULL configuration to
+	refer to global one.
+	(vstr_cache_srch): Dito.
+
+	* src/vstr_fmt.c (vstr_fmt_add): Allowed NULL configuration to refer
+	to global one.
+	(vstr_fmt_del): Dito.
+	(vstr_fmt_srch): Dito.
+
+2002-12-12  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_all): Added function.
+
+	* src/vstr_add.c (vstr__convert_buf_ref): Cleanup code.
+
+	* src/vstr_export.c (vstr_export_ref): Used chg_node to export data
+	inside on _BUF node as a _REF without doing any copying.
+
+	* src/vstr.c (vstr__chg_node_buf_ref): Added internal function, and
+	cleaned code up in vstr_add_vstr().
+
+2002-11-29  James Antill  <james@and.org>
+
+	* src/vstr_dbl/glibc/sysdeps/generic/printf_fphex.c (__printf_fphex): 
+	Update to latest glibc release.
+
+2002-11-26  James Antill  <james@and.org>
+
+	* Fixup references to vstr_nx_ in the ChangeLog.
+
+	* src/vstr_sc_posix.c (vstr_sc_mmap_fd): Change MAP_SHARED to 
+	MAP_PRIVATE, as we are doing PROT_READ anyway so it doesn't matter ...
+	and MAP_SHARED fails if you have a writeable fd.
+
+2002-11-21  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_write_fd): Limit vectors to UIO_MAXIOV.
+	(vstr_sc_read_*): Limit vectors to UIO_MAXIOV.
+
+	* tst/tst-main.c (PRNT_DEBUG_VSTR): Change %zu for %lu and cast ... 
+	as that isn't always on the system.
+	(PRNT_CSTR): Change %zu for %lu and cast ... as that isn't always on
+	the system.
+	(PRNT_VSTR): Change %zu for %lu and cast ... as that isn't always on
+	the system.
+
+	* configure.in: Build fixes for SunOS 5.8
+
+2002-11-20  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_free_conf): Remove global variables
+	for vstr_add_*fmt specification allocation. All functions should now
+	be mostly called reentrent, if using different configurations ... and
+	no _BUF -> _REF data is shared bewteen them.
+
 2002-11-18  James Antill  <james@and.org>
 
-	* src/vstr_cache.c (vstr__free_cache): Fixed warning.
+	* NEWS: Release 0.9.20
 
 	* src/vstr_add_fmt.c (vstr__add_fmt_number): Fixed some corner cases.
 
 	* tst/add_fmt/tst_num.c (tst): Added more tests for 
 	field width + precision.
+
+	* src/vstr_cache.c (vstr__free_cache): Fixed warning.
 
 2002-11-16  James Antill  <james@and.org>
 
@@ -15,7 +112,7 @@
 	update sections.
 	(vstr_sects_update_del): Add function, to auto update sections.
 
-	* src/vstr.c (vstr_nx_free_base): Make dealoction faster, and don't 
+	* src/vstr.c (vstr_free_base): Make dealoction faster, and don't 
 	call cache cbs except to say free yourself.
 
 2002-11-09  James Antill  <james@and.org>
@@ -94,9 +191,9 @@
 
 2002-10-02  James Antill  <james@and.org>
 
-	* src/vstr_cache.c (vstr_nx_cache_set): Changed API.
-	(vstr_nx_cache_add): Changed API.
-	(vstr_nx_cache_cb_sub): Changed API.
+	* src/vstr_cache.c (vstr_cache_set): Changed API.
+	(vstr_cache_add): Changed API.
+	(vstr_cache_cb_sub): Changed API.
 
 	* include/vstr-inline.h (vstr_cache_get): Changed API.
 
@@ -249,10 +346,10 @@
 
 2002-09-02  James Antill  <james@and.org>
 
-	* src/vstr_sc_posix.c (vstr_nx_sc_mmap_fd): Add checks for mmap()
+	* src/vstr_sc_posix.c (vstr_sc_mmap_fd): Add checks for mmap()
 	counts, when in debugging mode.
 
-	* src/vstr.c (vstr_nx_exit): Add checks for mmap() counts, when in 
+	* src/vstr.c (vstr_exit): Add checks for mmap() counts, when in 
 	debugging mode.
 
 	* NEWS: Release 0.9.13
@@ -288,7 +385,7 @@
 
 	* src/vstr_conv.c (vstr_conv_encode_uri): Made the conversion walk
 	forwards through the Vstr string, for speed.
-	(vstr_nx_conv_decode_uri): Made the conversion walk forwards through
+	(vstr_conv_decode_uri): Made the conversion walk forwards through
 	the Vstr string, for speed.
 	(VSTR__BUF_NEEDED): Fast path when buf/non nodes are the only ones
 	in the Vstr string.

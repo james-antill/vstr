@@ -157,7 +157,8 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
 {
   Vstr__cache_data_iovec *vec = NULL;
   size_t alloc_sz = sz + base->conf->iov_min_alloc + base->conf->iov_min_offset;
- 
+  Vstr_conf *conf = base->conf;
+  
   if (!sz)
     return (TRUE);
 
@@ -173,15 +174,15 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
  vec = VSTR__CACHE(base)->vec;
  if (!vec)
  {
-   if (!(vec = malloc(sizeof(Vstr__cache_data_iovec))))
+   if (!(vec = VSTR__MK(sizeof(Vstr__cache_data_iovec))))
    {
-     base->conf->malloc_bad = TRUE;
+     conf->malloc_bad = TRUE;
      return (FALSE);
    }
-   if (!vstr_nx_cache_set(base, base->conf->cache_pos_cb_iovec, vec))
+   if (!vstr_nx_cache_set(base, conf->cache_pos_cb_iovec, vec))
    {
-     free(vec);
-     base->conf->malloc_bad = TRUE;
+     VSTR__F(vec);
+     conf->malloc_bad = TRUE;
      return (FALSE);
    }
    
@@ -193,33 +194,33 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
    vec->sz = 0;
  }
  assert(VSTR__CACHE(base)->vec ==
-        vstr_nx_cache_get(base, base->conf->cache_pos_cb_iovec));
+        vstr_nx_cache_get(base, conf->cache_pos_cb_iovec));
  
  if (!vec->v)
  {
-  vec->v = malloc(sizeof(struct iovec) * alloc_sz);
+   vec->v = VSTR__MK(sizeof(struct iovec) * alloc_sz);
 
-  if (!vec->v)
-  {
-    base->conf->malloc_bad = TRUE;
-    return (FALSE);
-  }
-
-  assert(!vec->t);
-  vec->t = malloc(alloc_sz);
-
-  if (!vec->t)
-  {
-    free(vec->v);
-    vec->v = NULL;
-    base->conf->malloc_bad = TRUE;
-    return (FALSE);
-  }
-  
-  vec->sz = alloc_sz;
-  assert(!vec->off);
+   if (!vec->v)
+   {
+     conf->malloc_bad = TRUE;
+     return (FALSE);
+   }
+   
+   assert(!vec->t);
+   vec->t = VSTR__MK(alloc_sz);
+   
+   if (!vec->t)
+   {
+     VSTR__F(vec->v);
+     vec->v = NULL;
+     conf->malloc_bad = TRUE;
+     return (FALSE);
+   }
+   
+   vec->sz = alloc_sz;
+   assert(!vec->off);
  }
-
+ 
  if (!base->iovec_upto_date)
  {
    vec->off = 0;
@@ -230,34 +231,19 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
 
  if (sz > (vec->sz - vec->off))
  {
-  struct iovec *tmp_iovec = NULL;
-  unsigned char *tmp_types = NULL;
-
-  alloc_sz = sz + base->conf->iov_min_offset;
- 
-  tmp_iovec = realloc(vec->v, sizeof(struct iovec) * alloc_sz);
-
-  if (!tmp_iovec)
-  {
-   base->conf->malloc_bad = TRUE;
-   return (FALSE);
-  }
+   alloc_sz = sz + base->conf->iov_min_offset;
+   
+   if (!VSTR__MV(vec->v, sizeof(struct iovec) * alloc_sz) ||
+       !VSTR__MV(vec->t, alloc_sz))
+   {
+     conf->malloc_bad = TRUE;
+     return (FALSE);
+   }
   
-  vec->v = tmp_iovec;
-  
-  tmp_types = realloc(vec->t, alloc_sz);
-
-  if (!tmp_types)
-  {
-   base->conf->malloc_bad = TRUE;
-   return (FALSE);
-  }
-  
-  vec->t = tmp_types;
-  vec->sz = alloc_sz;
-  
-  if (vec->off < base->conf->iov_min_offset)
-    vstr__cache_iovec_memmove(base);
+   vec->sz = alloc_sz;
+   
+   if (vec->off < base->conf->iov_min_offset)
+     vstr__cache_iovec_memmove(base);
  }
 
  return (TRUE);
@@ -265,7 +251,7 @@ int vstr__cache_iovec_alloc(const Vstr_base *base, unsigned int sz)
 
 int vstr__make_cache(const Vstr_base *base)
 {
- Vstr__cache *cache = malloc(sizeof(Vstr__cache));
+ Vstr__cache *cache = VSTR__MK(sizeof(Vstr__cache));
 
  if (!cache)
  {
@@ -292,7 +278,7 @@ void vstr__free_cache(const Vstr_base *base)
 
   vstr__cache_cbs(base, 0, 0, VSTR_TYPE_CACHE_FREE);
   
-  free(VSTR__CACHE(base));
+  VSTR__F(VSTR__CACHE(base));
 
   ((Vstr_base *)base)->iovec_upto_date = FALSE;
   
@@ -306,18 +292,16 @@ static int vstr__resize_cache(const Vstr_base *base, unsigned int sz)
   assert(base->cache_available && VSTR__CACHE(base));
   assert(VSTR__CACHE(base)->sz < sz);
   
-  if (!(cache = realloc(VSTR__CACHE(base),
-                        sizeof(Vstr__cache) + (sizeof(void *) * sz))))
+  if (!VSTR__MV(VSTR__CACHE(base), sizeof(Vstr__cache) + (sizeof(void *) * sz)))
   {
     base->conf->malloc_bad = TRUE;  
     return (FALSE);
   }
-
+  cache = VSTR__CACHE(base);
+  
   vstr_nx_wrap_memset(cache->data + cache->sz, 0,
                       sizeof(void *) * (sz - cache->sz));
-
   cache->sz = sz;
-  VSTR__CACHE(base) = cache;
 
   return (TRUE);
 }
@@ -330,7 +314,7 @@ static void *vstr__cache_pos_cb(const Vstr_base *base __attribute__((unused)),
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
-    free(data);
+    VSTR__F(data);
     return (NULL);
   }
 
@@ -363,9 +347,9 @@ static void *vstr__cache_iovec_cb(const Vstr_base *base
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
-    free(data->v);
-    free(data->t);
-    free(data);
+    VSTR__F(data->v);
+    VSTR__F(data->t);
+    VSTR__F(data);
 
     return (NULL);
   }
@@ -387,7 +371,7 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
   {
     if (data)
       vstr_nx_ref_del(data->ref);
-    free(data);
+    VSTR__F(data);
     return (NULL);
   }
 
@@ -426,7 +410,7 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
 
 int vstr__cache_conf_init(Vstr_conf *conf)
 {
-  if (!(conf->cache_cbs_ents = malloc(sizeof(Vstr_cache_cb) * 3)))
+  if (!(conf->cache_cbs_ents = VSTR__MK(sizeof(Vstr_cache_cb) * 3)))
     return (FALSE);
   
   conf->cache_cbs_sz = 3;
@@ -452,31 +436,30 @@ int vstr__cache_conf_init(Vstr_conf *conf)
 }
 
 /* initial stuff done in vstr.c */
-unsigned int vstr_nx_cache_add(Vstr_conf *conf, const char *name,
+unsigned int vstr_nx_cache_add(Vstr_conf *passed_conf, const char *name,
                                void *(*func)(const Vstr_base *,
                                              size_t, size_t,
                                              unsigned int, void *))
 {
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   unsigned int sz = conf->cache_cbs_sz + 1;
-  Vstr_cache_cb *ents = realloc(conf->cache_cbs_ents,
-                                sizeof(Vstr_cache_cb) * sz);
 
-  if (!ents)
+  if (!VSTR__MV(conf->cache_cbs_ents, sizeof(Vstr_cache_cb) * sz))
   {
     conf->malloc_bad = TRUE;
     return (0);
   }
   conf->cache_cbs_sz = sz;
-  conf->cache_cbs_ents = ents;
 
-  ents[sz - 1].name = name;
-  ents[sz - 1].cb_func = func;
+  conf->cache_cbs_ents[sz - 1].name = name;
+  conf->cache_cbs_ents[sz - 1].cb_func = func;
   
   return (sz);
 }
 
-unsigned int vstr_nx_cache_srch(Vstr_conf *conf, const char *name)
+unsigned int vstr_nx_cache_srch(Vstr_conf *passed_conf, const char *name)
 {
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   unsigned int pos = 0;
 
   while (pos < conf->cache_cbs_sz)
@@ -545,13 +528,13 @@ int vstr__cache_dup_cbs(Vstr_conf *conf, Vstr_conf *dupconf)
   unsigned int scan = 0;
 
   if ((conf->cache_cbs_sz != dupconf->cache_cbs_sz) &&
-      !(ents = realloc(ents, sizeof(Vstr_cache_cb) * conf->cache_cbs_sz)))
+      !VSTR__MV(ents, sizeof(Vstr_cache_cb) * conf->cache_cbs_sz))
   {
     conf->malloc_bad = TRUE;
     return (FALSE);
   }
   conf->cache_cbs_sz = dupconf->cache_cbs_sz;
-  conf->cache_cbs_ents = ents;  
+  conf->cache_cbs_ents = ents;
 
   while (scan < dupconf->cache_cbs_sz)
   {

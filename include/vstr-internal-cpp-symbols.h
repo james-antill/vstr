@@ -5,6 +5,10 @@
 #define vstr_nx_ref_cb_free_ptr_ref vstr_ref_cb_free_ptr_ref
 #define vstr_nx_ref_make_ptr vstr_ref_make_ptr
 #define vstr_nx_ref_make_malloc vstr_ref_make_malloc
+#define vstr_nx_ref_make_memdup vstr_ref_make_memdup
+#define vstr_nx_ref_make_vstr_base vstr_ref_make_vstr_base
+#define vstr_nx_ref_make_vstr_conf vstr_ref_make_vstr_conf
+#define vstr_nx_ref_make_vstr_sects vstr_ref_make_vstr_sects
 #define vstr_nx_init vstr_init
 #define vstr_nx_exit vstr_exit
 #define vstr_nx_make_conf vstr_make_conf
@@ -81,7 +85,6 @@
 #define vstr_nx_export_iovec_cpy_buf vstr_export_iovec_cpy_buf
 #define vstr_nx_export_iovec_cpy_ptr vstr_export_iovec_cpy_ptr
 #define vstr_nx_export_buf vstr_export_buf
-#define vstr_nx_export_chr vstr_export_chr
 #define vstr_nx_export_ref vstr_export_ref
 #define vstr_nx_export_cstr_ptr vstr_export_cstr_ptr
 #define vstr_nx_export_cstr_malloc vstr_export_cstr_malloc
@@ -96,6 +99,7 @@
 #define vstr_nx_parse_intmax vstr_parse_intmax
 #define vstr_nx_parse_uintmax vstr_parse_uintmax
 #define vstr_nx_parse_ipv4 vstr_parse_ipv4
+#define vstr_nx_parse_ipv6 vstr_parse_ipv6
 #define vstr_nx_parse_netstr vstr_parse_netstr
 #define vstr_nx_parse_netstr2 vstr_parse_netstr2
 #define vstr_nx_sects_make vstr_sects_make
@@ -126,6 +130,11 @@
 #define vstr_nx_sc_fmt_add_bkmg_bits_uint vstr_sc_fmt_add_bkmg_bits_uint
 #define vstr_nx_sc_fmt_add_ipv4_ptr vstr_sc_fmt_add_ipv4_ptr
 #define vstr_nx_sc_fmt_add_ipv6_ptr vstr_sc_fmt_add_ipv6_ptr
+#define vstr_nx_sc_fmt_add_ipv4_vec vstr_sc_fmt_add_ipv4_vec
+#define vstr_nx_sc_fmt_add_ipv6_vec vstr_sc_fmt_add_ipv6_vec
+#define vstr_nx_sc_fmt_add_ipv4_vec_cipe vstr_sc_fmt_add_ipv4_vec_cipe
+#define vstr_nx_sc_fmt_add_ipv6_vec_cipe vstr_sc_fmt_add_ipv6_vec_cipe
+#define vstr_nx_sc_fmt_add_all vstr_sc_fmt_add_all
 #define vstr_nx_sc_fmt_cb_beg vstr_sc_fmt_cb_beg
 #define vstr_nx_sc_fmt_cb_end vstr_sc_fmt_cb_end
 #define vstr_nx_sc_mmap_fd vstr_sc_mmap_fd

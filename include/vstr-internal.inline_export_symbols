@@ -7,6 +7,12 @@ wrap_memmove(USE_WRAP_MEMMOVE)
 ref_del
 ref_add
 cache_get
+cache__pos
+base__pos
+export__node_ptr
+export_chr
+iter_fwd_beg
+iter_fwd_nxt
 add_buf
 del
 sects_add

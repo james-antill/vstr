@@ -4,6 +4,7 @@ static const char *rf = __FILE__;
 
 #define TST_IP(flags, ip0, ip1, ip2, ip3, ci, num, er) do { \
   memset(ips, -1, 4); \
+  cidr = -1; \
   \
   ret = vstr_parse_ipv4(s1, 1, s1->len, ips, &cidr, flags, &num_len, &err); \
   \
@@ -89,7 +90,9 @@ int tst(void)
 
 /* tst_coverage
  *
+ * VSTR_FLAG_PARSE_IPV4_LOCAL
  * VSTR_FLAG_PARSE_IPV4_CIDR_FULL
  * VSTR_FLAG_PARSE_IPV4_NETMASK_FULL
+ * VSTR_TYPE_PARSE_IPV4_ERR_NONE
  *
  */

@@ -48,7 +48,34 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
 {
   Vstr__fmt_usr_name_node *scan = conf->fmt_usr_names;
   size_t fmt_max_len = 0;
+  
+  if (conf->fmt_usr_curly_braces)
+  { /* we know they follow a certain format of "{" [^}]* "}"
+     * so we can find the length */
+    char *ptr = strchr(fmt, '}');
+    size_t len = 0;
+    
+    if (!ptr)
+      return (NULL);
 
+    len = (ptr - fmt) + 1;
+    while (scan)
+    {
+      assert(!scan->next || (scan->name_len <= scan->next->name_len));
+      
+      if ((scan->name_len == len) &&
+          !vstr_nx_wrap_memcmp(scan->name_str, fmt, len))
+        return (scan);
+
+      if (scan->name_len > len)
+        break;
+      
+      scan = scan->next;
+    }
+    
+    return (NULL);
+  }
+  
   if (!conf->fmt_name_max)
   {
     while (scan)
@@ -76,43 +103,49 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   return (NULL);
 }
 
-int vstr_nx_fmt_add(Vstr_conf *conf, const char *name,
+int vstr_nx_fmt_add(Vstr_conf *passed_conf, const char *name,
                     int (*func)(Vstr_base *, size_t, Vstr_fmt_spec *), ...)
 {
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   Vstr__fmt_usr_name_node **scan = &conf->fmt_usr_names;
   va_list ap;
   unsigned int count = 1;
-  Vstr__fmt_usr_name_node *node = malloc(sizeof(Vstr__fmt_usr_name_node) +
-                                         (sizeof(unsigned int) * count));
   unsigned int scan_type = 0;
+  Vstr__fmt_usr_name_node *node = NULL;
 
-  if (vstr__fmt_usr_srch(conf, name))
-    return (FALSE);
-  
+  node = VSTR__MK(sizeof(Vstr__fmt_usr_name_node) +
+                  (sizeof(unsigned int) * count));
+
   if (!node)
   {
     conf->malloc_bad = TRUE;
     return (FALSE);
   }
   
+  if (vstr__fmt_usr_srch(conf, name))
+    return (FALSE);
+  
   node->name_str = name;
   node->name_len = strlen(name);
   node->func = func;
 
+  if ((name[0] != '{') ||
+      (name[node->name_len - 1] != '}') ||
+      ((strchr(name, '}') != (name + node->name_len - 1))))
+    conf->fmt_usr_curly_braces = FALSE;
+  
   va_start(ap, func);
   while ((scan_type = va_arg(ap, unsigned int)))
   {
-    Vstr__fmt_usr_name_node *tmp = realloc(node,
-                                           sizeof(Vstr__fmt_usr_name_node) +
-                                           (sizeof(unsigned int) * ++count));
-    if (!tmp)
+    ++count;
+    if (!VSTR__MV(node, sizeof(Vstr__fmt_usr_name_node) +
+                  (sizeof(unsigned int) * count)))
     {
       conf->malloc_bad = TRUE;
-      free(node);
+      VSTR__F(node);
       va_end(ap);
       return (FALSE);
     }
-    node = tmp;
 
     assert(FALSE ||
            (scan_type == VSTR_TYPE_FMT_INT) ||
@@ -161,8 +194,9 @@ int vstr_nx_fmt_add(Vstr_conf *conf, const char *name,
   return (TRUE);
 }
 
-void vstr_nx_fmt_del(Vstr_conf *conf, const char *name)
+void vstr_nx_fmt_del(Vstr_conf *passed_conf, const char *name)
 {
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   Vstr__fmt_usr_name_node **scan = vstr__fmt_usr_srch(conf, name);
 
   if (scan)
@@ -176,11 +210,12 @@ void vstr_nx_fmt_del(Vstr_conf *conf, const char *name)
     if (tmp->name_len == conf->fmt_name_max)
       conf->fmt_name_max = 0;
 
-    free(tmp);
+    VSTR__F(tmp);
   }
 }
 
-int vstr_nx_fmt_srch(Vstr_conf *conf, const char *name)
+int vstr_nx_fmt_srch(Vstr_conf *passed_conf, const char *name)
 {
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   return (!!vstr__fmt_usr_srch(conf, name));
 }

@@ -55,7 +55,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     if (!vstr_nx_cache_set(base, off, NULL))
       return (NULL);
     
-    if (!(data = malloc(sizeof(Vstr__cache_data_cstr))))
+    if (!(data = VSTR__MK(sizeof(Vstr__cache_data_cstr))))
     {
       base->conf->malloc_bad = TRUE;
       return (NULL);
