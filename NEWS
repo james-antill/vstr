@@ -1,8 +1,14 @@
- Latest stable release is 1.0.10
+ Latest stable release is 1.0.11
+
+2003-12-14: Version 1.0.11 ... Make vstr_export_chr() easier to optimize for
+GCC. Custom formatters now accept %d instead of the field width or precision in
+the static format checkers compat. (this fixes custom formatters starting with a
+%p which have both a field width _and_ a precision). Build fixes for cygwin,
+64bit arches and ICC.
 
 2003-09-30: Version 1.0.10 ... More testing, now at over 98% code coverage.
 A bunch of new features so that the printf like function can easily emulate
-some more common extension, including configurable grouping per base and the
+some more common extensions, including configurable grouping per base and the
 ability to print numbers in base 2. Added code so that temporary strings can
 be created used and destroyed without entering malloc(). Changes to
 documentation and examples. Removed C++ inline code, now C++ just calls the

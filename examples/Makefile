@@ -11,9 +11,9 @@ VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3 # -ansi -pedantic
 
-HAVE_TIMER_Q=0
+HAVE_TIMER_Q=1
 HAVE_SSL=1
-HAVE_LIBZ=1
+HAVE_LIGZ=1
 HAVE_LIBBZ2=1
 HAVE_GMP=1
 
@@ -75,7 +75,7 @@ ifeq ($(HAVE_SSL),1)
 SSL_PROGS=ex_perf_sgopenssl
 endif
 
-ifeq ($(HAVE_LIBZ),1)
+ifeq ($(HAVE_LIGZ),1)
 ifeq ($(HAVE_LIBBZ2),1)
 ZCAT=ex_zcat
 endif

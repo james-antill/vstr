@@ -593,9 +593,6 @@ void vstr__del_conf(Vstr_conf *conf)
       Vstr_locale_num_base *next = conf->loc->num_beg->next;
       
       VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->num_beg);
-      VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->num_beg->grouping);
-      VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->num_beg->thousands_sep_ref);
-      VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->num_beg->decimal_point_ref);
       
       vstr_ref_del(conf->loc->num_beg->grouping);
       vstr_ref_del(conf->loc->num_beg->thousands_sep_ref);
@@ -605,7 +602,6 @@ void vstr__del_conf(Vstr_conf *conf)
       conf->loc->num_beg = next;
     }
 
-    VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->null_ref);
     vstr_ref_del(conf->loc->null_ref);
 
     VSTR__F(conf->loc);

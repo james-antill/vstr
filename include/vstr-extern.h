@@ -680,7 +680,7 @@ extern size_t vstr_export_buf(const struct Vstr_base *, size_t, size_t,
                               void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern char vstr_export_chr(const struct Vstr_base *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
 
 extern struct Vstr_ref *vstr_export_ref(const struct Vstr_base *,
                                         size_t, size_t, size_t *)

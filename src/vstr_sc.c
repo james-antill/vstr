@@ -240,9 +240,9 @@ static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
 
   if (!buf)
   {
-    buf = "(null)";
-    if (sf_len > strlen("(null)"))
-      sf_len = strlen("(null)");
+    buf = base->conf->loc->null_ref->ptr;
+    if (sf_len > base->conf->loc->null_len)
+      sf_len = base->conf->loc->null_len;
   }
 
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
@@ -274,13 +274,13 @@ static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
 
   if (!ptr)
   {
-    ptr = "(null)";
-    if (sf_len > strlen("(null)"))
-      sf_len = strlen("(null)");
+    ptr = base->conf->loc->null_ref->ptr;
+    if (sf_len > base->conf->loc->null_len)
+      sf_len = base->conf->loc->null_len;
   }
 
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                          VSTR_FLAG_SC_FMT_CB_BEG_DEF))
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
 
   if (!vstr_add_ptr(base, pos, ptr, sf_len))
@@ -592,7 +592,7 @@ static unsigned int vstr__sc_fmt_num16_len(unsigned int num)
  */
 static unsigned int vstr__sc_fmt_num_ipv6_compact(unsigned int *ips,
                                                   unsigned int max_num,
-                                                  unsigned int *pos)
+                                                  size_t *pos)
 {
   unsigned int scan = 0;
   unsigned int ret_max = 0;
@@ -1072,9 +1072,11 @@ int vstr_sc_fmt_add_lower_base2_uintmax(Vstr_conf *conf, const char *name)
 #define VSTR__SC_FMT_ADD(x, nb, ne) \
  if (!( \
  vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" ne "}") && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*"   ne "}") && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  ".*" ne "}") && \
- vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*.*" ne "}") && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*"   ne "}")  && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  ".*" ne "}")  && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*.*" ne "}")  && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  "d%" ne "}")  && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "d%d%" ne "}") &&  \
  vstr_sc_fmt_add_ ## x (conf, "{" nb "}"))) ret = FALSE
 
 int vstr_sc_fmt_add_all(Vstr_conf *conf)

@@ -109,18 +109,20 @@
 	</td></tr></table>
 
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.10</h2>
+	  <h2>Current version is 1.0.11</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
               <a href="latest/"><b>http</b></a>
 	    </li>
-            <li> An upto date <a href="ftp://ftp.and.org/apt/apt-0.5.4cnc9-fr1.i386.rpm">apt-rpm</a> repository is available (containing only the non debug versions of the rpms)...<br>
+            <li> An upto date <a href="http://www.phy.duke.edu/~rgb/General/yum_article/yum_article/yum_article.html">YUM</a> repository is available (containing only the non debug versions of the rpms)...<br>
 <pre>
-rpm     ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
-rpm-src ftp://ftp.and.org/apt redhat/8.0/en/i386 extras
+[and-org-james]
+name=And.org James' packages
+baseurl=ftp://ftp.and.org/yum/fc$releasever-james
+        ftp://code.and.org/yum/fc$releasever-james
 </pre>
-	      ...at which point you can just "apt-get install vstr".
+	      ...at which point you can just "yum install vstr".
 	    </li>
             <li> I build RPMs for i386, they are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/rpms/">ftp</a> and
@@ -675,7 +677,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu Oct 30 14:08:12 EST 2003
+Last modified: Mon Dec 15 03:15:11 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

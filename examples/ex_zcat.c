@@ -5,7 +5,9 @@
 
 
 /* compression libraries */
+
 #include <zlib.h>
+#define BZ_NO_STDIO 1
 #include <bzlib.h>
 
 
@@ -38,7 +40,7 @@ static int ex_zcat_open(Vstr_base *s2)
 
   if (ex_zcat_data_open) /* allow open to be called many times */
     return (TRUE);
-
+  
   if (s2->len < 3) not_enough = TRUE; else
   {
     unsigned char buf[3] = {0x1F, 0x8B, 0x08};
@@ -48,9 +50,13 @@ static int ex_zcat_open(Vstr_base *s2)
 
   if (s2->len < 4) not_enough = TRUE; else
   {
-    unsigned char buf[4] = {0x42, 0x5A, 0x68, 0x39};
-    if (vstr_cmp_buf_eq(s2, 1, sizeof(buf), buf, sizeof(buf)))
+    unsigned char buf[3] = {0x42, 0x5A, 0x68};
+
+    if (vstr_cmp_buf_eq(s2, 1, sizeof(buf), buf, sizeof(buf)) &&
+        /* byte four is the level -1 .. -9 */
+        (vstr_export_chr(s2, 4) >= 0x31) && (vstr_export_chr(s2, 4) <= 0x39))
       f_type = EX_ZCAT_TYPE_BZIP2;
+
   }
 
   memset(&ex_zcat_lib_decomp_data, 0, sizeof(ex_zcat_lib_decomp_data));

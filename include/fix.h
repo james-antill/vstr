@@ -180,7 +180,7 @@ extern short ospeed;
 # endif
 #endif
 
-#ifndef HAVE_CMSGHDR_STRUCT
+#if !defined(HAVE_CMSGHDR_STRUCT)
 struct cmsghdr
 {
  size_t cmsg_len;
@@ -307,7 +307,7 @@ extern int FIX_SYMBOL(asprintf)(char **, const char *, ...);
 # endif
 #endif
 
-#ifndef HAVE_GETOPT_LONG
+#if !defined(HAVE_GETOPT_LONG) && defined(HAVE_POSIX_HOST)
 /* Declarations for getopt.
    Copyright (C) 1989,90,91,92,93,94,96,97 Free Software Foundation, Inc.
                  2000 James Antill <james@and.org>
@@ -429,7 +429,7 @@ extern int FIX_SYMBOL(_getopt_internal) (int argc, char *const *argv,
 #define _getopt_internal(a, b, c, d, e, f) FIX_SYMBOL(_getopt_internal)(a, b, c, d, e, f)
 #endif
 
-#ifndef HAVE_POLL
+#if !defined(HAVE_POLL) && defined(HAVE_POSIX_HOST)
 /* Compatibility definitions for System V `poll' interface.
    Copyright (C) 1994, 1996 Free Software Foundation, Inc.
    This file is part of the GNU C Library.

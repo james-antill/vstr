@@ -1,3 +1,35 @@
+2003-12-14  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.11
+
+2003-12-14  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_all): Add a "%d" and "%d%d" static
+	format checker compat. Mainly because GCC "knows" %p can't take a
+	precision ".*".
+	(vstr__sc_fmt_add_cb_buf): Fix custom formatter to use the Vstr locale
+	NULL string.
+	(vstr__sc_fmt_add_cb_ptr): Fix custom formatter to use the Vstr locale
+	NULL string.
+	* src/vstr_sc.c (vstr__sc_fmt_add_cb_ptr): Fix type passed to
+	vstr_sc_fmt_cb_beg() in the callback.
+
+2003-12-14  Martin Pool <mbp@hp.com>
+
+	* src/vstr_sc.c (vstr__sc_fmt_num_ipv6_compact): 64bit clean patch.
+
+2003-12-09  James Antill  <james@and.org>
+
+	* include/vstr-extern.h: Made vstr_export_chr() pure.
+
+2003-11-08  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__fmt_mv_spec): Fix for ICC warning.
+
+2003-11-06  James Antill  <james@and.org>
+
+	* src/fix.c: Build fixes for --enable-noposix-host
+
 2003-10-30  James Antill  <james@and.org>
 
 	* NEWS (2003-09-29): Release 1.0.10

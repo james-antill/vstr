@@ -279,7 +279,7 @@ OUT->print($man_consts_header);
 
 synopsis(0);
 
-open (OUT, "> constants.3")        || die "open(constants.3): $!";
+open (IN, "< $docs/constants.txt") || die "open(constants.txt): $!";
 
 OUT->print($man_consts_desc);
 

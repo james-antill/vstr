@@ -7563,7 +7563,9 @@ Function: vstr_sc_fmt_add_all()
  section of each custom formatter. Also 4 alternate names are given so that
  the formatter can be used in a gcc warning compatible way. For instance
  the vstr_add_buf() formatter is "{buf}", however the names "{buf:%s%zu}",
- "{buf:%*s%zu}", "{buf:%.*s%zu}" and "{buf:%*.*s%zu}" are also added.
+ "{buf:%*s%zu}", "{buf:%.*s%zu}", "{buf:%*.*s%zu}", "{buf:%d%s%zu}" and 
+ "{buf:%d%d%s%zu}" are also added (the later two are slightly less readable,
+ but required for custom formaters whos first argument is a %p.
 
  Note:
 

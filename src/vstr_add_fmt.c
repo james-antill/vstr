@@ -403,7 +403,7 @@ static int vstr__fmt_add_spec(Vstr_conf *conf)
 
 #define VSTR__FMT_MV_SPEC(conf, x) vstr__fmt_mv_spec(conf, spec, x, &params)
 static void vstr__fmt_mv_spec(Vstr_conf *conf, struct Vstr__fmt_spec *spec,
-                              int main_param, int *params)
+                              int main_param, unsigned int *params)
 {
   conf->vstr__fmt_spec_make = spec->next;
 

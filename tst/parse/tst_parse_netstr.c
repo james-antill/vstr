@@ -12,7 +12,7 @@ int tst(void)
 
   sprintf(buf, "%d %d %u %u", INT_MAX, INT_MIN, 0, UINT_MAX);
 
-  vstr_add_fmt(s1, s1->len, "%d:%n%s,", strlen(buf), &buf_pos, buf);
+  vstr_add_fmt(s1, s1->len, "%zu:%n%s,", strlen(buf), &buf_pos, buf);
   ++buf_pos;
 
   len = vstr_parse_netstr(s1, 1, s1->len, &pos, &dlen);

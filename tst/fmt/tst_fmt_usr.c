@@ -8,6 +8,8 @@ static int getpid(void) { return (0xdeadbeef); }
 
 static int tst_errno = 0;
 
+static char *tst_NULL = NULL;
+
 static int tst_usr_vstr_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
 {
   Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
@@ -317,6 +319,11 @@ int tst(void)
                VSTR_TYPE_FMT_INT,
                VSTR_TYPE_FMT_END);
 
+  ref = vstr_ref_make_ptr("(BAD-BAD)", vstr_ref_cb_free_ref);
+  ASSERT(vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR,
+                        ref, strlen(ref->ptr)));
+  vstr_ref_del(ref);
+  
   vstr_sc_fmt_add_all(s3->conf);
   ASSERT(s3->conf->fmt_usr_curly_braces);
   vstr_fmt_add(s3->conf, "{BLANK_ERRNO1}", tst_usr_blank_errno1_cb,
@@ -344,9 +351,21 @@ int tst(void)
   TST_B_TST(ret, 1, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
 
   vstr_add_fmt(s3, 0, "$$ ${vstr:%p%zu%zu%u} -- $PID $$",
-               (void *)s2, 3, strlen(buf), 0);
+               (void *)s2, (size_t)3, strlen(buf), 0);
 
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
+
+  vstr_del(s3, 1, s3->len);
+  vstr_add_fmt(s3, 0, "<$.4{buf:%s%zu}> <${buf:%s%zu}> <${buf:%s%zu}>",
+               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
+
+  vstr_del(s3, 1, s3->len);
+  vstr_add_fmt(s3, 0, "<$.4{ptr:%s%zu}> <${ptr:%s%zu}> <${ptr:%s%zu}>",
+               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
 
   vstr_del(s3, 1, s3->len);
   vstr_add_fmt(s3, 0, "$$ ${buf:%s%zu} -- $PID $$",
@@ -372,14 +391,31 @@ int tst(void)
   vstr_del(s3, 1, s3->len);
   ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ref);
   vstr_add_fmt(s3, 0, "$$ $*{ref:%*p%zu%zu} -- $PID $$",
-               0, ref, 0, strlen(buf));
+               0, ref, (size_t)0, strlen(buf));
   vstr_ref_del(ref);
 
   TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
+  vstr_del(s2, 3, strlen(buf));
+  vstr_del(s3, 1, s3->len);
+  ref = vstr_ref_make_ptr("123", vstr_ref_cb_free_ref);
+  vstr_add_fmt(s3, 0, "$$ $*.*{ref:%d%d%p%zu%zu} -- $PID $$",
+               4, 0, ref, (size_t)0, strlen(buf));
+  vstr_ref_del(ref);
+
+  assert(VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
+
+  vstr_del(s3, 1, s3->len);
+  ref = vstr_ref_make_ptr("--", vstr_ref_cb_free_ref);
+  vstr_add_fmt(s3, 0, "$$$*.*{ref:%d%d%p%zu%zu} $PID $$",
+               4, 5, ref, (size_t)0, (size_t)2);
+  vstr_ref_del(ref);
+
+  assert(VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
+
   vstr_del(s1, 1, s1->len);
   vstr_del(s3, 1, s3->len);
-  vstr_add_fmt(s3, 0, "X${rep_chr:%c%zu}X", '-', 43);
+  vstr_add_fmt(s3, 0, "X${rep_chr:%c%zu}X", '-', (size_t)43);
   vstr_add_rep_chr(s1, s1->len, 'X', 1);
   vstr_add_rep_chr(s1, s1->len, '-', 43);
   vstr_add_rep_chr(s1, s1->len, 'X', 1);
@@ -595,12 +631,12 @@ int tst(void)
                          "$76{ipv6.v+C:%p%u%u}|"
                          "$76{ipv6.v+C:%p%u%u}"
                          "",
-                         s2, 1, s2->len, 0,
-                         "--buf--", 7,
-                         "--ptr--", 7,
-                         7,
-                         ref, 0, 7,
-                         'x', 8,
+                         s2, (size_t)1, s2->len, 0,
+                         "--buf--", (size_t)7,
+                         "--ptr--", (size_t)7,
+                         (size_t)7,
+                         ref, (size_t)0, (size_t)7,
+                         'x', (size_t)8,
                          ipv4,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED,
                          ipv4, 24,
@@ -661,12 +697,12 @@ int tst(void)
                          "$-76{ipv6.v+C:%p%u%u}|"
                          "$-76{ipv6.v+C:%p%u%u}"
                          "",
-                         s2, 1, s2->len, 0,
-                         "--buf--", 7,
-                         "--ptr--", 7,
-                         7,
-                         ref, 0, 7,
-                         'x', 8,
+                         s2, (size_t)1, s2->len, 0,
+                         "--buf--", (size_t)7,
+                         "--ptr--", (size_t)7,
+                         (size_t)7,
+                         ref, (size_t)0, (size_t)7,
+                         'x', (size_t)8,
                          ipv4,
                          ipv6, VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED,
                          ipv4, 24,
@@ -701,17 +737,6 @@ int tst(void)
   vstr_fmt_add(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}",
                tst_usr_pid_cb, VSTR_TYPE_FMT_END);
   vstr_fmt_del(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}");
-  
-  {
-    const char *ptr = NULL;
-
-    vstr_del(s3, 1, s3->len);
-    vstr_add_fmt(s3, 0, "${buf:%s%zu}", ptr, (size_t)1000);
-    TST_B_TST(ret, 16, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "(null)"));
-    vstr_del(s3, 1, s3->len);
-    vstr_add_fmt(s3, 0, "${ptr:%s%zu}", ptr, (size_t)1000);
-    TST_B_TST(ret, 17, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "(null)"));
-  }
   
   return (TST_B_RET(ret));
 }

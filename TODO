@@ -7,6 +7,12 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
+. AM_CFLAGS
+
+. timeval custom formatter
+
+. bkmg intmax at least.
+
 . Some way to say use a _BUF if we are subbing in a _BUF and use a _PTR/_REF
   otherwise. Or a way to say how much data can I add into this node
  (Ie. currently, is it a _BUF and does it have free space).

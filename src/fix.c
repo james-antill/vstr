@@ -273,7 +273,7 @@ int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
 }
 #endif
 
-#ifndef HAVE_GETOPT_LONG
+#if !defined(HAVE_GETOPT_LONG) && defined(HAVE_POSIX_HOST)
 /* Getopt for GNU.
    NOTE: getopt is now part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
@@ -1077,7 +1077,7 @@ FIX_SYMBOL(getopt_long_only) (argc, argv, options, long_options, opt_index)
 
 #endif
 
-#ifndef HAVE_POLL
+#if !defined(HAVE_POLL) && defined(HAVE_POSIX_HOST)
 /* hacked slightly, so that invalid fd's work ...
  * glibc-2.1 fixes this itself */
 /* Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
@@ -1219,7 +1219,7 @@ FIX_SYMBOL(poll) (fds, nfds, timeout)
 }
 #endif
 
-#ifndef HAVE_INET_NTOP
+#if !defined(HAVE_INET_NTOP) && defined(HAVE_POSIX_HOST)
 const char *FIX_SYMBOL(inet_ntop)(int af, const void *cp, char *buf, size_t len)
 {
 #ifdef HAVE_INET_NTOA
@@ -1240,7 +1240,7 @@ const char *FIX_SYMBOL(inet_ntop)(int af, const void *cp, char *buf, size_t len)
 }
 #endif
 
-#ifndef HAVE_INET_PTON
+#if !defined(HAVE_INET_PTON) && defined(HAVE_POSIX_HOST)
 int FIX_SYMBOL(inet_pton)(int af, const char *cp, void *buf)
 {
 #ifdef HAVE_INET_ATON
@@ -1270,7 +1270,7 @@ int FIX_SYMBOL(inet_pton)(int af, const char *cp, void *buf)
 }
 #endif
 
-#ifndef HAVE_SENDFILE
+#if !defined(HAVE_SENDFILE) && defined(HAVE_POSIX_HOST)
 ssize_t FIX_SYMBOL(sendfile)(int out_fd, int in_fd,
                              off_t *offset, size_t nbytes)
 {

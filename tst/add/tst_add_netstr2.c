@@ -35,7 +35,7 @@ int tst(void)
   vstr_add_netstr2_end(s3, pos, s3->len);
 
   vstr_del(s2, 1, s2->len);
-  vstr_add_fmt(s2, s2->len, "%0*zu:,", VSTR_AUTOCONF_ULONG_MAX_LEN, 0);
+  vstr_add_fmt(s2, s2->len, "%0*zu:,", VSTR_AUTOCONF_ULONG_MAX_LEN, (size_t)0);
   TST_B_TST(ret, 3,
             !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
   
@@ -58,7 +58,7 @@ int tst(void)
   } while (!vstr_add_netstr2_end(s3, pos, s3->len));
   tst_mfail_num(0);
 
-  vstr_add_fmt(s2, s2->len, "%0*zu:a,", VSTR_AUTOCONF_ULONG_MAX_LEN, 1);
+  vstr_add_fmt(s2, s2->len, "%0*zu:a,", VSTR_AUTOCONF_ULONG_MAX_LEN, (size_t)1);
   TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
   
   return (TST_B_RET(ret));
