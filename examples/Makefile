@@ -7,7 +7,7 @@ LDFLAGS=`gnome-config --libs vstr`
 TQ_CFLAGS=`gnome-config --cflags timer_q`
 TQ_LDFLAGS=`gnome-config --libs timer_q`
 
-FILES=ex1 ex2 ex3 ex4 ex5 ex6 ex_cat ex_slowcat
+FILES=ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex_cat ex_slowcat
 
 all: $(FILES)
 

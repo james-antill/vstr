@@ -390,8 +390,8 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
       /* else FALLTHROUGH */
       
     default:
-      beg = vstr__base_split_node(base, scan, pos + len);
-      if (!beg)
+      scan = vstr__base_split_node(base, scan, pos + len);
+      if (!scan)
       {
        base->len += len; /* make sure nothing changed */
        

@@ -74,7 +74,10 @@ extern Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *, size_t, size_t *,
 extern Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *, size_t *,
                                           unsigned int *, Vstr_node *,
                                           char **, size_t *);
-/* extern Vstr_node *vstr__base_pos(Vstr_base *, size_t *, unsigned int *); */
+extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
+                                   unsigned int *, char **, size_t *);
+extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *, unsigned int *, 
+                                   char **, size_t *);
 
 extern void vstr__cache_free_cstr(Vstr_cache *);
 extern void vstr__cache_free_pos(Vstr_cache *);

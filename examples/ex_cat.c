@@ -115,7 +115,7 @@ static int ex_cat_readv(Vstr_base *str1, int fd)
  struct iovec *iovs = NULL;
  unsigned int num = 0;
  
- if (!vstr_add_iovec_buf_beg(str1, 4, 32, &iovs, &num))
+ if (!vstr_add_iovec_buf_beg(str1, str1->len, 4, 32, &iovs, &num))
    errno = ENOMEM, PROBLEM("vstr_add_iovec_buf_beg:");
  
  bytes = readv(fd, iovs, num);
@@ -124,7 +124,7 @@ static int ex_cat_readv(Vstr_base *str1, int fd)
  if (bytes == -1)
    PROBLEM("readv:");
  
- vstr_add_iovec_buf_end(str1, bytes);
+ vstr_add_iovec_buf_end(str1, str1->len, bytes);
 
  return (!!bytes);
 }
@@ -220,6 +220,7 @@ static void ex_cat_mmap_file(Vstr_base *str1, int fd, size_t len)
 
 int main(int argc, char *argv[])
 { /* This is "cat", without any command line options */
+ Vstr_conf *conf = NULL;
  Vstr_base *str1 = NULL;
  int count = 1; /* skip the program name */
  int fcntl_flags = 0;
@@ -227,7 +228,12 @@ int main(int argc, char *argv[])
  if (!vstr_init())
    errno = ENOMEM, PROBLEM("vstr_init:");
  
- str1 = vstr_make_base(NULL);
+ if (!(conf = vstr_make_conf()))
+   errno = ENOMEM, PROBLEM("vstr_make_conf:");
+
+ vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 2096);
+
+ str1 = vstr_make_base(conf);
  if (!str1)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
 

@@ -1,3 +1,25 @@
+2001-12-04  James Antill  <james@and.org>
+
+	* src/vstr_spn.c (vstr__spn_buf_rev_fast): Added function to speed up
+	reverse traversal.
+	(vstr__cspn_buf_rev_fast): Added function to speed up reverse traversal.
+
+	* src/vstr_add.c (vstr__add_setup_pos): Make sure we aren't called with
+	pos == 0.
+	(vstr_add_buf): Make work for pos == 0, when we already have data.
+	(vstr_add_ptr): Make work for pos == 0, when we already have data.
+	(vstr_add_non): Make work for pos == 0, when we already have data.
+	(vstr_add_ref): Make work for pos == 0, when we already have data.
+	(vstr_add_iovec_buf_beg): Added pos argument.
+	(vstr_add_iovec_buf_end): Added pos argument.
+
+2001-12-03  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr__base_iovec_reset_node): Fix vector usage when 
+	offset is used.
+	(vstr__base_scan_rev_nxt): Fix vector usage when offset is used.
+	(vstr__base_split_node): Fix ->end ptr on a split.
+
 2001-12-02  James Antill  <james@and.org>
 
 	* src/vstr_mov.c (vstr_mov): Added function.

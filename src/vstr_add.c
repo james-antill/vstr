@@ -71,19 +71,20 @@ static int vstr__base_iovec_maybe_add_end(Vstr_base *base, Vstr_node *node,
  return (TRUE);
 }
 
-static Vstr_node *vstr__add_setup_pos(Vstr_base *base,
-                                      size_t *pos,
+static Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos,
                                       unsigned int *num,
                                       size_t *orig_scan_len)
 {
- Vstr_node *scan = vstr__base_pos(base, pos, num, TRUE);
- Vstr_node *scan_next = NULL;
+ Vstr_node *scan = NULL;
+
+ assert(*pos);
+
+ scan = vstr__base_pos(base, pos, num, TRUE);;
  
  if (orig_scan_len)
    *orig_scan_len = scan->len;
  
- if ((*pos != scan->len) &&
-     !(scan_next = vstr__base_split_node(base, scan, *pos)))
+ if ((*pos != scan->len) && !(scan = vstr__base_split_node(base, scan, *pos)))
    return (NULL);
  
  if (base->iovec_upto_date && (scan != base->end))
@@ -109,7 +110,7 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  else
  {
   assert(!base->num);
-  base->beg = NULL;
+  base->beg = pos_scan_next;
  }
  
  assert(vstr__check_spare_nodes(base->conf));
@@ -145,7 +146,7 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
     return (FALSE);
  }
  
- if (base->len)
+ if (pos && base->len)
  {
   scan = vstr__add_setup_pos(base, &pos, &num, &orig_pos_scan_len);
   if (!scan)
@@ -179,7 +180,16 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
     return (TRUE);
    }
   }
+
+  if (scan != base->end) /* we need to add stuff to the middle of the iovec */
+    base->iovec_upto_date = FALSE;
  }
+ else if (base->len)
+ {
+   pos_scan_next = base->beg;
+   base->iovec_upto_date = FALSE;
+ }
+ 
  assert(!!pos_scan == !!orig_pos_scan_len);
  
  scan = (Vstr_node *)base->conf->spare_buf_beg;
@@ -263,7 +273,7 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
     return (FALSE);
  }
  
- if (base->len)
+ if (pos && base->len)
  {
   scan = vstr__add_setup_pos(base, &pos, &num, NULL);
   if (!scan)
@@ -271,8 +281,16 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
 
   pos_scan = scan;
   pos_scan_next = scan->next;
+
+  if (scan != base->end) /* we need to add stuff to the middle of the iovec */
+    base->iovec_upto_date = FALSE;
  }
- 
+ else if (base->len)
+ {
+   pos_scan_next = base->beg;
+   base->iovec_upto_date = FALSE;
+ }
+
  scan = (Vstr_node *)base->conf->spare_ptr_beg;
  if (pos_scan)
  {
@@ -336,7 +354,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
     return (FALSE);
  }
 
- if (base->len)
+ if (pos && base->len)
  {
   scan = vstr__add_setup_pos(base, &pos, &num, NULL);
   if (!scan)
@@ -352,6 +370,14 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
   
   pos_scan = scan;
   pos_scan_next = scan->next;
+
+  if (scan != base->end) /* we need to add stuff to the middle of the iovec */
+    base->iovec_upto_date = FALSE;
+ }
+ else if (base->len)
+ {
+   pos_scan_next = base->beg;
+   base->iovec_upto_date = FALSE;
  }
  
  scan = (Vstr_node *)base->conf->spare_non_beg;
@@ -419,7 +445,7 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
     return (FALSE);
  }
  
- if (base->len)
+ if (pos && base->len)
  {
   scan = vstr__add_setup_pos(base, &pos, &num, NULL);
   if (!scan)
@@ -427,8 +453,16 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
   
   pos_scan = scan;
   pos_scan_next = scan->next;
+
+  if (scan != base->end) /* we need to add stuff to the middle of the iovec */
+    base->iovec_upto_date = FALSE;
  }
-  
+ else if (base->len)
+ {
+   pos_scan_next = base->beg;
+   base->iovec_upto_date = FALSE;
+ }
+ 
  scan = (Vstr_node *)base->conf->spare_ref_beg;
  if (pos_scan)
  {
@@ -687,157 +721,270 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
  return (FALSE);
 }
 
-size_t vstr_add_iovec_buf_beg(Vstr_base *base,
+size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
                               unsigned int min, unsigned int max,
                               struct iovec **ret_iovs,
                               unsigned int *num)
 {
- unsigned int sz = max;
- struct iovec *iovs = NULL;
- size_t bytes = 0;
- Vstr_node *scan = NULL;
- 
- if ((base->conf->spare_buf_num < min) &&
-     (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, min)) != min)
-   return (0);
- 
- if (base->conf->spare_buf_num < sz)
-   sz = base->conf->spare_buf_num;
- 
- if (!vstr__base_iovec_alloc(base, base->num + sz))
-   return (0);
-
- vstr__base_iovec_valid(base);
-   
- iovs = base->vec.v + base->vec.off + base->num;
- 
- *num = 0;
-
- if (base->end && (base->end->type == VSTR_TYPE_NODE_BUF) &&
-     (base->conf->buf_sz > base->end->len))
- {
-  if (sz < max)
-    ++sz;
+  unsigned int sz = max;
+  struct iovec *iovs = NULL;
+  size_t bytes = 0;
+  Vstr_node *scan = NULL;
   
-  assert(base->len);
+  assert(min && (min != UINT_MAX) && (max >= min));
+
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
   
-  --iovs;
-  iovs[0].iov_len = (base->conf->buf_sz - base->end->len);
-  iovs[0].iov_base = (((Vstr_node_buf *)base->end)->buf + base->end->len);
-
-  base->iovec_upto_date = FALSE;
+  if (!(min && (min != UINT_MAX) && (max >= min)))
+    return (0);
   
-  bytes = iovs[0].iov_len;
-  *num = 1;
- }
- 
- scan = (Vstr_node *)base->conf->spare_buf_beg;
- assert(scan);
-
- while (*num < sz)
- {
-  assert(scan->type == VSTR_TYPE_NODE_BUF);
+  if (pos != base->len)
+    ++min;
   
-  iovs[*num].iov_len = base->conf->buf_sz;
-  iovs[*num].iov_base = ((Vstr_node_buf *)scan)->buf;
-
-  bytes += iovs[*num].iov_len;
-  ++*num;
-  
-  scan = scan->next;
- }
-
- *ret_iovs = iovs;
- return (bytes);
-}
-
-void vstr_add_iovec_buf_end(Vstr_base *base, size_t bytes)
-{
- struct iovec *iovs = NULL;
- unsigned int count = 0;
- Vstr_node *scan = NULL;
-
- vstr__cache_add(base, base->len, bytes);
-
- base->len += bytes;
-
- iovs = base->vec.v + base->vec.off + base->num;
- 
- if (base->end && (base->end->type == VSTR_TYPE_NODE_BUF) &&
-     (base->conf->buf_sz > base->end->len))
- {
-  size_t first_iov_len = 0;
-
-  --iovs;
-  
-  assert(base->len);
-  assert((base->conf->buf_sz - base->end->len) == iovs[0].iov_len);
-  assert((((Vstr_node_buf *)base->end)->buf + base->end->len) ==
-         iovs[0].iov_base);
-
-  first_iov_len = iovs[0].iov_len;
-  if (first_iov_len > bytes)
-    first_iov_len = bytes;
+  if (min > base->conf->spare_buf_num)
+  {
+    size_t tmp = min - base->conf->spare_buf_num;
     
-  assert(!base->iovec_upto_date);
-  base->iovec_upto_date = TRUE;
+    if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, tmp) != tmp)
+      return (0);
+  }
   
-  base->end->len += first_iov_len;
+  if (sz > base->conf->spare_buf_num)
+    sz = base->conf->spare_buf_num;
   
-  vstr__base_iovec_reset_node(base, base->end, base->num);
+  if (!vstr__base_iovec_alloc(base, base->num + sz))
+    return (0);
+  
+  vstr__base_iovec_valid(base);
+  
+  iovs = base->vec.v + base->vec.off;
+  *num = 0;
+  
+  if (pos)
+  {
+    unsigned int scan_num = 0;
+    
+    assert(base && pos && (pos <= base->len));
+    
+    if (pos > base->len)
+      return (0);
+    
+    scan = vstr__base_pos(base, &pos, &scan_num, TRUE);
+    assert(scan);
 
-  bytes -= first_iov_len;
+    if (pos != scan->len)
+    {
+      scan = vstr__base_split_node(base, scan, pos);
 
-  ++iovs;
- }
- assert(base->iovec_upto_date);
-
- if (!bytes)
-   return;
- 
- if (base->end)
-   base->end->next = (Vstr_node *)base->conf->spare_buf_beg;
- else
-   base->beg = (Vstr_node *)base->conf->spare_buf_beg;
- 
- scan = (Vstr_node *)base->conf->spare_buf_beg;
- count = 0;
- while (bytes > 0)
- {
-  Vstr_node *scan_next = scan->next;
-  size_t tmp = iovs[count].iov_len;
-     
+      if (!scan)
+        return (0);
+    }
+    assert(pos == scan->len);
+    
+    if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
+    {
+      if ((sz < max) && (sz < base->conf->spare_buf_num))
+        ++sz;
+      
+      iovs += scan_num - 1;
+      
+      iovs[0].iov_len = (base->conf->buf_sz - pos);
+      iovs[0].iov_base = (((Vstr_node_buf *)scan)->buf + pos);
+      
+      base->iovec_upto_date = FALSE;
+      
+      bytes = iovs[0].iov_len;
+      *num = 1;
+    }
+    else
+    {
+      iovs += scan_num;
+      
+      if (scan != base->end)
+      {
+        /* if we are adding into the middle of the Vstr then we don't keep
+         * the vec valid for after the point where we are adding.
+         * This is then updated again in the _end() func */
+        base->iovec_upto_date = FALSE;
+      }
+    }
+  }
+  
+  scan = (Vstr_node *)base->conf->spare_buf_beg;
   assert(scan);
   
-  if (bytes < tmp)
-    tmp = bytes;
+  while (*num < sz)
+  {
+    assert(scan->type == VSTR_TYPE_NODE_BUF);
+    
+    iovs[*num].iov_len = base->conf->buf_sz;
+    iovs[*num].iov_base = ((Vstr_node_buf *)scan)->buf;
+    
+    bytes += iovs[*num].iov_len;
+    ++*num;
+    
+    scan = scan->next;
+  }
   
-  assert(((Vstr_node_buf *)scan)->buf == iovs[count].iov_base);
-  assert((tmp == base->conf->buf_sz) || (tmp == bytes));
-     
-  scan->len = tmp;
+  *ret_iovs = iovs;
+  return (bytes);
+}
+
+void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
+{
+  struct iovec *iovs = NULL;
+  unsigned int count = 0;
+  Vstr_node *scan = NULL;
+  Vstr_node **adder = NULL;
+
+  if (bytes)
+    vstr__cache_add(base, pos, bytes);
   
-  bytes -= tmp;
+  base->len += bytes;
   
+  iovs = base->vec.v + base->vec.off;
+  if (pos)
+  {
+    unsigned int scan_num = 0;
+    
+    scan = vstr__base_pos(base, &pos, &scan_num, TRUE);
+    iovs += scan_num - 1;
+
+    assert(pos == scan->len);
+    
+    if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
+    {
+      size_t first_iov_len = 0;
+      
+      assert((base->conf->buf_sz - scan->len) == iovs[0].iov_len);
+      assert((((Vstr_node_buf *)scan)->buf + scan->len) == iovs[0].iov_base);
+
+      first_iov_len = iovs[0].iov_len;
+      if (first_iov_len > bytes)
+        first_iov_len = bytes;
+      
+      assert(!base->iovec_upto_date);
+      if (scan == base->end)
+      {
+        base->end = NULL;
+        base->iovec_upto_date = TRUE;
+      }
+      
+      scan->len += first_iov_len;
+
+      vstr__base_iovec_reset_node(base, scan, scan_num);
+
+      bytes -= first_iov_len;
+    }
+    else if (scan == base->end)
+    {
+      base->end = NULL;
+      assert(base->iovec_upto_date);
+    }
+    
+    ++iovs;
+
+    adder = &scan->next;
+  }
+  else
+    adder = &base->beg;
+
   if (!bytes)
   {
-   base->end = scan;
-   iovs[count].iov_len = tmp;
+    if (!base->iovec_upto_date && base->len)
+    {
+      if (!base->end)
+      {
+        assert(!*adder);
+        base->end = scan;
+      }
+      
+      count = 0;
+      scan = *adder;
+      while (scan)
+      {
+        iovs[count].iov_len = scan->len;
+        iovs[count].iov_base = vstr__export_node_ptr(scan);
+        
+        ++count;
+        scan = scan->next;
+      }
+    }
+
+    assert(vstr__check_spare_nodes(base->conf));
+    assert(vstr__check_real_nodes(base));
+
+    return;
   }
-     
-  scan = scan_next;
-  ++count;
- }
- assert(scan || (base->conf->spare_buf_num == count));
- 
- base->num += count;
- base->conf->spare_buf_num -= count;
- 
- assert(base->end);
- assert(base->len);
- 
- base->end->next = NULL;
- 
- base->conf->spare_buf_beg = (Vstr_node_buf *)scan;
+  
+  scan = (Vstr_node *)base->conf->spare_buf_beg;
+  count = 0;
+  while (bytes > 0)
+  {
+    Vstr_node *scan_next = NULL;
+    size_t tmp = iovs[count].iov_len;
+
+    assert(scan);
+    scan_next = scan->next;
+    
+    if (tmp > bytes)
+      tmp = bytes;
+    
+    assert(((Vstr_node_buf *)scan)->buf == iovs[count].iov_base);
+    assert((tmp == base->conf->buf_sz) || (tmp == bytes));
+    
+    scan->len = tmp;
+    
+    bytes -= tmp;
+    
+    if (!bytes)
+    {
+      scan->next = *adder;
+      
+      if (!base->end)
+      {
+        assert(base->iovec_upto_date);
+        base->end = scan;
+      }
+      
+      iovs[count].iov_len = tmp;
+    }
+    
+    scan = scan_next;
+    
+    ++count;
+  }
+  assert(base->conf->spare_buf_num >= count);
+  
+  base->num += count;
+  base->conf->spare_buf_num -= count;
+
+  assert(base->end);
+  assert(base->len);
+
+  if (!base->iovec_upto_date)
+  {
+    Vstr_node *tmp = *adder;
+    
+    while (tmp)
+    {
+      iovs[count].iov_len = tmp->len;
+      iovs[count].iov_base = vstr__export_node_ptr(tmp);
+      
+      ++count;
+      tmp = tmp->next;
+    }
+
+    base->iovec_upto_date = TRUE;
+  }
+  else
+    assert(!*adder);
+    
+  *adder = (Vstr_node *)base->conf->spare_buf_beg;
+  base->conf->spare_buf_beg = (Vstr_node_buf *)scan;
+  
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
 }
 

@@ -140,7 +140,7 @@ static int ex_slowcat_readv(Vstr_base *str1, int fd)
  struct iovec *iovs = NULL;
  unsigned int num = 0;
  
- if (!vstr_add_iovec_buf_beg(str1, 4, 32, &iovs, &num))
+ if (!vstr_add_iovec_buf_beg(str1, str1->len, 4, 32, &iovs, &num))
    errno = ENOMEM, PROBLEM("vstr_add_iovec_buf_beg:");
  
  bytes = readv(fd, iovs, num);
@@ -149,7 +149,7 @@ static int ex_slowcat_readv(Vstr_base *str1, int fd)
  if (bytes == -1)
    PROBLEM("readv:");
  
- vstr_add_iovec_buf_end(str1, bytes);
+ vstr_add_iovec_buf_end(str1, str1->len, bytes);
 
  return (!!bytes);
 }

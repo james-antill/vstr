@@ -69,11 +69,11 @@ extern size_t vstr_add_vfmt(struct Vstr_base *, size_t, const char *, va_list)
 extern size_t vstr_add_fmt(struct Vstr_base *, size_t, const char *, ...)
     __attribute__ ((__format__ (__printf__, 3, 4)));
 
-extern size_t vstr_add_iovec_buf_beg(struct Vstr_base *,
+extern size_t vstr_add_iovec_buf_beg(struct Vstr_base *, size_t,
                                      unsigned int, unsigned int,
                                      struct iovec **,
                                      unsigned int *);
-extern void vstr_add_iovec_buf_end(struct Vstr_base *, size_t);
+extern void vstr_add_iovec_buf_end(struct Vstr_base *, size_t, size_t);
 
 /* NOTE: netstr2 allows leading '0' s, netstr doesn't */
 extern size_t vstr_add_netstr_beg(struct Vstr_base *, size_t);

@@ -167,21 +167,24 @@ int vstr__base_iovec_alloc(Vstr_base *base, unsigned int sz)
 void vstr__base_iovec_reset_node(Vstr_base *base, Vstr_node *node,
                                  unsigned int num)
 {
- if (!base->iovec_upto_date)
-   return;
-
- base->vec.v[num - 1].iov_len = node->len;
- base->vec.v[num - 1].iov_base = vstr__export_node_ptr(node);
-
- if (num == 1)
- {
-  char *tmp = NULL;
+  struct iovec *iovs = NULL;
   
-  base->vec.v[num - 1].iov_len -= base->used;
-  tmp = base->vec.v[num - 1].iov_base;
-  tmp += base->used;
-  base->vec.v[num - 1].iov_base = tmp;
- }
+  if (!base->iovec_upto_date)
+    return;
+  
+  iovs = base->vec.v + base->vec.off;
+  iovs[num - 1].iov_len = node->len;
+  iovs[num - 1].iov_base = vstr__export_node_ptr(node);
+  
+  if (num == 1)
+  {
+    char *tmp = NULL;
+    
+    iovs[num - 1].iov_len -= base->used;
+    tmp = iovs[num - 1].iov_base;
+    tmp += base->used;
+    iovs[num - 1].iov_base = tmp;
+  }
 }
 
 int vstr__base_iovec_valid(Vstr_base *base)
@@ -371,7 +374,7 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
    
    ref = ((Vstr_node_ref *)node)->ref;
    ((Vstr_node_ref *)beg)->ref = vstr_ref_add_ref(ref);
-   ((Vstr_node_ref *)beg)->off = pos + ((Vstr_node_ref *)node)->off;
+   ((Vstr_node_ref *)beg)->off = ((Vstr_node_ref *)node)->off + pos;
   }
   break;
 
@@ -382,10 +385,12 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
 
  ++base->num;
  
- base->iovec_upto_date = FALSE; /* FIXME: complicated */  
+ base->iovec_upto_date = FALSE;
 
  beg->len = node->len - pos;
- beg->next = node->next;
+
+ if (!(beg->next = node->next))
+   base->end = beg;
  node->next = beg;
  
  node->len = pos;
@@ -744,3 +749,64 @@ Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *base, size_t *len,
 }
 
 
+int vstr__base_scan_rev_beg(const Vstr_base *base,
+                            size_t pos, size_t *len,
+                            unsigned int *num, 
+                            char **scan_str, size_t *scan_len)
+{
+  Vstr_node *scan = NULL;
+  
+  assert(base && pos && ((pos + *len - 1) <= base->len));
+  
+  if ((pos > base->len) || !*len)
+    return (FALSE);
+  
+  if ((pos + *len - 1) > base->len)
+    *len = base->len - (pos - 1);
+  
+  pos += *len - 1; /* pos at end of string */
+  scan = vstr__base_pos(base, &pos, num, TRUE);
+  assert(scan);
+  
+  --pos;
+  
+  *scan_len = scan->len - pos;
+  if (*scan_len > *len)
+    *scan_len = *len;
+  *len -= *scan_len;
+  
+  *scan_str = NULL;
+  if (scan->type != VSTR_TYPE_NODE_NON)
+    *scan_str = vstr__export_node_ptr(scan) + pos;
+  
+  return (TRUE);
+}
+
+int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
+                            unsigned int *num, 
+                            char **scan_str, size_t *scan_len)
+{
+  struct iovec *iovs = NULL;
+  size_t pos = 0;
+  
+  assert(num);
+  
+  if (!*len || !--*num)
+    return (FALSE);
+
+  iovs = base->vec.v + base->vec.off;
+  *scan_len = iovs[*num - 1].iov_len;
+  
+  if (*scan_len > *len)
+  {
+    pos = *scan_len - *len;
+    *scan_len = *len;
+  }
+  *len -= *scan_len;
+  
+  *scan_str = NULL;
+  if (iovs[*num - 1].iov_base)
+    *scan_str = ((char *) (iovs[*num - 1].iov_base)) + pos;
+  
+  return (TRUE);
+}

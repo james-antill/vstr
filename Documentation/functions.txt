@@ -376,7 +376,7 @@ Section: Functions to add data to a Vstr string
 
 
 Function: vstr_add_buf()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -404,7 +404,7 @@ Function: vstr_add_buf()
 
 
 Function: vstr_add_ptr()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -435,7 +435,7 @@ Function: vstr_add_ptr()
  is often easier to create a memory reference and use vstr_add_ref() instead.
 
 Function: vstr_add_non()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -458,7 +458,7 @@ Function: vstr_add_non()
 
 
 Function: vstr_add_ref()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -487,7 +487,7 @@ Function: vstr_add_ref()
 
 
 Function: vstr_add_vstr()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -605,7 +605,7 @@ Function: vstr_dup_vstr()
 
 
 Function: vstr_add_vfmt()
- Returns: 
+ Returns: Number of bytes added
  Type: size_t
 
  Parameter[1]: Vstr string
@@ -639,7 +639,7 @@ Function: vstr_add_vfmt()
 
 
 Function: vstr_add_fmt()
- Returns: 
+ Returns: Number of bytes added
  Type: size_t
 
  Parameter[1]: Vstr string
@@ -673,23 +673,42 @@ Function: vstr_add_fmt()
 
 
 Function: vstr_add_iovec_buf_beg()
- Returns: 
+ Returns: Number of bytes in the iovec array
  Type: size_t
 
  Parameter[1]: Vstr string
  Type[1]: struct Vstr_base *
 
- Parameter[2]: 
- Type[2]: unsigned int
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
 
- Parameter[3]: 
+ Parameter[3]: Minimum ammount of iovecs to add
  Type[3]: unsigned int
 
- Parameter[4]: 
- Type[4]: struct iovec **
+ Parameter[4]: Maximum ammount of iovecs to add
+ Type[4]: unsigned int
 
- Parameter[5]: 
- Type[5]: unsigned int *
+ Parameter[5]: Returns the start of the iovec array
+ Type[5]: struct iovec **
+
+ Parameter[6]: Returns the number of iovec structures in the array
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function is used to add a copy of data directly into the Vstr string,
+ the obvious use being a call to readv().
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+ Note:
+
+  You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg()
+ and vstr_add_iovec_buf_end(), unless you know that they are operating on a
+ different Vstr string which is using a different Vstr configuration.
 
 
 Function: vstr_add_iovec_buf_end()
@@ -699,8 +718,22 @@ Function: vstr_add_iovec_buf_end()
  Parameter[1]: Vstr string
  Type[1]: const struct Vstr_base *
 
- Parameter[2]: 
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
+
+ Parameter[3]: Number of bytes added to the iovec array
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used after calling vstr_add_iovec_buf_beg() and you've then
+ filled in a bunch of data.
+
+ Note:
+
+  Although it's safe to not bother calling this function if you didn't have
+ anything to add to the Vstr string it is often more efficient to call this
+ function with Parameter[3] as 0.
 
 Function: vstr_add_netstr_beg()
  Returns: 
@@ -790,7 +823,7 @@ Section: Functions to substitute data in a Vstr string with other data
 
 
 Function: vstr_sub_buf()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -831,7 +864,7 @@ Function: vstr_sub_buf()
 
 
 Function: vstr_sub_ptr()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -867,7 +900,7 @@ Function: vstr_sub_ptr()
 
 
 Function: vstr_sub_non()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -900,7 +933,7 @@ Function: vstr_sub_non()
 
 
 Function: vstr_sub_ref()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -939,7 +972,7 @@ Function: vstr_sub_ref()
 
 
 Function: vstr_sub_vstr()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -988,7 +1021,7 @@ Section: Functions to move data from a Vstr string to another Vstr string
 
 
 Function: vstr_mov()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -1021,7 +1054,7 @@ Section: Functions for miscellaneous control of options
 
 
 Function: vstr_cntl_opt()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: option type
@@ -1031,7 +1064,7 @@ Function: vstr_cntl_opt()
  Type[ ... ]: Default stdarg/vararg promotion
 
 Function: vstr_cntl_base()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -1045,7 +1078,7 @@ Function: vstr_cntl_base()
 
 
 Function: vstr_cntl_conf()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: 

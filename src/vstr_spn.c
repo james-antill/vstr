@@ -126,12 +126,54 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
  return (ret);
 }
 
+static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
+                                     size_t pos, size_t len,
+                                     const char *spn_buf, size_t spn_len)
+{
+  unsigned int num = 0;
+  size_t ret = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  
+  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &scan_str, &scan_len))
+    return (0);
+  
+  do
+  {
+    size_t count = 0;
+    
+    if (!scan_str && spn_buf)
+      return (ret);
+    
+    if (!scan_str)
+    {
+      assert(!spn_buf);
+      goto next_loop;
+    }
+    
+    if (!spn_buf)
+      return (ret);
+    
+    while (count < scan_len)
+    {
+      if (!memchr(spn_buf, scan_str[scan_len - count], spn_len))
+        return (ret + count);
+      ++count;
+    }
+    assert(count == scan_len);
+    
+   next_loop:
+    ret += scan_len;
+  } while (vstr__base_scan_rev_nxt(base, &len, &num, &scan_str, &scan_len));
+  
+  return (ret);
+}
+
 size_t vstr_spn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                         const char *spn_buf, size_t spn_len)
-{ /* FIXME: this needs to use iovec to walk backwards */
-
-  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
-   *   return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len)); */
+{
+  if (!vstr__base_iovec_valid((Vstr_base *)base))
+    return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len));
   
   return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
 }
@@ -237,12 +279,54 @@ static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
  return (ret);
 }
 
+static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
+                                      size_t pos, size_t len,
+                                      const char *spn_buf, size_t spn_len)
+{
+  unsigned int num = 0;
+  size_t ret = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  
+  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &scan_str, &scan_len))
+    return (0);
+  
+  do
+  {
+    size_t count = 0;
+    
+    if (!scan_str && spn_buf)
+      return (ret);
+    
+    if (!scan_str)
+    {
+      assert(!spn_buf);
+      goto next_loop;
+    }
+    
+    if (!spn_buf)
+      return (ret);
+    
+    while (count < scan_len)
+    {
+      if (memchr(spn_buf, scan_str[scan_len - count], spn_len))
+        return (ret + count);
+      ++count;
+    }
+    assert(count == scan_len);
+    
+   next_loop:
+    ret += scan_len;
+  } while (vstr__base_scan_rev_nxt(base, &len, &num, &scan_str, &scan_len));
+  
+  return (ret);
+}
+
 size_t vstr_cspn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                          const char *cspn_buf, size_t cspn_len)
-{ /* FIXME: this needs to use iovec to walk backwards */
-  
-  /* if (!vstr__base_iovec_valid((Vstr_base *)base))
-   *   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len)); */
+{  
+  if (!vstr__base_iovec_valid((Vstr_base *)base))
+    return (vstr__cspn_buf_rev_fast(base, pos, len, cspn_buf, cspn_len));
   
   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));
 }
