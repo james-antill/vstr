@@ -12,7 +12,7 @@
 
 prog_name=jechod
 prog_exe=ex_echod
-ex_dir=@@libdir@@/vstr-@@VERSION@@/examples
+ex_dir=@libdir@/vstr-@VERSION@/examples
 
 [ -r /etc/sysconfig/jechod ] && . /etc/sysconfig/jechod
 

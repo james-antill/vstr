@@ -1551,5 +1551,5 @@ AC_OUTPUT([Makefile
            VERSION
 ])
 
+chmod +x examples/init.d/jechod examples/init.d/jhttpd
 $SED_PATH 's%^#define *%#define VSTR_AUTOCONF_%' < include/autoconf.h > include/vstr-conf.h
-
