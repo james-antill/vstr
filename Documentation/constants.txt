@@ -26,7 +26,23 @@ Constant: VSTR_COMPILE_INLINE
   This switch controls whether inline functions will be used in the public
  headers for the library. If the value is 1 then if they are supported by the
  compiler that built the library they will be used, if the value is 0 they
- won't be used at all.
+ won't be used.
+
+
+Constant: VSTR_COMPILE_MACRO_FUNCTIONS
+
+ Explanation:
+
+  This switch controls whether macro functions will be used in the public
+ headers for the library. If the value is 1 then they will be used, if the
+ value is 0 they won't be used.
+
+ Note:
+
+  This only includes the macro  functions which also have real function
+ replacements. For example VSTR_ADD_CSTR_BUF() won't be defined because there
+ is a vstr_add_cstr_buf() function, but VSTR_FMT_CB_ARG_PTR() will always be
+ defined.
 
 
 Constant: VSTR_COMPILE_TYPEDEF
@@ -637,10 +653,10 @@ Constant: VSTR_FLAG_PARSE_NUM_OVERFLOW
  Note:
 
   The return value with this set is the highest number that can be parsed from
- the beginning of the Vstr string, while the value without this flag would be the
- parsed number modulo the highest number of the type. For example given type
- that had a maximum of 10, then parsing "64" would give you 6 with the flag, and
- 4 without.
+ the beginning of the Vstr string, while the value without this flag would be
+ the parsed number modulo the highest number of the type.
+  For example given a type that had a maximum of 10, then parsing "64" would
+ give you 6 with the flag, and 4 without.
 
 
 Constant: VSTR_FLAG_PARSE_NUM_SPACE
@@ -1708,12 +1724,12 @@ Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_REF
 
  Explanation:
 
-  This option is will set the number of specified nodes of the specified type,
+  This option is will set the number of spare nodes of the specified type,
  by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
 
  Note:
 
-  When the value specified is higher and vstr calls vstr_make_spare_nodes() then
+  When the value specified is higher and it calls vstr_make_spare_nodes() then
  a return value of FALSE means that there was a malloc error, just as if you
  called vstr_make_nodes directly.
 
@@ -1754,6 +1770,30 @@ Constant: VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS
   This is mainly a speedup to the vstr_sub_*() functions and the functions that
  use them, like vstr_conv_*(). It is true by default, so all function
  operations are atomic.
+
+
+Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF
+Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON
+Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR
+Constant: VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
+
+ Parameter[1]: Minimum number of spare nodes to have for the specified type
+ Type[1]: unsigned int
+
+ Parameter[2]: Maximum number of spare nodes to have for the specified type
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This option will make the number of spare nodes of the specified type fit
+ into the range given, by calling either vstr_make_spare_nodes() or 
+ vstr_free_spare_nodes().
+
+ Note:
+
+  When the value specified is higher and it calls vstr_make_spare_nodes() then
+ a return value of FALSE means that there was a malloc error, just as if you
+ called vstr_make_nodes directly.
 
 
 Section: Constants you pass to the vstr_cntl_opt() function

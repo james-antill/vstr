@@ -21,6 +21,9 @@
 #include "assert_loop-def.h"
 #include "assert_loop-extern.h"
 
+#include "tools-def.h"
+#include "tools-extern.h"
+
 /* vstr includes done by hand... */
 #define VSTR__HEADER_H
 
@@ -40,8 +43,5 @@
 #include "vstr-def.h"
 
 #include "vstr-internal.h" /* inline done in here */
-
-#include "tools-def.h"
-#include "tools-extern.h"
 
 #endif

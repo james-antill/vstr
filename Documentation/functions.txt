@@ -752,6 +752,74 @@ Function: vstr_dup_rep_chr()
  used.
 
 
+Function: vstr_dup_cstr_buf()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This function calls vstr_dup_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_dup_cstr_ptr()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This function calls vstr_dup_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_dup_cstr_ref()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Vstr memory reference
+ Type[2]: struct Vstr_ref *
+
+ Parameter[3]: Offset of Vstr memory reference (Parameter[3])
+ Type[3]: size_t
+
+
+ Explanation:
+
+  This function calls vstr_dup_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
 Function: VSTR_DUP_CSTR_BUF()
  Returns: Vstr string
  Type: struct Vstr_base *
@@ -813,6 +881,11 @@ Function: VSTR_DUP_CSTR_REF()
   This macro function calls vstr_dup_ref() with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 Function: vstr_ref_make_malloc()
@@ -1147,6 +1220,68 @@ Function: vstr_add_rep_chr()
   The function will return 0 if it needs to allocate memory and cannot do so,
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
+
+
+Function: vstr_add_cstr_buf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This function calls vstr_add_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
+
+Function: vstr_add_cstr_ptr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This function calls vstr_add_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
+
+Function: vstr_add_cstr_ref()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Vstr memory reference
+ Type[3]: struct Vstr_ref *
+
+ Parameter[4]: Offset of Vstr memory reference (Parameter[3])
+ Type[4]: size_t
+
+
+ Explanation:
+
+  This function calls vstr_add_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
 
 
 Function: VSTR_ADD_CSTR_BUF()
@@ -1753,6 +1888,76 @@ Function: vstr_sub_rep_chr()
  happen).
 
 
+Function: vstr_sub_cstr_buf()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_sub_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_sub_cstr_ptr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_sub_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_sub_cstr_ref()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr memory reference
+ Type[4]: struct Vstr_ref *
+
+ Parameter[5]: Offset of Vstr memory reference (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls vstr_sub_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 Function: VSTR_SUB_CSTR_BUF()
  Returns: TRUE on success and FALSE on failure
  Type: int
@@ -2100,6 +2305,1200 @@ Function: vstr_cmp_vers_buf()
 
   Think of this function as doing a vstr_dup_ptr() on the data array
  (Parameter[4]) and then calling vstr_cmp_vers().
+
+
+Function: vstr_cmp_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp() if both of the length values
+ (Parameter[3] Parameter[6]) are equal.
+
+
+Function: vstr_cmp_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_buf() with the length of the buffer being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_buf_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_buf() if both of the length values
+ (Parameter[3] Parameter[5]) are equal.
+
+
+Function: vstr_cmp_cstr_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function returns !vstr_cmp_buf(), if both of the length values are
+ equal, with the length of the buffer being the value of strlen() on the data
+ parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+Function: vstr_cmp_case_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_case_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_buf_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const void *
+
+ Parameter[5]: Length of ASCII C string (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+Function: vstr_cmp_case_cstr_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function returns !vstr_cmp_case_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+Function: vstr_cmp_vers_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_vers_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_buf_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const void *
+
+ Parameter[5]: Length of ASCII C string (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+Function: vstr_cmp_vers_cstr_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function returns !vstr_cmp_vers_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_bod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+Function: vstr_cmp_eod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+Function: vstr_cmp_bod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_bod().
+
+
+Function: vstr_cmp_eod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_eod().
+
+
+Function: vstr_cmp_bod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_bod().
+
+
+Function: vstr_cmp_eod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_eod().
+
+
+Function: vstr_cmp_bod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_bod_buf().
+
+
+Function: vstr_cmp_eod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_eod_buf().
+
+
+Function: vstr_cmp_bod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_eod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_bod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_eod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_bod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp_case() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+Function: vstr_cmp_case_eod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp_case() with the both lengths as the lowest of
+ either passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+Function: vstr_cmp_case_bod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case_bod().
+
+
+Function: vstr_cmp_case_eod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case_eod().
+
+
+Function: vstr_cmp_case_bod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_case_bod().
+
+
+Function: vstr_cmp_case_eod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_case_eod().
+
+
+Function: vstr_cmp_case_bod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case_bod_buf().
+
+
+Function: vstr_cmp_case_eod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_case_eod_buf().
+
+
+Function: vstr_cmp_case_bod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_case_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_eod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_case_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_bod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_case_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_case_eod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_case_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_bod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp_vers() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+Function: vstr_cmp_vers_eod()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls vstr_cmp_vers() with the both lengths as the lowest of
+ either passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+Function: vstr_cmp_vers_bod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers_bod().
+
+
+Function: vstr_cmp_vers_eod_eq()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers_eod().
+
+
+Function: vstr_cmp_vers_bod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_vers_bod().
+
+
+Function: vstr_cmp_vers_eod_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_vers_eod().
+
+
+Function: vstr_cmp_vers_bod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers_bod_buf().
+
+
+Function: vstr_cmp_vers_eod_buf_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function calls returns !vstr_cmp_vers_eod_buf().
+
+
+Function: vstr_cmp_vers_bod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_vers_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_eod_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_vers_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_bod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_vers_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_vers_eod_cstr_eq()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_vers_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
 
 
 Function: VSTR_CMP_EQ()
@@ -2857,6 +4256,182 @@ Function: vstr_srch_case_vstr_rev()
  ASCII values are treated equivalently.
 
 
+Function: vstr_srch_cstr_buf_fwd()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_srch_cstr_buf_rev()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_srch_cstr_chrs_fwd()
+ Returns: Position in the Vstr string of the start of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_srch_cstr_chrs_rev()
+ Returns: Position in the Vstr string of the start of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_csrch_cstr_chrs_fwd()
+ Returns: Position in the Vstr string of the start of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_csrch_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_csrch_cstr_chrs_rev()
+ Returns: Position in the Vstr string of the start of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_csrch_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_srch_case_cstr_buf_fwd()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_case_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_srch_case_cstr_buf_rev()
+ Returns: Position in the Vstr string of the start of the data
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_srch_case_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
 Function: VSTR_SRCH_CSTR_BUF_FWD()
  Returns: Position in the Vstr string of the start of the data
  Type: size_t
@@ -3149,6 +4724,94 @@ Function: vstr_cspn_chrs_rev()
  function will return 0 to indicate an error.
 
 
+Function: vstr_spn_cstr_chrs_fwd()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning characters
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_spn_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_spn_cstr_chrs_rev()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning characters
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_spn_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cspn_cstr_chrs_fwd()
+ Returns: Number of characters in the compliment span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning characters
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cspn_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_cspn_cstr_chrs_rev()
+ Returns: Number of characters in the compliment span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to spanning characters
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cspn_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
 Function: VSTR_SPN_CSTR_CHRS_FWD()
  Returns: Number of characters in the span
  Type: size_t
@@ -3167,7 +4830,7 @@ Function: VSTR_SPN_CSTR_CHRS_FWD()
 
  Explanation:
 
-  This macro function calls vstr_spn_chrs_fwd() with the length being the
+  This function calls vstr_spn_chrs_fwd() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3189,7 +4852,7 @@ Function: VSTR_SPN_CSTR_CHRS_REV()
 
  Explanation:
 
-  This macro function calls vstr_spn_chrs_rev() with the length being the
+  This function calls vstr_spn_chrs_rev() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -3686,6 +5349,71 @@ Function: vstr_split_chrs()
   This function works like vstr_split_buf() except that instead of having to
  match all the data in the data buffer it matches any of the characters in the
  character buffer (Parameter[4]).
+
+
+Function: vstr_split_cstr_buf()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data to split on
+ Type[4]: const char *
+
+ Parameter[5]: Vstr sections
+ Type[5]: struct Vstr_sects *
+
+ Parameter[6]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[6]: unsigned int
+
+ Parameter[7]: Flags starting VSTR_FLAG_SPLIT_
+ Type[7]: unsigned int
+
+ Explanation:
+
+  This function calls vstr_split_buf() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: vstr_split_cstr_chrs()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to characters to split on
+ Type[4]: const char *
+
+ Parameter[5]: Length of characters (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Vstr sections
+ Type[6]: struct Vstr_sects *
+
+ Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[7]: unsigned int
+
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Type[8]: unsigned int
+
+ Explanation:
+
+  This function calls vstr_split_chrs() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
 
 
 Function: VSTR_SPLIT_CSTR_BUF()
@@ -4210,6 +5938,8 @@ Function: vstr_fmt_add()
   This function allows you to register arbitrary format specifiers for printing
  from vstr_fmt_vstr(). Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
+  The call back you register should return 0 (zero) if memory couldn't be 
+ allocated and 1 (one) otherwise.
 
  Note:
 

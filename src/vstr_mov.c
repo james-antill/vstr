@@ -1,6 +1,6 @@
 #define VSTR_MOV_C
 /*
- *  Copyright (C) 2001, 2002  James Antill
+ *  Copyright (C) 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -28,15 +28,15 @@ static int vstr__mov_slow(Vstr_base *base, size_t pos,
 
   assert(base != from_base);
 
-  ret = vstr_nx_add_vstr(base, pos,
-                         from_base, from_pos, len, VSTR_TYPE_ADD_DEF);
+  ret = vstr_add_vstr(base, pos,
+                      from_base, from_pos, len, VSTR_TYPE_ADD_DEF);
   if (!ret)
     return (FALSE);
 
-  ret = vstr_nx_del(from_base, from_pos, len);
+  ret = vstr_del(from_base, from_pos, len);
   if (!ret)
   {
-    ret = vstr_nx_del(base, pos, len);
+    ret = vstr_del(base, pos, len);
     assert(ret); /* this must work as a split can't happen */
     return (FALSE);
   }
@@ -58,22 +58,22 @@ static int vstr__mov_single_node(Vstr_base *base, size_t pos,
   /* 123456789 */
   /* XXFFXX>XX = cp T, F1, FL; mv F1, F1+FL, P1-F1; cp P1, T, FL */
   
-  scan = vstr_nx_base__pos(base, &pos, &num, TRUE);
-  if ((vstr_nx_base__pos(base, &from_pos, &num, TRUE) == scan) &&
+  scan = vstr_base__pos(base, &pos, &num, TRUE);
+  if ((vstr_base__pos(base, &from_pos, &num, TRUE) == scan) &&
       (scan->len > len) &&
       ((scan->len - len) >= pos) &&
       ((scan->len - len) >= from_pos))
   {
-    char *ptr = vstr_nx_export__node_ptr(scan);
+    char *ptr = vstr_export__node_ptr(scan);
 
-    vstr_nx_wrap_memcpy(tbuf, ptr + from_pos - 1, len);
+    vstr_wrap_memcpy(tbuf, ptr + from_pos - 1, len);
     if (pos > from_pos)
-      vstr_nx_wrap_memmove(ptr + from_pos + len - 1,
-                           ptr + from_pos - 1, (pos + 1) - from_pos);
+      vstr_wrap_memmove(ptr + from_pos + len - 1,
+                        ptr + from_pos - 1, (pos + 1) - from_pos);
     else
-      vstr_nx_wrap_memmove(ptr + pos + len,
-                           ptr + pos, from_pos - (pos + 1));
-    vstr_nx_wrap_memmove(ptr + pos, tbuf, len);
+      vstr_wrap_memmove(ptr + pos + len,
+                        ptr + pos, from_pos - (pos + 1));
+    vstr_wrap_memmove(ptr + pos, tbuf, len);
     
     return (TRUE);
   }
@@ -97,7 +97,7 @@ static Vstr_node **vstr__mov_setup_beg(Vstr_base *base, size_t pos,
     return (&base->beg);
   }
   
-  scan = vstr_nx_base__pos(base, &pos, num, TRUE);
+  scan = vstr_base__pos(base, &pos, num, TRUE);
   
   if ((pos != scan->len) && !(scan = vstr__base_split_node(base, scan, pos)))
     return (NULL);
@@ -125,7 +125,7 @@ static Vstr_node **vstr__mov_setup_end(Vstr_base *base, size_t pos,
     return (&base->beg);
   }
   
-  scan = vstr_nx_base__pos(base, &pos, num, TRUE);
+  scan = vstr_base__pos(base, &pos, num, TRUE);
   
   if ((pos != scan->len) && !(scan = vstr__base_split_node(base, scan, pos)))
     return (NULL);
@@ -144,8 +144,8 @@ static void vstr__mov_iovec_kill(Vstr_base *base)
   base->iovec_upto_date = FALSE;
 }
 
-int vstr_nx_mov(Vstr_base *base, size_t pos,
-                Vstr_base *from_base, size_t from_pos, size_t len)
+int vstr_mov(Vstr_base *base, size_t pos,
+             Vstr_base *from_base, size_t from_pos, size_t len)
 {
   Vstr_node *from_prev = NULL;
   Vstr_node **beg = NULL;

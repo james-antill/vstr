@@ -4,6 +4,17 @@ Some are pretty high priority for the next stable version.
  I need a better priority ... but so far I've mainly been concerned with what
 was needed for vstr-1.0.0
 
+ During 1.0.x
+ ------------
+
+. vstr_mov() doesn't move cache information.
+
+. Make sure everything builds on different platforms.
+
+. Get rid of inet_ntop() ?
+
+. Try to find a way to test malloc() failure cases in testsuite ... last 17%
+
  Not needed for 1.0
  ------------------
 

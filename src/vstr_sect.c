@@ -1,6 +1,6 @@
 #define VSTR_SECT_C
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
 /* functions to manage a Vstr section */
 #include "main.h"
 
-Vstr_sects *vstr_nx_sects_make(unsigned int beg_num)
+Vstr_sects *vstr_sects_make(unsigned int beg_num)
 {
   Vstr_sects *sects = VSTR__MK(sizeof(Vstr_sects));
   Vstr_sect_node *ptr = NULL;
@@ -39,7 +39,7 @@ Vstr_sects *vstr_nx_sects_make(unsigned int beg_num)
   return (sects);
 }
 
-void vstr_nx_sects_free(Vstr_sects *sects)
+void vstr_sects_free(Vstr_sects *sects)
 {
   if (!sects)
     return;
@@ -86,9 +86,9 @@ static int vstr__sects_del(Vstr_sects *sects)
   return (TRUE);
 }
 
-int vstr_nx_extern_inline_sects_add(Vstr_sects *sects,
-                                    size_t pos __attribute__((unused)),
-                                    size_t len __attribute__((unused)))
+int vstr_extern_inline_sects_add(Vstr_sects *sects,
+                                 size_t pos __attribute__((unused)),
+                                 size_t len __attribute__((unused)))
 {
   /* see vstr-extern.h for why */
   assert(sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node));
@@ -96,7 +96,7 @@ int vstr_nx_extern_inline_sects_add(Vstr_sects *sects,
   return (vstr__sects_add(sects));
 }
 
-int vstr_nx_sects_del(Vstr_sects *sects, unsigned int num)
+int vstr_sects_del(Vstr_sects *sects, unsigned int num)
 {
   assert(sects->sz && num);
   assert(sects->num >= num);
@@ -121,7 +121,7 @@ int vstr_nx_sects_del(Vstr_sects *sects, unsigned int num)
   return (TRUE);
 }
 
-unsigned int vstr_nx_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
+unsigned int vstr_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
 {
   unsigned int count = 0;
 
@@ -140,11 +140,11 @@ unsigned int vstr_nx_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
   return (0);
 }
 
-int vstr_nx_sects_foreach(const Vstr_base *base,
-                          Vstr_sects *sects, const unsigned int flags,
-                          unsigned int (*foreach_func)(const Vstr_base *,
-                                                       size_t, size_t, void *),
-                          void *data)
+int vstr_sects_foreach(const Vstr_base *base,
+                       Vstr_sects *sects, const unsigned int flags,
+                       unsigned int (*foreach_func)(const Vstr_base *,
+                                                    size_t, size_t, void *),
+                       void *data)
 {
   unsigned int count = 0;
   unsigned int scan = 0;
@@ -215,7 +215,7 @@ static void *vstr__sects_update_cb(const Vstr_base *base,size_t pos, size_t len,
   unsigned int count = 0;
   
   ASSERT(base->conf->cache_pos_cb_sects);
-  ASSERT(data == vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects));
+  ASSERT(data == vstr_cache_get(base, base->conf->cache_pos_cb_sects));
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
@@ -330,12 +330,12 @@ static void vstr__sects_update_del(Vstr__sects_cache_data *data,
   --data->len;
   
   if (sects != end)
-    vstr_nx_wrap_memmove(sects, sects + 1,
-                         (end - sects) * sizeof(Vstr_sects *));
+    vstr_wrap_memmove(sects, sects + 1,
+                      (end - sects) * sizeof(Vstr_sects *));
 }
 
-int vstr_nx_sects_update_add(const Vstr_base *base,
-                             Vstr_sects *sects)
+int vstr_sects_update_add(const Vstr_base *base,
+                          Vstr_sects *sects)
 {
   Vstr__sects_cache_data *data = NULL;
   unsigned int sz = 1;
@@ -344,32 +344,29 @@ int vstr_nx_sects_update_add(const Vstr_base *base,
   {
     unsigned int tmp = 0;
     
-    tmp = vstr_nx_cache_add(base->conf, "/vstr__/sects/update",
-                            vstr__sects_update_cb);
+    tmp = vstr_cache_add(base->conf, "/vstr__/sects/update",
+                         vstr__sects_update_cb);
 
     if (!tmp)
-      return (FALSE);
+      goto malloc_bad;
     
     base->conf->cache_pos_cb_sects = tmp;
   }
 
-  if (!(data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects)))
+  if (!(data = vstr_cache_get(base, base->conf->cache_pos_cb_sects)))
   {
-    if (!vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL))
-      return (FALSE);
+    if (!vstr_cache_set(base, base->conf->cache_pos_cb_sects, NULL))
+      goto malloc_bad;
 
     data = VSTR__MK(sizeof(Vstr__sects_cache_data) +
                     (sz * sizeof(Vstr_sects *)));
     if (!data)
-    {
-      base->conf->malloc_bad = TRUE;
-      return (FALSE);
-    }
+      goto malloc_bad;
 
     data->sz = 1;
     data->len = 0;
     
-    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, data);
+    vstr_cache_set(base, base->conf->cache_pos_cb_sects, data);
   }
 
   sz = data->len + 1;
@@ -379,23 +376,25 @@ int vstr_nx_sects_update_add(const Vstr_base *base,
   {
     if (!(VSTR__MV(data, sizeof(Vstr__sects_cache_data) +
                    (sz * sizeof(Vstr_sects *)))))
-    {
-      base->conf->malloc_bad = TRUE;
-      return (FALSE);
-    }
+      goto malloc_bad;
+    
     data->sz = data->len + 1;
     
-    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, data);
+    vstr_cache_set(base, base->conf->cache_pos_cb_sects, data);
   }
 
   data->updates[data->len] = sects;
   ++data->len;
   
   return (TRUE);
+
+ malloc_bad:
+  base->conf->malloc_bad = TRUE;
+  return (FALSE);  
 }
 
-int vstr_nx_sects_update_del(const Vstr_base *base,
-                             Vstr_sects *sects)
+int vstr_sects_update_del(const Vstr_base *base,
+                          Vstr_sects *sects)
 {
   Vstr__sects_cache_data *data = NULL;
   Vstr_sects **srch = NULL;
@@ -403,7 +402,7 @@ int vstr_nx_sects_update_del(const Vstr_base *base,
   if (!sects || !base->conf->cache_pos_cb_sects)
     return (FALSE);
   
-  data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_sects);
+  data = vstr_cache_get(base, base->conf->cache_pos_cb_sects);
   if (!data)
     return (FALSE);
 
@@ -419,7 +418,7 @@ int vstr_nx_sects_update_del(const Vstr_base *base,
   if (!data->len)
   {
     VSTR__F(data);
-    vstr_nx_cache_set(base, base->conf->cache_pos_cb_sects, NULL);
+    vstr_cache_set(base, base->conf->cache_pos_cb_sects, NULL);
   }
   
   return (TRUE);

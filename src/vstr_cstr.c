@@ -1,6 +1,6 @@
 #define VSTR_CSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,7 @@ static Vstr_ref *vstr__export_cstr_ref(const Vstr_base *base,
 {
   Vstr_ref *ref = NULL;
   
-  if (!(ref = vstr_nx_ref_make_malloc(len + 1)))
+  if (!(ref = vstr_ref_make_malloc(len + 1)))
   {
     base->conf->malloc_bad = TRUE;
     return (NULL);
@@ -34,7 +34,7 @@ static Vstr_ref *vstr__export_cstr_ref(const Vstr_base *base,
 
   assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
   
-  vstr_nx_export_cstr_buf(base, pos, len, ref->ptr, len + 1);
+  vstr_export_cstr_buf(base, pos, len, ref->ptr, len + 1);
 
   return (ref);
 }
@@ -50,9 +50,9 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   assert(base && pos && ((pos + len - 1) <= base->len) && ret_off);
   assert(len || (!base->len && (pos == 1)));
   
-  if (!(data = vstr_nx_cache_get(base, off)))
+  if (!(data = vstr_cache_get(base, off)))
   {
-    if (!vstr_nx_cache_set(base, off, NULL))
+    if (!vstr_cache_set(base, off, NULL))
       return (NULL);
     
     if (!(data = VSTR__MK(sizeof(Vstr__cache_data_cstr))))
@@ -62,7 +62,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
     }
     data->ref = NULL;
     
-    vstr_nx_cache_set(base, off, data);
+    vstr_cache_set(base, off, data);
   }
  
   if (data->ref)
@@ -79,7 +79,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
       }
     }
     
-    vstr_nx_ref_del(data->ref);
+    vstr_ref_del(data->ref);
     data->ref = NULL;
   }
 
@@ -94,7 +94,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
   return (data);
 }
 
-char *vstr_nx_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
+char *vstr_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
 {
   Vstr__cache_data_cstr *data = NULL;
   size_t off = 0;
@@ -105,7 +105,7 @@ char *vstr_nx_export_cstr_ptr(const Vstr_base *base, size_t pos, size_t len)
   return (((char *)data->ref->ptr) + off);
 }
 
-char *vstr_nx_export_cstr_malloc(const Vstr_base *base, size_t pos, size_t len)
+char *vstr_export_cstr_malloc(const Vstr_base *base, size_t pos, size_t len)
 {
   void *ptr = malloc(len + 1);
 
@@ -115,13 +115,13 @@ char *vstr_nx_export_cstr_malloc(const Vstr_base *base, size_t pos, size_t len)
     return (NULL);
   }
   
-  vstr_nx_export_cstr_buf(base, pos, len, ptr, len + 1);
+  vstr_export_cstr_buf(base, pos, len, ptr, len + 1);
 
   return (ptr);
 }
 
-Vstr_ref *vstr_nx_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
-                                  size_t *ret_off)
+Vstr_ref *vstr_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
+                               size_t *ret_off)
 {
   Vstr__cache_data_cstr *data = NULL;
   
@@ -139,11 +139,11 @@ Vstr_ref *vstr_nx_export_cstr_ref(const Vstr_base *base, size_t pos, size_t len,
   if (!(data = vstr__export_cstr_cache(base, pos, len, ret_off)))
     return (NULL);
   
-  return (vstr_nx_ref_add(data->ref));
+  return (vstr_ref_add(data->ref));
 }
 
-size_t vstr_nx_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
-                               void *buf, size_t buf_len)
+size_t vstr_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
+                            void *buf, size_t buf_len)
 {
   size_t cpy_len = len;
 
@@ -153,7 +153,7 @@ size_t vstr_nx_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
   if (cpy_len >= buf_len)
     cpy_len = (buf_len - 1);
 
-  vstr_nx_export_buf(base, pos, len, buf, cpy_len);
+  vstr_export_buf(base, pos, len, buf, cpy_len);
   ((char *)buf)[cpy_len] = 0;
 
   return (cpy_len + 1);

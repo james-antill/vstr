@@ -11,10 +11,14 @@
 
 #include <errno.h>
 
+#include <limits.h>
+
 #define TRUE 1
 #define FALSE 0
 
 #define OUT_DEF_NUM 2 /* how many lines to add at once, by default */
+
+#define OUT_LIM_DEF_NUM 0 /* how many lines to do in total, by default */
 
 #define OUT_PTR 1 /* copy ptr's to data */
 #define OUT_BUF 2 /* copy data to */
@@ -51,6 +55,41 @@ static void DIE(const char *msg, ...)
   exit (EXIT_FAILURE);
 }
 
+#define GETOPT_NUM(name, var) \
+    else if (!strncmp("--" name, argv[count], strlen("--" name))) \
+    { \
+      if (!strncmp("--" name "=", argv[count], strlen("--" name "="))) \
+        (var) = strtol(argv[count] + strlen("--" name "="), NULL, 0); \
+      else \
+      { \
+        (var) = 0; \
+        \
+        ++count; \
+        if (count >= argc) \
+          break; \
+        \
+        (var) = strtol(argv[count], NULL, 0); \
+      } \
+    } \
+    else if (0) ASSERT(FALSE)
+
+#define GETOPT_CSTR(name, var) \
+    else if (!strncmp("--" name, argv[count], strlen("--" name))) \
+    { \
+      if (!strncmp("--" name "=", argv[count], strlen("--" name "="))) \
+        (var) = argv[count] + strlen("--" name "="); \
+      else \
+      { \
+        (var) = NULL; \
+        \
+        ++count; \
+        if (count >= argc) \
+          break; \
+        \
+        (var) = argv[count]; \
+      } \
+    } \
+    else if (0) ASSERT(FALSE)
 
 int main(int argc, char *argv[])
 { /* This is "cat", without any command line options */
@@ -60,6 +99,9 @@ int main(int argc, char *argv[])
   struct stat stat_buf;
   unsigned int out_type = OUT_PTR;
   unsigned int out_num = OUT_DEF_NUM;
+  unsigned int lim_num = OUT_LIM_DEF_NUM;
+  const char *out_filename = NULL;
+  int out_fd = -1;
   
   /* init the Vstr string library, note that if this fails we can't call DIE
    * or the program will crash */
@@ -98,36 +140,11 @@ int main(int argc, char *argv[])
       out_type = OUT_BUF;
     else if (!strcmp("--ref", argv[count]))
       out_type = OUT_REF;
-    else if (!strncmp("--sz", argv[count], strlen("--sz")))
-    {
-      if (!strncmp("--sz=", argv[count], strlen("--sz=")))
-        sz = strtol(argv[count] + strlen("--sz="), NULL, 0);
-      else
-      {
-        sz = 0;
-        
-        ++count;
-        if (count >= argc)
-          break;
-
-        sz = strtol(argv[count], NULL, 0);
-      }
-    }
-    else if (!strncmp("--num", argv[count], strlen("--num")))
-    {
-      if (!strncmp("--num=", argv[count], strlen("--num=")))
-        out_num = strtol(argv[count] + strlen("--num="), NULL, 0);
-      else
-      {
-        out_num = 0;
-        
-        ++count;
-        if (count >= argc)
-          break;
-
-        out_num = strtol(argv[count], NULL, 0);
-      }
-    }
+    GETOPT_NUM("sz",    sz);
+    GETOPT_NUM("num",   out_num);
+    GETOPT_NUM("limit", lim_num);
+    GETOPT_NUM("lim",   lim_num);
+    GETOPT_CSTR("file",  out_filename);
     else if (!strcmp("--version", argv[count]))
     {
       vstr_add_fmt(s1, 0, "%s", "\
@@ -182,7 +199,9 @@ Report bugs to James Antill <james@and.org>.\n\
 
   VSTR_ADD_CSTR_PTR(cmd_line, cmd_line->len, "\n");
 
-  if (out_type == OUT_PTR)
+  if (0)
+  { ASSERT(FALSE); }
+  else if (out_type == OUT_PTR)
   { /* do nothing */ }
   else if (out_type == OUT_BUF)
   {
@@ -205,28 +224,45 @@ Report bugs to James Antill <james@and.org>.\n\
   if (!out_num)
     ++out_num;
 
-  while (TRUE)
+  if (!out_filename)
+    out_fd = 1;
+  else
+  {
+    out_fd = open(out_filename, O_WRONLY | O_TRUNC | O_LARGEFILE | O_NOCTTY);
+    
+    if (out_fd == -1)
+      DIE("open(%s): %m\n", out_filename);
+  }
+  
+  /* BEG: main loop */
+  
+  do
   {
     count = out_num;
     
     while ((s1->len < sz) && (--count >= 0))
       vstr_add_vstr(s1, s1->len, cmd_line, 1, cmd_line->len, VSTR_TYPE_ADD_DEF);
     
-    if (!vstr_sc_write_fd(s1, 1, s1->len, 1, NULL))
+    if (!vstr_sc_write_fd(s1, 1, s1->len, out_fd, NULL))
     {
       if ((errno != EAGAIN) && (errno != EINTR))
         DIE("write: %m\n");
     }
-  }
 
-  /* never reaches here ... but can do with options */
+    /* 0 == infinity */
+    if    (lim_num == 1) break;
+    if    (lim_num >  1) --lim_num;
+  } while (TRUE);
+  
  out:
   while (s1->len)
-    if (!vstr_sc_write_fd(s1, 1, s1->len, 1, NULL))
+    if (!vstr_sc_write_fd(s1, 1, s1->len, out_fd, NULL))
     {
       if ((errno != EAGAIN) && (errno != EINTR))
         DIE("write: %m\n");
     }
+
+  /* END: main loop */
 
   /* These next three calls are only really needed to make valgrind happy,
    * but that does help in that any memory leaks are easier to see.

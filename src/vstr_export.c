@@ -1,6 +1,6 @@
 #define VSTR_EXPORT_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,28 +22,28 @@
 #include "main.h"
 
 
-size_t vstr_nx_export_iovec_ptr_all(const Vstr_base *base,
-                                    struct iovec **iovs, unsigned int *ret_num)
+size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
+                                 struct iovec **iovs, unsigned int *ret_num)
 {
- if (!base->num)
-   return (0);
+  if (!base->num)
+    return (0);
 
- if (!vstr__cache_iovec_valid((Vstr_base *)base))
-   return (0);
+  if (!vstr__cache_iovec_valid((Vstr_base *)base))
+    return (0);
 
- if (iovs)
-   *iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
+  if (iovs)
+    *iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
 
- if (ret_num)
-   *ret_num = base->num;
+  if (ret_num)
+    *ret_num = base->num;
  
- return (base->len);
+  return (base->len);
 }
 
-size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
-                                    size_t pos, size_t len,
-                                    struct iovec *iovs, unsigned int num_max,
-                                    unsigned int *real_ret_num)
+size_t vstr_export_iovec_cpy_buf(const Vstr_base *base,
+                                 size_t pos, size_t len,
+                                 struct iovec *iovs, unsigned int num_max,
+                                 unsigned int *real_ret_num)
 {
   Vstr_iter iter[1];
   size_t ret_len = 0;
@@ -59,7 +59,7 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
   if (!real_ret_num)
     real_ret_num = &dummy_ret_num;
   
-  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
   
   do
@@ -74,7 +74,7 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
       tmp = (iovs[ret_num].iov_len - used);
     
     if (iter->node->type != VSTR_TYPE_NODE_NON)
-      vstr_nx_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used,iter->ptr,tmp);
+      vstr_wrap_memcpy(((char *)iovs[ret_num].iov_base) + used,iter->ptr,tmp);
 
     used += tmp;
     iter->ptr += tmp;
@@ -90,7 +90,7 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
     }
     
     if (!iter->len)
-      vstr_nx_iter_fwd_nxt(iter);
+      vstr_iter_fwd_nxt(iter);
   } while (iter->node);
 
   if (used)
@@ -104,10 +104,10 @@ size_t vstr_nx_export_iovec_cpy_buf(const Vstr_base *base,
   return (ret_len);
 }
 
-size_t vstr_nx_export_iovec_cpy_ptr(const Vstr_base *base,
-                                    size_t pos, size_t len,
-                                    struct iovec *iovs, unsigned int num_max,
-                                    unsigned int *real_ret_num)
+size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base,
+                                 size_t pos, size_t len,
+                                 struct iovec *iovs, unsigned int num_max,
+                                 unsigned int *real_ret_num)
 {
   size_t orig_len = len;
   Vstr_iter iter[1];
@@ -123,7 +123,7 @@ size_t vstr_nx_export_iovec_cpy_ptr(const Vstr_base *base,
   if (!real_ret_num)
     real_ret_num = &dummy_ret_num;
   
-  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
   
   do
@@ -132,7 +132,7 @@ size_t vstr_nx_export_iovec_cpy_ptr(const Vstr_base *base,
     iovs[ret_num].iov_len = iter->len;
     ret_len += iter->len;
     
-  } while ((++ret_num < num_max) && vstr_nx_iter_fwd_nxt(iter));
+  } while ((++ret_num < num_max) && vstr_iter_fwd_nxt(iter));
   assert((ret_len == orig_len) || (ret_num == num_max));
   
   *real_ret_num = ret_num;
@@ -140,8 +140,8 @@ size_t vstr_nx_export_iovec_cpy_ptr(const Vstr_base *base,
   return (ret_len);
 }
 
-size_t vstr_nx_export_buf(const Vstr_base *base, size_t pos, size_t len,
-                          void *buf, size_t buf_len)
+size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
+                       void *buf, size_t buf_len)
 {
   Vstr_iter iter[1];
   size_t ret = 0;
@@ -152,7 +152,7 @@ size_t vstr_nx_export_buf(const Vstr_base *base, size_t pos, size_t len,
   if (len > buf_len)
     len = buf_len;
   
-  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (0);
   
   ret = iter->remaining + iter->len;
@@ -160,10 +160,10 @@ size_t vstr_nx_export_buf(const Vstr_base *base, size_t pos, size_t len,
   do
   {
     if (iter->node->type != VSTR_TYPE_NODE_NON)
-      vstr_nx_wrap_memcpy(buf, iter->ptr, iter->len);
+      vstr_wrap_memcpy(buf, iter->ptr, iter->len);
    
     buf = ((char *)buf) + iter->len;
-  } while (vstr_nx_iter_fwd_nxt(iter));
+  } while (vstr_iter_fwd_nxt(iter));
  
   return (ret);
 }
@@ -173,10 +173,9 @@ static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,
 {
   Vstr_ref *ref = NULL;
 
-  if (!len)
-    return (NULL);
+  ASSERT(len);
   
-  if (!(ref = vstr_nx_ref_make_malloc(len)))
+  if (!(ref = vstr_ref_make_malloc(len)))
   {
     base->conf->malloc_bad = TRUE;
     return (NULL);
@@ -184,13 +183,13 @@ static Vstr_ref *vstr__export_buf_ref(const Vstr_base *base,
 
   assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
   
-  vstr_nx_export_buf(base, pos, len, ref->ptr, len);
+  vstr_export_buf(base, pos, len, ref->ptr, len);
   
   return (ref);
 }
 
-Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
-                             size_t *ret_off)
+Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
+                          size_t *ret_off)
 {
   Vstr_node **scan = NULL;
   unsigned int num = 0;
@@ -199,6 +198,25 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
   
   assert(base && pos && len && ((pos + len - 1) <= base->len));
   assert(ret_off);
+
+  if (base->cache_available)
+  { /* use cstr cache if available */
+    Vstr__cache_data_cstr *data = NULL;
+    unsigned int off = base->conf->cache_pos_cb_cstr;
+    
+    if ((data = vstr_cache_get(base, off)) && data->ref)
+    {
+      if (pos >= data->pos)
+      {
+        size_t tmp = (pos - data->pos);
+        if (data->len <= (len - tmp))
+        {
+          *ret_off = tmp;
+          return (vstr_ref_add(data->ref));
+        }
+      }
+    }
+  }
   
   scan = vstr__base_ptr_pos(base, &pos, &num);
   --pos;
@@ -210,13 +228,13 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
     else if ((*scan)->type == VSTR_TYPE_NODE_REF)
     {
       *ret_off = pos + ((Vstr_node_ref *)*scan)->off;
-      return (vstr_nx_ref_add(((Vstr_node_ref *)*scan)->ref));
+      return (vstr_ref_add(((Vstr_node_ref *)*scan)->ref));
     }
     else if ((*scan)->type == VSTR_TYPE_NODE_PTR)
     {
       void *ptr = ((char *)((Vstr_node_ptr *)*scan)->ptr) + pos;
       
-      if (!(ref = vstr_nx_ref_make_ptr(ptr, vstr_nx_ref_cb_free_ref)))
+      if (!(ref = vstr_ref_make_ptr(ptr, vstr_ref_cb_free_ref)))
       {
         base->conf->malloc_bad = TRUE;
         return (NULL);
@@ -234,26 +252,7 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
       /* NOTE: pos can include ->used stuff, which is now gone */
       assert(pos >= ((Vstr_node_ref *)*scan)->off);
       *ret_off = pos;
-      return (vstr_nx_ref_add(((Vstr_node_ref *)*scan)->ref));
-    }
-  }
-
-  if (base->cache_available)
-  { /* use cstr cache if available */
-    Vstr__cache_data_cstr *data = NULL;
-    unsigned int off = base->conf->cache_pos_cb_cstr;
-    
-    if ((data = vstr_nx_cache_get(base, off)) && data->ref)
-    {
-      if (pos >= data->pos)
-      {
-        size_t tmp = (pos - data->pos);
-        if (data->len <= (len - tmp))
-        {
-          *ret_off = tmp;
-          return (vstr_nx_ref_add(data->ref));
-        }
-      }
+      return (vstr_ref_add(((Vstr_node_ref *)*scan)->ref));
     }
   }
 

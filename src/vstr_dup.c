@@ -1,6 +1,6 @@
 #define VSTR_DUP_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,119 +21,119 @@
 /* These are just shortcut helper functions */
 #include "main.h"
 
-Vstr_base *vstr_nx_dup_buf(Vstr_conf *conf, const void *data, size_t len)
+Vstr_base *vstr_dup_buf(Vstr_conf *conf, const void *data, size_t len)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_buf(ret, 0, data, len))
+  if (len && !vstr_add_buf(ret, 0, data, len))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   
   return (NULL);
 }
 
-Vstr_base *vstr_nx_dup_ptr(Vstr_conf *conf, const void *data, size_t len)
+Vstr_base *vstr_dup_ptr(Vstr_conf *conf, const void *data, size_t len)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_ptr(ret, 0, data, len))
+  if (len && !vstr_add_ptr(ret, 0, data, len))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   
   return (NULL);
 }
 
-Vstr_base *vstr_nx_dup_non(Vstr_conf *conf, size_t len)
+Vstr_base *vstr_dup_non(Vstr_conf *conf, size_t len)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_non(ret, 0, len))
+  if (len && !vstr_add_non(ret, 0, len))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   
   return (NULL);
 }
 
-Vstr_base *vstr_nx_dup_ref(Vstr_conf *conf,
-                           Vstr_ref *ref, size_t off, size_t len)
+Vstr_base *vstr_dup_ref(Vstr_conf *conf,
+                        Vstr_ref *ref, size_t off, size_t len)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_ref(ret, 0, ref, off, len))
+  if (len && !vstr_add_ref(ret, 0, ref, off, len))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   
   return (NULL);
 }
 
-Vstr_base *vstr_nx_dup_vstr(Vstr_conf *conf,
-                            const Vstr_base *base, size_t pos, size_t len,
-                            unsigned int type)
+Vstr_base *vstr_dup_vstr(Vstr_conf *conf,
+                         const Vstr_base *base, size_t pos, size_t len,
+                         unsigned int type)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_vstr(ret, 0, base, pos, len, type))
+  if (len && !vstr_add_vstr(ret, 0, base, pos, len, type))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   base->conf->malloc_bad = TRUE;
   
   return (NULL);
 }
 
-Vstr_base *vstr_nx_dup_rep_chr(Vstr_conf *conf, char chr, size_t len)
+Vstr_base *vstr_dup_rep_chr(Vstr_conf *conf, char chr, size_t len)
 {
-  Vstr_base *ret = vstr_nx_make_base(conf);
+  Vstr_base *ret = vstr_make_base(conf);
   
   if (!ret)
     goto make_base_fail;
   
-  if (len && !vstr_nx_add_rep_chr(ret, 0, chr, len))
+  if (len && !vstr_add_rep_chr(ret, 0, chr, len))
     goto add_vstr_fail;
   
   return (ret);
   
  add_vstr_fail:
-  vstr_nx_free_base(ret);
+  vstr_free_base(ret);
  make_base_fail:
   
   return (NULL);

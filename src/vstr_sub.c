@@ -1,6 +1,6 @@
 #define VSTR_SUB_C
 /*
- *  Copyright (C) 2001, 2002  James Antill
+ *  Copyright (C) 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,11 +25,18 @@
   if (tmp > buf_len) \
     tmp = buf_len; \
   \
-  vstr_nx_wrap_memcpy((((Vstr_node_buf *)scan)->buf) + pos, buf, tmp); \
+  vstr_wrap_memcpy((((Vstr_node_buf *)scan)->buf) + pos, buf, tmp); \
   buf_len -= tmp; \
   buf = ((char *)buf) + tmp; \
 } while (FALSE)
 
+
+static int vstr__sub_simple_fail(Vstr_base *base, size_t pos, size_t len)
+{
+  int ret = vstr_del(base, pos, len);
+  assert(ret); /* this must work as a split can't happen */
+  return (FALSE);
+}
 
 static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
                               const void *buf)
@@ -37,7 +44,7 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
   Vstr_iter iter[1];
   size_t buf_len = len;
 
-  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
   
   do
@@ -46,11 +53,11 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
 
     assert(iter->node->type == VSTR_TYPE_NODE_BUF);
     
-    vstr_nx_wrap_memcpy((char *)iter->ptr, buf, tmp);
+    vstr_wrap_memcpy((char *)iter->ptr, buf, tmp);
     buf = ((char *)buf) + tmp;
-  } while (vstr_nx_iter_fwd_nxt(iter));
+  } while (vstr_iter_fwd_nxt(iter));
 
-  vstr_nx_cache_cb_sub(base, pos, buf_len);
+  vstr_cache_cb_sub(base, pos, buf_len);
 
   return (TRUE);
 }
@@ -78,7 +85,7 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   else
     add_len = buf_len - len;
   
-  if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
   
   do
@@ -92,31 +99,20 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
       sub_add_len += tmp;
     
     buf_len -= tmp;
-  } while (buf_len && vstr_nx_iter_fwd_nxt(iter));
+  } while (buf_len && vstr_iter_fwd_nxt(iter));
 
   buf_len = orig_buf_len;
   
   if (sub_add_len == buf_len)
   { /* no _BUF nodes, so we can't optimise it anyway ... */
-    int ret = vstr_nx_add_buf(base, pos - 1, buf, buf_len);
+    int ret = vstr_add_buf(base, pos - 1, buf, buf_len);
     
     if (!ret)
-    {
-      assert(vstr__check_spare_nodes(base->conf));
-      assert(vstr__check_real_nodes(base));
       return (FALSE);
-    }
     
-    ret = vstr_nx_del(base, pos + buf_len, len + del_len);
+    ret = vstr_del(base, pos + buf_len, len + del_len);
     if (!ret)
-    {
-      ret = vstr_nx_del(base, pos, buf_len);
-      assert(ret); /* this must work as a split can't happen */
-
-      assert(vstr__check_spare_nodes(base->conf));
-      assert(vstr__check_real_nodes(base));
-      return (FALSE);
-    }
+      return (vstr__sub_simple_fail(base, pos, buf_len));
     
     return (TRUE);
   }
@@ -126,133 +122,45 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   /* allocate extra _BUF nodes needed, all other are ok -- no splits will
    * happen on non _BUF nodes */
   num = (add_len / base->conf->buf_sz) + 2;
-  if (num > base->conf->spare_buf_num)
-  {
-    num -= base->conf->spare_buf_num;
-    if (vstr_nx_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num)
+  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
+                      num, UINT_MAX))
+    return (FALSE);
+  
+  if (sub_add_len)
+  { /* loop again removing any non _BUF nodes */
+    int nxt_iter = FALSE;
+    
+    if (!vstr_iter_fwd_beg(base, pos, len, iter))
       return (FALSE);
+    
+    do
+    {
+      size_t tmp_len        = iter->len;
+      unsigned int tmp_type = iter->node->type;
+      
+      nxt_iter = vstr_iter_fwd_nxt(iter);
+      
+      if (tmp_type != VSTR_TYPE_NODE_BUF)
+      {  
+        vstr_del(base, pos, tmp_len);
+        len -= tmp_len;
+      }
+
+      pos += tmp_len;
+    } while (buf_len && nxt_iter);
   }
   
-  real_pos = orig_pos;
+  vstr__sub_buf_fast(base, orig_pos, len, buf);
   
-  if (!sub_add_len) /* length we are replacing is _just_ _BUF nodes */
-  {
-    vstr__sub_buf_fast(base, real_pos, len, buf);
-
-    real_pos += len;
-    buf_len -= len;
-    buf = ((char *)buf) + len;
-  }
-  else
-  {
-    size_t rm_pos = 0;
-    size_t rm_len = 0;
-    Vstr_node *scan = NULL;
-    
-    /* loop again removing any non _BUF nodes and substituting on _BUF */
-    if ((pos + len - 1) > base->len)
-      len = base->len - (pos - 1);
-    scan = vstr_nx_base__pos(base, &pos, &num, TRUE);
-    assert(scan);
-    
-    --pos;
-    
-    while (buf_len && len)
-    {
-      size_t tmp = 0;
-      
-      assert(scan);
-      
-      if (rm_pos)
-      {
-        assert(rm_pos == real_pos);
-        vstr_nx_del(base, rm_pos, rm_len);
-      }
-      
-      tmp = scan->len - pos;
-      if (tmp > len)
-        tmp = len;
-      
-      if (scan->type != VSTR_TYPE_NODE_BUF)
-      {
-        rm_pos = real_pos;
-        rm_len = tmp;
-        len -= tmp;
-      }
-      else
-      {
-        rm_pos = 0;
-        
-        VSTR__SUB_BUF();
-        
-        vstr_nx_cache_cb_sub(base, real_pos, tmp);
-        
-        len -= tmp;
-        real_pos += tmp;
-        
-        if (buf_len && add_len && (((base->beg == scan) && base->used) ||
-                                   (scan->len < base->conf->buf_sz)))
-        { /* be more aggessive here than in vstr_add_buf() because when you are
-           * adding you generally add a lot, but when subbing you often sub
-           * just a little bit more or less than you started with */
-          pos += tmp;
-          if ((base->beg == scan) && base->used)
-          {
-            pos -= base->used;
-            scan->len -= base->used;
-            vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf,
-                                 ((Vstr_node_buf *)scan)->buf + base->used,
-                                 scan->len);
-            base->used = 0;
-          }
-          
-          assert(scan->len < base->conf->buf_sz);
-          
-          tmp = base->conf->buf_sz - scan->len;
-          if (tmp > add_len)
-            tmp = add_len;
-          if (tmp > buf_len)
-            tmp = buf_len;
-          
-          if (pos < scan->len)
-            vstr_nx_wrap_memmove(((Vstr_node_buf *)scan)->buf + pos + tmp,
-                                 ((Vstr_node_buf *)scan)->buf + pos,
-                                 (scan->len - pos));
-          
-          VSTR__SUB_BUF();
-          
-          scan->len += tmp;
-          base->len += tmp;
-          add_len -= tmp;
-          
-          vstr__cache_add(base, real_pos, tmp);
-          
-          real_pos += tmp;
-          
-          if (base->iovec_upto_date)
-            vstr__cache_iovec_reset_node(base, scan,
-                                         vstr__num_node(base, scan));
-        }
-      }
-      
-      pos = 0;
-      scan = scan->next;
-    }
-
-    if (rm_pos)
-    {
-      assert(rm_pos == real_pos);
-      vstr_nx_del(base, rm_pos, rm_len);
-    }
-
-    assert(!buf_len || (add_len >= buf_len));
-  }
+  real_pos = orig_pos + len;
+  buf_len -= len;
+  buf = ((char *)buf) + len;
   
   if (del_len)
-    vstr_nx_del(base, real_pos, del_len);
+    vstr_del(base, real_pos, del_len);
 
   if (buf_len)
-    vstr_nx_add_buf(base, real_pos - 1, buf, buf_len);
+    vstr_add_buf(base, real_pos - 1, buf, buf_len);
 
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
@@ -260,11 +168,11 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
   return (TRUE);
 }
 
-int vstr_nx_sub_buf(Vstr_base *base, size_t pos, size_t len,
-                    const void *buf, size_t buf_len)
+int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
+                 const void *buf, size_t buf_len)
 {
   if (!len)
-    return (vstr_nx_add_buf(base, pos - 1, buf, buf_len));
+    return (vstr_add_buf(base, pos - 1, buf, buf_len));
   
   if ((len == buf_len) &&
       !base->node_non_used &&
@@ -275,31 +183,9 @@ int vstr_nx_sub_buf(Vstr_base *base, size_t pos, size_t len,
   return (vstr__sub_buf_slow(base, pos, len, buf, buf_len));
 }
 
-int vstr_nx_sub_ptr(Vstr_base *base, size_t pos, size_t len,
-                    const void *ptr, size_t ptr_len)
+int vstr_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
 {
-  int ret = vstr_nx_add_ptr(base, pos - 1, ptr, ptr_len);
-
-  if (!len)
-    return (ret);
-  
-  if (!ret)
-    return (FALSE);
-  
-  ret = vstr_nx_del(base, pos + ptr_len, len);
-  if (!ret)
-  {
-    ret = vstr_nx_del(base, pos, ptr_len);
-    assert(ret); /* this must work as a split can't happen */
-    return (FALSE);
-  }
-  
-  return (ret);
-}
-
-int vstr_nx_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
-{
-  int ret = vstr_nx_add_non(base, pos - 1, non_len);
+  int ret = vstr_add_non(base, pos - 1, non_len);
 
   if (!len)
     return (ret);
@@ -307,21 +193,79 @@ int vstr_nx_sub_non(Vstr_base *base, size_t pos, size_t len, size_t non_len)
   if (!ret)
     return (FALSE);
 
-  ret = vstr_nx_del(base, pos + non_len, len);
+  ret = vstr_del(base, pos + non_len, len);
   if (!ret)
-  {
-    ret = vstr_nx_del(base, pos, non_len);
-    assert(ret); /* this must work as a split can't happen */
-    return (FALSE);
-  }
+    return (vstr__sub_simple_fail(base, pos, non_len));
 
   return (ret);
 }
 
-int vstr_nx_sub_ref(Vstr_base *base, size_t pos, size_t len,
-                    Vstr_ref *ref, size_t off, size_t ref_len)
+int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
+                 const void *ptr, size_t ptr_len)
 {
-  int ret = vstr_nx_add_ref(base, pos - 1, ref, off, ref_len);
+  int ret = FALSE;
+  Vstr_iter iter[1];
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (FALSE);
+  
+  if ((ptr_len < VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
+  {
+    Vstr_node_ptr *ptr_node = NULL;
+    
+    if (iter->node->type == VSTR_TYPE_NODE_PTR)
+      ptr_node = (Vstr_node_ptr *)iter->node;
+    else
+    {
+      if (!vstr_cntl_conf(base->conf,
+                          VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR, 1, UINT_MAX))
+        return (FALSE);
+      --base->conf->spare_ptr_num;
+      ptr_node = base->conf->spare_ptr_beg;
+      base->conf->spare_ptr_beg = (Vstr_node_ptr *)ptr_node->s.next;
+    }
+    
+    if (ptr_len < len)
+    {
+      size_t diff_len = len - ptr_len;
+
+      len             -= diff_len;
+      iter->node->len -= diff_len;
+      base->len       -= diff_len;
+      vstr__cache_del(base, pos, diff_len);
+    }
+    
+    ptr_node->s.len = len;
+    ptr_node->ptr = (void *)ptr;
+    
+    if (iter->node->type == VSTR_TYPE_NODE_PTR)
+      vstr__cache_iovec_reset_node(base, &ptr_node->s, iter->num);
+    else
+    {
+      if (iter->node == base->beg)
+        base->used = 0;
+      vstr__swap_node_X_X(base, pos, &ptr_node->s);
+    }
+    
+    vstr_cache_cb_sub(base, pos, ptr_len);
+    
+    if (ptr_len > len)
+    {
+      size_t diff_len = ptr_len - len;
+
+      ptr_node->s.len += diff_len;
+      base->len     += diff_len;
+      
+      vstr__cache_iovec_reset_node(base, &ptr_node->s, iter->num);
+      vstr__cache_add(base, pos, diff_len);
+    }
+    
+    assert(vstr__check_spare_nodes(base->conf));
+    assert(vstr__check_real_nodes(base));
+    return (TRUE);
+  }
+  
+  ret = vstr_add_ptr(base, pos - 1, ptr, ptr_len);
 
   if (!len)
     return (ret);
@@ -329,20 +273,101 @@ int vstr_nx_sub_ref(Vstr_base *base, size_t pos, size_t len,
   if (!ret)
     return (FALSE);
   
-  ret = vstr_nx_del(base, pos + ref_len, len);
+  ret = vstr_del(base, pos + ptr_len, len);
   if (!ret)
-  {
-    ret = vstr_nx_del(base, pos, ref_len);
-    assert(ret); /* this must work as a split can't happen */
+    return (vstr__sub_simple_fail(base, pos, ptr_len));
+  
+  return (ret);
+}
+
+int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
+                 Vstr_ref *ref, size_t off, size_t ref_len)
+{
+  int ret = FALSE;
+  Vstr_iter iter[1];
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
     return (FALSE);
+
+  if ((ref_len < VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
+  {
+    Vstr_node_ref *ref_node = NULL;
+    
+    vstr_ref_add(ref);
+    
+    if (iter->node->type == VSTR_TYPE_NODE_REF)
+      ref_node = (Vstr_node_ref *)iter->node;
+    else
+    {
+      if (!vstr_cntl_conf(base->conf,
+                          VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, 1, UINT_MAX))
+        return (FALSE);
+      --base->conf->spare_ref_num;
+      ref_node = base->conf->spare_ref_beg;
+      base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->s.next;
+    }
+    
+    if (ref_len < len)
+    {
+      size_t diff_len = len - ref_len;
+
+      len             -= diff_len;
+      iter->node->len -= diff_len;
+      base->len       -= diff_len;
+      vstr__cache_del(base, pos, diff_len);
+    }
+    
+    vstr_ref_del(ref_node->ref);
+    
+    ref_node->s.len = len;
+    ref_node->ref = ref;
+    ref_node->off = off;
+    
+    if (iter->node->type == VSTR_TYPE_NODE_REF)
+      vstr__cache_iovec_reset_node(base, &ref_node->s, iter->num);
+    else
+    {
+      if (iter->node == base->beg)
+        base->used = 0;
+      vstr__swap_node_X_X(base, pos, &ref_node->s);
+    }
+    
+    vstr_cache_cb_sub(base, pos, ref_len);
+    
+    if (ref_len > len)
+    {
+      size_t diff_len = ref_len - len;
+
+      ref_node->s.len += diff_len;
+      base->len     += diff_len;
+      
+      vstr__cache_iovec_reset_node(base, &ref_node->s, iter->num);
+      vstr__cache_add(base, pos, diff_len);
+    }
+    
+    assert(vstr__check_spare_nodes(base->conf));
+    assert(vstr__check_real_nodes(base));
+    return (TRUE);
   }
+
+  ret = vstr_add_ref(base, pos - 1, ref, off, ref_len);
+   
+   if (!len)
+     return (ret);
+   
+   if (!ret)
+     return (FALSE);
+   
+   ret = vstr_del(base, pos + ref_len, len);
+   if (!ret)
+     return (vstr__sub_simple_fail(base, pos, ref_len));
 
   return (ret);
 }
 
-int vstr_nx_sub_vstr(Vstr_base *base, size_t pos, size_t len,
-                     const Vstr_base *from_base,
-                     size_t from_pos, size_t from_len, unsigned int type)
+int vstr_sub_vstr(Vstr_base *base, size_t pos, size_t len,
+                  const Vstr_base *from_base,
+                  size_t from_pos, size_t from_len, unsigned int type)
 { /* TODO: this is inefficient compared to vstr_sub_buf() because of atomic
    * guarantees - could be made to work with _ALL_BUF */
   int ret = TRUE;
@@ -350,8 +375,8 @@ int vstr_nx_sub_vstr(Vstr_base *base, size_t pos, size_t len,
   assert(pos && from_pos);
   
   if (from_len)
-    ret = vstr_nx_add_vstr(base, pos - 1, from_base, from_pos, from_len,
-                           type);
+    ret = vstr_add_vstr(base, pos - 1, from_base, from_pos, from_len,
+                        type);
 
   if (!len)
     return (ret);
@@ -359,23 +384,19 @@ int vstr_nx_sub_vstr(Vstr_base *base, size_t pos, size_t len,
   if (!ret)
     return (FALSE);
 
-  ret = vstr_nx_del(base, pos + from_len, len);
+  ret = vstr_del(base, pos + from_len, len);
   if (!ret)
-  {
-    ret = vstr_nx_del(base, pos, from_len);
-    assert(ret); /* this must work as a split can't happen */
-    return (FALSE);
-  } 
-
+    return (vstr__sub_simple_fail(base, pos, from_len));
+  
   return (ret);
 }
 
-int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
-                        char chr, size_t rep_len)
+int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
+                     char chr, size_t rep_len)
 {
   int ret = TRUE;
 
-  /* TODO: this is a simple opt. for _netstr */
+  /* TODO: this is a simple opt. */
   if ((len == rep_len) &&
       !base->node_non_used &&
       !base->node_ptr_used &&
@@ -383,7 +404,7 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
   {
     Vstr_iter iter[1];
     
-    if (!vstr_nx_iter_fwd_beg(base, pos, len, iter))
+    if (!vstr_iter_fwd_beg(base, pos, len, iter))
       return (FALSE);
     
     do
@@ -392,15 +413,15 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
       
       assert(iter->node->type == VSTR_TYPE_NODE_BUF);
       
-      vstr_nx_wrap_memset((char *)iter->ptr, chr, tmp);
-    } while (vstr_nx_iter_fwd_nxt(iter));
+      vstr_wrap_memset((char *)iter->ptr, chr, tmp);
+    } while (vstr_iter_fwd_nxt(iter));
 
-    vstr_nx_cache_cb_sub(base, pos, rep_len);
+    vstr_cache_cb_sub(base, pos, rep_len);
     
     return (TRUE);
   }
 
-  ret = vstr_nx_add_rep_chr(base, pos - 1, chr, rep_len);
+  ret = vstr_add_rep_chr(base, pos - 1, chr, rep_len);
 
   if (!len)
     return (ret);
@@ -408,13 +429,9 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
   if (!ret)
     return (FALSE);
 
-  ret = vstr_nx_del(base, pos + rep_len, len);
+  ret = vstr_del(base, pos + rep_len, len);
   if (!ret)
-  {
-    ret = vstr_nx_del(base, pos, rep_len);
-    assert(ret); /* this must work as a split can't happen */
-    return (FALSE);
-  }
+    return (vstr__sub_simple_fail(base, pos, rep_len));
 
   return (ret);  
 }

@@ -1,4 +1,4 @@
-.TH vstr_const 3 "20-Jan-2003" "Vstr 1.0.0" "Vstr String Library"
+.TH vstr_const 3 "12-Feb-2003" "Vstr 1.0.1" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -14,6 +14,9 @@
 .br
 .ti \w'  'u
 \fBVSTR_COMPILE_INLINE\fR
+.br
+.ti \w'  'u
+\fBVSTR_COMPILE_MACRO_FUNCTIONS\fR
 .br
 .ti \w'  'u
 \fBVSTR_COMPILE_TYPEDEF\fR
@@ -623,6 +626,18 @@
 .br
 .ti \w'  'u
 \fBVSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR\fR
+.br
+.ti \w'  'u
+\fBVSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF\fR
 .sp
 .br
 .ti \w'  'u
@@ -661,7 +676,21 @@
 \fBExplanation:\fR
 
 .br
-  This switch controls whether inline functions will be used in the public headers for the library. If the value is 1 then if they are supported by the compiler that built the library they will be used, if the value is 0 they won't be used at all.
+  This switch controls whether inline functions will be used in the public headers for the library. If the value is 1 then if they are supported by the compiler that built the library they will be used, if the value is 0 they won't be used.
+
+.br
+\fBConstant: \fR VSTR_COMPILE_MACRO_FUNCTIONS
+
+.br
+\fBExplanation:\fR
+
+.br
+  This switch controls whether macro functions will be used in the public headers for the library. If the value is 1 then they will be used, if the value is 0 they won't be used.
+.sp
+\fBNote:\fR
+
+.br
+  This only includes the macro  functions which also have real function replacements. For example VSTR_ADD_CSTR_BUF() won't be defined because there is a vstr_add_cstr_buf() function, but VSTR_FMT_CB_ARG_PTR() will always be defined.
 
 .br
 \fBConstant: \fR VSTR_COMPILE_TYPEDEF
@@ -1325,7 +1354,9 @@
 \fBNote:\fR
 
 .br
-  The return value with this set is the highest number that can be parsed from the beginning of the Vstr string, while the value without this flag would be the parsed number modulo the highest number of the type. For example given type that had a maximum of 10, then parsing "64" would give you 6 with the flag, and 4 without.
+  The return value with this set is the highest number that can be parsed from the beginning of the Vstr string, while the value without this flag would be the parsed number modulo the highest number of the type.
+.br
+  For example given a type that had a maximum of 10, then parsing "64" would give you 6 with the flag, and 4 without.
 
 .br
 \fBConstant: \fR VSTR_FLAG_PARSE_NUM_SPACE
@@ -2578,12 +2609,12 @@ Type\fB[1]\fR: unsigned int
 \fBExplanation:\fR
 
 .br
-  This option is will set the number of specified nodes of the specified type, by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
+  This option is will set the number of spare nodes of the specified type, by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
 .sp
 \fBNote:\fR
 
 .br
-  When the value specified is higher and vstr calls vstr_make_spare_nodes() then a return value of FALSE means that there was a malloc error, just as if you called vstr_make_nodes directly.
+  When the value specified is higher and it calls vstr_make_spare_nodes() then a return value of FALSE means that there was a malloc error, just as if you called vstr_make_nodes directly.
 
 .br
 \fBConstant: \fR VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS
@@ -2622,6 +2653,36 @@ Type\fB[1]\fR: int
 
 .br
   This is mainly a speedup to the vstr_sub_*() functions and the functions that use them, like vstr_conv_*(). It is true by default, so all function operations are atomic.
+
+.br
+\fBConstant: \fR VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF
+
+\fBConstant: \fR VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON
+
+\fBConstant: \fR VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR
+
+\fBConstant: \fR VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
+
+.br
+Parameter\fB[1]\fR: Minimum number of spare nodes to have for the specified type
+.br
+Type\fB[1]\fR: unsigned int
+
+.br
+Parameter\fB[2]\fR: Maximum number of spare nodes to have for the specified type
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This option will make the number of spare nodes of the specified type fit into the range given, by calling either vstr_make_spare_nodes() or  vstr_free_spare_nodes().
+.sp
+\fBNote:\fR
+
+.br
+  When the value specified is higher and it calls vstr_make_spare_nodes() then a return value of FALSE means that there was a malloc error, just as if you called vstr_make_nodes directly.
 
 .SH Constants you pass to the vstr_cntl_opt() function
 

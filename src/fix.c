@@ -1351,7 +1351,7 @@ size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,
     
     ret += tmp_len;
 
-    if (!nwc)
+    if (!--nwc)
       break;
     
     ++*src;

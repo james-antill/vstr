@@ -1,4 +1,4 @@
-%define ver      1.0.0
+%define ver      1.0.1
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -6,7 +6,10 @@
 %define prefix   /usr
 %define name    vstr
 
+# Do we want to create a debug build...
 %define dbg_opt %{?dbg}%{!?dbg:0}
+# Do we want to run "make check" after the build...
+%define chk_opt %{?chk}%{!?chk:0}
 
 %if %{dbg_opt}
 %define debugopt --enable-debug
@@ -50,15 +53,18 @@ and includes support for i18n parameter position modifiers).
 Summary: String library, safe, quick and easy to use. Specilizes in IO.
 Group: Development/Libraries
 Requires: pkgconfig >= 0.8
-Requires: %{name} = %{version}
+Requires: %{name} = %{ver}
 
 %description devel
  Static libraries and header files for the Vstr string library
  Also includes a %{name}.pc file for pkg-config.
 
 %changelog
-* Mon Jan 13 2003 James Antill <james@and.org> 1.0.0-%{real_release_num}
-- Moved the includedir to /usr/include/%{name}-*
+* Fri Jan 31 2003 James Antill <james@and.org>
+- Added chk option for doing a "make check"
+
+* Mon Jan 13 2003 James Antill <james@and.org>
+- Moved the includedir to /usr/include/%%{name}-*
 
 * Sat Nov 16 2002 James Antill <james@and.org>
 - Added wrap memcpy/memset to the default configure options.
@@ -106,6 +112,10 @@ fi
   %{fmtfloatopt} %{debugopt}
 
 make
+
+%if %{chk_opt}
+make check
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT

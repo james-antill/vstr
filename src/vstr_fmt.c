@@ -1,6 +1,6 @@
 #define VSTR_ADD_FMT_C
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  *  email: james@and.org
-*/
+ */
 /* Registration/deregistration of custom format specifiers */
 #include "main.h"
 
@@ -34,7 +34,7 @@ vstr__fmt_usr_srch(Vstr_conf *conf, const char *name)
     assert(!(*scan)->next || ((*scan)->name_len <= (*scan)->next->name_len));
     
     if (((*scan)->name_len == len) &&
-        !vstr_nx_wrap_memcmp((*scan)->name_str, name, len))
+        !vstr_wrap_memcmp((*scan)->name_str, name, len))
       return (scan);
     
     scan = &(*scan)->next;
@@ -64,7 +64,7 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
       assert(!scan->next || (scan->name_len <= scan->next->name_len));
       
       if ((scan->name_len == len) &&
-          !vstr_nx_wrap_memcmp(scan->name_str, fmt, len))
+          !vstr_wrap_memcmp(scan->name_str, fmt, len))
         return (scan);
 
       if (scan->name_len > len)
@@ -94,7 +94,7 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   {
     assert(!scan->next || (scan->name_len <= scan->next->name_len));
     
-    if (!vstr_nx_wrap_memcmp(fmt, scan->name_str, scan->name_len))
+    if (!vstr_wrap_memcmp(fmt, scan->name_str, scan->name_len))
       return (scan);
     
     scan = scan->next;
@@ -103,8 +103,8 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   return (NULL);
 }
 
-int vstr_nx_fmt_add(Vstr_conf *passed_conf, const char *name,
-                    int (*func)(Vstr_base *, size_t, Vstr_fmt_spec *), ...)
+int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
+                 int (*func)(Vstr_base *, size_t, Vstr_fmt_spec *), ...)
 {
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   Vstr__fmt_usr_name_node **scan = &conf->fmt_usr_names;
@@ -194,7 +194,7 @@ int vstr_nx_fmt_add(Vstr_conf *passed_conf, const char *name,
   return (TRUE);
 }
 
-void vstr_nx_fmt_del(Vstr_conf *passed_conf, const char *name)
+void vstr_fmt_del(Vstr_conf *passed_conf, const char *name)
 {
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   Vstr__fmt_usr_name_node **scan = vstr__fmt_usr_srch(conf, name);
@@ -214,7 +214,7 @@ void vstr_nx_fmt_del(Vstr_conf *passed_conf, const char *name)
   }
 }
 
-int vstr_nx_fmt_srch(Vstr_conf *passed_conf, const char *name)
+int vstr_fmt_srch(Vstr_conf *passed_conf, const char *name)
 {
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   return (!!vstr__fmt_usr_srch(conf, name));

@@ -1,6 +1,6 @@
 #define VSTR_PARSE_NETSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
 
   if (!netstr2)
     flags |= VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO;
-  ret_len = vstr_nx_parse_ulong(base, pos, len, 10 | flags, &num_len, NULL);
+  ret_len = vstr_parse_ulong(base, pos, len, 10 | flags, &num_len, NULL);
 
   if (!num_len)
     return (0);
@@ -57,7 +57,7 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   if (num_len == len)
     return (0);
 
-  if (vstr_nx_export_chr(base, pos + num_len) != VSTR__ASCII_COLON())
+  if (vstr_export_chr(base, pos + num_len) != VSTR__ASCII_COLON())
     return (0);
   
   *ret_pos = pos + num_len + 1;
@@ -67,21 +67,20 @@ static size_t vstr__parse_netstr(const Vstr_base *base, size_t pos, size_t len,
   if (ret_len > len)
     return (0);
 
-  if (vstr_nx_export_chr(base, pos - 1 + ret_len) != VSTR__ASCII_COMMA())
+  if (vstr_export_chr(base, pos - 1 + ret_len) != VSTR__ASCII_COMMA())
     return (0);
   
   return (ret_len);
 }
 
-size_t vstr_nx_parse_netstr2(const Vstr_base *base, size_t pos, size_t len,
+size_t vstr_parse_netstr2(const Vstr_base *base, size_t pos, size_t len,
                           size_t *ret_pos, size_t *ret_len)
 {
   return (vstr__parse_netstr(base, pos, len, ret_pos, ret_len, TRUE));
 }
 
-size_t vstr_nx_parse_netstr(const Vstr_base *base, size_t pos, size_t len,
+size_t vstr_parse_netstr(const Vstr_base *base, size_t pos, size_t len,
                          size_t *ret_pos, size_t *ret_len)
 {
   return (vstr__parse_netstr(base, pos, len, ret_pos, ret_len, FALSE));
 }
-

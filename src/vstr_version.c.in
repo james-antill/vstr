@@ -82,10 +82,6 @@ void vstr_version_func(void)
 
     
  "  Compiler supports attributes:\n"
-#ifdef HAVE_ATTRIB_ALIAS
- "    alias\n"
-#endif
-
 #ifdef HAVE_ATTRIB_DEPRECATED
  "    deprecated\n"
 #endif
@@ -102,8 +98,10 @@ void vstr_version_func(void)
  "    pure\n"
 #endif
 
-#ifdef HAVE_ATTRIB_VISIBILITY
- "    visibility\n"
+#if VSTR__USE_INTERNAL_SYMBOLS
+ "  Internal functions can be restricted for speed and API purity.\n"
+#else
+ "  Internal functions are exported.\n"
 #endif
 
 #ifdef HAVE_INLINE

@@ -1,6 +1,6 @@
 #define VSTR_PARSE_C
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,7 @@ static int vstr__parse_num(const Vstr_base *base,
      
   if (flags & VSTR_FLAG_PARSE_NUM_SPACE)
   {
-    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_space, 1);
+    tmp = vstr_spn_chrs_fwd(base, pos, len, &sym_space, 1);
     if (tmp >= len)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_ONLY_S;
@@ -73,7 +73,7 @@ static int vstr__parse_num(const Vstr_base *base,
   
   if (!(flags & VSTR_FLAG_PARSE_NUM_NO_BEG_PM))
   {
-    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_minus, 1);
+    tmp = vstr_spn_chrs_fwd(base, pos, len, &sym_minus, 1);
     if (tmp > 1)
     {
       *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -81,7 +81,7 @@ static int vstr__parse_num(const Vstr_base *base,
     }
     else if (!tmp)
     {
-      tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &sym_plus, 1);
+      tmp = vstr_spn_chrs_fwd(base, pos, len, &sym_plus, 1);
       if (tmp > 1)
       {
         *err = VSTR_TYPE_PARSE_NUM_ERR_OOB;
@@ -101,7 +101,7 @@ static int vstr__parse_num(const Vstr_base *base,
     return (0);
   }
   
-  tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &num_0, 1);
+  tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
   if ((tmp == 1) && (auto_base || (num_base == 16)))
   {
     char xX[2];
@@ -117,7 +117,7 @@ static int vstr__parse_num(const Vstr_base *base,
 
     xX[0] = let_x_low;
     xX[1] = let_X_high;
-    tmp = vstr_nx_spn_chrs_fwd(base, pos, len, xX, 2);
+    tmp = vstr_spn_chrs_fwd(base, pos, len, xX, 2);
 
     if (tmp > 1)
     { /* It's a 0 */
@@ -141,7 +141,7 @@ static int vstr__parse_num(const Vstr_base *base,
         return (0);
       }
       
-      tmp = vstr_nx_spn_chrs_fwd(base, pos, len, &num_0, 1);
+      tmp = vstr_spn_chrs_fwd(base, pos, len, &num_0, 1);
     }
     else if (auto_base)
       num_base = 8;
@@ -228,7 +228,7 @@ static int vstr__parse_num(const Vstr_base *base,
 #define VSTR__PARSE_NUM_LOOP(num_type) do { \
   while (len) \
   { \
-    unsigned char scan = vstr_nx_export_chr(base, pos); \
+    unsigned char scan = vstr_export_chr(base, pos); \
     const char *end = NULL; \
     unsigned int add_num = 0; \
     num_type old_ret = ret; \
@@ -246,9 +246,9 @@ static int vstr__parse_num(const Vstr_base *base,
         add_num = (scan - '0'); \
       else if (num_base <= 10) \
         break; \
-      else if ((end = vstr_nx_wrap_memchr(local_let_low, scan, num_base-10))) \
+      else if ((end = vstr_wrap_memchr(local_let_low, scan, num_base-10))) \
         add_num = 10 + (end - local_let_low); \
-      else if ((end = vstr_nx_wrap_memchr(local_let_high, scan, num_base-10))) \
+      else if ((end = vstr_wrap_memchr(local_let_high, scan, num_base-10))) \
         add_num = 10 + (end - local_let_high); \
       else \
         break; \
@@ -326,46 +326,46 @@ static int vstr__parse_num(const Vstr_base *base,
   VSTR__PARSE_NUM_END_U(); \
 } while (FALSE)
     
-short vstr_nx_parse_short(const Vstr_base *base, size_t pos, size_t len,
-                          unsigned int flags, size_t *ret_len,
-                          unsigned int *err)
+short vstr_parse_short(const Vstr_base *base, size_t pos, size_t len,
+                       unsigned int flags, size_t *ret_len,
+                       unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned short, SHRT_MAX); }
 
-unsigned short vstr_nx_parse_ushort(const Vstr_base *base,
-                                    size_t pos, size_t len,
-                                    unsigned int flags, size_t *ret_len,
-                                    unsigned int *err)
+unsigned short vstr_parse_ushort(const Vstr_base *base,
+                                 size_t pos, size_t len,
+                                 unsigned int flags, size_t *ret_len,
+                                 unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned short); }
 
-int vstr_nx_parse_int(const Vstr_base *base, size_t pos, size_t len,
-                      unsigned int flags, size_t *ret_len, unsigned int *err)
+int vstr_parse_int(const Vstr_base *base, size_t pos, size_t len,
+                   unsigned int flags, size_t *ret_len, unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned int, INT_MAX); }
 
-unsigned int vstr_nx_parse_uint(const Vstr_base *base, size_t pos, size_t len,
-                                unsigned int flags, size_t *ret_len,
-                                unsigned int *err)
+unsigned int vstr_parse_uint(const Vstr_base *base, size_t pos, size_t len,
+                             unsigned int flags, size_t *ret_len,
+                             unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned int); }
 
-long vstr_nx_parse_long(const Vstr_base *base, size_t pos, size_t len,
-                        unsigned int flags, size_t *ret_len,
-                        unsigned int *err)
+long vstr_parse_long(const Vstr_base *base, size_t pos, size_t len,
+                     unsigned int flags, size_t *ret_len,
+                     unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(unsigned long, LONG_MAX); }
 
-unsigned long vstr_nx_parse_ulong(const Vstr_base *base, size_t pos, size_t len,
-                                  unsigned int flags, size_t *ret_len,
-                                  unsigned int *err)
+unsigned long vstr_parse_ulong(const Vstr_base *base, size_t pos, size_t len,
+                               unsigned int flags, size_t *ret_len,
+                               unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(unsigned long); }
 
-intmax_t vstr_nx_parse_intmax(const struct Vstr_base *base,
-                              size_t pos, size_t len,
-                              unsigned int flags, size_t *ret_len,
-                              unsigned int *err)
+intmax_t vstr_parse_intmax(const struct Vstr_base *base,
+                           size_t pos, size_t len,
+                           unsigned int flags, size_t *ret_len,
+                           unsigned int *err)
 { VSTR__PARSE_NUM_SFUNC(uintmax_t, INTMAX_MAX); }
 
-uintmax_t vstr_nx_parse_uintmax(const struct Vstr_base *base,
-                                size_t pos, size_t len,
-                                unsigned int flags, size_t *ret_len,
-                                unsigned int *err)
+uintmax_t vstr_parse_uintmax(const struct Vstr_base *base,
+                             size_t pos, size_t len,
+                             unsigned int flags, size_t *ret_len,
+                             unsigned int *err)
 { VSTR__PARSE_NUM_UFUNC(uintmax_t); }
 
 static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
@@ -387,8 +387,8 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
     if (num_len > len)
       num_len = len;
     
-    tmp = vstr_nx_parse_uint(base, pos, num_len, 10 | num_flags,
-                             &num_len, NULL);
+    tmp = vstr_parse_uint(base, pos, num_len, 10 | num_flags,
+                          &num_len, NULL);
     if (!num_len)
     {
       *cidr = scan * 8;
@@ -439,7 +439,7 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
     if (scan == 4)
       break;
 
-    if (len && (vstr_nx_export_chr(base, pos) != sym_dot))
+    if (len && (vstr_export_chr(base, pos) != sym_dot))
       break;
     
     if (len)
@@ -470,13 +470,13 @@ static int vstr__parse_ipv4_cidr(const struct Vstr_base *base,
   size_t num_len = 0;
 
   if (len)
-    *cidr = vstr_nx_parse_uint(base, pos, len, 10 | num_flags,
-                               &num_len, NULL);
+    *cidr = vstr_parse_uint(base, pos, len, 10 | num_flags,
+                            &num_len, NULL);
   if (num_len)
   {
     if ((flags & VSTR_FLAG_PARSE_IPV4_NETMASK) &&
         (*cidr > 32) && (len > num_len) &&
-        (vstr_nx_export_chr(base, pos + num_len) == sym_dot))
+        (vstr_export_chr(base, pos + num_len) == sym_dot))
     {
       if (!vstr__parse_ipv4_netmask(base, pos, &len, flags, num_flags,
                                     sym_dot, cidr, err))
@@ -506,10 +506,10 @@ static int vstr__parse_ipv4_cidr(const struct Vstr_base *base,
   return (TRUE);
 }
 
-int vstr_nx_parse_ipv4(const struct Vstr_base *base,
-                       size_t pos, size_t len,
-                       unsigned char *ips, unsigned int *cidr,
-                       unsigned int flags, size_t *ret_len, unsigned int *err)
+int vstr_parse_ipv4(const struct Vstr_base *base,
+                    size_t pos, size_t len,
+                    unsigned char *ips, unsigned int *cidr,
+                    unsigned int flags, size_t *ret_len, unsigned int *err)
 {
   size_t orig_len = len;
   unsigned char sym_slash = 0x2F;
@@ -544,8 +544,8 @@ int vstr_nx_parse_ipv4(const struct Vstr_base *base,
     if (num_len > len)
       num_len = len;
     
-    tmp = vstr_nx_parse_uint(base, pos, num_len, 10 | num_flags,
-                             &num_len, NULL);
+    tmp = vstr_parse_uint(base, pos, num_len, 10 | num_flags,
+                          &num_len, NULL);
     if (!num_len)
       break;
 
@@ -563,10 +563,10 @@ int vstr_nx_parse_ipv4(const struct Vstr_base *base,
     if (scan == 4)
       break;
     
-    if (len && (vstr_nx_export_chr(base, pos) == sym_slash))
+    if (len && (vstr_export_chr(base, pos) == sym_slash))
       break;
     
-    if (len && (vstr_nx_export_chr(base, pos) != sym_dot))
+    if (len && (vstr_export_chr(base, pos) != sym_dot))
       break;
     
     if (len)
@@ -575,7 +575,7 @@ int vstr_nx_parse_ipv4(const struct Vstr_base *base,
       --len;
     }
 
-    if (len && (vstr_nx_export_chr(base, pos) == sym_slash))
+    if (len && (vstr_export_chr(base, pos) == sym_slash))
       break;
   }
 
@@ -597,7 +597,7 @@ int vstr_nx_parse_ipv4(const struct Vstr_base *base,
   if (!len)
     goto ret_len;
 
-  if (vstr_nx_export_chr(base, pos) == sym_slash)
+  if (vstr_export_chr(base, pos) == sym_slash)
   {
     if (flags & VSTR_FLAG_PARSE_IPV4_CIDR)
     {
@@ -639,8 +639,8 @@ static int vstr__parse_ipv6_cidr(const struct Vstr_base *base,
   size_t num_len = 0;
 
   if (len)
-    *cidr = vstr_nx_parse_uint(base, pos, len, 10 | num_flags,
-                               &num_len, NULL);
+    *cidr = vstr_parse_uint(base, pos, len, 10 | num_flags,
+                            &num_len, NULL);
   if (num_len)
   {
     if (*cidr <= 128)
@@ -675,10 +675,10 @@ static int vstr__parse_ipv6_cidr(const struct Vstr_base *base,
  *   3. Note this means that "::" is a valid ipv6 address (all zeros)
  *   4. The last two words may be written as an IPv4 address ::1234:127.0.0.1
  */
-int vstr_nx_parse_ipv6(const struct Vstr_base *base,
-                       size_t pos, size_t len,
-                       unsigned int *ips, unsigned int *cidr,
-                       unsigned int flags, size_t *ret_len, unsigned int *err)
+int vstr_parse_ipv6(const struct Vstr_base *base,
+                    size_t pos, size_t len,
+                    unsigned int *ips, unsigned int *cidr,
+                    unsigned int flags, size_t *ret_len, unsigned int *err)
 {
   size_t orig_len = len;
   unsigned char sym_slash = 0x2F;
@@ -693,7 +693,7 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
   VSTR_SECTS_DECL_INIT(sects);
 
   assert(ips);
-  vstr_nx_wrap_memset(ips, 0, sizeof(int) * 8);
+  vstr_wrap_memset(ips, 0, sizeof(int) * 8);
   
   if (ret_len) *ret_len = 0;
   if (!err)
@@ -719,9 +719,9 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
     char buf[2]; buf[0] = sym_colon; buf[1] = sym_colon;
     
     if (VSTR_CMP_BUF_EQ(base, pos, 2, buf, 2))
-      vstr_nx_sects_add(sects, pos, 0);
+      vstr_sects_add(sects, pos, 0);
     
-    vstr_nx_split_buf(base, pos, len, buf, 1, sects, sects->sz, split_flags);
+    vstr_split_buf(base, pos, len, buf, 1, sects, sects->sz, split_flags);
   }
 
   while (scan < sects->num)
@@ -742,10 +742,10 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
       continue;
     }
     
-    tmp = vstr_nx_parse_uint(base,
-                             VSTR_SECTS_NUM(sects, scan)->pos,
-                             VSTR_SECTS_NUM(sects, scan)->len, 16 | num_flags,
-                             &num_len, NULL);
+    tmp = vstr_parse_uint(base,
+                          VSTR_SECTS_NUM(sects, scan)->pos,
+                          VSTR_SECTS_NUM(sects, scan)->len, 16 | num_flags,
+                          &num_len, NULL);
     if (!num_len && off_null && (off_null == (scan - 1)) &&
         (scan == sects->num))
       break;
@@ -776,10 +776,10 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
       
       ASSERT(off_null != scan);
       
-      if (vstr_nx_parse_ipv4(base,
-                             VSTR_SECTS_NUM(sects, scan)->pos,
-                             VSTR_SECTS_NUM(sects, scan)->len,
-                             ipv4_ips, NULL, ipv4_flags, &tmp_num_len, NULL))
+      if (vstr_parse_ipv4(base,
+                          VSTR_SECTS_NUM(sects, scan)->pos,
+                          VSTR_SECTS_NUM(sects, scan)->len,
+                          ipv4_ips, NULL, ipv4_flags, &tmp_num_len, NULL))
       {
         num_len = tmp_num_len;
         ips[scan - 1] = ipv4_ips[1] + (((unsigned int)ipv4_ips[0]) << 8);
@@ -798,8 +798,8 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
       unsigned int off_end = (8 - scan);
       unsigned int num = (scan - off_null);
       
-      vstr_nx_wrap_memmove(beg + off_end, beg, num * sizeof(unsigned int));
-      vstr_nx_wrap_memset(beg, 0, off_end * sizeof(unsigned int));
+      vstr_wrap_memmove(beg + off_end, beg, num * sizeof(unsigned int));
+      vstr_wrap_memset(beg, 0, off_end * sizeof(unsigned int));
     }
   }
   
@@ -811,7 +811,7 @@ int vstr_nx_parse_ipv6(const struct Vstr_base *base,
   if (!len)
     goto ret_len;
   
-  if (vstr_nx_export_chr(base, pos) == sym_slash)
+  if (vstr_export_chr(base, pos) == sym_slash)
   {
     if (flags & VSTR_FLAG_PARSE_IPV6_CIDR)
     {

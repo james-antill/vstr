@@ -1,6 +1,6 @@
 #define VSTR_CMP_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,14 +22,14 @@
 #include "main.h"
 
 /* compare 2 vector strings */
-int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-                const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+             const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
   
-  vstr_nx_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_nx_iter_fwd_beg(base_2, pos_2, len_2, iter2);
+  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
+  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
   
   if (!iter1->node && !iter2->node)
     return (0);
@@ -49,7 +49,7 @@ int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
     if ((iter1->node->type != VSTR_TYPE_NODE_NON) &&
         (iter2->node->type != VSTR_TYPE_NODE_NON))
     {
-      int ret = vstr_nx_wrap_memcmp(iter1->ptr, iter2->ptr, tmp);
+      int ret = vstr_wrap_memcmp(iter1->ptr, iter2->ptr, tmp);
       if (ret)
         return (ret);
       iter1->ptr += tmp;
@@ -65,25 +65,25 @@ int vstr_nx_cmp(const Vstr_base *base_1, size_t pos_1, size_t len_1,
     
     assert(!iter1->len || !iter2->len);
     
-  } while ((iter1->len || vstr_nx_iter_fwd_nxt(iter1)) &&
-           (iter2->len || vstr_nx_iter_fwd_nxt(iter2)) &&
+  } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
+           (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
   
   if (iter1->node)
     return (1);
-  if (iter2->len || vstr_nx_iter_fwd_nxt(iter2))
+  if (iter2->len || vstr_iter_fwd_nxt(iter2))
     return (-1);
   
   return (0);
 }
 
 /* compare with a "normal" C string */
-int vstr_nx_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
-                    const void *buf, size_t buf_len)
+int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
+                 const void *buf, size_t buf_len)
 { 
   Vstr_iter iter[1];
   
-  vstr_nx_iter_fwd_beg(base, pos, len, iter);
+  vstr_iter_fwd_beg(base, pos, len, iter);
   
   if (!iter->node && !buf_len)
     return (0);
@@ -110,13 +110,13 @@ int vstr_nx_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
     
     if (buf)
     {
-      if ((ret = vstr_nx_wrap_memcmp(iter->ptr, buf, iter->len)))
+      if ((ret = vstr_wrap_memcmp(iter->ptr, buf, iter->len)))
         return (ret);
       buf = ((char *)buf) + iter->len;
     }
     
     buf_len -= iter->len;
-  } while (buf_len && vstr_nx_iter_fwd_nxt(iter));
+  } while (buf_len && vstr_iter_fwd_nxt(iter));
 
   if (iter->remaining)
     return (1);
@@ -148,18 +148,18 @@ static int vstr__cmp_memcasecmp(const char *str1, const char *str2, size_t len)
     --len;
   }
   
- return (0);
+  return (0);
 }
 
 /* don't include ASCII case when comparing */
-int vstr_nx_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-                     const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+                  const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
   
-  vstr_nx_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_nx_iter_fwd_beg(base_2, pos_2, len_2, iter2);
+  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
+  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
   
   if (!iter1->node && !iter2->node)
     return (0);
@@ -195,24 +195,24 @@ int vstr_nx_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
     
     assert(!iter1->len || !iter2->len);
     
-  } while ((iter1->len || vstr_nx_iter_fwd_nxt(iter1)) &&
-           (iter2->len || vstr_nx_iter_fwd_nxt(iter2)) &&
+  } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
+           (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
   
   if (iter1->node)
     return (1);
-  if (iter2->len || vstr_nx_iter_fwd_nxt(iter2))
+  if (iter2->len || vstr_iter_fwd_nxt(iter2))
     return (-1);
   
   return (0);
 }
 
-int vstr_nx_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
-                         const char *buf, size_t buf_len)
+int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
+                      const char *buf, size_t buf_len)
 {
   Vstr_iter iter[1];
   
-  vstr_nx_iter_fwd_beg(base, pos, len, iter);
+  vstr_iter_fwd_beg(base, pos, len, iter);
   
   if (!iter->node && !buf_len)
     return (0);
@@ -245,7 +245,7 @@ int vstr_nx_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
     }
     
     buf_len -= iter->len;
-  } while (buf_len && vstr_nx_iter_fwd_nxt(iter));
+  } while (buf_len && vstr_iter_fwd_nxt(iter));
 
   if (iter->remaining)
     return (1);
@@ -271,134 +271,134 @@ static int vstr__cmp_vers(const char *scan_str_1,
                           const char *scan_str_2, size_t len,
                           int state, int *difference)
 {
- int diff = 0;
+  int diff = 0;
 
- while ((state < VSTR__CMP_NON_MAIN_LOOP) &&
-        len && !(diff = *scan_str_1 - *scan_str_2))
- {
-  switch (state)
+  while ((state < VSTR__CMP_NON_MAIN_LOOP) &&
+         len && !(diff = *scan_str_1 - *scan_str_2))
   {
-   case VSTR__CMP_NORM:
-     if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
-       state = VSTR__CMP_NUMB;
-     if (*scan_str_1 == VSTR__ASCII_DIGIT_0())
-     {
-      assert(state == VSTR__CMP_NUMB);
-      ++state;
-      assert(state == VSTR__CMP_FRAC);
-     }
-     break;
-   case VSTR__CMP_FRAC:
-     if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
-         (*scan_str_1 != VSTR__ASCII_DIGIT_0()))
-       state = VSTR__CMP_NUMB;
-   case VSTR__CMP_NUMB:
-     if (!VSTR__IS_ASCII_DIGIT(*scan_str_1))
-       state = VSTR__CMP_NORM;
-     break;
+    switch (state)
+    {
+      case VSTR__CMP_NORM:
+        if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
+          state = VSTR__CMP_NUMB;
+        if (*scan_str_1 == VSTR__ASCII_DIGIT_0())
+        {
+          assert(state == VSTR__CMP_NUMB);
+          ++state;
+          assert(state == VSTR__CMP_FRAC);
+        }
+        break;
+      case VSTR__CMP_FRAC:
+        if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+            (*scan_str_1 != VSTR__ASCII_DIGIT_0()))
+          state = VSTR__CMP_NUMB;
+      case VSTR__CMP_NUMB:
+        if (!VSTR__IS_ASCII_DIGIT(*scan_str_1))
+          state = VSTR__CMP_NORM;
+        break;
      
-   default:
-     state = VSTR__CMP_NORM;
-     assert(FALSE);
-     break;
-   }
+      default:
+        state = VSTR__CMP_NORM;
+        assert(FALSE);
+        break;
+    }
   
-  ++scan_str_1;
-  ++scan_str_2;
+    ++scan_str_1;
+    ++scan_str_2;
   
-  --len;
- }
+    --len;
+  }
 
- if (diff)
- {
-  int new_state = VSTR__CMP_BAD;
-  
-  assert(len);
-
-  *difference = diff;
-
-  switch (state)
+  if (diff)
   {
-   case VSTR__CMP_NORM:
-     if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
-         (*scan_str_1 != VSTR__ASCII_DIGIT_0()) &&
-         VSTR__IS_ASCII_DIGIT(*scan_str_2) &&
-         (*scan_str_2 != VSTR__ASCII_DIGIT_0()))
-       state = VSTR__CMP_NUMB;
-     break;
-   case VSTR__CMP_FRAC:
-   case VSTR__CMP_NUMB:
-     if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) && !VSTR__IS_ASCII_DIGIT(*scan_str_2))
-       state = VSTR__CMP_NORM;
-     break;
+    int new_state = VSTR__CMP_BAD;
+  
+    assert(len);
+
+    *difference = diff;
+
+    switch (state)
+    {
+      case VSTR__CMP_NORM:
+        if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+            (*scan_str_1 != VSTR__ASCII_DIGIT_0()) &&
+            VSTR__IS_ASCII_DIGIT(*scan_str_2) &&
+            (*scan_str_2 != VSTR__ASCII_DIGIT_0()))
+          state = VSTR__CMP_NUMB;
+        break;
+      case VSTR__CMP_FRAC:
+      case VSTR__CMP_NUMB:
+        if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) && !VSTR__IS_ASCII_DIGIT(*scan_str_2))
+          state = VSTR__CMP_NORM;
+        break;
      
-   default:
-     state = VSTR__CMP_NORM;
-     assert(FALSE);
-     break;
+      default:
+        state = VSTR__CMP_NORM;
+        assert(FALSE);
+        break;
+    }
+  
+    if (state == VSTR__CMP_NORM)
+      return (VSTR__CMP_DONE);
+  
+    assert((state == VSTR__CMP_NUMB) ||
+           (state == VSTR__CMP_FRAC));
+  
+    /* if a string is longer return positive or negative ignoring difference */
+    new_state = state << 2;
+  
+    assert(((state == VSTR__CMP_NUMB) && (new_state == VSTR__CMP_LEN_POS)) ||
+           ((state == VSTR__CMP_FRAC) && (new_state == VSTR__CMP_LEN_NEG)) ||
+           FALSE);
+  
+    state = new_state;
   }
-  
-  if (state == VSTR__CMP_NORM)
-    return (VSTR__CMP_DONE);
-  
-  assert((state == VSTR__CMP_NUMB) ||
-         (state == VSTR__CMP_FRAC));
-  
-  /* if a string is longer return positive or negative ignoring difference */
-  new_state = state << 2;
-  
-  assert(((state == VSTR__CMP_NUMB) && (new_state == VSTR__CMP_LEN_POS)) ||
-         ((state == VSTR__CMP_FRAC) && (new_state == VSTR__CMP_LEN_NEG)) ||
-         FALSE);
-  
-  state = new_state;
- }
 
- if (state >= VSTR__CMP_NON_MAIN_LOOP)
- {
-  assert((state == VSTR__CMP_LEN_POS) ||
-         (state == VSTR__CMP_LEN_NEG));
+  if (state >= VSTR__CMP_NON_MAIN_LOOP)
+  {
+    assert((state == VSTR__CMP_LEN_POS) ||
+           (state == VSTR__CMP_LEN_NEG));
 
-  while (len &&
-         VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
-         VSTR__IS_ASCII_DIGIT(*scan_str_2))
-  {
-   ++scan_str_1;
-   ++scan_str_2;
+    while (len &&
+           VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+           VSTR__IS_ASCII_DIGIT(*scan_str_2))
+    {
+      ++scan_str_1;
+      ++scan_str_2;
    
-   --len;
-  }
+      --len;
+    }
   
-  if (len)
-  {
-   assert((VSTR__CMP_LEN_POS + 1) < VSTR__CMP_LEN_NEG);
+    if (len)
+    {
+      assert((VSTR__CMP_LEN_POS + 1) < VSTR__CMP_LEN_NEG);
    
-   if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
-     *difference = ((-state) + VSTR__CMP_LEN_POS + 1);
-   if (VSTR__IS_ASCII_DIGIT(*scan_str_2))
-     *difference = (state - VSTR__CMP_LEN_POS - 1);
-   /* if both are the same length then use the initial stored difference */
+      if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
+        *difference = ((-state) + VSTR__CMP_LEN_POS + 1);
+      if (VSTR__IS_ASCII_DIGIT(*scan_str_2))
+        *difference = (state - VSTR__CMP_LEN_POS - 1);
+      /* if both are the same length then use the initial stored difference */
    
-   return (VSTR__CMP_DONE);
+      return (VSTR__CMP_DONE);
+    }
   }
- }
  
- return (state);
+  return (state);
 }
 
 /* Compare strings while treating digits characters numerically. *
  * However digits starting with a 0 are clasified as fractional (Ie. 0.x)
  */
-int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
-                     const Vstr_base *base_2, size_t pos_2, size_t len_2)
+int vstr_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
+                  const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
   Vstr_iter iter1[1];
   Vstr_iter iter2[1];
   int state = VSTR__CMP_NORM;
   int ret = 0;
   
-  vstr_nx_iter_fwd_beg(base_1, pos_1, len_1, iter1);
-  vstr_nx_iter_fwd_beg(base_2, pos_2, len_2, iter2);
+  vstr_iter_fwd_beg(base_1, pos_1, len_1, iter1);
+  vstr_iter_fwd_beg(base_2, pos_2, len_2, iter2);
   
   if (!iter1->node && !iter2->node)
     return (0);
@@ -424,51 +424,51 @@ int vstr_nx_cmp_vers(const Vstr_base *base_1, size_t pos_1, size_t len_1,
       iter1->ptr += tmp;
       iter2->ptr += tmp;
     }
-   else if (iter1->node->type != VSTR_TYPE_NODE_NON)
-     goto scan_1_longer;
-   else if (iter2->node->type != VSTR_TYPE_NODE_NON)
-     goto scan_2_longer;
+    else if (iter1->node->type != VSTR_TYPE_NODE_NON)
+      goto scan_1_longer;
+    else if (iter2->node->type != VSTR_TYPE_NODE_NON)
+      goto scan_2_longer;
    
     iter1->len -= tmp;
     iter2->len -= tmp;
     
     assert(!iter1->len || !iter2->len);
-  } while ((iter1->len || vstr_nx_iter_fwd_nxt(iter1)) &&
-           (iter2->len || vstr_nx_iter_fwd_nxt(iter2)) &&
+  } while ((iter1->len || vstr_iter_fwd_nxt(iter1)) &&
+           (iter2->len || vstr_iter_fwd_nxt(iter2)) &&
            TRUE);
  
   if (iter1->node)
-   goto scan_1_longer;
-  if (iter2->len || vstr_nx_iter_fwd_nxt(iter2))
-   goto scan_2_longer;
+    goto scan_1_longer;
+  if (iter2->len || vstr_iter_fwd_nxt(iter2))
+    goto scan_2_longer;
  
- return (ret); /* same length, might have been different at a previous point */
+  return (ret); /* same length, might have been different at a previous point */
 
  scan_1_longer:  
- if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
-   return (-1);
+  if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
+    return (-1);
  
- assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
-        (state == VSTR__CMP_LEN_POS));
- return (1);
+  assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
+         (state == VSTR__CMP_LEN_POS));
+  return (1);
  
  scan_2_longer:  
- if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
-   return (1);
+  if ((state == VSTR__CMP_FRAC) || (state == VSTR__CMP_LEN_NEG))
+    return (1);
  
- assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
-        (state == VSTR__CMP_LEN_POS));
- return (-1);
+  assert((state == VSTR__CMP_NORM) || (state == VSTR__CMP_NUMB) ||
+         (state == VSTR__CMP_LEN_POS));
+  return (-1);
 }
 
-int vstr_nx_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
-                         const char *buf, size_t buf_len)
+int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
+                      const char *buf, size_t buf_len)
 {
   Vstr_iter iter[1];
   int state = VSTR__CMP_NORM;
   int ret = 0;
   
-  vstr_nx_iter_fwd_beg(base, pos, len, iter);
+  vstr_iter_fwd_beg(base, pos, len, iter);
   
   if (!iter->node && !buf_len)
     return (0);
@@ -500,7 +500,7 @@ int vstr_nx_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
     }
     
     buf_len -= iter->len;
-  } while (buf_len && vstr_nx_iter_fwd_nxt(iter));
+  } while (buf_len && vstr_iter_fwd_nxt(iter));
 
   if (iter->remaining)
     goto scan_1_longer;

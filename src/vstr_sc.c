@@ -1,6 +1,6 @@
 #define VSTR_SC_C
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,9 +22,9 @@
 
 #include "main.h"
 
-int vstr_nx_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
-                          Vstr_fmt_spec *spec, size_t *obj_len,
-                          unsigned int flags)
+int vstr_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
+                       Vstr_fmt_spec *spec, size_t *obj_len,
+                       unsigned int flags)
 {
   size_t space_len = 0;
 
@@ -53,7 +53,7 @@ int vstr_nx_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
       (!(flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM) || !spec->fmt_zero) &&
       space_len)
   {
-    if (!vstr_nx_add_rep_chr(base, *pos, ' ', space_len))
+    if (!vstr_add_rep_chr(base, *pos, ' ', space_len))
       return (FALSE);
     *pos += space_len;
     space_len = 0;
@@ -63,26 +63,26 @@ int vstr_nx_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   {
     if (flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG)
     {
-      if (!vstr_nx_add_rep_chr(base, *pos, '-', 1))
+      if (!vstr_add_rep_chr(base, *pos, '-', 1))
         return (FALSE);
       ++*pos;
     }
     else if ((flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM) && spec->fmt_plus)
     {
-      if (!vstr_nx_add_rep_chr(base, *pos, '+', 1))
+      if (!vstr_add_rep_chr(base, *pos, '+', 1))
         return (FALSE);
       ++*pos;
     }
     else if ((flags & VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM) && spec->fmt_space)
     {
-      if (!vstr_nx_add_rep_chr(base, *pos, ' ', 1))
+      if (!vstr_add_rep_chr(base, *pos, ' ', 1))
         return (FALSE);
       ++*pos;
     }
     
     if (spec->fmt_zero && space_len)
     {
-      if (!vstr_nx_add_rep_chr(base, *pos, '0', space_len))
+      if (!vstr_add_rep_chr(base, *pos, '0', space_len))
         return (FALSE);
       *pos += space_len;
       space_len = 0;
@@ -94,8 +94,8 @@ int vstr_nx_sc_fmt_cb_beg(Vstr_base *base, size_t *pos,
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_cb_end(Vstr_base *base, size_t pos,
-                          Vstr_fmt_spec *spec, size_t obj_len)
+int vstr_sc_fmt_cb_end(Vstr_base *base, size_t pos,
+                       Vstr_fmt_spec *spec, size_t obj_len)
 {
   size_t space_len = 0;
   
@@ -103,7 +103,7 @@ int vstr_nx_sc_fmt_cb_end(Vstr_base *base, size_t pos,
     space_len = spec->obj_field_width;
   
   if (spec->fmt_minus)
-    if (!vstr_nx_add_rep_chr(base, pos + obj_len, ' ', space_len))
+    if (!vstr_add_rep_chr(base, pos + obj_len, ' ', space_len))
       return (FALSE);
 
   return (TRUE);
@@ -117,27 +117,27 @@ static int vstr__sc_fmt_add_cb_vstr(Vstr_base *base, size_t pos,
   size_t sf_len          = VSTR_FMT_CB_ARG_VAL(spec, size_t, 2);
   unsigned int sf_flags  = VSTR_FMT_CB_ARG_VAL(spec, unsigned int, 3);
 
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
-  if (!vstr_nx_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
+  if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_vstr(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_vstr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_vstr,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_vstr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
@@ -153,25 +153,25 @@ static int vstr__sc_fmt_add_cb_buf(Vstr_base *base, size_t pos,
       sf_len = strlen("(null)");
   }
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
-  if (!vstr_nx_add_buf(base, pos, buf, sf_len))
+  if (!vstr_add_buf(base, pos, buf, sf_len))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_buf(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_buf(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_buf,
-                          VSTR_TYPE_FMT_PTR_CHAR,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_buf,
+                       VSTR_TYPE_FMT_PTR_CHAR,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
@@ -187,25 +187,25 @@ static int vstr__sc_fmt_add_cb_ptr(Vstr_base *base, size_t pos,
       sf_len = strlen("(null)");
   }
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_DEF))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_DEF))
     return (FALSE);
   
-  if (!vstr_nx_add_ptr(base, pos, ptr, sf_len))
+  if (!vstr_add_ptr(base, pos, ptr, sf_len))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ptr(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ptr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ptr,
-                          VSTR_TYPE_FMT_PTR_CHAR,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ptr,
+                       VSTR_TYPE_FMT_PTR_CHAR,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_non(Vstr_base *base, size_t pos,
@@ -213,24 +213,24 @@ static int vstr__sc_fmt_add_cb_non(Vstr_base *base, size_t pos,
 {
   size_t sf_len   = VSTR_FMT_CB_ARG_VAL(spec, size_t, 0);
 
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
-  if (!vstr_nx_add_non(base, pos, sf_len))
+  if (!vstr_add_non(base, pos, sf_len))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_non(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_non(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_non,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_non,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_ref(Vstr_base *base, size_t pos,
@@ -242,26 +242,26 @@ static int vstr__sc_fmt_add_cb_ref(Vstr_base *base, size_t pos,
 
   assert(ref);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
     return (FALSE);
   
-  if (!vstr_nx_add_ref(base, pos, ref, sf_off, sf_len))
+  if (!vstr_add_ref(base, pos, ref, sf_off, sf_len))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ref(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ref(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ref,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_SIZE_T,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ref,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
@@ -328,8 +328,8 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
    * NNN        end_bkmg */
   sf_len = val_len + !!prec + prec + strlen(end_bkmg);
 
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM))
     return (FALSE);
 
   if (TRUE)
@@ -340,8 +340,8 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
     if (prec)
       buf_dot[0] = '.';
     
-    if (!vstr_nx_add_sysfmt(base, pos, "%u%n%s%s", bkmg, &num_iadded,
-                            buf_dot, end_bkmg))
+    if (!vstr_add_sysfmt(base, pos, "%u%n%s%s", bkmg, &num_iadded,
+                         buf_dot, end_bkmg))
       return (FALSE);
     num_added = num_iadded;
   }
@@ -350,18 +350,18 @@ static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
   assert(num_added >= val_len);
   assert(num_added > mov_dot_back);
   
-  if (prec && !vstr_nx_mov(base, pos + val_len,
-                           base, pos + num_added + 1, 1))
+  if (prec && !vstr_mov(base, pos + val_len,
+                        base, pos + num_added + 1, 1))
     return (FALSE);
   
   if (TRUE)
   {
     size_t num_keep = val_len + prec;
     if (num_added > num_keep)
-      vstr_nx_del(base, pos + 1 + num_keep + !!prec, (num_added - num_keep));
+      vstr_del(base, pos + 1 + num_keep + !!prec, (num_added - num_keep));
   }
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, sf_len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
     return (FALSE);
   
   return (TRUE);
@@ -374,11 +374,11 @@ static int vstr__sc_fmt_add_cb_bkmg_Byte_uint(Vstr_base *base, size_t pos,
                                          "B", "KB", "MB", "GB"));
 }
 
-int vstr_nx_sc_fmt_add_bkmg_Byte_uint(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_bkmg_Byte_uint(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Byte_uint,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Byte_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_bkmg_Bytes_uint(Vstr_base *base, size_t pos,
@@ -388,39 +388,39 @@ static int vstr__sc_fmt_add_cb_bkmg_Bytes_uint(Vstr_base *base, size_t pos,
                                          "B/s", "KB/s", "MB/s", "GB/s"));
 }
 
-int vstr_nx_sc_fmt_add_bkmg_Bytes_uint(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_bkmg_Bytes_uint(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Bytes_uint,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_Bytes_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_bkmg_bit_uint(Vstr_base *base, size_t pos,
                                              Vstr_fmt_spec *spec)
 {
   return (vstr__sc_fmt_add_cb_bkmg__uint(base, pos, spec,
-                                             "b", "Kb", "Mb", "Gb"));
+                                         "b", "Kb", "Mb", "Gb"));
 }
 
-int vstr_nx_sc_fmt_add_bkmg_bit_uint(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_bkmg_bit_uint(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bit_uint,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bit_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_bkmg_bits_uint(Vstr_base *base, size_t pos,
                                               Vstr_fmt_spec *spec)
 {
   return (vstr__sc_fmt_add_cb_bkmg__uint(base, pos, spec,
-                                             "b/s", "Kb/s", "Mb/s", "Gb/s"));
+                                         "b/s", "Kb/s", "Mb/s", "Gb/s"));
 }
 
-int vstr_nx_sc_fmt_add_bkmg_bits_uint(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_bkmg_bits_uint(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bits_uint,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_bkmg_bits_uint,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static unsigned int vstr__sc_fmt_num10_len(unsigned int num)
@@ -520,25 +520,25 @@ static int vstr__sc_fmt_add_cb_ipv4_vec(Vstr_base *base, size_t pos,
   len = (vstr__sc_fmt_num10_len(ips[0]) + vstr__sc_fmt_num10_len(ips[1]) +
          vstr__sc_fmt_num10_len(ips[2]) + vstr__sc_fmt_num10_len(ips[3]) + 3);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
-  if (!vstr_nx_add_fmt(base, pos, "%u.%u.%u.%u",
-                       ips[0], ips[1], ips[2], ips[3]))
+  if (!vstr_add_fmt(base, pos, "%u.%u.%u.%u",
+                    ips[0], ips[1], ips[2], ips[3]))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv4_vec(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ipv4_vec(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_END));
 }
 
 static unsigned int vstr__sc_fmt_num_ipv6_std(unsigned int *ips,
@@ -624,7 +624,7 @@ static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
       while ((scan < max_num) && !ips[scan])
         ++scan;
       
-      if (!vstr_nx_add_rep_chr(base, pos, ':', 2))
+      if (!vstr_add_rep_chr(base, pos, ':', 2))
         return (FALSE);
       pos += 2;
       
@@ -632,7 +632,7 @@ static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
       continue;
     }
     
-    if (!vstr_nx_add_fmt(base, pos, "%s%X%n", done ? ":" : "", ips[scan], &len))
+    if (!vstr_add_fmt(base, pos, "%s%X%n", done ? ":" : "", ips[scan], &len))
       return (FALSE);
     pos += len;
     
@@ -642,7 +642,7 @@ static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
 
   if ((max_num != 8) && done) /* NOTE: hack to make sure the string ends
                                * in a ':' character for the ipv4 part */
-    if (!vstr_nx_add_rep_chr(base, pos, ':', 1))
+    if (!vstr_add_rep_chr(base, pos, ':', 1))
       return (FALSE);
     
   return (TRUE);
@@ -658,23 +658,23 @@ static int vstr__sc_fmt_prnt_ipv6(Vstr_base *base, size_t pos,
   if (0) { }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED)
   {
-    if (!vstr_nx_add_fmt(base, pos, "%04X:%04X:%04X:%04X:%04X:%04X:",
-                         ips[0], ips[1], ips[2], ips[3],
-                         ips[4], ips[5]))
+    if (!vstr_add_fmt(base, pos, "%04X:%04X:%04X:%04X:%04X:%04X:",
+                      ips[0], ips[1], ips[2], ips[3],
+                      ips[4], ips[5]))
       return (FALSE);
   }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_STD)
   {
-    if (!vstr_nx_add_fmt(base, pos, "%X:%X:%X:%X:%X:%X:%X:%X",
-                         ips[0], ips[1], ips[2], ips[3],
-                         ips[4], ips[5], ips[6], ips[7]))
+    if (!vstr_add_fmt(base, pos, "%X:%X:%X:%X:%X:%X:%X:%X",
+                      ips[0], ips[1], ips[2], ips[3],
+                      ips[4], ips[5], ips[6], ips[7]))
       return (FALSE);
   }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD)
   {
-    if (!vstr_nx_add_fmt(base, pos, "%X:%X:%X:%X:%X:%X:",
-                         ips[0], ips[1], ips[2], ips[3],
-                         ips[4], ips[5]))
+    if (!vstr_add_fmt(base, pos, "%X:%X:%X:%X:%X:%X:",
+                      ips[0], ips[1], ips[2], ips[3],
+                      ips[4], ips[5]))
       return (FALSE);
   }
   else if (type == VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT)
@@ -689,9 +689,9 @@ static int vstr__sc_fmt_prnt_ipv6(Vstr_base *base, size_t pos,
   }
   else /* if (type == VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED) */
   { /* always last ... so prints with screwed types */
-    if (!vstr_nx_add_fmt(base, pos, "%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X",
-                         ips[0], ips[1], ips[2], ips[3],
-                         ips[4], ips[5], ips[6], ips[7]))
+    if (!vstr_add_fmt(base, pos, "%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X",
+                      ips[0], ips[1], ips[2], ips[3],
+                      ips[4], ips[5], ips[6], ips[7]))
       return (FALSE);
   }
 
@@ -700,9 +700,9 @@ static int vstr__sc_fmt_prnt_ipv6(Vstr_base *base, size_t pos,
   if ((type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_ALIGNED) ||
       (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_STD) ||
       (type == VSTR_TYPE_SC_FMT_CB_IPV6_IPV4_COMPACT))
-    if (!vstr_nx_add_fmt(base, pos, "%u.%u.%u.%u",
-                         (ips[6] >> 8) & 0xFF, (ips[6] >> 0) & 0xFF,
-                         (ips[7] >> 8) & 0xFF, (ips[7] >> 0) & 0xFF))
+    if (!vstr_add_fmt(base, pos, "%u.%u.%u.%u",
+                      (ips[6] >> 8) & 0xFF, (ips[6] >> 0) & 0xFF,
+                      (ips[7] >> 8) & 0xFF, (ips[7] >> 0) & 0xFF))
       return (FALSE);
 
   return (TRUE);
@@ -718,25 +718,25 @@ static int vstr__sc_fmt_add_cb_ipv6_vec(Vstr_base *base, size_t pos,
 
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
   if (!vstr__sc_fmt_prnt_ipv6(base, pos, type, ips, pos_compact))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv6_vec(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ipv6_vec(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_ipv4_vec_cidr(Vstr_base *base, size_t pos,
@@ -753,26 +753,26 @@ static int vstr__sc_fmt_add_cb_ipv4_vec_cidr(Vstr_base *base, size_t pos,
          vstr__sc_fmt_num10_len(ips[2]) + vstr__sc_fmt_num10_len(ips[3]) +
          vstr__sc_fmt_num10_len(cidr) + 4);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
-  if (!vstr_nx_add_fmt(base, pos, "%u.%u.%u.%u/%u",
-                       ips[0], ips[1], ips[2], ips[3], cidr))
+  if (!vstr_add_fmt(base, pos, "%u.%u.%u.%u/%u",
+                    ips[0], ips[1], ips[2], ips[3], cidr))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv4_vec_cidr(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ipv4_vec_cidr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec_cidr,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv4_vec_cidr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
@@ -790,40 +790,40 @@ static int vstr__sc_fmt_add_cb_ipv6_vec_cidr(Vstr_base *base, size_t pos,
   vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
   len += 1 + vstr__sc_fmt_num10_len(cidr);
   
-  if (!vstr_nx_sc_fmt_cb_beg(base, &pos, spec, &len,
-                             VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
     return (FALSE);
 
   orig_len = base->len;
   if (!vstr__sc_fmt_prnt_ipv6(base, pos, type, ips, pos_compact))
     return (FALSE);
-  if (!vstr_nx_add_fmt(base, pos + (base->len - orig_len), "/%u", cidr))
+  if (!vstr_add_fmt(base, pos + (base->len - orig_len), "/%u", cidr))
     return (FALSE);
   
-  if (!vstr_nx_sc_fmt_cb_end(base, pos, spec, len))
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, len))
     return (FALSE);
 
   return (TRUE);
 }
 
-int vstr_nx_sc_fmt_add_ipv6_vec_cidr(Vstr_conf *conf, const char *name)
+int vstr_sc_fmt_add_ipv6_vec_cidr(Vstr_conf *conf, const char *name)
 {
-  return (vstr_nx_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec_cidr,
-                          VSTR_TYPE_FMT_PTR_VOID,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_UINT,
-                          VSTR_TYPE_FMT_END));
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_ipv6_vec_cidr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_UINT,
+                       VSTR_TYPE_FMT_END));
 }
 
 #define VSTR__SC_FMT_ADD(x, nb, ne) \
  if (!( \
- vstr_nx_sc_fmt_add_ ## x (conf, "{" nb ":%" ne "}") && \
- vstr_nx_sc_fmt_add_ ## x (conf, "{" nb ":%" "*"   ne "}") && \
- vstr_nx_sc_fmt_add_ ## x (conf, "{" nb ":%"  ".*" ne "}") && \
- vstr_nx_sc_fmt_add_ ## x (conf, "{" nb ":%" "*.*" ne "}") && \
- vstr_nx_sc_fmt_add_ ## x (conf, "{" nb "}"))) ret = FALSE
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" ne "}") && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*"   ne "}") && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%"  ".*" ne "}") && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb ":%" "*.*" ne "}") && \
+ vstr_sc_fmt_add_ ## x (conf, "{" nb "}"))) ret = FALSE
 
-int vstr_nx_sc_fmt_add_all(Vstr_conf *conf)
+int vstr_sc_fmt_add_all(Vstr_conf *conf)
 {
   int ret = TRUE;
 
@@ -836,10 +836,10 @@ int vstr_nx_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
   VSTR__SC_FMT_ADD(bkmg_bit_uint, "bKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_bits_uint, "bKMG/s.u", "u");
-#ifdef HAVE_POSIX_HOST
+  #ifdef HAVE_POSIX_HOST
   VSTR__SC_FMT_ADD(ipv4_ptr, "ipv4.p", "p");
   VSTR__SC_FMT_ADD(ipv6_ptr, "ipv6.p", "p");
-#endif
+  #endif
   VSTR__SC_FMT_ADD(ipv4_vec, "ipv4.v", "p");
   VSTR__SC_FMT_ADD(ipv6_vec, "ipv6.v", "p%u");
   VSTR__SC_FMT_ADD(ipv4_vec_cidr, "ipv4.v+C", "p%u");
@@ -851,10 +851,10 @@ int vstr_nx_sc_fmt_add_all(Vstr_conf *conf)
 }
 #undef VSTR__SC_FMT_ADD
 
-void vstr_nx_sc_basename(const Vstr_base *base, size_t pos, size_t len,
-                         size_t *ret_pos, size_t *ret_len)
+void vstr_sc_basename(const Vstr_base *base, size_t pos, size_t len,
+                      size_t *ret_pos, size_t *ret_len)
 {
-  size_t ls = vstr_nx_srch_chr_rev(base, pos, len, '/');
+  size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
   size_t end_pos = (pos + len) - 1;
   
   if (!ls)
@@ -871,8 +871,8 @@ void vstr_nx_sc_basename(const Vstr_base *base, size_t pos, size_t len,
   {
     char buf[1] = {'/'};
 
-    ls = vstr_nx_spn_chrs_rev(base, pos, len, buf, 1);
-    vstr_nx_sc_basename(base, pos, len - ls, ret_pos, ret_len);
+    ls = vstr_spn_chrs_rev(base, pos, len, buf, 1);
+    vstr_sc_basename(base, pos, len - ls, ret_pos, ret_len);
   }
   else
   {
@@ -882,10 +882,10 @@ void vstr_nx_sc_basename(const Vstr_base *base, size_t pos, size_t len,
   }
 }
 
-void vstr_nx_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
-                        size_t *ret_len)
+void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
+                     size_t *ret_len)
 {
-  size_t ls = vstr_nx_srch_chr_rev(base, pos, len, '/');
+  size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
   size_t end_pos = (pos + len) - 1;
   const char buf[1] = {'/'};
 
@@ -894,17 +894,17 @@ void vstr_nx_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
     *ret_len = 0;
   else if (ls == end_pos)
   {
-    ls = vstr_nx_spn_chrs_rev(base, pos, len, buf, 1);
+    ls = vstr_spn_chrs_rev(base, pos, len, buf, 1);
     len -= ls;
     if (!len)
       *ret_len = 1;
     else
-      vstr_nx_sc_dirname(base, pos, len, ret_len);
+      vstr_sc_dirname(base, pos, len, ret_len);
   }
   else
   {
     len = (ls - pos) + 1;
-    ls = vstr_nx_spn_chrs_rev(base, pos, len - 1, buf, 1);
+    ls = vstr_spn_chrs_rev(base, pos, len - 1, buf, 1);
     *ret_len = len - ls;
   }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 /* not external inline functions */
 #ifdef VSTR_AUTOCONF_USE_WRAP_MEMRCHR
-extern inline void *vstr_nx_wrap_memrchr(const void *passed_s1, int c, size_t n)
+extern inline void *vstr_wrap_memrchr(const void *passed_s1, int c, size_t n)
 {
   const unsigned char *s1 = passed_s1;
   const void *ret = 0;
@@ -42,51 +42,141 @@ extern inline void *vstr_nx_wrap_memrchr(const void *passed_s1, int c, size_t n)
   return ((void *)ret);
 }
 #else
-# define vstr_nx_wrap_memrchr(x, y, z) memrchr(x, y, z)
+# define vstr_wrap_memrchr(x, y, z) memrchr(x, y, z)
 #endif
 
-#ifndef NDEBUG
+#ifndef NDEBUG /* this is all non threadsafe ... */
 extern inline void *vstr__debug_malloc(size_t sz)
 {
-  ++vstr__options.malloc_count;
+  void *ret = NULL;
+  
+  ++vstr__options.mem_num;
+
+  if (!vstr__options.mem_sz)
+  {
+    vstr__options.mem_sz = 8;
+    vstr__options.mem_vals = malloc(sizeof(void *) * vstr__options.mem_sz);
+    ASSERT(vstr__options.mem_vals);
+  }
+  
+  if (vstr__options.mem_num > vstr__options.mem_sz)
+  {
+    vstr__options.mem_sz *= 2;
+    vstr__options.mem_vals = realloc(vstr__options.mem_vals,
+                                     sizeof(void *) * vstr__options.mem_sz);
+    ASSERT(vstr__options.mem_vals);
+  }
+  ASSERT(vstr__options.mem_num <= vstr__options.mem_sz);
   
   ASSERT(sz);
-  return (malloc(sz));
+
+  ret = malloc(sz);
+
+  vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
+  
+  return (ret);
 }
 
 extern inline void *vstr__debug_calloc(size_t num, size_t sz)
 {
-  ++vstr__options.malloc_count;
+  void *ret = NULL;
   
-  ASSERT(sz);
-  return (calloc(num, sz));
+  ++vstr__options.mem_num;
+  
+  if (!vstr__options.mem_sz)
+  {
+    vstr__options.mem_sz = 8;
+    vstr__options.mem_vals = malloc(sizeof(void *) * vstr__options.mem_sz);
+    ASSERT(vstr__options.mem_vals);
+  }
+  
+  if (vstr__options.mem_num > vstr__options.mem_sz)
+  {
+    vstr__options.mem_sz *= 2;
+    vstr__options.mem_vals = realloc(vstr__options.mem_vals,
+                                     sizeof(void *) * vstr__options.mem_sz);
+    ASSERT(vstr__options.mem_vals);
+  }
+  ASSERT(vstr__options.mem_num <= vstr__options.mem_sz);
+  
+  ASSERT(num && sz);
+
+  ret = calloc(num, sz);
+
+  vstr__options.mem_vals[vstr__options.mem_num - 1] = ret;
+
+  return (ret);
 }
 
 extern inline void vstr__debug_free(void *ptr)
 {
-  ASSERT(vstr__options.malloc_count--);
+  if (ptr)
+  {
+    unsigned int scan = 0;
+    
+    ASSERT(vstr__options.mem_num);
+    --vstr__options.mem_num;
+
+    while (vstr__options.mem_vals[scan] &&
+           (vstr__options.mem_vals[scan] != ptr))
+      ++scan;
+
+    ASSERT(vstr__options.mem_vals[scan]);
+    if (scan != vstr__options.mem_num)
+    {
+      SWAP_TYPE(vstr__options.mem_vals[scan],
+                vstr__options.mem_vals[vstr__options.mem_num],
+                void *);
+      vstr__options.mem_vals[vstr__options.mem_num] = NULL;      
+    }
+  }
   
   free(ptr);
 }
-#else
-# define vstr__debug_malloc malloc
-# define vstr__debug_calloc calloc
-# define vstr__debug_free free
-#endif
 
 extern inline int vstr__safe_realloc(void **ptr, size_t sz)
 {
   void *tmp = realloc(*ptr, sz);
 
+  ASSERT(*ptr && sz);
+  
   if (!tmp)
     return (FALSE);
 
-  ASSERT(*ptr && sz);
+  if (*ptr != tmp)
+  {
+    unsigned int scan = 0;
+  
+    ASSERT(vstr__options.mem_num);
+
+    while (vstr__options.mem_vals[scan] &&
+           (vstr__options.mem_vals[scan] != *ptr))
+      ++scan;
+
+    ASSERT(vstr__options.mem_vals[scan]);
+    vstr__options.mem_vals[scan] = tmp;
+  }
   
   *ptr = tmp;
   
   return (TRUE);
 }
+#else
+
+extern inline int vstr__safe_realloc(void **ptr, size_t sz)
+{
+  void *tmp = realloc(*ptr, sz);
+
+  ASSERT(*ptr && sz);
+  
+  if (!tmp)
+    return (FALSE);
+
+  *ptr = tmp;
+  
+  return (TRUE);
+}
+#endif
 
 /* zero ->used and normalise first node */
 extern inline void vstr__base_zero_used(Vstr_base *base)
@@ -95,11 +185,88 @@ extern inline void vstr__base_zero_used(Vstr_base *base)
   {
     ASSERT(base->beg->type == VSTR_TYPE_NODE_BUF);
     base->beg->len -= base->used;
-    vstr_nx_wrap_memmove(((Vstr_node_buf *)base->beg)->buf,
-                         ((Vstr_node_buf *)base->beg)->buf + base->used,
-                         base->beg->len);
+    vstr_wrap_memmove(((Vstr_node_buf *)base->beg)->buf,
+                      ((Vstr_node_buf *)base->beg)->buf + base->used,
+                      base->beg->len);
     base->used = 0;
   }
+}
+
+extern inline void vstr__cache_iovec_reset_node(const Vstr_base *base,
+                                                Vstr_node *node,
+                                                unsigned int num)
+{
+  struct iovec *iovs = NULL;
+  unsigned char *types = NULL;
+  
+  if (!base->iovec_upto_date)
+    return;
+  
+  iovs = VSTR__CACHE(base)->vec->v + VSTR__CACHE(base)->vec->off;
+  iovs[num - 1].iov_len = node->len;
+  iovs[num - 1].iov_base = vstr_export__node_ptr(node);
+
+  types = VSTR__CACHE(base)->vec->t + VSTR__CACHE(base)->vec->off;
+  types[num - 1] = node->type;
+  
+  if (num == 1)
+  {
+    char *tmp = NULL;
+    
+    iovs[num - 1].iov_len -= base->used;
+    tmp = iovs[num - 1].iov_base;
+    tmp += base->used;
+    iovs[num - 1].iov_base = tmp;
+  }
+}
+
+extern inline void vstr__relink_nodes(Vstr_conf *conf,
+                                      Vstr_node *beg, Vstr_node **end_next,
+                                      unsigned int num)
+{
+  Vstr_node *tmp = NULL;
+  
+  ASSERT(beg->type == VSTR__CONV_PTR_NEXT_PREV(end_next)->type);
+
+  switch (beg->type)
+  {
+    case VSTR_TYPE_NODE_BUF:
+      tmp = (Vstr_node *)conf->spare_buf_beg;
+      
+      conf->spare_buf_num += num;
+      
+      conf->spare_buf_beg = (Vstr_node_buf *)beg;
+      break;
+      
+    case VSTR_TYPE_NODE_NON:
+      tmp = (Vstr_node *)conf->spare_non_beg;
+      
+      conf->spare_non_num += num;
+      
+      conf->spare_non_beg = (Vstr_node_non *)beg;
+      break;
+      
+    case VSTR_TYPE_NODE_PTR:
+      tmp = (Vstr_node *)conf->spare_ptr_beg;
+      
+      conf->spare_ptr_num += num;
+      
+      conf->spare_ptr_beg = (Vstr_node_ptr *)beg;
+      break;
+      
+    case VSTR_TYPE_NODE_REF:
+      tmp = (Vstr_node *)conf->spare_ref_beg;
+      
+      conf->spare_ref_num += num;
+      
+      conf->spare_ref_beg = (Vstr_node_ref *)beg;
+      break;
+      
+    default:
+      ASSERT(FALSE);
+  }
+
+  *end_next = tmp;
 }
 
 /* sequence could get annoying ... too many special cases */
@@ -127,10 +294,10 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
 
   end_pos = pos;
   end_pos += *len - 1;
-  scan_beg = vstr_nx_base__pos(base, &pos, &dummy_num, TRUE);
+  scan_beg = vstr_base__pos(base, &pos, &dummy_num, TRUE);
   --pos;
   
-  scan_end = vstr_nx_base__pos(base, &end_pos, num, FALSE);
+  scan_end = vstr_base__pos(base, &end_pos, num, FALSE);
 
   *type = scan_end->type;
   
@@ -154,7 +321,7 @@ extern inline int vstr__base_scan_rev_beg(const Vstr_base *base,
   
   *scan_str = NULL;
   if (scan_end->type != VSTR_TYPE_NODE_NON)
-    *scan_str = vstr_nx_export__node_ptr(scan_end) + pos;
+    *scan_str = vstr_export__node_ptr(scan_end) + pos;
   
   return (TRUE);
 }

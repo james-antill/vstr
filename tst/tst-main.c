@@ -1,4 +1,4 @@
-#include "../../include/autoconf.h"
+#include <autoconf.h>
 
 #ifdef USE_RESTRICTED_HEADERS
 # define USE_WIDE_CHAR_T 0
@@ -6,44 +6,20 @@
 
 #ifdef HAVE_POSIX_HOST
 # define USE_MMAP 1
-# include "../../include/main_system.h"
+# include <main_system.h>
 #else
-# include "../../include/main_noposix_system.h"
+# include <main_noposix_system.h>
 #endif
 
 #include <float.h>
 
-#include "../../include/fix.h"
+#include <fix.h>
 
-/* not from system ... just from here */
-/* #include "../../vstr.h" -- have to do it manually */
+#include <vstr.h>
 
-#define VSTR__HEADER_H 1
-
-#include "../../include/vstr-conf.h"
-
-#ifndef VSTR_AUTOCONF_HAVE_POSIX_HOST
-/* only undef the things we use externaly */
-# undef VSTR_AUTOCONF_HAVE_MMAP
-# undef VSTR_AUTOCONF_HAVE_WRITEV
-#endif
-
-#include "../../include/vstr-switch.h"
-
-#include "../../include/vstr-const.h"
-#include "../../include/vstr-def.h"
-#include "../../include/vstr-extern.h"
-
-#if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
-# include "../../include/vstr-inline.h"
-#endif
-
-/* use system assert, so we get abort()s which fail tests */
 #undef NDEBUG /* always use assert */
 #include <assert.h>
 #define ASSERT(x) assert(x)
-
-
 
 static int tst(void); /* fwd */
 
@@ -113,7 +89,7 @@ static void die(void)
 
 #define EXIT_FAILED_OK 77
 
-#define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * (tst))
+#define TST_B_TST(val, num, tst) ((val) |= (1U<< ((num) - 1)) * !!(tst))
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
 

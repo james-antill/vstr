@@ -25,7 +25,7 @@ my $hdr_date = `date '+%d-%b-%Y'`;
 chomp($hdr_date);
 
 my $hdr_ver = undef;
-if (!open(VER, "< ../VERSION"))
+if (!open(VER, "< ./VERSION") && !open(VER, "< ../VERSION"))
   { die "No version file in parent directory."; }
 $_ = <VER>; chomp; $hdr_ver = $_;
 close(VER);

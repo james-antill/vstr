@@ -1,6 +1,6 @@
 #define VSTR_INLINE_C
 /*
- *  Copyright (C) 2002  James Antill
+ *  Copyright (C) 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,12 @@
 
 #include "main.h"
 
-/* everything is done in vstr-inline.h.pre with magic added vstr-internal.h */
+/* everything is done in vstr-inline.h with magic added vstr-internal.h */
 /* This works with gcc */
 # undef extern
 # define extern /* nothing */
 # undef inline
 # define inline /* nothing */
 
-# include "vstr-internal-inline.h"
+# include "vstr-inline.h"
 # include "vstr-nx-inline.h"

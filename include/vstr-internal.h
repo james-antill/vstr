@@ -2,7 +2,7 @@
 #define VSTR__INTERNAL_HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,8 @@
 # define VSTR__ATTR_I() __attribute__((visibility("internal")))
 
 # define VSTR__SYM(x) \
+ extern __typeof(vstr_nx_ ## x) vstr_nx_ ## x \
+    VSTR__ATTR_H() ; \
  extern __typeof(vstr_nx_ ## x) vstr_ ## x \
     VSTR__ATTR_A("vstr_nx_" #x ) VSTR__ATTR_D() ;
 
@@ -46,16 +48,6 @@
 # define VSTR__ATTR_H()
 # define VSTR__ATTR_I()
 #endif
-
-/* include the normal extern declarations ... but fixed */
-#if !VSTR__USE_INTERNAL_SYMBOLS
-/* if we can't do aliases etc. ... just #define the internal symbols to
- * the external name */
-# include "vstr-internal-cpp-symbols.h"
-# include "vstr-internal-cpp-inline-symbols.h"
-#endif
-
-#include "vstr-internal-extern.h"
 
 #define VSTR_TYPE_FMT_UCHAR 1
 #define VSTR_TYPE_FMT_USHORT 2
@@ -83,10 +75,22 @@
 
 #define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
-#define VSTR__MK(sz)      malloc(sz)
-#define VSTR__M0(sz)      calloc(1, sz)
+#define VSTR__MK(sz)      vstr__debug_malloc(sz)
+#define VSTR__M0(sz)      vstr__debug_calloc(1, sz)
 #define VSTR__MV(ptr, sz) vstr__safe_realloc((void **)&(ptr), sz)
-#define VSTR__F(ptr)      free(ptr)
+#define VSTR__F(ptr)      vstr__debug_free(ptr)
+
+/* given a length, and an iteration of that length is this node _it_
+ * another way to look at it is will vstr_iter_fwd_nxt() return FALSE */
+#define VSTR__ITER_EQ_ALL_NODE(base, iter) \
+  (((base)->beg == (iter)->node) ? \
+   (((iter)->len == (iter)->node->len) && \
+    (!(iter)->remaining) && \
+    ((iter)->ptr == (vstr_export__node_ptr((iter)->node)))) : \
+   (((iter)->len == (size_t)((iter)->node->len - (base)->used)) && \
+    (!(iter)->remaining) && \
+    ((iter)->ptr == (vstr_export__node_ptr((iter)->node) + (base)->used))))
+
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
@@ -94,7 +98,9 @@ typedef struct Vstr__options
 {
  Vstr_conf *def;
  unsigned int mmap_count;
- unsigned int malloc_count;
+ unsigned long  mem_sz;
+ unsigned long  mem_num;
+ void **mem_vals;
 } Vstr__options;
 
 typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;
@@ -146,9 +152,6 @@ extern size_t vstr__netstr2_ULONG_MAX_len;
 #ifndef NDEBUG
 extern int vstr__check_real_nodes(Vstr_base *) VSTR__ATTR_I();
 extern int vstr__check_spare_nodes(Vstr_conf *) VSTR__ATTR_I();
-extern void vstr__ref_cb_free_buf_ref(struct Vstr_ref *) VSTR__ATTR_H();
-#else
-#define vstr__ref_cb_free_buf_ref vstr_ref_cb_free_ref
 #endif
 
 extern void vstr__add_user_conf(Vstr_conf *) VSTR__ATTR_I();
@@ -173,8 +176,14 @@ extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
 extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
                                    unsigned int *, unsigned int *,
                                    char **, size_t *) VSTR__ATTR_I();
+
+extern void vstr__relink_nodes(Vstr_conf *, Vstr_node *, Vstr_node **,
+                               unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern int vstr__chg_node_buf_ref(const Vstr_base *, Vstr_node **,
                                   unsigned int)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+extern void vstr__swap_node_X_X(const Vstr_base *, size_t, Vstr_node *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
 extern int vstr__cache_iovec_alloc(const Vstr_base *, unsigned int)
@@ -189,8 +198,6 @@ extern int vstr__cache_iovec_valid(Vstr_base *) /* makes it valid */
     VSTR__ATTR_I();
 
 extern void vstr__cache_free_cstr(const Vstr_base *)
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
-extern void vstr__cache_free_pos(const Vstr_base *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 extern void vstr__cache_del(const Vstr_base *, size_t, size_t) VSTR__ATTR_I();
 extern void vstr__cache_add(const Vstr_base *, size_t, size_t) VSTR__ATTR_I();
@@ -207,10 +214,14 @@ extern int  vstr__cache_subset_cbs(Vstr_conf *, Vstr_conf *)
 extern int  vstr__cache_dup_cbs(Vstr_conf *, Vstr_conf *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
-extern void *vstr_nx_wrap_memrchr(const void *, int, size_t)
+extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
-#ifndef NDEBUG
+#ifdef NDEBUG
+# define vstr__debug_malloc malloc
+# define vstr__debug_calloc calloc
+# define vstr__debug_free free
+#else
 extern void *vstr__debug_malloc(size_t sz)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
 extern void *vstr__debug_calloc(size_t num, size_t sz)
@@ -236,37 +247,44 @@ extern Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *, const char *)
 /* so the linker-script does the right thing */
 extern void vstr_version_func(void);
 
-/* Setup _No eXtern_ symbols for use inside the library */
 #if  VSTR__USE_INTERNAL_SYMBOLS
-# include "vstr-internal-alias-symbols.h"
+# include "internal_syms_generated/vstr-cpp-symbols_fwd.h"
 #endif
 
+#include "vstr-extern.h"
+
 #if defined(VSTR_AUTOCONF_HAVE_INLINE) && VSTR_COMPILE_INLINE
-# include "vstr-internal-inline.h"
+# include "vstr-inline.h"
 # include "vstr-nx-inline.h"
 #else
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMCPY
-#  define vstr_nx_wrap_memcpy(x, y, z)  memcpy(x, y, z)
+#  define vstr_wrap_memcpy(x, y, z)  memcpy(x, y, z)
 # endif
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMCMP
-#  define vstr_nx_wrap_memcmp(x, y, z)  memcmp(x, y, z)
+#  define vstr_wrap_memcmp(x, y, z)  memcmp(x, y, z)
 # endif
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMCHR
-#  define vstr_nx_wrap_memchr(x, y, z)  memchr(x, y, z)
+#  define vstr_wrap_memchr(x, y, z)  memchr(x, y, z)
 # endif
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMRCHR
-#  define vstr_nx_wrap_memrchr(x, y, z) memrchr(x, y, z)
+#  define vstr_wrap_memrchr(x, y, z) memrchr(x, y, z)
 # endif
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMSET
-#  define vstr_nx_wrap_memset(x, y, z)  memset(x, y, z)
+#  define vstr_wrap_memset(x, y, z)  memset(x, y, z)
 # endif
 # ifndef VSTR_AUTOCONF_USE_WRAP_MEMMOVE
-#  define vstr_nx_wrap_memmove(x, y, z) memmove(x, y, z)
+#  define vstr_wrap_memmove(x, y, z) memmove(x, y, z)
 # endif
 #endif
 
 #if  VSTR__USE_INTERNAL_SYMBOLS
-# include "vstr-internal-alias-inline-symbols.h"
+
+# include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+
+# include "internal_syms_generated/vstr-alias-symbols.h"
+
+# include "internal_syms_generated/vstr-cpp-symbols_fwd.h"
+
 #endif
 
 #endif

@@ -4,20 +4,20 @@ CC=gcc
 # CC=diet gcc
 #CC=diet gcc3
 
-# VSTR_LOCAL_DIR=../j
 VSTR_LOCAL_DIR=../
+# VSTR_LOCAL_DIR=../j
 VSTR_LIBS_DIR=$(VSTR_LOCAL_DIR)/src/.libs
 
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-HAVE_TIMER_Q=1
-HAVE_SSL=1
+HAVE_TIMER_Q=0
+HAVE_SSL=0
 
-LOCAL=1
-PROFILE=1
+LOCAL=0
+PROFILE=0
 # 1 == Static with libvstr, 2 == really static
-STATIC=1
-FAST=0
+STATIC=0
+FAST=1
 
 ifeq ($(PROFILE),1)
 PROF=-pg

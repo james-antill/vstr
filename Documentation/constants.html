@@ -24,6 +24,7 @@
 <li><a href="#VSTR_COMPILE_ATTRIBUTES">VSTR_COMPILE_ATTRIBUTES</a>
 <li><a href="#VSTR_COMPILE_INCLUDE">VSTR_COMPILE_INCLUDE</a>
 <li><a href="#VSTR_COMPILE_INLINE">VSTR_COMPILE_INLINE</a>
+<li><a href="#VSTR_COMPILE_MACRO_FUNCTIONS">VSTR_COMPILE_MACRO_FUNCTIONS</a>
 <li><a href="#VSTR_COMPILE_TYPEDEF">VSTR_COMPILE_TYPEDEF</a>
 </ul><li><a href="#Global%20constants">Global constants</a>
 <ul>
@@ -257,6 +258,10 @@
 <li><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_REF">VSTR_CNTL_CONF_SET_NUM_SPARE_REF</a>
 <li><a href="#VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS">VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS</a>
 <li><a href="#VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS">VSTR_CNTL_CONF_SET_FLAG_ATOMIC_OPS</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF">VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF</a>
 </ul><li><a href="#Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function">Constants you pass to the vstr_cntl_opt() function</a>
 <ul>
 <li><a href="#VSTR_CNTL_OPT_GET_CONF">VSTR_CNTL_OPT_GET_CONF</a>
@@ -290,7 +295,22 @@
 </p><p>  This switch controls whether inline functions will be used in the public
  headers for the library. If the value is 1 then if they are supported by the
  compiler that built the library they will be used, if the value is 0 they
- won't be used at all.
+ won't be used.
+
+
+<a name="VSTR_COMPILE_MACRO_FUNCTIONS"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_COMPILE_MACRO_FUNCTIONS
+</a>
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This switch controls whether macro functions will be used in the public
+ headers for the library. If the value is 1 then they will be used, if the
+ value is 0 they won't be used.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This only includes the macro  functions which also have real function
+ replacements. For example VSTR_ADD_CSTR_BUF() won't be defined because there
+ is a vstr_add_cstr_buf() function, but VSTR_FMT_CB_ARG_PTR() will always be
+ defined.
 
 
 <a name="VSTR_COMPILE_TYPEDEF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -891,10 +911,10 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The return value with this set is the highest number that can be parsed from
- the beginning of the Vstr string, while the value without this flag would be the
- parsed number modulo the highest number of the type. For example given type
- that had a maximum of 10, then parsing "64" would give you 6 with the flag, and
- 4 without.
+ the beginning of the Vstr string, while the value without this flag would be
+ the parsed number modulo the highest number of the type.
+</p><p>  For example given a type that had a maximum of 10, then parsing &quot;64&quot; would
+ give you 6 with the flag, and 4 without.
 
 
 <a name="VSTR_FLAG_PARSE_NUM_SPACE"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1887,11 +1907,11 @@
 </a>
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Number of spare nodes to have for the specified type<br>Type<strong>[1]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option is will set the number of specified nodes of the specified type,
+</p><p>  This option is will set the number of spare nodes of the specified type,
  by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  When the value specified is higher and vstr calls vstr_make_spare_nodes() then
+</p><p>  When the value specified is higher and it calls vstr_make_spare_nodes() then
  a return value of FALSE means that there was a malloc error, just as if you
  called vstr_make_nodes directly.
 
@@ -1926,6 +1946,25 @@
 </p><p>  This is mainly a speedup to the vstr_sub_*() functions and the functions that
  use them, like vstr_conv_*(). It is true by default, so all function
  operations are atomic.
+
+
+<a name="VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF
+</a><a name="VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON
+</a><a name="VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR
+</a><a name="VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Minimum number of spare nodes to have for the specified type<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum number of spare nodes to have for the specified type<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will make the number of spare nodes of the specified type fit
+ into the range given, by calling either vstr_make_spare_nodes() or 
+ vstr_free_spare_nodes().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  When the value specified is higher and it calls vstr_make_spare_nodes() then
+ a return value of FALSE means that there was a malloc error, just as if you
+ called vstr_make_nodes directly.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function"><h2>Constants you pass to the vstr_cntl_opt() function</h2>

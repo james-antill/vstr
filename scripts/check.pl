@@ -23,6 +23,9 @@ my $conf_debug = 1;
 my $conf_test = 1;
 my $conf_wrap = 1;
 
+# Call configurations randomly ?
+my $conf_rand = 0;
+
 while (scalar (@ARGV))
 {
   my $arg = shift @ARGV;
@@ -90,6 +93,20 @@ while (scalar (@ARGV))
   { $conf_debug = 1; }
   elsif ("nodebug" eq $arg)
   { $conf_debug = 0; }
+
+  elsif ("RAND" eq $arg)
+  { $conf_rand = 1; }
+
+  elsif ("ALL" eq $arg)
+  { 
+  	{ $conf_linker_check = 1; }
+  	{ $conf_full_dbl_check = 1; }
+  	{ $conf_full_test_check = 1; }
+  	{ $conf_full_wrap_check = 1; }
+  	{ $conf_test = 1; }
+  	{ $conf_wrap = 1; }
+  	{ $conf_debug = 1; }
+  }
 
   else
   { die "Unknown option $arg\n"; }
@@ -294,6 +311,12 @@ sub tst_conf_X
 	--$tlen;
       }
 
+    if ($conf_rand)
+      { # perlfaq4: How do I shuffle an array randomly?
+         use List::Util 'shuffle';
+         @confs = shuffle(@confs);
+      }
+
     my $count = 0;
     for my $val (@confs)
       {
@@ -323,9 +346,12 @@ if ($conf_print_stdout_info)
       return ("false");
     }
 
-  STDOUT->print("-" x 79 . "\n");
+  my $header = " configuration ";
 
-  STDOUT->print("Running with the following config...\n");
+  my $xes_l = (79 - length($header)) / 2;
+  my $xes_r = (79 - length($header)) - $xes_l;
+
+  STDOUT->print("-" x $xes_l . $header . "-" x $xes_r . "\n");
 
   STDOUT->print(sprintf("%16s = %s\n", "fast",     tf($conf_fast_check)));
   STDOUT->print(sprintf("%16s = %s\n", "linker",   tf($conf_linker_check)));
@@ -341,6 +367,7 @@ if ($conf_print_stdout_info)
   STDOUT->print(sprintf("%16s = %s\n", "time",     tf($conf_time)));
   STDOUT->print(sprintf("%16s = %s\n", "test",     tf($conf_test)));
   STDOUT->print(sprintf("%16s = %s\n", "wrap",     tf($conf_wrap)));
+  STDOUT->print(sprintf("%-16s = %s\n", "RANDOMISE",tf($conf_rand)));
 
   STDOUT->print("-" x 79 . "\n");
 }

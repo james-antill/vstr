@@ -64,6 +64,9 @@
 <li><a href="#vstr_dup_ref%28%29">vstr_dup_ref()</a>
 <li><a href="#vstr_dup_vstr%28%29">vstr_dup_vstr()</a>
 <li><a href="#vstr_dup_rep_chr%28%29">vstr_dup_rep_chr()</a>
+<li><a href="#vstr_dup_cstr_buf%28%29">vstr_dup_cstr_buf()</a>
+<li><a href="#vstr_dup_cstr_ptr%28%29">vstr_dup_cstr_ptr()</a>
+<li><a href="#vstr_dup_cstr_ref%28%29">vstr_dup_cstr_ref()</a>
 <li><a href="#VSTR_DUP_CSTR_BUF%28%29">VSTR_DUP_CSTR_BUF()</a>
 <li><a href="#VSTR_DUP_CSTR_PTR%28%29">VSTR_DUP_CSTR_PTR()</a>
 <li><a href="#VSTR_DUP_CSTR_REF%28%29">VSTR_DUP_CSTR_REF()</a>
@@ -83,6 +86,9 @@
 <li><a href="#vstr_add_ref%28%29">vstr_add_ref()</a>
 <li><a href="#vstr_add_vstr%28%29">vstr_add_vstr()</a>
 <li><a href="#vstr_add_rep_chr%28%29">vstr_add_rep_chr()</a>
+<li><a href="#vstr_add_cstr_buf%28%29">vstr_add_cstr_buf()</a>
+<li><a href="#vstr_add_cstr_ptr%28%29">vstr_add_cstr_ptr()</a>
+<li><a href="#vstr_add_cstr_ref%28%29">vstr_add_cstr_ref()</a>
 <li><a href="#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a>
 <li><a href="#VSTR_ADD_CSTR_PTR%28%29">VSTR_ADD_CSTR_PTR()</a>
 <li><a href="#VSTR_ADD_CSTR_REF%28%29">VSTR_ADD_CSTR_REF()</a>
@@ -105,6 +111,9 @@
 <li><a href="#vstr_sub_ref%28%29">vstr_sub_ref()</a>
 <li><a href="#vstr_sub_vstr%28%29">vstr_sub_vstr()</a>
 <li><a href="#vstr_sub_rep_chr%28%29">vstr_sub_rep_chr()</a>
+<li><a href="#vstr_sub_cstr_buf%28%29">vstr_sub_cstr_buf()</a>
+<li><a href="#vstr_sub_cstr_ptr%28%29">vstr_sub_cstr_ptr()</a>
+<li><a href="#vstr_sub_cstr_ref%28%29">vstr_sub_cstr_ref()</a>
 <li><a href="#VSTR_SUB_CSTR_BUF%28%29">VSTR_SUB_CSTR_BUF()</a>
 <li><a href="#VSTR_SUB_CSTR_PTR%28%29">VSTR_SUB_CSTR_PTR()</a>
 <li><a href="#VSTR_SUB_CSTR_REF%28%29">VSTR_SUB_CSTR_REF()</a>
@@ -124,6 +133,54 @@
 <li><a href="#vstr_cmp_case_buf%28%29">vstr_cmp_case_buf()</a>
 <li><a href="#vstr_cmp_vers%28%29">vstr_cmp_vers()</a>
 <li><a href="#vstr_cmp_vers_buf%28%29">vstr_cmp_vers_buf()</a>
+<li><a href="#vstr_cmp_eq%28%29">vstr_cmp_eq()</a>
+<li><a href="#vstr_cmp_cstr%28%29">vstr_cmp_cstr()</a>
+<li><a href="#vstr_cmp_buf_eq%28%29">vstr_cmp_buf_eq()</a>
+<li><a href="#vstr_cmp_cstr_eq%28%29">vstr_cmp_cstr_eq()</a>
+<li><a href="#vstr_cmp_case_eq%28%29">vstr_cmp_case_eq()</a>
+<li><a href="#vstr_cmp_case_cstr%28%29">vstr_cmp_case_cstr()</a>
+<li><a href="#vstr_cmp_case_buf_eq%28%29">vstr_cmp_case_buf_eq()</a>
+<li><a href="#vstr_cmp_case_cstr_eq%28%29">vstr_cmp_case_cstr_eq()</a>
+<li><a href="#vstr_cmp_vers_eq%28%29">vstr_cmp_vers_eq()</a>
+<li><a href="#vstr_cmp_vers_cstr%28%29">vstr_cmp_vers_cstr()</a>
+<li><a href="#vstr_cmp_vers_buf_eq%28%29">vstr_cmp_vers_buf_eq()</a>
+<li><a href="#vstr_cmp_vers_cstr_eq%28%29">vstr_cmp_vers_cstr_eq()</a>
+<li><a href="#vstr_cmp_bod%28%29">vstr_cmp_bod()</a>
+<li><a href="#vstr_cmp_eod%28%29">vstr_cmp_eod()</a>
+<li><a href="#vstr_cmp_bod_eq%28%29">vstr_cmp_bod_eq()</a>
+<li><a href="#vstr_cmp_eod_eq%28%29">vstr_cmp_eod_eq()</a>
+<li><a href="#vstr_cmp_bod_buf%28%29">vstr_cmp_bod_buf()</a>
+<li><a href="#vstr_cmp_eod_buf%28%29">vstr_cmp_eod_buf()</a>
+<li><a href="#vstr_cmp_bod_buf_eq%28%29">vstr_cmp_bod_buf_eq()</a>
+<li><a href="#vstr_cmp_eod_buf_eq%28%29">vstr_cmp_eod_buf_eq()</a>
+<li><a href="#vstr_cmp_bod_cstr%28%29">vstr_cmp_bod_cstr()</a>
+<li><a href="#vstr_cmp_eod_cstr%28%29">vstr_cmp_eod_cstr()</a>
+<li><a href="#vstr_cmp_bod_cstr_eq%28%29">vstr_cmp_bod_cstr_eq()</a>
+<li><a href="#vstr_cmp_eod_cstr_eq%28%29">vstr_cmp_eod_cstr_eq()</a>
+<li><a href="#vstr_cmp_case_bod%28%29">vstr_cmp_case_bod()</a>
+<li><a href="#vstr_cmp_case_eod%28%29">vstr_cmp_case_eod()</a>
+<li><a href="#vstr_cmp_case_bod_eq%28%29">vstr_cmp_case_bod_eq()</a>
+<li><a href="#vstr_cmp_case_eod_eq%28%29">vstr_cmp_case_eod_eq()</a>
+<li><a href="#vstr_cmp_case_bod_buf%28%29">vstr_cmp_case_bod_buf()</a>
+<li><a href="#vstr_cmp_case_eod_buf%28%29">vstr_cmp_case_eod_buf()</a>
+<li><a href="#vstr_cmp_case_bod_buf_eq%28%29">vstr_cmp_case_bod_buf_eq()</a>
+<li><a href="#vstr_cmp_case_eod_buf_eq%28%29">vstr_cmp_case_eod_buf_eq()</a>
+<li><a href="#vstr_cmp_case_bod_cstr%28%29">vstr_cmp_case_bod_cstr()</a>
+<li><a href="#vstr_cmp_case_eod_cstr%28%29">vstr_cmp_case_eod_cstr()</a>
+<li><a href="#vstr_cmp_case_bod_cstr_eq%28%29">vstr_cmp_case_bod_cstr_eq()</a>
+<li><a href="#vstr_cmp_case_eod_cstr_eq%28%29">vstr_cmp_case_eod_cstr_eq()</a>
+<li><a href="#vstr_cmp_vers_bod%28%29">vstr_cmp_vers_bod()</a>
+<li><a href="#vstr_cmp_vers_eod%28%29">vstr_cmp_vers_eod()</a>
+<li><a href="#vstr_cmp_vers_bod_eq%28%29">vstr_cmp_vers_bod_eq()</a>
+<li><a href="#vstr_cmp_vers_eod_eq%28%29">vstr_cmp_vers_eod_eq()</a>
+<li><a href="#vstr_cmp_vers_bod_buf%28%29">vstr_cmp_vers_bod_buf()</a>
+<li><a href="#vstr_cmp_vers_eod_buf%28%29">vstr_cmp_vers_eod_buf()</a>
+<li><a href="#vstr_cmp_vers_bod_buf_eq%28%29">vstr_cmp_vers_bod_buf_eq()</a>
+<li><a href="#vstr_cmp_vers_eod_buf_eq%28%29">vstr_cmp_vers_eod_buf_eq()</a>
+<li><a href="#vstr_cmp_vers_bod_cstr%28%29">vstr_cmp_vers_bod_cstr()</a>
+<li><a href="#vstr_cmp_vers_eod_cstr%28%29">vstr_cmp_vers_eod_cstr()</a>
+<li><a href="#vstr_cmp_vers_bod_cstr_eq%28%29">vstr_cmp_vers_bod_cstr_eq()</a>
+<li><a href="#vstr_cmp_vers_eod_cstr_eq%28%29">vstr_cmp_vers_eod_cstr_eq()</a>
 <li><a href="#VSTR_CMP_EQ%28%29">VSTR_CMP_EQ()</a>
 <li><a href="#VSTR_CMP_CSTR%28%29">VSTR_CMP_CSTR()</a>
 <li><a href="#VSTR_CMP_BUF_EQ%28%29">VSTR_CMP_BUF_EQ()</a>
@@ -154,6 +211,14 @@
 <li><a href="#vstr_srch_case_buf_rev%28%29">vstr_srch_case_buf_rev()</a>
 <li><a href="#vstr_srch_case_vstr_fwd%28%29">vstr_srch_case_vstr_fwd()</a>
 <li><a href="#vstr_srch_case_vstr_rev%28%29">vstr_srch_case_vstr_rev()</a>
+<li><a href="#vstr_srch_cstr_buf_fwd%28%29">vstr_srch_cstr_buf_fwd()</a>
+<li><a href="#vstr_srch_cstr_buf_rev%28%29">vstr_srch_cstr_buf_rev()</a>
+<li><a href="#vstr_srch_cstr_chrs_fwd%28%29">vstr_srch_cstr_chrs_fwd()</a>
+<li><a href="#vstr_srch_cstr_chrs_rev%28%29">vstr_srch_cstr_chrs_rev()</a>
+<li><a href="#vstr_csrch_cstr_chrs_fwd%28%29">vstr_csrch_cstr_chrs_fwd()</a>
+<li><a href="#vstr_csrch_cstr_chrs_rev%28%29">vstr_csrch_cstr_chrs_rev()</a>
+<li><a href="#vstr_srch_case_cstr_buf_fwd%28%29">vstr_srch_case_cstr_buf_fwd()</a>
+<li><a href="#vstr_srch_case_cstr_buf_rev%28%29">vstr_srch_case_cstr_buf_rev()</a>
 <li><a href="#VSTR_SRCH_CSTR_BUF_FWD%28%29">VSTR_SRCH_CSTR_BUF_FWD()</a>
 <li><a href="#VSTR_SRCH_CSTR_BUF_REV%28%29">VSTR_SRCH_CSTR_BUF_REV()</a>
 <li><a href="#VSTR_SRCH_CSTR_CHRS_FWD%28%29">VSTR_SRCH_CSTR_CHRS_FWD()</a>
@@ -168,6 +233,10 @@
 <li><a href="#vstr_spn_chrs_rev%28%29">vstr_spn_chrs_rev()</a>
 <li><a href="#vstr_cspn_chrs_fwd%28%29">vstr_cspn_chrs_fwd()</a>
 <li><a href="#vstr_cspn_chrs_rev%28%29">vstr_cspn_chrs_rev()</a>
+<li><a href="#vstr_spn_cstr_chrs_fwd%28%29">vstr_spn_cstr_chrs_fwd()</a>
+<li><a href="#vstr_spn_cstr_chrs_rev%28%29">vstr_spn_cstr_chrs_rev()</a>
+<li><a href="#vstr_cspn_cstr_chrs_fwd%28%29">vstr_cspn_cstr_chrs_fwd()</a>
+<li><a href="#vstr_cspn_cstr_chrs_rev%28%29">vstr_cspn_cstr_chrs_rev()</a>
 <li><a href="#VSTR_SPN_CSTR_CHRS_FWD%28%29">VSTR_SPN_CSTR_CHRS_FWD()</a>
 <li><a href="#VSTR_SPN_CSTR_CHRS_REV%28%29">VSTR_SPN_CSTR_CHRS_REV()</a>
 <li><a href="#VSTR_CSPN_CSTR_CHRS_FWD%28%29">VSTR_CSPN_CSTR_CHRS_FWD()</a>
@@ -199,6 +268,8 @@
 <ul>
 <li><a href="#vstr_split_buf%28%29">vstr_split_buf()</a>
 <li><a href="#vstr_split_chrs%28%29">vstr_split_chrs()</a>
+<li><a href="#vstr_split_cstr_buf%28%29">vstr_split_cstr_buf()</a>
+<li><a href="#vstr_split_cstr_chrs%28%29">vstr_split_cstr_chrs()</a>
 <li><a href="#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>
 <li><a href="#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a>
 </ul><li><a href="#Functions%20for%20parsing%20data%20from%20a%20vstr">Functions for parsing data from a vstr</a>
@@ -777,6 +848,51 @@
  used.
 
 
+<a name="vstr_dup_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_cstr_buf()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_dup_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+<a name="vstr_dup_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_cstr_ptr()
+</a><br>Returns: Vstr string<br>Type: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_dup_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+<a name="vstr_dup_cstr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_dup_cstr_ref()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Vstr memory reference<br>Type<strong>[2]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[3]</strong>: size_t
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_dup_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
 <a name="VSTR_DUP_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_DUP_CSTR_BUF()
 </a><br>Returns: Vstr string<br>Type: struct Vstr_base *
@@ -816,6 +932,10 @@
 </p><p>  This macro function calls vstr_dup_ref() with the length being the value of
  strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
  at the offset (Parameter[4]).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
 
 
 <a name="vstr_ref_make_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1038,6 +1158,42 @@
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
  although if it does fail the Vstr string won't have changed (Ie. the function
  is atomic).
+
+
+<a name="vstr_add_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_cstr_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_add_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
+
+<a name="vstr_add_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_cstr_ptr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_add_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
+
+<a name="vstr_add_cstr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_add_cstr_ref()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr memory reference<br>Type<strong>[3]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Offset of Vstr memory reference (Parameter[3])<br>Type<strong>[4]</strong>: size_t
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_add_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
 
 
 <a name="VSTR_ADD_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -1432,6 +1588,44 @@
  happen).
 
 
+<a name="vstr_sub_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sub_cstr_buf()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_sub_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_sub_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sub_cstr_ptr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_sub_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_sub_cstr_ref%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sub_cstr_ref()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr memory reference<br>Type<strong>[4]</strong>: struct Vstr_ref *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Offset of Vstr memory reference (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_sub_ref() with the length being the value of
+ strlen() on the memory from the Vstr memory reference (Parameter[3]) starting
+ at the offset (Parameter[4]).
+
+
 <a name="VSTR_SUB_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SUB_CSTR_BUF()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
@@ -1631,6 +1825,630 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
  (Parameter[4]) and then calling vstr_cmp_vers().
+
+
+<a name="vstr_cmp_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp() if both of the length values
+ (Parameter[3] Parameter[6]) are equal.
+
+
+<a name="vstr_cmp_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_buf() with the length of the buffer being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_buf_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_buf() if both of the length values
+ (Parameter[3] Parameter[5]) are equal.
+
+
+<a name="vstr_cmp_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_cstr_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function returns !vstr_cmp_buf(), if both of the length values are
+ equal, with the length of the buffer being the value of strlen() on the data
+ parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+<a name="vstr_cmp_case_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_buf_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+<a name="vstr_cmp_case_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_cstr_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function returns !vstr_cmp_case_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+<a name="vstr_cmp_vers_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_buf_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of ASCII C string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+<a name="vstr_cmp_vers_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_cstr_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function returns !vstr_cmp_vers_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_bod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+<a name="vstr_cmp_eod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+<a name="vstr_cmp_bod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_bod().
+
+
+<a name="vstr_cmp_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_eod().
+
+
+<a name="vstr_cmp_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_bod().
+
+
+<a name="vstr_cmp_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_eod().
+
+
+<a name="vstr_cmp_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_bod_buf().
+
+
+<a name="vstr_cmp_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_eod_buf().
+
+
+<a name="vstr_cmp_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_eod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_bod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_eod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_bod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+<a name="vstr_cmp_case_eod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case() with the both lengths as the lowest of
+ either passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+<a name="vstr_cmp_case_bod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case_bod().
+
+
+<a name="vstr_cmp_case_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case_eod().
+
+
+<a name="vstr_cmp_case_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_case_bod().
+
+
+<a name="vstr_cmp_case_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_case_eod().
+
+
+<a name="vstr_cmp_case_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case_bod_buf().
+
+
+<a name="vstr_cmp_case_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_case_eod_buf().
+
+
+<a name="vstr_cmp_case_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_eod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_bod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_case_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_case_eod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_case_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_bod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers() with the both lengths as the lowest of either
+ passed length (Parameter[3]) or (Parameter[6]). Thus you get a comparison of
+ the beginning of the data in the two strings.
+
+
+<a name="vstr_cmp_vers_eod%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers() with the both lengths as the lowest of
+ either passed length (Parameter[3]) or (Parameter[6]) and with the positions
+ (Parameter[3]) and (Parameter[6]) changed so that the length of each goes
+ to the end of the string. Thus you get a comparison of the end of the data in
+ the two strings.
+
+
+<a name="vstr_cmp_vers_bod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers_bod().
+
+
+<a name="vstr_cmp_vers_eod_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod_eq()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Vstr string<br>Type<strong>[4]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the Vstr string (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the Vstr string (Parameter[4])<br>Type<strong>[6]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers_eod().
+
+
+<a name="vstr_cmp_vers_bod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_vers_bod().
+
+
+<a name="vstr_cmp_vers_eod_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod_buf()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_vers_eod().
+
+
+<a name="vstr_cmp_vers_bod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers_bod_buf().
+
+
+<a name="vstr_cmp_vers_eod_buf_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod_buf_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls returns !vstr_cmp_vers_eod_buf().
+
+
+<a name="vstr_cmp_vers_bod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers_bod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_eod_cstr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod_cstr()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers_eod_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_bod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_bod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers_bod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cmp_vers_eod_cstr_eq%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cmp_vers_eod_cstr_eq()
+</a><br>Returns: Less then zero, zero or greater than zero depending on comparison<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to ASCII C string<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cmp_vers_eod_buf_eq() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="VSTR_CMP_EQ%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2054,6 +2872,102 @@
  ASCII values are treated equivalently.
 
 
+<a name="vstr_srch_cstr_buf_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_cstr_buf_fwd()
+</a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_srch_cstr_buf_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_cstr_buf_rev()
+</a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_srch_cstr_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_cstr_chrs_fwd()
+</a><br>Returns: Position in the Vstr string of the start of the character<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_srch_cstr_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_cstr_chrs_rev()
+</a><br>Returns: Position in the Vstr string of the start of the character<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_csrch_cstr_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_csrch_cstr_chrs_fwd()
+</a><br>Returns: Position in the Vstr string of the start of the character<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_csrch_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_csrch_cstr_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_csrch_cstr_chrs_rev()
+</a><br>Returns: Position in the Vstr string of the start of the character<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_csrch_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_srch_case_cstr_buf_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_case_cstr_buf_fwd()
+</a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_case_buf_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_srch_case_cstr_buf_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_srch_case_cstr_buf_rev()
+</a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_srch_case_buf_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
 <a name="VSTR_SRCH_CSTR_BUF_FWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SRCH_CSTR_BUF_FWD()
 </a><br>Returns: Position in the Vstr string of the start of the data<br>Type: size_t
@@ -2218,6 +3132,54 @@
  function will return 0 to indicate an error.
 
 
+<a name="vstr_spn_cstr_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_spn_cstr_chrs_fwd()
+</a><br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_spn_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_spn_cstr_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_spn_cstr_chrs_rev()
+</a><br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_spn_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cspn_cstr_chrs_fwd%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cspn_cstr_chrs_fwd()
+</a><br>Returns: Number of characters in the compliment span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cspn_chrs_fwd() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_cspn_cstr_chrs_rev%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cspn_cstr_chrs_rev()
+</a><br>Returns: Number of characters in the compliment span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_cspn_chrs_rev() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
 <a name="VSTR_SPN_CSTR_CHRS_FWD%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> VSTR_SPN_CSTR_CHRS_FWD()
 </a><br>Returns: Number of characters in the span<br>Type: size_t
@@ -2226,7 +3188,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_spn_chrs_fwd() with the length being the
+</p><p>  This function calls vstr_spn_chrs_fwd() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2238,7 +3200,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This macro function calls vstr_spn_chrs_rev() with the length being the
+</p><p>  This function calls vstr_spn_chrs_rev() with the length being the
  value of strlen() on the data parameter (Parameter[4]).
 
 
@@ -2534,6 +3496,37 @@
 </p><p>  This function works like vstr_split_buf() except that instead of having to
  match all the data in the data buffer it matches any of the characters in the
  character buffer (Parameter[4]).
+
+
+<a name="vstr_split_cstr_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_split_cstr_buf()
+</a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data to split on<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Vstr sections<br>Type<strong>[5]</strong>: struct Vstr_sects *
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[6]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[7]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_split_buf() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
+
+
+<a name="vstr_split_cstr_chrs%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_split_cstr_chrs()
+</a><br>Returns: Number of Vstr section nodes added to the Vstr sections<br>Type: unsigned int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to characters to split on<br>Type<strong>[4]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Length of characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Vstr sections<br>Type<strong>[6]</strong>: struct Vstr_sects *
+</td></tr><tr><td>Parameter<strong>[7]</strong>: Limit of sections to add to Vstr sections (Parameter[6])<br>Type<strong>[7]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[8]</strong>: Flags starting VSTR_FLAG_SPLIT_<br>Type<strong>[8]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls vstr_split_chrs() with the length being the
+ value of strlen() on the data parameter (Parameter[4]).
 
 
 <a name="VSTR_SPLIT_CSTR_BUF%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -2832,6 +3825,8 @@
 </p><p>  This function allows you to register arbitrary format specifiers for printing
  from vstr_fmt_vstr(). Note that these trigger off the user escape character,
  which may or may not be the same as the "system" escape character of '%'.
+</p><p>  The call back you register should return 0 (zero) if memory couldn't be 
+ allocated and 1 (one) otherwise.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is

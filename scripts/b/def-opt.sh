@@ -13,5 +13,5 @@ fi
 
 
 CFLAGS="-O2 -march=i386 -mcpu=i686" \
-  $c --with-fmt-float=glibc --enable-linker-script $@ && \
+  $c --enable-wrap-memset --enable-wrap-memcpy --with-fmt-float=glibc --enable-linker-script $@ && \
  make clean && make check

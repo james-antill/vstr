@@ -1,6 +1,6 @@
 #define VSTR_ADD_FMT_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -67,9 +67,9 @@
 #define NUM_IS_ZERO (1 << 29) /* is the number zero */
 #define NUM_IS_NEGATIVE (1 << 30) /* is the number negative */
 
-#define VSTR__FMT_ADD(x, y, z) vstr_nx_add_buf((x), ((x)->len - pos_diff), y, z)
+#define VSTR__FMT_ADD(x, y, z) vstr_add_buf((x), ((x)->len - pos_diff), y, z)
 #define VSTR__FMT_ADD_REP_CHR(x, y, z) \
- vstr_nx_add_rep_chr((x), ((x)->len - pos_diff), y, z)
+ vstr_add_rep_chr((x), ((x)->len - pos_diff), y, z)
 
 /* print a number backwards (any base)... */
 #define VSTR__FMT_ADD_NUM(type, passed_num) do { \
@@ -420,7 +420,7 @@ void vstr__add_fmt_free_conf(Vstr_conf *conf)
   {
     Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_names;
     
-    vstr_nx_fmt_del(conf, tmp->name_str);
+    vstr_fmt_del(conf, tmp->name_str);
   }
 }
 
@@ -431,7 +431,7 @@ static int vstr__fmt_add_spec(Vstr_conf *conf)
   if (!(spec = VSTR__MK(sizeof(struct Vstr__fmt_spec))))
     return (FALSE);
 
-  assert(vstr_nx_wrap_memset(spec, 0xeF, sizeof(struct Vstr__fmt_spec)));
+  assert(vstr_wrap_memset(spec, 0xeF, sizeof(struct Vstr__fmt_spec)));
   
   spec->next = conf->vstr__fmt_spec_make;
   conf->vstr__fmt_spec_make = spec;
@@ -509,6 +509,9 @@ static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
 static int vstr__add_fmt_char(Vstr_base *base, size_t pos_diff,
                               struct Vstr__fmt_spec *spec)
 {
+  if (spec->field_width > 0)
+    --spec->field_width; /* account for char */
+  
   if (spec->field_width_usr && !(spec->flags & LEFT))
     if (spec->field_width > 0)
     {
@@ -540,7 +543,7 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
   size_t len_mbs = 0;
   char *buf_mbs = NULL;
   
-  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
+  vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcrtomb(NULL, spec->u.data_wint, &state);
   if (len_mbs == (size_t)-1)
     goto failed_EILSEQ;
@@ -551,10 +554,13 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
     base->conf->malloc_bad = TRUE;
     goto failed_alloc;
   }
-  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
+  vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcrtomb(buf_mbs, spec->u.data_wint, &state);
   len_mbs += wcrtomb(buf_mbs + len_mbs, L'\0', &state);
   --len_mbs; /* remove terminator */
+  
+  if (spec->field_width > 0)
+    --spec->field_width; /* account for char */
   
   if (spec->field_width_usr && !(spec->flags & LEFT))
     if (spec->field_width > 0)
@@ -641,7 +647,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   char *buf_mbs = NULL;
   const wchar_t *tmp = spec->u.data_ptr;
   
-  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
+  vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
 
   if (!(spec->flags & PREC_USR))
     spec->precision = UINT_MAX;
@@ -652,10 +658,8 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   {
     size_t tmp_mbs = wcrtomb(NULL, L'\0', &state);
     
-    if (tmp_mbs == (size_t)-1)
-      goto failed_EILSEQ; /* don't think this can happen ? */
-    
-    len_mbs += tmp_mbs; /* include '\0' */
+    if (tmp_mbs != (size_t)-1)
+      len_mbs += tmp_mbs; /* include '\0' */
   }
   else
     ++len_mbs;
@@ -666,11 +670,11 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
     goto failed_alloc;
   }
   tmp = spec->u.data_ptr;
-  vstr_nx_wrap_memset(&state, 0, sizeof(mbstate_t));
+  vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcsnrtombs(buf_mbs, &tmp, spec->precision, len_mbs, &state);
   if (tmp) /* wcslen() > spec->precision */
   {
-    size_t tmp_mbs = wcrtomb(buf_mbs, L'\0', &state);
+    size_t tmp_mbs = wcrtomb(buf_mbs + len_mbs, L'\0', &state);
     len_mbs += tmp_mbs - 1; /* ignore '\0' */
   }
   
@@ -808,12 +812,7 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
   usr_spec->data_ptr[scan] = NULL;
 
   if (!(*beg->usr_spec->func)(base, base->len - pos_diff, usr_spec))
-  {
-    if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
-      VSTR__F(usr_spec);
-    
-    return (NULL);
-  }
+    last = NULL;
   
   if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
     VSTR__F(usr_spec);
@@ -1044,7 +1043,6 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
         case 's':
           u.data_ptr = va_arg(ap, char *);
           
-          assert(u.data_ptr);
           if (!u.data_ptr)
             u.data_ptr = (char *)"(null)";
           break;
@@ -1052,7 +1050,6 @@ static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
         case 'S':
           u.data_ptr = va_arg(ap, wchar_t *);
           
-          assert(u.data_ptr);
           if (!u.data_ptr)
             u.data_ptr = (wchar_t *)(L"(null)");
           break;
@@ -1331,7 +1328,7 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
 
     return (fmt + node->name_len);
   }
-
+  
   return (fmt);
   
  failed_alloc:
@@ -1385,14 +1382,8 @@ static const char *vstr__add_fmt_spec(const char *fmt,
     
    use_field_width:
     spec->field_width_usr = TRUE;
-    
-    if (tmp_num < 0)
-    {
-      VSTR__FMT_S2U_NUM(spec->field_width, tmp_num);
-      spec->flags |= LEFT;
-    }
-    else
-      spec->field_width = tmp_num;
+    spec->field_width = tmp_num;
+    ASSERT(tmp_num >= 0);
   }
   else if (*fmt == '*')
   {
@@ -1426,10 +1417,9 @@ static const char *vstr__add_fmt_spec(const char *fmt,
     if (VSTR__ADD_FMT_ISDIGIT(*fmt))
     {
       tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
-      if (tmp_num < 0) /* check to make sure things go nicely */
-        tmp_num = 0;
 
       spec->precision = tmp_num;
+      ASSERT(tmp_num >= 0);
     }
     else if (*fmt == '*')
     {
@@ -1548,14 +1538,9 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     {
       if (fmt_usr_escape == '%')
         goto vstr__fmt_sys_escapes;
-      
-      assert(FALSE);
-      
-      vstr__fmt_init_spec(spec);
-      spec->u.data_c = *fmt_orig;
-      spec->fmt_code = 'c';
-      VSTR__FMT_MV_SPEC(base->conf, FALSE);
-      fmt = fmt_orig + 1;
+
+      assert(FALSE); /* $$ etc. is already done before here */
+      fmt = "";
     }
     else
       fmt = fmt_end;
@@ -1657,12 +1642,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       
     default:
       assert(FALSE);
-      
-      vstr__fmt_init_spec(spec);
-      spec->u.data_c = *fmt_orig;
-      spec->fmt_code = 'c';
-      VSTR__FMT_MV_SPEC(base->conf, FALSE);
-      fmt = fmt_orig + 1;
+      fmt = "";
       continue;
   }
 
@@ -1682,7 +1662,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
  failed_write_spec:
 
  if (base->len - orig_len)
-   vstr_nx_del(base, start_pos, base->len - orig_len);
+   vstr_del(base, start_pos, base->len - orig_len);
 
  if (0) /* already done in write_spec */
  {
@@ -1696,19 +1676,19 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
  return (0);
 }
 
-size_t vstr_nx_add_vfmt(Vstr_base *base, size_t pos,
+size_t vstr_add_vfmt(Vstr_base *base, size_t pos,
                         const char *fmt, va_list ap)
 {
   return (vstr__add_vfmt(base, pos, TRUE,  fmt, ap));
 }
 
-size_t vstr_nx_add_vsysfmt(Vstr_base *base, size_t pos,
+size_t vstr_add_vsysfmt(Vstr_base *base, size_t pos,
                            const char *fmt, va_list ap)
 {
   return (vstr__add_vfmt(base, pos, FALSE, fmt, ap));
 }
 
-size_t vstr_nx_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
+size_t vstr_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
 {
   size_t len = 0;
   va_list ap;
@@ -1722,7 +1702,7 @@ size_t vstr_nx_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
   return (len);
 }
 
-size_t vstr_nx_add_sysfmt(Vstr_base *base, size_t pos, const char *fmt, ...)
+size_t vstr_add_sysfmt(Vstr_base *base, size_t pos, const char *fmt, ...)
 {
   size_t len = 0;
   va_list ap;

@@ -1,3 +1,192 @@
+2003-02-12  James Antill  <james@and.org>
+
+	* NEWS: Release 1.0.1
+
+	* src/vstr_cache.c (vstr__cache_dup_cbs): Fixed resize bug, when 
+	conf < dupconf.
+
+2003-02-11  James Antill  <james@and.org>
+
+	* include/vstr-switch.h (VSTR_COMPILE_MACRO_FUNCTIONS): Added constant
+	to toggle use of macro functions and have an normal function partner.
+
+	* include/vstr-inline.h (vstr_cmp_eq): Added function.
+	(vstr_cmp_buf_eq): Added function.
+	(vstr_cmp_cstr): Added function.
+	(vstr_cmp_cstr_eq): Added function.
+	(vstr_cmp_case_eq): Added function.
+	(vstr_cmp_case_buf_eq): Added function.
+	(vstr_cmp_case_cstr): Added function.
+	(vstr_cmp_case_cstr_eq): Added function.
+	(vstr_cmp_vers_eq): Added function.
+	(vstr_cmp_vers_buf_eq): Added function.
+	(vstr_cmp_vers_cstr): Added function.
+	(vstr_cmp_vers_cstr_eq): Added function.
+	(vstr_add_cstr_buf): Added function.
+	(vstr_add_cstr_ptr): Added function.
+	(vstr_add_cstr_ref): Added function.
+	(vstr_dup_cstr_buf): Added function.
+	(vstr_dup_cstr_ptr): Added function.
+	(vstr_dup_cstr_ref): Added function.
+	(vstr_sub_cstr_buf): Added function.
+	(vstr_sub_cstr_ptr): Added function.
+	(vstr_sub_cstr_ref): Added function.
+	(vstr_srch_cstr_buf_fwd): Added function.
+	(vstr_srch_cstr_buf_rev): Added function.
+	(vstr_srch_cstr_chrs_fwd): Added function.
+	(vstr_srch_cstr_chrs_rev): Added function.
+	(vstr_csrch_cstr_chrs_fwd): Added function.
+	(vstr_csrch_cstr_chrs_rev): Added function.
+	(vstr_srch_case_cstr_buf_fwd): Added function.
+	(vstr_srch_case_cstr_buf_rev): Added function.
+	(vstr_spn_cstr_chrs_fwd): Added function.
+	(vstr_spn_cstr_chrs_rev): Added function.
+	(vstr_cspn_cstr_chrs_fwd): Added function.
+	(vstr_cspn_cstr_chrs_rev): Added function.
+	(vstr_split_cstr_buf): Added function.
+	(vstr_split_cstr_chrs): Added function.
+	(vstr_cmp_eod): Added function.
+	(vstr_cmp_bod_eq): Added function.
+	(vstr_cmp_bod_eq): Added function.
+	(vstr_cmp_eod_eq): Added function.
+	(vstr_cmp_eod_buf): Added function.
+	(vstr_cmp_bod_buf_eq): Added function.
+	(vstr_cmp_bod_buf_eq): Added function.
+	(vstr_cmp_eod_buf_eq): Added function.
+	(vstr_cmp_bod_cstr): Added function.
+	(vstr_cmp_eod_cstr): Added function.
+	(vstr_cmp_bod_cstr_eq): Added function.
+	(vstr_cmp_eod_cstr_eq): Added function.
+	(vstr_cmp_case_eod): Added function.
+	(vstr_cmp_case_bod_eq): Added function.
+	(vstr_cmp_case_bod_eq): Added function.
+	(vstr_cmp_case_eod_eq): Added function.
+	(vstr_cmp_case_eod_buf): Added function.
+	(vstr_cmp_case_bod_buf_eq): Added function.
+	(vstr_cmp_case_bod_buf_eq): Added function.
+	(vstr_cmp_case_eod_buf_eq): Added function.
+	(vstr_cmp_case_bod_cstr): Added function.
+	(vstr_cmp_case_eod_cstr): Added function.
+	(vstr_cmp_case_bod_cstr_eq): Added function.
+	(vstr_cmp_case_eod_cstr_eq): Added function.
+	(vstr_cmp_vers_eod): Added function.
+	(vstr_cmp_vers_bod_eq): Added function.
+	(vstr_cmp_vers_bod_eq): Added function.
+	(vstr_cmp_vers_eod_eq): Added function.
+	(vstr_cmp_vers_eod_buf): Added function.
+	(vstr_cmp_vers_bod_buf_eq): Added function.
+	(vstr_cmp_vers_bod_buf_eq): Added function.
+	(vstr_cmp_vers_eod_buf_eq): Added function.
+	(vstr_cmp_vers_bod_cstr): Added function.
+	(vstr_cmp_vers_eod_cstr): Added function.
+	(vstr_cmp_vers_bod_cstr_eq): Added function.
+	(vstr_cmp_vers_eod_cstr_eq): Added function.
+
+2003-02-09  James Antill  <james@and.org>
+
+	* src/vstr_sub.c (vstr__sub_buf_slow): Massive code path removal, speed
+	should be similar ... fixed bug while doing it
+
+2003-02-08  James Antill  <james@and.org>
+
+	* src/vstr_cache.c (vstr__cache_cstr_cpy): Fix caching bug when copying
+	cstr cache information from one vstr to another.
+
+	* src/vstr_conv.c (vstr_conv_encode_uri): Refactored error path, and
+	discovered memory leak in error path.
+	(vstr_conv_decode_uri): Refactored error path, and discovered memory
+	leak in error path.
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_char): Fixed "%3c" in formatted
+	output (it used to put out one too many spaces).
+	(vstr__add_fmt_wide_char): Fixed "%3c" in formatted output (it used to
+	put out one too many spaces).
+	(vstr__add_fmt_wide_cstr): Fixes for printing wide character strings
+	with precision.
+
+	* src/vstr_export.c (vstr_export_ref): Move code so that a ref export 
+	looks at the cstr cache first, and so returns the same ref as 
+	export_cstr_ref().
+
+2003-02-07  James Antill  <james@and.org>
+
+	* src/vstr_del.c (vstr_extern_inline_del): Fixed bug with iovec cache
+	when you've got an offset and then delete from the end.
+
+	* src/vstr.c (vstr_swap_conf): Fix bad test, always failed if buffer
+	size or cache callbacks weren't compatible.
+
+2003-02-03  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_mmap_fd): Fix bug where mmap() wouldn't
+	be called for zero sized files, if you asked vstr to work out the
+	filesize for you. Now fstat() of files bigger than or equal to the
+	offset give ENOSPAC as an fstat() value.
+	(vstr_sc_read_len_file): Now fstat() of files bigger than or equal to
+	the offset give ENOSPAC as an fstat() value.
+	(vstr_sc_read_len_fd): Now fstat() of files equal to zero give
+	ENOSPAC as an fstat() value.
+
+
+2003-01-30  James Antill  <james@and.org>
+
+	* src/vstr_cntl.c (vstr_cntl_conf): Fix bug where the return value for
+	VSTR_CNTL_CONF_SET_NUM_SPARE_BUF was always false, even though it
+	worked.
+	(vstr_cntl_conf): Fixed bug where VSTR_CNTL_CONF_SET_NUM_SPARE_NON,
+	VSTR_CNTL_CONF_SET_NUM_SPARE_PTR, and VSTR_CNTL_CONF_SET_NUM_SPARE_REF
+	would allocate the wrong ammount of nodes.
+
+	* include/vstr-const.h 
+	(VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF): Added constant.
+	(VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_NON): Added constant.
+	(VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR): Added constant.
+	(VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF): Added constant.
+
+	* src/vstr_sub.c (vstr_sub_ref): Speed up function for replacing one
+	reference with another.
+
+	* include/vstr-extern.h (vstr_cmp_vers_buf): Fix nonnull attribute.
+	(vstr_cmp_case_buf): Fix nonnull attribute.
+	(vstr_srch_chrs_fwd): Fix nonnull attribute.
+	(vstr_srch_chrs_rev): Fix nonnull attribute.
+	(vstr_csrch_chrs_fwd): Fix nonnull attribute.
+	(vstr_csrch_chrs_rev): Fix nonnull attribute.
+	(vstr_srch_buf_fwd): Fix nonnull attribute.
+	(vstr_srch_buf_rev): Fix nonnull attribute.
+	(vstr_srch_case_buf_fwd): Fix nonnull attribute.
+	(vstr_srch_case_buf_rev): Fix nonnull attribute.
+	(vstr_spn_chrs_fwd): Fix nonnull attribute.
+	(vstr_spn_chrs_rev): Fix nonnull attribute.
+	(vstr_cspn_chrs_fwd): Fix nonnull attribute.
+	(vstr_cspn_chrs_rev): Fix nonnull attribute.
+	(vstr_split_buf): Fix nonnull attribute.
+	(vstr_split_chrs): Fix nonnull attribute.
+
+2003-01-28  James Antill  <james@and.org>
+
+	* scripts/ncc.sh: ncc program analysis script.
+
+2003-01-27  James Antill  <james@and.org>
+
+	* tst/Makefile.am (tst): Do all checks in one pass.
+
+	* src/vstr_version.c.in: Change the version info. output slightly.
+
+2003-01-25  James Antill  <james@and.org>
+
+	* tst/add_fmt/tst_double.c (tst): Change test slightly to work around
+	broken glibc double formating.
+
+	* tst/add_fmt/tst_usr.c (tst): Allow checks to pass with fmt double 
+	none.
+
+	* tst/add_fmt/tst_double.c (tst): Re-add accidently removed checks.
+
+	* src/*.c: Changed vstr_nx_ symbols to just vstr_ ... do
+	the remapping automatically.
+	Also reindented everything. 
+
 2003-01-20  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.0

@@ -205,7 +205,7 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
     
     ex_hexdump_process(s1, s2, !keep_going);
 
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
   }
 }
 
@@ -243,13 +243,13 @@ int main(int argc, char *argv[])
     errno = ENOMEM, DIE("vstr_make_base:");
 
   /* set output to non-blocking mode */
-  ex_utils_set_o_nonblock(1);
+  ex_utils_set_o_nonblock(STDOUT_FILENO);
   
   if (count >= argc)  /* if no arguments -- use stdin */
   {
     /* set input to non-blocking mode */
-    ex_utils_set_o_nonblock(0);
-    ex_hexdump_read_fd_write_stdout(s1, s2, 0);
+    ex_utils_set_o_nonblock(STDIN_FILENO);
+    ex_hexdump_read_fd_write_stdout(s1, s2, STDIN_FILENO);
   }
   
   /* loop through all arguments, open the file specified
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
   while (count < argc)
   {
     unsigned int err = 0;
-
+    
     /* try to mmap the file, as that is faster ... */
     if (s2->len < MAX_R_DATA_INCORE)
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
       DIE("add:");
     else
       /* mmap worked so processes the entire file at once */
-      ex_hexdump_process(s1, s2, FALSE);
+      ex_hexdump_process(s1, s2, TRUE);
 
     /* write some of what we've created */
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);

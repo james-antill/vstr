@@ -17,10 +17,11 @@
   </head>
 
   <body bgcolor="#FFFFFF">
-<table width="100%"><tr><td bgcolor="#DDFFDD">
-    <h1>Vstr documentation -- overview</h1>
-</td></tr></table>
 
+    <table width="100%"><tr><td bgcolor="#DDFFDD">
+	  <h1>Vstr documentation -- overview</h1>
+	</td></tr></table>
+    
     <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="contents"></a>Contents</h2>
 	</td></tr></table>
@@ -72,12 +73,14 @@
 	</td></tr>
     </table>
 
+<!-- Section -->    
+
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="download"></a>Download URLs</h2>
 	</td></tr></table>
     
 <table width="80%"><tr><td>
-	  <h2>Current version is 1.0.0</h2>
+	  <h2>Current version is 1.0.1</h2>
 	  <ul>
             <li> Tar balls are available via.
               <a href="ftp://ftp.and.org/pub/james/vstr/latest/">ftp</a> and
@@ -94,6 +97,8 @@
               <a href="TODO">here</a>
 	    </li>
 </td></tr></table>
+
+<!-- Section -->
 
     <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="about"></a>About</h2>
@@ -178,31 +183,41 @@
 
 </table>
 
+<!-- Section -->    
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2><a name="testing"></a>Testing and API documentation</h2>
+	  <h2><a name="testing"></a>Testing</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td>
 	  <p>
 	    The Vstr string 
 	    library comes with a "make check" test suite with about
-	  <emp>six and a half thousand lines</emp> of code in it.
+	  <emp>seven thousand lines</emp> of code in it.
 	  This is over a third of the size of the library itself, and more 
-	  lines of code than some string libraries implementations. 
+	  lines of code than some string library implementations. 
 	</p><p>
 	    The test suite has at least one test for each function call, and
 	    at least one usage of each constant. This is automatically checked
 	    using the "scripts/tst_coverage_diff.sh" script included in the
 	    distribution (note that you need to compile without inline 
 	    support, or inline functions won't be seen to be part of the test
-	    suite). This does not guarantee that the library doesn't have any
-	    bugs, it does mean that you have an assurance that most things
-	    will work as advertised.
+	    suite).
+	  </p><p>
+	    Using the coverage analysis available with gcc the test suite has
+	  <emp>coverage of over 82% of the source</emp>
+	  (the biggest untested sections of code are those from
+	  the malloc() error paths).
+	</p><p>
+	    Note that even if the library had 100% coverage, that still
+	    doesn't mean that there are no bugs in the code (as you need a
+	    test for every code path). 
 	  </p>
 </td></tr>
 
 </table>
+
+<!-- Section -->    
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="reference"></a>Reference Documentation</h2>
@@ -240,6 +255,8 @@ there is any).
 </p></td></tr>
 
 </table>
+
+<!-- Section -->    
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="APItp"></a>Reference to the layout of the API</h2>
@@ -305,6 +322,8 @@ that can be broken up into... <br>
 
 </table>
 
+<!-- Section -->    
+
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="reentrant"></a>Threads and signals</h2>
 	</td></tr></table>
@@ -355,6 +374,8 @@ that can be broken up into... <br>
 </p></td></tr>
 
 </table>
+
+<!-- Section -->    
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="cust-fmt"></a>Custom formatters</h2>
@@ -445,6 +466,8 @@ struct in_addr ipv4;
 
 </table>
 
+<!-- Section -->    
+
 <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2><a name="examples"></a>Simple and heavily commented examples</h2>
 	</td></tr></table>
@@ -494,7 +517,7 @@ use it to measure the differences between those methods.
 shows text repeatedly, it does show the difference between the different
 methods of copying data between Vstr strings. You can use this program to
 measure those copying affects. One minor note is that it does allow you to use the string "--version" as the output ... which the GNU version doesn't (as of
-1.0.12).
+fileutils-2.0.12).
 </li>
 <li>
 <a href="vstr-latest/vstr/examples/ex_mon_cp.c.html">monitor copy</a> - This
@@ -538,7 +561,7 @@ Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Jan 20 21:10:38 EST 2003
+Last modified: Wed Feb 12 19:51:22 EST 2003
 <!-- hhmts end -->
   </body>
 </html>

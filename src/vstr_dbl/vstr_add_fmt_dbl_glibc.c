@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -87,14 +87,14 @@ struct vstr__fmt_printf_info
 
 #undef putc
 #define putc(c, f) \
- (vstr_nx_add_rep_chr((f)->base, (f)->base->len - (f)->pos_diff, c, 1) ? \
+ (vstr_add_rep_chr((f)->base, (f)->base->len - (f)->pos_diff, c, 1) ? \
   (c) : EOF)
 
 #define PUT(f, s, n) \
- vstr_nx_add_buf((f)->base, ((f)->base->len - (f)->pos_diff), s, n)
+ vstr_add_buf((f)->base, ((f)->base->len - (f)->pos_diff), s, n)
 
 #define PAD(f, c, n) \
- (vstr_nx_add_rep_chr((f)->base, (f)->base->len - (f)->pos_diff, c, n) * n)
+ (vstr_add_rep_chr((f)->base, (f)->base->len - (f)->pos_diff, c, n) * n)
 
 #undef   isupper
 #define  isupper(x) (fp->spec->flags & LARGE)

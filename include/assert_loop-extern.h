@@ -11,12 +11,12 @@ extern void vstr__assert_loop(const char *,
 #  undef  assert
 #  define assert(x) do { \
  if (!(x)) \
-  vstr__assert_loop(#x, __FILE__, __LINE__, __PRETTY_FUNCTION__); } \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
  while (FALSE)
 #  undef  ASSERT
 #  define ASSERT(x) do { \
  if (!(x)) \
-  vstr__assert_loop(#x, __FILE__, __LINE__, __PRETTY_FUNCTION__); } \
+  vstr__assert_loop(#x, __FILE__, __LINE__, __func__); } \
  while (FALSE)
 # endif
 #endif
