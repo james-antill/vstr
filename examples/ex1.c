@@ -147,7 +147,7 @@ static void do_test(Vstr_base *str2, const char *filename)
       errno = ENOMEM, DIE("vstr_add_fmt:");
   }
   
-  if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", str2))
+  if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", (void *)str2))
     errno = ENOMEM, DIE("vstr_add_fmt:");
   
   if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))

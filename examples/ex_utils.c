@@ -1,4 +1,6 @@
 
+#define _GNU_SOURCE 1 /* needed for caddr_t */
+
 #define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
 

@@ -1,3 +1,35 @@
+2002-02-03  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (VSTR_SECTS_DECL): Changed macro function, it's
+	now a single declaration and ISO C89 compliant.
+	(VSTR_SECTS_INIT): Added macro function.
+	(VSTR_SECTS_DECL_INIT): Added macro function, must be called as well as 
+	VSTR_SECTS_DECL.
+	(VSTR_SECTS_EXTERN_DECL): Added macro function, so you can have
+	global static sects.
+
+	* src/vstr_sect.c (vstr_sects_make): Moved function to be inside the 
+	vstr_sect namespace.
+	(vstr_sects_free): Dito.
+
+	* configure.in (--enable-ansi):  Added enable-ansi argument.
+
+	* src/vstr_sc.c (vstr_sc_write_fd): Made errno a usable value for all
+	error cases.
+	(vstr_sc_read_fd): Dito.
+	(vstr_sc_add_fd): Dito.
+
+2002-02-01  James Antill  <james@and.org>
+
+	* src/vstr_sc.c (vstr_sc_write_file): Save and restore errno when an 
+	error occurs before close().
+	(vstr_sc_add_file): Save and restore errno when an error occurs before
+	close().
+
+2002-02-01  James Antill  <james@and.org>
+
+	* NEWS: Release 0.7.2
+
 2002-02-01  James Antill  <james@and.org>
 
 	* include/vstr-switch.h (VSTR_COMPILE_INCLUDE): Added compile switch

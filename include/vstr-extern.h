@@ -22,21 +22,56 @@
  */
 
 /* == macro functions == */
-#define VSTR_DECL_INIT_SECTS(sz, ptr) { 0, (sz), \
+#define VSTR_SECTS_INIT(sects, p_sz, p_ptr, p_free_ptr) do { \
+  (sects)->num = 0; \
+  (sects)->sz = (p_sz); \
+ \
+  (sects)->malloc_bad = 0; \
+  (sects)->free_ptr = !!(p_free_ptr); \
+  (sects)->can_add_sz = !(p_free_ptr); \
+  (sects)->can_del_sz = !(p_free_ptr); \
+ \
+  (sects)->alloc_double = 1; \
+ \
+ \
+  (sects)->ptr = (p_ptr); \
+ } while (0)
+
+#define VSTR__SECTS_DECL_INIT(p_sz) { 0, (p_sz), \
  0, 0, 0, 0, \
  \
- 1, 0, 0, 0, \
  0, 0, 0, 0, \
  0, 0, 0, 0, \
  0, 0, 0, 0, \
  0, 0, 0, 0, \
  0, 0, 0, 0, \
  0, 0, 0, 0, \
- ptr}
+ 0, 0, 0, 0, \
+ (Vstr_sect_node *)0}
 
-#define VSTR_DECL_SECTS(pre, name, sz) \
- pre struct Vstr_sect_node vstr__sect_array__ ## name [sz]; \
- pre struct Vstr_sects name = VSTR_DECL_INIT_SECTS(sz, vstr__sect_array__ ## name)
+/* This is more disgusting than it should be because C89 doesn't say you
+ * can init part of a struct to another variable.
+ *
+ * It basically does the same thing as...
+ *
+ * struct Vstr_sects name[1] = VSTR__SECTS_DECL_INIT(sz);
+ * struct Vstr_sect_node name[sz];
+ *
+ * ...asssuming that C allowed that, with the meaning of tack the second
+ * declaration on the end of the first.
+ *
+ * NOTE: assumes sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node) */
+#define VSTR_SECTS_EXTERN_DECL(name, sz) \
+ struct Vstr_sects name[1 + \
+   ((sz) - (((sizeof(struct Vstr_sects) - \
+              sizeof(struct Vstr_sect_node)) * (sz)) / \
+            sizeof(struct Vstr_sects)))]
+
+#define VSTR_SECTS_DECL(name, sz) \
+ VSTR_SECTS_EXTERN_DECL(name, sz) = {VSTR__SECTS_DECL_INIT(sz)}
+
+#define VSTR_SECTS_DECL_INIT(sects) \
+ (sects)->ptr = (struct Vstr_sect_node *)(&((sects)[1]))
 
 #define VSTR_SECTS_NUM(sects, off) ((sects)->ptr[(off) - 1])
 
@@ -87,9 +122,9 @@ extern struct Vstr_base *vstr_dup_vstr(struct Vstr_conf *,
                                        unsigned int);
 
 extern size_t vstr_add_vfmt(struct Vstr_base *, size_t, const char *, va_list)
-    __attribute__ ((__format__ (__printf__, 3, 0)));
+    VSTR__COMPILE_ATTR_FMT(3, 0);
 extern size_t vstr_add_fmt(struct Vstr_base *, size_t, const char *, ...)
-    __attribute__ ((__format__ (__printf__, 3, 4)));
+    VSTR__COMPILE_ATTR_FMT(3, 4);
 
 extern size_t vstr_add_iovec_buf_beg(struct Vstr_base *, size_t,
                                      unsigned int, unsigned int,
@@ -225,9 +260,10 @@ extern void vstr_export_cstr_buf(const struct Vstr_base *, size_t, size_t,
                                  void *, size_t);
 extern struct Vstr_ref *vstr_export_cstr_ref(const struct Vstr_base *,
                                              size_t, size_t);
-/* section functions */
-extern struct Vstr_sects *vstr_make_sects(unsigned int);
-extern void vstr_free_sects(struct Vstr_sects *);
+
+/* section functions -- seperate namespace */
+extern struct Vstr_sects *vstr_sects_make(unsigned int);
+extern void vstr_sects_free(struct Vstr_sects *);
 
 extern int vstr_sects_add(struct Vstr_sects *, size_t, size_t);
 extern int vstr_sects_del(struct Vstr_sects *, unsigned int);

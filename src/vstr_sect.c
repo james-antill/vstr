@@ -21,7 +21,7 @@
 /* functions to manage a Vstr section */
 #include "main.h"
 
-Vstr_sects *vstr_make_sects(unsigned int beg_num)
+Vstr_sects *vstr_sects_make(unsigned int beg_num)
 {
   Vstr_sects *sects = malloc(sizeof(Vstr_sects));
   Vstr_sect_node *ptr = NULL;
@@ -34,21 +34,15 @@ Vstr_sects *vstr_make_sects(unsigned int beg_num)
     return (NULL);
   }
 
-  if (TRUE)
-  {
-    Vstr_sects dummy_sects = VSTR_DECL_INIT_SECTS(beg_num, ptr);
-    
-    *sects = dummy_sects;
-  }
+  VSTR_SECTS_INIT(sects, beg_num, ptr, TRUE);
   
   sects->free_ptr = TRUE;
-
   sects->can_add_sz = TRUE;
 
   return (sects);
 }
 
-void vstr_free_sects(Vstr_sects *sects)
+void vstr_sects_free(Vstr_sects *sects)
 {
   if (!sects)
     return;
@@ -84,6 +78,9 @@ static int vstr__sects_add(Vstr_sects *sects)
 /* FIXME: inline */
 int vstr_sects_add(Vstr_sects *sects, size_t pos, size_t len)
 {
+  /* see vstr-extern.h for why */
+  assert(sizeof(struct Vstr_sects) >= sizeof(struct Vstr_sect_node));
+  
   if (!sects->sz || (sects->num >= sects->sz))
   {
     if (!sects->can_add_sz)

@@ -51,16 +51,17 @@ int main(int argc, char *argv[])
                              VSTR_FLAG_SPLIT_MID_NULL |
                              VSTR_FLAG_SPLIT_END_NULL);
     const int flags = VSTR_FLAG_SPLIT_NO_RET;
-    VSTR_DECL_SECTS(, sects, SECTS_LOOP);
+    VSTR_SECTS_DECL(sects, SECTS_LOOP);
     unsigned int num = 0;
-    
-    vstr_split_buf(str2, pos, len, "\n", 1, &sects, sects.sz,
+
+    VSTR_SECTS_DECL_INIT(sects);
+    vstr_split_buf(str2, pos, len, "\n", 1, sects, sects->sz,
                    flags | (RM_BLANK_LINES ? 0 : blank_lines));
 
-    while ((++num < SECTS_LOOP) && (num <= sects.num))
+    while ((++num < SECTS_LOOP) && (num <= sects->num))
     {
-      size_t split_pos = VSTR_SECTS_NUM(&sects, num).pos;
-      size_t split_len = VSTR_SECTS_NUM(&sects, num).len;
+      size_t split_pos = VSTR_SECTS_NUM(sects, num).pos;
+      size_t split_len = VSTR_SECTS_NUM(sects, num).len;
 
       if (split_len && (vstr_spn_buf_fwd(str2, split_pos, split_len,
                                          " \v\t", 3) == split_len))
@@ -83,12 +84,12 @@ int main(int argc, char *argv[])
         ex_utils_write(str1, 1);
     }
 
-    if (sects.num != sects.sz)
+    if (sects->num != sects->sz)
       len = 0;
     else
     {
-      pos = VSTR_SECTS_NUM(&sects, sects.sz).pos;
-      len = VSTR_SECTS_NUM(&sects, sects.sz).len;
+      pos = VSTR_SECTS_NUM(sects, sects->sz).pos;
+      len = VSTR_SECTS_NUM(sects, sects->sz).len;
     }
   }
 

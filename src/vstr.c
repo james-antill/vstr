@@ -23,7 +23,7 @@
 
 static size_t vstr__grp_strlen(const char *passed_str)
 {
-  const unsigned char *str = passed_str;
+  const unsigned char *str = (const unsigned char *)passed_str;
   size_t len = 0;
   
   while (*str && (*str < CHAR_MAX))

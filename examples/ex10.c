@@ -10,7 +10,9 @@
 #include "ex_utils.h"
 
 const unsigned int FLAGS = (16 |
-                            // VSTR_FLAG_PARSE_NUM_LOCAL |
+#if 0
+                            VSTR_FLAG_PARSE_NUM_LOCAL |
+#endif
                             VSTR_FLAG_PARSE_NUM_SEP | 
                             VSTR_FLAG_PARSE_NUM_OVERFLOW | 
                             VSTR_FLAG_PARSE_NUM_SPACE |

@@ -120,6 +120,7 @@ static size_t vstr__spn_buf_rev_slow(const Vstr_base *base,
   ret += scan_len;
   
  next_loop_memchr_fail:
+  continue;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                           scan, &scan_str, &scan_len)));
  
@@ -276,6 +277,7 @@ static size_t vstr__cspn_buf_rev_slow(const Vstr_base *base,
   ret += scan_len;
   
  next_loop_memchr_fail:
+  continue;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                           scan, &scan_str, &scan_len)));
  

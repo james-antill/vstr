@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE 1
 
 /* This is a slowcat program, you can limit the number of bytes written and
  * how often they are written.

@@ -58,6 +58,12 @@
 # endif
 #endif
 
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+# define VSTR__COMPILE_ATTR_FMT(x, y) \
+ __attribute__ ((__format__ (__printf__, x, y)))
+#else
+# define VSTR__COMPILE_ATTR_FMT(x, y) /* nothing */
+#endif
 
 #ifdef VSTR_AUTOCONF_NDEBUG
 # define VSTR_TYPE_CONST_DEBUG_1 0

@@ -33,7 +33,7 @@ static void vstr__sc_ref_munmap(Vstr_ref *passed_ref)
 int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
                    unsigned int *err)
 {
-  int dummy_err;
+  unsigned int dummy_err;
   caddr_t addr = (caddr_t)-1;
   Vstr__sc_mmap_ref *mmap_ref = NULL;
   
@@ -77,6 +77,7 @@ int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
  malloc_mmap_ref_failed:
   munmap(addr, len);
   *err = VSTR_TYPE_SC_ADD_FILE_ERR_MEM;
+  errno = ENOMEM;
   base->conf->malloc_bad = TRUE;
   
   return (FALSE);
@@ -86,8 +87,9 @@ int vstr_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
                      unsigned int *err)
 {
   int fd = open(filename, O_RDONLY);
-  int dummy_err;
+  unsigned int dummy_err;
   int ret = 0;
+  int saved_errno = 0;
   
   if (!err)
     err = &dummy_err;
@@ -100,9 +102,15 @@ int vstr_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
 
   ret = vstr_sc_add_fd(base, pos, fd, 0, 0, err);
 
+  if (*err)
+    saved_errno = errno;
+  
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO;
 
+  if (saved_errno)
+    errno = saved_errno;
+  
   return (ret);
 }
 
@@ -122,6 +130,7 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   if (!vstr_add_iovec_buf_beg(base, pos, min, max, &iovs, &num))
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_MEM;
+    errno = ENOMEM;
     return (FALSE);
   }
 
@@ -142,6 +151,7 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   if (!bytes)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_EOF;
+    errno = EIO;
     return (FALSE);
   }
 
@@ -151,7 +161,7 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
 int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
                      unsigned int *err)
 {
-  int dummy_err;
+  unsigned int dummy_err;
 
   if (!err)
     err = &dummy_err;
@@ -178,6 +188,7 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
     if (!len)
     {
       *err = VSTR_TYPE_SC_WRITE_FILE_ERR_MEM;
+      errno = ENOMEM;
       return (FALSE);
     }
     assert(len == base->len);
@@ -207,8 +218,9 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
                        unsigned int *err)
 {
   int fd = -1;
-  int dummy_err;
+  unsigned int dummy_err;
   int ret = 0;
+  int saved_errno = 0;
   
   if (!err)
     err = &dummy_err;
@@ -223,11 +235,16 @@ int vstr_sc_write_file(Vstr_base *base, size_t pos, size_t len,
     return (FALSE);
   }
 
-  /* EGAIN shouldn't happen, so we're ok */
   ret = vstr_sc_write_fd(base, pos, len, fd, err);
 
+  if (*err)
+    saved_errno = errno;
+  
   if ((close(fd) == -1) && !*err)
     *err = VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO;
-  
+
+  if (saved_errno)
+    errno = saved_errno;
+
   return (ret);
 }

@@ -31,12 +31,12 @@ static int vstr__parse_num(const Vstr_base *base,
   size_t len = *passed_len;
   unsigned int num_base = flags & VSTR_FLAG_PARSE_NUM_MASK;
   int auto_base = FALSE;
-  unsigned char num_0 = '0';
-  unsigned char let_x_low = 'x';
-  unsigned char let_X_high = 'X';
-  unsigned char sym_minus = '-';
-  unsigned char sym_plus = '+';
-  unsigned char sym_space = ' ';
+  char num_0 = '0';
+  char let_x_low = 'x';
+  char let_X_high = 'X';
+  char sym_minus = '-';
+  char sym_plus = '+';
+  char sym_space = ' ';
   size_t tmp = 0;
   
   if (!num_base)

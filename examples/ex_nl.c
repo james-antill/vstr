@@ -48,15 +48,16 @@ int main(int argc, char *argv[])
                        VSTR_FLAG_SPLIT_MID_NULL |
                        VSTR_FLAG_SPLIT_END_NULL |
                        VSTR_FLAG_SPLIT_NO_RET);
-    VSTR_DECL_SECTS(, sects, SECTS_LOOP);
+    VSTR_SECTS_DECL(sects, SECTS_LOOP);
     unsigned int num = 0;
-    
-    vstr_split_buf(str2, pos, len, "\n", 1, &sects, sects.sz, flags);
 
-    while ((++num < SECTS_LOOP) && (num <= sects.num))
+    VSTR_SECTS_DECL_INIT(sects);
+    vstr_split_buf(str2, pos, len, "\n", 1, sects, sects->sz, flags);
+
+    while ((++num < SECTS_LOOP) && (num <= sects->num))
     {
-      size_t split_pos = VSTR_SECTS_NUM(&sects, num).pos;
-      size_t split_len = VSTR_SECTS_NUM(&sects, num).len;
+      size_t split_pos = VSTR_SECTS_NUM(sects, num).pos;
+      size_t split_len = VSTR_SECTS_NUM(sects, num).len;
 
       if (!split_len)
       {
@@ -74,22 +75,24 @@ int main(int argc, char *argv[])
         errno = ENOMEM, DIE("adding data:");
 
       while (str1->len > (1024 * 16))
-        ex_utils_write(str1, 1);
+        if (!ex_utils_write(str1, 1))
+          DIE("write:");
     }
 
-    if (sects.num != sects.sz)
+    if (sects->num != sects->sz)
       len = 0;
     else
     {
-      pos = VSTR_SECTS_NUM(&sects, sects.sz).pos;
-      len = VSTR_SECTS_NUM(&sects, sects.sz).len;
+      pos = VSTR_SECTS_NUM(sects, sects->sz).pos;
+      len = VSTR_SECTS_NUM(sects, sects->sz).len;
     }
   }
 
   vstr_free_base(str2);
   
   while (str1->len)
-    ex_utils_write(str1, 1);
+    if (!ex_utils_write(str1, 1))
+      DIE("write:");
   
   vstr_free_base(str1);
 

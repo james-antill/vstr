@@ -144,6 +144,7 @@ size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
   }
   
  next_loop:
+  continue;
  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                           scan, &scan_str, &scan_len)) &&
           ((base->len - (pos + (ret - len))) >= str_len));

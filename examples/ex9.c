@@ -48,8 +48,10 @@ int main(void)
   Vstr_base *str1 = NULL;
   Vstr_base *str2 = NULL;
   const char *path = getenv("PATH");
-  VSTR_DECL_SECTS(, sects, ALLOC_LIM);
+  VSTR_SECTS_DECL(sects, ALLOC_LIM);
   
+  VSTR_SECTS_DECL_INIT(sects);
+    
   if (!vstr_init())
     exit (EXIT_FAILURE);
   
@@ -61,9 +63,9 @@ int main(void)
   if (!str2)
     errno = ENOMEM, DIE("vstr_dup_ptr:");
 
-  vstr_split_buf(str2, 1, str2->len, ":", 1, &sects, PASS_LIM, FLAGS);
+  vstr_split_buf(str2, 1, str2->len, ":", 1, sects, PASS_LIM, FLAGS);
 
-  vstr_sects_foreach(str2, &sects, 0, foreach_func, str1);
+  vstr_sects_foreach(str2, sects, 0, foreach_func, str1);
 
   if (str1->conf->malloc_bad)
     errno = ENOMEM, DIE("vstr_add_fmt:");

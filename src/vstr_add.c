@@ -202,7 +202,8 @@ static void vstr__add_fail_cleanup(Vstr_base *base,
  \
  vstr__cache_add(base, orig_pos, orig_len); \
 } while (FALSE)
-   
+
+/* FIXME: inline first bit */
 int vstr_add_buf(Vstr_base *base, size_t pos,
                  const void *buffer, size_t len)
 {
@@ -230,25 +231,9 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
     if (tmp > len)
       tmp = len;
 
-    switch (tmp)
-    { /* optimise, because gcc/glibc will turn memcpy into a function call.
-       * The switch over point is just a guess, but 4 == an int copy.
-       *  Needs real numbers -- seems to be slightly faster for 2 */
-      case 3:
-        *(((Vstr_node_buf *)scan)->buf + scan->len++) = *((char *)buffer)++;
-        /* FALL THROUGH */
-      case 2:
-        *(((Vstr_node_buf *)scan)->buf + scan->len++) = *((char *)buffer)++;
-        /* FALL THROUGH */
-      case 1:
-        *(((Vstr_node_buf *)scan)->buf + scan->len++) = *((char *)buffer)++;
-        break;
-        
-      default:
-        memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, tmp);
-        scan->len += tmp;
-        buffer = ((char *)buffer) + tmp;
-    }
+    memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, tmp);
+    scan->len += tmp;
+    buffer = ((char *)buffer) + tmp;
     
     vstr__cache_iovec_add_node_end(base, num, tmp);
     
