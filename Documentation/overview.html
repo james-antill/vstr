@@ -7,7 +7,7 @@
       A:visited { color: #ff4040; }
       A:hover { color: #20b2aa; }
 
-      P { text-indent: 1cm; }
+      P { text-indent: 1.5em; }
 
       body { background: #FFF; color: #000; }
 
@@ -521,7 +521,7 @@ they're length is assumed by looking for a NIL terminator.
  sprintf(my_str, "%d", num);
 	  </pre>
 	<p>
-	  ...and in with a Vstr string would normally write that as...
+	  ...and to do the same in a Vstr string it's a simple API change to...
 	</p>
 	  <pre>
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, "%d", num);
@@ -535,9 +535,9 @@ they're length is assumed by looking for a NIL terminator.
 	  yourself. This is all pretty ugly, often unreliable, slow
 	  and takes significant programer resources.
 	</p><p>
-	    This is where custom formatters should help and give you back
+	    This is where custom formatters can help and give you back
 	    code clarity, reliability, speed and ease of use. Assuming you want
-	    to print an IPv4 address, then you would initialize
+	    to print an IPv4 address, then you can initialize
 	    the Vstr configuration like so...</p>
 	  <pre>
 <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all</a>(my_vstr->conf);
@@ -559,39 +559,44 @@ struct in_addr ipv4;
 	  </pre>
 	  <p>...all normal printf() like formatting options work, as you would
 	  expect them to including being able to use i18n format specifiers to
-	  change the order. However if you try the above, you'll note that all
+	  change the order. <b>However</b> if you try the above, you'll note that all
 	  of the calls to <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>
 	  will produce warnings with gcc, because "%{" isn't the start of a
 	  valid formatting character under gcc's static printf() parsing rules.
-	  This makes custom formatters mostly useless, as you
+	  <b>This deficiency makes custom formatters as used above mostly useless</b>,
+	    as you
 	  have to either turn warnings off or see at least one warning for every
 	  usage of a custom formatter.
 	  </p><p>
-	    To deal with this, you can use the following initialization code...
+	    To deal with this, the Vstr custom formatter code allows you to
+	    work around the static checkers by using the following
+	    initialization code...
 	  </p>
 	  <pre>
 <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all</a>(my_vstr->conf);
 <a href="functions.html#vstr_cntl_conf()">vstr_cntl_conf</a>(my_vstr->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
 	  </pre>
 <p>
-	  ...now you can call the custom formatters, using code like...
+	  ...you can then call the custom formatters, using code like...
 </p>
 	  <pre>
 struct sockaddr_in sa;
 struct in_addr ipv4;
 
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$-20{ipv4.p:%p}", (void *)&ipv4);
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*{ipv4.p:%p}", 20,
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*{ipv4.p:%d%p}", 20,
              (void *)&sa.sin_addr.s_addr);
 
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%d%d%p%zu%zu%u}", 50, 50,
-             (void *)my_vstr, 1, my_vstr->len);
+             (void *)my_vstr, (size_t)1, my_vstr->len, VSTR_TYPE_ADD_DEF);
 	  </pre>
 	  <p>
-	  ...which isn't as good as true support for customer formatters in gcc,
-	  however it does make sure that custom
+	  ...which isn't as good as true support for customer formatters in
+	    static analyzers like gcc it does,
+	  however, make sure that custom
 	  formatters will not crash, provides complete protection for
-	  non-custom formatters and doesn't produce spurious warnings.
+	  non-custom formatter using calls and doesn't produce spurious
+	    warnings.
 	  <b>One final note</b> is that in all sane environments you don't
 	  need the cast to (void *), however it is in theory required in
 	  standard ISO 9899:1999 C.
@@ -734,7 +739,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu May 20 12:49:35 EDT 2004
+Last modified: Tue Jun 29 18:17:05 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

@@ -11,8 +11,6 @@ was needed for vstr-1.0.0
 
 . restrict  (speed)
 
-. %p uses longs should use intptr_t
-
 . autodetect linker-script options (build)
 
 . AM_CFLAGS (build)

@@ -1,7 +1,5 @@
-/* dns stub resolver...
- * rfc1034 rfc1035 rfc1183 rfc1535 rfc1536 rfc1995 rfc1996 rfc2182
- * rfc2219 rfc2308 rfc2309 rfc2606 rfc2671 rfc2782
- * ipv6: rfc1886 rfc2874 rfc3363 rfc3364 rfc3596 */
+/* threaded dns stub resolver, don't use ... just here for comparon to ex_dns.c
+ */
 
 #define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
