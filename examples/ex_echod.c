@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <signal.h>
+#include <syslog.h>
 
 /* #define NDEBUG 1 -- done via. ./configure */
 #include <assert.h>

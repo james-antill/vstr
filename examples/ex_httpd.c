@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <getopt.h>
+#include <syslog.h>
 
 /* is the data is less than this, queue instead of hitting write */
 #define CL_MAX_WAIT_SEND 16
