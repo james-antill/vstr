@@ -37,7 +37,7 @@ while (<>)
 		 $/x);
     my ($mon, $day, $tm, $msg) = ($1, $2, $3, $4);
     my $year = undef;
-    my $off = "0000";
+    my $off = "-0500";
 
     ($_,$_,$_,$_,$_,$year,$_,$_) = localtime(time);
 
@@ -49,22 +49,23 @@ while (<>)
 	    from \[ (\d+.\d+.\d+.\d+) [@] \d+ \] \s # IP
 	    ret  \[ (\d+) \s [^]]+ \] \s            # return code
 	    sz   \[ [^:]+ : (\d+) \] \s             # Size
-	    host \[ .*? \] \s                       # Host header
-	    UA   \[ (.*?) \] \s                     # User-agent header
-	    ref  \[ (.*?) \]                        # Referer (sic) header
+	    host \[ ".*?" \] \s                       # Host header
+	    UA   \[ "(.*?)" \] \s                     # User-agent header
+	    ref  \[ "(.*?)" \] \s                     # Referer (sic) header
+	    ver  \[ "(HTTP[^]]+?)" \]                 # HTTP version
 	    : \s                                    # MSG Seperator...
 	    (.+)                                    # URL path
 	    $/x)
       {
 	my $ip      = $2;
-	my $req     = '"' . $1 . ' ' . $7 . ' HTTP/1.1"';
+	my $req     = $1 . ' ' . $8 . ' ' . $7;
 	my $ret     = $3;
 	my $sz      = $4;
 	my $referer = length($6) ? '"' . $6 . '"' : '-';
 	my $ua      = length($5) ? '"' . $5 . '"' : '-';
 
 	print <<EOL;
-$ip - - [$day/$mon/$year:$tm -$off] $req $ret $sz "$referer" "$ua"
+$ip - - [$day/$mon/$year:$tm $off] "$req" $ret $sz $referer $ua
 EOL
       }
     elsif (/^ERREQ \s from/)

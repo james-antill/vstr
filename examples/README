@@ -34,7 +34,6 @@ http://www.sans.org/top20/#u2
 	edge triggered events
 	multi proc speed up
 	extension finder(/index and get index.html)
-	http/1.0 only mode?
 	auth (rfc2617)
 	FreeBSD sendfile
 	FreeBSD kqueue

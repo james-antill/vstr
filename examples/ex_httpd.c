@@ -652,26 +652,57 @@ static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
   }
 }
 
-static void http_app_header_cstr(Vstr_base *out,
-                                 const char *hdr, const char *data)
+static void http__app_header_hdr(Vstr_base *out, const char *hdr)
 {
-  vstr_add_fmt(out, out->len, "%s: %s" HTTP_EOL, hdr, data);
+  vstr_add_cstr_buf(out, out->len, hdr);
+  vstr_add_cstr_buf(out, out->len, ": ");  
+}
+static void http__app_header_eol(Vstr_base *out)
+{
+  vstr_add_cstr_buf(out, out->len, HTTP_EOL);
 }
 
-static void http_app_header_vstr(Vstr_base *out,
-                                 const char *hdr,
+static void http_app_header_cstr(Vstr_base *out, const char *hdr,
+                                 const char *data)
+{
+  http__app_header_hdr(out, hdr);
+  vstr_add_cstr_buf(out, out->len, data);
+  http__app_header_eol(out);
+}
+
+static void http_app_header_vstr(Vstr_base *out, const char *hdr,
                                  Vstr_base *s1, size_t vpos, size_t vlen,
                                  unsigned int type)
 {
-  vstr_add_fmt(out, out->len, "%s: ${vstr:%p%zu%zu%u}" HTTP_EOL, hdr,
-               s1, vpos, vlen, type);
+  http__app_header_hdr(out, hdr);
+  vstr_add_vstr(out, out->len, s1, vpos, vlen, type);
+  http__app_header_eol(out);
+}
+
+static void http_app_header_fmt(Vstr_base *out, const char *hdr,
+                                const char *fmt, ...)
+   VSTR__COMPILE_ATTR_FMT(3, 4);
+static void http_app_header_fmt(Vstr_base *out, const char *hdr,
+                                const char *fmt, ...)
+{
+  va_list ap;
+
+  http__app_header_hdr(out, hdr);
+  
+  va_start(ap, fmt);
+  vstr_add_vfmt(out, out->len, fmt, ap);
+  va_end(ap);
+
+  http__app_header_eol(out);
 }
 
 static void http_app_header_uintmax(Vstr_base *out,
                                     const char *hdr,
                                     VSTR_AUTOCONF_uintmax_t data)
 {
-  vstr_add_fmt(out, out->len, "%s: %ju" HTTP_EOL, hdr, data);
+  http__app_header_hdr(out, hdr);
+  vstr_add_fmt(out, out->len, "%ju", data);
+  http__app_header_eol(out);
 }
 
 static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
@@ -700,8 +731,8 @@ static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
       /* FALLTHROUGH */
     case HTTP_1_1_KEEP_ALIVE:
       if (0) /* do we really want this info. public ? */
-        vstr_add_fmt(out, out->len, "%s: %s=%u" HTTP_EOL,
-                     "Keep-Alive",  "timeout", client_timeout); /* max=xxx ? */
+        http_app_header_fmt(out, "Keep-Alive",
+                            "%s=%u", "timeout", client_timeout); /* max=xxx ? */
       
       ASSERT_NO_SWITCH_DEF();
   }
@@ -716,11 +747,12 @@ static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
     else
       http_app_header_cstr(out, "Content-Encoding", "gzip");
   }
+  
   http_app_header_uintmax(out, "Content-Length", content_length);
 }
 static void http_app_end_hdrs(Vstr_base *out)
 {
-  vstr_add_cstr_ptr(out, out->len, HTTP_EOL);
+  http__app_header_eol(out);
 }
 
 static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
@@ -855,8 +887,11 @@ static int parse_hdrs(Vstr_base *data, struct Http_hdrs *http_hdrs,
     else if (HDR__EQ("If-Range"))            HDR__SET(if_range);
     else if (HDR__EQ("If-Unmodified-Since")) HDR__SET(if_unmodified_since);
     else if (HDR__EQ("Range"))               HDR__SET(range);
-    
+
+    /* in theory 0 bytes is ok ... who cares */
     else if (HDR__EQ("Content-Length"))      return (FALSE);
+    /* in theory identity is ok? ... who cares */
+    else if (HDR__EQ("Transfer-Encoding"))   return (FALSE);
   }
 
   return (TRUE);
@@ -950,7 +985,7 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
     return (FALSE);
   
   if (!parse_hdrs(data, con->http_hdrs, req->sects, 3))
-    HTTPD_ERR_RET(req, 400, FALSE);
+    HTTPD_ERR_RET(req, 413, FALSE); /* don't allow a request entity */
 
   if (!serv->use_keep_alive)
     return (TRUE);
@@ -1234,9 +1269,14 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
-/* is the quality set at zero -- Ie. don't use it */
-static int http_parse_quality_zero(Vstr_base *data, size_t pos, size_t len)
+/* is the quality set at zero -- might only work for accept-encoding */
+static int http_parse_quality_zero(Vstr_base *data, size_t pos, size_t len,
+                                   unsigned int *ern)
 {
+  ASSERT(ern);
+  
+  *ern = 0;
+  
   HTTP_SKIP_LWS(data, pos, len);
 
   if (0) { }
@@ -1244,53 +1284,67 @@ static int http_parse_quality_zero(Vstr_base *data, size_t pos, size_t len)
   {
     size_t zeros  = 0;
     size_t digits = 0;
+    int lead_zero = TRUE;
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
     
     if (!VPREFIX(data, pos, len, "q"))
-      return (FALSE);
+      goto syntax_error;
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
     
     if (!VPREFIX(data, pos, len, "="))
-      return (FALSE);
+      goto syntax_error;
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
-    
-    if (!VPREFIX(data, pos, len, "0"))
-      return (FALSE);
 
+    /* if it's 0[.000] TRUE, 0[.\d\d\d] or 1[.000] is FALSE */
+    if (!(lead_zero = VPREFIX(data, pos, len, "0")) &&
+        !VPREFIX(data, pos, len, "1"))
+      goto syntax_error;
+    
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
     if (!len)
-      return (TRUE);
+      return (lead_zero);
     if (VPREFIX(data, pos, len, ","))
-      return (TRUE);
+      return (lead_zero);
 
     if (!VPREFIX(data, pos, len, "."))
-      return (TRUE);
-
+      goto syntax_error;
+    
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
 
-    digits = vstr_spn_cstr_chrs_fwd(data, pos, len,    "0123456789");
-    if (!digits || (digits > 3))
-      return (FALSE);
+    digits = vstr_spn_cstr_chrs_fwd(data, pos, len, "0123456789");
+    if (digits != 3)
+      goto syntax_error;
     
-    zeros  = vstr_spn_cstr_chrs_fwd(data, pos, digits, "0");
-    if (digits > zeros)
-      return (FALSE);
-    ASSERT(digits == zeros);
+    zeros  = vstr_spn_cstr_chrs_fwd(data, pos, len, "0");
+    if (digits != zeros)
+    {
+      if (!lead_zero)
+        goto syntax_error;
+      else
+        lead_zero = FALSE;
+    }
+    ASSERT(zeros <= digits);
+    len -= digits; pos += digits;
     
-    return (TRUE);
+    HTTP_SKIP_LWS(data, pos, len);
+    if (!len)
+      return (lead_zero);
+    if (VPREFIX(data, pos, len, ","))
+      return (lead_zero);
   }
   else if (VPREFIX(data, pos, len, ","))
     return (FALSE);
 
-  /* syntax error -- treat as ok */
+ syntax_error:
+  *ern = 1;
   return (FALSE);
 }
 
@@ -1318,11 +1372,12 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
   while ((tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
                                         HTTP_EOL HTTP_LWS ";,")))
   {
+    unsigned int ern = 0;
     if (0) { }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "gzip"))
     {
       len -= strlen("gzip"); pos += strlen("gzip");
-      return (!http_parse_quality_zero(data, pos, len));
+      return (!http_parse_quality_zero(data, pos, len, &ern) && !ern);
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "x-gzip"))
     {
@@ -1332,7 +1387,9 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "*"))
     { /* "*;q=0,gzip" means TRUE ... and "*;q=1,gzip;q=0" means FALSE */
       len -= strlen("*"); pos += strlen("*");
-      ret = !http_parse_quality_zero(data, pos, len);
+      ret = !http_parse_quality_zero(data, pos, len, &ern);
+      if (ern)
+        return (FALSE);
     }
 
     /* skip this entry */
@@ -1447,30 +1504,35 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
   http_app_def_hdrs(con, req, now, req->f_stat->st_mtime,
                     content_type, con->f_len);
   if (h_r->pos)
-    vstr_add_fmt(out, out->len, "%s: %s %ju-%ju/%ju" HTTP_EOL,
-                 "Content-Range",  "bytes",
-                 range_beg, range_end,
-                 (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
+    http_app_header_fmt(out, "Content-Range",
+                        "%s %ju-%ju/%ju", "bytes", range_beg, range_end,
+                        (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
   
   http_app_end_hdrs(out);
   
   return (TRUE);
 }
 
-static void http_vlg_def(struct Con *con, Vstr_sects *sects)
+static void http_vlg_def(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
   Vstr_sect_node *h_h  = con->http_hdrs->hdr_host;
   Vstr_sect_node *h_ua = con->http_hdrs->hdr_ua;
   Vstr_sect_node *h_r  = con->http_hdrs->hdr_referer;
-  
-  vlg_info(vlg, " host[$<http-esc.vstr:%p%zu%zu>]"
-           " UA[$<http-esc.vstr:%p%zu%zu>] ref[$<http-esc.vstr:%p%zu%zu>]"
-           ": $<http-esc.vstr.sect:%p%p%u>\n", 
-           data, h_h->pos, h_h->len,
+
+  vlg_info(vlg, (" host[\"$<http-esc.vstr:%p%zu%zu>\"]"
+                 " UA[\"$<http-esc.vstr:%p%zu%zu>\"]"
+                 " ref[\"$<http-esc.vstr:%p%zu%zu>\"]"),
+           data, h_h->pos, h_h->len,    
            data, h_ua->pos, h_ua->len,
-           data, h_r->pos, h_r->len,
-           data, sects, 2);
+           data, h_r->pos, h_r->len);
+
+  if (req->ver_0_9)
+    vlg_info(vlg, " ver[\"HTTP/0.9]\"");
+  else
+    vlg_info(vlg, " ver[\"$<vstr.sect:%p%p%u>\"]", data, req->sects, 3);
+    
+  vlg_info(vlg, ": $<http-esc.vstr.sect:%p%p%u>\n", data, req->sects, 2);
 }
 
 static int http_req_make_path(struct Con *con, struct Http_req_data *req,
@@ -1664,8 +1726,11 @@ static int http_fin_req(struct Con *con, struct Http_req_data *req)
 static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *out = con->ev->io_w;
+
+  req->content_encoding_gzip = FALSE;
   
   if ((req->http_error_code == 400) || (req->http_error_code == 405) ||
+      (req->http_error_code == 413) ||
       (req->http_error_code == 500) || (req->http_error_code == 501))
     con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   
@@ -1674,7 +1739,7 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
   vlg_info(vlg, "ERREQ from[$<sa:%p>] err[%03u %s]", con->ev->sa,
            req->http_error_code, req->http_error_line);
   if (req->sects->num >= 2)
-    http_vlg_def(con, req->sects);
+    http_vlg_def(con, req);
   else
     vlg_info(vlg, "%s", "\n");
 
@@ -1691,9 +1756,8 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
     http_app_def_hdrs(con, req, time(NULL), server_beg,
                  "text/html", req->http_error_len);
     if (req->http_error_code == 416)
-      vstr_add_fmt(out, out->len, "%s: %s */%ju" HTTP_EOL,
-                   "Content-Range",  "bytes",
-                   (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
+      http_app_header_fmt(out, "Content-Range", "%s */%ju", "bytes",
+                          (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
 
     if ((req->http_error_code == 405) || (req->http_error_code == 501))
       http_app_header_cstr(out, "Allow", "GET, HEAD, TRACE");
@@ -1756,8 +1820,9 @@ static int http_fin_errmem_close_req(struct Con *con, struct Http_req_data *req)
 }
 
 static int http_req_op_get(struct Con *con, struct Http_req_data *req)
-{ /* GET or HEAD ops, only does file requests ... no CGI atm. */
-  Vstr_base *out = con->ev->io_w;
+{ /* GET or HEAD ops */
+  Vstr_base *data = con->ev->io_r;
+  Vstr_base *out  = con->ev->io_w;
   const char *http_req_content_type = "application/octet-stream";
   const char *fname_cstr = NULL;
   unsigned int http_ret_code = 200;
@@ -1830,12 +1895,12 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   if (req->use_mmap && !vstr_mov(con->ev->io_w, con->ev->io_w->len,
                                  req->f_mmap, 1, req->f_mmap->len))
     VLG_WARNNOMEM_RET(http_fin_errmem_close_req(con, req), (vlg, "mmap: %m\n"));
-  
-  vlg_info(vlg,
-           "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
-           req->head_op ? "HEAD" : "GET", con->ev->sa,
+
+  /* req->head_op is set for 304 returns */
+  vlg_info(vlg, "REQ $<vstr.sect:%p%p%u> from[$<sa:%p>] ret[%03u %s]"
+           " sz[${BKMG.ju:%ju}:%ju]", data, req->sects, 1, con->ev->sa,
            http_ret_code, http_ret_line, con->f_len, con->f_len);
-  http_vlg_def(con, req->sects);
+  http_vlg_def(con, req);
   
   if (req->head_op || req->use_mmap)
     serv_fd_close(con);
@@ -1953,6 +2018,7 @@ static int http_parse_req(struct Con *con)
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "TRACE"))
     {
       time_t now = time(NULL);
+      VSTR_AUTOCONF_uintmax_t tmp = 0;
       
       vstr_add_fmt(out, out->len, "%s %03d %s" HTTP_EOL, "HTTP/1.1", 200, "OK");
       http_app_def_hdrs(con, req, now, now, "message/http", req->len);
@@ -1960,10 +2026,11 @@ static int http_parse_req(struct Con *con)
       vstr_add_vstr(out, out->len, data, 1, req->len, VSTR_TYPE_ADD_DEF);
       if (out->conf->malloc_bad)
         VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "TRACE: %m\n"));
-      
-      vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s]",
-               "TRACE", con->ev->sa, 200, "OK");
-      http_vlg_def(con, req->sects);
+
+      tmp = req->len;
+      vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
+               "TRACE", con->ev->sa, 200, "OK", tmp, tmp);
+      http_vlg_def(con, req);
       
       return (http_fin_req(con, req));
     }
@@ -2385,6 +2452,9 @@ static void cl_cmd_line(int argc, char *argv[])
   };
   OPT_SC_SERV_DECL_OPTS();
 
+  /* FIXME: TCP_CORK doesn't work if off, but only want it on for http evnt's */
+  evnt_opt_nagle = TRUE;
+  
   program_name = opt_program_name(argv[0], "jhttpd");
   
   while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",

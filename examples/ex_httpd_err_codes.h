@@ -94,6 +94,20 @@
 </html>\r\n\
 "
 
+#define CONF_LINE_RET_413 "Request Entity Too Large"
+#define CONF_MSG_RET_413 "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
+<html>\r\n\
+  <head>\r\n\
+    <title>413 Request Entity Too Large</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>413 Request Entity Too Large</h1>\r\n\
+    <p>The server does not accept any requests with Content (In other words if either a Content-Length or a Transfer-Encoding header is passed to the server, the request will fail).</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
 #define CONF_LINE_RET_414 "Request-URI Too Long"
 #define CONF_MSG_RET_414 "\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\r\n\
@@ -209,7 +223,9 @@
       if (vstr_cmp_cstr_eq(lfn, 1, lfn->len, "..") ||                   \
           VSUFFIX(lfn, 1, lfn->len, "/.."))                             \
         HTTPD_ERR_RET(req, 403, val);                                   \
-      else if (!VSUFFIX(lfn, 1, lfn->len, "/"))                         \
+      else if (VSUFFIX(lfn, 1, lfn->len, "/"))                          \
+        vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);           \
+      else                                                              \
       {                                                                 \
         size_t last_slash = 0;                                          \
                                                                         \
@@ -225,8 +241,6 @@
           req->redirect_http_error_msg = TRUE;                          \
         return (val);                                                   \
       }                                                                 \
-      else                                                              \
-        vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);           \
     } while (0)
       
 #endif

@@ -94,9 +94,13 @@ static void vlg__add_chk_flush(Vlg *vlg, const char *fmt, va_list ap,
   Vstr_base *dlg = vlg->out_vstr;
 
   if (!vstr_add_vfmt(dlg, dlg->len, fmt, ap))
-    errno = ENOMEM, err(EXIT_FAILURE, "chk_flush");
+  {
+    if (dlg->conf->malloc_bad)
+      errno = ENOMEM, err(EXIT_FAILURE, "chk_flush");
+    return;
+  }
   
-  if (vstr_srch_chr_fwd(dlg, 1, dlg->len, '\n'))
+  if (vstr_export_chr(dlg, dlg->len) == '\n')
     vlg__flush(vlg, type, out_err);
 }
 

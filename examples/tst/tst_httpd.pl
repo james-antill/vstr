@@ -15,7 +15,7 @@ sub httpd__munge_ret
     $output =~ s/^(Date:).*$/$1/gm;
     # Remove last-modified = start date for error messages
     $output =~
-      s!(HTTP/1[.]1 \s (?:301|40[0345]|41[2467]|50[015]) .*)$ (\n)
+      s!(HTTP/1[.]1 \s (?:301|40[0345]|41[23467]|50[015]) .*)$ (\n)
 	^(Date:)$ (\n)
 	^(Server:.*)$ (\n)
 	^(Last-Modified:) .*$

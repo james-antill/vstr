@@ -184,13 +184,15 @@ Very small provided API functionality, can't printf() a GString without doing a 
     on substitutions.</p>
 
 	<p>There is no substitution API in glib, probably because you can't
-	  share data so you just do a memcpy() and an overwrite (but it's <b>far to easy to get this wrong</b>). It's also
+	  share data so you just do a memcpy() and an overwrite (but it's <b>far too easy to get this wrong</b>). It's also
 	  worth noting that your program may crash if you try and add data in
-	  a GString to itself (there is no safe API to do it).</p>
-	<p>Note that vstr_split_chrs() and other functions for using a GString
-	  are in glib, as part of the C string helper functions
-	  (Eg. g_strsplit() in the case of vstr_split_chrs()) -- obviously will
-will have silent truncation with embeded NIL data. There is also
+	  a GString to itself (there is no safe glib API to do this).</p>
+	<p>Note that vstr_split_chrs()-like functions are available in glib, as
+	      part of the "C string" helper functions
+	  (Eg. g_strsplit() in the case of vstr_split_chrs()). However this
+	      means that although a GString can contain a NIL these helper
+ functions will
+ silently truncate at the embeded NIL. There is also
 	  limited support in glib for doing things in ASCII regardless of the
 	  current user locale.
 </p></td></tr></table>
@@ -1292,7 +1294,7 @@ now and again when I might have looked at them.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Sun Aug 29 19:53:57 EDT 2004
+Last modified: Wed Dec 29 14:09:45 EST 2004
 <!-- hhmts end -->
   </body>
 </html>
