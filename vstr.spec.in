@@ -264,6 +264,6 @@ fi
 /var/empty/
 
 %defattr(-, root, root)
-%{_sysconfdir}/init.d/
+%{_sysconfdir}/init.d/*
 %{_sbindir}/
 /var/www/html
