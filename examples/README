@@ -16,7 +16,7 @@ happily work on win32 etc.
 
 
  evnt
-	allow groups, make Evnt smaller (moveout cb's to groups)
+	allow groups, make Evnt smaller (moveout cb's/conf to group data)
 
  ex_sock_filter
 	All asm calls should have names
@@ -25,15 +25,10 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
-        syslog2apache, do merge/catchup
-	Check config, Ie. --dir-filename="foo bar"
-	man page
-	jhttpd -> vstr-httpd?
-	O(1) timer_q_add_node
-	mime_types speed, by having explicit filename/ext matches
-	Multi procs "cntl list" command pass through
-	max timeout for keep-alive
-	max requests for keep-alive?
+	Child dies in --procs, when sent C-z (it's in an "orphaned process group").
+	public/symlinks path checking
+	 fd cache
+	 stat cache
 	conf
 	 Support accept/accept-language per file [w3/chips]
            GALEON
@@ -50,9 +45,13 @@ http://www.sans.org/top20/#u2
 	 404 pages (and other return codes)
          Vary: accept-language,...
          Type map support?
+	man page
+	mime_types speed, by having explicit filename/ext matches
+	max timeout for keep-alive
+	max requests for keep-alive?
+	Check config, Ie. --dir-filename="foo bar"
+	jhttpd -> vstr-httpd?
         mmap cache?
-	fd cache
-	stat cache
 	408 - request timeout?
         limiting IO
 	ipv6
@@ -61,10 +60,6 @@ http://www.sans.org/top20/#u2
 	auth (rfc2617)
 	FreeBSD sendfile
 	FreeBSD kqueue
-
-  cleanups
-
-	move cl_timer_con() into evnt ?
 
     BUGS?
 	GMT time convertion isn't done ... fuck the broken apps.

@@ -1,6 +1,7 @@
 
 #include "mime_types.h"
 
+#include <errno.h>
 #include <err.h>
 
 #ifndef FALSE
@@ -33,7 +34,8 @@ int mime_types_load_simple(const char *fname)
   Vstr_sects *sects = NULL;
   size_t data_pos = 0;
   size_t data_len = 0;
-
+  int saved_errno = ENOMEM;
+  
   if (!fname || !*fname)
     return (TRUE);
   
@@ -118,13 +120,16 @@ int mime_types_load_simple(const char *fname)
   ents->num = orig_ents_num;
  fail_split_line:
  fail_split_file:
+  errno = ENOMEM;
  fail_read_file:
+  saved_errno = errno;
   vstr_sects_free(lines);
  fail_sects_tmp:
   vstr_sects_free(sects);
  fail_sects_lines:
   vstr_free_base(data);
  fail_data:
+  errno = saved_errno;
   return (FALSE);
 }
 

@@ -91,16 +91,28 @@ sub gzip_file
     ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
 
     defined ($out) || die("Can't create tempfile: $!");
+    binmode $out;
 
     print STDOUT "Compress: $name\n" if ($verbose_compress > 0);
 
     open(IN, "-|", "gzip", "--to-stdout", "--no-name", "--best", "--", $name) ||
       die("Can't gzip: $!");
+    binmode IN;
 
-    my $bs = 1024 * 8;
+    my $bs = 1024 * 8; # Do IO in 8k blocks
     $/ = \$bs;
 
     while (<IN>) { $out->print($_); }
+
+    # If the the gzip file is 95% of the original, delete it
+    $out->autoflush(1);
+    if (-s $out >= (($st_name[7] * 95) / 100))
+      {
+	close(IN);
+	close($out);
+	unlink($fname);
+	return;
+      }
 
     close(IN)   || die "Failed closing input: $!";
 

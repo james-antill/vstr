@@ -23,7 +23,7 @@ static void io_fd_unset_o_nonblock(int fd)
       err(EXIT_FAILURE, "fcntl(F_SETFL, ~O_NONBLOCK)");
 }
 
-static void full_write(int fd, const void *buf, size_t len)
+static void full_write(int fd, const char *buf, size_t len)
 {
   while (len > 0)
   { /* loop until all of the write request is done */

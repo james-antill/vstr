@@ -4,8 +4,13 @@
 %define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix    /usr
-%define varprefix /
+%define varprefix
+%define vardir %{varprefix}/var
+%define wwwdir %{vardir}/www
 %define name    vstr
+
+%define jechod_uid 442
+%define jhttpd_uid 444
 
 # Do we want to run "make check" after the build...
 %define chk_opt %{?chk}%{!?chk:0}
@@ -156,16 +161,18 @@ cd dbg
 
 ../configure --prefix=%{prefix} --mandir=%{_mandir} \
   --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
-  --localstatedir=%{varprefix}/var \
+  --localstatedir=%{vardir} \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-debug \
   %{fmtfloatopt}
 build
 
+CFLAGS="$RPM_OPT_FLAGS"
+export CFLAGS
 cd ../opt
 ../configure  --prefix=%{prefix} --mandir=%{_mandir} \
   --datadir=%{_datadir} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
-  --localstatedir=%{varprefix}/var \
+  --localstatedir=%{vardir} \
   --includedir=%{_includedir}/%{name}-%{libver} --enable-linker-script \
   --enable-wrap-memcpy --enable-wrap-memset \
   %{fmtfloatopt}
@@ -192,9 +199,13 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/%{name}-%{ver}/examples/html
 rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/functions.3
 rm -f  $RPM_BUILD_ROOT/usr/share/doc/%{name}-devel-%{ver}/constants.3
 
-mkdir -p $RPM_BUILD_ROOT/var/empty/jechod
-mkdir -p $RPM_BUILD_ROOT/var/empty/jhttpd
-mkdir -p $RPM_BUILD_ROOT/var/www/html
+mkdir -p $RPM_BUILD_ROOT/var/empty/jechod/dev
+touch    $RPM_BUILD_ROOT/var/empty/jechod/dev/log
+
+mkdir -p $RPM_BUILD_ROOT/var/www/html/localhost
+ln -s localhost $RPM_BUILD_ROOT/var/www/html/127.0.0.1
+mkdir -p $RPM_BUILD_ROOT/var/www/dev
+touch    $RPM_BUILD_ROOT/var/www/dev/log
 
 mkdir -p $RPM_BUILD_ROOT/%{_sbindir}
 ln -s %{_libdir}/%{name}-%{ver}/examples/ex_echod $RPM_BUILD_ROOT/%{_sbindir}/jechod
@@ -206,6 +217,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %post -p /sbin/ldconfig
 
+%pre initd
+
+# Add the user id's
+/usr/sbin/useradd -c "jECHOd" -u %{jechod_uid} \
+        -s /sbin/nologin -r -d %{vardir}/empty/jechod jechod 2> /dev/null || :
+/usr/sbin/useradd -c "jHTTPd" -u %{jhttpd_uid} \
+        -s /sbin/nologin -r -d %{wwwdir}              jhttpd 2> /dev/null || :
+
 %post initd
 
 if [ $1 = 1 ]; then
@@ -213,8 +232,8 @@ if [ $1 = 1 ]; then
     /sbin/chkconfig --add jechod
 fi
 if [ $1 = 2 ]; then
-    /sbin/service jechod condrestart >/dev/null 2>&1
-    /sbin/service jhttpd condrestart >/dev/null 2>&1
+    /sbin/service jechod condrestart > /dev/null 2>&1
+    /sbin/service jhttpd condrestart > /dev/null 2>&1
 fi
 
 %preun initd
@@ -268,3 +287,5 @@ fi
 %{_sysconfdir}/init.d/*
 %{_sbindir}/
 /var/www/html
+/var/www/dev
+/var/www/dev/log

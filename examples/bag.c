@@ -52,14 +52,15 @@ Bag *bag_make(size_t sz,
 
 void bag_free(Bag *bag)
 {
-  ASSERT(bag);
-
+  if (!bag)
+    return;
+  
   bag_del_all(bag);
   
   free(bag);
 }
 
-Bag *bag_add_obj(Bag *bag, const char *key, const void *val)
+Bag *bag_add_obj(Bag *bag, const char *key, void *val)
 {
   ASSERT(bag);
 
@@ -88,7 +89,7 @@ Bag *bag_add_obj(Bag *bag, const char *key, const void *val)
   return (bag);
 }
 
-Bag *bag_add_cstr(Bag *bag, const char *key, const char *val)
+Bag *bag_add_cstr(Bag *bag, const char *key, char *val)
 {
   return (bag_add_obj(bag, key, val));
 }
@@ -132,6 +133,40 @@ const Bag_obj *bag_iter_beg(Bag *bag, Bag_iter *iter)
   iter->num = 0;
   
   return (bag_iter_nxt(iter));
+}
+
+const Bag_obj *bag_srch_eq(Bag *bag,
+                           int (*cmp_func)(const Bag_obj *, const void *),
+                           const void *val)
+{
+  Bag_iter iter[1];
+  const Bag_obj *obj = bag_iter_beg(bag, iter);
+
+  while (obj)
+  {
+    if ((*cmp_func)(obj, val))
+      return (obj);
+    
+    obj = bag_iter_nxt(iter);
+  }
+
+  return (NULL);
+}
+
+int bag_cb_srch_eq_key_ptr(const Bag_obj *obj, const void *val)
+{
+  if (obj->key == val)
+    return (TRUE);
+    
+  return (FALSE);
+}
+
+int bag_cb_srch_eq_val_ptr(const Bag_obj *obj, const void *val)
+{
+  if (obj->val == val)
+    return (TRUE);
+    
+  return (FALSE);
 }
 
 void bag_cb_free_nothing(void *BAG__ATTR_UNUSED(val))

@@ -7,7 +7,9 @@
     --priv-gid        - Drop privilages to this gid.
     --pid-file        - Log pid to file.
     --cntl-file       - Create control file.
-    --accept-filter-file - Load Linux Socket Filter code for accept().
+    --accept-filter-file
+                      - Load Linux Socket Filter code for accept().
+    --processes       - Number of processes to use (default: 1).
     --mmap            - Toggle use of mmap() to load files (default: off).
     --sendfile        - Toggle use of sendfile() to load files (default: on).
     --keep-alive      - Toggle use of Keep-Alive handling (default: on).
@@ -26,7 +28,6 @@
                       - Default mime type (application/octet-stream).
     --mime-types-main - Main mime types filename (default: /etc/mime.types).
     --mime-types-xtra - Additional mime types filename.
-    --processes       - Number of processes to use (default: 1).
     --send-err-406    - Toggle sending 406 responses (default: on).
     --canonize-host   - Strip leading 'www.', strip trailing '.' (default: off).
     --err-host-400    - Give an 400 error for a bad host (default: on).

@@ -22,6 +22,19 @@
 #define VLG_COMPILE_INLINE 0
 #include "vlg.h"
 
+/* FIXME: could possibly work on other OSes ? */
+#ifdef __linux__
+# include <sys/mount.h>
+#endif
+
+#ifdef MS_BIND
+# define CONF_USE_MOUNT_BIND TRUE
+# define BIND_MOUNT(x, y) mount(x, y, "", MS_BIND, "")
+#else
+# define BIND_MOUNT(x, y) -1 /* do nothing */
+# define CONF_USE_MOUNT_BIND FALSE
+#endif
+
 #ifndef VSTR_AUTOCONF_NDEBUG
 # define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
 # define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
@@ -74,6 +87,13 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
       const char *tm = date_syslog(time(NULL));
 
       /* Note: we add the begining backwards, it's easier that way */
+      if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "warn");
+      if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "err");
+      if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
+        errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
+      
       if (!vlg->log_pid_console)
       {
         if (!vstr_add_cstr_ptr(dlg, 0, "]: "))
@@ -89,14 +109,7 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
       
       if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
           !vstr_add_cstr_ptr(dlg, 0, "["))
-        errno = ENOMEM, err(EXIT_FAILURE, "prefix");
-      
-      if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
-        errno = ENOMEM, err(EXIT_FAILURE, "warn");
-      if ((type == LOG_ALERT) && !vstr_add_cstr_ptr(dlg, 0, "ERR: "))
-        errno = ENOMEM, err(EXIT_FAILURE, "err");
-      if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
-        errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
+        errno = ENOMEM, err(EXIT_FAILURE, "prefix");      
     }
     
     while (dlg->len)
@@ -278,6 +291,42 @@ int vlg_sc_fmt_add_all(Vstr_conf *conf)
                           "<vstr.sect", "p%p%u", ">") &&
           VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sa,
                           "<sa", "p", ">"));
+}
+
+void vlg_sc_bind_mount(const char *chroot_dir)
+{ /* make sure we can reconnect to syslog */
+  Vstr_base *tmp = NULL;
+  const char *src = "/dev/log";
+  const char *dst = NULL;
+  struct stat64 st_src[1];
+  struct stat64 st_dst[1];
+  
+  if (!CONF_USE_MOUNT_BIND || !chroot_dir)
+    return;
+  
+  if (!(tmp = vstr_make_base(NULL)))
+    errno = ENOMEM, err(EXIT_FAILURE, "bind-mount");
+    
+  vstr_add_fmt(tmp, 0, "%s%s", chroot_dir, "/dev/log");
+  dst = vstr_export_cstr_ptr(tmp, 1, tmp->len);
+  if (tmp->conf->malloc_bad)
+    errno = ENOMEM, err(EXIT_FAILURE, "bind-mount");
+  
+  if (stat64(src, st_src) == -1)
+    err(EXIT_FAILURE, "stat(%s)", src);
+  if (stat64(dst, st_dst) == -1)
+    err(EXIT_FAILURE, "stat(%s)", dst);
+  
+  if ((st_src->st_ino != st_dst->st_ino) ||
+      (st_src->st_dev != st_dst->st_dev))
+  {
+    umount(dst); /* NOTE: You can't bind mount over a bind mount,
+                  * so if syslog is restarted we need to try this */
+    if (BIND_MOUNT(src, dst) == -1)
+      err(EXIT_FAILURE, "bind-mount(%s, %s)", src, dst);
+  }
+    
+  vstr_free_base(tmp);
 }
 
 void vlg_init(void)

@@ -251,6 +251,7 @@ static void io_limit(int io_r_state, int io_r_fd,
 
 /* generic POSIX IO functions that _don't_ call Vstr functions */
 
+#ifndef EX_UTILS_NO_USE_IO_FD
 static int io_fd_set_o_nonblock(int fd)
 {
   int flags = 0;
@@ -266,6 +267,7 @@ static int io_fd_set_o_nonblock(int fd)
 
   return (TRUE);
 }
+#endif
 
 
 #ifdef VSTR_AUTOCONF_HAVE_OPEN64

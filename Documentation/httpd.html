@@ -22,12 +22,13 @@ HTTP/1.1 after implementing a server is
 <a href="http://www.and.org/texts/server-http.html">here</a>.</p>
 
 <pre>
-    Simple. Secure. Unit tests (over 85% coverage).
+    Simple. Secure. Unit tests (over 90% coverage).
 
 % egrep '\<(mem|rawmem|bcopy|bzero|bcmp|str(n?cpy|n?cat|n?cmp|coll|xfrm|n?dup|r?chr|c?spn|str|pbrk|tok|n?case|sep|verscmp|fry|_)|stpn?cpy|r?index[^.]|basename|dirname|a?sn?printf|byte_)' examples/ex_httpd.c
 %
 
-    Design is somewhat like thttpd.
+    Design is a statemachine triggering off IO events, somewhat like thttpd.
+     Simple tests with ab show it to be about twice as fast as thttpd-2.20c.
 
     Uses the following system utilities:
      poll or epoll, multiplexing
@@ -79,13 +80,23 @@ HTTP/1.1 after implementing a server is
       Parse or honor the Accept-Charset header.
 
       Full date parser (not a problem, string matches work well).
+
+   NMAP simple service fingerprint(s):
+
+Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
+ports 70,79,80-85,88,113,139,143,280,497,515,540,554,631,783,993,995,1220,1503,2030,3052,3128,3372,3531,3689,5000,5432,5800,5900,6699,7070,8000-8010,8080-8085,8880-8888,9090,9999,10000,10005,11371,13722,15000,40193,4711
+
+match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd/(\d+\.\d+\.[-.\w]+) \(Vstr\)|s v/jhttpd - Vstr example/$1//
+match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd/(\d+\.\d+\.[-.\w]+) ([^\r\n]+)|s v/jhttpd/$1/$2/
+match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
+
 </pre>
 
     <hr>
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Sat Feb 19 17:26:07 EST 2005
+Last modified: Thu Mar 10 13:11:57 EST 2005
 <!-- hhmts end -->
   </body>
 </html>

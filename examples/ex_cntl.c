@@ -511,13 +511,13 @@ static void cl_beg(void)
   if (io_r_fd != -1)
   {
     vlg_dbg3(vlg, "cl_beg io_r beg\n");
-    evnt_fd_set_nonblock(io_r_fd,  TRUE);
+    evnt_fd__set_nonblock(io_r_fd,  TRUE);
     if (!(io_ind_r = socket_poll_add(io_r_fd)))
       errno = ENOMEM, err(EXIT_FAILURE, __func__);
     SOCKET_POLL_INDICATOR(io_ind_r)->events |= POLLIN;
   }
   
-  evnt_fd_set_nonblock(io_w_fd, TRUE);
+  evnt_fd__set_nonblock(io_w_fd, TRUE);
   if (!(io_ind_w = socket_poll_add(io_w_fd)))
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 

@@ -5,6 +5,11 @@
     --drop-privs      - Drop privilages, after startup.
     --priv-uid        - Drop privilages to this uid.
     --priv-gid        - Drop privilages to this gid.
+    --pid-file        - Log pid to file.
+    --cntl-file       - Create control file.
+    --accept-filter-file
+                      - Load Linux Socket Filter code for accept().
+    --processes       - Number of processes to use (default: 1).
     --debug -d        - Enable debug info.
     --host -H         - IPv4 address to bind (def: "all").
     --help -h         - Print this message.

@@ -18,11 +18,13 @@ localstatedir="@localstatedir@"
 prog_name=jechod
 prog_exe="@sbindir@/${prog_name}"
 
-I_ARG_PID="--pid-file ${localstatedir}/run/${prog_name}"
-I_ARG_CNTL="--cntl-file ${localstatedir}/run/${prog_name}"
+I_ARG_PID='--pid-file "${localstatedir}/run/${prog_name}"'
+I_ARG_CNTL='--cntl-file "${localstatedir}/run/${prog_name}"'
+JECHOD_ARGS='--drop-privs --chroot "%{localstatedir}/empty/jechod"'
 [ -r /etc/sysconfig/jechod ] && . /etc/sysconfig/jechod
 
-I_ARGS="--daemon $I_ARG_PID.pid $I_ARG_CNTL.cntl"
+PI_ARGS="--priv-uid 442 --priv-gid 442"
+I_ARGS="--daemon $I_ARG_PID.pid $I_ARG_CNTL.cntl $PI_ARGS"
 
 function start()
 {

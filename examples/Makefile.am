@@ -12,8 +12,8 @@ GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 CFLAGS = @CFLAGS@ @WARNS@
 
 
-CMDLINE_FILES_SRCS = opt.c date.c evnt.c vlg.c
-CMDLINE_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h
+CMDLINE_FILES_SRCS = date.c evnt.c opt.c vlg.c
+CMDLINE_FILES_HDRS = date.h evnt.h opt.h vlg.h vlg_assert.h
 
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
@@ -121,8 +121,8 @@ ex_cntl_DEPENDENCIES =      $(CMDLINE_FILES_HDRS)
 ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-DAEMON_FILES_SRCS = opt.c date.c evnt.c vlg.c              cntl.c
-DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h vlg_assert.h cntl.h
+DAEMON_FILES_SRCS = bag.c cntl.c date.c evnt.c opt.c vlg.c
+DAEMON_FILES_HDRS = bag.h cntl.h date.h evnt.h opt.h vlg.h vlg_assert.h
 
 ex_httpd_SOURCES = ex_httpd.c mime_types.c $(DAEMON_FILES_SRCS)
 ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h mime_types.h $(DAEMON_FILES_HDRS)

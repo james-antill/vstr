@@ -24,12 +24,15 @@ MIME_EXTRAS_FILE="@libdir@/vstr-@VERSION@/examples/data/mime_types_extra.txt"
 
 FILE_BASE="${localstatedir}/run/${prog_name}"
 JHTTPD_NUM=1
-JHTTPD1_DIR=${localstatedir}/www/html
+JHTTPD1_CHROOT="${localstatedir}/www"
+JHTTPD1_DIR="html"
+JHTTPD1_ARGS='--drop-privs'
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
 
-GLOB_I_ARGS="--daemon --mime-types-xtra $MIME_EXTRAS_FILE"
+PI_ARGS="--priv-uid 444 --priv-gid 444"
+GLOB_I_ARGS="--daemon --mime-types-xtra $MIME_EXTRAS_FILE $PI_ARGS"
 
-function jhttpd_dirs()
+function jhttpd_vars()
 {
           CNTL_FILE="${FILE_BASE}$i.cntl"
           PID_FILE="${FILE_BASE}$i.pid"
@@ -48,7 +51,7 @@ function start()
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          jhttpd_dirs
+          jhttpd_vars
           U__CALL_ARGS="JHTTPD${i}_ARGS"
           I_ARGS="$GLOB_I_ARGS --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
           U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
@@ -68,7 +71,7 @@ function stop()
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          jhttpd_dirs
+          jhttpd_vars
           echo -n $"Shutting down $prog_name(${REAL_DIR}): "
           killproc $prog_name$i
           RETVAL=$?
@@ -85,7 +88,7 @@ function softstop()
         i=1
 	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
         do
-          jhttpd_dirs
+          jhttpd_vars
           echo -n $"Soft shutdown $prog_name(${REAL_DIR}): "
           $cntl_exe $CNTL_FILE -e close > /dev/null
           RETVAL=$?
@@ -147,7 +150,7 @@ function statuses()
         i=1
 	while [ $i -le $JHTTPD_NUM ];
         do
-          jhttpd_dirs
+          jhttpd_vars
           mystatus $prog_name $i
           RETVAL=$?
           [ $RETVAL -eq 0 ] && $cntl_exe $CNTL_FILE -e status

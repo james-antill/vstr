@@ -35,12 +35,16 @@ struct Evnt
  Vstr_base *io_w;
 
  struct Evnt *s_next;
+ struct Evnt *c_next;
  
  Timer_q_node *tm_o;
 
  struct timeval ctime;
  struct timeval mtime;
 
+ unsigned long msecs_tm_mtime;
+ 
+ VSTR_AUTOCONF_uintmax_t prev_bytes_r;
  struct
  {
   unsigned int            req_put;
@@ -56,11 +60,14 @@ struct Evnt
  unsigned int flag_q_none      : 1;
  
  unsigned int flag_q_send_now  : 1;
+ unsigned int flag_q_closed    : 1;
 
  unsigned int flag_q_pkt_move  : 1;
 
  unsigned int flag_io_nagle    : 1;
  unsigned int flag_io_cork     : 1;
+
+ unsigned int flag_io_filter   : 1;
 
  unsigned int io_r_shutdown    : 1;
  unsigned int io_w_shutdown    : 1;
@@ -72,7 +79,7 @@ struct Evnt
 
 extern void evnt_logger(Vlg *);
 
-extern void evnt_fd_set_nonblock(int, int);
+extern void evnt_fd__set_nonblock(int, int);
 
 extern int evnt_fd(struct Evnt *);
 
@@ -101,7 +108,7 @@ extern void evnt_add(struct Evnt **, struct Evnt *);
 extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
-extern int evnt_shutdown_r(struct Evnt *);
+extern int evnt_shutdown_r(struct Evnt *, int);
 extern int evnt_shutdown_w(struct Evnt *);
 extern int evnt_recv(struct Evnt *, unsigned int *);
 extern int evnt_send(struct Evnt *);
@@ -120,6 +127,12 @@ extern int evnt_waiting(void);
 
 extern void evnt_fd_set_cork(struct Evnt *, int);
 extern void evnt_fd_set_defer_accept(struct Evnt *, int);
+extern int  evnt_fd_set_filter(struct Evnt *, const char *);
+
+extern void evnt_timeout_init(void);
+extern void evnt_timeout_exit(void);
+
+extern int evnt_sc_timeout_via_mtime(struct Evnt *, unsigned int);
 
 extern void evnt_vlg_stats_info(struct Evnt *, const char *);
 
@@ -128,7 +141,7 @@ extern int evnt_epoll_enabled(void);
 
 extern unsigned int evnt_poll_add(struct Evnt *, int);
 extern void evnt_poll_del(struct Evnt *);
-extern int evnt_poll_swap(struct Evnt *, int);
+extern int evnt_poll_swap_accept_read(struct Evnt *, int);
 extern int evnt_poll(void);
 
 extern struct Evnt *evnt_find_least_used(void);

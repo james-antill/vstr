@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
 
 use strict;
+use FileHandle;
 
 # Using: http://httpd.apache.org/docs/logs.html
 
@@ -29,27 +30,58 @@ use Pod::Usage;
 my $man = 0;
 my $help = 0;
 
-my $output_file = 0;
-my $sync_file = 0;
+my $output_file = undef;
+my $sync_file   = undef;
 
 pod2usage(0) if !
 GetOptions ("output|o=s"  => \$output_file,
-	    "sync=s"  => \$sync_file,
-	    "help|?"   => \$help,
-	    "man"      => \$man);
+	    "sync=s"      => \$sync_file,
+	    "help|?"      => \$help,
+	    "man"         => \$man);
 pod2usage(-exitstatus => 0, -verbose => 1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+if (defined($output_file))
+  { open (OUT, ">> $output_file") || die "open($output_file): $!\n"; }
+else
+  { open (OUT, ">&STDOUT")        || die "dup2(STDOUT, OUT): $!\n";  }
+
+my $last_line = undef;
+if (defined($sync_file))
+  {
+    open (IN, "< $sync_file")     || die "open($sync_file): $!\n";
+
+    while (<IN>)
+      {
+	next unless (m!^
+		       (?:\d+[.]){3}\d+ \s       # IP
+		       -                \s       # blank
+		       -                \s       # blank
+		       \[
+		         \d+/[^/]+/\d+    # date
+		         (:\d+){3} \s     # time
+		         [^]]+            # off
+		       \]              \s
+		       ".+"            \s       # req
+		       \d+             \s       # ret
+		       \d+             \s       # sz
+		       (".+"|-)        \s       # ref
+		       (".+"|-)        \s       # ua
+		       $!x);
+	$last_line = $_;
+      }
+  }
 
 while (<>)
   {
     next unless(/^
-		 (\w+) \s         # Month
-		 (\d+) \s         # Day
+		 (\w+)         \s # Month
+		 (\d\d|\s\d)   \s # Day
 		 (\d+:\d+:\d+) \s # Time
-		 \w+ \s           # Logging host
+		 \w+           \s # Logging host
 		 (?:j|vstr-)httpd # It's the jhttpd server
 		 \[ \d+ \]        # Pid of web server
-		 : \s             # MSG Seperator...
+		 :             \s # MSG Seperator...
 		 (.+)
 		 $/x);
     my ($mon, $day, $tm, $msg) = ($1, $2, $3, $4);
@@ -61,16 +93,18 @@ while (<>)
     $year += 1900;
 
     $_ = $msg;
+    my $cur_line = undef;
+
     if (0) {}
-    elsif (/^REQ \s (GET|HEAD) \s
+    elsif (/^REQ \s (GET|HEAD)                   \s
 	    from \[ (\d+.\d+.\d+.\d+) [@] \d+ \] \s # IP
-	    ret  \[ (\d+) \s [^]]+ \] \s            # return code
-	    sz   \[ [^:]+ : (\d+) \] \s             # Size
-	    host \[ ".*?" \] \s                       # Host header
-	    UA   \[ "(.*?)" \] \s                     # User-agent header
-	    ref  \[ "(.*?)" \] \s                     # Referer (sic) header
-	    ver  \[ "(HTTP[^]]+?)" \]                 # HTTP version
-	    : \s                                    # MSG Seperator...
+	    ret  \[ (\d+) \s [^]]+ \]            \s            # return code
+	    sz   \[ [^:]+ : (\d+) \]             \s # Size
+	    host \[ ".*?" \]                     \s # Host header
+	    UA   \[ "(.*?)" \]                   \s # User-agent header
+	    ref  \[ "(.*?)" \]                   \s # Referer (sic) header
+	    ver  \[ "(HTTP[^]]+?)" \]               # HTTP version
+	    :                                    \s # MSG Seperator...
 	    (.+)                                    # URL path
 	    $/x)
       {
@@ -81,13 +115,42 @@ while (<>)
 	my $referer = length($6) ? '"' . $6 . '"' : '-';
 	my $ua      = length($5) ? '"' . $5 . '"' : '-';
 
-	print <<EOL;
+	$cur_line = <<EOL;
 $ip - - [$day/$mon/$year:$tm $off] "$req" $ret $sz $referer $ua
 EOL
       }
-    elsif (/^ERREQ \s from/)
+    elsif (/^ERREQ \s
+	    from \[ (\d+.\d+.\d+.\d+) [@] \d+ \] \s # IP
+	    err  \[ (\d+) \s [^]]+ \]            \s # error code
+	    host \[ ".*?" \]                     \s # Host header
+	    UA   \[ "(.*?)" \]                   \s # User-agent header
+	    ref  \[ "(.*?)" \]                   \s # Referer (sic) header
+	    ver  \[ "(HTTP[^]]+?)" \]               # HTTP version
+	    :                                    \s # MSG Seperator...
+	    (.+)                                    # URL path
+	    $/x)
       {
+	my $ip      = $1;
+	my $req     = 'GET ' . $6 . ' ' . $5;
+	my $ret     = $2;
+	my $sz      = 0;
+	my $referer = length($4) ? '"' . $4 . '"' : '-';
+	my $ua      = length($3) ? '"' . $3 . '"' : '-';
+
+	$cur_line = <<EOL;
+$ip - - [$day/$mon/$year:$tm $off] "$req" $ret $sz $referer $ua
+EOL
       }
+
+    if (! defined($cur_line))
+      { next; }
+
+    if (defined ($last_line) && ($last_line eq $cur_line))
+      { $last_line = undef; }
+    if (defined ($last_line))
+      { next; }
+
+    OUT->print($cur_line);
   }
 
 __END__
