@@ -105,18 +105,29 @@ ex_slowcat_DEPENDENCIES = ex_utils.h
 ex_slowcat_CFLAGS   = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_dns_SOURCES = ex_dns.c dns.c evnt.c date.c vlg.c
-ex_dns_DEPENDENCIES = dns.h     evnt.h date.h vlg.h
+CMDLINE_FILES_SRCS = date.c evnt.c vlg.c
+CMDLINE_FILES_HDRS = date.h evnt.h vlg.h
+
+ex_dns_SOURCES = ex_dns.c dns.c $(CMDLINE_FILES_SRCS)
+ex_dns_DEPENDENCIES =     dns.h $(CMDLINE_FILES_HDRS)
 ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_httpd_SOURCES = ex_httpd.c                      evnt.c date.c vlg.c
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h opt.h evnt.h date.h vlg.h
+ex_cntl_SOURCES = ex_cntl.c $(CMDLINE_FILES_SRCS)
+ex_cntl_DEPENDENCIES =      $(CMDLINE_FILES_HDRS)
+ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
+ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
+
+DAEMON_FILES_SRCS =       date.c evnt.c vlg.c cntl.c
+DAEMON_FILES_HDRS = opt.h date.h evnt.h vlg.h cntl.h
+
+ex_httpd_SOURCES = ex_httpd.c $(DAEMON_FILES_SRCS)
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h $(DAEMON_FILES_HDRS)
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_echod_SOURCES = ex_echod.c evnt.c date.c vlg.c
-ex_echod_DEPENDENCIES = opt.h evnt.h date.h vlg.h
+ex_echod_SOURCES = ex_echod.c $(DAEMON_FILES_SRCS)
+ex_echod_DEPENDENCIES = $(DAEMON_FILES_HDRS)
 ex_echod_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_echod_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -197,7 +208,7 @@ if TIMER_Q_AVAIL
 examples_PROGRAMS += ex_slowcat
 
 if SOCKET_POLL_AVAIL
-examples_PROGRAMS += ex_dns ex_echod ex_httpd
+examples_PROGRAMS += ex_cntl ex_dns ex_echod ex_httpd
 #examples_PROGRAMS += ex_ypservd
 endif
 # Timer_q
@@ -226,14 +237,19 @@ examples_PROGRAMS += ex_perf_nodesize_foreach
 endif
 endif
 
-# !HAVE_POSIX_HOST
+
+if PERL_USR_BIN_AVAIL
+TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
+TESTS = tst/tst_cat.pl tst/tst_hexdump.pl
+endif
+
 else
+# !HAVE_POSIX_HOST
 
 # Use pre-installed version...
 hi_DEP =
 hi_APP = jhighlight
 
-# HAVE_POSIX_HOST
 endif
 
 otherdir   = $(EX_INST_DIR)
@@ -243,13 +259,19 @@ other_DATA = \
 htmldir   = $(EX_INST_DIR)/html
 html_DATA = \
   html/f_c.css \
-  html/dns.h.html \
+  html/app.h.html \
+  html/cntl.c.html \
+  html/cntl.h.html \
+  html/date.c.html \
+  html/date.h.html \
   html/dns.c.html \
-  html/evnt.h.html \
+  html/dns.h.html \
   html/evnt.c.html \
+  html/evnt.h.html \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
+  html/ex_cntl.c.html \
   html/ex_csv.c.html \
   html/ex_dir_filter.c.html \
   html/ex_dir_list.c.html \
@@ -288,9 +310,6 @@ html_DATA = \
   html/ex_yes.c.html \
   html/ex_ypservd.c.html \
   html/ex_zcat.c.html \
-  html/date.c.html \
-  html/date.h.html \
-  html/vlg.c.html \
   html/opt.h.html \
   html/vlg.c.html \
   html/vlg.h.html

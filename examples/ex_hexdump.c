@@ -301,8 +301,8 @@ Output filenames in human hexdump format.\n\
       --help     Display this help and exit\n\
       --version  Output version information and exit\n\
       --high     Allow space and high characters in ASCII output\n\
-      --none     Allow only small amount of characters ASCII output (default)\n\
-      --space    Allow space characters in ASCII output\n\
+      --none     Allow only small amount of characters ASCII output\n\
+      --space    Allow space characters in ASCII output (default)\n\
       --mmap     Toggle use of mmap() to load input files\n\
       --         Treat rest of cmd line as input filenames\n\
 \n\

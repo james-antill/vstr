@@ -1,3 +1,14 @@
+2004-10-06  James Antill  <james@and.org>
+
+	* src/vstr_sc_posix.c (vstr_sc_write_fd): Fixed bug when UIO_MAXIOV is
+	too big.
+	(vstr_sc_read_len_file): Changed code to block until error or all data
+	is read, makes function much more useful.
+	(vstr_sc_write_file): Changed code to block until error or all data
+	is written, makes function much more useful.
+	(vstr_sc_read_iov_file): Changed code to block until error or all data
+	is read, makes function much more useful.
+
 2004-10-04  James Antill  <james@and.org>
 
 	* src/vstr_sc_posix.c (vstr_sc_read_len_fd): Fixed OOB zero length fail

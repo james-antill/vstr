@@ -8,13 +8,25 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/un.h>
+
+#include <limits.h>
+
 #include "date.h"
 
 #define VLG_COMPILE_INLINE 0
 #include "vlg.h"
 
-#define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-#define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+#ifndef NDEBUG
+# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+#else
+# define ASSERT(x)
+# define assert(x)
+#endif
 #define ASSERT_NOT_REACHED() assert(FALSE)
 
 /* how much memory should we preallocate so it's "unlikely" we'll get mem errors
@@ -138,6 +150,94 @@ static int vlg__fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
+/* also a helper for printing any network address */
+static int vlg__fmt__add_vstr_add_sa(Vstr_base *base, size_t pos,
+                                     Vstr_fmt_spec *spec)
+{
+  struct sockaddr *sa = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t obj_len = 0;
+  char buf1[128 + 1];
+  char buf2[sizeof(short) * CHAR_BIT + 1];
+  const char *ptr1 = NULL;
+  size_t len1 = 0;
+  const char *ptr2 = NULL;
+  size_t len2 = 0;
+
+  assert(sa);
+  assert(sizeof(buf1) >= INET_ADDRSTRLEN);
+  assert(sizeof(buf1) >= INET6_ADDRSTRLEN);
+
+  switch (sa->sa_family)
+  {
+    case AF_INET:
+    {
+      struct sockaddr_in *sin4 = (void *)sa;
+      ptr1 = inet_ntop(AF_INET, &sin4->sin_addr, buf1, sizeof(buf1));
+      if (!ptr1) ptr1 = "<unknown>";
+      len1 = strlen(ptr1);
+      ptr2 = buf2;
+      len2 = vstr_sc_conv_num10_uint(buf2, sizeof(buf2), ntohs(sin4->sin_port));
+    }
+    break;
+      
+    case AF_INET6:
+    {
+      struct sockaddr_in6 *sin6 = (void *)sa;
+      ptr1 = inet_ntop(AF_INET6, &sin6->sin6_addr, buf1, sizeof(buf1));
+      if (!ptr1) ptr1 = "<unknown>";
+      len1 = strlen(ptr1);
+      ptr2 = buf2;
+      len2 = vstr_sc_conv_num10_uint(buf2,sizeof(buf2), ntohs(sin6->sin6_port));
+    }
+    break;
+    
+    case AF_LOCAL:
+    {
+      struct sockaddr_un *sun = (void *)sa;
+      ptr1 = sun->sun_path;
+      len1 = strlen(ptr1);
+    }
+    break;
+    
+    default: ASSERT_NOT_REACHED();
+  }
+
+  obj_len = len1 + !!len2 + len2;
+  
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &obj_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
+    return (FALSE);
+  ASSERT(obj_len == (len1 + !!len2 + len2));
+  
+  if (!vstr_add_buf(base, pos, ptr1, len1))
+    return (FALSE);
+  if (ptr2 && (!vstr_add_rep_chr(base, pos + len1, '@', 1) ||
+               !vstr_add_buf(    base, pos + len1 + 1, ptr2, len2)))
+    return (FALSE);
+                                                                                
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, obj_len))
+    return (FALSE);
+                                                                                
+  return (TRUE);
+}
+
+static int vlg__fmt_add_vstr_add_sa(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vlg__fmt__add_vstr_add_sa,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_END));
+}
+
+int vlg_sc_fmt_add_all(Vstr_conf *conf)
+{
+  return (VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_vstr,
+                          "<vstr", "p%zu%zu", ">") &&
+          VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sect_vstr,
+                          "<vstr.sect", "p%p%u", ">") &&
+          VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sa,
+                          "<sa", "p", ">"));
+}
+
 void vlg_init(void)
 {
   unsigned int buf_sz = 0;
@@ -147,10 +247,7 @@ void vlg_init(void)
 
   if (!vstr_cntl_conf(vlg__conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
       !vstr_sc_fmt_add_all(vlg__conf) ||
-      !VSTR_SC_FMT_ADD(vlg__conf, vlg__fmt_add_vstr_add_vstr,
-                       "<vstr", "p%zu%zu", ">") ||
-      !VSTR_SC_FMT_ADD(vlg__conf, vlg__fmt_add_vstr_add_sect_vstr,
-                       "<vstr.sect", "p%p%u", ">") ||
+      !vlg_sc_fmt_add_all(vlg__conf) ||
       FALSE)
     goto malloc_err_vstr_fmt_all;
 
@@ -164,7 +261,7 @@ void vlg_init(void)
       !vstr_make_spare_nodes(vlg__conf, VSTR_TYPE_NODE_REF,
                              (VLG_MEM_PREALLOC / buf_sz) + 1))
     goto malloc_err_vstr_spare;
-  
+
   return;
   
  malloc_err_vstr_spare:
@@ -178,6 +275,8 @@ void vlg_exit(void)
 {
   if (vlg__done_syslog_init)
     closelog();
+  
+  vstr_free_conf(vlg__conf); vlg__conf = NULL;
 }
 
 Vlg *vlg_make(void)

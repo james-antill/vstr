@@ -3,6 +3,11 @@
 
 #include "vlg.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include <timer_q.h>
+
 struct Evnt;
 
 struct Evnt_cbs
@@ -22,6 +27,8 @@ struct Evnt
  struct Evnt_cbs cbs[1];
  
  unsigned int ind; /* socket poll */
+
+ struct sockaddr *sa;
  
  Vstr_base *io_r;
  Vstr_base *io_w;
@@ -41,13 +48,18 @@ struct Evnt
   VSTR_AUTOCONF_uintmax_t bytes_w;
  } acct;
  
+ unsigned int flag_q_accept    : 1;
+ unsigned int flag_q_connect   : 1;
+ unsigned int flag_q_recv      : 1;
  unsigned int flag_q_send_recv : 1;
- unsigned int flag_q_send_now  : 1;
  unsigned int flag_q_none      : 1;
+ 
+ unsigned int flag_q_send_now  : 1;
 };
 
 #define EVNT_SA(x)    (                      (x)->sa)
 #define EVNT_SA_IN(x) ((struct sockaddr_in *)(x)->sa)
+#define EVNT_SA_UN(x) ((struct sockaddr_un *)(x)->sa)
 
 extern void evnt_logger(Vlg *);
 
@@ -60,7 +72,9 @@ extern int evnt_cb_func_send(struct Evnt *);
 extern void evnt_cb_func_free(struct Evnt *);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
+extern int evnt_make_con_local(struct Evnt *, const char *);
 extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short);
+extern int evnt_make_bind_local(struct Evnt *, const char *);
 extern int evnt_make_acpt(struct Evnt *, int, struct sockaddr *, socklen_t);
 
 extern void evnt_free(struct Evnt *);
@@ -78,6 +92,11 @@ extern void evnt_send_del(struct Evnt *);
 extern int evnt_poll(void);
 extern void evnt_scan_fds(unsigned int, size_t);
 extern void evnt_scan_send_fds(void);
+
+extern unsigned int evnt_num_all(void);
+extern int evnt_waiting(void);
+
+extern void evnt_out_dbg3(const char *);
 
 extern int evnt_opt_nagle;
 

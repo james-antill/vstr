@@ -56,7 +56,6 @@
 struct con
 {
  struct Evnt ev[1];
- struct sockaddr *sa;
 };
 
 struct con_listen
@@ -67,8 +66,6 @@ struct con_listen
 static Timer_q_base *cl_timeout_base = NULL;
 
 static struct con_listen *acpt_sock = NULL;
-
-static unsigned int server_clients_count = 0; /* current number of clients */
 
 static unsigned int client_timeout = (2 * 60); /* 2 minutes */
 
@@ -101,15 +98,11 @@ static void serv_cb_func_free(struct Evnt *evnt)
 {
   struct con *con = (struct con *)evnt;
 
-  vlg_info(vlg, "FREE from[%s:%hu] recv[${BKMG.ju:%ju}] send[${BKMG.ju:%ju}]\n",
-           inet_ntoa(EVNT_SA_IN(con)->sin_addr),
-           ntohs(EVNT_SA_IN(con)->sin_port),
+  vlg_info(vlg, "FREE from[$<sa:%p>]"
+           " recv[${BKMG.ju:%ju}] send[${BKMG.ju:%ju}]\n", con->ev->sa,
            con->ev->acct.bytes_r, con->ev->acct.bytes_w);
 
-  free(con->sa);
   free(con);
-
-  --server_clients_count;
 }
 
 static void serv_cb_func_acpt_free(struct Evnt *evnt)
@@ -129,8 +122,7 @@ static struct Evnt *serv_cb_func_accept(int fd,
   struct con *con = malloc(sizeof(struct con));
   struct timeval tv;
 
-  ASSERT(!server_max_clients || (server_clients_count <= server_max_clients));
-  if (server_max_clients && (server_clients_count >= server_max_clients))
+  if (server_max_clients && (evnt_num_all() >= server_max_clients))
     goto make_acpt_fail;
 
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
@@ -146,22 +138,13 @@ static struct Evnt *serv_cb_func_accept(int fd,
                                          TIMER_Q_FLAG_NODE_DEFAULT)))
     goto timer_add_fail;
 
-  if (!(con->sa = malloc(len)))
-    goto malloc_sa_fail;
-  memcpy(con->sa, sa, len);
-  
-  vlg_info(vlg, "CONNECT from[%s:%hu]\n", inet_ntoa(EVNT_SA_IN(con)->sin_addr),
-           ntohs(EVNT_SA_IN(con)->sin_port));
+  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->ev->sa);
   
   con->ev->cbs->cb_func_recv = serv_cb_func_recv;
   con->ev->cbs->cb_func_free = serv_cb_func_free;
   
-  ++server_clients_count;
-  
   return (con->ev);
 
- malloc_sa_fail:
-  timer_q_quick_del_node(con->ev->tm_o);
  timer_add_fail:
   evnt_free(con->ev);
  make_acpt_fail:
@@ -178,8 +161,6 @@ static int serv_make_bind(const char *acpt_addr, short acpt_port)
     free(con);
     return (FALSE);
   }
-                                                                              
-  SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
 
   acpt_sock = con;
   
@@ -401,11 +382,10 @@ static void serv_init(void)
 
 static void serv_cntl_resources(void)
 {
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE, 2, 20);
+  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE, 0, 20);
   
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                 (CONF_MEM_PREALLOC_MIN / CONF_BUF_SZ),
-                 (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
+                 0, (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
 }
 
 static void serv_signals(void)
@@ -434,7 +414,7 @@ int main(int argc, char *argv[])
   
   vlg_info(vlg, "READY\n");
   
-  while (acpt_sock || server_clients_count)
+  while (evnt_waiting())
   {
     int ready = evnt_poll();
     struct timeval tv;
@@ -444,28 +424,22 @@ int main(int argc, char *argv[])
     if (ready == -1)
       continue;
 
-    vlg_dbg3(vlg, "1 a=%p r=%p s=%p n=%p\n",
-             q_accept, q_recv, q_send_recv, q_none);
+    evnt_out_dbg3("1");
     evnt_scan_fds(ready, CL_MAX_WAIT_SEND);
-    vlg_dbg3(vlg, "2 a=%p r=%p s=%p n=%p\n",
-             q_accept, q_recv, q_send_recv, q_none);
+    evnt_out_dbg3("2");
     evnt_scan_send_fds();
-    vlg_dbg3(vlg, "3 a=%p r=%p s=%p n=%p\n",
-             q_accept, q_recv, q_send_recv, q_none);
+    evnt_out_dbg3("3");
     
     gettimeofday(&tv, NULL);
     timer_q_run_norm(&tv);
 
-    vlg_dbg3(vlg, "4 a=%p r=%p s=%p n=%p\n",
-             q_accept, q_recv, q_send_recv, q_none);
+    evnt_out_dbg3("4");
     evnt_scan_send_fds();
-    vlg_dbg3(vlg, "5 a=%p r=%p s=%p n=%p SN=%p\n",
-             q_accept, q_recv, q_send_recv, q_none, q_send_now);
+    evnt_out_dbg3("5");
 
     serv_cntl_resources();
   }
-  vlg_dbg3(vlg, "E a=%p r=%p s=%p n=%p\n",
-           q_accept, q_recv, q_send_recv, q_none);
+  evnt_out_dbg3("E");
 
   timer_q_del_base(cl_timeout_base);
   

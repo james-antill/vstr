@@ -141,6 +141,12 @@ AC_PATH_PROG(SED_PATH, sed, $TRUE_PATH,
 AC_PATH_PROG(PERL_PATH, perl, $TRUE_PATH,
              $PATH:/usr/bin:/bin:/usr/local/bin:/usr/local/perl:/usr/gnu/bin:/usr/local/gnu/bin:/opt/gnu/bin)
 
+if test "x$PERL_CONFIG" = "x/usr/bin/perl" ; then
+  AM_CONDITIONAL(PERL_USR_BIN_AVAIL, false)
+else
+  AM_CONDITIONAL(PERL_USR_BIN_AVAIL, true)
+fi
+
 AC_PATH_PROG(TAR_PATH, tar, $TRUE_PATH,
              $PATH:/usr/bin:/bin:/usr/local/bin:/usr/gnu/bin:/usr/local/gnu/bin:/opt/gnu/bin)
 

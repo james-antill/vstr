@@ -7657,8 +7657,8 @@ Function: vstr_sc_read_len_fd()
  Explanation:
 
   This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the file descriptor got by opening the filename (Parameter[3]) and finally
- vstr_add_iovec_buf_end() before returning.
+ the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ before returning.
   However the arguments to the vstr_add_iovec_buf_* calls
  are limited so that only up to size (Parameter[4]) data will be read.
   If size (Parameter[4]) is zero then the entire file will try to be read.
@@ -7697,8 +7697,23 @@ Function: vstr_sc_read_iov_file()
  Explanation:
 
   This function is used to call vstr_add_iovec_buf_beg(), then readv() with
- the file descriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
- before returning.
+ the file descriptor got by opening the filename (Parameter[3]) and finally
+ vstr_add_iovec_buf_end() before returning.
+  However the arguments to the vstr_add_iovec_buf_* calls
+ are limited so that only up to size (Parameter[4]) data will be read.
+  However the arguments to the vstr_add_iovec_buf_* calls are limited so that
+ only up to exactly size (Parameter[4]) data will be read. If size
+ (Parameter[5]) is zero then the entire file, minus the offset (Parameter[4])
+ will try and be read.
+
+ Note:
+
+  If all the data is read() and then close() fails with an error, although
+ the error code will signify this the data will stay inside the Vstr as this
+ seemed the most useful/sane behaviour.
+  read() is called multiple times from this function, so it should return
+ after either all the data has been read from the file into the Vstr or an
+ error has occured.
 
 
 Function: vstr_sc_read_len_file()
@@ -7735,8 +7750,12 @@ Function: vstr_sc_read_len_file()
 
  Note:
 
-  As with all calls in the vstr library, this is a non-blocking call. If you
- need all of the data specified (Parameter[5]) then you'll need to loop.
+  If all the data is read() and then close() fails with an error, although
+ the error code will signify this the data will stay inside the Vstr as this
+ seemed the most useful/sane behaviour.
+  read() is called multiple times from this function, so it should return
+ after either all the data has been read from the file into the Vstr or an
+ error has occured.
 
 
 Function: vstr_sc_write_fd()
@@ -7803,6 +7822,14 @@ Function: vstr_sc_write_file()
   This function is used to take data from a Vstr string and write it to a
  file, after open()ing the file (Parameter[4]) with open flags (Parameter[5])
  and open mode (Parameter[6]).
+
+ Note:
+
+  Because multiple system calls will be done inside this function, and 
+ that doing a write automatically removes data it's possible for this function
+ to return failure but have actually written some data out. The other
+ alternative would be to copy all the data until after the close() happened,
+ which would be vastly less efficient.
 
 
 Function: vstr_sc_add_b_uint16()

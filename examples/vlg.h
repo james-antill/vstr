@@ -49,6 +49,8 @@ extern void vlg_dbg3(Vlg *, const char *fmt, ... )
 
 extern void vlg_pid_file(Vlg *, const char *);
 
+extern int vlg_sc_fmt_add_all(Vstr_conf *);
+
 #ifndef VLG_COMPILE_INLINE
 #define VLG_COMPILE_INLINE 1
 #endif

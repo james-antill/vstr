@@ -28,7 +28,6 @@ static void read_file_s2(size_t tlen)
 int tst(void)
 {
   int ret = 0;
-  size_t tmp = 0;
   unsigned int err = 0;
 
 #ifndef HAVE_POSIX_HOST
@@ -54,15 +53,9 @@ int tst(void)
   vstr_add_vstr(s3, s3->len, s3, 1, s1->len, 0);
   
   unlink(fn);
-  tmp = s1->len;
-  while (s1->len)
-  {
-    size_t off = tmp - s1->len;
-    
-    TST_B_TST(ret, 1,
-              !vstr_sc_write_file(s1, 1, s1->len, fn,
-                                  O_WRONLY | O_CREAT, 0600, off, NULL));
-  }
+  TST_B_TST(ret, 1,
+            !vstr_sc_write_file(s1, 1, s1->len, fn,
+                                O_WRONLY | O_CREAT, 0600, 0, NULL));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
@@ -86,40 +79,27 @@ int tst(void)
   TST_B_TST(ret, 5, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
   
   unlink(fn);
-  tmp = s4->len;
-  while (s4->len)
-  {
-    size_t off = tmp - s4->len;
-    TST_B_TST(ret, 6,
-              !vstr_sc_write_file(s4, 1, s4->len, fn,
-                                  O_WRONLY | O_CREAT, 0600, off, NULL));
-  }
+  TST_B_TST(ret, 6,
+            !vstr_sc_write_file(s4, 1, s4->len, fn,
+                                O_WRONLY | O_CREAT, 0600, 0, NULL));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s4, 0, buf);
   TST_B_TST(ret, 7, !VSTR_CMP_EQ(s4, 1, s4->len, s2, 1, s2->len));
 
   unlink(fn);
-  tmp = s1->len;
-  while (s1->len)
-  {
-    TST_B_TST(ret, 8,
-              !vstr_sc_write_file(s1, 1, s1->len, fn,
-                                  O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
-  }
+  TST_B_TST(ret, 8,
+            !vstr_sc_write_file(s1, 1, s1->len, fn,
+                                O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s1, 0, buf);
   TST_B_TST(ret, 9, !VSTR_CMP_EQ(s1, 1, s1->len, s2, 1, s2->len));
 
   unlink(fn);
-  tmp = s3->len;
-  while (s3->len)
-  {
-    TST_B_TST(ret, 10,
-              !vstr_sc_write_file(s3, 1, s3->len, fn,
-                                  O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
-  }
+  TST_B_TST(ret, 10,
+            !vstr_sc_write_file(s3, 1, s3->len, fn,
+                                O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s3, 0, buf);
@@ -127,15 +107,11 @@ int tst(void)
   TST_B_TST(ret, 11, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
   unlink(fn);
-  tmp = s4->len;
-  while (s4->len)
-  {
-    TST_B_TST(ret, 12,
-              !vstr_sc_write_file(s4, 1, s4->len, fn,
-                                  O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
-    TST_B_TST(ret, 13, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_NONE));
-    TST_B_TST(ret, 14, (err != VSTR_TYPE_SC_WRITE_FD_ERR_NONE));
-  }
+  TST_B_TST(ret, 12,
+            !vstr_sc_write_file(s4, 1, s4->len, fn,
+                                O_WRONLY | O_CREAT |O_APPEND, 0600, 0, NULL));
+  TST_B_TST(ret, 13, (err != VSTR_TYPE_SC_WRITE_FILE_ERR_NONE));
+  TST_B_TST(ret, 14, (err != VSTR_TYPE_SC_WRITE_FD_ERR_NONE));
 
   read_file_s2(s2->len);
   VSTR_ADD_CSTR_BUF(s4, 0, buf);

@@ -36,82 +36,51 @@ int tst(void)
   return (EXIT_FAILED_OK);
 #endif
 
-  while (s1->len < tlen)
-  {
-    size_t left = tlen - s1->len;
-    TST_B_TST(ret, 1,
-              !vstr_sc_read_len_file(s1, s1->len, __FILE__,
-                                     s1->len, left, NULL));
-    if (ret) break;
-  }
+  TST_B_TST(ret, 1,
+            !vstr_sc_read_len_file(s1, s1->len, __FILE__,
+                                   s1->len, tlen - s1->len, NULL));
 
   TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "/* TEST: abcd */\n"));
 
   vstr_del(s1, 1, s1->len);
 
-  while (s1->len < tlen)
-  {
-    TST_B_TST(ret, 3,
-              !vstr_sc_read_iov_file(s1, s1->len, __FILE__,
-                                     s1->len, 2, 4, NULL));
-    if (ret) break;
-  }
-
-  if (s1->len > tlen)
-    vstr_del(s1, tlen + 1, s1->len - tlen);
+  TST_B_TST(ret, 3,
+            !vstr_sc_read_iov_file(s1, s1->len, __FILE__,
+                                   s1->len, 2, 4, NULL));
+  vstr_sc_reduce(s1, 1, s1->len, s1->len - tlen);
 
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "/* TEST: abcd */\n"));
 
   /* again with s3 ... Ie. small _buf nodes */
-  while (s3->len < tlen)
-  {
-    size_t left = tlen - s3->len;
-    TST_B_TST(ret, 5,
-              !vstr_sc_read_len_file(s3, s3->len, __FILE__,
-                                     s3->len, left, NULL));
-    if (ret) break;
-  }
+  TST_B_TST(ret, 5,
+            !vstr_sc_read_len_file(s3, s3->len, __FILE__,
+                                   s3->len, tlen - s3->len, NULL));
 
   TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "/* TEST: abcd */\n"));
 
   vstr_del(s3, 1, s3->len);
 
-  while (s3->len < tlen)
-  {
-    TST_B_TST(ret, 7,
-              !vstr_sc_read_iov_file(s3, s3->len, __FILE__,
-                                     s3->len, UIO_MAXIOV + 1, UINT_MAX, NULL));
-    if (ret) break;
-  }
-
-  if (s3->len > tlen)
-    vstr_del(s3, tlen + 1, s3->len - tlen);
+  TST_B_TST(ret, 7,
+            !vstr_sc_read_iov_file(s3, s3->len, __FILE__,
+                                   s3->len, UIO_MAXIOV + 1, UINT_MAX, NULL));
+  vstr_sc_reduce(s3, 1, s3->len, s3->len - tlen);
 
   TST_B_TST(ret, 8, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "/* TEST: abcd */\n"));
 
   /* again with s4 ... Ie. no iovs */
-  while (s4->len < tlen)
-  {
-    TST_B_TST(ret, 9,
-              !vstr_sc_read_len_file(s4, s4->len, __FILE__,
-                                     s4->len, 0, NULL));
-    if (ret) break;
-  }
+  TST_B_TST(ret, 9,
+            !vstr_sc_read_len_file(s4, s4->len, __FILE__,
+                                   s4->len, 0, NULL));
 
   TST_B_TST(ret, 10, !VSTR_CMP_CSTR_EQ(s4, 1, tlen, "/* TEST: abcd */\n"));
 
   vstr_del(s4, 1, s4->len);
 
-  while (s4->len < tlen)
-  {
-    TST_B_TST(ret, 11,
-              !vstr_sc_read_iov_file(s4, s4->len, __FILE__,
-                                     s4->len, 2, 4, &err));
-    TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FD_ERR_NONE));
-    TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FILE_ERR_NONE));
-
-    if (ret) break;
-  }
+  TST_B_TST(ret, 11,
+            !vstr_sc_read_iov_file(s4, s4->len, __FILE__,
+                                   s4->len, 2, 4, &err));
+  TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FD_ERR_NONE));
+  TST_B_TST(ret, 11, (err != VSTR_TYPE_SC_READ_FILE_ERR_NONE));
 
   if (s4->len > tlen)
     vstr_del(s4, tlen + 1, s4->len - tlen);
@@ -130,17 +99,19 @@ int tst(void)
   TST_B_TST(ret, 15, !!vstr_sc_read_iov_fd(s4, s4->len, -1, 1, 2, &err));
   TST_B_TST(ret, 16, (err != VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO));
   TST_B_TST(ret, 16, (err != VSTR_TYPE_SC_READ_FILE_ERR_READ_ERRNO));
+  
+  { /* by hand, FILE_EOF doesn't happen */
+    int fd = open("/dev/null", O_RDONLY);
+    
+    TST_B_TST(ret, 17, !!vstr_sc_read_len_fd(s1, s1->len, fd, 20, &err));
+    TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
 
-  TST_B_TST(ret, 17, !!vstr_sc_read_len_file(s1, s1->len, "/dev/null",
-                                             0, 20, &err));
-  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
-  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FILE_ERR_EOF));
+    TST_B_TST(ret, 17, !!vstr_sc_read_len_fd(s4, s4->len, fd, 20, &err));
+    TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
 
-  TST_B_TST(ret, 17, !!vstr_sc_read_len_file(s4, s4->len, "/dev/null",
-                                             0, 20, &err));
-  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FD_ERR_EOF));
-  TST_B_TST(ret, 18, (err != VSTR_TYPE_SC_READ_FILE_ERR_EOF));
-
+    close(fd);
+  }
+  
   TST_B_TST(ret, 19, vstr_sc_read_len_file(s1, s1->len, "/abcd_missing",
                                            0, 1, &err));
   TST_B_TST(ret, 20, (err != VSTR_TYPE_SC_READ_FILE_ERR_OPEN_ERRNO));

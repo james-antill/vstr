@@ -1,7 +1,3 @@
-/* dns stub resolver...
- * rfc1034 rfc1035 rfc1183 rfc1535 rfc1536 rfc1995 rfc1996 rfc2182
- * rfc2219 rfc2308 rfc2309 rfc2606 rfc2671 rfc2782
- * ipv6: rfc1886 rfc2874 rfc3363 rfc3364 rfc3596 */
 
 #define VSTR_COMPILE_INCLUDE 1
 #include <vstr.h>
@@ -48,24 +44,12 @@
 #define CL_MAX_WAIT_SEND 16
 
 
-#include "dns.h"
 #include "app.h"
-
-#define CL_DNS_INIT(x, y) do {                  \
-      (x)->io_w_serv = (y);                     \
-      (x)->io_w_user = io_w;                    \
-      (x)->io_dbg    = vlg;                     \
-      (x)->opt_recur = cl_opt_recur;            \
-    } while (FALSE)
-
-
 #include "evnt.h"
 
 struct con
 {
  struct Evnt ev[1];
- 
- Dns_base d1[1];
 };
 
 static int io_r_fd = STDIN_FILENO;
@@ -83,103 +67,103 @@ static int server_clients_count = 0; /* current number of clients */
 static int server_clients = 1;
 static unsigned int server_timeout = (2 * 60); /* 2 minutes */
 
-static const char *server_ipv4_address = "127.0.0.1";
-static short server_port = 53;
-
-static unsigned int cl_opt_recur = TRUE;
+static const char *server_filename = NULL;
 
 static Vlg *vlg = NULL;
 
-static void ui_out(Dns_base *d1, Vstr_base *pkt)
+static void ui_out(void)
 {
   if (!io_ind_w)
     return;
   
-  dns_sc_ui_out(d1, pkt);
   SOCKET_POLL_INDICATOR(io_ind_w)->events |=  POLLOUT;
 }
 
-static void cl_parse(struct con *con, size_t msg_len)
+static int cl_recv(struct Evnt *evnt)
 {
-  Vstr_base *pkt = vstr_dup_vstr(con->ev->io_r->conf,
-                                 con->ev->io_r, 1, msg_len,
-                                 VSTR_TYPE_ADD_BUF_PTR);
-
-  if (!pkt)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
-
-  vlg_dbg1(vlg, "${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
-           '=', 33, msg_len, '=', 33);
-  dns_dbg_prnt_pkt(con->d1, pkt);
-  vlg_dbg1(vlg, "${rep_chr:%c%zu}\n", '-', 79);
+  int ret = evnt_cb_func_recv(evnt);
   
-  ui_out(con->d1, pkt);
-  vstr_free_base(pkt);
-  vstr_del(con->ev->io_r, 1, msg_len);
+  if (!ret)
+    goto malloc_bad;
 
-  evnt_got_pkt(con->ev);
-}
-
-static int cl_recv(struct con *con)
-{
-  unsigned int ern = 0;
-  int ret = evnt_recv(con->ev, &ern);
-  unsigned int msg_len = 0;
-  
-  /* parse data */
-  while ((msg_len = dns_get_msg_len(con->ev->io_r, 1)))
+  while (evnt->io_r->len)
   {
-    if (msg_len > con->ev->io_r->len)
+    size_t pos = 0;
+    size_t len = 0;
+    size_t ns1 = 0;
+    size_t vpos = 0;
+    size_t vlen = 0;
+    size_t nse2 = 0;
+    int done = FALSE;
+  
+    if (!(ns1 = vstr_parse_netstr(evnt->io_r, 1, evnt->io_r->len, &pos, &len)))
     {
-      if (msg_len > CL_PACKET_MAX)
-      {
-        vlg_dbg2(vlg, "ERROR-RECV-MAX: fd=%d len=%zu\n",
-                 SOCKET_POLL_INDICATOR(con->ev->ind)->fd, msg_len);
+      if (!(SOCKET_POLL_INDICATOR(evnt->ind)->events & POLLIN))
         return (FALSE);
-      }
-      
       return (TRUE);
     }
 
-    vstr_del(con->ev->io_r, 1, 2);
+    while ((nse2 = vstr_parse_netstr(evnt->io_r, pos, len, &vpos, &vlen)))
+    {
+      if (!done && !vlen && (nse2 == len))
+      {
+        len = 0;
+        evnt_got_pkt(evnt);
+        break;
+      }
+      
+      if (done)
+        app_cstr_buf(io_w, " ");
+      
+      app_vstr(io_w, evnt->io_r, vpos, vlen, VSTR_TYPE_ADD_DEF);
     
-    cl_parse(con, msg_len - 2);
+      if (!done)
+        app_cstr_buf(io_w, ":");
+    
+      done = TRUE;
+
+      len -= nse2; pos += nse2;
+    }
+    if (done)
+      app_cstr_buf(io_w, "\n");
+
+    ui_out();
+  
+    if (len)
+      VLG_WARN_RET(FALSE, (vlg, "invalid entry\n"));
+
+  /*
+  if (io_w->conf->malloc_bad)
+    goto malloc_bad;
+  */
+  
+    vstr_del(evnt->io_r, 1, ns1);
   }
-
-  if (!ret)
-    evnt_close(con->ev);
-    
-  return (ret);
+  
+  return (TRUE);
+  
+ malloc_bad:
+  evnt->io_r->conf->malloc_bad = FALSE;
+  evnt->io_w->conf->malloc_bad = FALSE;
+  return (FALSE);
 }
 
-static void cl_app_recq1_pkt(struct con *con,
-                             const char *name,
-                             unsigned int dns_class,
-                             unsigned int dns_type)
-{
-  dns_app_recq_pkt(con->d1, 1, name, dns_class, dns_type);
-  
-  SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
-  evnt_put_pkt(con->ev);
-  
-  if (con->ev != q_connect)
-    evnt_send_add(con->ev, FALSE, CL_MAX_WAIT_SEND); /* does write */
-}
-
-
-#define UI_CMD(x, c, t)                                                 \
-    else if (vstr_cmp_case_bod_cstr_eq(io_r, 1, len, x " ")) do         \
+#define UI_CMD(x)                                                       \
+    else if (vstr_cmp_case_cstr_eq(io_r, 1, len, x "\n")) do            \
     {                                                                   \
-      size_t pos = 1;                                                   \
-      size_t tmp = strlen(x " ");                                       \
-      const char *name = NULL;                                          \
+      size_t ns1 = 0;                                                   \
+      Vstr_base *out = con->io_w;                                       \
                                                                         \
-      pos += tmp; len -= tmp;                                           \
-      tmp = vstr_spn_cstr_chrs_fwd(io_r, pos, len, " ");                \
-      pos += tmp; len -= tmp;                                           \
-      name = vstr_export_cstr_ptr(io_r, pos, len - 1);                  \
-                                                                        \
-      cl_app_recq1_pkt((struct con *)con, name, c, t);                  \
+      if (!(ns1 = vstr_add_netstr_beg(out, out->len)) ||                \
+          !vstr_add_cstr_ptr(out, out->len, x) ||                       \
+          !vstr_add_netstr_end(out, ns1, out->len) ||                   \
+          !evnt_send_add(con, FALSE, 0))                                \
+      {                                                                 \
+        evnt_close(con);                                                \
+        return;                                                         \
+      }                                                                 \
+      SOCKET_POLL_INDICATOR(con->ind)->events |= POLLIN;                \
+      evnt_put_pkt(con);                                                \
     } while (FALSE)
 
 static void cl_connect(void); /* fwd ref */
@@ -189,6 +173,8 @@ static void ui_parse(void)
   unsigned int count = 64;
   struct Evnt *con = q_none;
 
+  vlg_dbg3(vlg, "ui_parse %zu\n", io_r->len);
+  
   if (!io_r->len)
     return; /* don't start more connections for nothing */
 
@@ -220,38 +206,25 @@ static void ui_parse(void)
     size_t line_len = len;
 
     if (0) { /* not reached */ }
-    UI_CMD("*.*",      DNS_CLASS_ALL, DNS_TYPE_ALL);
-    UI_CMD("all.all",  DNS_CLASS_ALL, DNS_TYPE_ALL);
+    UI_CMD("CLOSE");
+    UI_CMD("LIST");
+    UI_CMD("STATUS");
 
-    UI_CMD("in.*",     DNS_CLASS_IN, DNS_TYPE_ALL);
-    UI_CMD("in.all",   DNS_CLASS_IN, DNS_TYPE_ALL);
-    
-    UI_CMD("in.a",     DNS_CLASS_IN, DNS_TYPE_IN_A);
-    UI_CMD("in.aaaa",  DNS_CLASS_IN, DNS_TYPE_IN_AAAA);
-    UI_CMD("in.cname", DNS_CLASS_IN, DNS_TYPE_IN_CNAME);
-    UI_CMD("in.hinfo", DNS_CLASS_IN, DNS_TYPE_IN_HINFO);
-    UI_CMD("in.mx",    DNS_CLASS_IN, DNS_TYPE_IN_MX);
-    UI_CMD("in.ns",    DNS_CLASS_IN, DNS_TYPE_IN_NS);
-    UI_CMD("in.ptr",   DNS_CLASS_IN, DNS_TYPE_IN_PTR);
-    UI_CMD("in.soa",   DNS_CLASS_IN, DNS_TYPE_IN_SOA);
-    UI_CMD("in.txt",   DNS_CLASS_IN, DNS_TYPE_IN_TXT);
-    
-    UI_CMD("ch.*",     DNS_CLASS_CH, DNS_TYPE_ALL);
-    UI_CMD("ch.all",   DNS_CLASS_CH, DNS_TYPE_ALL);
-    UI_CMD("ch.txt",   DNS_CLASS_CH, DNS_TYPE_CH_TXT);
-
+    vlg_dbg3(vlg, "bad input\n");
     /* ignore everything else */
     
     vstr_del(io_r, 1, line_len);
   }
+  vlg_dbg3(vlg, "io_r left = %zu\n", io_r->len);
 }
 #undef UI_CMD
-
 
 static int cl_cb_func_connect(struct Evnt *evnt)
 {
   (void)evnt;
   
+  vlg_dbg3(vlg, "connect\n");
+
   ui_parse();
   
   return (TRUE);
@@ -259,7 +232,7 @@ static int cl_cb_func_connect(struct Evnt *evnt)
 
 static int cl_cb_func_recv(struct Evnt *evnt)
 {
-  return (cl_recv((struct con *)evnt));
+  return (cl_recv(evnt));
 }
 
 static void cl_cb_func_free(struct Evnt *evnt)
@@ -271,32 +244,30 @@ static void cl_cb_func_free(struct Evnt *evnt)
   --server_clients_count;
 }
 
-static struct con *cl_make(const char *ipv4_string, short port)
+static struct con *cl_make(const char *server_fname)
 {
   struct con *ret = malloc(sizeof(struct con));
 
   if (!ret)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
-  if (!evnt_make_con_ipv4(ret->ev, ipv4_string, port))
+  if (!evnt_make_con_local(ret->ev, server_fname))
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
   ret->ev->cbs->cb_func_connect = cl_cb_func_connect;
-  ret->ev->cbs->cb_func_recv = cl_cb_func_recv;
-  ret->ev->cbs->cb_func_free = cl_cb_func_free;
+  ret->ev->cbs->cb_func_recv    = cl_cb_func_recv;
+  ret->ev->cbs->cb_func_free    = cl_cb_func_free;
   
-  ++server_clients_count;  
+  ++server_clients_count;
 
-  CL_DNS_INIT(ret->d1, ret->ev->io_w);
-  
   if (ret->ev->flag_q_none)
     cl_cb_func_connect(ret->ev);
-
+  
   return (ret);
 }
 
 static void cl_connect(void)
 {
-  struct con *con = cl_make(server_ipv4_address, server_port);
+  struct con *con = cl_make(server_filename);
   struct timeval tv;
 
   if (server_timeout)
@@ -385,12 +356,10 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
 
 static void usage(const char *program_name, int tst_err)
 {
-  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-chmtwV] <?>\n"
+  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-chmtwV] <server name>\n"
           " --help -h         - Print this message.\n"
           " --debug -d        - Enable debug info.\n"
           " --clients -c      - Number of connections to make.\n"
-          " --host -H         - IPv4 host address to send DNS queries to.\n"
-          " --port -P         - Port to send DNS queries to.\n"
           " --nagle -n        - Enable/disable nagle TCP option.\n"
           " --timeout -t      - Timeout (usecs) between each message.\n"
           " --version -V      - Print the version string.\n",
@@ -405,7 +374,7 @@ static void usage(const char *program_name, int tst_err)
 static void cl_cmd_line(int argc, char *argv[])
 {
   char optchar = 0;
-  const char *program_name = "dns";
+  const char *program_name = "cntl";
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},
@@ -415,7 +384,6 @@ static void cl_cmd_line(int argc, char *argv[])
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
    {"nagle", optional_argument, NULL, 'n'},
-   {"recursive", optional_argument, NULL, 'R'},
    {"timeout", required_argument, NULL, 't'},
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
@@ -440,13 +408,11 @@ static void cl_cmd_line(int argc, char *argv[])
         usage(program_name, '?' == optchar);
         
       case 'V':
-        printf(" %s version 0.0.1, compiled on %s.\n", program_name, __DATE__);
+        printf(" %s version 0.5.1, compiled on %s.\n", program_name, __DATE__);
         exit (EXIT_SUCCESS);
 
       case 'c': server_clients      = atoi(optarg); break;
       case 't': server_timeout      = atoi(optarg); break;
-      case 'H': server_ipv4_address = optarg;       break;
-      case 'P': server_port         = atoi(optarg); break;
 
       case 'd': vlg_debug(vlg);                     break;
         
@@ -465,15 +431,6 @@ static void cl_cmd_line(int argc, char *argv[])
         else if (!strcasecmp("0", optarg))      evnt_opt_nagle = FALSE;
         break;
 
-      case 'R':
-        if (!optarg)
-        { cl_opt_recur = !cl_opt_recur; }
-        else if (!strcasecmp("true", optarg))   cl_opt_recur = TRUE;
-        else if (!strcasecmp("1", optarg))      cl_opt_recur = TRUE;
-        else if (!strcasecmp("false", optarg))  cl_opt_recur = FALSE;
-        else if (!strcasecmp("0", optarg))      cl_opt_recur = FALSE;
-        break;
-
       default:
         abort();
     }
@@ -482,10 +439,10 @@ static void cl_cmd_line(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  //  if (argc != 1)
-  //    usage(program_name, TRUE);
+  if (argc != 1)
+    usage(program_name, TRUE);
 
-  //  ip_addr_input_file = argv[0];
+  server_filename = argv[0];
 }
 
 static void cl_timer_cli(int type, void *data)
@@ -548,7 +505,6 @@ static void cl_timer_con(int type, void *data)
   }
 }
 
-
 static void cl_init(void)
 {
   cl_timeout_base       = timer_q_add_base(cl_timer_cli,
@@ -571,9 +527,12 @@ static void cl_init(void)
 static void cl_beg(void)
 {
   int count = 0;
+
+  vlg_dbg3(vlg, "cl_beg\n");
   
   if (io_r_fd != -1)
   {
+    vlg_dbg3(vlg, "cl_beg io_r beg\n");
     evnt_fd_set_nonblock(io_r_fd,  TRUE);
     if (!(io_ind_r = socket_poll_add(io_r_fd)))
       errno = ENOMEM, err(EXIT_FAILURE, __func__);
@@ -645,7 +604,7 @@ int main(int argc, char *argv[])
 
   cl_beg();
   
-  while (io_ind_w && (io_w->len || (evnt_waiting() || io_ind_r || io_r->len)))
+  while (io_ind_w && (io_w->len || evnt_waiting() || io_ind_r || io_r->len))
   {
     int ready = evnt_poll();
     struct timeval tv;
