@@ -28,16 +28,13 @@ Vstr_sects *vstr_sects_make(unsigned int beg_num)
   if (!sects)
     return (NULL);
 
-  if (beg_num && !(ptr = malloc(beg_num)))
+  if (beg_num && !(ptr = malloc(sizeof(Vstr_sect_node) * beg_num)))
   {
     free(sects);
     return (NULL);
   }
 
   VSTR_SECTS_INIT(sects, beg_num, ptr, TRUE);
-  
-  sects->free_ptr = TRUE;
-  sects->can_add_sz = TRUE;
 
   return (sects);
 }
@@ -62,6 +59,26 @@ static int vstr__sects_add(Vstr_sects *sects)
     sz <<= 1;
   else
     ++sz;
+  
+  if (!(ptr = realloc(sects->ptr, sizeof(Vstr_sect_node) * sz)))
+  {
+    sects->malloc_bad = TRUE;
+    return (FALSE);
+  }
+
+  sects->ptr = ptr;
+  sects->sz = sz;
+
+  return (TRUE);
+}
+
+static int vstr__sects_del(Vstr_sects *sects)
+{
+  Vstr_sect_node *ptr = NULL;
+  unsigned int sz = sects->sz;
+  
+  sz >>= 1;
+  assert(sz >= sects->num);
   
   if (!(ptr = realloc(sects->ptr, sizeof(Vstr_sect_node) * sz)))
   {
@@ -105,13 +122,19 @@ int vstr_sects_del(Vstr_sects *sects, unsigned int num)
   if (!sects->sz || !num)
     return (FALSE);
   
-  if (sects->num < num)
+  if (num > sects->num)
     return (FALSE);
 
-  assert(sects->ptr[num - 1].pos);
-  
+  if (!sects->ptr[num - 1].pos)
+    return (FALSE);
+
   sects->ptr[num - 1].pos = 0;
-  sects->ptr[num - 1].len = 0;
+
+  while (sects->num && !sects->ptr[sects->num - 1].pos)
+    --sects->num;
+
+  if (sects->can_del_sz && (sects->num < (sects->sz / 2)))
+    vstr__sects_del(sects);
   
   return (TRUE);
 }
@@ -125,8 +148,8 @@ unsigned int vstr_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
   
   while (count < sects->num)
   {
-    size_t scan_pos = VSTR_SECTS_NUM(sects, count).pos;
-    size_t scan_len = VSTR_SECTS_NUM(sects, count).len;
+    size_t scan_pos = VSTR_SECTS_NUM(sects, count)->pos;
+    size_t scan_len = VSTR_SECTS_NUM(sects, count)->len;
 
     ++count;
     
@@ -137,44 +160,64 @@ unsigned int vstr_sects_srch(Vstr_sects *sects, size_t pos, size_t len)
   return (0);
 }
 
-int vstr_sects_foreach(Vstr_base *base, Vstr_sects *sects, unsigned int flags,
-                       int (*foreach_func)(const Vstr_base *, size_t, size_t,
-                                           void *),
+int vstr_sects_foreach(const Vstr_base *base,
+                       Vstr_sects *sects, const unsigned int flags,
+                       unsigned int (*foreach_func)(const Vstr_base *,
+                                                    size_t, size_t, void *),
                        void *data)
 {
   unsigned int count = 0;
+  unsigned int scan = 0;
 
   if (!sects->sz)
     return (0);
+
+  if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS)
+    scan = sects->num;
   
-  while (count < sects->num)
+  while ((!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS) &&
+          (scan < sects->num)) ||
+         ((flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS) && scan))
   {
-    size_t pos = sects->ptr[count].pos;
-    size_t len = sects->ptr[count].len;
+    size_t pos = 0;
+    size_t len = 0;
 
-    if (pos && (len || (flags & VSTR_FLAG_SECT_FOREACH_ALLOW_NULL)))
+    if (flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS)
+      --scan;
+
+    pos = sects->ptr[scan].pos;
+    len = sects->ptr[scan].len;
+
+    if (pos && (len || (flags & VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL)))
     {
-      int ret = (*foreach_func)(base, pos, len, data);
+      ++count;
 
-      switch (ret)
+      switch ((*foreach_func)(base, pos, len, data))
       {
         default:
           assert(FALSE);
-        case VSTR_TYPE_SECT_FOREACH_DEF:
+        case VSTR_TYPE_SECTS_FOREACH_DEF:
           break;
-        case VSTR_TYPE_SECT_FOREACH_DEL:
-          sects->ptr[count].pos = 0;
-          sects->ptr[count].len = 0;
+        case VSTR_TYPE_SECTS_FOREACH_DEL:
+          sects->ptr[scan].pos = 0;
           break;
           
-        case VSTR_TYPE_SECT_FOREACH_RET:
-          return (count + 1);
+        case VSTR_TYPE_SECTS_FOREACH_RET:
+          goto shorten_and_return;
       }
     }
 
-    ++count;
+    if (!(flags & VSTR_FLAG_SECTS_FOREACH_BACKWARDS))
+      ++scan;
   }
 
-  return (sects->num);
+ shorten_and_return:
+  while (sects->num && !sects->ptr[sects->num - 1].pos)
+    --sects->num;
+
+  if (sects->can_del_sz && (sects->num < (sects->sz / 2)))
+    vstr__sects_del(sects);
+
+  return (count);
 }
 

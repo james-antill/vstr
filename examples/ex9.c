@@ -17,8 +17,8 @@ const unsigned int FLAGS = (VSTR_FLAG_SPLIT_BEG_NULL |
 #define ALLOC_LIM 8
 #define PASS_LIM 8
 
-static int foreach_func(const Vstr_base *base, size_t pos, size_t len,
-                        void *data)
+static unsigned int foreach_func(const Vstr_base *base, size_t pos, size_t len,
+                                 void *data)
 {
   static unsigned int count = 0;
   Vstr_base *str1 = data;

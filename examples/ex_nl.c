@@ -44,7 +44,8 @@ int main(int argc, char *argv[])
 
   while (len)
   {
-    const int flags = (VSTR_FLAG_SPLIT_BEG_NULL |
+    const int flags = (VSTR_FLAG_SPLIT_REMAIN |
+                       VSTR_FLAG_SPLIT_BEG_NULL |
                        VSTR_FLAG_SPLIT_MID_NULL |
                        VSTR_FLAG_SPLIT_END_NULL |
                        VSTR_FLAG_SPLIT_NO_RET);
@@ -56,8 +57,8 @@ int main(int argc, char *argv[])
 
     while ((++num < SECTS_LOOP) && (num <= sects->num))
     {
-      size_t split_pos = VSTR_SECTS_NUM(sects, num).pos;
-      size_t split_len = VSTR_SECTS_NUM(sects, num).len;
+      size_t split_pos = VSTR_SECTS_NUM(sects, num)->pos;
+      size_t split_len = VSTR_SECTS_NUM(sects, num)->len;
 
       if (!split_len)
       {
@@ -83,8 +84,8 @@ int main(int argc, char *argv[])
       len = 0;
     else
     {
-      pos = VSTR_SECTS_NUM(sects, sects->sz).pos;
-      len = VSTR_SECTS_NUM(sects, sects->sz).len;
+      pos = VSTR_SECTS_NUM(sects, sects->sz)->pos;
+      len = VSTR_SECTS_NUM(sects, sects->sz)->len;
     }
   }
 

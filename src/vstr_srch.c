@@ -85,6 +85,50 @@ size_t vstr_srch_chr_rev(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__srch_chr_rev_slow(base, pos, len, srch));
 }
 
+size_t vstr_srch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                          const char *srch, size_t chrs_len)
+{
+  size_t num = vstr_cspn_buf_fwd(base, pos, len, srch, chrs_len);
+
+  if (num == len)
+    return (0);
+
+  return (pos + num);
+}
+
+size_t vstr_srch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                          const char *srch, size_t chrs_len)
+{
+  size_t num = vstr_cspn_buf_rev(base, pos, len, srch, chrs_len);
+
+  if (num == len)
+    return (0);
+  
+  return (pos + ((len - num) - 1));
+}
+
+size_t vstr_csrch_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
+                           const char *srch, size_t chrs_len)
+{
+  size_t num = vstr_spn_buf_fwd(base, pos, len, srch, chrs_len);
+
+  if (num == len)
+    return (0);
+
+  return (pos + num);
+}
+
+size_t vstr_csrch_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
+                           const char *srch, size_t chrs_len)
+{
+  size_t num = vstr_spn_buf_rev(base, pos, len, srch, chrs_len);
+
+  if (num == len)
+    return (0);
+  
+  return (pos + ((len - num) - 1));
+}
+
 size_t vstr_srch_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
                          const void *const str, const size_t str_len)
 {
@@ -250,4 +294,35 @@ size_t vstr_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__srch_vstr_rev_slow(base, pos, len, ndl_base, ndl_pos, ndl_len));
 }
 
+unsigned int vstr_srch_sects_add_buf_fwd(const Vstr_base *base,
+                                         size_t pos, size_t len,
+                                         Vstr_sects *sects,
+                                         const void *const str,
+                                         const size_t str_len)    
+{
+  unsigned int orig_num = sects->num;
+  size_t srch_pos = 0;
 
+  while ((srch_pos = vstr_srch_buf_fwd(base, pos, len, str, str_len)))
+  {
+    if (!vstr_sects_add(sects, srch_pos, str_len))
+    {
+      if (sects->malloc_bad)
+      {
+        assert(sects->num >= orig_num);
+        sects->num = orig_num;
+        return (0);
+      }
+      assert(!sects->can_add_sz);
+      assert(sects->num == sects->sz);
+    }
+
+    len -= srch_pos - pos;
+    len -= str_len;
+    if (!len)
+      break;
+    pos = srch_pos + str_len;
+  }
+
+  return (sects->num - orig_num);
+}

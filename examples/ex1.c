@@ -47,18 +47,26 @@ static void do_test(Vstr_base *str2, const char *filename)
                     (char *)"Hello this is a constant message.\n\n",
                     strlen("Hello this is a constant message.\n\n")))
     errno = ENOMEM, DIE("vstr_add_ptr:");
+  
+  {
+    const char *name_lc_numeric = NULL;
+    const char *decimal_point = NULL;
+    const char *thousands_sep = NULL;
 
-  /* FIXME: **** NOTE NOTE NOTE NOTE ****
-   * Do not just deref. like this, the api will be via. _cntl functions
-   * this code will change and may not work in the future */
-  vstr_add_fmt(str2, str2->len, "\n\nLocale information:\n"
-               "name: %s\n"
-               "decimal: %s\n"
-               "thousands_sep: %s\n"
-               "grouping:",
-               str2->conf->loc->name_lc_numeric_str,
-               str2->conf->loc->decimal_point_str,
-               str2->conf->loc->thousands_sep_str);
+    vstr_cntl_conf(str2->conf, VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC,
+                   &name_lc_numeric);
+    vstr_cntl_conf(str2->conf, VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT,
+                   &decimal_point);
+    vstr_cntl_conf(str2->conf, VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP,
+                   &thousands_sep);
+    
+    vstr_add_fmt(str2, str2->len, "\n\nLocale information:\n"
+                 "name: %s\n"
+                 "decimal: %s\n"
+                 "thousands_sep: %s\n"
+                 "grouping:",
+                 name_lc_numeric, decimal_point, thousands_sep);
+  }
 
   {
     unsigned int scan = 0;
@@ -242,6 +250,22 @@ int main(int argc, char *argv[])
 
   setlocale(LC_ALL, "");
 
+  do_test(str2, (argc > 1) ? argv[1] : NULL);
+  do_test(str1, (argc > 1) ? argv[1] : NULL);
+
+  if (!vstr_cntl_conf(str1->conf,
+                      VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC, "ex1-custom"))
+    errno = ENOMEM, DIE("vstr_cntl_conf(LOC_CSTR_NAME_NUMERIC):");
+  if (!vstr_cntl_conf(str1->conf,
+                      VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT, "<.>"))
+    errno = ENOMEM, DIE("vstr_cntl_conf(LOC_CSTR_DECIMAL_POINT):");
+  if (!vstr_cntl_conf(str1->conf,
+                      VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP, "->"))
+    errno = ENOMEM, DIE("vstr_cntl_conf(LOC_CSTR_THOU_SEP):");
+  if (!vstr_cntl_conf(str1->conf,
+                      VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP, "\4\2\3"))
+    errno = ENOMEM, DIE("vstr_cntl_conf(LOC_CSTR_THOU_GRP):");
+  
   do_test(str2, (argc > 1) ? argv[1] : NULL);
   do_test(str1, (argc > 1) ? argv[1] : NULL);
 

@@ -31,6 +31,14 @@ void vstr_ref_cb_free_ref(Vstr_ref *ref)
  free(ref);
 }
 
+#ifndef NDEBUG
+void vstr__ref_cb_free_buf_ref(Vstr_ref *ref)
+{
+  assert(((Vstr__buf_ref *)ref)->buf == ref->ptr);
+  vstr_ref_cb_free_ref(ref);
+}
+#endif
+
 void vstr_ref_cb_free_ptr(Vstr_ref *ref)
 {
  free(ref->ptr);
@@ -67,7 +75,7 @@ Vstr_ref *vstr_ref_add(Vstr_ref *tmp)
 {
  if (!tmp)
  {
-  Vstr_ref do_ref_init = VSTR_INIT_REF;
+  Vstr_ref do_ref_init = VSTR_REF_INIT();
   
   tmp = malloc(sizeof(Vstr_ref));
   if (!tmp)

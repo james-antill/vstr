@@ -79,6 +79,14 @@ VSTR__DECL_TYPEDEF1(struct Vstr_locale)
   size_t thousands_sep_len; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_locale);
 
+struct Vstr_base; /* fwd declaration for callbacks */
+VSTR__DECL_TYPEDEF1(struct Vstr_cache_cb)
+{
+  const char *name;
+  void *(*cb_func)(const struct Vstr_base *, size_t, size_t,
+                   unsigned int, void *);
+} VSTR__DECL_TYPEDEF2(Vstr_cache_cb);
+
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
  unsigned int spare_buf_num; /* private */
@@ -100,10 +108,17 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  
  unsigned int buf_sz; /* private */
 
+ struct Vstr_cache_cb *cache_cbs_ents; /* private */ 
+ unsigned int cache_cbs_sz; /* private */
+
+ unsigned int cache_pos_cb_pos; /* private */
+ unsigned int cache_pos_cb_iovec; /* private */
+ unsigned int cache_pos_cb_cstr; /* private */
+ 
  int ref; /* private */
  
  unsigned int free_do : 1; /* private */
- unsigned int malloc_bad : 1; /* public/read */
+ unsigned int malloc_bad : 1; /* public/read|write */
  unsigned int iovec_auto_update : 1; /* private */
  unsigned int split_buf_del : 1; /* private */
 
@@ -121,25 +136,25 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)
 {
- struct Vstr_node *beg; /* private */
- struct Vstr_node *end; /* private */
- 
- size_t len; /* public/read -- bytes in vstr */
-
- unsigned int num; /* private */
-
- struct Vstr_conf *conf; /* public/read */
- 
- unsigned int used : 16; /* private */
- 
- unsigned int free_do : 1; /* private */
- unsigned int iovec_upto_date : 1; /* private */
- unsigned int cache_available : 1; /* private */
- unsigned int unused04 : 1; /* private */
- 
- VSTR__DEF_BITFLAG_1_4(6); /* private */
- VSTR__DEF_BITFLAG_1_4(7); /* private */
- VSTR__DEF_BITFLAG_1_4(8); /* private */
+  size_t len; /* public/read -- bytes in vstr */
+  
+  struct Vstr_node *beg; /* private */
+  struct Vstr_node *end; /* private */
+  
+  unsigned int num; /* private */
+  
+  struct Vstr_conf *conf; /* public/read */
+  
+  unsigned int used : 16; /* private */
+  
+  unsigned int free_do : 1; /* private */
+  unsigned int iovec_upto_date : 1; /* private */
+  unsigned int cache_available : 1; /* private */
+  unsigned int unused04 : 1; /* private */
+  
+  VSTR__DEF_BITFLAG_1_4(6); /* private */
+  VSTR__DEF_BITFLAG_1_4(7); /* private */
+  VSTR__DEF_BITFLAG_1_4(8); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_base);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_sect_node)
@@ -150,8 +165,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sect_node)
 
 VSTR__DECL_TYPEDEF1(struct Vstr_sects)
 {
-  unsigned int num;
-  unsigned int sz;
+  unsigned int num; /* public/read|write */
+  unsigned int sz; /* public/read|write */
   
   unsigned int malloc_bad : 1; /* public/read|write */
   unsigned int free_ptr : 1; /* public/read|write */
@@ -170,6 +185,6 @@ VSTR__DECL_TYPEDEF1(struct Vstr_sects)
   VSTR__DEF_BITFLAG_1_4(7); /* private */
   VSTR__DEF_BITFLAG_1_4(8); /* private */
   
-  struct Vstr_sect_node *ptr; /* private */
+  struct Vstr_sect_node *ptr; /* public/read|write */
 } VSTR__DECL_TYPEDEF2(Vstr_sects);
 

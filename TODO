@@ -1,12 +1,6 @@
 
 . bunch of the _rev functions don't have a fast path.
 
-. doco.
-
-. pkg-config as well/instead of gnome-config
-
-. Make the vstr__netstr2_num_len value constant.
-
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 
 . Max and Min ammounts for spare nodes.
@@ -19,12 +13,8 @@
 
 . Allow conf to say don't allocate a cache.
 
-. vstr_sect_adj_ add/del ?
-
-. Cache reg./unreg.
-
-. Move len to top of Vstr_base
-
 . Optionaly use Timer_q to delete old cache entries ?
 
-. vstr_conv_2int() ?
+. vstr_conv_encode_qp (quoted printable rfc2045.txt)
+
+. only using _NON and _BUF nodes flag for sub functions optomisation.

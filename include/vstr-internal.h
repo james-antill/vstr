@@ -36,32 +36,36 @@
 #define VSTR__ASCII_COLON() (0x3A)
 #define VSTR__ASCII_COMMA() (0x2C)
 
-typedef struct Vstr_iovec
+typedef struct Vstr_cache_data_iovec
 {
- struct iovec *v; /* private */
- unsigned char *t; /* private */
+ struct iovec *v;
+ unsigned char *t;
  /* num == base->num */
- unsigned int off; /* private */
- unsigned int sz; /* private */
-} Vstr_iovec;
+ unsigned int off;
+ unsigned int sz;
+} Vstr_cache_data_iovec;
+
+typedef struct Vstr_cache_data_cstr
+{
+ size_t pos;
+ size_t len;
+ struct Vstr_ref *ref;
+} Vstr_cache_data_cstr;
+
+typedef struct Vstr_cache_data_pos
+{
+ size_t pos;
+ unsigned int num;
+ struct Vstr_node *node;
+} Vstr_cache_data_pos;
 
 typedef struct Vstr_cache
 {
- struct Vstr_cache_cstr
- {
-  size_t pos; /* private */
-  size_t len; /* private */
-  struct Vstr_ref *ref; /* private */
- } cstr; /* private */
- 
- struct Vstr_cache_pos
- {
-  size_t pos; /* private */
-  unsigned int num; /* private */
-  struct Vstr_node *node; /* private */
- } pos; /* private */
+ unsigned int sz;
 
- struct Vstr_iovec *vec; /* private */
+ struct Vstr_cache_data_iovec *vec;
+
+ void *VSTR__STRUCT_HACK_ARRAY(data);
 } Vstr_cache;
 
 typedef struct Vstr__base_cache
@@ -77,11 +81,11 @@ typedef struct Vstr__options
  Vstr_conf *def;
 } Vstr__options;
 
-typedef struct Vstr__cstr_ref
+typedef struct Vstr__buf_ref
 {
  Vstr_ref ref;
  char VSTR__STRUCT_HACK_ARRAY(buf);
-} Vstr__cstr_ref;
+} Vstr__buf_ref;
 
 typedef struct Vstr__sc_mmap_ref
 {
@@ -104,7 +108,12 @@ extern size_t vstr__netstr2_ULONG_MAX_len;
 #ifndef NDEBUG
 extern int vstr__check_real_nodes(Vstr_base *);
 extern int vstr__check_spare_nodes(Vstr_conf *);
+extern void vstr__ref_cb_free_buf_ref(struct Vstr_ref *);
+#else
+#define vstr__ref_cb_free_buf_ref vstr_ref_cb_free_ref
 #endif
+
+extern int vstr_init_base(struct Vstr_conf *, struct Vstr_base *);
 
 extern void vstr__add_conf(Vstr_conf *);
 extern void vstr__add_no_node_conf(Vstr_conf *);
@@ -118,6 +127,7 @@ extern char *vstr__export_node_ptr(const Vstr_node *);
 
 extern Vstr_node *vstr__base_split_node(Vstr_base *, Vstr_node *, size_t);
 
+extern unsigned int vstr__num_node(Vstr_base *, Vstr_node *);
 extern Vstr_node *vstr__base_pos(const Vstr_base *, size_t *,
                                  unsigned int *, int);
 extern Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *, size_t, size_t *,
@@ -133,20 +143,26 @@ extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
                                    unsigned int *, unsigned int *,
                                    char **, size_t *);
 
-extern int vstr__cache_iovec_alloc(Vstr_base *, unsigned int);
-extern void vstr__cache_iovec_free(Vstr_base *);
-extern void vstr__cache_iovec_reset_node(Vstr_base *base, Vstr_node *node,
+extern int vstr__cache_iovec_alloc(const Vstr_base *, unsigned int);
+extern void vstr__cache_iovec_add_node_end(Vstr_base *, unsigned int,
+                                           unsigned int);
+extern void vstr__cache_iovec_reset_node(const Vstr_base *base, Vstr_node *node,
                                         unsigned int num);
-extern int vstr__cache_iovec_valid(Vstr_base *);
+extern int vstr__cache_iovec_valid(Vstr_base *); /* makes it valid */
 
-extern void vstr__cache_free_cstr(Vstr_cache *);
-extern void vstr__cache_free_pos(Vstr_cache *);
-extern void vstr__cache_del(Vstr_base *, size_t, size_t);
-extern void vstr__cache_add(Vstr_base *, size_t, size_t);
-extern void vstr__cache_cpy(Vstr_base *, size_t, size_t, Vstr_base *, size_t);
-extern void vstr__cache_chg(Vstr_base *, size_t, size_t);
-extern int  vstr__make_cache(Vstr_base *);
-extern void vstr__free_cache(Vstr_base *);
+extern void vstr__cache_free_cstr(const Vstr_base *);
+extern void vstr__cache_free_pos(const Vstr_base *);
+extern void vstr__cache_del(const Vstr_base *, size_t, size_t);
+extern void vstr__cache_add(const Vstr_base *, size_t, size_t);
+extern void vstr__cache_sub(const Vstr_base *, size_t, size_t);
+extern void vstr__cache_cstr_cpy(const Vstr_base *, size_t, size_t,
+                                 const Vstr_base *, size_t);
+extern int  vstr__make_cache(const Vstr_base *);
+extern void vstr__free_cache(const Vstr_base *);
+extern int  vstr__cache_conf_init(Vstr_conf *);
+
+extern size_t vstr__loc_thou_grp_strlen(const char *);
+extern int vstr__make_conf_loc_numeric(Vstr_conf *, const char *);
 
 extern void vstr__version_func(void);
     

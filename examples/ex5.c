@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
  Vstr_base *str1 = NULL;
  int count = 0;
  Vstr_ref *args_fwd = NULL;
+ size_t off = 0;
  
  if (!vstr_init())
    errno = ENOMEM, DIE("vstr_init:");
@@ -67,8 +68,9 @@ int main(int argc, char *argv[])
   ++count;
  }
  
- if (!(args_fwd = vstr_export_cstr_ref(str1, 1, str1->len)))
+ if (!(args_fwd = vstr_export_cstr_ref(str1, 1, str1->len, &off)))
    errno = ENOMEM, DIE("vstr_export_cstr_ref:");
+ 
  vstr_del(str1, 1, str1->len);
  
  count = argc;
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
  if (!vstr_export_cstr_ptr(str1, 1, str1->len))
    errno = ENOMEM, DIE("vstr_export_cstr_ptr:");
 
- old_function_integrate(args_fwd->ptr,
+ old_function_integrate(((char *)args_fwd->ptr) + off,
                         vstr_export_cstr_ptr(str1, 1, str1->len));
 
  vstr_ref_del(args_fwd);

@@ -50,8 +50,7 @@ int main(void)
   * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
  
  vstr_add_fmt(str1, str1->len, "Hello %s, World is %d.\n", "vstr", 1);
- vstr_add_ptr(str1, str1->len, (char *)"Hello this is a constant message.\n\n",
-              strlen("Hello this is a constant message.\n\n"));
+ VSTR_ADD_CSTR_PTR(str1, str1->len, "Hello this is a constant message.\n\n");
 
  ex_utils_cpy_write_all(str1, 1);
 
@@ -59,9 +58,12 @@ int main(void)
  
  vstr_del(str1, strlen("Hello vstr, World "), strlen(" is"));
  vstr_del(str1, 1, 1);
- vstr_sub_buf(str1, 1, strlen("ello"), "Hello", strlen("Hello"));
- vstr_sub_buf(str1, strlen("Hello "), strlen(" vstr,"),
-              " ** Vstr subed **", strlen(" ** Vstr subed **"));
+ if (0)
+   VSTR_SUB_CSTR_BUF(str1, 1, strlen("ello"), "Hello");
+ else
+   VSTR_ADD_CSTR_BUF(str1, 0, "H");
+ VSTR_SUB_CSTR_BUF(str1, strlen("Hello "), strlen(" vstr,"),
+                   " ** Vstr subed **");
 
  ex_utils_cpy_write_all(str1, 1);
  

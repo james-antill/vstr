@@ -28,7 +28,7 @@ Vstr_base *vstr_dup_buf(struct Vstr_conf *conf, const void *data, size_t len)
  if (!ret)
    goto make_base_fail;
 
- if (!vstr_add_buf(ret, 0, data, len))
+ if (len && !vstr_add_buf(ret, 0, data, len))
    goto add_vstr_fail;
 
  return (ret);
@@ -47,7 +47,7 @@ Vstr_base *vstr_dup_ptr(struct Vstr_conf *conf, const void *data, size_t len)
  if (!ret)
    goto make_base_fail;
 
- if (!vstr_add_ptr(ret, 0, data, len))
+ if (len && !vstr_add_ptr(ret, 0, data, len))
    goto add_vstr_fail;
 
  return (ret);
@@ -66,7 +66,7 @@ Vstr_base *vstr_dup_non(struct Vstr_conf *conf, size_t len)
  if (!ret)
    goto make_base_fail;
 
- if (!vstr_add_non(ret, 0, len))
+ if (len && !vstr_add_non(ret, 0, len))
    goto add_vstr_fail;
 
  return (ret);
@@ -87,7 +87,7 @@ Vstr_base *vstr_dup_vstr(struct Vstr_conf *conf,
  if (!ret)
    goto make_base_fail;
 
- if (!vstr_add_vstr(ret, 0, base, pos, len, type))
+ if (len && !vstr_add_vstr(ret, 0, base, pos, len, type))
    goto add_vstr_fail;
 
  return (ret);

@@ -1,5 +1,5 @@
 
-Section: the Vstr_ref struct
+Section: struct Vstr_ref (aka. Vstr reference)
 
 Member: func
 
@@ -32,5 +32,100 @@ Member: ref
   It is safest to only change this by calling either vstr_ref_add_ref() or
  vstr_ref_del_ref(). These will automatically call the cleanup function when
  the reference reaches zero.
+
+
+Section: struct Vstr_conf (aka. Vstr configuration)
+
+Member: malloc_bad
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE by any function which does an
+ allocation on a Vstr string or Vstr configuration that fails, this allows the
+ programmer to call multiple allocation functions and then do a single test.
+
+
+Section: struct Vstr_base (aka. Vstr string)
+
+Member: len
+
+ Explanation:
+
+  This is the length of the Vstr string.
+
+
+Member: conf
+
+ Explanation:
+
+  This is a pointer to the Vstr configuration used by the Vstr string.
+
+
+Section: struct Vstr_sects (aka. Vstr sections)
+
+Member: num
+
+ Explanation:
+
+  This is the number of used sections in the Vstr sections.
+
+ Note:
+
+  Some of the section nodes may be used by null or deleted sections.
+
+
+Member: sz
+
+ Explanation:
+
+  This is the size of space allocated for sections in the Vstr sections.
+
+
+Member: malloc_bad
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE by any function which does an
+ allocation on a section that fails, this allows the programmer to call
+ multiple allocation functions and then do a single test.
+
+
+Member: free_ptr
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to free().
+
+
+Member: can_add_sz
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to realloc() to make it bigger.
+
+
+Member: can_del_sz
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE when the data in ->ptr can be passed
+ to realloc() to make it smaller.
+
+
+Member: alloc_double
+
+ Explanation:
+
+  This is a bitflag which is set to TRUE when the data in ->ptr should be 
+ realloc()'d at twice it's current size when it needs to be bigger.
+
+
+Member: ptr
+
+ Explanation:
+
+  This is a pointer to the section nodes.
 
 

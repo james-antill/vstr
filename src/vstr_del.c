@@ -144,15 +144,16 @@ static void vstr__del_beg_cleanup(Vstr_base *base, unsigned int type,
 
 static void vstr_del_all(Vstr_base *base)
 {
- unsigned int num = 0;
- unsigned int type;
- Vstr_node **scan = NULL;
+  size_t orig_len = base->len;
+  unsigned int num = 0;
+  unsigned int type;
+  Vstr_node **scan = NULL;
 
- assert(vstr__check_spare_nodes(base->conf));
- assert(vstr__check_real_nodes(base));
-
- if (!base->len)
-   return;
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
+  
+  if (!base->len)
+    return;
  
  scan = &base->beg;
  type = (*scan)->type;
@@ -185,22 +186,25 @@ static void vstr_del_all(Vstr_base *base)
  
  vstr__cache_iovec_reset(base);
 
+ vstr__cache_del(base, 1, orig_len);
+ 
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 }
 
 static void vstr_del_beg(Vstr_base *base, size_t len)
 {
- unsigned int num = 0;
- unsigned int type;
- Vstr_node **scan = NULL;
- 
- assert(len && base->beg);
-
- assert(vstr__check_spare_nodes(base->conf));
- assert(vstr__check_real_nodes(base));
- 
- if (!len)
+  size_t orig_len = base->len;
+  unsigned int num = 0;
+  unsigned int type;
+  Vstr_node **scan = NULL;
+  
+  assert(len && base->beg);
+  
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
+  
+  if (!len)
     return;
 
  if (!base->beg)
@@ -269,6 +273,8 @@ static void vstr_del_beg(Vstr_base *base, size_t len)
  if (len)
    vstr__cache_iovec_del_node_beg(base, base->beg, 1, len);
 
+ vstr__cache_del(base, 1, orig_len);
+ 
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
 }
@@ -346,16 +352,15 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
 
  if (pos <= 1)
  {
-  vstr__cache_del(base, pos, len);
-  
-  if (len >= base->len)
-  {
-   vstr_del_all(base);
+   if (len >= base->len)
+   {
+     vstr_del_all(base);
+     
+     return (TRUE);
+   }
+   
+   vstr_del_beg(base, len);
    return (TRUE);
-  }
-  
-  vstr_del_beg(base, len);
-  return (TRUE);
  }
 
  assert(vstr__check_spare_nodes(base->conf));
@@ -411,11 +416,11 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
       break;
    }
    scan->len -= len;
+
+   vstr__cache_del(base, orig_pos, orig_len);
    
    assert(vstr__check_spare_nodes(base->conf));
    assert(vstr__check_real_nodes(base));
-
-   vstr__cache_del(base, orig_pos, orig_len);
    
    return (TRUE);
   }
@@ -427,11 +432,11 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
  
  if (!len)
  {
+  vstr__cache_del(base, orig_pos, orig_len);
+  
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
 
-  vstr__cache_del(base, orig_pos, orig_len);
-  
   return (TRUE);
  }
  
@@ -495,7 +500,7 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
   {
    case VSTR_TYPE_NODE_BUF:
      /* if (!base->conf->split_buf_del) */
-     /* no point in not splitting */
+     /* no point in splitting */
      memmove(((Vstr_node_buf *)scan)->buf,
              ((Vstr_node_buf *)scan)->buf + len,
              scan->len - len);
@@ -515,11 +520,11 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
   
   vstr__cache_iovec_reset_node(base, scan, saved_num + 1);
  }
+
+ vstr__cache_del(base, orig_pos, orig_len);
  
  assert(vstr__check_spare_nodes(base->conf));
  assert(vstr__check_real_nodes(base));
-
- vstr__cache_del(base, orig_pos, orig_len);
  
  return (TRUE);
 }

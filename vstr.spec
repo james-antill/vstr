@@ -1,7 +1,7 @@
 # This is hacked from glib
 # Note that this is NOT a relocatable package
-%define ver      @VERSION@
-%define libver  @LT_RELEASE@
+%define ver      0.9.1
+%define libver  0.9
 %define  RELEASE 1
 %define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   /usr

@@ -18,6 +18,7 @@ endif
 libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr.c \
                         vstr_add.c \
+                        vstr_add_fmt.c \
                         vstr_add_netstr.c \
                         vstr_cache.c \
                         vstr_cmp.c \
@@ -27,18 +28,18 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \
+                        vstr_join.c \
                         vstr_mov.c \
                         vstr_parse.c \
+                        vstr_parse_netstr.c \
                         vstr_ref.c \
                         vstr_sc.c \
                         vstr_sect.c \
                         vstr_spn.c \
                         vstr_split.c \
                         vstr_srch.c \
-                        vstr_srch_netstr.c \
                         vstr_sub.c \
-                        vstr_version.c \
-                        vstr_fmt.c
+                        vstr_version.c
 
 libvstr_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \

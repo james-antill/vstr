@@ -80,6 +80,18 @@ extern int prctl(int, unsigned long, unsigned long,
 # define SA_NOMASK SA_NODEFER
 #endif
 
+#ifndef INTMAX_MIN
+# define INTMAX_MIN LONG_MIN
+#endif
+
+#ifndef INTMAX_MAX
+# define INTMAX_MAX LONG_MAX
+#endif
+
+#ifndef UINTMAX_MAX
+# define UINTMAX_MAX ULONG_MAX
+#endif
+
 #ifndef HAVE_VA_COPY
 # ifdef HAVE___VA_COPY
 #  define HAVE_VA_COPY 1

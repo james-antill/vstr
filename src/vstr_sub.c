@@ -1,6 +1,6 @@
 #define VSTR_SUB_C
 /*
- *  Copyright (C) 2001  James Antill
+ *  Copyright (C) 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,16 @@
  */
 /* functions to substitute data in a vstr */
 #include "main.h"
+
+#define VSTR__SUB_BUF() do { \
+  if (tmp > buf_len) \
+    tmp = buf_len; \
+  \
+  memcpy(((Vstr_node_buf *)scan)->buf + pos, buf, tmp); \
+  buf_len -= tmp; \
+  buf = ((char *)buf) + tmp; \
+} while (FALSE)
+
 
 int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
                  const void *buf, size_t buf_len)
@@ -95,13 +105,14 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
     }
   }
 
+  add_len += sub_add_len;
   /* allocate extra _BUF nodes needed, all other are ok -- no splits will
    * happen on non _BUF nodes */
-  num = (len / base->conf->buf_sz) + 2;
+  num = (add_len / base->conf->buf_sz) + 2;
   if (num > base->conf->spare_buf_num)
   {
     num -= base->conf->spare_buf_num;
-    if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num)
+    if (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num)
       return (FALSE);
   }
   
@@ -112,34 +123,12 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   assert(scan);
   
   --pos;
-  if (pos && (scan == base->beg) && (pos == base->used) &&
-      (buf_len >= scan->len) && (add_len >= base->used))
-  { /* save space by filling in the begining of the _BUF node */
-    len += base->used;
-    base->len += base->used;
-    add_len -= base->used;
-    
-    if (base->iovec_upto_date)
-    {
-      struct iovec *vec = NULL;
-      char *scan_buf = ((Vstr_node_buf *)scan)->buf;
-      
-      vec = &(VSTR__CACHE(base)->vec->v[VSTR__CACHE(base)->vec->off]);
-
-      assert(vec->iov_base == (scan_buf + base->used));
-      assert(vec->iov_len == (size_t)(scan->len - base->used));
-      
-      vec->iov_len += base->used;
-      vec->iov_base = scan_buf;
-    }
-
-    base->used = 0;
-    pos = 0;
-  }
 
   real_pos = orig_pos;
-  do
+  while (buf_len && len)
   {
+    size_t tmp = 0;
+      
     assert(scan);
     
     if (rm_pos)
@@ -147,35 +136,75 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
       assert(rm_pos == real_pos);
       vstr_del(base, rm_pos, rm_len);
     }
+
+    tmp = scan->len - pos;
+    if (tmp > len)
+      tmp = len;
     
     if (scan->type != VSTR_TYPE_NODE_BUF)
     {
       rm_pos = real_pos;
-      rm_len = scan->len - pos;
-      len -= rm_len;
+      rm_len = tmp;
+      len -= tmp;
     }
     else
     {
-      size_t tmp = base->conf->buf_sz - pos;
-      
-      if (tmp > buf_len)
-        tmp = buf_len;
-      if (tmp > len)
-        tmp = len;
-      
       rm_pos = 0;
 
-      memcpy(((Vstr_node_buf *)scan)->buf + pos, buf, tmp);
-      buf_len -= tmp;
-      buf = ((char *)buf) + tmp;
-
+      VSTR__SUB_BUF();
+      
+      vstr__cache_sub(base, real_pos, tmp);
+      
       len -= tmp;
       real_pos += tmp;
+
+      if (buf_len && add_len && (((base->beg == scan) && base->used) ||
+                                 (scan->len < base->conf->buf_sz)))
+      { /* be more aggessive here than in vstr_add_buf() because when you are
+         * adding you generally add a lot, but when subbing you often sub
+         * just a little bit more or less than you started with */
+        pos += tmp;
+        if ((base->beg == scan) && base->used)
+        {
+          pos -= base->used;
+          scan->len -= base->used;
+          memmove(((Vstr_node_buf *)scan)->buf,
+                  ((Vstr_node_buf *)scan)->buf + base->used,
+                  scan->len);
+          base->used = 0;
+        }
+
+        assert(scan->len < base->conf->buf_sz);
+        
+        tmp = base->conf->buf_sz - scan->len;
+        if (tmp > add_len)
+          tmp = add_len;
+        if (tmp > buf_len)
+          tmp = buf_len;
+
+        if (pos < scan->len)
+          memmove(((Vstr_node_buf *)scan)->buf + pos + tmp,
+                  ((Vstr_node_buf *)scan)->buf + pos,
+                  (scan->len - pos));
+        
+        VSTR__SUB_BUF();
+
+        scan->len += tmp;
+        base->len += tmp;
+        add_len -= tmp;
+        
+        vstr__cache_add(base, real_pos, tmp);
+        
+        real_pos += tmp;
+      
+        if (base->iovec_upto_date)
+          vstr__cache_iovec_reset_node(base, scan, vstr__num_node(base, scan));
+      }
     }
 
     pos = 0;
     scan = scan->next;
-  } while (buf_len && len);
+  }
 
   if (rm_pos)
   {
@@ -186,10 +215,9 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   if (del_len)
     vstr_del(base, real_pos, del_len);
 
+  assert(add_len >= buf_len);
   if (buf_len)
     vstr_add_buf(base, real_pos - 1, buf, buf_len);
-
-  assert(!base->conf->malloc_bad);
 
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));

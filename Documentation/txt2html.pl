@@ -26,16 +26,31 @@ my $html_footer = "\n</td></tr></table>\n</body></html>";
 sub convert()
   {
     my $in_pre_tag = "";
-    
+    my $in_const = 0;
+
     while (<IN>)
       {
-	if (s!^(Constant|Function|Member): (.*)$!</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>$1: </strong> $2! ||
+	my $next_in_const = 0;
+
+	my $beg_replace = <<EOL;
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+EOL
+
+	if ($in_const)
+	  {
+	    $beg_replace = qw(<br>);
+	  }
+
+	if (s!^(Constant|Function|Member): (.*)$!$beg_replace<strong>$1: </strong> $2! ||
 	    s!^ Explanation:\s*$!</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>! ||
 	    s!^ Note:\s*$!</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>! ||
 	    s!^Section:\s*(.*)$!</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>$1</h2>! ||
 	    0)
 	  {
-	    # Do nothing...
+	    if (defined ($1) && ($1 eq "Constant"))
+	      {
+		$next_in_const = 1;
+	      }
 	  }
 	elsif (m!^ ([A-Z][a-z]+)(\[\d\]|\[ \.\.\. \])?: (.*)$!)
 	  {
@@ -85,6 +100,8 @@ sub convert()
 	    $_ = "</p><p>$_";
 	  }
 	
+	$in_const = $next_in_const;
+
 	print OUT;
       }
   }

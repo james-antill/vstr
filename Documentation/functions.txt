@@ -2,7 +2,6 @@
 Section: Initialization function
 
 Function: vstr_init()
-
  Returns: TRUE on success and FALSE on failure
  Type: int
 
@@ -11,12 +10,15 @@ Function: vstr_init()
   This function needs to be called before any of the other functions are
  called.
 
+ Note:
+
+  The function can be called multiple times, without any problems.
+
 
 Section: Functions to export vstr data
 
 
-Function: vstr_export_cstr_ptr();
-
+Function: vstr_export_cstr_ptr()
  Returns: a pointer to an array of characters
  Type: char *
 
@@ -48,8 +50,44 @@ Function: vstr_export_cstr_ptr();
  than it really is to normal C/POSIX string functions.
 
 
-Function: vstr_export_cstr_ref();
+Function: vstr_export_cstr_buf()
 
+ Returns: nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Length from position in the Vstr
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to export a copt of the data in the Vstr string to a
+ data array, the maximum ammount of data stored in the array will be of length
+ (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string".
+ However the data before the terminator of the "C string" is limited to
+ (Parameter[5] - 1).
+
+ Note:
+
+  Data from nodes of type NON are exported by not doing anything to the
+ underlying data array (Ie. It'll have whatever data was in there to
+ start with).
+  If there is any 0 bytes in the Vstr these will make the "C string" look
+ shorter than it really is to normal C/POSIX string functions.
+
+
+Function: vstr_export_cstr_ref()
  Returns: Vstr memory reference
  Type: struct Vstr_ref *
 
@@ -62,15 +100,17 @@ Function: vstr_export_cstr_ref();
  Parameter[3]: Length from position in the Vstr
  Type[3]: size_t
 
+ Parameter[4]: Offset of Vstr memory refernce (Return)
+ Type[4]: size_t *
+
  Explanation:
 
   This function is used to return a pointer to a Vstr memory reference of at 
  least length (Parameter[3] + 1), the last byte will be a 0 to terminate the
- "C string" stored in (Vstr_ref *)->ptr.
-  When you are finnished with the reference you need to use
- vstr_ref_del_ref() or the memory will stay allocated forever.
-  Multiple adjacent calls will act as though you'd just called
- vstr_ref_add_ref() on the value returned in the first call.
+ "C string" stored in (Vstr_ref *)->ptr. The offset (Parameter[4]) should be
+ used to find the beginning of the block of memory to use.
+  When you are finnished with the reference you need to use vstr_ref_del() or
+ the memory will stay allocated forever.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   The function will return NULL if it needs to allocate memory and cannot do so.
@@ -107,12 +147,12 @@ Function: vstr_export_iovec_ptr_all()
  Note:
 
   Nodes of type NON are represented by a iov_base set to NULL.
-  Note that altering the iov_base/iov_len members will probably do very bad
- things, if you need to do this use the vstr_export_iovec_cpy_ptr()
-  Note that altering the data in the iovec structure isn't a good idea as
- it isn't easy for the programer to know if the data is shared/read-only.
- If you need to do this you should use either the vstr_sub_* functions
- instead or vstr_export_iovec_cpy_buf() (the later works on a copy though).
+  Altering the iov_base/iov_len members will probably do very bad things, if
+ you need to do this use the vstr_export_iovec_cpy_ptr()
+  Altering the data in the iovec structure isn't a good idea as it isn't easy
+ for the programer to know if the data is shared/read-only. If you need to do
+ this you should use either the vstr_sub_* functions instead or
+ vstr_export_iovec_cpy_buf() (the later does a copy).
 
 
 Function: vstr_export_iovec_cpy_buf()
@@ -187,10 +227,10 @@ Function: vstr_export_iovec_cpy_ptr()
  Note:
 
   Nodes of type NON are represented by a iov_base set to NULL.
-  Note that altering the data in the iovec structure isn't a good idea as
- it isn't easy for the programer to know if the data is shared/read-only.
- If you need to do this you should use either the vstr_sub_* functions
- instead or vstr_export_iovec_cpy_buf() (the later works on a copy though).
+  Altering the data in the iovec structure isn't a good idea as it isn't easy
+ for the programer to know if the data is shared/read-only. If you need to do
+ this you should use either the vstr_sub_* functions instead or
+ vstr_export_iovec_cpy_buf() (the later does a copy).
 
 Function: vstr_export_buf()
  Returns: Size of bytes exported from the Vstr string
@@ -244,6 +284,40 @@ Function: vstr_export_chr()
  and real data that is equal to the value 0.
 
 
+Function: vstr_export_ref()
+
+ Returns: Vstr memory reference
+ Type: struct Vstr_ref *
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr
+ Type[2]: size_t
+
+ Parameter[3]: Length from position in the Vstr
+ Type[3]: size_t
+
+ Parameter[4]: Offset of Vstr memory refernce (Return)
+ Type[4]: size_t *
+
+ Explanation:
+
+  This function is used to return a pointer to a Vstr memory reference of at 
+ least length (Parameter[3]). The offset (Parameter[4]) should be used to find
+ the beginning of the block of memory to use.
+  When you are finnished with the reference you need to use vstr_ref_del() or
+ the memory will stay allocated forever.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  The function will return NULL if it needs to allocate memory and cannot do so.
+
+ Note:
+
+  Any _NON data in the Vstr will be uninitialised data in the memory pointed
+ to by the memory reference.
+
+
 Section: Functions to use as callbacks in a Vstr memory reference
 
 
@@ -256,7 +330,7 @@ Function: vstr_ref_cb_free_nothing()
 
  Explanation:
 
-  This does nothing.
+  This function does nothing.
 
 Function: vstr_ref_cb_free_ref()
  Returns: nothing
@@ -295,25 +369,32 @@ Function: vstr_ref_cb_free_ptr_ref()
 
 Section: Functions to reference and dereference a Vstr memory reference
 
-
-Function: vstr_ref_add_ref()
- Returns: Vstr memory reference
+Function: vstr_ref_add()
+ Returns: Vstr memory reference (Parameter[1])
  Type: struct Vstr_ref *
 
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
 
+ Explanation:
 
-Function: void vstr_ref_del_ref()
+  This function will add a reference count to the Vstr_ref (Parameter[1]).
+
+
+Function: vstr_ref_del()
  Returns: nothing
  Type: void
 
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
 
+ Explanation:
 
-Section: Creation/destruction of random stuff
+  This function will delete a reference count from the Vstr_ref (Parameter[1]),
+ when the reference count reaches zero then the cleanup function will be called.
 
+
+Section: Creation/destruction of core objects
 
 Function: vstr_make_conf()
  Returns: Vstr configuration
@@ -324,18 +405,19 @@ Function: vstr_make_conf()
 
  Explanation:
 
+  This function will make a Vstr configuration, or return NULL.
 
 
-Function: vstr_init_base()
- Returns: 
- Type: int
+Function: vstr_free_conf()
+ Returns: nothing
+ Type: void
 
  Parameter[1]: Vstr configuration
  Type[1]: struct Vstr_conf *
 
- Parameter[2]: Vstr string
- Type[2]: struct Vstr_base *
+ Explanation:
 
+  This function will free a Vstr configuration, allocated by vstr_make_conf().
 
 
 Function: vstr_make_base()
@@ -348,6 +430,11 @@ Function: vstr_make_base()
  Parameter[2]: 
  Type[2]: struct Vstr_conf *
 
+ Explanation:
+
+  This function will make a Vstr string, or return NULL.
+
+
 Function: vstr_free_base()
  Returns: nothing
  Type: void
@@ -355,37 +442,59 @@ Function: vstr_free_base()
  Parameter[1]: Vstr string
  Type[1]: struct Vstr_base *
 
+ Explanation:
+
+  This function will free a Vstr string, allocated by vstr_make_base().
 
 
-
-
-
-Function: vstr_add_spare_nodes()
- Returns: 
+Function: vstr_make_spare_nodes()
+ Returns: Number of nodes created
  Type: unsigned int
 
- Parameter[2]: 
+ Parameter[2]: Vstr configuration
  Type[2]: struct Vstr_conf *
 
- Parameter[2]: 
+ Parameter[2]: Type of nodes to create
  Type[2]: unsigned int
 
- Parameter[3]: 
+ Parameter[3]: Number of nodes to create
  Type[3]: unsigned int
 
-Function: vstr_del_spare_nodes()
- Returns: 
+ Explanation:
+
+  This function will try and create a number (Parameter[3]) of nodes of type
+ (Parameter[2]).
+
+ Note:
+
+  The number of nodes created will be less than or equal to the number requested
+ (Parameter[3]), however if it is less than then the malloc_bad flag will be set
+ (Parameter[1])->malloc_bad.
+
+
+Function: vstr_free_spare_nodes()
+ Returns: Number of nodes destroyed
  Type: unsigned int
 
- Parameter[1]: 
+ Parameter[1]: Vstr configuration
  Type[1]: struct Vstr_conf *
 
- Parameter[2]: 
+ Parameter[2]: Type of nodes to destroy
  Type[2]: unsigned int
 
- Parameter[3]: 
+ Parameter[3]: Number of nodes to destroy
  Type[3]: unsigned int
 
+ Explanation:
+
+  This function will try and destroy a number (Parameter[3]) of nodes of type
+ (Parameter[2]).
+
+ Note:
+
+  The number of nodes created will be less than or equal to the number requested
+ (Parameter[3]), the only reason that less will be destroyed is if there are no
+ more unused nodes of that type (Parameter[2]).
 
 
 Section: Functions to add data to a Vstr string
@@ -449,6 +558,7 @@ Function: vstr_add_ptr()
   If the data in the array needs to be free'd the programer will have to
  decide when it is no longer being used by the Vstr string and free it. It
  is often easier to create a memory reference and use vstr_add_ref() instead.
+
 
 Function: vstr_add_non()
  Returns: TRUE on success and FALSE on failure
@@ -540,6 +650,47 @@ Function: vstr_add_vstr()
  (Parameter[1]) and in some cases even how the data is represented in the
  Vstr string (Parameter[3]) for more information see the documentation on the
  VSTR_TYPE_ADD_* constants.
+  This function will set _both_ (Parameter[1])->conf->malloc_bad and
+ (Parameter[3])->conf->malloc_bad if any of the allocation calls fails.
+
+
+Function: VSTR_ADD_CSTR_BUF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_add_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
+
+Function: VSTR_ADD_CSTR_PTR()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Pointer to data
+ Type[3]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_add_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[3]).
+
 
 Function: vstr_dup_buf()
  Returns: Vstr string
@@ -620,6 +771,38 @@ Function: vstr_dup_vstr()
  vstr_add_vstr().
 
 
+Function: VSTR_DUP_CSTR_BUF()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_dup_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
+Function: VSTR_DUP_CSTR_PTR()
+ Returns: Vstr string
+ Type: struct Vstr_base *
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_dup_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[2]).
+
+
 Function: vstr_add_vfmt()
  Returns: Number of bytes added
  Type: size_t
@@ -683,9 +866,10 @@ Function: vstr_add_fmt()
 
  Note:
 
-  Double support is done by calling the underlying sprintf() routine, so if
- that doesn't understand a modifier ('\'' isn't well supported for instance)
- then that won't work for doubles.
+  Double support is done by calling the underlying sprintf() routine, in a
+ simple manner (Ie. the ' flag is dealt with in the vstr code). This does mean
+ that any system bugs for inacuracy, etc. will show through.
+  vstr_add_fmt() calls vstr_add_buf() to get data into the Vstr string.
 
 
 Function: vstr_add_iovec_buf_beg()
@@ -713,7 +897,9 @@ Function: vstr_add_iovec_buf_beg()
  Explanation:
 
   This function is used to add a copy of data directly into the Vstr string,
- the obvious use being a call to readv().
+ the ammount of data available will be between the minimum (Parameter[4]) and
+ maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of
+ data in _BUF type nodes. The obvious use for the data if to call readv() on it.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   The function will return 0 if it needs to allocate memory and cannot do so,
@@ -725,6 +911,10 @@ Function: vstr_add_iovec_buf_beg()
   You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg()
  and vstr_add_iovec_buf_end(), unless you know that they are operating on a
  different Vstr string which is using a different Vstr configuration.
+  The reason there is a +1 on the maximum value is that data may be appened to
+ a _BUF node just before the start of where the data is to go, this is almost
+ guaranteed to happen when adding to the end of a Vstr string and saves a lot
+ of wasted space.
 
 
 Function: vstr_add_iovec_buf_end()
@@ -752,60 +942,105 @@ Function: vstr_add_iovec_buf_end()
  function with Parameter[3] as 0.
 
 Function: vstr_add_netstr_beg()
- Returns: 
+ Returns: Position of start of netstr (Parameter[2]) + 1
  Type: size_t
 
  Parameter[1]: Vstr string
  Type[1]: struct Vstr_base *
 
- Parameter[2]: Position in the Vstr string (Parameter[1])
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
+
+ Explanation:
+
+  This function creates the start of a netstring
+ http://cr.yp.to/proto/netstrings.txt this can be used in conjunction with
+ vstr_add_netstr_end() to easily create netstrings.
 
 
 Function: vstr_add_netstr_end()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
  Type[1]: struct Vstr_base *
 
- Parameter[2]: 
+ Parameter[2]: Position returned from vstr_add_netstr_beg()
  Type[2]: size_t
 
- Parameter[3]: 
+ Parameter[3]: End of netstring
  Type[3]: size_t
+
+ Explanation:
+
+  This function is called after calling vstr_add_netstr_beg(), adding all the
+ data you want to the netstring and then passing the position of the end of
+ that data.
+  Upon success a valid netstring will contain all the data added between the two
+ calls.
+
+ Note:
+
+  It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as
+ that signifies that there is no data in the netstring.
+  It is almost guaranteed that data will need to be removed from the begining of
+ the netstring due to the length being shorter than the maximum, this is
+ inefficient and could cause problems if you know how big the Vstr string is
+ you can use the vstr_add_netstr2_* functions to solve both problems.
 
 
 Function: vstr_add_netstr2_beg()
- Returns: 
+ Returns: Position of start of netstr (Parameter[2]) + 1
  Type: size_t
 
  Parameter[1]: Vstr string
  Type[1]: struct Vstr_base *
 
- Parameter[2]: Position in the Vstr string (Parameter[1])
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
  Type[2]: size_t
            
+ Explanation:
+
+  This function creates the start of a netstring2 which is like a netstring
+ http://cr.yp.to/proto/netstrings.txt but can have leading zeros, this can be
+ used in conjunction with vstr_add_netstr2_end() to easily create netstring2s.
+
 
 Function: vstr_add_netstr2_end()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
+ Type[1]: struct Vstr_base *
 
- Parameter[2]: 
+ Parameter[2]: Position returned from vstr_add_netstr2_beg()
  Type[2]: size_t
 
- Parameter[3]: 
+ Parameter[3]: End of netstring2
  Type[3]: size_t
+
+ Explanation:
+
+  This function is called after calling vstr_add_netstr2_beg(), adding all the
+ data you want to the netstring2 and then passing the position of the end of
+ that data.
+  Upon success a netstring2 will contain all the data added between the two
+ calls.
+
+ Note:
+
+  It is valid to pass the same values for (Parameter[2]) and (parameter[3]), as
+ that signifies that there is no data in the netstring.
+  No data is ever removed from the begining of a netstring2, this is
+ imcompatible with the netstring spec. but is more efficient and doesn't
+ cause problems if you know how big the Vstr string is and can't have it lose
+ data from the begining/middle.
 
 
 Section: Function to delete data from a Vstr string
 
-
 Function: vstr_del()
- Returns: 
+ Returns: TRUE on success and FALSE on failure
  Type: int
 
  Parameter[1]: Vstr string
@@ -828,11 +1063,11 @@ Function: vstr_del()
 
  Note:
 
-  This function may need to allocate memory in certain situations, cases that
- never cause an allocation are: deleteing the entire Vstr string; deleteing
- from the begining to somewhere; and deleteing from somewhere to the end.
-  Deleteing the entire Vstr string, and deleteing from the begining onwards are
- faster operations than a generic delete.
+  Deleted nodes do not get returned to the system, they get put into a pool in
+ the Vstr configuration for reuse on the next call to a vstr_add_*() function.
+  Deleteing the entire Vstr string and deleteing from the begining onwards are
+ faster operations than a generic delete. They also never require allocating
+ memory and so the return value can be ignored.
 
 
 Section: Functions to substitute data in a Vstr string with other data
@@ -1033,8 +1268,51 @@ Function: vstr_sub_vstr()
  VSTR_TYPE_SUB_* constants.
 
 
-Section: Functions to move data from a Vstr string to another Vstr string
+Function: VSTR_SUB_CSTR_BUF()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
 
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_sub_buf() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_SUB_CSTR_PTR()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_sub_ptr() with the length being the value of
+ strlen() on the data parameter (Parameter[4]).
+
+
+Section: Functions to move data from a Vstr string to another Vstr string
 
 Function: vstr_mov()
  Returns: TRUE on success and FALSE on failure
@@ -1068,12 +1346,11 @@ Function: vstr_mov()
 
 Section: Functions for miscellaneous control of options
 
-
 Function: vstr_cntl_opt()
  Returns: TRUE on success and FALSE on failure
  Type: int
 
- Parameter[1]: option type
+ Parameter[1]: Option type starting VSTR_CNTL_OPT_
  Type[1]: int
 
  Parameter[ ... ]: options depending on value of Parameter[1]
@@ -1086,7 +1363,7 @@ Function: vstr_cntl_base()
  Parameter[1]: Vstr string
  Type[1]: const struct Vstr_base *
 
- Parameter[2]: option type
+ Parameter[2]: Option type starting VSTR_CNTL_BASE_
  Type[2]: int
 
  Parameter[ ... ]: options depending on value of Parameter[2]
@@ -1100,7 +1377,7 @@ Function: vstr_cntl_conf()
  Parameter[1]: 
  Type[1]: struct Vstr_conf *
 
- Parameter[2]: option type
+ Parameter[2]: Option type starting VSTR_CNTL_CONF_
  Type[2]: int
 
  Parameter[ ... ]: options depending on value of Parameter[2]
@@ -1109,9 +1386,8 @@ Function: vstr_cntl_conf()
 
 Section: Functions to compare with a Vstr string
 
-
 Function: vstr_cmp()
- Returns: 
+ Returns: Less then zero, zero or greater than zero depending on comparison
  Type: int
 
  Parameter[1]: Vstr string
@@ -1134,17 +1410,22 @@ Function: vstr_cmp()
 
  Explanation:
 
-  This function is used to compare the data in one Vstr string (Parameter[1])
- with data in another Vstr string (Parameter[4]).
+  This function is used to compares the data in one Vstr string (Parameter[1])
+ with data in another Vstr string (Parameter[4]) byte by byte, all data is
+ compared unsigned.
   Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
- and then a call to memcmp() (although it's much faster than doing that and
- doesn't allocate anything).
+ and then a call to memcmp() (although it doesn't allocate anything).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+ Note:
+
+  Data of type _NON is assumed to have the value -1, and so all data compares
+ as greater than it.
+
 
 Function: vstr_cmp_buf()
- Returns: 
+ Returns: Less then zero, zero or greater than zero depending on comparison
  Type: int
 
  Parameter[1]: Vstr string
@@ -1164,17 +1445,12 @@ Function: vstr_cmp_buf()
 
  Explanation:
 
-  This function is used to compare the data in the data array with data in the
- Vstr string.
-  Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
- and then a call to memcmp() (although it's much faster than doing that and
- doesn't allocate anything).
-  If the function can detect that the values of parameters are in error the
- function will return 0 to indicate an error.
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp().
 
 
 Function: vstr_cmp_case()
- Returns: 
+ Returns: Less then zero, zero or greater than zero depending on comparison
  Type: int
 
  Parameter[1]: Vstr string
@@ -1197,12 +1473,42 @@ Function: vstr_cmp_case()
 
  Explanation:
 
-  This function is like vstr_cmp() but all upper case and lower case ASCII
- values compare equally.
+  This function is like vstr_cmp() but uppercase and lowercase ASCII
+ values compare equally with each other.
+
+ Note:
+
+  Data of type _NON is assumed to have the value -1, and so all data compares
+ as greater than it.
+
+
+Function: vstr_cmp_case_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_case().
 
 
 Function: vstr_cmp_vers()
- Returns: 
+ Returns: Less then zero, zero or greater than zero depending on comparison
  Type: int
 
  Parameter[1]: Vstr string
@@ -1227,17 +1533,217 @@ Function: vstr_cmp_vers()
 
   This function is used to compare the data in one Vstr string (Parameter[1])
  with data in another Vstr string (Parameter[4]), however for ASCII digits the
- algorithum tests on the numbers themselves (so "10" is greater than "9").
+ algorithum tests on the numbers themselves (so "10" is greater than "9" but
+ "01" is greater than "012", as the later are fractions).
   Think of this function as doing a vstr_export_cstr_ptr() on each Vstr string,
- and then a call to strverscmp() (although it's much faster than doing that and
- doesn't allocate anything, _and_ it deals with 0 bytes in the data).
+ and then a call to strverscmp() (although it doesn't allocate anything,
+ _and_ it deals with 0 bytes in the data).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 
+ Note:
+
+  Data of type _NON is assumed to have the value -1, and so all data compares
+ as greater than it.
+
+
+Function: VSTR_CMP_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_cmp() if both of the length values
+ (Parameter[3] Parameter[6]) are equal.
+
+
+Function: VSTR_CMP_CSTR()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_cmp_buf() with the length of the buffer being
+ the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CMP_BUF_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_cmp_buf() if both of the length values
+ (Parameter[3] Parameter[5]) are equal.
+
+
+Function: VSTR_CMP_CSTR_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Explanation:
+
+  This macro function returns !vstr_cmp_buf(), if both of the length values are
+ equal, with the length of the buffer being the value of strlen() on the data
+ parameter (Parameter[4]).
+
+
+Function: VSTR_CMP_CASE_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_case_cmp() if both of the length
+ values (Parameter[3] Parameter[6]) are equal.
+
+
+Function: VSTR_CMP_CASE_CSTR()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function calls vstr_cmp_case_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
+
+
+Function: VSTR_CMP_CASE_BUF_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This macro function calls returns !vstr_cmp_case_buf() if both of the length
+ values (Parameter[3] Parameter[5]) are equal.
+
+
+Function: VSTR_CMP_CASE_CSTR_EQ()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Explanation:
+
+  This macro function returns !vstr_cmp_case_buf(), if both of the length
+ values are equal, with the length of the buffer being the value of strlen()
+ on the data parameter (Parameter[4]).
 
 
 Section: Functions to search in a Vstr string
-
 
 Function: vstr_srch_chr_fwd()
  Returns: Position in the Vstr string of the character
@@ -1286,11 +1792,122 @@ Function: vstr_srch_chr_rev()
 
   This function is used to search backwards for a character in a Vstr string.
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
- and then a call to memrchr() (although it's much faster than doing that and
- doesn't allocate anything).
+ and then a call to memrchr() (although it doesn't allocate anything).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   If the character cannot be found 0 is returned.
+
+
+Function: vstr_srch_chrs_fwd()
+ Returns: Position in the Vstr string of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to search forwards for any of the characters in the
+ data array (Parameter[4]) in a Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If any of the characters cannot be found 0 is returned.
+
+
+Function: vstr_srch_chrs_rev()
+ Returns: Position in the Vstr string of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to search backwards for any of the characters in the
+ data array (Parameter[4]) in a Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If any of the characters cannot be found 0 is returned.
+
+
+Function: vstr_csrch_chrs_fwd()
+ Returns: Position in the Vstr string of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to search forwards for any of the characters not in the
+ data array (Parameter[4]) in a Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If any of the characters cannot be found 0 is returned.
+
+
+Function: vstr_csrch_chrs_rev()
+ Returns: Position in the Vstr string of the character
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data
+ Type[4]: const char *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  This function is used to search backwards for any of the characters not in the
+ data array (Parameter[4]) in a Vstr string.
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If any of the characters cannot be found 0 is returned.
 
 
 Function: vstr_srch_buf_fwd()
@@ -1323,6 +1940,10 @@ Function: vstr_srch_buf_fwd()
  function will return 0 to indicate an error.
   If the data cannot be found 0 is returned.
 
+ Note:
+
+  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
+ size (Paramter[5]) will be searched for.
 
 Function: vstr_srch_buf_rev()
  Returns: Position in the Vstr string of the start of the data
@@ -1350,6 +1971,11 @@ Function: vstr_srch_buf_rev()
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   If the data cannot be found 0 is returned.
+
+ Note:
+
+  If the pointer to data (Paramter[4]) is NULL then _NON data of the specified
+ size (Paramter[5]) will be searched for.
 
 
 Function: vstr_srch_vstr_fwd()
@@ -1387,7 +2013,7 @@ Function: vstr_srch_vstr_fwd()
 
 
 Function: vstr_srch_vstr_rev()
- Returns: 
+ Returns: Position in the Vstr string of the start of the data
  Type: size_t
 
  Parameter[1]: Vstr string
@@ -1417,49 +2043,7 @@ Function: vstr_srch_vstr_rev()
   If the data cannot be found 0 is returned.
 
 
-Function: vstr_srch_netstr_fwd()
- Returns: 
- Type: size_t
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Start position in the Vstr string (Parameter[1])
- Type[2]: size_t
-
- Parameter[3]: Length in the Vstr string (Parameter[1])
- Type[3]: size_t
-
- Parameter[4]: 
- Type[4]: size_t *
-
- Parameter[5]: 
- Type[5]: size_t *
-
-
-Function: vstr_srch_netstr2_fwd()
- Returns: 
- Type: size_t
-
- Parameter[1]: Vstr string
- Type[1]: const struct Vstr_base *
-
- Parameter[2]: Start position in the Vstr string (Parameter[1])
- Type[2]: size_t
-
- Parameter[3]: Length in the Vstr string (Parameter[1])
- Type[3]: size_t
-
- Parameter[4]: 
- Type[4]: size_t *
-
- Parameter[5]: 
- Type[5]: size_t *
-
-
-
 Section: Functions to calculate spanning in a Vstr string
-
 
 Function: vstr_spn_buf_fwd()
  Returns: Number of characters in the span
@@ -1573,4 +2157,1059 @@ Function: vstr_cspn_buf_rev()
  Vstr string that are in the compliment of those in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
+
+
+Section: Functions for converting data in a vstr
+
+Function: vstr_conv_lowercase()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function converts all the uppercase ASCII characters into lowercase
+ ASCII characters.
+
+Function: vstr_conv_uppercase()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function converts all the lowercase ASCII characters into upperrcase
+ ASCII characters.
+
+
+Function: vstr_conv_unprintable_chr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_
+ Type[4]: unsigned int
+
+ Parameter[5]: Character to substitute in place of the unprintable character
+ Type[5]: char
+
+ Explanation:
+
+  This function substitutes all unprintable characters with the substitution
+ character (Paramter[5]).
+
+
+Function: vstr_conv_unprintable_del()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Flags starting VSTR_FLAG_CONV_UNPRINTABLE_
+ Type[4]: unsigned int
+
+ Explanation:
+
+  This function deletes all unprintable characters.
+
+
+Function: vstr_conv_encode_uri()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function converts characters to the URI %<hex><hex> encoding, so the
+ ASCII space character ' ' becomes the encoded sequence %20 etc.
+
+ Note:
+
+  It converts all the characters in section 2.4.3 of rfc2396 into encoded
+ form (that's all of the control, space, unwise and high ASCII characters).
+
+
+Function: vstr_conv_decode_uri()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Explanation:
+
+  This function converts characters from the URI %<hex><hex> encoding, so that
+ the encoded sequence %20 becomes the ASCII space character ' ' etc.
+
+
+Section: Functions for dealing with a constant section of a vstr
+
+Function: VSTR_SECTS_DECL()
+ Returns: Declaration of a Vstr sections
+ Type: struct Vstr_sects *
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Maximum size of the Vstr sections (Parameter[1])
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This macro function declares a Vstr sections, of the specified size
+ (Parameter[2]).
+
+ Note:
+
+  VSTR_SECTS_DECL_INIT() needs to be called on the Vstr sections before it can
+ be used.
+
+
+Function: VSTR_SECTS_EXTERN_DECL()
+ Returns: Extern declaration of a Vstr sections
+ Type: struct Vstr_sects *
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Maximum size of the Vstr sections
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This macro function declares a Vstr sections, of the specified size
+ (Parameter[2]), that is usable after an extern keyword.
+
+
+Function: VSTR_SECTS_DECL_INIT()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Explanation:
+
+  This macro function finishes initilising a Vstr sections that has been
+ allocated using VSTR_SECTS_DECL().
+  This macro function can be called multiple times without causing any problems.
+
+
+Function: VSTR_SECTS_INIT()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Size of the Vstr sections
+ Type[2]: unsigned int
+
+ Parameter[3]: Array of Vstr section nodes
+ Type[3]: struct Vstr_sect_node *
+
+ Parameter[4]: non-zero if the nodes (Parameter[3]) can be passed to free()
+ Type[4]: int
+
+ Explanation:
+
+  The macro function initialises a self declared Vstr sections.
+
+ Note:
+
+  Unlike VSTR_SECTS_DECL_INIT() this should only be called once per
+ initialisation.
+
+
+Function: VSTR_SECTS_NUM()
+ Returns: The ith Vstr section node in the Vstr sections
+ Type: struct Vstr_sect_node *
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Number of the section in the Vstr sections (Parameter[1])
+ Type[2]: unsigned int
+
+ Explanation:
+
+  Simple way to goto the Vstr section node in a Vstr sections.
+
+
+Function: vstr_sects_make()
+ Returns: Vstr sections
+ Type: struct Vstr_sects *
+
+ Parameter[1]: Size of the Vstr sections
+ Type[1]: unsigned int
+
+ Explanation:
+
+  This function will make a Vstr sections, or return NULL.
+
+
+Function: vstr_sects_free()
+ Returns: nothing
+ Type: void
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Explanation:
+
+  This function will free a Vstr sections, allocated by vstr_sects_make().
+
+
+Function: vstr_sects_add()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: Length in a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This function will add the position and length to a Vstr section node at the
+ end of the Vstr sections (Paramter[1]). If space is not available and
+ (Paramter[1])->can_add_sz is TRUE, then space try to be allocated.
+
+
+Function: vstr_sects_del()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Number of the section in the Vstr sections (Parameter[1])
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will delete a specified Vstr section node. If
+ (Paramter[1])->can_del_sz is TRUE then space may be compated.
+
+
+Function: vstr_sects_foreach()
+ Returns: Number of the times the foreach function ran the callback
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Vstr sections
+ Type[2]: struct Vstr_sects *
+
+ Parameter[3]: Flags starting VSTR_FLAG_SECT_FOREACH_
+ Type[3]: unsigned int
+
+ Parameter[4]: Function to run as foreach body
+ Type[4]: unsigned int (*)(const Vstr_base *, size_t, size_t, void *)
+
+ Parameter[5]: Data to pass to foreach body function (Parameter[4])
+ Type[5]: void *
+
+ Explanation:
+
+  This function will run the foreach body function (Parameter[4]) on every
+ valid Vstr section node in the Vstr sections.
+
+ Note:
+
+  The foreach callback body function returns types starting
+ VSTR_TYPE_SECT_FOREACH_.
+
+
+Function: vstr_sects_srch()
+ Returns: Number of the section in the Vstr sections (Parameter[1])
+ Type: unsigned int
+
+ Parameter[1]: Vstr sections
+ Type[1]: struct Vstr_sects *
+
+ Parameter[2]: Position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: Length in a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This function will search for the first Vstr section node in a Vstr section
+ (Parameter[1]) that matches the position and length.
+
+
+Section: Functions for splitting data in a Vstr into sections
+
+Function: vstr_split_buf()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to data to split on
+ Type[4]: const void *
+
+ Parameter[5]: Length of data (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Vstr sections
+ Type[6]: struct Vstr_sects *
+
+ Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[7]: unsigned int
+
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Type[8]: unsigned int
+
+ Explanation:
+
+  This function is used to add section nodes to the Vstr sections (Parameter[6])
+ about the Vstr string (Parameter[1]). The function will add one section before
+ each occurance of the data (Parameter[4]), and one final section for the
+ rest of the Vstr string.
+  If the limit (Parameter[7]) is non-zero then ((Parameter[7]) - 1) occurances
+ of the data will be searched for and one final section will be added for the
+ rest of the Vstr string. This means that "a:b:c" if split on ":" with a limit
+ of 2 will split into "a" and "b:c", and that "a::" if split on ":" with a limit
+ of 2 will split into "a" and ":".
+
+
+Function: vstr_split_chrs()
+ Returns: Number of Vstr section nodes added to the Vstr sections
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to characters to split on
+ Type[4]: const char *
+
+ Parameter[5]: Length of characters (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Vstr sections
+ Type[6]: struct Vstr_sects *
+
+ Parameter[7]: Limit of sections to add to Vstr sections (Parameter[6])
+ Type[7]: unsigned int
+
+ Parameter[8]: Flags starting VSTR_FLAG_SPLIT_
+ Type[8]: unsigned int
+
+ Explanation:
+
+  Thsi function works like vstr_split_buf() except that instead of having to
+ match all the data in the data buffer it matches any of the characters in the
+ character buffer (Parameter[4]).
+
+
+Section: Functions for parsing data from a vstr
+
+Function: vstr_parse_short()
+ Returns: Number pared from Vstr string
+ Type: short
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range SHRT_MIN to SHRT_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_ushort()
+ Returns: Number pared from Vstr string
+ Type: unsigned short
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range 0 to USHRT_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_int()
+ Returns: Number pared from Vstr string
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range INT_MIN to INT_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_uint()
+ Returns: Number pared from Vstr string
+ Type: unsigned int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range 0 to UINT_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_long()
+ Returns: Number pared from Vstr string
+ Type: long
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range LONG_MIN to LONG_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_ulong()
+ Returns: Number pared from Vstr string
+ Type: unsigned long
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range 0 to ULONG_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+
+
+Function: vstr_parse_intmax()
+ Returns: Number pared from Vstr string
+ Type: intmax_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range INTMAX_MIN to INTMAX_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+  If the intmax_t type is unavailable on the platform, then this function will
+ act the same as vstr_parse_long().
+
+
+Function: vstr_parse_uintmax()
+ Returns: Number pared from Vstr string
+ Type: uintmax_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Base to parse number in and flags starting VSTR_FLAG_PARSE_NUM_
+ Type[4]: unsigned int
+
+ Parameter[5]: Returns length of number (Return)
+ Type[5]: size_t *
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_PARSE_NUM_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function will parse a number, in the range 0 to UINTMAX_MAX, from
+ the start of a Vstr string.
+  The base that the number is parsed as is passed by specifying a number
+ between 2 and 36 as part of the flags (Parameter[4]).
+
+ Note:
+
+  A base of 0 specifies that the base should be automatically detected, by
+ choosing base 16 if the number starts 0x or 0X, base 8 if the number starts
+ with a 0 and defaulting to base 10 otherwise.
+  If the intmax_t type is unavailable on the platform, then this function will
+ act the same as vstr_parse_ulong().
+
+
+Function: vstr_parse_netstr()
+ Returns: Returns the length of the netstring
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Returns the position of the start of the netstring data
+ Type[4]: size_t *
+
+ Parameter[5]: Returns the length of the data in the netstring
+ Type[5]: size_t *
+
+ Explanation:
+
+  This function is used to search forwards for the begining of a netstring in
+ the Vstr string (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If the data cannot be found 0 is returned.
+
+ Note:
+
+  The netstring is only found if it is "whole", in that the entire netstring
+ and data exist in the Vstr string. If one is found but is not whole then the
+ position of the start of data and the length of the netstring will still be
+ returned.
+  This searches for the begining of a netstring, so a length (Paramter[3]) of
+ 1 would still find the netstring as long as it is whole and starts at the
+ start position in the Vstr string (Parameter[2]).
+
+
+Function: vstr_parse_netstr2()
+ Returns: Position in the Vstr string of the start of the netstring2
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Returns the position of the start of the netstring data
+ Type[4]: size_t *
+
+ Parameter[5]: Returns the length of the netstring
+ Type[5]: size_t *
+
+ Explanation:
+
+  This function is used to search forwards for the begining of a netstring in
+ the Vstr string (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+  If the data cannot be found 0 is returned.
+
+ Note:
+
+  The netstring is only found if it is "whole", in that the entire netstring
+ and data exist in the Vstr string. If one is found but is not whole then the
+ position of the start of data and the length of the netstring will still be
+ returned.
+  This searches for the begining of a netstring, so a length (Paramter[3]) of
+ 1 would still find the netstring as long as it is whole and starts at the
+ start position in the Vstr string (Parameter[2]).
+  The specification of a netstring2 is a superset of the specification of a
+ netstring, so this function will find either.
+
+
+Function: vstr_parse_ipv4()
+ Returns: Number pared from Vstr string
+ Type: uintmax_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Returns ip in array ellements 0 to 3
+ Type[4]: unsigned char *
+
+ Parameter[5]: Returns cidr mask
+ Type[5]: unsigned int *
+
+ Parameter[6]: Flags starting VSTR_FLAG_PARSE_IPV4_
+ Type[6]: unsigned int
+
+ Parameter[7]: Returns length of parsed ip address (Parameter[4] Parameter[5])
+ Type[7]: size_t *
+
+ Parameter[8]: Returns error code starting VSTR_TYPE_PARSE_IPV4_ERR_
+ Type[8]: unsigned int *
+
+ Explanation:
+
+  This function will parse an ipv4 address, or optionaly an ipv4 address and a
+ cidr mask / netmask, from the Vstr string.
+
+
+Section: Functions for hooking into the cache for the Vstr string
+
+Function: vstr_cache_add_cb()
+ Returns: Cookie reference for cache function
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Parameter[3]: Function to use as callback from the cache
+ Type[3]: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int, void *)
+
+ Explanation:
+
+  This function will add the callback function (Parameter[3]) to the
+ Vstr configuration for use in all Vstr strings that use the Vstr configuration
+ and have a cache. The name of the cache function (Parameter[2]) should be
+ unique, the vstr library uses names starting "/vstr__/".
+
+ Note:
+
+  The name of the cache function should be placed in permanent storage, Ie.
+ only the pointer to the name will be stored so you cannot malloc() the name
+ and then free() it after calling the function.
+  The callback function parameters, are the Vstr string, position, length,
+ the type of callback starting VSTR_TYPE_CACHE_ and the data for the cache
+ function.
+  The callback function will not be called if the data for the cache function
+ is NULL.
+
+
+Function: vstr_cache_get_data()
+ Returns: Data for cache function
+ Type: void *
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Cookie reference for cache function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will get the data for the cache function.
+
+
+Function: vstr_cache_set_data()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Cookie reference for cache function
+ Type[2]: unsigned int
+
+ Parameter[3]: Data for cache function
+ Type[3]: void *
+
+ Explanation:
+
+  This function will set the data for the cache function.
+
+ Note:
+
+  The callback function will not be called if the data for the cache function
+ is NULL.
+
+
+Function: vstr_cache_srch()
+ Returns: Cookie reference for cache function
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Explanation:
+
+  This function will find a cache function name (Parameter[2]) and return the
+ cookie reference for use in the other cache functions.
+
+
+Section: Short cut helper functions
+
+Function: vstr_sc_add_fd()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: File descriptor
+ Type[3]: int
+
+ Parameter[4]: Offset to start map in file descriptor
+ Type[4]: off_t
+
+ Parameter[5]: Size of map in file descriptor
+ Type[5]: size_t
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_SC_ADD_FD_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function is used to add a mmap()d mapping of data from a filedescriptor
+ (Parameter[3]) at offset (Paramter[4]) and of size (Parameter[5]) to a
+ Vstr string.
+
+ Note:
+
+  If the size (Parameter[5]) is zero, then then the size of the file is
+ automatically worked out and the size (Parameter[5]) becomes the file size
+ minus the offset (Parameter[4]).
+
+
+Function: vstr_sc_add_file()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Filename to add a mapping from
+ Type[3]: const char *
+
+ Parameter[4]: Returns error code starting VSTR_TYPE_SC_ADD_FILE_ERR_
+ Type[4]: unsigned int *
+
+ Explanation:
+
+  This function is used to add a mmap()d mapping of the entire data of filename
+ (Parameter[3]) to a Vstr string.
+
+
+Function: vstr_sc_read_fd()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Append position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: File descriptor
+ Type[3]: int
+
+ Parameter[4]: Minimum ammount of nodes to read into
+ Type[4]: unsigned int
+
+ Parameter[5]: Maximum ammount of nodes to read into
+ Type[5]: unsigned int
+
+ Parameter[6]: Returns error code starting VSTR_TYPE_SC_READ_FD_ERR_
+ Type[6]: unsigned int *
+
+ Explanation:
+
+  This function is used to call vstr_add_iovec_buf_beg(), then readv() with
+ the filedescriptor (Parameter[3]) and finally vstr_add_iovec_buf_end()
+ before returning.
+
+
+Function: vstr_sc_write_fd()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[3]: File descriptor
+ Type[3]: int
+
+ Parameter[4]: Returns error code starting VSTR_TYPE_SC_WRITE_FD_ERR_
+ Type[4]: unsigned int *
+
+ Explanation:
+
+  This function is used to take data from a Vstr string and write it to a
+ filedescriptor.
+
+ Note:
+
+  If the start position is 1, the length is (Parameter[1])->len and caching is
+ available for the Vstr string the data will be exported as though
+ vstr_export_iovec_ptr_all(), writev() and then vstr_del() were called.
+
+
+Function: vstr_sc_write_file()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Filename to add a mapping from
+ Type[4]: const char *
+
+ Parameter[5]: Flags to pass to the open() system call
+ Type[5]: int
+
+ Parameter[6]: Mode to pass to the open() system call
+ Type[6]: int
+
+ Parameter[7]: Returns error code starting VSTR_TYPE_SC_WRITE_FILE_ERR_
+ Type[7]: unsigned int *
+
+ Explanation:
+
+  This function is used to take data from a Vstr string and write it to a
+ file, after open()ing the file (Parameter[4]) with open flags (Parameter[5])
+ and open mode (Parameter[6]).
+
 

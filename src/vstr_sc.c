@@ -36,6 +36,9 @@ int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
   unsigned int dummy_err;
   caddr_t addr = (caddr_t)-1;
   Vstr__sc_mmap_ref *mmap_ref = NULL;
+
+  assert(off >= 0); /* off is offset from the start of the file,
+                     * not as in seek */
   
   if (!err)
     err = &dummy_err;
@@ -43,20 +46,27 @@ int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
 
   if (!len)
   {
-    struct stat stat_buf;
+    struct stat64 stat_buf;
     
-    if (fstat(fd, &stat_buf) == -1)
+    if (fstat64(fd, &stat_buf) == -1)
     {
-      *err = VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO;
+      *err = VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO;
       return (FALSE);
     }
+    if ((stat_buf.st_size - off) > (SIZE_MAX - base->len))
+    {
+      *err = VSTR_TYPE_SC_ADD_FD_ERR_TOO_LARGE;
+      errno = EFBIG;
+      return (FALSE);
+    }
+    
     len = stat_buf.st_size;
   }
 
   addr = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, off);
   if (addr == (caddr_t)-1)
   {
-    *err = VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO;
+    *err = VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO;
     return (FALSE);
   }
 
@@ -86,7 +96,7 @@ int vstr_sc_add_fd(Vstr_base *base, size_t pos, int fd, off_t off, size_t len,
 int vstr_sc_add_file(Vstr_base *base, size_t pos, const char *filename,
                      unsigned int *err)
 {
-  int fd = open(filename, O_RDONLY);
+  int fd = open(filename, O_RDONLY | O_LARGEFILE | O_NOCTTY);
   unsigned int dummy_err;
   int ret = 0;
   int saved_errno = 0;
@@ -151,7 +161,7 @@ int vstr_sc_read_fd(Vstr_base *base, size_t pos, int fd,
   if (!bytes)
   {
     *err = VSTR_TYPE_SC_READ_FD_ERR_EOF;
-    errno = EIO;
+    errno = ENOSPC;
     return (FALSE);
   }
 
@@ -166,23 +176,25 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
   if (!err)
     err = &dummy_err;
   *err = 0;
-  
+
+  assert(len || (pos == 1));
   if (!len)
     return (TRUE);
   
   while (len)
   {
-    struct iovec cpy_vec[8];
+    struct iovec cpy_vec[32];
     struct iovec *vec;
     unsigned int num = 0;
     ssize_t bytes = 0;
 
-    if ((pos == 1) && (len == base->len))
+    if ((pos == 1) && (len == base->len) && base->cache_available)
       len = vstr_export_iovec_ptr_all(base, &vec, &num);
     else
     {
       vec = cpy_vec;
-      len = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 8, &num);
+      bytes = vstr_export_iovec_cpy_ptr(base, pos, len, vec, 32, &num);
+      assert(bytes);
     }
     
     if (!len)

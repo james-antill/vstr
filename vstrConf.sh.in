@@ -1,7 +1,0 @@
-#
-# Configuration file for using the vstr library, (via. gnome-config).
-#
-VSTR_LIBDIR="@VSTR_LIBDIR@"
-VSTR_LIBS="@VSTR_LIBS@ -lvstr"
-VSTR_INCLUDEDIR="@VSTR_INCLUDEDIR@"
-MODULE_VERSION="vstr-@VERSION@"

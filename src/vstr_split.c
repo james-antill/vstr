@@ -22,9 +22,10 @@
 #include "main.h"
 
 /* do the null fields go to the end ? */
-static int vstr__split_null_end(const Vstr_base *base, size_t pos, size_t len,
-                                const void *buf, size_t buf_len,
-                                unsigned int *ret_num)
+static int vstr__split_buf_null_end(const Vstr_base *base,
+                                    size_t pos, size_t len,
+                                    const void *buf, size_t buf_len,
+                                    unsigned int *ret_num)
 {
   assert(!vstr_cmp_buf(base, pos, buf_len, buf, buf_len));
   assert(len >= buf_len);
@@ -64,14 +65,80 @@ static int vstr__split_null_end(const Vstr_base *base, size_t pos, size_t len,
    return (1); \
 } while (FALSE)
 
+static unsigned int vstr__split_hdl_null_beg(size_t *pos, size_t *len,
+                                             size_t buf_len,
+                                             Vstr_sects *sects,
+                                             unsigned int flags,
+                                             unsigned int count,
+                                             unsigned int limit,
+                                             unsigned int added)
+{
+  if (limit && (count >= (limit - added)))
+    count = (limit - 1) - added;
+  
+  while (count)
+  {
+    if (flags & VSTR_FLAG_SPLIT_BEG_NULL)
+    {
+      if (!vstr_sects_add(sects, *pos, 0))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
+    
+    *pos += buf_len;
+    *len -= buf_len;
+    --count;
+  }
+  
+  return (added);
+}
+
+static unsigned int vstr__split_hdl_null_mid(size_t *pos, size_t *len,
+                                             size_t buf_len,
+                                             Vstr_sects *sects,
+                                             unsigned int flags,
+                                             unsigned int count,
+                                             unsigned int limit,
+                                             unsigned int added)
+{
+  if (limit && (count >= (limit - added)))
+    count = (limit - 1) - added;
+  
+  while (count)
+  {
+    if (flags & VSTR_FLAG_SPLIT_MID_NULL)
+    {
+      if (!vstr_sects_add(sects, *pos, 0))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
+    
+    *pos += buf_len;
+    *len -= buf_len;
+    --count;
+  }
+
+  return (added);
+}
+
 static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
                                              size_t buf_len,
                                              Vstr_sects *sects,
                                              unsigned int flags,
-                                             unsigned int count)
+                                             unsigned int count,
+                                             unsigned int limit,
+                                             unsigned int added)
 {
-  unsigned int added = 0;
+  assert(len);
   
+  if (!(flags & VSTR_FLAG_SPLIT_END_NULL))
+    goto no_end_null;
+
+  if (limit && (count > (limit - added)))
+    count = limit - added;
+        
   while (count)
   {
     if (!vstr_sects_add(sects, pos, 0))
@@ -87,8 +154,11 @@ static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
   
   if (!(flags & VSTR_FLAG_SPLIT_POST_NULL) && !len)
     return (added);
-  
-  if (!vstr_sects_add(sects, pos, len))
+
+ no_end_null:
+  if (((len &&  (flags & VSTR_FLAG_SPLIT_REMAIN)) ||
+       (!len && (flags & VSTR_FLAG_SPLIT_POST_NULL))) &&
+      !vstr_sects_add(sects, pos, len))
     VSTR__SPLIT_HDL_ERR();
   
   return (added);
@@ -101,11 +171,9 @@ unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
   size_t orig_pos = pos;
   size_t split_pos = 0;
   unsigned int added = 0;
+  const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
   
-  if (!sects->can_add_sz && !sects->sz && !(flags & VSTR_FLAG_SPLIT_NO_RET))
-    return (1);
-  
-  while (len && (!limit || (added < (limit - 1))) &&
+  while (len && (!limit || (added < (limit - is_remain))) &&
          (split_pos = vstr_srch_buf_fwd(base, pos, len, buf, buf_len)))
   {
     if (split_pos == orig_pos)
@@ -114,73 +182,26 @@ unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
       
       assert(orig_pos == pos);
 
-      if (vstr__split_null_end(base, pos, len, buf, buf_len, &count))
+      if (vstr__split_buf_null_end(base, pos, len, buf, buf_len, &count))
       {
-        if (!(flags & VSTR_FLAG_SPLIT_BEG_NULL) ||
-            !(flags & VSTR_FLAG_SPLIT_END_NULL))
+        if (!(flags & VSTR_FLAG_SPLIT_BEG_NULL))
           return (0);
 
-        if (limit && (count > (limit - added)))
-          count = limit - added;
-        
-        return (vstr__split_hdl_null_end(pos, len, buf_len, sects,
-                                         flags, count));
+        return (vstr__split_hdl_null_end(pos, len, buf_len, sects, flags,
+                                         count, limit, added));
       }
-      if (limit && (count >= (limit - added)))
-        count = (limit - 1) - added;
-
-      while (count)
-      {
-        if (flags & VSTR_FLAG_SPLIT_BEG_NULL)
-        {
-          if (!vstr_sects_add(sects, pos, 0))
-            VSTR__SPLIT_HDL_ERR();
-          
-          ++added;
-        }
-        
-        pos += buf_len;
-        len -= buf_len;
-        --count;
-      }
+      added = vstr__split_hdl_null_beg(&pos, &len, buf_len, sects, flags,
+                                       count, limit, added);
     }
     else if (split_pos == pos)
     {
       unsigned int count = 0;
       
-      if (vstr__split_null_end(base, pos, len, buf, buf_len, &count))
-      {
-        if (!(flags & VSTR_FLAG_SPLIT_END_NULL))
-          return (added);
-        
-        if (limit && (count >= (limit - added)))
-          count = limit - added;
-
-        if (flags & VSTR_FLAG_SPLIT_NO_RET)
-          return (vstr__split_hdl_null_end(pos, len, buf_len, sects,
-                                           flags, count));
-        else
-          return (added + vstr__split_hdl_null_end(pos, len, buf_len, sects,
-                                                   flags, count));
-      }
-
-      if (limit && (count >= (limit - added)))
-        count = (limit - 1) - added;
-        
-      while (count)
-      {
-        if (flags & VSTR_FLAG_SPLIT_MID_NULL)
-        {
-          if (!vstr_sects_add(sects, pos, 0))
-            VSTR__SPLIT_HDL_ERR();
-          
-          ++added;
-        }
-        
-        pos += buf_len;
-        len -= buf_len;
-        --count;
-      }
+      if (vstr__split_buf_null_end(base, pos, len, buf, buf_len, &count))
+        return (vstr__split_hdl_null_end(pos, len, buf_len, sects, flags,
+                                         count, limit, added));
+      added = vstr__split_hdl_null_mid(&pos, &len, buf_len, sects, flags,
+                                       count, limit, added);      
     }
     else
     {
@@ -204,12 +225,97 @@ unsigned int vstr_split_buf(const Vstr_base *base, size_t pos, size_t len,
 
   if (len)
   {
-    if (!vstr_sects_add(sects, pos, len))
-      VSTR__SPLIT_HDL_ERR();
-    
-    ++added;
+    if (flags & VSTR_FLAG_SPLIT_REMAIN)
+    {
+      assert(!limit || (added <= (limit - 1)));
+
+      if (!vstr_sects_add(sects, pos, len))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
   }
-  else if (flags & VSTR_FLAG_SPLIT_POST_NULL)
+  else if ((flags & VSTR_FLAG_SPLIT_POST_NULL) && (!limit || (added < limit)))
+    if (!vstr_sects_add(sects, pos, 0))
+      VSTR__SPLIT_HDL_ERR();    
+  
+  return (added);
+}
+
+unsigned int vstr_split_chrs(const Vstr_base *base, size_t pos, size_t len,
+                             const char *chrs, size_t chrs_len,
+                             Vstr_sects *sects,
+                             unsigned int limit, unsigned int flags)
+{
+  size_t orig_pos = pos;
+  size_t split_pos = 0;
+  unsigned int added = 0;
+  const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
+ 
+  while (len && (!limit || (added < (limit - is_remain))) &&
+         (split_pos = vstr_srch_chrs_fwd(base, pos, len, chrs, chrs_len)))
+  {
+    if (split_pos == orig_pos)
+    {
+      unsigned int count = 0;
+      
+      assert(orig_pos == pos);
+
+      if ((count = vstr_spn_buf_fwd(base, pos, len, chrs, chrs_len)) == len)
+      {
+        if (!(flags & VSTR_FLAG_SPLIT_BEG_NULL))
+          return (0);
+        
+        return (vstr__split_hdl_null_end(pos, len, 1, sects, flags,
+                                         count, limit, added));
+      }
+      added = vstr__split_hdl_null_beg(&pos, &len, 1, sects, flags,
+                                       count, limit, added);
+    }
+    else if (split_pos == pos)
+    {
+      unsigned int count = 0;
+
+      if ((count = vstr_spn_buf_fwd(base, pos, len, chrs, chrs_len)) == len)
+        return (vstr__split_hdl_null_end(pos, len, 1, sects, flags,
+                                         count, limit, added));
+
+      added = vstr__split_hdl_null_mid(&pos, &len, 1, sects, flags,
+                                       count, limit, added);
+    }
+    else
+    {
+      size_t split_len = 0;
+      
+      assert(split_pos > pos);
+
+      split_len = (split_pos - pos);
+      
+      if (!vstr_sects_add(sects, pos, split_len))
+        VSTR__SPLIT_HDL_ERR();
+    
+      ++added;
+      
+      split_len += 1;
+
+      pos += split_len;
+      len -= split_len;
+    }
+  }
+
+  if (len)
+  {
+    if (flags & VSTR_FLAG_SPLIT_REMAIN)
+    {
+      assert(!limit || (added <= (limit - 1)));
+      
+      if (!vstr_sects_add(sects, pos, len))
+        VSTR__SPLIT_HDL_ERR();
+      
+      ++added;
+    }
+  }
+  else if ((flags & VSTR_FLAG_SPLIT_POST_NULL) && (!limit || (added < limit)))
     if (!vstr_sects_add(sects, pos, 0))
       VSTR__SPLIT_HDL_ERR();    
   

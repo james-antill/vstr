@@ -16,38 +16,719 @@
   </head>
   <body>
 <table width="100%"><tr><td bgcolor="#DDFFDD"><h1>Vstr documentation -- constants</h1>
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants for initialisation in debuging mode</h2>
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Global constants</h2>
 
-</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_DEBUG_INIT_BASE
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_MAX_NODE_ALL
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This is the value that static (Vstr_base) structs need to be initialised
- to when in debugging mode.
+</p><p>  This is the largest size a node can be, if you pass values greater than this
+ to vstr_add_ptr() etc. then multiple nodes will be allocated.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_MAX_NODE_BUF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the largest size a node _BUF type can be, if you pass values greater
+ than this to vstr_add_buf() etc. then multiple nodes will be allocated.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants for making/freeing type of nodes</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_NODE_BUF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to vstr_make_space_nodes() specifies nodes of type _BUF,
+ which are the only nodes that can be "written" to. These nodes are added into
+ a Vstr string by the vstr_add_buf() function and the vstr_add_iovec_buf_*()
+ functions.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  In non-debugging mode this value is all 0's, so this won't do anything
- different from just declaring your structs as static.
-</p><p>  The library will also re-initialise the base back to it's correct form before
- returning from timer_q_del_base, so you just need to set it up correctly the
- first time.
+</p><p>  A call to vstr_sub_buf() with a Vstr string consisting of _BUF nodes means
+ that data will be substituted inplace.
 
 
-</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to vstr_add_vstr()</h2>
-
-</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_NODE_NON
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This is.
+</p><p>  This type when passed to vstr_make_space_nodes() specifies nodes of type _NON,
+ which are nodes that contain "nothing". These nodes can be used as placeholders
+ for data, and are added into a Vstr string by the vstr_add_non() function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_NODE_PTR
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to vstr_make_space_nodes() specifies nodes of type _PTR,
+ which are nodes that contain a memory pointer to an area of memory.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_NODE_REF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to vstr_make_space_nodes() specifies nodes of type _REF,
+ which are nodes that contain a Vstr memory reference.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to vstr_add_vstr() and vstr_sub_vstr()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_ADD_DEF
+<br><strong>Constant: </strong> VSTR_TYPE_SUB_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
+ that all types of nodes are added as their respective type.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_ADD_BUF_PTR
+<br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_PTR
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
+ that all nodes of type _BUF are added as type _PTR.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you add/del/sub data in the original Vstr string then because the added
+ data is only pointers to the old data, life may become intereesting for you.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_ADD_BUF_REF
+<br><strong>Constant: </strong> VSTR_TYPE_SUB_BUF_REF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
+ that all nodes of type _BUF are converted to type _REF before being added.
+
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This means that if you do a substitution on the original Vstr string it will
+ now be less efficient, as the _REF nodes cannot have data substituted in place.
+</p><p>  The _BUF nodes will not go back to the pool in the Vstr configuration as
+ happens if you deleted them.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_ADD_ALL_REF
+<br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_REF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
+ that the data should be taken as though vstr_export_ref() was called on the
+ original Vstr string.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_ADD_ALL_BUF
+<br><strong>Constant: </strong> VSTR_TYPE_SUB_ALL_BUF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This type when passed to either vstr_sub_vstr() or vstr_add_vstr() specifies
+ that the data should all be added via. vstr_add_buf().
+
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to vstr_conv_unprintable_*()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag is 0, and is generally only used as programmer documentation to mean
+ no flags are applied to this function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_NUL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x00 byte, aka. NULL, through as a "printable"
+ character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BEL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x07 byte, aka. terminal bell, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_BS
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x08 byte, aka. backspace, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HT
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x09 byte, aka. horizontal tab, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_LF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x0A byte, aka. line feed, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_VT
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x0B byte, aka. vertical tab, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_FF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x0C byte, aka. form feed, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_CR
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x0D byte, aka. cariage return, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_ESC
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x1B byte, aka. escape, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_DEL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the ASCII 0x7F byte, aka. delete, through as a
+ "printable" character.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the all ASCII bytes greater than 0xA1 through as
+ "printable" characters.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants used with vstr_parse_[u](short|int|long|intmax_t)()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_NONE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code has the value 0, and means that no error occured parsing the
+ number from the Vstr string.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_S
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the Vstr string consisted only of spaces.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the Vstr string consisted only spaces, and a plus
+ or minus sign.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the Vstr string consisted only spaces, a plus
+ or minus sign and a "0x" base 16 prefix.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_OOB
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the Vstr string had characters in it that where
+ out of bounds from the working set.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This out of bounds includes the Vstr string "++" as well as "4A", when
+ parsing in a base less than 11.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the number parsed from the Vstr string would
+ overflow the type it is being parsed into, this is only returned when the
+ VSTR_FLAG_PARSE_NUM_OVERFLOW flag was passed to the parse function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the number parsed from the Vstr string starts
+ with a '-' (Hyphen) character when it is supposed to be an unsigned type.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This error code means that the number parsed from the Vstr string starts
+ with a '0' (Digit Zero) character, when the VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO
+ flag was passed to the parse function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag is 0, and is generally only used as programmer documentation to mean
+ no flags are applied to this function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_LOCAL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag changes the parsing from ASCII numbers into "local" numbers
+ (whatever is generated by '0 .. '9' by the host compiler). This can be ignored
+ by anyone not using an EBCD character set, or something equally weird.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_SEP
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the parsing of the '_' (Low Line) seperator character
+ between the digits of the number, so "1234" and "1_234" would both parse the
+ same.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The seperator is only allowed within the digits of the number, so " _+_1234"
+ woudl fail as would "_1234".
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_OVERFLOW
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag turns on the overflow checking, in other words without it
+ VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW will never be returned as an error code.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The return value with this set is the highest number that can be parsed from
+ the begining of the Vstr string, while the value without this flag would be the
+ parsed number modulo the highest number of the type. For example given type
+ that had a mazimum of 10, then parsing "64" would give you 6 with the flag, and
+ 4 without.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_SPACE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows one or more ' ' (Space) characters before the number or
+ number prefix (Plus Sign, Hyphen).
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag disallows one or more '0' (Digit Zero) characters before the number.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to vstr_split_*()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag is 0, and is generally only used as programmer documentation to mean
+ no flags are applied to this function.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_BEG_NULL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the split functions to add sections at the begining of the
+ input that have a null string before the match. For example the input
+ "::abcd:..." split on ":" would have 2 sections at positions 1 and 2
+ of length 0, without this flag the first section would be at position 3 with
+ length 4.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_MID_NULL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the split functions to add sections in the middle of the
+ input that have a null string between 2 matches. For example the input
+ "a::abcd:..." split on ":" would have the second section at position 3
+ of length 0, without this flag the second section would be at position 4 of
+ length 4.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_END_NULL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the split functions to add sections at the end of the
+ input that have a null string after a match. For example the input
+ "a::" split on ":" would have the second section at position 3
+ of length 0, without this flag there would only be one section added.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_POST_NULL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the split functions to add a final post section of the
+ input that ends with a match. For example the input "a:" split on ":" would
+ have the second section at position 3 (outside the range of the input)
+ of length 0, without this flag there would only be one section added.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_NO_RET
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag allows the split functions to return 1, when the Vstr sections
+ doesn't have any more room. Without the flag the split functions would
+ calculate the number of splits that would have been added if there was room
+ in the Vstr sections.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SPLIT_REMAIN
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag changes the split functions, when used with a limit, so that the
+ last section added is for the remainder of the input.
+
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants used with vstr_sects_*()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_BACKWARDS
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_FLAG_SECTS_FOREACH_ALLOW_NULL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_DEF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_DEL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SECTS_FOREACH_RET
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants passed to the cache callback function (vstr_cache_add_cb())</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CACHE_ADD
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CACHE_DEL
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CACHE_SUB
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_CACHE_FREE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants used with vstr_sc_add_fd() and vstr_sc_add_file()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_NONE
+<br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_NONE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_OPEN_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_FSTAT_ERRNO
+<br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_FSTAT_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_MMAP_ERRNO
+<br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MMAP_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_ADD_FD_ERR_MEM
+<br><strong>Constant: </strong> VSTR_TYPE_SC_ADD_FILE_ERR_MEM
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants used with vstr_sc_read_fd()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_NONE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_EOF
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_READ_FD_ERR_MEM
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants used with vstr_sc_write_fd() and vstr_sc_write_file()</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_NONE
+<br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_NONE
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_OPEN_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_WRITE_ERRNO
+<br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_CLOSE_ERRNO
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FD_ERR_MEM
+<br><strong>Constant: </strong> VSTR_TYPE_SC_WRITE_FILE_ERR_MEM
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  # FIXME:
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants you pass to the vstr_cntl_base() function</h2>
 
-</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Constant: </strong> VSTR_CNTL_BASE_SET_FLAG_
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_BASE_GET_CONF
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: value<br>Type<strong>[1]</strong>: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Return Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will set the value of the flag _BLAH on the base.
+</p><p>  This option will get the Vstr configuration for the Vstr string
 
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_BASE_SET_CONF
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the Vstr configuration for the Vstr string.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This will only return successfully if either the Vstr string is empty, or
+ the Vstr configurations have the same value for the NUM_BUF_SZ attribute.
+</p><p>  If the Vstr configuration (Parameter[1]) is NULL, then the default
+ Vstr configuration will be used.
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants you pass to the vstr_cntl_conf() function</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_BUF_SZ
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the size of the allocated portion of a _BUF type node.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_BUF_SZ
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the size of the allocated portion of a _BUF type node.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This will fail if Vstr strings are using the Vstr configuration.
+</p><p>  The value cannot be higher than VSTR_MAX_NODE_BUF.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_IOV_MIN_ALLOC
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns size of minimum iovec allocation<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the size of the minimum allocation to do when expanding
+ the iovec cache.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_IOV_MIN_ALLOC
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Size of minimum iovec allocation<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the size of the minimum allocation to do when expanding
+ the iovec cache.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_IOV_MIN_OFFSET
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the size of the allocated portion of a _BUF type node.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_IOV_MIN_OFFSET
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the size of the allocated portion of a _BUF type node.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_REF
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns number of references<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the number of references to the Vstr configuration.
+
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><h2>Constants you pass to the vstr_cntl_opt() function</h2>
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_OPT_GET_CONF
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Return Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will get the default Vstr configuration.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_OPT_SET_CONF
+
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will set the default Vstr configuration.
 
 
 </td></tr></table>

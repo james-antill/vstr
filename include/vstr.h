@@ -32,6 +32,7 @@ extern "C"
 #if VSTR_COMPILE_INCLUDE
 # include <stdlib.h>
 # include <stdarg.h>
+# include <string.h> /* strlen() in headers */
 # include <sys/uio.h>
 # ifdef VSTR__AUTOCONF_NEED_INTTYPES_H
 #  include <stdint.h>

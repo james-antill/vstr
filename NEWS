@@ -1,1 +1,2 @@
  Now has a real application that uses the library, and-vsftpd.
+ The API is pretty much frozen, just some more testing and it'll be 1.0.

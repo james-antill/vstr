@@ -1,6 +1,4 @@
 #define VSTR_ADD_FMT_C
-/* filename == vstr_fmt.c because CVS doesn't have a rename command
- * should be vstr_add_fmt.c */
 /*
  *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
@@ -51,11 +49,6 @@
 #define SPECIAL (1 << 13) /* 0x */
 #define LARGE (1 << 14) /* use 'ABCDEF' instead of 'abcdef' */
 #define THOUSAND_SEP (1 << 15) /* split at grouping marks according to locale */
-#ifdef HAVE_THOUSANDS_SPRINTF
-# define VSTR__OS_THOUSAND_SEP THOUSAND_SEP
-#else
-# define VSTR__OS_THOUSAND_SEP 0
-#endif
 
 
 #define IS_USR_PREC (1 << 28) /* user specified precision */
@@ -103,7 +96,7 @@ static int vstr__add_spaces(Vstr_base *base, size_t pos_diff, size_t len)
    num = (len / base->conf->buf_sz) + 1; /* overestimates ... but that's ok */
 
  if ((base->conf->spare_buf_num < num) &&
-     (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
+     (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
    return (FALSE);
 
  while (tmp < len)
@@ -131,7 +124,7 @@ static int vstr__add_zeros(Vstr_base *base, size_t pos_diff, size_t len)
    num = (len / base->conf->buf_sz) + 1; /* overestimates ... but that's ok */
 
  if ((base->conf->spare_buf_num < num) &&
-     (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
+     (vstr_make_spare_nodes(base->conf, VSTR_TYPE_NODE_BUF, num) != num))
    return (FALSE);
 
  while (tmp < len)
@@ -525,7 +518,7 @@ static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
        break
 
 static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
-                                size_t original_length)
+                                size_t orig_len)
 {
   struct Vstr__fmt_spec *spec = spec_list_beg;
   mbstate_t state;
@@ -734,7 +727,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         
       case 'n':
       {
-        size_t len = (base->len - original_length);
+        size_t len = (base->len - orig_len);
         
         switch (spec->int_type)
         {
@@ -857,7 +850,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
         /* hand code thousands_sep into the number if it's a %f or %F */
         if (((spec->fmt_code == 'f') || (spec->fmt_code == 'F')) &&
-            (spec->flags & VSTR__OS_THOUSAND_SEP) &&
+            (spec->flags & THOUSAND_SEP) &&
             base->conf->loc->thousands_sep_len)
         {
           const char *num_beg = str;
@@ -1192,12 +1185,13 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
 
 size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
 {
- size_t original_length = base->len; /* starting size */
+ size_t start_pos = pos + 1;
+ size_t orig_len = base->len;
  size_t pos_diff = 0;
  unsigned int params = 0;
  unsigned int have_dollars = 0; /* have posix %2$d etc. stuff */
    
- if (!base || !fmt || !*fmt || (pos > base->len) || base->conf->malloc_bad)
+ if (!base || !fmt || !*fmt || (pos > base->len))
    return (0);
 
  pos_diff = base->len - pos;
@@ -1487,7 +1481,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
  if (!vstr__fmt_fillin_spec(ap, have_dollars))
    goto no_format_for_arg;
  
- if (!vstr__fmt_write_spec(base, pos_diff, original_length))
+ if (!vstr__fmt_write_spec(base, pos_diff, orig_len))
    goto failed_alloc;
  
  spec_list_end->next = spec_make;
@@ -1495,10 +1489,11 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
  spec_list_beg = NULL;
  spec_list_end = NULL;
  
- return (base->len - original_length);
+ return (base->len - orig_len);
 
  failed_alloc:
- vstr_del(base, original_length, base->len - original_length);
+ if (base->len - orig_len)
+   vstr_del(base, start_pos, base->len - orig_len);
  
  no_format_for_arg:
  spec_list_end->next = spec_make;

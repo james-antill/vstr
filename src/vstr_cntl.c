@@ -93,13 +93,18 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
   {
    Vstr_conf *val = va_arg(ap, Vstr_conf *);
 
-   if (base->conf != val)
+   if (!val)
+     val = vstr__options.def;
+
+   if (base->conf == val)
+     ret = TRUE;
+   else if ((val->buf_sz == base->conf->buf_sz) || !base->len)
    {
      vstr__del_conf(base->conf);
      vstr__add_base_conf(base, val);
+
+     ret = TRUE;
    }
-   
-   ret = TRUE;
   }
   break;
 
@@ -175,7 +180,7 @@ int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
   
   case VSTR_CNTL_CONF_GET_NUM_BUF_SZ:
   {
-   int *val = va_arg(ap, int *);
+    unsigned int *val = va_arg(ap, unsigned int *);
    
    *val = conf->buf_sz;
    
@@ -185,7 +190,7 @@ int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
   
   case VSTR_CNTL_CONF_SET_NUM_BUF_SZ:
   {
-   int val = va_arg(ap, int);
+    unsigned int val = va_arg(ap, unsigned int);
 
    /* this is too restrictive, but getting it "right" would require too much
     * bookkeeping. */
@@ -202,27 +207,170 @@ int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
    }
   }
   break;
-  
-  case VSTR_CNTL_CONF_GET_FLAG_MALLOC_BAD:
-  {
-   int *val = va_arg(ap, int *);
-   
-   *val = conf->malloc_bad;
-   
-   ret = TRUE;
-  }
-  break;
-  
-  case VSTR_CNTL_CONF_SET_FLAG_MALLOC_BAD:
-  {
-   int val = va_arg(ap, int);
 
-   conf->malloc_bad = !!val;
-   
-   ret = FALSE;
-  }
-  break;
+   case VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC:
+   {
+     const char *val = va_arg(ap, const char *);
+
+     ret = vstr__make_conf_loc_numeric(conf, val);
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_LOC_CSTR_NAME_NUMERIC:
+   {
+     const char **val = va_arg(ap, const char **);
+
+     *val = conf->loc->name_lc_numeric_str;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC:
+   {
+     const char *val = va_arg(ap, const char *);
+     char *tmp = NULL;
+     size_t len = strlen(val);
+
+     if (!(tmp = malloc(len + 1)))
+       break;
+
+     free(conf->loc->name_lc_numeric_str);
+     memcpy(tmp, val, len + 1);
+     conf->loc->name_lc_numeric_str = tmp;
+     conf->loc->name_lc_numeric_len = len;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_LOC_CSTR_DEC_POINT:
+   {
+     const char **val = va_arg(ap, const char **);
+
+     *val = conf->loc->decimal_point_str;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_SET_LOC_CSTR_DEC_POINT:
+   {
+     const char *val = va_arg(ap, const char *);
+     char *tmp = NULL;
+     size_t len = strlen(val);
+
+     if (!(tmp = malloc(len + 1)))
+       break;
+
+     free(conf->loc->decimal_point_str);
+     memcpy(tmp, val, len + 1);
+     conf->loc->decimal_point_str = tmp;
+     conf->loc->decimal_point_len = len;     
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP:
+   {
+     const char **val = va_arg(ap, const char **);
+
+     *val = conf->loc->thousands_sep_str;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_SEP:
+   {
+     const char *val = va_arg(ap, const char *);
+     char *tmp = NULL;
+     size_t len = strlen(val);
+
+     if (!(tmp = malloc(len + 1)))
+       break;
+
+     free(conf->loc->thousands_sep_str);
+     memcpy(tmp, val, len + 1);
+     conf->loc->thousands_sep_str = tmp;
+     conf->loc->thousands_sep_len = len;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_GRP:
+   {
+     const char **val = va_arg(ap, const char **);
+
+     *val = conf->loc->grouping;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_SET_LOC_CSTR_THOU_GRP:
+   {
+     const char *val = va_arg(ap, const char *);
+     char *tmp = NULL;
+     size_t len = vstr__loc_thou_grp_strlen(val);
+
+     if (!(tmp = malloc(len + 1)))
+       break;
+
+     free(conf->loc->grouping);
+     memcpy(tmp, val, len); tmp[len] = 0;
+     conf->loc->grouping = tmp;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_FLAG_IOV_UPDATE:
+   {
+     int *val = va_arg(ap, int *);
+     
+     *val = conf->iovec_auto_update;
+     
+     ret = TRUE;
+   }
+   break;
   
+   case VSTR_CNTL_CONF_SET_FLAG_IOV_UPDATE:
+   {
+     int val = va_arg(ap, int);
+
+     assert(val == !!val);
+
+     conf->iovec_auto_update = val;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT:
+   {
+     int *val = va_arg(ap, int *);
+     
+     *val = conf->split_buf_del;
+     
+     ret = TRUE;
+   }
+   break;
+  
+   case VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT:
+   {
+     int val = va_arg(ap, int);
+
+     assert(val == !!val);
+
+     conf->split_buf_del = val;
+     
+     ret = TRUE;
+   }
+   break;
+
   default:
     break;
  }

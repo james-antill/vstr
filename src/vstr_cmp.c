@@ -226,6 +226,57 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
   return (0);
 }
 
+int vstr_cmp_case_buf(const Vstr_base *base, size_t pos, size_t len,
+                      const void *str, size_t str_len)
+{
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  char *scan_str = NULL;
+  size_t scan_len = 0;
+  
+  scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
+  if (!scan && !str_len)
+    return (0);
+  if (!scan)
+    return (-1);
+  if (!str_len)
+    return (1);
+  
+  do
+  {
+    int ret = 0;
+    
+    if (scan_len > str_len)
+    {
+      scan_len = str_len;
+      len += 1; /* just need enough for test at end */
+    }
+    
+    if ((scan->type == VSTR_TYPE_NODE_NON) && str)
+      return (-1);
+    if ((scan->type != VSTR_TYPE_NODE_NON) && !str)
+      return (1);
+    
+    if (str)
+    {
+      if ((ret = vstr__cmp_memcasecmp(scan_str, str, scan_len)))
+        return (ret);
+      str = ((char *)str) + scan_len;
+    }
+    
+    str_len -= scan_len;
+  } while (str_len &&
+           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+                                           scan, &scan_str, &scan_len)));
+  
+  if (len)
+    return (1);
+  if (str_len)
+    return (-1);
+  
+  return (0);
+}
+
 #define VSTR__CMP_BAD (-1)
 
 #define VSTR__CMP_NORM 0

@@ -66,8 +66,8 @@ AC_SUBST(LDFLAGS)
 # Seriously butchered from glib...
 
 VSTR_MAJOR_VERSION=0
-VSTR_MINOR_VERSION=7
-VSTR_MICRO_VERSION=3
+VSTR_MINOR_VERSION=9
+VSTR_MICRO_VERSION=1
 VSTR_INTERFACE_AGE=1
 VSTR_BINARY_AGE=1
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -137,18 +137,24 @@ AC_PATH_PROG(TAR_PATH, tar, $TRUE_PATH,
 AC_PATH_PROG(CHMOD_PATH, chmod, $TRUE_PATH,
              $PATH:/usr/bin:/bin:/usr/local/bin:/usr/gnu/bin:/usr/local/gnu/bin:/opt/gnu/bin)
 
-AC_PATH_PROG(GNOME_CONFIG_PATH, gnome-config, ${srcdir}/gnome-config-missing.sh,
-             $PATH:/usr/bin:/bin:/usr/local/bin:/usr/gnu/bin:/usr/local/gnu/bin:/opt/gnu/bin)
+#
+# Find pkg-config
+#
+AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+if test x$PKG_CONFIG = xno ; then
+  AC_MSG_ERROR([*** pkg-config not found. See http://www.freedesktop.org/software/pkgconfig/])
+fi
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.5 ; then
+  :
+else
+  AC_MSG_ERROR([*** pkg-config too old; version 0.5 or better required.])
+fi
 
 WARNS=""
 AC_ARG_ENABLE(debug, [  --enable-debug turn on debugging (assumes gcc/gdb) [default=no]],WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O1 -ggdb3",AC_DEFINE(NDEBUG))
 AC_ARG_ENABLE(ansi, [  --enable-ansi turn on ansi stuff (assumes gcc/gdb) [default=no]],WARNS="$WARNS -ansi -pedantic",)
 AC_SUBST(WARNS)
-
-INST_GNOME_CONFIG_HACK="/"
-AC_ARG_ENABLE(gnome-config, [  --disable-gnome-config turn off use of gnome-config data [default=enabled]],INST_GNOME_CONFIG_HACK="${srcdir}/src/.libs/",)
-
-AC_SUBST(INST_GNOME_CONFIG_HACK)
 
 TWOCAN_CONF_MSG(Checking for headers)
 
@@ -1081,16 +1087,11 @@ esac
 
 TWOCAN_CONF_MSG(Output Substitution)
 
-VSTR_LIBDIR="-L${libdir}"
-VSTR_INCLUDEDIR="-I${includedir}"
 VSTR_LIBS="$LIBS"
-
-AC_SUBST(VSTR_LIBDIR)
-AC_SUBST(VSTR_INCLUDEDIR)
 AC_SUBST(VSTR_LIBS)
 
 AC_OUTPUT([Makefile 
-           gnome-config-missing.sh
+           vstr.pc
            libtool_hack/Makefile
            src/Makefile
            include/Makefile
@@ -1098,8 +1099,6 @@ AC_OUTPUT([Makefile
            src/vstr_version.c
            vstr.spec
 ])
-
-$CHMOD_PATH 755 ${srcdir}/gnome-config-missing.sh
 
 $SED_PATH 's%^#define *%#define VSTR_AUTOCONF_%' < include/autoconf.h > include/vstr-conf.h
 

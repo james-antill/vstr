@@ -102,6 +102,7 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
                                  struct iovec *iovs, unsigned int num_max,
                                  unsigned int *real_ret_num)
 {
+  size_t orig_len = len;
   Vstr_node *scan = NULL;
   unsigned int num = 0;
   char *scan_str = NULL;
@@ -124,14 +125,13 @@ size_t vstr_export_iovec_cpy_ptr(const Vstr_base *base, size_t pos, size_t len,
     iovs[ret_num].iov_len = scan_len;
     ret_len += scan_len;
     
-    if (++ret_num >= num_max)
-      break;
-    
-  } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
+  } while ((++ret_num < num_max) &&
+           (scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                            scan, &scan_str, &scan_len)));
+  assert((ret_len == orig_len) || (ret_num == num_max));
   
   *real_ret_num = ret_num;
-  
+
   return (ret_len);
 }
 
@@ -171,3 +171,93 @@ char vstr_export_chr(const Vstr_base *base, size_t pos)
  return (buf[0]);
 }
 
+static Vstr__buf_ref *vstr__export_buf_ref(const Vstr_base *base,
+                                           size_t pos, size_t len)
+{
+  struct Vstr__buf_ref *ref = NULL;
+  
+  if (!(ref = malloc(sizeof(Vstr__buf_ref) + len)))
+  {
+    base->conf->malloc_bad = TRUE;
+    return (NULL);
+  }
+  
+  ref->ref.func = vstr_ref_cb_free_ref;
+  ref->ref.ptr = ref->buf;
+  ref->ref.ref = 1;
+  
+  if (len)
+    vstr_export_buf(base, pos, len, ref->buf);
+  
+  return (ref);
+}
+
+Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
+                          size_t *ret_off)
+{
+  Vstr_node *scan = NULL;
+  unsigned int num = 0;
+  Vstr__buf_ref *buf_ref = NULL;
+  Vstr_ref *ref = NULL;
+
+  assert(base && pos && len && ((pos + len - 1) <= base->len));
+  assert(ret_off);
+  
+  scan = vstr__base_pos(base, &pos, &num, TRUE);
+  if (!scan)
+    return (0);
+
+  if (0)
+  { /* do nothing */; }
+  else if (scan->type == VSTR_TYPE_NODE_REF)
+  {
+    if ((scan->len - pos) >= len)
+    {
+      *ret_off = pos + ((Vstr_node_ref *)scan)->off;
+      return (vstr_ref_add(((Vstr_node_ref *)scan)->ref));
+    }
+  }
+  else if (scan->type == VSTR_TYPE_NODE_PTR)
+  {
+    if ((scan->len - pos) >= len)
+    {
+      if (!(ref = malloc(sizeof(Vstr_ref))))
+      {
+        base->conf->malloc_bad = TRUE;
+        return (NULL);
+      }
+      
+      *ret_off = 0;
+      ref->func = vstr_ref_cb_free_ref;
+      ref->ptr = ((char *)((Vstr_node_ptr *)scan)->ptr) + pos;
+      ref->ref = 0;
+      
+      return (vstr_ref_add(ref));
+    }
+  }
+
+  if (base->cache_available)
+  { /* use cstr cache if available */
+    Vstr_cache_data_cstr *data = NULL;
+    unsigned int off = base->conf->cache_pos_cb_cstr;
+    
+    if ((data = vstr_cache_get_data(base, off)) && data->ref)
+    {
+      if (pos >= data->pos)
+      {
+        size_t tmp = (pos - data->pos);
+        if (data->len <= (len - tmp))
+        {
+          *ret_off = tmp;
+          return (vstr_ref_add(data->ref));
+        }
+      }
+    }
+  }
+
+  *ret_off = 0;
+  if (!(buf_ref = vstr__export_buf_ref(base, pos, len)))
+    return (NULL);
+    
+  return (&buf_ref->ref);
+}

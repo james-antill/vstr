@@ -18,66 +18,100 @@
 
 #include "ex_utils.h"
 
-static void test1(Vstr_base *str1, Vstr_base *str2, const char *tester)
+static void test1(Vstr_base *str1, Vstr_base *str2, const char *tester,
+                  int use_netstr2_add, int use_netstr2_parse)
 {
  size_t netstr_beg = 0;
  size_t netstr_pos = 0;
  size_t netstr_len = 0;
+ size_t netstr_data_len = 0;
  size_t tmp = 0;
-
- netstr_beg = vstr_add_netstr_beg(str1, str1->len);
+ int added = TRUE;
+ 
+ if (use_netstr2_add)
+   netstr_beg = vstr_add_netstr2_beg(str1, str1->len);
+ else
+   netstr_beg = vstr_add_netstr_beg(str1, str1->len);
  if (netstr_beg != 1)
    DIE("netstr_beg");
  
  tmp = vstr_add_fmt(str1, str1->len, "%s", tester);
- vstr_add_netstr_end(str1, netstr_beg, str1->len);
 
- vstr_add_fmt(str2, str2->len, "String is: %s\n", tester);
- vstr_add_fmt(str2, str2->len, "String len: %d\n", tmp);
+ if (use_netstr2_add)
+   added = vstr_add_netstr2_end(str1, netstr_beg, str1->len);
+ else
+   added = vstr_add_netstr_end(str1, netstr_beg, str1->len);
+
+ if (!added)
+   DIE("netstr_end");
+ 
+ vstr_add_fmt(str2, str2->len, " Use netstr 2 add/parse [%d,%d]\n"
+              "String is: %s\n"
+              "String len: %d\n",
+              use_netstr2_add, use_netstr2_parse, tester, tmp);
  
  ex_utils_cpy_write_all(str2, 1);
  vstr_del(str2, 1, str2->len);
  
- netstr_beg = vstr_srch_netstr_fwd(str1, 1, 1, &netstr_pos, &netstr_len);
- if (netstr_beg != 1)
-   DIE("netstr_beg");
- if (netstr_len != tmp)
-   DIE("netstr_len");
+ if (use_netstr2_parse)
+   netstr_len = vstr_parse_netstr2(str1, 1, str1->len,
+                                   &netstr_pos, &netstr_data_len);
+ else
+   netstr_len = vstr_parse_netstr(str1, 1, str1->len,
+                                  &netstr_pos, &netstr_data_len);
 
- vstr_add_fmt(str2, str2->len, "Parse netstr: %d %d %d\n",
-              netstr_beg, netstr_pos, netstr_len);
+ vstr_add_fmt(str2, str2->len, "Parse netstr: pos=%d len=%d "
+              "data_pos=%d data_len=%d\n\n",
+              netstr_beg, netstr_len, netstr_pos, netstr_data_len);
  
  ex_utils_cpy_write_all(str2, 1);
  vstr_del(str2, 1, str2->len); 
  vstr_del(str1, 1, str1->len);
 }
 
-static void test2(Vstr_base *str1, Vstr_base *str2)
+static void test2(Vstr_base *str1, Vstr_base *str2,
+                  int use_netstr2_add, int use_netstr2_parse)
 {
  size_t netstr_beg = 0;
  size_t netstr_pos = 0;
  size_t netstr_len = 0;
+ size_t netstr_data_len = 0;
+ int added = TRUE;
  
- /* test empty */
- netstr_beg = vstr_add_netstr_beg(str1, str1->len);
+ if (use_netstr2_add)
+   netstr_beg = vstr_add_netstr2_beg(str1, str1->len);
+ else
+   netstr_beg = vstr_add_netstr_beg(str1, str1->len);
  if (netstr_beg != 1)
    DIE("netstr_beg");
  
- vstr_add_netstr_end(str1, netstr_beg, str1->len);
+ /* test empty */
+ 
+ if (use_netstr2_add)
+   added = vstr_add_netstr2_end(str1, netstr_beg, str1->len);
+ else
+   added = vstr_add_netstr_end(str1, netstr_beg, str1->len);
 
- vstr_add_fmt(str2, str2->len, "String empty.\n");
+ if (!added)
+   DIE("netstr_end");
+
+ vstr_add_fmt(str2, str2->len, " Use netstr 2 add/parse [%d,%d]\n"
+              "String is empty.\n",
+              use_netstr2_add, use_netstr2_parse);
  
  ex_utils_cpy_write_all(str2, 1);
  vstr_del(str2, 1, str2->len);
- 
- netstr_beg = vstr_srch_netstr_fwd(str1, 1, 1, &netstr_pos, &netstr_len);
- if (netstr_beg != 1)
-   DIE("netstr_beg");
- if (netstr_len != 0)
-   DIE("netstr_len");
 
- vstr_add_fmt(str2, str2->len, "Parse netstr: %d %d %d\n",
-              netstr_beg, netstr_pos, netstr_len);
+ if (use_netstr2_parse)
+   netstr_len = vstr_parse_netstr2(str1, 1, str1->len,
+                                   &netstr_pos, &netstr_data_len);
+ else
+   netstr_len = vstr_parse_netstr(str1, 1, str1->len,
+                                  &netstr_pos, &netstr_data_len);
+
+ vstr_add_fmt(str2, str2->len, "Parse netstr: pos=%d len=%d "
+              "data_pos=%d data_len=%d\n\n",
+              netstr_beg, netstr_len, netstr_pos, netstr_data_len);
  
  ex_utils_cpy_write_all(str2, 1);
  vstr_del(str2, 1, str2->len); 
@@ -117,8 +151,14 @@ int main(void /* int argc, char *argv[] */)
  
  vstr_add_fmt(str2, str2->len, "Testing vstr_srch_netstr\n");
 
- test1(str1, str2, "Test da netstr.");
- test2(str1, str2);
+ test1(str1, str2, "Test da netstr.", FALSE, FALSE);
+ test1(str1, str2, "Test da netstr.", FALSE, TRUE);
+ test1(str1, str2, "Test da netstr.", TRUE, FALSE); /* fails */
+ test1(str1, str2, "Test da netstr.", TRUE, TRUE);
+ test2(str1, str2, FALSE, FALSE);
+ test2(str1, str2, FALSE, TRUE);
+ test2(str1, str2, TRUE, FALSE); /* fails */
+ test2(str1, str2, TRUE, TRUE);
 
  exit (EXIT_SUCCESS);
 }
