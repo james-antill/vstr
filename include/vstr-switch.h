@@ -89,6 +89,22 @@
 # define VSTR__COMPILE_ATTR_NONNULL_L(x) /* nothing */
 #endif
 
+#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_PURE) && \
+    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+# define VSTR__COMPILE_ATTR_PURE() \
+ __attribute__ ((__pure__))
+#else
+# define VSTR__COMPILE_ATTR_PURE() /* nothing */
+#endif
+
+#if defined(VSTR_AUTOCONF_HAVE_ATTRIB_MALLOC) && \
+    !defined(__STRICT_ANSI__) && VSTR_COMPILE_ATTRIBUTES
+# define VSTR__COMPILE_ATTR_MALLOC() \
+ __attribute__ ((__malloc__))
+#else
+# define VSTR__COMPILE_ATTR_MALLOC() /* nothing */
+#endif
+
 #ifdef VSTR_AUTOCONF_NDEBUG
 # define VSTR_TYPE_CONST_DEBUG_1 0
 # define VSTR_TYPE_CONST_DEBUG_16 0

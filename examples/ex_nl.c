@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   
   ex_utils_set_o_nonblock(1);
   
-  if (count == argc)  /* use stdin */
+  if (count >= argc)  /* use stdin */
   {
     ex_utils_set_o_nonblock(0);
     ex_nl_read_fd_write_stdout(str1, str2, 0);

@@ -514,7 +514,7 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
         base->end = ref_node;
 
       /* FIXME: hack alteration of type of node in cache */
-      if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
+      if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)) &&
           (data->node == *scan))
         data->node = ref_node;
       if (base->iovec_upto_date)

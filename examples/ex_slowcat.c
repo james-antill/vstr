@@ -52,110 +52,6 @@ typedef struct ex_slowcat_vars
  unsigned int finished_reading_file : 1;
 } ex_slowcat_vars;
 
-typedef struct ex_slowcat_mmap_ref
-{
- Vstr_ref ref;
- size_t len;
-} ex_slowcat_mmap_ref;
-
-static int have_mmaped_file = 0;
-
-static void ex_slowcat_ref_munmap(Vstr_ref *passed_ref)
-{
- ex_slowcat_mmap_ref *ref = (ex_slowcat_mmap_ref *)passed_ref;
- munmap(ref->ref.ptr, ref->len);
- free(ref);
-
- --have_mmaped_file;
-}
-
-static void ex_slowcat_del_write(Vstr_base *base, int fd, size_t max_bytes)
-{
- Vstr_base *cpy = base;
- struct iovec *vec;
- unsigned int num = 0;
- size_t len = 0;
- ssize_t bytes = 0;
- unsigned int hacked_off = 0;
- size_t hacked_len = 0;
- 
- if (!base->len)
-   return;
- 
- len = vstr_export_iovec_ptr_all(cpy, &vec, &num);
- if (!len)
-   errno = ENOMEM, DIE("vstr_export_iovec_ptr_all:");
-
- if (max_bytes > len)
-   max_bytes = len;
- else
- {
-  unsigned int count = 0;
-  
-  while (count < max_bytes)
-  {
-   size_t tmp = vec[hacked_off].iov_len;
-
-   hacked_len = tmp;
-   
-   if (count + tmp > max_bytes)
-     tmp = max_bytes - count;
-
-   vec[hacked_off++].iov_len = tmp;
-   count += tmp;
-  }
-  assert(count == max_bytes);
-
-  num = hacked_off;
- }
- 
- if ((size_t)(bytes = writev(fd, vec, num)) != len)
- {
-  if ((bytes == -1) && (errno != EAGAIN))
-    DIE("writev:");
-  if (bytes == -1)
-    return;
- }
-
- if (hacked_off)
-   vec[hacked_off - 1].iov_len = hacked_len; /* restore */
- 
- vstr_del(cpy, 1, (size_t)bytes);
-}
-
-static void ex_slowcat_mmap_file(Vstr_base *str1, int fd, size_t len)
-{
- ex_slowcat_mmap_ref *ref = NULL;
- caddr_t addr = NULL;
-
- if (!len)
-   return;
- 
- if (!(ref = malloc(sizeof(ex_slowcat_mmap_ref))))
-   errno = ENOMEM, DIE("malloc ex_slowcat_mmap:");
- 
- ref->len = len;
- 
- addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
- if (addr == (caddr_t)-1)
-   DIE("mmap:");
- 
- if (close(fd) == -1)
-   DIE("close:");
- 
- ref->ref.func = ex_slowcat_ref_munmap;
- ref->ref.ptr = (char *)addr;
- ref->ref.ref = 0;
- 
- if (offsetof(ex_slowcat_mmap_ref, ref))
-   DIE("assert");
- 
- if (!vstr_add_ref(str1, str1->len, &ref->ref, 0, ref->len))
-   errno = ENOMEM, DIE("vstr_add_ref:");
-
- ++have_mmaped_file;
-}
-
 static void ex_slowcat_timer_func(int type, void *data)
 {
  ex_slowcat_vars *v = data;
@@ -176,8 +72,6 @@ static void ex_slowcat_timer_func(int type, void *data)
   {
    if (v->finished_reading_file)
    {
-    struct stat stat_buf;
-
     assert(v->arg_count < v->argc);
     
     v->finished_reading_file = FALSE;
@@ -187,17 +81,13 @@ static void ex_slowcat_timer_func(int type, void *data)
     if (v->fd == -1)
       DIE("open(%s):", v->argv[v->arg_count]);
     
-    if (fstat(v->fd, &stat_buf) == -1)
-      DIE("fstat(%s):", v->argv[v->arg_count]);
-    
     ++v->arg_count;
     
-    if (S_ISREG(stat_buf.st_mode))
-    {
-     ex_slowcat_mmap_file(v->str1, v->fd, stat_buf.st_size);
-     if (v->arg_count >= v->argc)
-       v->finished_reading_data = TRUE;
-     v->finished_reading_file = TRUE;
+    if (vstr_sc_mmap_fd(v->str1, v->str1->len, v->fd, 0, 0, NULL))
+    {      
+      if (v->arg_count >= v->argc)
+        v->finished_reading_data = TRUE;
+      v->finished_reading_file = TRUE;
     }
     else
     {
@@ -397,8 +287,6 @@ int main(int argc, char *argv[])
   
   timer_q_run_norm(&s_tv);
  }
- 
- assert(!have_mmaped_file);
 
  timer_q_del_base(v.base);
  

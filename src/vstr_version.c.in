@@ -66,14 +66,6 @@ void vstr_version_func(void)
  "  No POSIX host (iovec is manually defined, and vstr_sc_* are stubs)\n"
 #endif
 
-#ifdef HAVE_MMAP
- "  Have mmap system call.\n"
-#endif
-
-#ifdef HAVE_LONG_LONG
- "  Have long long type.\n"
-#endif
-    
 #ifdef USE_RESTRICTED_HEADERS
  "  Compiled with restricted functionality in lib C.\n"
 #endif
@@ -90,16 +82,24 @@ void vstr_version_func(void)
 
     
  "  Compiler supports attributes:\n"
-#ifdef HAVE_ATTRIB_NONNULL
- "    nonnull\n"
-#endif
-
 #ifdef HAVE_ATTRIB_ALIAS
  "    alias\n"
 #endif
 
 #ifdef HAVE_ATTRIB_DEPRECATED
  "    deprecated\n"
+#endif
+
+#ifdef HAVE_ATTRIB_MALLOC
+ "    malloc\n"
+#endif
+
+#ifdef HAVE_ATTRIB_NONNULL
+ "    nonnull\n"
+#endif
+
+#ifdef HAVE_ATTRIB_PURE
+ "    pure\n"
 #endif
 
 #ifdef HAVE_ATTRIB_VISIBILITY
@@ -121,7 +121,7 @@ void vstr_version_func(void)
 "Information can be found at:\t\t\t\thttp://www.and.org/vstr/"
        "\n"
 "Bug reports should be sent to:\t\t\t    James Antill <james@and.org>"
-       "\n\n\0\0\0\0"
+       "\n\n"
     ;
 
   const char *scan = NULL;

@@ -1,3 +1,31 @@
+2002-10-03  James Antill  <james@and.org>
+
+	* NEWS: Released 0.9.17
+
+2002-10-02  James Antill  <james@and.org>
+
+	* src/vstr_cache.c (vstr_nx_cache_set): Changed API.
+	(vstr_nx_cache_add): Changed API.
+	(vstr_nx_cache_cb_sub): Changed API.
+
+	* include/vstr-inline.h (vstr_cache_get): Changed API.
+
+2002-10-01  James Antill  <james@and.org>
+
+	* include/vstr-switch.h (VSTR__COMPILE_ATTR_PURE): Added attribute to
+	some functions.
+	(VSTR__COMPILE_ATTR_MALLOC): Added attribute to	some functions.
+
+	* src/vstr_cstr.c (vstr_export_cstr_malloc): Added function.
+
+2002-09-30  James Antill  <james@and.org>
+
+	* tst/tst-main.c: Changes to allow vstr to be built in a sub directory.
+
+2002-09-28  James Antill  <james@and.org>
+
+	* examples/ex_mon_cp.c (main): Fix bkmg functions to be the final API.
+
 2002-09-28  James Antill  <james@and.org>
 
 	* NEWS: Relase 0.9.16

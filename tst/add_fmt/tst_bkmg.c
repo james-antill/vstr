@@ -47,12 +47,12 @@ static void tst_bkmg(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "2GB     ||"));
   
   vstr_del(t1, 1, t1->len);
-  vstr_add_fmt(t1, 0, "$.3{BKMG/s:%u}",
+  vstr_add_fmt(t1, 0, "$.3{BKMG/s:%u}ec",
                (4U * 1000U * 1000U * 1000U) +
                187654321U + 
                0U);
   
-  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "4.187GB/s"));
+  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "4.187GB/sec"));
 
   vstr_del(t1, 1, t1->len);
   vstr_add_fmt(t1, 0, "$.6{bKMG/s:%u}",

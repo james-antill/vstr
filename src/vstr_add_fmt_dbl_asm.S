@@ -1,5 +1,5 @@
 #if defined(__i386__)
-# include "../include/autoconf.h" /* ASM_GLOBAL_DIRECTIVE */
+# include "autoconf.h" /* ASM_GLOBAL_DIRECTIVE */
 
 # ifndef ASM_GLOBAL_DIRECTIVE
 #  error "No ASM_GLOBAL_DIRECTIVE"

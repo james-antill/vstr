@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/fcntl.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "ex_utils.h"
 
@@ -22,7 +24,6 @@ int main(int argc, char *argv[])
   Vstr_base *s2 = NULL;
   int fd = -1;
   struct stat stat_buf;
-  off_t len = 0;
   time_t beg_time;
   unsigned int beg_sz = 0;
   unsigned int last_sz = 0;
@@ -83,9 +84,9 @@ int main(int argc, char *argv[])
 
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s2->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
-  vstr_sc_fmt_add_bkmg_B_uint_buf(s1->conf, "{BKMG:%u}");
-  vstr_sc_fmt_add_bkmg_B_uint_buf(s2->conf, "{BKMG:%u}");
-  vstr_sc_fmt_add_bkmg_Bs_uint_buf(s2->conf, "{BKMG/s:%u}");
+  vstr_sc_fmt_add_bkmg_Byte_uint(s1->conf, "{BKMG:%u}");
+  vstr_sc_fmt_add_bkmg_Byte_uint(s2->conf, "{BKMG:%u}");
+  vstr_sc_fmt_add_bkmg_Bytes_uint(s2->conf, "{BKMG/s:%u}");
 
   beg_time = time(NULL); --beg_time;
   beg_sz = last_sz = stat_buf.st_size;
@@ -109,7 +110,7 @@ int main(int argc, char *argv[])
       DIE("fstat:");
 
     ++count;
-    if (last_sz != stat_buf.st_size)
+    if (last_sz != (unsigned int)stat_buf.st_size)
       count = 0;
     if (last_sz > (unsigned int)stat_buf.st_size)
       break;

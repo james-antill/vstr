@@ -13,8 +13,8 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
 
 int tst(void)
 {
-  unsigned int tst_srch = vstr_cache_add_cb(s1->conf, "/tst_srch/tst",
-                                            tst_cache_cb);
+  unsigned int tst_srch = vstr_cache_add(s1->conf, "/tst_srch/tst",
+                                         tst_cache_cb);
   
   /* vstr internal stuff... */
   if (vstr_cache_srch(s1->conf, "/vstr__/pos") != 1)

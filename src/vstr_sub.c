@@ -73,7 +73,7 @@ static int vstr__sub_buf_fast(Vstr_base *base, size_t pos, size_t len,
   } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                            scan, &scan_str, &scan_len)));
 
-  vstr_nx_cache_sub(base, pos, buf_len);
+  vstr_nx_cache_cb_sub(base, pos, buf_len);
 
   assert(vstr__check_real_nodes(base));
 
@@ -217,7 +217,7 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
         
         VSTR__SUB_BUF();
         
-        vstr_nx_cache_sub(base, real_pos, tmp);
+        vstr_nx_cache_cb_sub(base, real_pos, tmp);
         
         len -= tmp;
         real_pos += tmp;
@@ -431,7 +431,7 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
     } while ((scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                              scan, &scan_str, &scan_len)));
 
-    vstr_nx_cache_sub(base, pos, rep_len);
+    vstr_nx_cache_cb_sub(base, pos, rep_len);
     
     return (TRUE);
   }

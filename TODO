@@ -14,8 +14,14 @@
 
 . VSTR_FLAG_PARSE_NUM_LOC_SEP
 
+. Document how to rm non cstr caches cache.
+
+. Man page equiv. for constants.html
+
  Not needed for 1.0
  ------------------
+
+. Configure option to have alternate malloc conf->malloc(x) etc.
 
 . Fast inline parsing of ints when using certain flags.
 
@@ -32,8 +38,6 @@
 . _SEF type ... like a _REF but you can do substitution on it ?
    Will do "strange" things on mmap() read/write areas on _conv_ functions
   as it's not obvious what it should/could do on expantion.
-
-. _NEF type ... like a _REF but auto turns into _BUF on cp, can do SUB etc. ?
 
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 

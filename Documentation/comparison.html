@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Vstr Comparison</title>
+
+    <style>
+      A:hover { color: #20b2aa; }
+      P { text-indent: 2cm; }
+
+      body { background: #FFFFFF; }
+
+      td.heading { background: #DDDDDD; }
+    </style>
+
+  </head>
+
+  <body>
+    <h1>Vstr Comparison</h1>
+
+    <p> This page is a rough comparison between the 
+      <a href="overview.html">Vstr</a> string library and other string libraries
+      that I've seen. This may be somewhat biased, due to the fact that I wrote
+      the Vstr library ... then again it is better :).
+    </p>
+
+    <ul>
+      <li>
+	<h2> <a href="http://www.sgi.com/tech/stl/Rope.html">C++ STL rope</a>
+	</h2>
+	<p>Obviously this is in C++, and not C. This library tries to do what
+	  Vstr does, as well as it does it, however it is "compatible" with the
+	  normal C++ string API and so is constrained in that way. It also
+	  doesn't really seem to have a <emp>reason</emp> for existing ... it just wants
+	  to do "strings well" as far as I can see.
+	  Apart from that, the major differences are that:
+	  <ul>
+	    <li> ropes can have a function as a string
+	      generator whereas Vstr doesn't allow that (error cases are 
+	      a nightmare here), however the major use of
+	      this is file IO, and Vstr has functions to help there. </li>
+	      <li> Vstr substitution is much faster than in ropes.</li>
+	      <li> Vstr makes a distinction between adding data at a pointer,
+	      and adding the pointer itself.</li>
+	  </ul>
+</p>
+	<p>Also it doesn't seem possible to act with a substring of a Rope, you
+	  can only make a copy of a substring using the substr call. Vstr
+	  doesn't have a true distinction between the entire Vstr and a portion
+	  thereof.</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://developer.gnome.org/doc/API/2.0/glib/glib-strings.html">GLib</a></h2>
+	<p> This is probably the most used C string library, and comes with the
+	  glib utility library. This works on a simple start pointer and
+	  length, model. This makes it much more memory effiecient for small
+	  strings. This feature also makes it pretty much impossible to do IO
+	  into the strings, share data between strings and kills performance
+	  on substitutions. Failure to allocate memory calls
+	  abort().</p>
+	<p>Also note that the printf implementation just calls the host
+	  implementation of sprintf/asprintf/etc. directly. So it's impossible
+	  to have custom formatters (the most annoying fallout of this is that
+	  you can't add a GString to a GString as part of a printf() call) and
+	  portability is a problem 
+	  (currently [2002-09-02] it
+	  doesn't even tell you that you'll crash your program in certain
+	  cases, and loses data in certain cases when you add a '\0' byte 
+	  to the string -- I've submitted a patch for the last problem).</p>
+	<p>There is no substitution API in glib, probably because you can't 
+	  share data so you just do a memcpy() and an overwrite. It's also
+	  worth noting that your program may crash if you try and add data in
+	  a GString to the GString itself.</p>
+	<p>Note that vstr_split_chrs() and other functions for using a GString 
+	  are in glib, as part of the C string helper functions
+	  (Eg. g_strsplit() in the case of vstr_split_chrs()). There is also
+	  limited support in glib for doing things in ASCII regardless of the
+	  current user locale.</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www.ossp.org/pkg/lib/str/">OSSP str</a></h2>
+	<p>
+	  This library is a slightly saner version of the ISO C str* functions,
+	  with a few extentions. It works with (char *) as the native type,
+	  and doesn't do automatic allocation ... so buffer overflows are still
+	  a concern.
+	</p>
+	<p>
+	  The printf implementation is internal, but 'F' 'a' and 'A' aren't
+	  supported, neither are i18n argument number specifiers or thousand
+	  seperator modifiers.
+	  The non standard 'q' length attribute denotes long long, and there is 
+	  no way of specifying long double. You can have custom modifiers, but
+	  only triggered on the system '%' character ... so gcc will currently
+	  spam warnings. It also looks like the ISO C std. is completely ignored
+	  for certain corner cases. Also note that due to the fact that the
+	  strings cannot be resized by the library the printf implementation
+	  uses a snprint() interface, this means that data can be lost using the
+	  interface if the programer isn't carefull.
+	</p>
+      </li>
+
+      
+      <li>
+	<h2> <a href="http://www.annexia.org/freeware/c2lib/">c2lib</a></h2>
+	<p>
+          This library works with (char *) as the base type, although
+          all allocator functions are also passed a "pool" that the (char *)
+	  comes from, and so resizing can be done by the library.
+	</p>
+	<p>
+	  There is no printf like function. However it does declare a
+	  "vector" type that is roughly equivalent to a Vstr_sects type however
+	  it only contains a "ptr" to the data ... so doing a split on a string
+	  involves at least doing a memdup() (it actually does a strndup()).
+	</p>
+	<p>
+	  Major namespace corruption.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://cade.webbg.com/away/vstring/">VSTRING</a></h2>
+	<p>
+	  This is currently just a C++ wrapper class around a (char *), with
+	  a couple of extra functions not available in std. C. It does to
+	  auto matic resizing. It also look looks like the implementation
+	  could be changed to fix a lot of
+	  problems with this (Eg. the length is calculated using strlen(), so
+	  embeded '\0' characters corrupt data) 
+	  without affecting source compatability. The printf like function calls
+	  the host implementation.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/my_string/">my_string</a></h2>
+	<p>
+	  This is a bunch of add on functions to the std. C string functions,
+	  inspired by PHP.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://libtext.sourceforge.net/">libtext</a></h2>
+	<p>
+	  This library doesn't allow "binary" (!isgraph &amp;&amp; !isspace --
+	  so depends depending on global locale) characters. 
+	  Printf like function calls the host implementation. Has a large API
+	  for  just add, delete and substitue.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/firestring/">firestring</a></h2>
+	<p>
+	  Has a start pointer and length model, but it doesn't 
+	  allocate/reallocate memory itself. So the user has to do half the work
+	  of the library to pre-allocate the right ammount of data before using
+	  the functions. The printf like function has almost no resemblence to 
+	  the ISO printf function, which is bound to confuse the user.
+	  It provides a function to do a read, which is nice. Also has a
+	  simple "parse configuration file" function.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://freshmeat.net/projects/mstringandmstringarray/">MString</a></h2>
+	<p>
+	  This is a C++ library designed to be compatible with the string 
+	  library that comes with the Microsoft Foundation Classes. <b>Each
+	  character</b> in the string is actually a <b>class itself</b>. This
+	  could probably be fixed without changing source compatability.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www2.dystance.net:8080/ping/pingutil/pingutil.html#String%20Manipulation%20and%20Parsing%20Functions">pingutil</a></h2>
+	<p>
+	  This library is a slightly saner version of the ISO C str* functions,
+	  with a few extentions. It works with (char *) as the native type,
+	  and doesn't do automatic allocation ... but <b>almost</b> all
+	  functions are size limited so buffer overflows aren't a big concern,
+	  but losing data is.
+	  The library has some vector functions, but it uses (char **) as the
+	  vector type and alters the original string in it's verison of split.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://herd.plethora.net/~seebs/c/sz.html">Peter Seebs -- sz</a></h2>
+	<p>
+	  An interesting library, it uses an opaque type for the string which
+	  is suitably non simplistic internally to allow quite a few
+	  opimisations. The function names all obey the 6 character C89 
+	  identifier limit (a limitation Vstr completely ignores so as to
+	  be more consistant, and hopefuly more readable).
+	  It's not obvious if it would use more or less memory 
+	  than Vstr ... my guess is more, but then I'm biased.
+	</p>
+	<p>
+	  It uses (void *) in most places and takes either a C string or an 
+	  (sz *) [the internal opaque type]. It distinguishes between these by
+	  a 2 character magic constant, so if you try and use a C string with 
+	  that constant life becomes interesting. There is no printf like 
+	  function.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://vsftpd.beasts.org/">vsftpd</a></h2>
+	<p>
+	  This has a fairly well abstracted namespace, esp. considering it is
+	  only bundled with the <emp>vsftpd</emp> ftp server. It works on the
+	  start pointer and length model, does dynamic resizing of strings and
+	  has quite a few utility functions. The only missing piece is a printf
+	  like function (the vsftpd code itself just calls snprintf() and then
+	  only for extremly simple cases). Failure to allocate memory calls
+	  abort().
+	</p>
+	<p>
+	  It is somewhat ammusing that even though this isn't a string library, 
+	  it is much better than most of the other string libraries here.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/cordh.txt">Bohem GC string</a></h2>
+	<p> This is the string implementation that comes with the Boehm
+	  Garbage Collector (and so is included in gcc etc.). It pretty much
+	  requires a GC as you can't "alter"
+	  a string, only make a new string with the alterations in it.
+	  Sharing data is a main point of this implementation, however again
+	  it isn't possible to do things directly on a "substring" you must
+	  first create that substring as a first class string.
+	</p>
+	<p>
+	  Although the basic APIs are there, add/del/sub/etc. there are few
+	  added functions to help you deal with the strings (although it does
+	  provide something equivilent to vstr_sc_read_len_file() but it uses
+	  stdio, and there isn't any good way to deal with IO errors).
+	</p>
+	<p>Also note that the printf implementation just calls the host
+	  implementation of sprintf/asprintf/etc. directly for anything that
+	  isn't one of the 's', 'r', 'c' or 'n' format specifiers. The custom
+	  format specifier of 'r' is the only one possible and will make gcc
+	  barf warnings if you use it. It also doesn't allow i18n argument
+	  number specifiers.
+	  This is an "old" implementation though, with the last copyright from
+	  1994 so some of these problems probably stem from that.
+	</p>
+      </li>
+
+      <li>
+	<h2> <a href="http://www.fefe.de/libowfat/">libowfat</a></h2>
+	<p>
+	  This is a reimplementation of the functions in qmail, but under a GPL
+	  license. 
+	  It does have a stralloc set of calls
+	  that operate on a start pointer and length model, they do dynamically
+	  reallocate memory and pass memory failure back to the caller.
+	  As with all DJB code though, the API is written as a set of small
+	  atomic operations. For instance printf like functionality is 
+	  implemented over 12 different functions named fmt_* (which don't
+	  check for overflows, but <b>some</b> are also reimplemented as a as
+	  stralloc functions). This design makes using the API much more clumsy,
+	  for a minor speedup, makes doing i18n almost impossible and goes
+	  directly against "premature optimization is bad".
+	</p>
+	<p>
+	  It's worth nothing that although the stralloc functions deal with 
+	  dynamic memory a lot of the other function ignore bounds checking
+	  and/or assume things are terminated with a '\0' character. Even more
+	  so than the DJB functions, although this is probably bad just
+	  implementation rather than deliberate -- but then why would you
+	  think you can write good code with an interface when the
+	  implementor can't	  
+	  (for 
+	  instance the scan_long and scan_8long functions are almost completely
+	  broken in libowfat ... but fine in qmail).
+	</p>
+      </li>      
+
+      <li>
+	<h2> <a href="http://www.postfix.org/ftp-sites.html">Wietse Venema -- postfix</a></h2>
+	<p>
+	  This is a set of functions used in the <emp>postfix</emp> MTA daemon
+	  but obviously well abstracted so that they can be easily used in 
+	  other applications. It works on a pointer and length model, although
+	  it also has "end pointer" and "amount left" variables. The 
+	  abstraction seems somewhat weird to me, as the underlying objects 
+	  want to look and act like (FILE *) and so have IO error flags ... and
+	  then on top of this are built Objects that are variable length 
+	  strings and they'll never do any IO.	  
+	</p>
+	<p>
+	  It is upto the user of the library whether you have a fixed or 
+	  dynamically sized buffer, and I think you can return 
+	  failure if memory isn't available but the vstream.c and vstring.c 
+	  implementations just assumes this can't happen.
+	  The functions to act on the buffer are just copied APIs of ISO C 
+	  (FILE *) manipulators, str* and mem* (with the addition of 
+	  memcat()). Importantly there are no interfaces for removing data 
+	  or substituting data in the string (you could probably do remove from
+	  the end of the string easily by playing with the pointers and 
+	  counters, but you'd have to write your own function for it).
+	  There is no way to access anything but the entire string, using the 
+	  API, or add data anywhere but the end of the string.
+	</p>
+	<p>
+	  There is an interface for using netstrings, but instead of the simple
+	  begin and end semantics in Vstr the interface overloads the string 
+	  interface ... so you have to say netstring_memcpy( ... ) which will
+	  copy data and encapsulate it as a netstring.
+	  It's also worth noting that the counters are of type "int", and the
+	  negative bit is used in the code ... so it's not possible to have a
+	  string bigger than INT_MAX.
+	</p>
+	<p>
+	  The printf like functions are implemented by parsing the format
+	  string and then passing known good formats through to 
+	  the host implementation sprintf() (after requesting enough space to 
+	  hold them). It doesn't accept long long or 
+	  long doulbe types, i18n 
+	  argument number specifiers or thousand seperator modifiers.
+	</p>
+      </li>      
+
+      <li>
+	<h2> <a href="http://doc.trolltech.com/3.0/qstring.html">Qt</a></h2>
+	<p>
+	  Again, C++ ... uses a pointer and length model but allows reference 
+	  counting on entire QString objects. This means that an assignment
+	  of an entire string from a to b will share most of the storage, but
+	  a substring or altering any part of either object will nullify all 
+	  sharing.
+	  The printf like function has an internal implementation for parsing 
+	  the format string (which doesn't allow i18n argument number
+	  specifiers --
+	  or even l ll h hh size modifiers), but it also
+	  calls out to the host sprintf() implementation for numbers, pointers 
+	  and doubles.
+	</p>
+      </li>      
+
+      <li>
+	<h2> <a href="http://www-wales.ch.cam.ac.uk/doc/mimelib-1.1.2/string.html">Mimelib DwString</a></h2>
+	<p>
+	  C++ ... uses a pointer and length model but allows reference 
+	  counting the Dwtring objects. This means that an assignment
+	  of an entire string, or a substring from a to b will share most of
+	  the storage, but altering any part of either object will nullify all 
+	  sharing. Apart from that it is much like QString in the QT library.
+	</p>
+      </li>
+	
+
+    </ul>
+
+
+    <p> Any corrections or omissions you see in the above, feel free to contact 
+      me at the address below </p>
+
+    <hr>
+    <address><a href="mailto:james@and.org">James Antill</a></address>
+<!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
+<!-- hhmts start -->
+Last modified: Thu Oct  3 18:06:25 EDT 2002
+<!-- hhmts end -->
+  </body>
+</html>

@@ -521,7 +521,7 @@ static int vstr__cache_cstr_check(Vstr_base *base)
 {
   Vstr__cache_data_cstr *data = NULL;
   
-  if (!(data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_cstr)))
+  if (!(data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_cstr)))
     return (TRUE);
   if (!data->ref)
     return (TRUE);
@@ -983,12 +983,12 @@ static int vstr__base_cache_pos(const Vstr_base *base,
   if (!base->cache_available)
     return (FALSE);
 
-  if (!(data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)))
+  if (!(data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)))
   {
     if (!(data = malloc(sizeof(Vstr__cache_data_pos))))
       return (FALSE);
 
-    if (!vstr_nx_cache_set_data(base, base->conf->cache_pos_cb_pos, data))
+    if (!vstr_nx_cache_set(base, base->conf->cache_pos_cb_pos, data))
     {
       free(data);
       return (FALSE);
@@ -1040,7 +1040,7 @@ Vstr_node *vstr__base_pos(const Vstr_base *base, size_t *pos,
   return (base->end);
  }
 
- if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)) &&
+ if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)) &&
      data->node && (data->pos <= orig_pos))
  {
   scan = data->node;

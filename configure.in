@@ -43,9 +43,7 @@ AC_MSG_RESULT(${T_MD}$1:${T_ME})
 
 # Scary shtool stuff... borowed from pth-1.0
 if test ".`echo dummy $@ | grep help`" = .; then
-    SHTOOL="\$(TOP)/shtool"
-    AC_SUBST(SHTOOL)
-    ac_shtool="./shtool"
+    ac_shtool="$srcdir/shtool"
     T_MD="`$ac_shtool echo -n -e %B 2>/dev/null`"
     T_ME="`$ac_shtool echo -n -e %b 2>/dev/null`"
     echo "Configuring ${T_MD}vstr${T_ME}, (Library)${T_ME}"
@@ -67,7 +65,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=16
+VSTR_MICRO_VERSION=17
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -98,11 +96,12 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_EXEEXT
 
-# No idea if this is right...
+# This could be better...
 CCAS=gcc
 AC_SUBST(CCAS)
-CCASFLAGS=
+CCASFLAGS="\$(DEFAULT_INCLUDES) \$(INCLUDES)"
 AC_SUBST(CCASFLAGS)
+
 
 TWOCAN_CONF_MSG(Libtool stuff)
 
@@ -1247,6 +1246,67 @@ case x$local_cv_has_attrib_deprecated in
 xyes) AC_DEFINE(HAVE_ATTRIB_DEPRECATED) ;;
 esac
 
+AC_MSG_CHECKING(if malloc is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_malloc,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int abcd(void *p) { return (!p); }
+void *func(void) __attribute__((malloc)) ; 
+void *func(void) { return (malloc(4)); }
+
+int main() {
+ return abcd(func());
+}],
+local_cv_has_attrib_malloc=yes,
+local_cv_has_attrib_malloc=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_malloc)
+case x$local_cv_has_attrib_malloc in
+xyes) AC_DEFINE(HAVE_ATTRIB_MALLOC) ;;
+esac
+
+AC_MSG_CHECKING(if nonnull is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_nonnull,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int func(char *) __attribute__((nonnull)) ; 
+int func(char *abcd) { return (!abcd); }
+
+int main() {
+ return func("abcd");
+}],
+local_cv_has_attrib_nonnull=yes,
+local_cv_has_attrib_nonnull=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_nonnull)
+case x$local_cv_has_attrib_nonnull in
+xyes) AC_DEFINE(HAVE_ATTRIB_NONNULL) ;;
+esac
+
+AC_MSG_CHECKING(if pure is a valid attribute)
+AC_CACHE_VAL(local_cv_has_attrib_pure,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+
+int abcd(int n)  __attribute__((pure)) ;
+int abcd(int n) { return (!n); }
+
+int main() {
+ return abcd(2);
+}],
+local_cv_has_attrib_pure=yes,
+local_cv_has_attrib_pure=no,
+)])
+AC_MSG_RESULT($local_cv_has_attrib_pure)
+case x$local_cv_has_attrib_pure in
+xyes) AC_DEFINE(HAVE_ATTRIB_PURE) ;;
+esac
+
 case x$local_cv_have_tst_noattr_visibility in
  xfalse)
 AC_MSG_CHECKING(if visibility is a valid attribute)
@@ -1271,25 +1331,8 @@ case x$local_cv_has_attrib_visibility in
 xyes) AC_DEFINE(HAVE_ATTRIB_VISIBILITY) ;;
 esac
 
-AC_MSG_CHECKING(if nonnull is a valid attribute)
-AC_CACHE_VAL(local_cv_has_attrib_nonnull,[
-AC_TRY_RUN([
-#include <stdlib.h>
-#include <stdio.h>
 
-int func(char *) __attribute__((nonnull)) ; 
-int func(char *abcd) { return (!abcd); }
 
-int main() {
- return func("abcd");
-}],
-local_cv_has_attrib_nonnull=yes,
-local_cv_has_attrib_nonnull=no,
-)])
-AC_MSG_RESULT($local_cv_has_attrib_nonnull)
-case x$local_cv_has_attrib_nonnull in
-xyes) AC_DEFINE(HAVE_ATTRIB_NONNULL) ;;
-esac
 CFLAGS=$XCFLAGS
 # End testing attributes ... turn CFLAGS back to normal
 

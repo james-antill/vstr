@@ -1,6 +1,6 @@
 ref_del
 ref_add
-cache_get_data
+cache_get
 add_buf
 del
 sects_add

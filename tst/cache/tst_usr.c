@@ -29,13 +29,13 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
   const size_t end_pos = (pos + len - 1);
   const size_t data_end_pos = (data->pos + data->len - 1);
 
+  --called_cache_cb;
+  
   if (type == VSTR_TYPE_CACHE_FREE)
   {
     free(data);
     return (NULL);
   }
-
-  --called_cache_cb;
   
   if (!data->pos)
     return (data);
@@ -119,7 +119,7 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
 static size_t xvstr_srch_chr_fwd(Vstr_base *base, size_t pos, size_t len,
                                  char srch)
 {
-  struct tst_cache_chr *data = vstr_cache_get_data(base, tst_cache_srch_pos);
+  struct tst_cache_chr *data = vstr_cache_get(base, tst_cache_srch_pos);
 
   if (data)
   {
@@ -194,7 +194,7 @@ static size_t xvstr_srch_chr_fwd(Vstr_base *base, size_t pos, size_t len,
   
   data->found_at = vstr_srch_chr_fwd(base, pos, len, srch);
   
-  if (!vstr_cache_set_data(base, tst_cache_srch_pos, data))
+  if (!vstr_cache_set(base, tst_cache_srch_pos, data))
   {
     size_t found_at = data->found_at;
     
@@ -217,8 +217,8 @@ static size_t xvstr_srch_chr_fwd(Vstr_base *base, size_t pos, size_t len,
 
 int tst(void)
 {
-  tst_cache_srch_pos = vstr_cache_add_cb(s1->conf, "/tst_usr/srch_fwd",
-                                         tst_cache_cb);
+  tst_cache_srch_pos = vstr_cache_add(s1->conf, "/tst_usr/srch_fwd",
+                                      tst_cache_cb);
   if (!tst_cache_srch_pos)
     die();
 
@@ -300,6 +300,15 @@ int tst(void)
 
   if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
     return (10);
+
+  ++called_cache_cb;
+  vstr_cache_cb_free(s1, tst_cache_srch_pos);
+  CB_NORM_CHECK();
+
+  tst_in_cache = NONE;
+  
+  if (xvstr_srch_chr_fwd(s1, 1, s1->len, '!') != strlen("The tester!"))
+    return (11);
 
   return (0);
 }

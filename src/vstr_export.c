@@ -267,7 +267,7 @@ Vstr_ref *vstr_nx_export_ref(const Vstr_base *base, size_t pos, size_t len,
     Vstr__cache_data_cstr *data = NULL;
     unsigned int off = base->conf->cache_pos_cb_cstr;
     
-    if ((data = vstr_nx_cache_get_data(base, off)) && data->ref)
+    if ((data = vstr_nx_cache_get(base, off)) && data->ref)
     {
       if (pos >= data->pos)
       {

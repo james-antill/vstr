@@ -65,6 +65,10 @@ unsigned int \fBvstr_num\fR(const struct Vstr_base *, size_t, size_t);
 .ti \w'  'u
 char *\fBvstr_export_cstr_ptr\fR(const struct Vstr_base *, size_t, size_t);
 .br
+.in \w'  char *\fBvstr_export_cstr_malloc\fR('u
+.ti \w'  'u
+char *\fBvstr_export_cstr_malloc\fR(const struct Vstr_base *, size_t, size_t);
+.br
 .in \w'  void \fBvstr_export_cstr_buf\fR('u
 .ti \w'  'u
 void \fBvstr_export_cstr_buf\fR(const struct Vstr_base *, size_t, size_t, void *, size_t);
@@ -685,25 +689,29 @@ void *\fBVSTR_FMT_CB_ARG_PTR\fR(struct Vstr_fmt_spec *, size_t);
 Paramter[2] \fBVSTR_FMT_CB_ARG_VAL\fR(struct Vstr_fmt_spec *, <symbol>, size_t);
 .sp
 .br
-.in \w'  void \fBvstr_cache_sub\fR('u
+.in \w'  unsigned int \fBvstr_cache_add\fR('u
 .ti \w'  'u
-void \fBvstr_cache_sub\fR(const struct Vstr_base *, size_t, size_t);
+unsigned int \fBvstr_cache_add\fR(struct Vstr_conf *, const char *, void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int, void *));
 .br
-.in \w'  unsigned int \fBvstr_cache_add_cb\fR('u
+.in \w'  void *\fBvstr_cache_get\fR('u
 .ti \w'  'u
-unsigned int \fBvstr_cache_add_cb\fR(struct Vstr_conf *, const char *, void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int, void *));
+void *\fBvstr_cache_get\fR(const struct Vstr_base *, unsigned int);
 .br
-.in \w'  void *\fBvstr_cache_get_data\fR('u
+.in \w'  int \fBvstr_cache_set\fR('u
 .ti \w'  'u
-void *\fBvstr_cache_get_data\fR(const struct Vstr_base *, unsigned int);
-.br
-.in \w'  int \fBvstr_cache_set_data\fR('u
-.ti \w'  'u
-int \fBvstr_cache_set_data\fR(const struct Vstr_base *, unsigned int, void *);
+int \fBvstr_cache_set\fR(const struct Vstr_base *, unsigned int, void *);
 .br
 .in \w'  unsigned int \fBvstr_cache_srch\fR('u
 .ti \w'  'u
 unsigned int \fBvstr_cache_srch\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  void \fBvstr_cache_cb_sub\fR('u
+.ti \w'  'u
+void \fBvstr_cache_cb_sub\fR(const struct Vstr_base *, size_t, size_t);
+.br
+.in \w'  void \fBvstr_cache_cb_free\fR('u
+.ti \w'  'u
+void \fBvstr_cache_cb_free\fR(const struct Vstr_base *, unsigned int);
 .sp
 .br
 .in \w'  int \fBvstr_sc_fmt_cb_beg\fR('u
@@ -1356,7 +1364,7 @@ Type\fB[3]\fR: size_t
 .br
 \fBFunction: \fR vstr_export_cstr_ptr()
 .br
-Returns: a pointer to an array of characters
+Returns: A pointer to an array of characters, terminated by NUL
 .br
 Type: char *
 
@@ -1390,7 +1398,51 @@ Type\fB[3]\fR: size_t
 \fBNote:\fR
 
 .br
-  If you alter the Vstr in anyway then the returned pointer will point to free()'d memory. To get a reference to this data use vstr_export_cstr_ref() instead.
+  If you alter the Vstr in anyway then the returned pointer may point to free()'d memory. To get a reference to this data use vstr_export_cstr_ref() instead.
+.br
+  If you want to make sure that the cached data is gone from the Vstr string, cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+.br
+  Any _NON data in the Vstr will be uninitialised data in the "C string".
+.br
+  If there are any 0 bytes in the Vstr they will make the string look shorter than it really is to normal C/POSIX string functions.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_export_cstr_malloc()
+.br
+Returns: A malloc'd pointer to an array of characters, terminated by NUL
+.br
+Type: char *
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length from position in the Vstr
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to export a malloc'd pointer to an array of characters of length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string". You will need to pass the pointer to free(), when you are done with it.
+.br
+  Each call will return a different pointer.
+.br
+  If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
+.br
+  The function will return NULL if it needs to allocate memory and cannot do so.
+.sp
+\fBNote:\fR
+
 .br
   Any _NON data in the Vstr will be uninitialised data in the "C string".
 .br
@@ -1433,7 +1485,7 @@ Type\fB[5]\fR: size_t
 \fBExplanation:\fR
 
 .br
-  This function is used to export a copt of the data in the Vstr string to a data array, the maximum ammount of data stored in the array will be of length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string". However the data before the terminator of the "C string" is limited to (Parameter[5] - 1).
+  This function is used to export a copy of the data in the Vstr string to a data array, the maximum ammount of data stored in the array will be of length (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string". However the data before the terminator of the "C string" is limited to (Parameter[5] - 1).
 .sp
 \fBNote:\fR
 
@@ -1484,6 +1536,8 @@ Type\fB[4]\fR: size_t *
 .sp
 \fBNote:\fR
 
+.br
+  If you want to make sure that the cached data is gone from the Vstr string, cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
 .br
   Any _NON data in the Vstr will be uninitialised data in the "C string".
 .br
@@ -7055,41 +7109,7 @@ Type\fB[3]\fR: size_t
 
 .ti -2
 .br
-\fBFunction: \fR vstr_cache_sub()
-.br
-Returns: Nothing
-.br
-Type: void
-
-.br
-Parameter\fB[1]\fR: Vstr string
-.br
-Type\fB[1]\fR: const struct Vstr_base *
-
-.br
-Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
-.br
-Type\fB[2]\fR: size_t
-
-.br
-Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
-.br
-Type\fB[3]\fR: size_t
-
-.br
-\fBExplanation:\fR
-
-.br
-  If you are substituting data in a vstr (from an iovec export, followed by a readv for instance or changing the data in a mmap()'d area) then you can use this function to notify the vstr caching mechanisms.
-.sp
-\fBNote:\fR
-
-.br
-  This is a last resort function, to make the hard things possible, use vstr_sub_*() functions instead.
-
-.ti -2
-.br
-\fBFunction: \fR vstr_cache_add_cb()
+\fBFunction: \fR vstr_cache_add()
 .br
 Returns: Cookie reference for cache function
 .br
@@ -7127,7 +7147,7 @@ Type\fB[3]\fR: void *(*)(const struct Vstr_base *, size_t, size_t, unsigned int,
 
 .ti -2
 .br
-\fBFunction: \fR vstr_cache_get_data()
+\fBFunction: \fR vstr_cache_get()
 .br
 Returns: Data for cache function
 .br
@@ -7151,7 +7171,7 @@ Type\fB[2]\fR: unsigned int
 
 .ti -2
 .br
-\fBFunction: \fR vstr_cache_set_data()
+\fBFunction: \fR vstr_cache_set()
 .br
 Returns: TRUE on success and FALSE on failure
 .br
@@ -7206,6 +7226,69 @@ Type\fB[2]\fR: const char *
 
 .br
   This function will find a cache function name (Parameter[2]) and return the cookie reference for use in the other cache functions.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_cache_cb_sub()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Start position in the Vstr string (Parameter[1])
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length in the Vstr string (Parameter[1])
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  If you are substituting data in a vstr (from an iovec export, followed by a readv for instance or changing the data in a mmap()'d area) then you can use this function to notify the vstr caching mechanisms.
+.sp
+\fBNote:\fR
+
+.br
+  This is a last resort function, to make the hard things possible, use the vstr_sub_*() functions instead.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_cache_cb_free()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: const struct Vstr_base *
+
+.br
+Parameter\fB[2]\fR: Cookie reference for cache function
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  If you have generated cache data, this function will tell the cache function  to free that data.
+.sp
+\fBNote:\fR
+
+.br
+  A Cookie reference of "zero" means tell all cache functions to free cached data. Note that this can cause severe performance degradation if overly used.
 
 .SH Short cut helper functions
 

@@ -54,6 +54,8 @@
 #define VSTR_TYPE_FMT_UCHAR 1
 #define VSTR_TYPE_FMT_USHORT 2
 
+#define VSTR_TYPE_CACHE_NOTHING 0
+
 /* ISO C magic, converts a ptr to ->next into ->next->prev
  *   (even though ->prev doesn't exist) */
 #define VSTR__CONV_PTR_NEXT_PREV(x) \

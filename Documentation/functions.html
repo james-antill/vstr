@@ -41,6 +41,7 @@
 </ul><li><a href="#Functions%20to%20export%20vstr%20data">Functions to export vstr data</a>
 <ul>
 <li><a href="#vstr_export_cstr_ptr%28%29">vstr_export_cstr_ptr()</a>
+<li><a href="#vstr_export_cstr_malloc%28%29">vstr_export_cstr_malloc()</a>
 <li><a href="#vstr_export_cstr_buf%28%29">vstr_export_cstr_buf()</a>
 <li><a href="#vstr_export_cstr_ref%28%29">vstr_export_cstr_ref()</a>
 <li><a href="#vstr_export_iovec_ptr_all%28%29">vstr_export_iovec_ptr_all()</a>
@@ -224,11 +225,12 @@
 <li><a href="#VSTR_FMT_CB_ARG_VAL%28%29">VSTR_FMT_CB_ARG_VAL()</a>
 </ul><li><a href="#Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string">Functions for hooking into the cache system for the Vstr string</a>
 <ul>
-<li><a href="#vstr_cache_sub%28%29">vstr_cache_sub()</a>
-<li><a href="#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a>
-<li><a href="#vstr_cache_get_data%28%29">vstr_cache_get_data()</a>
-<li><a href="#vstr_cache_set_data%28%29">vstr_cache_set_data()</a>
+<li><a href="#vstr_cache_add%28%29">vstr_cache_add()</a>
+<li><a href="#vstr_cache_get%28%29">vstr_cache_get()</a>
+<li><a href="#vstr_cache_set%28%29">vstr_cache_set()</a>
 <li><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
+<li><a href="#vstr_cache_cb_sub%28%29">vstr_cache_cb_sub()</a>
+<li><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
 <li><a href="#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a>
@@ -469,7 +471,7 @@
 
 <a name="vstr_export_cstr_ptr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_export_cstr_ptr()
-</a><br>Returns: a pointer to an array of characters<br>Type: char *
+</a><br>Returns: A pointer to an array of characters, terminated by NUL<br>Type: char *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
@@ -482,9 +484,33 @@
 </p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If you alter the Vstr in anyway then the returned pointer will point to
+</p><p>  If you alter the Vstr in anyway then the returned pointer may point to
  free()'d memory. To get a reference to this data use vstr_export_cstr_ref()
  instead.
+</p><p>  If you want to make sure that the cached data is gone from the Vstr string,
+ cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
+</p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
+</p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
+ than it really is to normal C/POSIX string functions.
+
+
+<a name="vstr_export_cstr_malloc%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_export_cstr_malloc()
+</a><br>Returns: A malloc'd pointer to an array of characters, terminated by NUL<br>Type: char *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length from position in the Vstr<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to export a malloc'd pointer to an array of characters
+ of length (Parameter[3] + 1), the last byte will be a 0 to terminate the
+ "C string". You will need to pass the pointer to free(), when you are done
+ with it.
+</p><p>  Each call will return a different pointer.
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+</p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -499,7 +525,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to export a copt of the data in the Vstr string to a
+</p><p>  This function is used to export a copy of the data in the Vstr string to a
  data array, the maximum ammount of data stored in the array will be of length
  (Parameter[3] + 1), the last byte will be a 0 to terminate the "C string".
  However the data before the terminator of the "C string" is limited to
@@ -532,6 +558,8 @@
 </p><p>  The function will return NULL if it needs to allocate memory and cannot do so.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If you want to make sure that the cached data is gone from the Vstr string,
+ cache then you can call vstr_cache_free() on the cookie from "/vstr__/cstr".
 </p><p>  Any _NON data in the Vstr will be uninitialised data in the "C string".
 </p><p>  If there are any 0 bytes in the Vstr they will make the string look shorter
  than it really is to normal C/POSIX string functions.
@@ -2833,24 +2861,8 @@
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20cache%20system%20for%20the%20Vstr%20string"><h2>Functions for hooking into the cache system for the Vstr string</h2>
 </a>
-<a name="vstr_cache_sub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_cache_sub()
-</a><br>Returns: Nothing<br>Type: void
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
-</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  If you are substituting data in a vstr (from an iovec export, followed by a
- readv for instance or changing the data in a mmap()'d area) then you can use
- this function to notify the vstr caching mechanisms.
-
-</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This is a last resort function, to make the hard things possible, use
- vstr_sub_*() functions instead.
-
-
-<a name="vstr_cache_add_cb%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_cache_add_cb()
+<a name="vstr_cache_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cache_add()
 </a><br>Returns: Cookie reference for cache function<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Name of cache function<br>Type<strong>[2]</strong>: const char *
@@ -2872,8 +2884,8 @@
  is NULL.
 
 
-<a name="vstr_cache_get_data%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_cache_get_data()
+<a name="vstr_cache_get%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cache_get()
 </a><br>Returns: Data for cache function<br>Type: void *
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for cache function<br>Type<strong>[2]</strong>: unsigned int
@@ -2881,8 +2893,8 @@
 </p><p>  This function will get the data for the cache function.
 
 
-<a name="vstr_cache_set_data%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
-<strong>Function: </strong> vstr_cache_set_data()
+<a name="vstr_cache_set%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cache_set()
 </a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for cache function<br>Type<strong>[2]</strong>: unsigned int
@@ -2903,6 +2915,36 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function will find a cache function name (Parameter[2]) and return the
  cookie reference for use in the other cache functions.
+
+
+<a name="vstr_cache_cb_sub%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cache_cb_sub()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  If you are substituting data in a vstr (from an iovec export, followed by a
+ readv for instance or changing the data in a mmap()'d area) then you can use
+ this function to notify the vstr caching mechanisms.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This is a last resort function, to make the hard things possible, use the
+ vstr_sub_*() functions instead.
+
+
+<a name="vstr_cache_cb_free%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_cache_cb_free()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for cache function<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  If you have generated cache data, this function will tell the cache function 
+ to free that data.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  A Cookie reference of "zero" means tell all cache functions to free cached
+ data. Note that this can cause severe performance degradation if overly used.
 
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>

@@ -19,27 +19,98 @@
   <body bgcolor="#FFFFFF">
     <h1>Vstr documentation -- overview</h1>
 
-<!-- this is basically copy and paste from the .txt file... */ ... errr -->
-
-<table width="90%"><tr><td bgcolor="#DDDDFF">
+    <table width="90%"><tr><td bgcolor="#DDDDFF">
 	  <h2>About</h2>
 	</td></tr></table>
+    
+    <table width="80%"><tr><td>
+	  <p>
+	    This is a string library, it's designed so you can work optimally
+	    with readv()/writev() for input/output. This means that, for 
+	    instance, you can readv() data to the end of the string and
+	    writev() data from the begining of the string without having to
+	    allocate or move memory. It also
+	    means that the library is completely happy with data that has
+	    multiple zero bytes in it.
+	  </p>
+	  <p>
+	    This design constraint means that unlike
+	    most string libraries Vstr doesn't have an internal representation 
+	    of the string where everything can be accessed from a single
+	    (char *) pointer in C, the internal representation is of multiple
+	    "blocks" or nodes each carrying some of the data for the string.
+	    This model of representing the data also means that as a string gets
+	    bigger the Vstr memory usage only goes up linearly and has no 
+	    inherant copying (due to other string libraries increasing space
+	    for the string via. realloc() the memory usage can almost double and
+	    require a complete copy of the string).
+	  </p>
+	  <p>
+	    It also means that adding, substituting or moving data anywhere in
+	    the string can be optimised a lot, to require O(1) copying instead 
+	    of O(n).
+	    Talking about O(1), it's worth remembering that if you have a 
+	    Vstr string with caching enabled a writev() call will take 
+	    constant time as well (the cat example below shows and example of
+	    this, the write call is <emp>always constant time</emp>.
+	  </p>
+	  
+	  As well as having features directly related to doing IO well
+	  it contains functions for:
+	  <ul>
+	    <li> splitting of strings into parameter/record chunks (ala. perl).
+	    <li> has custom printf format specifiers (and includes 
+	      pre-written custom format specifiers for ipv4 and ipv6 addresses,
+	      Vstr strings and more).
+	    <li> substituting data in a Vstr string
+	    <li> moving data from one Vstr string to another (or within a Vstr
+	      string).
+	    <li> comparing strings (without regard for case, or taking into
+	      account version information)
+	    <li> searching for data in strings (with or without regard for 
+	      case).
+	    <li> counting spans of data in a string (the equivalent of
+	      strspn() in ISO C).
+	    <li> converting data in a Vstr (Ie. delete/substitute unprintable 
+	      characters or makeing a Vstr string lowercase/uppercase).
+	    <li> parsing data from a Vstr string (Ie. numbers, or ipv4 
+	      addresses).
+	    <li> easily parsing and wrapping outgoing data in netstrings, for
+	      fast and simple (and hence less error prone) network communication
+	    <li> the ability to cache aspects of data about a Vstr string, to
+	      both simplify and speedup use of the string.
+	  </ul>
+	  It also has a number of functions for exporting data from a
+	  Vstr string so you can easily use data generted with the Vstr 
+	  outside of the library.
+	  
+	  <p>
+	    The other unusual aspect of the Vstr string library is that it 
+	    attaches a notion of a locale to the string configuration
+	    and not globally (as POSIX, and pretty much everything else does).
+	    This means that you can do Network IO in the C locale and
+	    user IO in the users locale.
+	  </p>
 
-<table width="80%"><tr><td><p>
+	  <p>
+	    A last point that shouldn't be unusual, but is. The Vstr string 
+	    library comes with a "make check" test suite with over <emp>four 
+	    thousand lines</emp> of code in it, so although you can never say 
+	    something is bug free you have an assurance that most things
+	    will work as advertised.
+	  </p>
+	    
+	  <p>
+	    For a comparison with other string libraries, see
+	    <a href="comparison.html">this page</a>.
+	  </p>
 
- This is a string library, it's designed so you can work optimally
-with readv()/writev() for input/output. As well as having features directly
-related to IO with strings, it does splitting of strings (ala. perl) and has
-custom printf format specifiers. It also attaches a notion of a locale to the
-string configuration itself ... so you can do Network IO in the C locale and
-user IO in the users locale.
-
-</p></td></tr>
+</td></tr>
 
 </table>
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2>Intro</h2>
+	  <h2>Reference Documentation</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td><p>
@@ -49,48 +120,31 @@ all constants are in <a href="constants.html">constants.html</a>, all public
 members of structures are in <a href="structs.html">structs.html</a>
 and the namespace rules are in <a href="namespace.html">namespace.html</a>.
 
-</p></td></tr><tr><td><p>
-
-Basically you should be able to get an overview of a function by looking at
-the functions.html file, and be able to get a deeper understanding by looking
-in the constants.html file (Ie. all constants should be passed to a function
-listed, so the more detailed information is listed with the constants -- not
-the functions).
+ Note that if you install the library the functions reference is available as
+the vstr man page.
 
 </p></td></tr>
 
 </table>
 
 <table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2>A very simple overview</h2>
+	  <h2>A simple and heavily commented example</h2>
 	</td></tr></table>
 
 <table width="80%"><tr><td><p>
 
- A very simple overview is that you call vstr_init() at the start of your
-program then you can create a (Vstr_base *) by calling vstr_make_base().
- You can then add/delete data from this string, using the provided functions,
-if you need to use all or part of the string with a "C string" interface
-then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
- To delete the entire vstr you call vstr_free_base() on the (Vstr_base *).
-
-</p></td></tr><tr><td><p>
-
- Also note that you might want to have a look at the examples/ directory.
-
-</p></td></tr>
-
-</table>
-
-<table width="90%"><tr><td bgcolor="#DDDDFF">
-	  <h2>Examples</h2>
-	</td></tr></table>
-
-<table width="80%"><tr><td><p>
-
- There are a couple of examples of how to use the vstr library, they can
-be seen on the examples directory or htmlized
-<a href="http://www.and.org/vstr/vstr-latest/vstr/examples/">here</a>.
+ To get a rough overview of how to use the library you can see heavily
+commented examples of a simple version of a
+<a href="vstr-latest/vstr/examples/ex_cat.c.html">Unix cat</a>program or a
+simple version of a
+<a href="vstr-latest/vstr/examples/ex_lookup_ip.c.html">hostname lookup</a>
+program.</p><p>
+ All the example programs are listed from the directory
+<a href="vstr-latest/vstr/examples/">HERE</a> and for the truley adventurous
+the "make check" test suite root is <a href="vstr-latest/vstr/tst/">HERE</a>
+(note that the test suite is written to try and break the Vstr string library,
+so although it uses all of the APIs it may not be code you want to copy and 
+paste into your programs/libraries).
 
 </p></td></tr>
 
@@ -100,7 +154,7 @@ be seen on the examples directory or htmlized
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Sep  2 16:16:31 EDT 2002
+Last modified: Thu Oct  3 18:29:53 EDT 2002
 <!-- hhmts end -->
   </body>
 </html>

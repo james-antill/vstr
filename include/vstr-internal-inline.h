@@ -39,8 +39,8 @@ extern inline struct Vstr_ref *vstr_nx_ref_add(struct Vstr_ref *tmp)
   return (tmp);
 }
 
-extern inline void *vstr_nx_cache_get_data(const struct Vstr_base *base,
-                                        unsigned int pos)
+extern inline void *vstr_nx_cache_get(const struct Vstr_base *base,
+                                   unsigned int pos)
 {
   if (!pos)
     return ((void *)0);
@@ -135,7 +135,7 @@ extern inline int vstr_nx_del(struct Vstr_base *base, size_t pos, size_t len)
         break;
     }
 
-    if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_cstr)))
+    if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_cstr)))
     {
       struct Vstr__cache_data_cstr *pdata = data;
       vstr_nx_ref_del(pdata->ref);
@@ -153,7 +153,7 @@ extern inline int vstr_nx_del(struct Vstr_base *base, size_t pos, size_t len)
       }
       VSTR__CACHE(base)->vec->v[num].iov_len -= len;
     }
-    if ((data = vstr_nx_cache_get_data(base, base->conf->cache_pos_cb_pos)))
+    if ((data = vstr_nx_cache_get(base, base->conf->cache_pos_cb_pos)))
     {
       struct Vstr__cache_data_pos *pdata = data;
       pdata->node = (void *)0;

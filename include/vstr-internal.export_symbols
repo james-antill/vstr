@@ -82,6 +82,7 @@ export_buf
 export_chr
 export_ref
 export_cstr_ptr
+export_cstr_malloc
 export_cstr_buf
 export_cstr_ref
 parse_short
@@ -102,10 +103,11 @@ sects_srch
 sects_foreach
 split_buf
 split_chrs
-cache_add_cb
+cache_add
 cache_srch
-cache_set_data
-cache_sub
+cache_set
+cache_cb_sub
+cache_cb_free
 fmt_add
 fmt_del
 fmt_srch

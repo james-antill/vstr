@@ -36,8 +36,8 @@ int tst(void)
                       vstr_export_cstr_ptr(s1, 1, s1->len)));
     
   memcpy(buf, "abcd", 4); /* alter the data at ptr */
-  vstr_cache_sub(s1, strlen(buf) + 1, strlen(buf));
-  vstr_cache_sub(s2, strlen(buf) + 1, strlen(buf)); /* should be nop */
+  vstr_cache_cb_sub(s1, strlen(buf) + 1, strlen(buf));
+  vstr_cache_cb_sub(s2, strlen(buf) + 1, strlen(buf)); /* should be nop */
   
   TST_B_TST(ret,  9, !VSTR_CMP_CSTR_EQ(s2, 1, s2->len, 
                                        vstr_export_cstr_ptr(s1, 1, s1->len)));

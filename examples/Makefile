@@ -4,12 +4,15 @@ CC=gcc
 #CC=diet gcc
 #CC=diet gcc3
 
+# VSTR_LIBS_DIR=../j/src/.libs
+VSTR_LIBS_DIR=../src/.libs
+
 OPTWARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-LOCAL=0
+LOCAL=1
 PROFILE=0
 # 1 == Static with libvstr, 2 == really static
-STATIC=0
+STATIC=1
 FAST=1
 
 ifeq ($(PROFILE),1)
@@ -17,10 +20,10 @@ PROF=-pg
 endif
 
 # Do these hacks so that valgrind is happy with a dynamic glibc
-LOCAL_LIBS=-L../src/.libs/ -lvstr
+LOCAL_LIBS=-L$(VSTR_LIBS_DIR) -lvstr
 ifeq ($(STATIC),1)
  ifeq ($(LOCAL),1)
-LOCAL_LIBS=../src/.libs/libvstr.a
+LOCAL_LIBS=$(VSTR_LIBS_DIR)/libvstr.a
  else
 ST=-static
  endif
@@ -45,7 +48,7 @@ endif
 TQ_CFLAGS=`gnome-config --cflags timer_q`
 TQ_LDFLAGS=`gnome-config --libs timer_q`
 
-FILES= ex_cat ex_hexdump ex_nl ex_mon_cp ex_slowcat # ex_tst1
+FILES= ex_cat ex_hexdump ex_nl ex_mon_cp ex_lookup_ip ex_slowcat # ex_tst1
 
 all: $(FILES)
 

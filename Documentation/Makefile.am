@@ -7,7 +7,6 @@ confexec_DATA =                         \
                 constants.html \
                 namespace.txt \
                 namespace.html \
-                overview.txt \
                 overview.html \
                 structs.txt \
                 structs.html \
@@ -19,4 +18,4 @@ man_MANS = \
 EXTRA_DIST = $(man_MANS)
 
 vstr.3: functions.3
-		cp -a functions.3 vstr.3
+		cp -a $(srcdir)/functions.3 vstr.3

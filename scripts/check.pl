@@ -7,6 +7,32 @@ use FileHandle;
 my $conf_fast_check = 1;
 # Do a full check, or group all disable options together
 my $conf_full_check = 0;
+my $conf_append_output = 0;
+my $conf_print_stdout_info = 0;
+
+while (scalar (@ARGV))
+{
+  if (0) {}
+  elsif ("full" eq $ARGV[0])
+  { $conf_full_check = 1; }
+  elsif ("nofull" eq $ARGV[0])
+  { $conf_full_check = 0; }
+  elsif ("fast" eq $ARGV[0])
+  { $conf_fast_check = 1; }
+  elsif ("nofast" eq $ARGV[0])
+  { $conf_fast_check = 0; }
+  elsif ("append" eq $ARGV[0])
+  { $conf_append_output = 1; }
+  elsif ("noappend" eq $ARGV[0])
+  { $conf_append_output = 0; }
+  elsif ("verbose" eq $ARGV[0])
+  { $conf_print_stdout_info = 1; }
+  elsif ("noverbose" eq $ARGV[0])
+  { $conf_print_stdout_info = 0; }
+  else
+  { last; }
+  shift @ARGV;
+}
 
 # From above.
 # 1, 0
@@ -40,6 +66,11 @@ sub print_cc_cflags()
     FOUT->print("CFLAGS=\"$cf\"\n");
     FERR->print("CC=\"$cc\"\n");
     FERR->print("CFLAGS=\"$cf\"\n");
+    if ($conf_print_stdout_info)
+    {
+      STDOUT->print("CC=\"$cc\"\n");
+      STDOUT->print("CFLAGS=\"$cf\"\n");
+    }
   }
 
 sub conf
@@ -53,9 +84,34 @@ sub conf
   FOUT->print("\n");
   FOUT->print("==== BEG: $p_args ====\n");
   FOUT->print("\n");
+  if ($conf_print_stdout_info)
+  {
+    STDOUT->print("BEG: $p_args\n");
+  }
 
   FERR->print("\n");
   FERR->print("==== BEG: $p_args ====\n");
+
+  my $c = undef;
+  my $v = undef;
+
+  if (0) {}
+  elsif (-x "./configure")
+    {
+      $c =  "./configure";
+      $v =  "./scripts/valgrind.sh";
+    }
+  elsif (-x "../configure")
+    {
+      $c =  "../configure";
+      $v =  "../scripts/valgrind.sh";
+    }
+
+  if (!defined ($c))
+    {
+      STDERR->print("Can't find configure.\n");
+      exit (1);
+    }
 
   if (!open(OLD_STDOUT, ">&STDOUT"))
     { die "dup2(OLD, STDOUT): $!\n"; }
@@ -68,7 +124,8 @@ sub conf
     { die "dup2(STDERR, FERR): $!\n"; }
 
   my $ok = 0;
-  if (!system("./configure", @_) &&
+
+  if (!system($c, @_) &&
       !system("make", "clean") &&
       !system("make", "check"))
     {
@@ -76,7 +133,7 @@ sub conf
       if (!open(STDOUT, ">&FERR"))
 	{ die "dup2(STDOUT, FERR): $!\n"; }
 
-      if (system("./scripts/valgrind.sh | egrep -C 2 '^=='"))
+      if (system("$v | egrep -C 2 '^=='"))
 	{
 	  $ok = 1;
 	}
@@ -208,7 +265,7 @@ sub tst_conf_7
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 
-if (scalar(@ARGV) && ($ARGV[0] eq "yes"))
+if ($conf_append_output)
   {
     if (!open(FOUT, ">> autocheck1.log"))
       { die "open(autocheck1.log): $!\n"; }
@@ -270,6 +327,11 @@ else
     tst_conf_1 (\@C_ls, \@C_dbg, \@tmp_no, \@C_dbl_g, \@C_dbl_h, \@C_dbl_n);
   }
 
+
+if ($conf_print_stdout_info)
+{
+  STDOUT->print("Updating documentation.\n");
+}
 
 # Make sure that the documentation is up to date.
 chdir("Documentation");

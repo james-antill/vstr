@@ -101,7 +101,6 @@ PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 SED_PATH = @SED_PATH@
 SENDMAIL_PATH = @SENDMAIL_PATH@
-SHTOOL = @SHTOOL@
 STRIP = @STRIP@
 TAR_PATH = @TAR_PATH@
 TRUE_PATH = @TRUE_PATH@
@@ -135,10 +134,11 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
-DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
-	Makefile.in NEWS TODO VERSION.in aclocal.m4 config.guess \
-	config.sub configure configure.in install-sh ltconfig ltmain.sh \
-	missing mkinstalldirs vstr.pc.in vstr.spec.in
+DIST_COMMON = README AUTHORS COPYING COPYING.LIB ChangeLog INSTALL \
+	Makefile.am Makefile.in NEWS TODO VERSION.in aclocal.m4 \
+	config.guess config.sub configure configure.in install-sh \
+	ltconfig ltmain.sh missing mkinstalldirs vstr.pc.in \
+	vstr.spec.in
 DIST_SUBDIRS = $(SUBDIRS)
 all: all-recursive
 

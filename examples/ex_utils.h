@@ -46,7 +46,7 @@
     if ((s1)->len > MAX_W_DATA_INCORE) \
       ex_utils_poll_stdout(); \
   } \
-} while (FALSE)
+} while ((s1)->len > MAX_W_DATA_INCORE)
 
 #define assert(x) do { if (!(x)) DIE("Assert=\"" #x "\""); } while (FALSE)
 

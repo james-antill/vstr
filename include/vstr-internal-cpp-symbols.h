@@ -82,6 +82,7 @@
 #define vstr_nx_export_chr vstr_export_chr
 #define vstr_nx_export_ref vstr_export_ref
 #define vstr_nx_export_cstr_ptr vstr_export_cstr_ptr
+#define vstr_nx_export_cstr_malloc vstr_export_cstr_malloc
 #define vstr_nx_export_cstr_buf vstr_export_cstr_buf
 #define vstr_nx_export_cstr_ref vstr_export_cstr_ref
 #define vstr_nx_parse_short vstr_parse_short
@@ -102,10 +103,11 @@
 #define vstr_nx_sects_foreach vstr_sects_foreach
 #define vstr_nx_split_buf vstr_split_buf
 #define vstr_nx_split_chrs vstr_split_chrs
-#define vstr_nx_cache_add_cb vstr_cache_add_cb
+#define vstr_nx_cache_add vstr_cache_add
 #define vstr_nx_cache_srch vstr_cache_srch
-#define vstr_nx_cache_set_data vstr_cache_set_data
-#define vstr_nx_cache_sub vstr_cache_sub
+#define vstr_nx_cache_set vstr_cache_set
+#define vstr_nx_cache_cb_sub vstr_cache_cb_sub
+#define vstr_nx_cache_cb_free vstr_cache_cb_free
 #define vstr_nx_fmt_add vstr_fmt_add
 #define vstr_nx_fmt_del vstr_fmt_del
 #define vstr_nx_fmt_srch vstr_fmt_srch
