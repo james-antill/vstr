@@ -27,6 +27,12 @@
 /* does "stat" + "struct stat" */
 # define stat64 VSTR_AUTOCONF_stat64
 #endif
+#ifdef VSTR_AUTOCONF_off64_t
+# define off64_t VSTR_AUTOCONF_off64_t
+#endif
+#ifdef VSTR_AUTOCONF_lseek64
+# define lseek64 VSTR_AUTOCONF_lseek64
+#endif
 
 
 /* **************************************************************** */
@@ -82,7 +88,7 @@
 
 #define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
 #define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-
+#define ASSERT_NOT_REACHED() assert(FALSE)
 
 
 /* ********************************* */
@@ -92,16 +98,21 @@
 /* limits on amount of data we keep in core -- can be overridden */
 /* Note that EX_UTILS_NO_USE_INPUT should be defined if Input IO isn't needed */
 #ifndef EX_MAX_R_DATA_INCORE
-# define EX_MAX_R_DATA_INCORE (8 * 1024)
+#define EX_MAX_R_DATA_INCORE (8 * 1024)
 #endif
 #ifndef EX_MAX_W_DATA_INCORE
-# define EX_MAX_W_DATA_INCORE (8 * 1024)
+#define EX_MAX_W_DATA_INCORE (8 * 1024)
+#endif
+
+#ifndef EX_UTILS_RET_FAIL
+#define EX_UTILS_RET_FAIL FALSE
 #endif
 
 #define IO_OK    0
 #define IO_BLOCK 1
 #define IO_EOF   2
 #define IO_NONE  3
+#define IO_FAIL  4
 
 #ifndef EX_UTILS_NO_USE_BLOCK
 /* block waiting for IO read, write or both... */
@@ -154,6 +165,9 @@ static int io_put(Vstr_base *io_w, int fd)
   {
     if (errno == EAGAIN)
       return (IO_BLOCK);
+
+    if (EX_UTILS_RET_FAIL)
+      return (IO_FAIL);
     
     err(EXIT_FAILURE, "write");
   }
@@ -187,12 +201,14 @@ static int io_get(Vstr_base *io_r, int fd)
   {
     unsigned int ern = 0;
 
-    vstr_sc_read_iov_fd(io_r, io_r->len, fd, 8, 16, &ern);
+    vstr_sc_read_iov_fd(io_r, io_r->len, fd, 56, 64, &ern);
     
     if (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
       return (IO_EOF);
     else if ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) && (errno == EAGAIN))
       return (IO_BLOCK);
+    else if (EX_UTILS_RET_FAIL && ern)
+      return (IO_FAIL);
     else if (ern)
       err(EXIT_FAILURE, "read");
   }
@@ -252,6 +268,9 @@ static int io_open(const char *filename)
 {
   int fd = EX_UTILS_OPEN(filename, O_RDONLY | O_NOCTTY);
 
+  if ((fd == -1) && EX_UTILS_RET_FAIL)
+    return (-1);
+  
   if (fd == -1)
     err(EXIT_FAILURE, "open(%s)", filename);
 
@@ -289,7 +308,7 @@ static Vstr_base *ex_init(Vstr_base **s2)
     stat_buf.st_blksize = 4096;
   
   if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
-                      stat_buf.st_blksize / 8))
+                      stat_buf.st_blksize / 32))
     warnx("Couldn't alter node size to match block size");
 
   /* create strings... */  
@@ -298,7 +317,7 @@ static Vstr_base *ex_init(Vstr_base **s2)
     errno = ENOMEM, err(EXIT_FAILURE, "Create string");
 
   /* create some data storage for _both_ of the above strings */
-  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
+  vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 64);
   
   /* Try and make stdout non-blocking, if it is a file this won't do anything */
   io_fd_set_o_nonblock(STDOUT_FILENO);

@@ -54,9 +54,7 @@
 #define CL_DNS_INIT(x, y) do {                  \
       (x)->io_w_serv = (y);                     \
       (x)->io_w_user = io_w;                    \
-      (x)->io_dbg    = cl_dbg_log;              \
-      (x)->dbg_fd    = cl_dbg_fd;               \
-      (x)->dbg_opt   = cl_dbg_opt;              \
+      (x)->io_dbg    = vlg;                     \
       (x)->opt_recur = cl_opt_recur;            \
     } while (FALSE)
 
@@ -88,35 +86,9 @@ static unsigned int server_timeout = (2 * 60); /* 2 minutes */
 static const char *server_ipv4_address = "127.0.0.1";
 static short server_port = 53;
 
-static unsigned int cl_dbg_opt = FALSE;
-static Vstr_base *cl_dbg_log = NULL;
-static int cl_dbg_fd = STDERR_FILENO;;
+static unsigned int cl_opt_recur = TRUE;
 
-static int cl_opt_recur = TRUE;
-
-
-static void dbg(const char *fmt, ... )
-   VSTR__COMPILE_ATTR_FMT(1, 2);
-static void dbg(const char *fmt, ... )
-{
-  Vstr_base *dlog = cl_dbg_log;
-  va_list ap;
-
-  if (!cl_dbg_opt)
-    return;
-  
-  va_start(ap, fmt);
-  vstr_add_vfmt(dlog, dlog->len, fmt, ap);
-  va_end(ap);
-
-  /* Only flush entire lines... */
-  while (vstr_srch_chr_fwd(dlog, 1, dlog->len, '\n'))
-  {
-    if (!vstr_sc_write_fd(dlog, 1, dlog->len, STDERR_FILENO, NULL) &&
-        (errno != EAGAIN))
-      err(EXIT_FAILURE, "dbg");
-  }
-}
+static Vlg *vlg = NULL;
 
 static void ui_out(Dns_base *d1, Vstr_base *pkt)
 {
@@ -136,13 +108,10 @@ static void cl_parse(struct con *con, size_t msg_len)
   if (!pkt)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
-  if (cl_dbg_opt > 1)
-  {
-    dbg("${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
-        '=', 33, msg_len, '=', 33);
-    dns_dbg_prnt_pkt(con->d1, pkt);
-    dbg("${rep_chr:%c%zu}\n", '-', 79);
-  }
+  vlg_dbg1(vlg, "${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
+           '=', 33, msg_len, '=', 33);
+  dns_dbg_prnt_pkt(con->d1, pkt);
+  vlg_dbg1(vlg, "${rep_chr:%c%zu}\n", '-', 79);
   
   ui_out(con->d1, pkt);
   vstr_free_base(pkt);
@@ -163,8 +132,8 @@ static int cl_recv(struct con *con)
     {
       if (msg_len > CL_PACKET_MAX)
       {
-        dbg("ERROR-RECV-MAX: fd=%d len=%zu\n",
-            SOCKET_POLL_INDICATOR(con->ev->ind)->fd, msg_len);
+        vlg_dbg2(vlg, "ERROR-RECV-MAX: fd=%d len=%zu\n",
+                 SOCKET_POLL_INDICATOR(con->ev->ind)->fd, msg_len);
         return (FALSE);
       }
       
@@ -341,15 +310,15 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
 {
   const int bad_poll_flags = (POLLERR | POLLHUP | POLLNVAL);
 
-  dbg("BEG ready = %u\n", ready);
+  vlg_dbg2(vlg, "BEG ready = %u\n", ready);
   if (io_ind_r &&
       SOCKET_POLL_INDICATOR(io_ind_r)->revents & bad_poll_flags)
   {
     --ready;
     
     close(SOCKET_POLL_INDICATOR(io_ind_r)->fd);
-    dbg("ERROR-POLL-IO_R(%d):\n",
-        SOCKET_POLL_INDICATOR(io_ind_r)->revents);
+    vlg_dbg2(vlg, "ERROR-POLL-IO_R(%d):\n",
+             SOCKET_POLL_INDICATOR(io_ind_r)->revents);
     socket_poll_del(io_ind_r);
     io_ind_r = 0;
   }
@@ -358,8 +327,8 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
     --ready;
     
     close(SOCKET_POLL_INDICATOR(io_ind_w)->fd);
-    dbg("ERROR-POLL-IO_W(%d):\n",
-        SOCKET_POLL_INDICATOR(io_ind_w)->revents);
+    vlg_dbg2(vlg, "ERROR-POLL-IO_W(%d):\n",
+             SOCKET_POLL_INDICATOR(io_ind_w)->revents);
     socket_poll_del(io_ind_w);
     io_ind_w = 0;
   }
@@ -387,7 +356,7 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
       default:
         break;
     }
-    dbg("READ UI\n");
+    vlg_dbg2(vlg, "READ UI\n");
   }
   else if (io_ind_w)
     ui_parse();
@@ -403,7 +372,7 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
     
     if (!io_w->len)
       SOCKET_POLL_INDICATOR(io_ind_w)->events &= ~POLLOUT;
-    dbg("WRITE UI\n");
+    vlg_dbg2(vlg, "WRITE UI\n");
   }
 
   return (ready);
@@ -413,8 +382,7 @@ static void usage(const char *program_name, int tst_err)
 {
   fprintf(tst_err ? stderr : stdout, "\n Format: %s [-chmtwV] <?>\n"
           " --help -h         - Print this message.\n"
-          " --debug -d        - Enable/disable debug info.\n"
-          " --output -o       - Output debug to filename instead of stderr.\n"
+          " --debug -d        - Enable debug info.\n"
           " --clients -c      - Number of connections to make.\n"
           " --host -H         - IPv4 host address to send DNS queries to.\n"
           " --port -P         - Port to send DNS queries to.\n"
@@ -442,7 +410,6 @@ static void cl_cmd_line(int argc, char *argv[])
    {"host", required_argument, NULL, 'H'},
    {"port", required_argument, NULL, 'P'},
    {"nagle", optional_argument, NULL, 'n'},
-   {"output", required_argument, NULL, 'o'},
    {"recursive", optional_argument, NULL, 'R'},
    {"timeout", required_argument, NULL, 't'},
    {"version", no_argument, NULL, 'V'},
@@ -457,7 +424,7 @@ static void cl_cmd_line(int argc, char *argv[])
       program_name = argv[0];
   }
 
-  while ((optchar = getopt_long(argc, argv, "c:d:e:hH:no:P:Rt:V",
+  while ((optchar = getopt_long(argc, argv, "c:de:hH:nP:Rt:V",
                                 long_options, NULL)) != EOF)
   {
     switch (optchar)
@@ -475,23 +442,18 @@ static void cl_cmd_line(int argc, char *argv[])
         exit (EXIT_SUCCESS);
 
       case 'c': server_clients      = atoi(optarg); break;
-      case 'd': cl_dbg_opt          = atoi(optarg); break;
       case 't': server_timeout      = atoi(optarg); break;
       case 'H': server_ipv4_address = optarg;       break;
       case 'P': server_port         = atoi(optarg); break;
 
+      case 'd': vlg_debug(vlg);                     break;
+        
       case 'e':
         /* use cmd line instead of stdin */
         io_r_fd = -1;
         app_cstr_buf(io_r, optarg); app_cstr_buf(io_r, "\n");
         break;
         
-      case 'o':
-        cl_dbg_fd = open(optarg, O_WRONLY | O_CREAT | O_APPEND, 0600);
-        if (cl_dbg_fd == -1)
-          err(EXIT_FAILURE, "open(%s)", optarg);
-        break;
-
       case 'n':
         if (!optarg)
         { evnt_opt_nagle = !evnt_opt_nagle; }
@@ -539,7 +501,8 @@ static void cl_timer_cli(int type, void *data)
   diff = timer_q_timeval_udiff_secs(&tv, &con->ev->mtime);
   if (diff > server_timeout)
   {
-    dbg("timeout = %p (%lu, %lu)\n", con, diff, (unsigned long)server_timeout);
+    vlg_dbg2(vlg, "timeout = %p (%lu, %lu)\n",
+             con, diff, (unsigned long)server_timeout);
     close(SOCKET_POLL_INDICATOR(con->ev->ind)->fd);
     return;
   }
@@ -596,6 +559,13 @@ static void cl_beg(void)
   if (!cl_timer_connect_base)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
 
+  vlg_init();
+
+  if (!(vlg = vlg_make()))
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
+
+  evnt_logger(vlg);
+  
   if (io_r_fd != -1)
   {
     evnt_fd_set_nonblock(io_r_fd,  TRUE);
@@ -650,9 +620,6 @@ int main(int argc, char *argv[])
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_sc_fmt_add_all(NULL);
   
-  if (!(cl_dbg_log = vstr_make_base(NULL)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
-  
   if (!(io_r = vstr_make_base(NULL))) /* used in cmd line */
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
   if (!(io_w = vstr_make_base(NULL)))
@@ -682,30 +649,39 @@ int main(int argc, char *argv[])
     if (ready == -1)
       continue;
 
-    dbg("1 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+    vlg_dbg3(vlg, "1 c=%p r=%p s=%p n=%p\n",
+             q_connect, q_recv, q_send_recv, q_none);
     ready = cl_scan_io_fds(ready);
-    dbg("2 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+    vlg_dbg3(vlg, "2 c=%p r=%p s=%p n=%p\n",
+             q_connect, q_recv, q_send_recv, q_none);
     evnt_scan_fds(ready, CL_MAX_WAIT_SEND);
-    dbg("3 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+    vlg_dbg3(vlg, "3 c=%p r=%p s=%p n=%p\n",
+             q_connect, q_recv, q_send_recv, q_none);
     evnt_scan_send_fds();
-    dbg("4 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+    vlg_dbg3(vlg, "4 c=%p r=%p s=%p n=%p\n",
+             q_connect, q_recv, q_send_recv, q_none);
     
     gettimeofday(&tv, NULL);
     timer_q_run_norm(&tv);
 
-    dbg("5 a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+    vlg_dbg3(vlg, "5 c=%p r=%p s=%p n=%p\n",
+             q_connect, q_recv, q_send_recv, q_none);
     evnt_scan_send_fds();
   }
-  dbg("E a=%p r=%p s=%p n=%p\n", q_connect, q_recv, q_send_recv, q_none);
+  vlg_dbg3(vlg, "E c=%p r=%p s=%p n=%p\n",
+           q_connect, q_recv, q_send_recv, q_none);
+
+  vstr_free_base(io_r);
+  vstr_free_base(io_w);
 
   timer_q_del_base(cl_timeout_base);
   timer_q_del_base(cl_timer_connect_base);
   
-  vstr_free_base(cl_dbg_log);
-  vstr_free_base(io_r);
-  vstr_free_base(io_w);
-
   evnt_close_all();
+  
+  vlg_free(vlg);
+  
+  vlg_exit();
   
   vstr_exit();
   

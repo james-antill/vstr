@@ -88,6 +88,19 @@
 </html>\r\n\
 "
 
+#define CONF_LINE_RET_416 "Requested Range Not Satisfiable"
+#define CONF_MSG_RET_416 "\
+<html>\r\n\
+  <head>\r\n\
+    <title>416 Requested Range Not Satisfiable</title>\r\n\
+  </head>\r\n\
+  <body>\r\n\
+    <h1>416 Requested Range Not Satisfiable</h1>\r\n\
+    <p>The document request range was not valid.</p>\r\n\
+  </body>\r\n\
+</html>\r\n\
+"
+
 #define CONF_LINE_RET_417 "Expectation Failed"
 #define CONF_MSG_RET_417 "\
 <html>\r\n\
@@ -140,28 +153,33 @@
 </html>\r\n\
 "
 
-#define HTTPD_ERR(code, skip_msg) do {                   \
-      http_error_code  = (code);                         \
-      http_error_line  = CONF_LINE_RET_ ## code ;        \
-      if (!(skip_msg))                                   \
-        http_error_msg = CONF_MSG_RET_ ## code ;         \
+#define HTTPD_ERR(code, skip_msg) do {                          \
+      http_error_code  = (code);                                \
+      http_error_line  = CONF_LINE_RET_ ## code ;               \
+      http_error_len   = strlen( CONF_MSG_RET_ ## code );       \
+      if (!(skip_msg))                                          \
+        http_error_msg = CONF_MSG_RET_ ## code ;                \
     } while (0)
 
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar
 */
-#define HTTP_REQ_CHK_DIR(s1, goto_label) do {          \
-      if (vstr_export_chr((s1), (s1)->len) != '/')     \
-      {                                                \
-        vstr_conv_encode_uri((s1), 1, (s1)->len);      \
-        vstr_add_cstr_buf((s1), (s1)->len, "/");       \
-        redirect_loc = TRUE;                           \
-        http_error_code = 301;                         \
-        http_error_line = CONF_LINE_RET_301;           \
-        if (!head_op)                                  \
-          redirect_http_error_msg = TRUE;              \
-        goto goto_label ;                              \
-      }                                                \
+#define HTTP_REQ_CHK_DIR(s1, goto_label) do {                     \
+      if (vstr_export_chr((s1), (s1)->len) != '/')                \
+      {                                                           \
+        vstr_del((s1), 1, vhost_prefix_len);                      \
+        vhost_prefix_len = 0;                                     \
+                                                                  \
+        vstr_conv_encode_uri((s1), 1, (s1)->len);                 \
+        vstr_add_cstr_buf((s1), (s1)->len, "/");                  \
+        redirect_loc = TRUE;                                      \
+        http_error_code = 301;                                    \
+        http_error_line = CONF_LINE_RET_301;                      \
+        http_error_len  = CONF_MSG_LEN_301(s1, 1, s1->len);       \
+        if (!head_op)                                             \
+          redirect_http_error_msg = TRUE;                         \
+        goto goto_label ;                                         \
+      }                                                           \
     } while (0)
       
 #endif

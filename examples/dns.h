@@ -70,11 +70,9 @@ struct Dns_base
  struct Vstr_base *io_w_serv;
  struct Vstr_base *io_w_user;
 
- struct Vstr_base *io_dbg;
+ struct Vlg       *io_dbg;
  
- int dbg_fd;
- unsigned int dbg_opt : 7;
- int opt_recur : 1;
+ unsigned int opt_recur : 1;
 };
 
 typedef struct Dns_base Dns_base;

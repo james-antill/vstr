@@ -19,15 +19,10 @@
 #include <time.h>
 #include <signal.h>
 
-/* #define NDEBUG 1 -- done via. ./configure */
-#include <assert.h>
-#define ASSERT assert
-
-#include <err.h>
-
-
 #include <socket_poll.h>
 #include <timer_q.h>
+
+#include "vlg.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -42,6 +37,14 @@
 # define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x
 #endif
 
+#ifndef NDEBUG
+# define ASSERT(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+# define assert(x) do { if (x) {} else vlg_err(vlg, EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
+#else
+# define ASSERT(x)
+# define assert(x)
+#endif
+
 int evnt_opt_nagle = FALSE;
 
 struct Evnt *q_send_now = NULL;  /* Try a send "now" */
@@ -52,6 +55,13 @@ struct Evnt *q_connect   = NULL; /* connections - send */
 struct Evnt *q_recv      = NULL; /* recv */
 struct Evnt *q_send_recv = NULL; /* recv + send */
 
+static Vlg *vlg = NULL;
+
+void evnt_logger(Vlg *passed_vlg)
+{
+  vlg = passed_vlg;
+}
+
 void evnt_fd_set_nonblock(int fd, int val)
 {
   int flags = 0;
@@ -59,11 +69,11 @@ void evnt_fd_set_nonblock(int fd, int val)
   assert(val);
   
   if ((flags = fcntl(fd, F_GETFL)) == -1)
-    err(EXIT_FAILURE, __func__);
+    vlg_err(vlg, EXIT_FAILURE, __func__);
   
   if (!(flags & O_NONBLOCK) &&
       (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
-    err(EXIT_FAILURE, __func__);
+    vlg_err(vlg, EXIT_FAILURE, __func__);
 }
 
 static  int evnt__cb_func_connect(struct Evnt *EVNT__ATTR_UNUSED(evnt))
@@ -237,7 +247,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   return (TRUE);
 
  bind_fail:
-  warn("bind(%s:%hd)", acpt_addr ? acpt_addr : "any", server_port);
+  vlg_warn(vlg, "bind(%s:%hd)", acpt_addr ? acpt_addr : "any", server_port);
  listen_fail:
  reuse_fail:
  init_fail:
@@ -341,7 +351,11 @@ int evnt_send_add(struct Evnt *con, int force_poll_event, size_t max_sz)
 
   /* already on send_q -- or already polling (and not forcing) */
   if (con->flag_q_send_now || (con->flag_q_send_recv && !force_poll_event))
+  {
+    vlg_dbg3(vlg, "q now = %u, q send recv = %u, force = %u\n",
+             con->flag_q_send_now, con->flag_q_send_recv, force_poll_event);
     return (TRUE);
+  }
   
   con->s_next = q_send_now;
   q_send_now = con;
@@ -369,21 +383,20 @@ void evnt_send_del(struct Evnt *con)
   *scan = con->s_next;
 }
 
-int evnt_recv(struct Evnt *con)
+int evnt_recv(struct Evnt *con, unsigned int *ern)
 {
-  unsigned int ern;
   int ret = TRUE;
   
   vstr_sc_read_iov_fd(con->io_r, con->io_r->len,
-                      SOCKET_POLL_INDICATOR(con->ind)->fd, 4, 32, &ern);
+                      SOCKET_POLL_INDICATOR(con->ind)->fd, 4, 32, ern);
   
-  switch (ern)
+  switch (*ern)
   {
     case VSTR_TYPE_SC_READ_FD_ERR_NONE:
       gettimeofday(&con->mtime, NULL);
       break;
     case VSTR_TYPE_SC_READ_FD_ERR_MEM:
-      err(EXIT_FAILURE, __func__);
+      VLG_WARN_RET(FALSE, (vlg, __func__));
 
     case VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO:
       if (errno == EAGAIN)
@@ -396,7 +409,7 @@ int evnt_recv(struct Evnt *con)
       break;
 
     default: /* unknown */
-      err(EXIT_FAILURE, "read_iov() = %d", ern);
+      VLG_WARN_RET(FALSE, (vlg, "read_iov() = %d: %m", *ern));
   }
 
   return (ret);
@@ -448,8 +461,10 @@ int evnt_poll(void)
 {
   const struct timeval *tv = timer_q_first_timeval();
   int msecs = -1;
-  
-  if (tv)
+
+  if (q_send_now)
+    msecs = 0;
+  else if (tv)
   {
     long diff = 0;
     struct timeval now_timeval;
@@ -495,12 +510,12 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       ret = getsockopt(SOCKET_POLL_INDICATOR(scan->ind)->fd,
                        SOL_SOCKET, SO_ERROR, &ern, &len);
       if (ret == -1)
-        err(EXIT_FAILURE, "getsockopt(SO_ERROR)");
+        vlg_err(vlg, EXIT_FAILURE, "getsockopt(SO_ERROR)");
       else if (ern)
       {
         /* server_ipv4_address */
         if (ern == ECONNREFUSED)
-          errno = ern, err(EXIT_FAILURE, "connect");
+          errno = ern, vlg_err(vlg, EXIT_FAILURE, "connect");
 
         /* FIXME: move del */
         evnt_del(&q_connect, scan);
@@ -650,8 +665,7 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
   }
 
   if (ready)
-    warnx("ready = %d", ready);
-  ASSERT(!ready);
+    vlg_err(vlg, EXIT_FAILURE, "ready = %d", ready);
 }
 
 void evnt_scan_send_fds(void)
@@ -663,8 +677,12 @@ void evnt_scan_send_fds(void)
   {
     struct Evnt *scan_s_next = scan->s_next;
     
-    if (scan->flag_q_send_now && !scan->cbs->cb_func_send(scan))
-      evnt_close(scan);
+    if (scan->flag_q_send_now)
+    {
+      scan->flag_q_send_now = FALSE;
+      if (!scan->cbs->cb_func_send(scan))
+        evnt_close(scan);
+    }
       
     scan = scan_s_next;
   }

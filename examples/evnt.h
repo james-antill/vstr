@@ -1,6 +1,8 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "vlg.h"
+
 struct Evnt;
 
 struct Evnt_cbs
@@ -40,6 +42,8 @@ struct Evnt
 };
 
 
+extern void evnt_logger(Vlg *);
+
 extern void evnt_fd_set_nonblock(int, int);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
@@ -54,7 +58,7 @@ extern void evnt_add(struct Evnt **, struct Evnt *);
 extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
-extern int evnt_recv(struct Evnt *);
+extern int evnt_recv(struct Evnt *, unsigned int *ern);
 extern int evnt_send(struct Evnt *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);

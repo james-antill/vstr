@@ -303,18 +303,18 @@ ex_slowcat_DEPENDENCIES = ex_utils.h
 ex_slowcat_CFLAGS = $(GEN_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_slowcat_LDADD = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_dns_SOURCES = ex_dns.c dns.c evnt.c
-ex_dns_DEPENDENCIES = dns.h evnt.h
+ex_dns_SOURCES = ex_dns.c dns.c evnt.c vlg.c
+ex_dns_DEPENDENCIES = dns.h evnt.h vlg.h
 ex_dns_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_httpd_SOURCES = ex_httpd.c evnt.c
-ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h
+ex_httpd_SOURCES = ex_httpd.c evnt.c date.c vlg.c
+ex_httpd_DEPENDENCIES = ex_httpd_err_codes.h evnt.h date.h vlg.h
 ex_httpd_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-ex_echod_SOURCES = ex_echod.c evnt.c
-ex_echod_DEPENDENCIES = evnt.h
+ex_echod_SOURCES = ex_echod.c evnt.c date.c vlg.c
+ex_echod_DEPENDENCIES = evnt.h date.h vlg.h
 ex_echod_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_echod_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
@@ -8144,11 +8144,12 @@ ex_dir_list_SOURCES = ex_dir_list.c
 ex_dir_list_OBJECTS = ex_dir_list-ex_dir_list.$(OBJEXT)
 ex_dir_list_LDFLAGS =
 am_ex_dns_OBJECTS = ex_dns-ex_dns.$(OBJEXT) ex_dns-dns.$(OBJEXT) \
-	ex_dns-evnt.$(OBJEXT)
+	ex_dns-evnt.$(OBJEXT) ex_dns-vlg.$(OBJEXT)
 ex_dns_OBJECTS = $(am_ex_dns_OBJECTS)
 ex_dns_LDFLAGS =
 am_ex_echod_OBJECTS = ex_echod-ex_echod.$(OBJEXT) \
-	ex_echod-evnt.$(OBJEXT)
+	ex_echod-evnt.$(OBJEXT) ex_echod-date.$(OBJEXT) \
+	ex_echod-vlg.$(OBJEXT)
 ex_echod_OBJECTS = $(am_ex_echod_OBJECTS)
 ex_echod_LDFLAGS =
 ex_gmp_factorials_SOURCES = ex_gmp_factorials.c
@@ -8186,7 +8187,8 @@ ex_html_dir_list_SOURCES = ex_html_dir_list.c
 ex_html_dir_list_OBJECTS = ex_html_dir_list-ex_html_dir_list.$(OBJEXT)
 ex_html_dir_list_LDFLAGS =
 am_ex_httpd_OBJECTS = ex_httpd-ex_httpd.$(OBJEXT) \
-	ex_httpd-evnt.$(OBJEXT)
+	ex_httpd-evnt.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
+	ex_httpd-vlg.$(OBJEXT)
 ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_httpd_LDFLAGS =
 ex_lookup_ip_SOURCES = ex_lookup_ip.c
@@ -8512,6 +8514,15 @@ ex_dns-evnt.obj: evnt.c
 ex_dns-evnt.lo: evnt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-evnt.lo `test -f 'evnt.c' || echo '$(srcdir)/'`evnt.c
 
+ex_dns-vlg.o: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
+ex_dns-vlg.obj: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-vlg.obj `if test -f 'vlg.c'; then $(CYGPATH_W) 'vlg.c'; else $(CYGPATH_W) '$(srcdir)/vlg.c'; fi`
+
+ex_dns-vlg.lo: vlg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_dns_CFLAGS) $(CFLAGS) -c -o ex_dns-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
 ex_echod-ex_echod.o: ex_echod.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-ex_echod.o `test -f 'ex_echod.c' || echo '$(srcdir)/'`ex_echod.c
 
@@ -8529,6 +8540,24 @@ ex_echod-evnt.obj: evnt.c
 
 ex_echod-evnt.lo: evnt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-evnt.lo `test -f 'evnt.c' || echo '$(srcdir)/'`evnt.c
+
+ex_echod-date.o: date.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
+
+ex_echod-date.obj: date.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-date.obj `if test -f 'date.c'; then $(CYGPATH_W) 'date.c'; else $(CYGPATH_W) '$(srcdir)/date.c'; fi`
+
+ex_echod-date.lo: date.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-date.lo `test -f 'date.c' || echo '$(srcdir)/'`date.c
+
+ex_echod-vlg.o: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
+ex_echod-vlg.obj: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-vlg.obj `if test -f 'vlg.c'; then $(CYGPATH_W) 'vlg.c'; else $(CYGPATH_W) '$(srcdir)/vlg.c'; fi`
+
+ex_echod-vlg.lo: vlg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
 
 ex_gmp_factorials-ex_gmp_factorials.o: ex_gmp_factorials.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_gmp_factorials_CFLAGS) $(CFLAGS) -c -o ex_gmp_factorials-ex_gmp_factorials.o `test -f 'ex_gmp_factorials.c' || echo '$(srcdir)/'`ex_gmp_factorials.c
@@ -8646,6 +8675,24 @@ ex_httpd-evnt.obj: evnt.c
 
 ex_httpd-evnt.lo: evnt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-evnt.lo `test -f 'evnt.c' || echo '$(srcdir)/'`evnt.c
+
+ex_httpd-date.o: date.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
+
+ex_httpd-date.obj: date.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.obj `if test -f 'date.c'; then $(CYGPATH_W) 'date.c'; else $(CYGPATH_W) '$(srcdir)/date.c'; fi`
+
+ex_httpd-date.lo: date.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.lo `test -f 'date.c' || echo '$(srcdir)/'`date.c
+
+ex_httpd-vlg.o: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
+ex_httpd-vlg.obj: vlg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.obj `if test -f 'vlg.c'; then $(CYGPATH_W) 'vlg.c'; else $(CYGPATH_W) '$(srcdir)/vlg.c'; fi`
+
+ex_httpd-vlg.lo: vlg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
 
 ex_lookup_ip-ex_lookup_ip.o: ex_lookup_ip.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_lookup_ip_CFLAGS) $(CFLAGS) -c -o ex_lookup_ip-ex_lookup_ip.o `test -f 'ex_lookup_ip.c' || echo '$(srcdir)/'`ex_lookup_ip.c
