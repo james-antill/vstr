@@ -5,7 +5,7 @@ Last-Modified:
 Connection: close
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 297
+Content-Length: 408
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -15,5 +15,7 @@ Content-Length: 297
   <body>
     <h1>417 Expectation Failed</h1>
     <p>The expectation given in an Expect request-header field could not be met by this server.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>

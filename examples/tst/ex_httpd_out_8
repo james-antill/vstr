@@ -4,7 +4,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 280
+Content-Length: 391
 Location: http://foo.example.com/corner/
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -15,6 +15,8 @@ Location: http://foo.example.com/corner/
   <body>
     <h1>301 Moved Permanently</h1>
     <p>The document has moved <a href="http://foo.example.com/corner/">here</a>.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 301 Moved Permanently
@@ -23,7 +25,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 291
+Content-Length: 402
 Location: http://foo.example.com/corner/index.html/
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -34,6 +36,8 @@ Location: http://foo.example.com/corner/index.html/
   <body>
     <h1>301 Moved Permanently</h1>
     <p>The document has moved <a href="http://foo.example.com/corner/index.html/">here</a>.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 200 OK

@@ -288,11 +288,12 @@ Usage: jdir_list2html [FILENAME]...\n\
    or: jdir_list2html OPTION\n\
 Output filenames.\n\
 \n\
-      --help        - Display this help and exit\n\
-      --version     - Output version information and exit\n\
-      --name        - Name to be used if input from stdin\n\
-      --prefix-path - Prefix for href on each name in directory listing\n\
-      --            - Treat rest of cmd line as input filenames\n\
+      --help         - Display this help and exit\n\
+      --version      - Output version information and exit\n\
+      --css-filename - Location of css used in directory listing\n\
+      --name         - Name to be used if input from stdin\n\
+      --prefix-path  - Prefix for href on each name in directory listing\n\
+      --             - Treat rest of cmd line as input filenames\n\
 \n\
 Report bugs to James Antill <james@and.org>.\n\
 ");

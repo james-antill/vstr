@@ -57,10 +57,13 @@ struct Evnt
  
  unsigned int flag_q_send_now  : 1;
 
+ unsigned int flag_q_pkt_move  : 1;
+
  unsigned int flag_io_nagle    : 1;
  unsigned int flag_io_cork     : 1;
 
  unsigned int io_r_shutdown    : 1;
+ unsigned int io_w_shutdown    : 1;
 };
 
 #define EVNT_SA(x)    (                      (x)->sa)
@@ -99,6 +102,7 @@ extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
 extern int evnt_shutdown_r(struct Evnt *);
+extern int evnt_shutdown_w(struct Evnt *);
 extern int evnt_recv(struct Evnt *, unsigned int *);
 extern int evnt_send(struct Evnt *);
 extern int evnt_sendfile(struct Evnt *, int,
@@ -108,6 +112,8 @@ extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);
 extern void evnt_scan_fds(unsigned int, size_t);
 extern void evnt_scan_send_fds(void);
+
+extern void evnt_stats_add(struct Evnt *, const struct Evnt *);
 
 extern unsigned int evnt_num_all(void);
 extern int evnt_waiting(void);

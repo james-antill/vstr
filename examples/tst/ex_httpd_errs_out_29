@@ -5,7 +5,7 @@ Last-Modified:
 Connection: close
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 395
+Content-Length: 506
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -15,5 +15,7 @@ Content-Length: 395
   <body>
     <h1>413 Request Entity Too Large</h1>
     <p>The server does not accept any requests with Content (In other words if either a Content-Length or a Transfer-Encoding header is passed to the server, the request will fail).</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>

@@ -6,5 +6,7 @@
   <body>
     <h1>501 Not Implemented</h1>
     <p>The request method is not implemented.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>

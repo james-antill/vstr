@@ -10,13 +10,16 @@
 <a href="examples/ex_httpd.c.html">See the source here.</a>
 
 <pre>
-    Simple. Secure.
+    Simple. Secure. Unit tests (over 80% coverage).
+
+% egrep '\<(mem|rawmem|bcopy|bzero|bcmp|str(n?cpy|n?cat|n?cmp|coll|xfrm|n?dup|r?chr|c?spn|str|pbrk|tok|n?case|sep|verscmp|fry|_)|stpn?cpy|r?index[^.]|basename|dirname|a?sn?printf|byte_)' examples/ex_httpd.c
+%
 
     Design is somewhat like thttpd.
 
     Uses the following system utilities:
      poll or epoll, multiplexing
-     multiple procs. for MP systems
+     multiple process support. for MP systems
      sendfile or mmap, for file contents
      LFS
      TCP_CORK
@@ -57,13 +60,18 @@
       Have a configuration file (will be fixed).
 
       Have a native ACL configuration (will be fixed, can use socket filters).
+
+      Parse or honor the Accept-Language header.
+      Parse or honor the Accept-Charset header.
+
+      Full date parser.
 </pre>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Mon Jan 17 20:13:36 EST 2005
+Last modified: Wed Feb  2 01:26:58 EST 2005
 <!-- hhmts end -->
   </body>
 </html>

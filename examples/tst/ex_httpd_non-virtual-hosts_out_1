@@ -5,7 +5,7 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 228
+Content-Length: 339
 
 HTTP/1.1 200 OK
 Date:
@@ -23,7 +23,7 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 267
+Content-Length: 378
 Location: http://X/default/
 
 HTTP/1.1 301 Moved Permanently
@@ -33,8 +33,8 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 264
-Location: http:/default/
+Content-Length: 384
+Location: http://default/default/
 
 HTTP/1.1 403 Forbidden
 Date:
@@ -43,7 +43,7 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 HTTP/1.1 403 Forbidden
 Date:
@@ -52,7 +52,7 @@ Last-Modified:
 Connection: Keep-Alive
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 HTTP/1.1 200 OK
 Date:

@@ -4,7 +4,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 297
+Content-Length: 408
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -14,6 +14,8 @@ Content-Length: 297
   <body>
     <h1>412 Precondition Failed</h1>
     <p>The precondition given in one or more of the request-header fields evaluated to false.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 412 Precondition Failed
@@ -23,7 +25,7 @@ Last-Modified:
 Connection: close
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 297
+Content-Length: 408
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -33,5 +35,7 @@ Content-Length: 297
   <body>
     <h1>412 Precondition Failed</h1>
     <p>The precondition given in one or more of the request-header fields evaluated to false.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>

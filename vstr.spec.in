@@ -46,6 +46,7 @@ and includes support for i18n parameter position modifiers).
 %package examples
 Summary: String library, examples.
 Group: Development/Tools
+BuildRequires: gmp-devel, openssl-devel, glib2-devel
 Requires: %{name} >= %{ver}
 
 %description examples

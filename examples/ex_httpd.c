@@ -93,6 +93,7 @@ struct sock_fprog
 #define CONF_SERV_DEF_MIME_TYPE "application/octet-stream"
 #define CONF_SERV_MIME_TYPE_MAIN "/etc/mime.types"
 #define CONF_SERV_MIME_TYPE_XTRA NULL
+#define CONF_SERV_USE_ERR_415 TRUE
 
 #include "ex_httpd_err_codes.h"
 
@@ -116,8 +117,6 @@ struct sock_fprog
 #else
 # define CONF_INPUT_MAXSZ (128 * 1024) /* debug */
 #endif
-
-#define CONF_ZEROPAD_SZ ((4 * 1024) - sizeof(Vstr_ref))
 
 /* Linear Whitespace, a full stds. check for " " and "\t" */
 #define HTTP_LWS " \t"
@@ -158,10 +157,12 @@ struct sock_fprog
 
 struct Http_hdrs
 {
- Vstr_sect_node hdr_ua[1]; /* logging headers */
+ Vstr_sect_node hdr_ua[1];
  Vstr_sect_node hdr_referer[1]; /* NOTE: referrer */
 
+ Vstr_sect_node hdr_accept[1];
  Vstr_sect_node hdr_accept_encoding[1];
+ Vstr_sect_node hdr_accept_language[1];
  Vstr_sect_node hdr_connection[1];
  Vstr_sect_node hdr_expect[1];
  Vstr_sect_node hdr_host[1];
@@ -245,8 +246,6 @@ static unsigned int server_max_header_sz = CONF_INPUT_MAXSZ;
 
 static time_t server_beg = (time_t)-1;
 
-static Vstr_ref *zeropad_data = NULL;
-
 static struct 
 {
  const char * server_name;
@@ -261,13 +260,15 @@ static struct
  unsigned int use_public_only : 1; /* 8th bitfield */
  unsigned int use_gzip_content_replacement : 1;
  unsigned int use_default_mime_type : 1;
- unsigned int num_procs : 8; /* 1 => 255 */
- unsigned int defer_accept : 14; /* 0 => 16384 (4hrs) */
- 
+ unsigned int num_procs : 8; /* 1 => 255 (10th-18th bitfields) */
+ unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (18th-30th bitfields) */
+ unsigned int use_err_415 : 1; /* 31st bitfield */
+
  const char * dir_filename;
  const char * mime_types_default_type;
  const char * mime_types_main;
  const char * mime_types_xtra;
+ Vstr_base *default_hostname;
 } serv[1] = {{CONF_SERV_DEF_NAME,
               CONF_SERV_USE_MMAP, CONF_SERV_USE_SENDFILE,
               CONF_SERV_USE_KEEPA, CONF_SERV_USE_KEEPA_1_0,
@@ -278,10 +279,12 @@ static struct
               CONF_SERV_USE_DEFAULT_MIME_TYPE,
               CONF_SERV_DEF_PROCS,
               CONF_SERV_DEF_TCP_DEFER_ACCEPT,
+              CONF_SERV_USE_ERR_415,
               CONF_SERV_DEF_DIR_FILENAME,
               CONF_SERV_DEF_MIME_TYPE,
               CONF_SERV_MIME_TYPE_MAIN,
-              CONF_SERV_MIME_TYPE_XTRA}};
+              CONF_SERV_MIME_TYPE_XTRA,
+              NULL}};
 
 static Vlg *vlg = NULL;
 
@@ -321,7 +324,10 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --mime-types-main - Main mime types filename (default: /etc/mime.types).\n\
     --mime-types-xtra - Additional mime types filename.\n\
     --processes       - Number of processes to use (default: 1).\n\
+    --send-err-415    - Toggle sending 415 responses%s.\n\
     --defer-accept    - Time to defer dataless connections (default: 16s).\n\
+    --default-hostname\n\
+                      - hostname used when none supplied (default is hostname).\n\
     --debug -d        - Raise debug level (can be used upto 3 times).\n\
     --host -H         - IPv4 address to bind (default: \"all\").\n\
     --help -h         - Print this message.\n\
@@ -344,6 +350,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(CONF_SERV_USE_PUBLIC_ONLY),
                opt_def_toggle(CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT),
                opt_def_toggle(CONF_SERV_USE_DEFAULT_MIME_TYPE),
+               opt_def_toggle(CONF_SERV_USE_ERR_415),
                opt_def_toggle(evnt_opt_nagle));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
@@ -541,6 +548,8 @@ static int http__fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
 
 static void serv_init(void)
 {
+  Vstr_base *tmp = NULL;
+  
   if (!vstr_init()) /* init the library */
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
@@ -563,9 +572,23 @@ static void serv_init(void)
                        "<http-esc.vstr.sect", "p%p%u", ">"))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-  if (!(zeropad_data = vstr_ref_make_malloc(CONF_ZEROPAD_SZ)))
+  if (!(tmp = vstr_make_base(NULL)))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
-  memset(zeropad_data->ptr, 0, CONF_ZEROPAD_SZ);
+  else
+  {
+    char buf[256];
+
+    if (gethostname(buf, sizeof(buf)) == -1)
+      err(EXIT_FAILURE, "gethostname");
+    
+    buf[255] = 0;
+    vstr_add_cstr_buf(tmp, 0, buf);
+    vstr_conv_lowercase(tmp, 1, tmp->len);
+  }
+  if (tmp->conf->malloc_bad)
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
+
+  serv->default_hostname = tmp;
   
   if (!(vlg = vlg_make()))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
@@ -807,6 +830,123 @@ static void http_app_end_hdrs(Vstr_base *out)
   http__app_header_eol(out);
 }
 
+#if 0
+/* see rfc2616 3.3.1 -- full date parser */
+static time_t http_parse_date(Vstr_base *s1, size_t pos, size_t len, time_t now)
+{
+  struct tm *tm = gmtime(&now);
+  static const char http__date_days_shrt[4][7] =
+    {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+  static const char http__date_days_full[10][7] =
+    {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+     "Saturday"};
+  static const char http__date_months[4][12] =
+    {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+     "Sep", "Oct", "Nov", "Dec"};
+  unsigned int scan = 0;
+
+  if (!tm) return (-1);
+
+  switch (len)
+  {
+    case 4 + 1 + 9 + 1 + 8 + 1 + 3: /* rfc1123 format - should be most common */
+    {
+      scan = 0;
+      while (scan < 7)
+      {
+        if (VPREFIX(s1, pos, len, http__date_days_shrt[scan]))
+          break;
+        ++scan;
+      }
+      len -= 3; pos += 3;
+      
+      if (!VPREFIX(s1, pos, len, ", "))
+        return (-1);
+      len -= strlen(", "); pos += strlen(", ");
+
+      tm->tm_mday = http__date_parse_2d(s1, pos, len, 1, 31);
+      
+      if (!VPREFIX(s1, pos, len, " "))
+        return (-1);
+      len -= strlen(" "); pos += strlen(" ");
+
+      scan = 0;
+      while (scan < 12)
+      {
+        if (VPREFIX(s1, pos, len, http__date_months[scan]))
+          break;
+        ++scan;
+      }
+      len -= 3; pos += 3;
+      
+      tm->tm_mon = scan;
+      
+      if (!VPREFIX(s1, pos, len, " "))
+        return (-1);
+      len -= strlen(" "); pos += strlen(" ");
+
+      tm->tm_year = http__date_parse_4d(s1, pos, len);
+
+      if (!VPREFIX(s1, pos, len, " "))
+        return (-1);
+      len -= strlen(" "); pos += strlen(" ");
+
+      tm->tm_hour = http__date_parse2d(s1, pos, len, 0, 23);
+      if (!VPREFIX(s1, pos, len, ":"))
+        return (-1);
+      len -= strlen(":"); pos += strlen(":");
+      tm->tm_min  = http__date_parse2d(s1, pos, len, 0, 59);
+      if (!VPREFIX(s1, pos, len, ":"))
+        return (-1);
+      len -= strlen(":"); pos += strlen(":");
+      tm->tm_sec  = http__date_parse2d(s1, pos, len, 0, 61);
+      
+      if (!VPREFIX(s1, pos, len, " GMT"))
+        return (-1);
+    }
+    return (mktime(tm));
+
+    case  7 + 1 + 7 + 1 + 8 + 1 + 3:
+    case  8 + 1 + 7 + 1 + 8 + 1 + 3:
+    case  9 + 1 + 7 + 1 + 8 + 1 + 3:
+    case 10 + 1 + 7 + 1 + 8 + 1 + 3: /* rfc850 format */
+    {
+      size_t match_len = 0;
+      
+      scan = 0;
+      while (scan < 7)
+      {
+        match_len = strlen(http__date_days_full[scan]);
+        if (VPREFIX(s1, pos, len, http__date_days_full[scan]))
+          break;
+        ++scan;
+      }
+      len -= match_len; pos += match_len;
+
+      return (-1);
+    }
+    return (mktime(tm));
+
+    case  3 + 1 + 6 + 1 + 8 + 1 + 4: /* asctime format */
+    {
+      scan = 0;
+      while (scan < 7)
+      {
+        if (VPREFIX(s1, pos, len, http__date_days_shrt[scan]))
+          break;
+        ++scan;
+      }
+      len -= 3; pos += 3;
+      
+      return (-1);
+    }
+    return (mktime(tm));
+  }
+  
+  return (-1);  
+}
+#endif
+
 static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
                                 time_t now,
                                 unsigned int *http_ret_code,
@@ -925,7 +1065,9 @@ static int parse_hdrs(Vstr_base *data, struct Http_hdrs *http_hdrs,
     else if (HDR__EQ("User-Agent"))          HDR__SET(ua);
     else if (HDR__EQ("Referer"))             HDR__SET(referer);
     
+    else if (HDR__EQ("Accept"))              HDR__SET(accept);
     else if (HDR__EQ("Accept-Encoding"))     HDR__SET(accept_encoding);
+    else if (HDR__EQ("Accept-Language"))     HDR__SET(accept_language);
     else if (HDR__EQ("Connection"))          HDR__SET(connection);
     else if (HDR__EQ("Expect"))              HDR__SET(expect);
     else if (HDR__EQ("Host"))                HDR__SET(host);
@@ -952,7 +1094,9 @@ static void serv_clear_hdrs(struct Con *con)
   CON_HDR_SET(con, ua, 0, 0);
   CON_HDR_SET(con, referer, 0, 0);
 
+  CON_HDR_SET(con, accept, 0, 0);
   CON_HDR_SET(con, accept_encoding, 0, 0);
+  CON_HDR_SET(con, accept_language, 0, 0);
   CON_HDR_SET(con, connection, 0, 0);
   CON_HDR_SET(con, expect, 0, 0);
   CON_HDR_SET(con, host, 0, 0);
@@ -1338,87 +1482,88 @@ static int serv_call_seek(struct Con *con, struct Http_req_data *req,
   return (TRUE);
 }
 
-/* is the quality set at zero -- might only work for accept-encoding */
-static int http_parse_quality_zero(Vstr_base *data, size_t pos, size_t len,
-                                   unsigned int *ern)
+#define HTTP__PARSE_CHECK_RET_OK() do {                 \
+      HTTP_SKIP_LWS(data, pos, len);                    \
+                                                        \
+      if (!len ||                                       \
+          VPREFIX(data, pos, len, ",") ||               \
+          (allow_more && VPREFIX(data, pos, len, ";"))) \
+      {                                                 \
+        *passed_pos = pos;                              \
+        *passed_len = len;                              \
+                                                        \
+        return (TRUE);                                  \
+      }                                                 \
+    } while (FALSE)
+
+/* What is the quality parameter, value between 0 and 1000 inclusive.
+ * returns TRUE on success, FALSE on failure. */
+static int http_parse_quality(Vstr_base *data,
+                              size_t *passed_pos, size_t *passed_len,
+                              int allow_more, unsigned int *val)
 {
-  ASSERT(ern);
+  size_t pos = *passed_pos;
+  size_t len = *passed_len;
   
-  *ern = 0;
+  ASSERT(val);
+  
+  *val = 1000;
   
   HTTP_SKIP_LWS(data, pos, len);
 
-  if (!len)
-    return (FALSE);
+  *passed_pos = pos;
+  *passed_len = len;
   
-  if (0) { }
+  if (!len || VPREFIX(data, pos, len, ","))
+    return (TRUE);
   else if (VPREFIX(data, pos, len, ";"))
   {
-    size_t zeros  = 0;
-    size_t digits = 0;
-    int lead_zero = TRUE;
+    int lead_zero = FALSE;
+    unsigned int num_len = 0;
+    unsigned int parse_flags = VSTR_FLAG02(PARSE_NUM, NO_BEG_PM, NO_NEGATIVE);
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
     
     if (!VPREFIX(data, pos, len, "q"))
-      goto syntax_error;
+      return (!!allow_more);
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
     
     if (!VPREFIX(data, pos, len, "="))
-      goto syntax_error;
+      return (!!allow_more);
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
 
-    /* if it's 0[.000] TRUE, 0[.\d\d\d] or 1[.000] is FALSE */
+    /* if it's 0[.00?0?] TRUE, 0[.\d\d?\d?] or 1[.00?0?] is FALSE */
     if (!(lead_zero = VPREFIX(data, pos, len, "0")) &&
         !VPREFIX(data, pos, len, "1"))
-      goto syntax_error;
+      return (FALSE);
+    *val = (!lead_zero) * 1000;
     
     len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-    if (!len)
-      return (lead_zero);
-    if (VPREFIX(data, pos, len, ","))
-      return (lead_zero);
+    
+    HTTP__PARSE_CHECK_RET_OK();
 
     if (!VPREFIX(data, pos, len, "."))
-      goto syntax_error;
+      return (FALSE);
     
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
 
-    digits = vstr_spn_cstr_chrs_fwd(data, pos, len, "0123456789");
-    if (digits != 3)
-      goto syntax_error;
+    *val += vstr_parse_uint(data, pos, len, 10 | parse_flags, &num_len, NULL);
+    if (!num_len || (num_len > 3) || (*val > 1000))
+      return (FALSE);
+    len -= num_len; pos += num_len;
     
-    zeros  = vstr_spn_cstr_chrs_fwd(data, pos, len, "0");
-    if (digits != zeros)
-    {
-      if (!lead_zero)
-        goto syntax_error;
-      else
-        lead_zero = FALSE;
-    }
-    ASSERT(zeros <= digits);
-    len -= digits; pos += digits;
-    
-    HTTP_SKIP_LWS(data, pos, len);
-    if (!len)
-      return (lead_zero);
-    if (VPREFIX(data, pos, len, ","))
-      return (lead_zero);
+    HTTP__PARSE_CHECK_RET_OK();
   }
-  else if (VPREFIX(data, pos, len, ","))
-    return (FALSE);
-
- syntax_error:
-  *ern = 1;
+  
   return (FALSE);
 }
+#undef HTTP__PARSE_CHECK_RET_OK
 
 static int http_parse_accept_encoding_gzip(struct Con *con,
                                            struct Http_req_data *req)
@@ -1426,7 +1571,7 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
   Vstr_base *data = con->ev->io_r;
   size_t pos = 0;
   size_t len = 0;
-  int ret = FALSE;
+  unsigned int val = 0;
   
   if (!serv->use_gzip_content_replacement)
     return (FALSE);
@@ -1439,10 +1584,8 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
   
   req->content_encoding_xgzip = FALSE;
   
-  /* search for end of current token */
   while (len)
   {
-    unsigned int ern = 0;
     size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
                                          HTTP_EOL HTTP_LWS ";,");
     
@@ -1450,23 +1593,26 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "gzip"))
     {
       len -= tmp; pos += tmp;
-      return (!http_parse_quality_zero(data, pos, len, &ern) && !ern);
+      return (http_parse_quality(data, &pos, &len, FALSE, &val) && val);
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "x-gzip"))
     {
+      len -= tmp; pos += tmp;
       req->content_encoding_xgzip = TRUE;
-      return (TRUE); /* ignore quality on x-gzip */
+      /* ignore quality on x-gzip */
+      return (http_parse_quality(data, &pos, &len, FALSE, &val));
     }
     else if (vstr_cmp_cstr_eq(data, pos, tmp, "*"))
-    { /* "*;q=0,gzip" means TRUE ... and "*;q=1,gzip;q=0" means FALSE */
+    { /* "*;q=0,gzip" means TRUE ... and "*;q=1.0,gzip;q=0" means FALSE */
       len -= tmp; pos += tmp;
-      ret = !http_parse_quality_zero(data, pos, len, &ern);
-      if (ern)
+      if (!http_parse_quality(data, &pos, &len, FALSE, &val))
         return (FALSE);
     }
     else
+    {
       len -= tmp; pos += tmp;
-
+    }
+    
     /* skip to end, or after next ',' */
     tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, ",");    
     len -= tmp; pos += tmp;
@@ -1477,7 +1623,153 @@ static int http_parse_accept_encoding_gzip(struct Con *con,
     HTTP_SKIP_LWS(data, pos, len);
   }
 
-  return (ret);
+  return (val);
+}
+
+/* skip a quoted string, or fail on syntax error */
+static int http__skip_quoted_string(Vstr_base *data, size_t *pos, size_t *len)
+{
+  size_t tmp = 0;
+
+  assert(VPREFIX(data, *pos, *len, "\""));
+  *len -= 1; *pos += 1;
+
+  while (TRUE)
+  {
+    tmp = vstr_cspn_cstr_chrs_fwd(data, *pos, *len, "\"\\");
+    *len -= tmp; *pos += tmp;
+    if (!*len)
+      return (FALSE);
+    
+    if (vstr_export_chr(data, *pos) == '"')
+      goto found;
+    assert(VPREFIX(data, *pos, *len, "\\"));
+    if (*len <= 2) /* must be at least <\X"> */
+      return (FALSE);
+    *len -= 2; *pos += 2;
+  }
+
+ found:
+  *len -= 1; *pos += 1;
+  HTTP_SKIP_LWS(data, *pos, *len);
+  return (TRUE);
+}
+
+/* skip, or fail on syntax error */
+static int http__skip_parameters(Vstr_base *data, size_t *pos, size_t *len)
+{
+  while (*len && (vstr_export_chr(data, *pos) != ','))
+  { /* skip parameters */
+    size_t tmp = 0;
+    
+    if (vstr_export_chr(data, *pos) != ';')
+      return (FALSE); /* syntax error */
+    
+    *len -= 1; *pos += 1;
+    HTTP_SKIP_LWS(data, *pos, *len);
+    tmp = vstr_cspn_cstr_chrs_fwd(data, *pos, *len, ";,=");
+    *len -= tmp; *pos += tmp;
+    if (!*len)
+      break;
+    
+    switch (vstr_export_chr(data, *pos))
+    {
+      case ';': break;
+      case ',': break;
+        
+      case '=': /* skip parameter value */
+        *len -= 1; *pos += 1;
+        HTTP_SKIP_LWS(data, *pos, *len);
+        if (!*len)
+          return (FALSE); /* syntax error */
+        if (vstr_export_chr(data, *pos) == '"')
+        {
+          if (!http__skip_quoted_string(data, pos, len))
+            return (FALSE); /* syntax error */
+        }
+        else
+        {
+          tmp = vstr_cspn_cstr_chrs_fwd(data, *pos, *len, ";,");
+          *len -= tmp; *pos += tmp;
+        }
+        break;
+    }
+  }
+
+  return (TRUE);
+}
+
+/* returns TRUE if we can use the content-type,
+* this does mean that if we fail to parse the "Accept:" line, we return TRUE */
+static int http_parse_accept(struct Con *con, struct Http_req_data *req)
+{
+  Vstr_base *data = con->ev->io_r;
+  size_t pos = 0;
+  size_t len = 0;
+  unsigned int val = 0;
+  int done_sub_type = FALSE;
+  const Vstr_base *ct_vs1 = req->content_type_vs1;
+  size_t ct_pos = req->content_type_pos;
+  size_t ct_len = req->content_type_len;
+  size_t ct_sub_len = 0;
+  
+  pos = con->http_hdrs->hdr_accept->pos;
+  len = con->http_hdrs->hdr_accept->len;
+  
+  if (!serv->use_err_415 || !len)
+    return (TRUE);
+
+  if (!(ct_sub_len = vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '/')) ||
+      vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '*'))
+  { /* it looks weird, blank it */
+    req->content_type_vs1 = NULL;
+    return (TRUE);
+  }
+  ct_sub_len = vstr_sc_posdiff(ct_pos, ct_sub_len);
+  
+  while (len)
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
+                                         HTTP_EOL HTTP_LWS ";,");
+    
+    if (0) { }
+    else if (vstr_cmp_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
+    { /* full match */
+      len -= tmp; pos += tmp;
+      return (!http_parse_quality(data, &pos, &len, TRUE, &val) || val);
+    }
+    else if ((tmp == (ct_sub_len + 1)) &&
+             vstr_cmp_eq(data, pos, ct_sub_len, ct_vs1, ct_pos, ct_sub_len) &&
+             (vstr_export_chr(data, vstr_sc_poslast(pos, tmp)) == '*'))
+    { /* sub match */
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, TRUE, &val))
+        return (TRUE);
+      done_sub_type = TRUE;
+    }
+    else if (!done_sub_type && vstr_cmp_cstr_eq(data, pos, tmp, "*/*"))
+    { /* "*;q=0,gzip" means TRUE ... and "*;q=1,gzip;q=0" means FALSE */
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, TRUE, &val))
+        return (TRUE);
+    }
+    else
+    {
+      len -= tmp; pos += tmp;
+      HTTP_SKIP_LWS(data, pos, len);
+    }
+
+    if (!http__skip_parameters(data, &pos, &len))
+      return (TRUE);
+    if (!len)
+      break;
+    
+    assert(VPREFIX(data, pos, len, ","));
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+  }
+
+  return (val);
 }
 
 static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
@@ -1607,11 +1899,30 @@ static void http_vlg_def(struct Con *con, struct Http_req_data *req)
   else
     vlg_info(vlg, " ver[\"$<vstr.sect:%p%p%u>\"]", data, req->sects, 3);
 
-  if (req->path_pos)
-    vlg_info(vlg, ": $<http-esc.vstr:%p%zu%zu>\n",
-             data, req->path_pos, req->path_len);
-  else
-    vlg_info(vlg, ": $<http-esc.vstr.sect:%p%p%u>\n", data, req->sects, 2);
+  vlg_info(vlg, ": $<http-esc.vstr:%p%zu%zu>\n",
+           data, req->path_pos, req->path_len);
+}
+
+static int serv__init_default_hostname(const char *def_hostname)
+{
+  Vstr_base *lfn = serv->default_hostname;
+  
+  if (def_hostname)
+    vstr_sub_cstr_ptr(lfn, 1, lfn->len, def_hostname);
+  else if (server_port != 80)
+    vstr_add_fmt(lfn, lfn->len, ":%hd", server_port);
+
+  return (!lfn->conf->malloc_bad);
+}
+
+static int serv_add_default_hostname(Vstr_base *lfn, size_t pos)
+{
+  Vstr_base *d_h = serv->default_hostname;
+  
+  if (!vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF))
+    return (FALSE);
+  
+  return (TRUE);
 }
 
 static int http_req_make_path(struct Con *con, struct Http_req_data *req)
@@ -1640,19 +1951,15 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
   
   if (serv->use_vhosts && con->http_hdrs->hdr_host->len)
   { /* add as buf's, for lowercase op */
-    Vstr_sect_node *h_h  = con->http_hdrs->hdr_host;
+    Vstr_sect_node *h_h = con->http_hdrs->hdr_host;
     
     if (vstr_add_vstr(fname, 0, data, h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
       vstr_conv_lowercase(fname, 1, h_h->len);
-    vstr_add_cstr_ptr(fname, 0, "/");
   }
   else if (serv->use_vhosts)
-  { /* if vhost but no host header, "default" dir is it */
-    vstr_add_vstr(fname, 0, data,
-                  con->http_hdrs->hdr_host->pos,
-                  con->http_hdrs->hdr_host->len, VSTR_TYPE_ADD_BUF_PTR);
-    vstr_add_cstr_ptr(fname, 0, "/default");
-  }
+    serv_add_default_hostname(fname, 0);
+
+  vstr_add_cstr_ptr(fname, 0, "/");
   
   /* check path ... */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
@@ -1810,6 +2117,8 @@ static int http_fin_req(struct Con *con, struct Http_req_data *req)
   
   http_req_free(req);
 
+  evnt_put_pkt(con->ev);
+  
   evnt_fd_set_cork(con->ev, TRUE);
   return (serv_send(con));
 }
@@ -1918,15 +2227,14 @@ static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
 
   vstr_del(lfn, 1, lfn->len);
   
-  if (!h_h->len) /* this is valid AFAICS... */
-    vstr_add_cstr_buf(lfn, lfn->len, "http:");
+  vstr_add_cstr_buf(lfn, lfn->len, "http://");
+  
+  if (!h_h->len)
+    serv_add_default_hostname(lfn, lfn->len);
   else
-  { /* but we'll do it "normally" if we have a host */
-    vstr_add_cstr_buf(lfn, lfn->len, "http://");
     vstr_add_vstr(lfn, lfn->len,
                   data, h_h->pos, h_h->len, VSTR_TYPE_ADD_ALL_BUF);
-  }
-  
+
   vstr_add_vstr(lfn, lfn->len, con->ev->io_r, req->path_pos, req->path_len,
                 VSTR_TYPE_ADD_ALL_BUF);
 
@@ -1963,7 +2271,7 @@ static int http__req_chk_dir(struct Con *con, struct Http_req_data *req)
  * the default content-type. So we just have to determine if we want to use
  * it or not. Can also return "content-types" like /404/ which returns a 404
  * error for the request */
-static int http__req_content_type(struct Http_req_data *req)
+static int http__req_content_type(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *vs1 = NULL;
   size_t     pos = 0;
@@ -1989,15 +2297,18 @@ static int http__req_content_type(struct Http_req_data *req)
       case 500: if (num_len == len) HTTPD_ERR_RET(req, 500, FALSE);
       case 503: if (num_len == len) HTTPD_ERR_RET(req, 503, FALSE);
         
-      default: /* just ignore everything else */
+      default: /* just ignore any other content */
         return (TRUE);
     }
   }
-  
+
   req->content_type_vs1 = vs1;
   req->content_type_pos = pos;
   req->content_type_len = len;
 
+  if (!http_parse_accept(con, req))
+    HTTPD_ERR_RET(req, 415, FALSE);
+  
   return (TRUE);
 }
 
@@ -2013,7 +2324,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   if (fname->conf->malloc_bad)
     VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(FN): %m\n"));
 
-  if (!http__req_content_type(req))
+  if (!http__req_content_type(con, req))
     return (http_fin_err_req(con, req));
 
   /* change "///foo" into "foo", in case no chroot ... this is done now
@@ -2157,6 +2468,7 @@ static int http_parse_req(struct Con *con)
       
       http_req_split_hdrs(con, req);
     }
+    evnt_got_pkt(con->ev);
     
     assert(((req->sects->num >= 3) && !req->ver_0_9) || (req->sects->num == 2));
     
@@ -2222,18 +2534,6 @@ static int http_parse_req(struct Con *con)
   ASSERT_NOT_REACHED();
 }
 
-/* FIXME: create a Ref for large amounts */
-static void serv_send_zeropad(struct Con *con)
-{
-  size_t len = CONF_ZEROPAD_SZ;
-    
-  if (len > con->f_len)
-    len = con->f_len;
-  
-  vstr_add_ref(con->ev->io_w, con->ev->io_w->len, zeropad_data, 0, len);
-  con->f_len -= len;
-}
-
 static int serv_q_send(struct Con *con)
 {
   vlg_dbg3(vlg, "Q $<sa:%p>\n", con->ev->sa);
@@ -2256,8 +2556,8 @@ static int serv_fin_send(struct Con *con)
       evnt_wait_cntl_add(con->ev, POLLIN);
     return (http_parse_req(con));
   }
-    
-  return (FALSE);
+
+  return (evnt_shutdown_w(con->ev));
 }
 
 /* try sending a bunch of times, bail out if we've done a few ... keep going
@@ -2286,18 +2586,10 @@ static int serv_send(struct Con *con)
   if (out->len)
     SERV__SEND("beg");
     
-  if (con->f_fd == -1)
-    while (con->f_len)
-    {
-      serv_send_zeropad(con);
-      if (out->conf->malloc_bad)
-      {
-        out->conf->malloc_bad = FALSE;
-        VLG_WARNNOMEM_RET((FALSE), (vlg, "zeropad: %m\n"));
-      }
+  if ((con->f_fd == -1) && con->f_len)
+    return (FALSE);
 
-      SERV__SEND("zero");
-    }
+  ASSERT((con->f_fd == -1) == !con->f_len);
   
   if (!con->f_len)
   {
@@ -2372,7 +2664,7 @@ static int serv_send(struct Con *con)
   close(con->f_fd);
   con->f_fd = -1;
 
-  return (serv_send(con)); /* restart and zeropad, or finish */
+  return (serv_send(con)); /* restart, or finish */
 }
 
 static int serv_cb_func_send(struct Evnt *evnt)
@@ -2437,6 +2729,9 @@ static void serv_cb_func_free(struct Evnt *evnt)
            con->ev->acct.bytes_r, con->ev->acct.bytes_r,
            con->ev->acct.bytes_w, con->ev->acct.bytes_w);
 
+  if (acpt_evnt)
+    evnt_stats_add(acpt_evnt, con->ev);
+    
   free(con);
 }
 
@@ -2503,6 +2798,8 @@ static struct Evnt *serv_cb_func_accept(int fd,
 
 static void serv_make_bind(const char *acpt_addr, short acpt_port)
 {
+  struct sockaddr_in *sinv4 = NULL;
+  
   if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
   
@@ -2514,6 +2811,10 @@ static void serv_make_bind(const char *acpt_addr, short acpt_port)
 
   if (serv->defer_accept)
     evnt_fd_set_defer_accept(acpt_evnt, serv->defer_accept);
+
+  sinv4 = EVNT_SA_IN(acpt_evnt);
+  ASSERT(!server_port || (server_port == ntohs(sinv4->sin_port)));
+  server_port = ntohs(sinv4->sin_port);
 }
 
 static void serv_filter_attach(int fd, const char *fname)
@@ -2601,13 +2902,15 @@ static void cl_cmd_line(int argc, char *argv[])
    {"server-name", required_argument, NULL, 22},
    {"gzip-content-replacement", optional_argument, NULL, 21},
    {"send-default-mime-type", optional_argument, NULL, 20},
-   {"default-mime-type", required_argument, NULL, 19},
-   {"mime-types-main", required_argument, NULL, 18},
-   {"mime-types-extra", required_argument, NULL, 17},
-   {"mime-types-xtra", required_argument, NULL, 17},
-   {"processes", required_argument, NULL, 16},
-   {"procs", required_argument, NULL, 16},
-   {"defer-accept", required_argument, NULL, 15},
+   {"send-err-415", optional_argument, NULL, 19},
+   {"default-mime-type", required_argument, NULL, 18},
+   {"mime-types-main", required_argument, NULL, 17},
+   {"mime-types-extra", required_argument, NULL, 16},
+   {"mime-types-xtra", required_argument, NULL, 16},
+   {"processes", required_argument, NULL, 15},
+   {"procs", required_argument, NULL, 15},
+   {"defer-accept", required_argument, NULL, 14},
+   {"default-hostname", required_argument, NULL, 13},
    /* {"404-file", required_argument, NULL, 0}, */
    {"debug", no_argument, NULL, 'd'},
    {"host", required_argument, NULL, 'H'},
@@ -2619,6 +2922,7 @@ static void cl_cmd_line(int argc, char *argv[])
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
+  const char *default_hostname = NULL;
   OPT_SC_SERV_DECL_OPTS();
 
   /* FIXME: TCP_CORK doesn't work if off, but only want it on for http evnt's */
@@ -2676,10 +2980,11 @@ static void cl_cmd_line(int argc, char *argv[])
       case 22: serv->server_name  = optarg;                        break;
       case 21: OPT_TOGGLE_ARG(serv->use_gzip_content_replacement); break;
       case 20: OPT_TOGGLE_ARG(serv->use_default_mime_type);        break;
-      case 19: serv->mime_types_default_type = optarg;             break;
-      case 18: serv->mime_types_main = optarg;                     break;
-      case 17: serv->mime_types_xtra = optarg;                     break;
-      case 16:
+      case 19: OPT_TOGGLE_ARG(serv->use_err_415);                  break;
+      case 18: serv->mime_types_default_type = optarg;             break;
+      case 17: serv->mime_types_main = optarg;                     break;
+      case 16: serv->mime_types_xtra = optarg;                     break;
+      case 15:
       {
         unsigned int num = atoi(optarg);
         if (!num || (num > 255))
@@ -2689,15 +2994,18 @@ static void cl_cmd_line(int argc, char *argv[])
       }
       break;
       
-      case 15:
+      case 14:
       {
         unsigned int num = atoi(optarg);
-        if (num > 16384)
+        if (num >= 4906)
           usage(program_name, TRUE,
-                " The seconds to defer connections must be in the range 0 to 16384.\n");
+                " The seconds to defer connections must be in the range 0 to 4905 (1 hour 8 minutes).\n");
         serv->defer_accept = num;
       }
-        
+      break;
+
+      case 13: default_hostname = optarg;
+      
       ASSERT_NO_SWITCH_DEF();
     }
   }
@@ -2726,6 +3034,9 @@ static void cl_cmd_line(int argc, char *argv[])
 
   serv_make_bind(server_ipv4_address, server_port);
 
+  if (!serv__init_default_hostname(default_hostname))
+    errno = ENOMEM, err(EXIT_FAILURE, "default_hostname");
+  
   if (pid_file)
     vlg_pid_file(vlg, pid_file);
 
@@ -2851,7 +3162,7 @@ int main(int argc, char *argv[])
   
   vlg_exit();
 
-  vstr_ref_del(zeropad_data);
+  vstr_free_base(serv->default_hostname);
   
   vstr_exit();
   

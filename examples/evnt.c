@@ -238,11 +238,14 @@ static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
   
   evnt->flag_q_send_now  = FALSE;
 
+  evnt->flag_q_pkt_move  = FALSE;
+
   /* FIXME: need group settings, default no nagle but cork */
   evnt->flag_io_nagle    = evnt_opt_nagle;
   evnt->flag_io_cork     = FALSE;
   
   evnt->io_r_shutdown    = FALSE;
+  evnt->io_w_shutdown    = FALSE;
   
   evnt->acct.req_put = 0;
   evnt->acct.req_got = 0;
@@ -381,6 +384,7 @@ int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
   
   if (!evnt_init(evnt, fd, alloc_len))
     goto init_fail;
+  evnt->flag_q_pkt_move = TRUE;
   
   if (!evnt->flag_io_nagle)
     evnt_fd_set_nodelay(fd, TRUE);
@@ -428,6 +432,7 @@ int evnt_make_con_local(struct Evnt *evnt, const char *fname)
   
   if (!evnt_init(evnt, fd, alloc_len))
     goto init_fail;
+  evnt->flag_q_pkt_move = TRUE;
   
   if (!evnt->flag_io_nagle)
     evnt_fd_set_nodelay(fd, TRUE);
@@ -669,14 +674,14 @@ void evnt_put_pkt(struct Evnt *evnt)
 {
   ASSERT(evnt__valid(evnt));
 
-  ASSERT(evnt->acct.req_put >= evnt->acct.req_got);
-  ++evnt->acct.req_put;
-  
-  if (evnt->flag_q_none)
+  if (evnt->flag_q_pkt_move && evnt->flag_q_none)
   {
+    ASSERT(evnt->acct.req_put >= evnt->acct.req_got);
     evnt_del(&q_none, evnt); evnt->flag_q_none = FALSE;
     evnt_add(&q_recv, evnt); evnt->flag_q_recv = TRUE;
   }
+  
+  ++evnt->acct.req_put;
   
   ASSERT(evnt__valid(evnt));
 }
@@ -686,10 +691,11 @@ void evnt_got_pkt(struct Evnt *evnt)
   ASSERT(evnt__valid(evnt));
   
   ++evnt->acct.req_got;
-  ASSERT(evnt->acct.req_put >= evnt->acct.req_got);
   
-  if (!evnt->flag_q_send_recv && (evnt->acct.req_put == evnt->acct.req_got))
+  if (evnt->flag_q_pkt_move &&
+      !evnt->flag_q_send_recv && (evnt->acct.req_put == evnt->acct.req_got))
   {
+    ASSERT(evnt->acct.req_put >= evnt->acct.req_got);
     evnt_del(&q_recv, evnt), evnt->flag_q_recv = FALSE;
     evnt_add(&q_none, evnt), evnt->flag_q_none = TRUE;
   }
@@ -789,6 +795,22 @@ int evnt_shutdown_r(struct Evnt *evnt)
   return (TRUE);
 }
 
+int evnt_shutdown_w(struct Evnt *evnt)
+{
+  vlg_dbg3(vlg, "shutdown(SHUT_WR) from[$<sa:%p>]\n", evnt->sa);
+  
+  if (shutdown(evnt_fd(evnt), SHUT_WR) == -1)
+  {
+    if (errno != ENOTCONN)
+      vlg_warn(vlg, "shutdown(SHUT_WR): %m\n");
+    return (FALSE);
+  }
+  evnt_wait_cntl_del(evnt, POLLOUT);
+  evnt->io_w_shutdown = TRUE;
+
+  return (TRUE);
+}
+
 int evnt_recv(struct Evnt *evnt, unsigned int *ern)
 {
   int ret = TRUE;
@@ -840,8 +862,7 @@ int evnt_send(struct Evnt *evnt)
   else if ( evnt->flag_q_send_recv && !evnt->io_w->len)
   {
     evnt_del(&q_send_recv, evnt);
-    ASSERT(evnt->acct.req_put >= evnt->acct.req_got);
-    if (evnt->acct.req_put == evnt->acct.req_got)
+    if (evnt->flag_q_pkt_move && (evnt->acct.req_put == evnt->acct.req_got))
       evnt_add(&q_none, evnt), evnt->flag_q_none = TRUE;
     else
       evnt_add(&q_recv, evnt), evnt->flag_q_recv = TRUE;
@@ -850,6 +871,7 @@ int evnt_send(struct Evnt *evnt)
   }
   else if (!evnt->flag_q_send_recv &&  evnt->io_w->len)
   {
+    ASSERT(evnt->flag_q_none || evnt->flag_q_recv);
     if (evnt->flag_q_none)
       evnt_del(&q_none, evnt), evnt->flag_q_none = FALSE;
     else
@@ -1049,6 +1071,8 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
         if (++acpt_num >= evnt__accept_limit)
           break;
       }
+      /* FIXME: apache seems to assume certain errors are really bad and we
+       * should just kill the listen socket and wait to die */
       
       goto next_accept;
     }
@@ -1217,6 +1241,15 @@ void evnt_out_dbg3(const char *prefix)
            evnt__debug_num_1(q_send_recv),
            evnt__debug_num_1(q_none),
            evnt__debug_num_1(q_send_now));
+}
+
+void evnt_stats_add(struct Evnt *dst, const struct Evnt *src)
+{
+  dst->acct.req_put += src->acct.req_put;
+  dst->acct.req_put += src->acct.req_got;
+
+  dst->acct.bytes_r += src->acct.bytes_r;
+  dst->acct.bytes_w += src->acct.bytes_w;
 }
 
 unsigned int evnt_num_all(void)

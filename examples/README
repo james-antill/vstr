@@ -17,6 +17,9 @@ happily work on win32 etc.
 
  TODO for existing code
 
+ --cssfile
+ --css-filename
+
  evnt
 	fixing nagle off/on for cork (allow groups)
 
@@ -29,12 +32,21 @@ http://www.sans.org/top20/#u2
 
 	condrestart doesn't work?
 	man page
-	jhttpd -> vstr-httpd
+        syslog2apache, do merge/catchup
+	chroot+/dev/log
+	jhttpd -> vstr-httpd?
 	O(1) timer_q_add_node
 	Multi procs "cntl list" command pass through
 	max timeout for keep-alive
 	max requests for keep-alive?
 	conf
+	 Support accept/accept-language per file [w3/chips]
+           GALEON
+              Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,image/jpeg,image/gif;q=0.2,*/*;q=0.1
+              Accept-Language: en
+           FIREFOX
+              Accept: image/png,*/*;q=0.5
+              Accept-Language: en-us,en;q=0.5
 	 Per file temp/perm directs (301/path or 307/path FS trees? -- and 302?)
 	  Allow 410 also? [w3/chips]
 	 Per file mime_type ... allow "cool URIs" [w3/chips]
@@ -46,8 +58,6 @@ http://www.sans.org/top20/#u2
 	stat cache
 	408 - request timeout?
         limiting IO
-	Support accept-language?
-	 Other accept headers [w3/chips]
 	ipv6
 	native syslog
 	edge triggered events

@@ -4,7 +4,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 228
+Content-Length: 339
 
 HTTP/1.1 200 OK
 Date:
@@ -75,7 +75,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -85,6 +85,8 @@ Content-Length: 216
   <body>
     <h1>403 Forbidden</h1>
     <p>The request is forbidden.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 403 Forbidden
@@ -93,7 +95,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -103,6 +105,8 @@ Content-Length: 216
   <body>
     <h1>403 Forbidden</h1>
     <p>The request is forbidden.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 206 Partial content
@@ -159,7 +163,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -169,6 +173,8 @@ Content-Length: 216
   <body>
     <h1>403 Forbidden</h1>
     <p>The request is forbidden.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 206 Partial content

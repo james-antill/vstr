@@ -53,39 +53,46 @@ static void cntl__close(Vstr_base *out)
   evnt_close(acpt_cntl_evnt);
 }
 
+static void cntl__ns_out_fmt(Vstr_base *out, const char *fmt, ...)
+   VSTR__COMPILE_ATTR_FMT(2, 3);
+static void cntl__ns_out_fmt(Vstr_base *out, const char *fmt, ...)
+{
+  va_list ap;
+  size_t ns = 0;
+
+  if (!(ns = vstr_add_netstr_beg(out, out->len)))
+    return;
+
+  va_start(ap, fmt);
+  vstr_add_vfmt(out, out->len, fmt, ap);
+  va_end(ap);
+
+  vstr_add_netstr_end(out, ns, out->len);
+}
+
 static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
 {
   struct Evnt *ev = beg;
   
   while (ev)
   {
-    size_t ns1 = 0;
-    size_t ns2 = 0;
+    size_t ns = 0;
 
-    if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
+    if (!(ns = vstr_add_netstr_beg(out, out->len)))
       return;
 
-    if (!(ns2 = vstr_add_netstr_beg(out, out->len)))
-      return;
-    vstr_add_fmt(out, out->len, "EVNT %s", tag);
-    vstr_add_netstr_end(out, ns2, out->len);
-    
-    if (!(ns2 = vstr_add_netstr_beg(out, out->len)))
-      return;
-    vstr_add_fmt(out, out->len, "from[$<sa:%p>]", ev->sa);
-    vstr_add_netstr_end(out, ns2, out->len);
+    cntl__ns_out_fmt(out, "EVNT %s", tag);
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
+    cntl__ns_out_fmt(out, "req_put[%'u:%u]",
+                     ev->acct.req_put, ev->acct.req_put);
+    cntl__ns_out_fmt(out, "req_got[%'u:%u]",
+                     ev->acct.req_got, ev->acct.req_got);
+    cntl__ns_out_fmt(out, "recv[${BKMG.ju:%ju}:%ju]",
+                     ev->acct.bytes_r, ev->acct.bytes_r);
+    cntl__ns_out_fmt(out, "send[${BKMG.ju:%ju}:%ju]",
+                     ev->acct.bytes_w, ev->acct.bytes_w);
 
-    if (!(ns2 = vstr_add_netstr_beg(out, out->len)))
-      return;
-    vstr_add_fmt(out, out->len, "recv[${BKMG.ju:%ju}]", ev->acct.bytes_r);
-    vstr_add_netstr_end(out, ns2, out->len);
-
-    if (!(ns2 = vstr_add_netstr_beg(out, out->len)))
-      return;
-    vstr_add_fmt(out, out->len, "send[${BKMG.ju:%ju}]", ev->acct.bytes_w);
-    vstr_add_netstr_end(out, ns2, out->len);
-    
-    vstr_add_netstr_end(out, ns1, out->len);
+    vstr_add_netstr_end(out, ns, out->len);
     
     ev = ev->next;
   }
@@ -156,6 +163,8 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
       return (TRUE);
     }
 
+    evnt_got_pkt(evnt);
+
     if (0){ }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "CLOSE"))
     {
@@ -184,6 +193,7 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
     if (evnt->io_w->conf->malloc_bad)
       goto malloc_bad;
     
+    evnt_put_pkt(evnt);
     if (!evnt_send_add(evnt, FALSE, 32))
       return (FALSE);
   
@@ -292,7 +302,21 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, int fd_r, int fd_w,
 {
   ASSERT(fd_w == -1);
   
-  if (!acpt_cntl_evnt)
+  if (acpt_cntl_evnt)
+  {
+    int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
+    
+    ASSERT(vlg       == passed_vlg);
+    ASSERT(acpt_evnt == passed_acpt_evnt);
+    
+    if (!evnt_poll_swap(acpt_cntl_evnt, fd_r))
+      vlg_abort(vlg, "%s: %m\n", "swap_acpt");
+
+    close(old_fd);
+    
+    acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
+  }
+  else
   {
     ASSERT(!vlg && passed_vlg);
 
@@ -308,20 +332,6 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, int fd_r, int fd_w,
     if (!evnt_make_custom(acpt_cntl_evnt, fd_r, 0, 0))
       vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "cntl file");
   
-    acpt_cntl_evnt->cbs->cb_func_free   = cntl__cb_func_pipe_acpt_free;
-  }
-  else
-  {
-    int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
-    
-    ASSERT(vlg       == passed_vlg);
-    ASSERT(acpt_evnt == passed_acpt_evnt);
-    
-    if (!evnt_poll_swap(acpt_cntl_evnt, fd_r))
-      vlg_abort(vlg, "%s: %m\n", "swap_acpt");
-
-    close(old_fd);
-    
-    acpt_cntl_evnt->cbs->cb_func_free   = cntl__cb_func_pipe_acpt_free;
+    acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
   }
 }

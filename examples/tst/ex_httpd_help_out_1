@@ -27,7 +27,10 @@
     --mime-types-main - Main mime types filename (default: /etc/mime.types).
     --mime-types-xtra - Additional mime types filename.
     --processes       - Number of processes to use (default: 1).
+    --send-err-415    - Toggle sending 415 responses (default: on).
     --defer-accept    - Time to defer dataless connections (default: 16s).
+    --default-hostname
+                      - hostname used when none supplied (default is hostname).
     --debug -d        - Raise debug level (can be used upto 3 times).
     --host -H         - IPv4 address to bind (default: "all").
     --help -h         - Print this message.

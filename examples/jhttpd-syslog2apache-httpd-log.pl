@@ -30,7 +30,7 @@ while (<>)
 		 (\d+) \s         # Day
 		 (\d+:\d+:\d+) \s # Time
 		 \w+ \s           # Logging host
-		 jhttpd           # It's the jhttpd server
+		 (?:j|vstr-)httpd # It's the jhttpd server
 		 \[ \d+ \]        # Pid of web server
 		 : \s             # MSG Seperator...
 		 (.+)

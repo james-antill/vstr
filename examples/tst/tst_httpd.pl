@@ -10,6 +10,23 @@ require 'vstr_tst_examples.pl';
 our $root = "ex_httpd_root";
 our $truncate_segv = 0;
 
+sub http_cntl_list_beg
+  { # FIXME: see if it looks "OK"
+    my $list_pid = tst_fork();
+    if (defined ($list_pid) && !$list_pid) {
+      sleep(2);
+      system("./ex_cntl -e list ex_httpd_cntl > /dev/null");
+      _exit(0);
+    }
+    return $list_pid;
+  }
+sub http_cntl_list_cleanup
+  {
+    my $list_pid = shift;
+    if (defined($list_pid))
+      { waitpid($list_pid, 0); }
+  }
+
 sub httpd__munge_ret
   {
     my $output = shift;
@@ -18,7 +35,7 @@ sub httpd__munge_ret
     $output =~ s/^(Date:).*$/$1/gm;
     # Remove last-modified = start date for error messages
     $output =~
-      s!(HTTP/1[.]1 \s (?:301|40[0345]|41[23467]|50[015]) .*)$ (\n)
+      s!(HTTP/1[.]1 \s (?:301|40[0345]|41[234567]|50[015]) .*)$ (\n)
 	^(Date:)$ (\n)
 	^(Server:.*)$ (\n)
 	^(Last-Modified:) .*$
@@ -314,26 +331,35 @@ utime $atime, $mtime, "$root/default/bin";
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-my $args = "--mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+my $args = "--default-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+
+my $list_pid = undef;
 
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=false --sendfile=false");
 system("cat > $root/default/fifo &");
+$list_pid = http_cntl_list_beg();
 all_vhost_tsts();
+http_cntl_list_cleanup($list_pid);
 daemon_exit("ex_httpd");
 
 $truncate_segv = 1;
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=true  --sendfile=false");
+daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=true  --sendfile=false --procs=2");
 system("cat > $root/default/fifo &");
+$list_pid = http_cntl_list_beg();
 all_vhost_tsts();
+http_cntl_list_cleanup($list_pid);
 daemon_exit("ex_httpd");
 $truncate_segv = 0;
 
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true --mmap=false --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
 system("cat > $root/default/fifo &");
+$list_pid = http_cntl_list_beg();
 all_vhost_tsts();
+http_cntl_list_cleanup($list_pid);
 daemon_exit("ex_httpd");
 
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --public-only=true");
+my $largs = "--mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+daemon_init("ex_httpd", $root, $largs . "-d -d -d --virtual-hosts=true  --public-only=true");
 all_public_only_tsts();
 daemon_exit("ex_httpd");
 

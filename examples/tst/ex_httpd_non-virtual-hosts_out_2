@@ -58,7 +58,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 275
+Content-Length: 386
 Location: http://X/foo.example.com/
 
 HTTP/1.1 301 Moved Permanently
@@ -67,7 +67,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 275
+Content-Length: 386
 Location: http://X/foo.example.com/
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -78,6 +78,8 @@ Location: http://X/foo.example.com/
   <body>
     <h1>301 Moved Permanently</h1>
     <p>The document has moved <a href="http://X/foo.example.com/">here</a>.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 206 Partial content
@@ -95,7 +97,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 216
+Content-Length: 327
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -105,6 +107,8 @@ Content-Length: 216
   <body>
     <h1>403 Forbidden</h1>
     <p>The request is forbidden.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 206 Partial content
@@ -123,7 +127,7 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 279
+Content-Length: 390
 Location: http://X/foo.example.com/nxt/
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -134,6 +138,8 @@ Location: http://X/foo.example.com/nxt/
   <body>
     <h1>301 Moved Permanently</h1>
     <p>The document has moved <a href="http://X/foo.example.com/nxt/">here</a>.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 301 Moved Permanently
@@ -142,8 +148,8 @@ Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 276
-Location: http:/foo.example.com/nxt/
+Content-Length: 396
+Location: http://default/foo.example.com/nxt/
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
@@ -152,7 +158,9 @@ Location: http:/foo.example.com/nxt/
   </head>
   <body>
     <h1>301 Moved Permanently</h1>
-    <p>The document has moved <a href="http:/foo.example.com/nxt/">here</a>.</p>
+    <p>The document has moved <a href="http://default/foo.example.com/nxt/">here</a>.</p>
+  <hr>
+  Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
 HTTP/1.1 206 Partial content

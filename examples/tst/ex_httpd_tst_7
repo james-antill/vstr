@@ -13,7 +13,7 @@ Accept-Encoding: gzip
 Range: bytes = 1-
 
 GET http://default/ HTTP/1.1
-Accept-Encoding: gzip; q = 0 . 000
+Accept-Encoding: gzip; q = 0 . 0
 
 GET http://default/ HTTP/1.1
 Accept-Encoding: gzipper
@@ -21,7 +21,7 @@ Accept-Encoding: gzipper
 GET http://default/ HTTP/1.1
 Range: bytes = 0-
 X-comment: ignore's full Range
-Accept-Encoding: foo, bar;q= 0 . 020 , *;q = 1 . 000 , gzipper;q=0, end
+Accept-Encoding: foo, bar;q= 0 . 02 , *;q = 1 . 000 , gzipper;q=0, end
 
 GET http://default/ HTTP/1.1
 Accept-Encoding: x-gzip

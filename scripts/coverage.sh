@@ -30,8 +30,7 @@ done
 fi
 
 
-# only remove the known .info files once...
-rm -f lib-dbg.info lib-opt.info tst-dbg.info tst-opt.info
+rm -f *.info
 
 function del()
 {

@@ -83,110 +83,56 @@ Content-Length: 165
     <h1>Foo default</h1>
   </body>
 </html>
-HTTP/1.1 200 OK
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 165
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
-  <head>
-    <title>Foo default</title>
-  </head>
-  <body>
-    <h1>Foo default</h1>
-  </body>
-</html>
-HTTP/1.1 416 Requested Range Not Satisfiable
+HTTP/1.1 415 Unsupported Media Type
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 387
-Content-Range: bytes */165
+Content-Length: 453
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>416 Requested Range Not Satisfiable</title>
+    <title>415 Unsupported Media Type</title>
   </head>
   <body>
-    <h1>416 Requested Range Not Satisfiable</h1>
-    <p>The document request range was not valid.</p>
+    <h1>415 Unsupported Media Type</h1>
+    <p>The server is refusing to service the request because the result of the request is in a format not supported, by the request.</p>
   <hr>
   Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
-HTTP/1.1 200 OK
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 165
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
-  <head>
-    <title>Foo default</title>
-  </head>
-  <body>
-    <h1>Foo default</h1>
-  </body>
-</html>
-HTTP/1.1 200 OK
-Date:
-Server: jhttpd/0.9.1 (Vstr)
-Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
-Content-Type: text/html
-Content-Length: 165
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
-  <head>
-    <title>Foo default</title>
-  </head>
-  <body>
-    <h1>Foo default</h1>
-  </body>
-</html>
-HTTP/1.1 416 Requested Range Not Satisfiable
+HTTP/1.1 415 Unsupported Media Type
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 387
-Content-Range: bytes */165
+Content-Length: 453
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>416 Requested Range Not Satisfiable</title>
+    <title>415 Unsupported Media Type</title>
   </head>
   <body>
-    <h1>416 Requested Range Not Satisfiable</h1>
-    <p>The document request range was not valid.</p>
+    <h1>415 Unsupported Media Type</h1>
+    <p>The server is refusing to service the request because the result of the request is in a format not supported, by the request.</p>
   <hr>
   Generated using the <a href="http://www.and.org/vstr/httpd.html">Vstr httpd example Web Server</a>.
   </body>
 </html>
-HTTP/1.1 206 Partial content
+HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.9.1 (Vstr)
 Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
 Connection: close
 Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 164
-Content-Range: bytes 1-164/165
+Content-Length: 165
 
-!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
     <title>Foo default</title>
