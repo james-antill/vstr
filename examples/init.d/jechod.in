@@ -14,10 +14,12 @@ prog_name=jechod
 prog_exe=ex_echod
 ex_dir=@@libdir@@/vstr-@@VERSION@@/examples
 
+[ -r /etc/sysconfig/jechod ] && . /etc/sysconfig/jechod
+
 function start()
 {
         echo -n $"Starting $prog: "
-        daemon --check $prog_name $ex_dir/$prog_exe
+        daemon --check $prog_name $ex_dir/$prog_exe $JECHOD_ARGS
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name

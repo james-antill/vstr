@@ -14,10 +14,13 @@ prog_name=jhttpd
 prog_exe=ex_httpd
 ex_dir=@@libdir@@/vstr-@@VERSION@@/examples
 
+JHTTPD_DIR=/var/www/html
+[ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
+
 function start()
 {
         echo -n $"Starting $prog: "
-        daemon --check $prog_name $ex_dir/$prog_exe /var/www/html
+        daemon --check $prog_name $ex_dir/$prog_exe $JHTTPD_ARGS $JHTTPD_DIR
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name
