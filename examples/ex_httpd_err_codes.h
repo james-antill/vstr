@@ -186,6 +186,16 @@
         req->http_error_msg = CONF_MSG_RET_ ## code ;                \
     } while (0)
 
+#define HTTPD_ERR_RET_VAL(req, code, val) do {          \
+      HTTPD_ERR(req, code);                             \
+      return (val);                                     \
+    } while (0)
+
+#define HTTPD_ERR_GOTO(req, code, label) do {           \
+      HTTPD_ERR(req, code);                             \
+      goto label ;                                      \
+    } while (0)
+
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar
 */

@@ -731,7 +731,7 @@ void evnt_send_del(struct Evnt *evnt)
   evnt->flag_q_send_now = FALSE;
 }
 
-void evnt_shutdown_r(struct Evnt *evnt)
+int evnt_shutdown_r(struct Evnt *evnt)
 {
   vlg_dbg3(vlg, "shutdown(SHUT_RD) from[$<sa:%p>]\n", evnt->sa);
   
@@ -739,7 +739,13 @@ void evnt_shutdown_r(struct Evnt *evnt)
   SOCKET_POLL_INDICATOR(evnt->ind)->revents &= ~POLLIN;
   SOCKET_POLL_INDICATOR(evnt->ind)->revents &= ~POLLHUP;
   if (shutdown(SOCKET_POLL_INDICATOR(evnt->ind)->fd, SHUT_RD) == -1)
-    vlg_err(vlg, EXIT_FAILURE, "shutdown(SHUT_RD): %m\n");
+  {
+    if (errno != ENOTCONN)
+      vlg_warn(vlg, "shutdown(SHUT_RD): %m\n");
+    return (FALSE);
+  }
+
+  return (TRUE);
 }
 
 int evnt_recv(struct Evnt *evnt, unsigned int *ern)

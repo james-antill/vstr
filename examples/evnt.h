@@ -87,7 +87,7 @@ extern void evnt_add(struct Evnt **, struct Evnt *);
 extern void evnt_del(struct Evnt **, struct Evnt *);
 extern void evnt_put_pkt(struct Evnt *);
 extern void evnt_got_pkt(struct Evnt *);
-extern void evnt_shutdown_r(struct Evnt *);
+extern int evnt_shutdown_r(struct Evnt *);
 extern int evnt_recv(struct Evnt *, unsigned int *ern);
 extern int evnt_send(struct Evnt *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);

@@ -43,14 +43,25 @@ sub all_vhost_tsts()
   {
     sub_tst(\&sub_http_tst, "ex_httpd");
     sub_tst(\&sub_http_tst, "ex_httpd_errs");
+
     sub_tst(\&sub_http_tst, "ex_httpd",
 	    {shutdown_w => 0});
     sub_tst(\&sub_http_tst, "ex_httpd_errs",
 	    {shutdown_w => 0});
+    sub_tst(\&sub_http_tst, "ex_httpd_shut",
+	    {shutdown_w => 0});
+
     sub_tst(\&sub_http_tst, "ex_httpd",
 	    {slow_write => 1});
     sub_tst(\&sub_http_tst, "ex_httpd_errs",
 	    {slow_write => 1});
+
+    sub_tst(\&sub_http_tst, "ex_httpd",
+	    {shutdown_w => 0, slow_write => 1});
+    sub_tst(\&sub_http_tst, "ex_httpd_errs",
+	    {shutdown_w => 0, slow_write => 1});
+    sub_tst(\&sub_http_tst, "ex_httpd_shut",
+	    {shutdown_w => 0, slow_write => 1});
   }
 
 sub all_nonvhost_tsts()

@@ -704,12 +704,13 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
                                  VSTR_FLAG_PARSE_NUM_OVERFLOW);
   
   if (!VPREFIX(data, op_pos, op_len, "HTTP"))
-    return (400);
+    HTTPD_ERR_RET_VAL(req, 400, FALSE);
+
   op_len -= strlen("HTTP"); op_pos += strlen("HTTP");
   SKIP_LWS(data, op_pos, op_len);
   
   if (!VPREFIX(data, op_pos, op_len, "/"))
-    return (400);
+    HTTPD_ERR_RET_VAL(req, 400, FALSE);
   op_len -= strlen("/"); op_pos += strlen("/");
   SKIP_LWS(data, op_pos, op_len);
   
@@ -718,7 +719,8 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
   SKIP_LWS(data, op_pos, op_len);
   
   if (!num_len || !VPREFIX(data, op_pos, op_len, "."))
-    return (400);
+    HTTPD_ERR_RET_VAL(req, 400, FALSE);
+
   op_len -= strlen("."); op_pos += strlen(".");
   SKIP_LWS(data, op_pos, op_len);
   
@@ -727,7 +729,7 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
   SKIP_LWS(data, op_pos, op_len);
   
   if (!num_len || op_len)
-    return (400);
+    HTTPD_ERR_RET_VAL(req, 400, FALSE);
   
   if (0) { } /* not allowing HTTP/0.9 here */
   else if ((major == 1) && (minor >= 1))
@@ -735,9 +737,9 @@ static int http_req_parse_version(struct Con *con, struct Http_req_data *req,
   else if ((major == 1) && (minor == 0))
   { /* do nothing */ }
   else
-    return (505);
+    HTTPD_ERR_RET_VAL(req, 505, FALSE);
         
-  return (0);
+  return (TRUE);
 }
 
 static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
@@ -746,15 +748,16 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
   Vstr_sect_node *h_c = con->http_hdrs->hdr_connection;
   size_t op_pos = VSTR_SECTS_NUM(req->sects, 3)->pos;
   size_t op_len = VSTR_SECTS_NUM(req->sects, 3)->len;
-  int ret = 0;
+
+  ASSERT(!req->ver_0_9);
   
-  if ((ret = http_req_parse_version(con, req, op_pos, op_len)))
-    return (ret);
+  if (!http_req_parse_version(con, req, op_pos, op_len))
+    return (FALSE);
   
   parse_hdrs(data, con->http_hdrs, req->sects, 3);
 
   if (!serv->use_keep_alive)
-    return (0);
+    return (TRUE);
   
   if (req->ver_1_1 &&
       (!h_c->pos || !vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "close")))
@@ -763,7 +766,7 @@ static int http_req_parse_1_x(struct Con *con, struct Http_req_data *req)
            vstr_cmp_case_cstr_eq(data, h_c->pos, h_c->len, "keep-alive"))
     con->keep_alive = HTTP_1_0_KEEP_ALIVE;
   
-  return (0);
+  return (TRUE);
 }
 
 static int serv_http_absolute_uri(struct Con *con,
@@ -1029,7 +1032,7 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
   if (req->ver_1_1 && con->http_hdrs->hdr_expect->len)
     /* I'm pretty sure we can ignore 100-continue, as no request will
      * have a body */
-    return (417);
+    HTTPD_ERR_RET_VAL(req, 417, FALSE);
           
   if (con->http_hdrs->hdr_range->pos)
   {
@@ -1046,13 +1049,13 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
     if (ret_code == 416)
     {
       if (!con->http_hdrs->hdr_if_range->pos)
-        return (416);
+        HTTPD_ERR_RET_VAL(req, 416, FALSE);
       h_r->pos = 0;
     }
   }
   
   if (!app_response_ok(con, req, now))
-    return (412);
+    HTTPD_ERR_RET_VAL(req, 412, FALSE);
 
   if (!con->http_hdrs->hdr_range->pos)
     serv_call_mmap(con, req, 0, con->f_len);
@@ -1072,8 +1075,8 @@ static int serv_http_req_1_x(struct Con *con, struct Http_req_data *req,
                  (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
   
   app_end_hdrs(out);
-
-  return (0);
+  
+  return (TRUE);
 }
 
 static void http_req_vlg_def(struct Con *con, Vstr_sects *sects)
@@ -1092,15 +1095,16 @@ static void http_req_vlg_def(struct Con *con, Vstr_sects *sects)
            data, sects, 2);
 }
 
-static int http_req_make_path(struct Con *con,
-                              Vstr_base *fname, size_t *vhost_prefix_len)
+static int http_req_make_path(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
+  Vstr_base *fname = req->fname;
+  size_t *vhost_prefix_len = &req->vhost_prefix_len;
   
   vstr_conv_decode_uri(fname, 1, fname->len);
 
   if (fname->conf->malloc_bad)
-    return (0);
+    return (TRUE);
   
   assert(VPREFIX(fname, 1, fname->len, "/"));
 
@@ -1113,7 +1117,7 @@ static int http_req_make_path(struct Con *con,
     Vstr_sect_node *h_h  = con->http_hdrs->hdr_host;
     
     if (!vstr_add_vstr(fname, 0, data, h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
-      return (0);
+      return (TRUE);
     vstr_conv_lowercase(fname, 1, h_h->len);
     vstr_add_cstr_ptr(fname, 0, "/");
     *vhost_prefix_len = con->http_hdrs->hdr_host->len + strlen("/");
@@ -1129,10 +1133,10 @@ static int http_req_make_path(struct Con *con,
   
   /* check path ... */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
-    return (403);
+    HTTPD_ERR_RET_VAL(req, 403, FALSE);
       
   if (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/../"))
-    return (403);
+    HTTPD_ERR_RET_VAL(req, 403, FALSE);
 
   ASSERT(fname->len >= 1);
   assert(VPREFIX(fname, 1, fname->len, "/"));
@@ -1141,7 +1145,7 @@ static int http_req_make_path(struct Con *con,
   if (!fname->len)
     vstr_add_cstr_ptr(fname, fname->len, "index.html");
 
-  return (0);
+  return (TRUE);
 }
 
 static void serv_fd_close(struct Con *con)
@@ -1280,10 +1284,7 @@ static int http_parse_req(struct Con *con)
   if (req->sects->malloc_bad)
     VLG_WARNNOMEM_GOTO(con_fin_error_mem, (vlg, "split: %m\n"));
   else if (req->sects->num < 2)
-  {
-    HTTPD_ERR(req, 400);
-    goto con_fin_error_code;
-  }
+    HTTPD_ERR_GOTO(req, 400, con_fin_error_code);
   else
   {
     size_t op_pos = 0;
@@ -1316,14 +1317,8 @@ static int http_parse_req(struct Con *con)
     op_pos = VSTR_SECTS_NUM(req->sects, 1)->pos;
     op_len = VSTR_SECTS_NUM(req->sects, 1)->len;
 
-    if (!req->ver_0_9)
-      switch (http_req_parse_1_x(con, req))
-      {
-        case   0: break;
-        case 400: HTTPD_ERR(req, 400); goto con_fin_error_code;
-        case 505: HTTPD_ERR(req, 505); goto con_fin_error_code;
-        default: ASSERT_NOT_REACHED();
-      }
+    if (!req->ver_0_9 && !http_req_parse_1_x(con, req))
+      goto con_fin_error_code;
       
     if (0) { }
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "GET") ||
@@ -1339,22 +1334,12 @@ static int http_parse_req(struct Con *con)
       op_len = VSTR_SECTS_NUM(req->sects, 2)->len;
 
       if (!serv_http_absolute_uri(con, &op_pos, &op_len, req->ver_1_1))
-      {
-        HTTPD_ERR(req, 400);
-        goto con_fin_error_code;
-      }
+        HTTPD_ERR_GOTO(req, 400, con_fin_error_code);
 
       vstr_add_vstr(req->fname, 0, data, op_pos, op_len, VSTR_TYPE_ADD_BUF_PTR);
 
-      if (req->fname->conf->malloc_bad)      
-        VLG_WARNNOMEM_GOTO(con_fin_error_mem, (vlg, "fname: %m\n"));
-
-      switch (http_req_make_path(con, req->fname, &req->vhost_prefix_len))
-      {
-        case   0: break;
-        case 403: HTTPD_ERR(req, 403); goto con_fin_error_code;
-        default: ASSERT_NOT_REACHED();
-      }
+      if (!http_req_make_path(con, req))
+        goto con_fin_error_code;
       
      retry_req:
       if (req->fname->conf->malloc_bad)
@@ -1394,15 +1379,9 @@ static int http_parse_req(struct Con *con)
         goto con_fin_error_code;
       }
       if (fstat64(con->f_fd, req->f_stat) == -1)
-      {
-        HTTPD_ERR(req, 500);
-        goto con_close_fin_error_code;
-      }
+        HTTPD_ERR_GOTO(req, 500, con_close_fin_error_code);
       if (CONF_PUBLIC_ONLY && !(req->f_stat->st_mode & S_IROTH))
-      {
-        HTTPD_ERR(req, 403);
-        goto con_close_fin_error_code;
-      }
+        HTTPD_ERR_GOTO(req, 403, con_close_fin_error_code);
 
       if (S_ISDIR(req->f_stat->st_mode))
       {
@@ -1411,26 +1390,16 @@ static int http_parse_req(struct Con *con)
         goto retry_req;
       }
       if (!S_ISREG(req->f_stat->st_mode))
-      {
-        HTTPD_ERR(req, 403);
-        goto con_close_fin_error_code;
-      }
+        HTTPD_ERR_GOTO(req, 403, con_close_fin_error_code);
       con->f_len = req->f_stat->st_size;
 
       vstr_del(req->fname, 1, req->fname->len);
       
       if (req->ver_0_9)
         serv_call_mmap(con, req, 0, con->f_len);
-      else
-        switch (serv_http_req_1_x(con, req, http_req_content_type,
+      else if (!serv_http_req_1_x(con, req, http_req_content_type,
                                   range_beg, range_end))
-        {
-          case   0: break;
-          case 417: HTTPD_ERR(req, 417); goto con_close_fin_error_code;
-          case 416: HTTPD_ERR(req, 416); goto con_close_fin_error_code;
-          case 412: HTTPD_ERR(req, 412); goto con_close_fin_error_code;
-          default: ASSERT_NOT_REACHED();
-        }
+        goto con_close_fin_error_code;
 
       if (out->conf->malloc_bad)
         VLG_WARNNOMEM_GOTO(con_close_fin_error_mem, (vlg, "headers: %m\n"));
@@ -1471,10 +1440,7 @@ static int http_parse_req(struct Con *con)
       op_len = VSTR_SECTS_NUM(req->sects, 2)->len;
 
       if (!serv_http_absolute_uri(con, &op_pos, &op_len, req->ver_1_1))
-      {
-        HTTPD_ERR(req, 400);
-        goto con_fin_error_code;
-      }
+        HTTPD_ERR_GOTO(req, 400, con_fin_error_code);
       
       vstr_add_fmt(out, out->len, "%s %03d %s\r\n", "HTTP/1.1", 200, "OK");
       app_def_hdrs(con, req, now, now, "message/http", req->len);
@@ -1495,19 +1461,12 @@ static int http_parse_req(struct Con *con)
               FALSE))
     {
       if (!serv_http_absolute_uri(con, &op_pos, &op_len, req->ver_1_1))
-      { /* ? */
-        HTTPD_ERR(req, 400);
-        goto con_fin_error_code;
-      }
-      
-      HTTPD_ERR(req, 405);
-      goto con_fin_error_code;
+        HTTPD_ERR_GOTO(req, 400, con_fin_error_code);
+
+      HTTPD_ERR_GOTO(req, 405, con_fin_error_code);
     }
     else
-    {
-      HTTPD_ERR(req, 501);
-      goto con_fin_error_code;
-    }
+      HTTPD_ERR_GOTO(req, 501, con_fin_error_code);
   }
   ASSERT_NOT_REACHED();
 
@@ -1658,7 +1617,8 @@ static int serv_send(struct Con *con)
 
     if (con->keep_alive)
     { /* need to try immediately, as we might have already got the next req */
-      SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
+      if (!con->io_r_shutdown)
+        SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
       return (http_parse_req(con));
     }
     
@@ -1715,7 +1675,8 @@ static int serv_cb_func_shutdown_r(struct Evnt *evnt)
   { }
   
   con->io_r_shutdown = TRUE;
-  evnt_shutdown_r(evnt);
+  if (!evnt_shutdown_r(evnt))
+    return (FALSE);
   
   return (TRUE);
 }
@@ -1726,24 +1687,24 @@ static int serv_recv(struct Con *con)
   int ret = 0;
   Vstr_base *data = con->ev->io_r;
 
-  if (!con->io_r_shutdown) /* FIXME: */
+  ASSERT(!con->io_r_shutdown);
+  
+  if (!(ret = evnt_recv(con->ev, &ern)))
   {
-    if (!(ret = evnt_recv(con->ev, &ern)))
-    {
-      vlg_dbg3(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->ev->sa, ern);
-      
-      if (ern != VSTR_TYPE_SC_READ_FD_ERR_EOF)
-        goto con_cleanup;
-      serv_cb_func_shutdown_r(con->ev);
-    }
+    vlg_dbg3(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->ev->sa, ern);
     
-    if (con->f_len) /* need to stop input, until we can get rid of it */
-    {
-      ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
-      
-      if (server_max_header_sz && (data->len > server_max_header_sz))
-        SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
-    }
+    if (ern != VSTR_TYPE_SC_READ_FD_ERR_EOF)
+      goto con_cleanup;
+    if (!serv_cb_func_shutdown_r(con->ev))
+      goto con_cleanup;
+  }
+    
+  if (con->f_len) /* need to stop input, until we can get rid of it */
+  {
+    ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
+    
+    if (server_max_header_sz && (data->len > server_max_header_sz))
+      SOCKET_POLL_INDICATOR(con->ev->ind)->events &= ~POLLIN;
   }
   
   if (http_parse_req(con))
@@ -1808,8 +1769,12 @@ static struct Evnt *serv_cb_func_accept(int fd,
   tv = con->ev->ctime;
   TIMER_Q_TIMEVAL_ADD_SECS(&tv, 0, client_timeout);
 
-  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+  con->f_fd  = -1;
+  con->f_len =  0;
+  
   con->parsed_method_ver_1_0 = FALSE;
+  con->keep_alive = HTTP_NIL_KEEP_ALIVE;
+  con->io_r_shutdown = FALSE;
   
   serv_clear_hdrs(con);
   
@@ -1824,9 +1789,6 @@ static struct Evnt *serv_cb_func_accept(int fd,
   con->ev->cbs->cb_func_free       = serv_cb_func_free;
   con->ev->cbs->cb_func_shutdown_r = serv_cb_func_shutdown_r;
 
-  con->f_fd  = -1;
-  con->f_len =  0;
-  
   return (con->ev);
 
  timer_add_fail:
@@ -1938,7 +1900,7 @@ static void cl_cmd_line(int argc, char *argv[])
 
   if (argc != 1)
     usage(program_name, EXIT_FAILURE);
-
+  
   if (become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)

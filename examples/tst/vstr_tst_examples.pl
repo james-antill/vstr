@@ -226,19 +226,21 @@ sub daemon_io
 	    failure("write: $!") if (!defined($tmp));
 	    $len -= $tmp; $off += $tmp;
 	  }
-	elsif (!$done_shutdown)
+
+	my $ret = $sock->sysread(my($buff), 4096);
+
+	next if (!defined($ret) &&
+		 ($! eq 'Resource temporarily unavailable'));
+	failure ("read: $!") if (!defined($ret));
+	last if (!$ret);
+
+	if (!$len && !$done_shutdown)
 	  {
-	    if ($slow_write) # Makes this _slow_
-	      { sleep(1); }
+#	    if ($slow_write) # Makes this _slow_
+#	      { select(undef, undef, undef, 0.50); }
 	    $sock->shutdown(1);
 	    $done_shutdown = 1;
 	  }
-
-	my $ret = $sock->sysread(my($buff), 4096);
-	failure("read: $!") if (!defined($buff));
-
-	next if (!defined($ret));
-	last if (!$ret);
 
 	$output .= $buff;
       }
