@@ -1,4 +1,4 @@
-%define ver      1.0.4
+%define ver      1.0.5
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -60,6 +60,10 @@ Requires: %{name} = %{ver}
  Also includes a %{name}.pc file for pkg-config.
 
 %changelog
+* Sat Mar 15 2003 James Antill <james@and.org>
+- Add dia diagram of internal structure.
+- Added design and printf_comparison html doco.
+
 * Fri Jan 31 2003 James Antill <james@and.org>
 - Added chk option for doing a "make check"
 
@@ -172,19 +176,22 @@ rm -rf $RPM_BUILD_ROOT
 %doc
 %{devdoco}/BUGS
 %{devdoco}/TODO
-%{devdoco}/functions.txt
 %{_mandir}/man3/vstr.3.gz
 %{_mandir}/man3/vstr_const.3.gz
-%{devdoco}/functions.html
+%{devdoco}/printf_comparison.html
+%{devdoco}/comparison.html
 %{devdoco}/constants.txt
 %{devdoco}/constants.html
+%{devdoco}/design.html
+%{devdoco}/functions.txt
+%{devdoco}/functions.html
 %{devdoco}/namespace.txt
 %{devdoco}/namespace.html
 %{devdoco}/overview.html
-%{devdoco}/comparison.html
 %{devdoco}/structs.txt
 %{devdoco}/structs.html
 %{devdoco}/size_cmp.gnumeric
+%{devdoco}/internal_structure.dia
 %{devdoco}/examples/Makefile
 %{devdoco}/examples/ex_cat.c
 %{devdoco}/examples/ex_hexdump.c

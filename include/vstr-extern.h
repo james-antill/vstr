@@ -676,7 +676,8 @@ extern struct Vstr_ref *vstr_export_ref(const struct Vstr_base *,
                                         size_t, size_t, size_t *)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
-extern const char *vstr_export_cstr_ptr(const struct Vstr_base *, size_t, size_t)
+extern const char *vstr_export_cstr_ptr(const struct Vstr_base *,
+                                        size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern char *vstr_export_cstr_malloc(const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC();
@@ -848,6 +849,8 @@ extern int vstr_sc_fmt_add_ptr(struct Vstr_conf *, const char *)
 extern int vstr_sc_fmt_add_non(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
 extern int vstr_sc_fmt_add_ref(struct Vstr_conf *, const char *)
+    VSTR__COMPILE_ATTR_NONNULL_L((2));
+extern int vstr_sc_fmt_add_rep_chr(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));
 extern int vstr_sc_fmt_add_bkmg_Byte_uint(struct Vstr_conf *, const char *)
     VSTR__COMPILE_ATTR_NONNULL_L((2));

@@ -6,11 +6,14 @@ confexec_DATA =                         \
                 constants.html \
                 namespace.txt \
                 namespace.html \
+                design.html \
                 overview.html \
                 comparison.html \
+                printf_comparison.html \
                 structs.txt \
                 structs.html \
-		size_cmp.gnumeric
+		size_cmp.gnumeric \
+		internal_structure.dia
 
 man_MANS = \
                 vstr.3 \

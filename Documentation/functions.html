@@ -318,6 +318,7 @@
 <li class="obj"><a href="#vstr_sc_fmt_add_ptr%28%29">vstr_sc_fmt_add_ptr()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_non%28%29">vstr_sc_fmt_add_non()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_ref%28%29">vstr_sc_fmt_add_ref()</a>
+<li class="obj"><a href="#vstr_sc_fmt_add_rep_chr%28%29">vstr_sc_fmt_add_rep_chr()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Byte_uint%28%29">vstr_sc_fmt_add_bkmg_Byte_uint()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_Bytes_uint%28%29">vstr_sc_fmt_add_bkmg_Bytes_uint()</a>
 <li class="obj"><a href="#vstr_sc_fmt_add_bkmg_bit_uint%28%29">vstr_sc_fmt_add_bkmg_bit_uint()</a>
@@ -538,7 +539,11 @@
 </p><p>  Altering the data in the iovec structure isn't a good idea as it isn't easy
  for the programer to know if the data is shared/read-only. If you need to do
  this you should use either the vstr_sub_* functions instead or
- <a href="functions.html#vstr_export_iovec_cpy_buf()">vstr_export_iovec_cpy_buf()</a> (the later does a copy).
+ <a href="functions.html#vstr_export_iovec_cpy_buf()">vstr_export_iovec_cpy_buf()</a> (the later does a copy). However if you do alter
+ the data then you'll need to do <a href="functions.html#vstr_cache_cb_sub()">vstr_cache_cb_sub()</a>.
+</p><p>  Either of the pointers for the iovec array (Parameter[2]) or the number of
+ iovecs (Parameter[3]) can be the NULL pointer, in which case nothing will be
+ written to those pointers.
 
 
 <a name="vstr_export_iovec_cpy_buf%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3865,9 +3870,10 @@
  "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%',
  will do the right thing with current printf warning checks in gcc. We can
  all hope that the former will be as usable eventually.
-</p><p>  If you register all your custom formatter names starting with a &quot;{&quot; and
- ending with a "}", and having no "{" or "}" character in it apart from those
- two ... then matching custom formatters will be much faster.
+</p><p>  If you register all your custom formatter names starting with one of
+ "{", "[", "<" or "("  and ending with one of "}", "]", ">" or ")" and no
+ other instances of those characters ... then matching custom formatters will
+ be much faster.
 
 
 <a name="vstr_fmt_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -4239,6 +4245,30 @@
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
 </p><p>  It is recommended that you use the name &quot;{ref}&quot;, with the gcc warning
  compatible alternates using "{ref:%p%u%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
+ will add this formatter using those names.
+
+
+<a name="vstr_sc_fmt_add_rep_chr%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_fmt_add_rep_chr()
+</a><br>Returns: TRUE on success and FALSE on failure<br>Type: int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Specifier name, for use with <a href="functions.html#vstr_add_vfmt()">vstr_add_vfmt()</a><br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a> with the type
+ arguments of <a href="constants.html#VSTR_TYPE_FMT_INT">VSTR_TYPE_FMT_INT</a>, <a href="constants.html#VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a> and
+ <a href="constants.html#VSTR_TYPE_FMT_END">VSTR_TYPE_FMT_END</a>. These correspond to the last 2 arguments to
+ <a href="functions.html#vstr_add_rep_chr()">vstr_add_rep_chr()</a>.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
+ length passed and the precision.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so.
+</p><p>  It is recommended that you use the name &quot;{rep_chr}&quot;, with the gcc warning
+ compatible alternates using "{rep_chr:%c%zu}" etc. <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all()</a>
  will add this formatter using those names.
 
 

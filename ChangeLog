@@ -1,4 +1,38 @@
+2003-05-17  James Antill  <james@and.org>
+
+	* NEWS: Release-1.0.5
+
+	* src/vstr_sc.c (vstr_sc_fmt_add_rep_chr): Added new function.
+	(vstr_sc_fmt_add_all): Added rep_chr formatter to "all".
+
+2003-05-02  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr_fmt_add): Allow multiple types of brackets and
+	still be fast.
+	(vstr__fmt_usr_match): Dito.
+
+2003-04-26  James Antill  <james@and.org>
+
+	* examples/ex_hexdump.c (EX_HEXDUMP_BYTE): Make the fast output,
+	somewhat more generic.
+	(main): Add getopt type arguments.
+
+2003-03-28  James Antill  <james@and.org>
+
+	* examples/ex_tar_decompress.c (main): Added a new example command, I've
+	wanted this command for a while ... so I wrote it.
+
+	* examples/ex_rot13.c (ex_rot13_read_fd_write_stdout): Don't busy 
+	spin when no data can be read yet.
+
+	* examples/ex_hexdump.c (ex_hexdump_read_fd_write_stdout): Don't busy 
+	spin when no data can be read yet.
+
 2003-03-15  James Antill  <james@and.org>
+
+	* Documentation/Makefile.am (confexec_DATA): Added 
+	printf_comparison.html, design.html and internal_structure.dia to set
+	of installed documentation.
 
 	* NEWS: Release 1.0.4
 

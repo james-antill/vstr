@@ -175,6 +175,7 @@
 #define vstr_sc_fmt_add_non vstr_nx_sc_fmt_add_non
 #define vstr_sc_fmt_add_ptr vstr_nx_sc_fmt_add_ptr
 #define vstr_sc_fmt_add_ref vstr_nx_sc_fmt_add_ref
+#define vstr_sc_fmt_add_rep_chr vstr_nx_sc_fmt_add_rep_chr
 #define vstr_sc_fmt_add_vstr vstr_nx_sc_fmt_add_vstr
 #define vstr_sc_fmt_cb_beg vstr_nx_sc_fmt_cb_beg
 #define vstr_sc_fmt_cb_end vstr_nx_sc_fmt_cb_end

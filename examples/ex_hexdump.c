@@ -19,7 +19,6 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 
-
 /* some utils shared among the more complex examples ... mainly for
  * die(), the read/write, fcntl() for NONBLOCK and poll() calls which are the
  * same in all the examples.
@@ -53,65 +52,78 @@ util-linux-2.11r-10
 #define MAX_R_DATA_INCORE (1024 * 1024)
 #define MAX_W_DATA_INCORE (1024 * 8)
 
-/* configure if we print high ASCII characters */
-#define PRNT_HIGH_CHARS TRUE
+#define PRNT_NONE 0
+#define PRNT_SPAC 1
+#define PRNT_HIGH 2
+
+/* configure what ASCII characters we print */
+static unsigned int prnt_high_chars = PRNT_NONE;
 
 #if 0
 /* simple print of a number ... not used */
 # define EX_HEXDUMP_X8(s1, num) \
-  vstr_add_fmt(s1, (s1)->len, "%08X:", (num))
+  vstr_add_fmt(s1, (s1)->len, "0x%08X:", (num))
 # define EX_HEXDUMP_X2X2(s1, num1, num2) \
   vstr_add_fmt(s1, (s1)->len, " %02X%02X", (num1), (num2))
 # define EX_HEXDUMP_X2__(s1, num1) \
   vstr_add_fmt(s1, (s1)->len, " %02X  ",   (num1))
 #else
-/* sick but fast print of a number ... used because I actually use this program
+/* fast print of a number ... used because I actually use this program
  */
+static const char *hexnums = "0123456789ABCDEF";
+
+# define EX_HEXDUMP_BYTE(buf, b) do { \
+  (buf)[1] = hexnums[((b) >> 0) & 0xf]; \
+  (buf)[0] = hexnums[((b) >> 4) & 0xf]; \
+ } while (FALSE)
+
+# define EX_HEXDUMP_UINT(buf, i) do { \
+  EX_HEXDUMP_BYTE((buf) + 6, (i) >>  0); \
+  EX_HEXDUMP_BYTE((buf) + 4, (i) >>  8); \
+  EX_HEXDUMP_BYTE((buf) + 2, (i) >> 16); \
+  EX_HEXDUMP_BYTE((buf) + 0, (i) >> 24); \
+ } while (FALSE)
+
 # define EX_HEXDUMP_X8(s1, num) do { unsigned char xbuf[9]; \
-  const char *digs = "0123456789ABCDEF"; \
   xbuf[8] = ':'; \
-  xbuf[7] = digs[(((num) >>  0) & 0xf)]; \
-  xbuf[6] = digs[(((num) >>  4) & 0xf)]; \
-  xbuf[5] = digs[(((num) >>  8) & 0xf)]; \
-  xbuf[4] = digs[(((num) >> 12) & 0xf)]; \
-  xbuf[3] = digs[(((num) >> 16) & 0xf)]; \
-  xbuf[2] = digs[(((num) >> 20) & 0xf)]; \
-  xbuf[1] = digs[(((num) >> 24) & 0xf)]; \
-  xbuf[0] = digs[(((num) >> 28) & 0xf)]; \
+  EX_HEXDUMP_UINT(xbuf, num); \
   vstr_add_buf(s1, (s1)->len, xbuf, 9); } while (FALSE)
 # define EX_HEXDUMP_X2X2(s1, num1, num2) do { unsigned char xbuf[5]; \
-  const char *digs = "0123456789ABCDEF"; \
   xbuf[0] = ' '; \
-  xbuf[4] = digs[(((num2) >> 0) & 0xf)]; \
-  xbuf[3] = digs[(((num2) >> 4) & 0xf)]; \
-  xbuf[2] = digs[(((num1) >> 0) & 0xf)]; \
-  xbuf[1] = digs[(((num1) >> 4) & 0xf)]; \
+  EX_HEXDUMP_BYTE(xbuf + 3, num2); \
+  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
   vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
 # define EX_HEXDUMP_X2__(s1, num1) do { unsigned char xbuf[5]; \
-  const char *digs = "0123456789ABCDEF"; \
   xbuf[4] = ' '; \
   xbuf[3] = ' '; \
-  xbuf[2] = digs[(((num1) >> 0) & 0xf)]; \
-  xbuf[1] = digs[(((num1) >> 4) & 0xf)]; \
+  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
   xbuf[0] = ' '; \
   vstr_add_buf(s1, (s1)->len, xbuf, 5); } while (FALSE)
 #endif
 
 
-static void ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
+static int ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 {
   static unsigned int addr = 0;
-  unsigned int flags = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
-		                   COMMA, DOT, _, SP); /* normal ASCII chars */
-  unsigned int flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW, /* high ascii too */
+  /* normal ASCII chars */
+  unsigned int flags = VSTR_FLAG02(CONV_UNPRINTABLE_ALLOW, COMMA, DOT);
+  /* allow spaces */
+  unsigned int flags_sp = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
+                                      COMMA, DOT, _, SP);
+  /* high ascii too */
+  unsigned int flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW,
                                        COMMA, DOT, _, SP, HSP, HIGH);
 
-  if (PRNT_HIGH_CHARS) /* config option */
-    flags = flags_hsp;
-
+  switch (prnt_high_chars)
+  {
+    case PRNT_HIGH: flags = flags_hsp; break;
+    case PRNT_SPAC: flags = flags_sp;  break;
+    case PRNT_NONE:                    break;
+  }
+  
   /* note that we don't want to create more data, if we are over our limit */
   if (s1->len > MAX_W_DATA_INCORE)
-    return;
+    return (FALSE);
   
   /* while we have a hexdump line ... */
   while (s2->len >= 16)
@@ -147,7 +159,7 @@ static void ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
     /* note that we don't want to create data indefinitely, so stop
      * according to in core configuration */
     if (s1->len > MAX_W_DATA_INCORE)
-      return;
+      return (TRUE);
   }
 
   if (last && s2->len)
@@ -185,11 +197,15 @@ static void ex_hexdump_process(Vstr_base *s1, Vstr_base *s2, int last)
 
     addr += s2->len;
     vstr_del(s2, 1, s2->len);
+
+    return (TRUE);
   }
 
   /* if any of the above memory mgmt failed, error */
   if (s1->conf->malloc_bad)
     errno = ENOMEM, DIE("adding data:");
+
+  return (FALSE);
 }
 
 static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
@@ -201,11 +217,15 @@ static void ex_hexdump_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2,
   /* read/process/write loop */
   while (keep_going)
   {
+    int proc_data = FALSE;
+    
     EX_UTILS_LIMBLOCK_READ_ALL(s2, fd, keep_going);
     
-    ex_hexdump_process(s1, s2, !keep_going);
+    proc_data = ex_hexdump_process(s1, s2, !keep_going);
 
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
+
+    EX_UTILS_LIMBLOCK_WAIT(s1, s2, fd, 16, keep_going, proc_data);
   }
 }
 
@@ -216,12 +236,13 @@ int main(int argc, char *argv[])
   Vstr_base *s2 = NULL;
   int count = 1; /* skip the program name */
   struct stat stat_buf;
+  unsigned int use_mmap = FALSE;
   
   /* init the Vstr string library, note that if this fails we can't call DIE
    * or the program will crash */
   
   if (!vstr_init())
-    errno = ENOMEM, DIE("vstr_init:");
+    exit (EXIT_FAILURE);
   
   /*  Change the default Vstr configuration, so we can have a node buffer size
    * that is whatever the stdout block size is */
@@ -233,18 +254,65 @@ int main(int argc, char *argv[])
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, stat_buf.st_blksize);
   vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF, 32);
   
-  /* create two Vstr strings for doing the IO with */  
-  s1 = vstr_make_base(NULL);
-  if (!s1)
-    errno = ENOMEM, DIE("vstr_make_base:");
-  
-  s2 = vstr_make_base(NULL);
-  if (!s2)
+  /* create two Vstr strings for doing the IO with */
+  if (FALSE ||
+      !(s1 = vstr_make_base(NULL)) ||
+      !(s2 = vstr_make_base(NULL)) ||
+      FALSE)
     errno = ENOMEM, DIE("vstr_make_base:");
 
   /* set output to non-blocking mode */
   ex_utils_set_o_nonblock(STDOUT_FILENO);
   
+  while (count < argc)
+  { /* quick hack getopt_long */
+    if (!strcmp("--", argv[count]))
+    {
+      ++count;
+      break;
+    }
+    else if (!strcmp("--mmap", argv[count]))
+      use_mmap = !use_mmap;
+    else if (!strcmp("--none", argv[count]))
+      prnt_high_chars = PRNT_NONE;
+    else if (!strcmp("--space", argv[count]))
+      prnt_high_chars = PRNT_SPAC;
+    else if (!strcmp("--high", argv[count]))
+      prnt_high_chars = PRNT_HIGH;
+    else if (!strcmp("--version", argv[count]))
+    {
+      vstr_add_fmt(s1, 0, "%s", "\
+jhexdump 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+");
+      goto out;
+    }
+    else if (!strcmp("--help", argv[count]))
+    {
+      vstr_add_fmt(s1, 0, "%s", "\
+Usage: jhexdump [STRING]...\n\
+   or: jhexdump OPTION\n\
+Repeatedly output a line with all specified STRING(s), or `y'.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --space    Allow space characters in ASCII output\n\
+      --high     Allow space and high characters in ASCII output\n\
+      --none     Allow only small amount of characters ASCII output\n\
+      --mmap     Toggle use of mmap() on files\n\
+      --         Use rest of cmd line input regardless of if it's an option\n\
+\n\
+Report bugs to James Antill <james@and.org>.\n\
+");
+      goto out;
+    }
+    else
+      break;
+    ++count;
+  }
+
   if (count >= argc)  /* if no arguments -- use stdin */
   {
     /* set input to non-blocking mode */
@@ -259,10 +327,11 @@ int main(int argc, char *argv[])
     unsigned int err = 0;
     
     /* try to mmap the file, as that is faster ... */
-    if (s2->len < MAX_R_DATA_INCORE)
+    if (use_mmap && (s2->len < MAX_R_DATA_INCORE))
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &err);
 
-    if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+    if (!use_mmap ||
+        (err == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
@@ -293,20 +362,24 @@ int main(int argc, char *argv[])
   while (s2->len)
   { /* No more data to read ...
      * finish processing read data and writing some of it */
-    ex_hexdump_process(s1, s2, TRUE);
+    int proc_data = ex_hexdump_process(s1, s2, TRUE);
 
-    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+    EX_UTILS_LIMBLOCK_WRITE_ALL(s1, STDOUT_FILENO);
+    EX_UTILS_LIMBLOCK_WAIT(s1, s2, -1, 16, s2->len, proc_data);
   }
   
   /* The vstr_free_base() and vstr_exit() calls are only really needed to
    * make memory checkers happy.
    */
   
+ out:
   vstr_free_base(s2);
 
   while (s1->len)
-    /* finish outputting processed data */
+  { /* finish outputting processed data */
     EX_UTILS_LIMBLOCK_WRITE_ALL(s1, 1);
+    EX_UTILS_LIMBLOCK_WAIT(s1, NULL, -1, 16, FALSE, FALSE);
+  }
   
   vstr_free_base(s1);
   

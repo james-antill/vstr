@@ -269,7 +269,11 @@ Function: vstr_export_iovec_ptr_all()
   Altering the data in the iovec structure isn't a good idea as it isn't easy
  for the programer to know if the data is shared/read-only. If you need to do
  this you should use either the vstr_sub_* functions instead or
- vstr_export_iovec_cpy_buf() (the later does a copy).
+ vstr_export_iovec_cpy_buf() (the later does a copy). However if you do alter
+ the data then you'll need to do vstr_cache_cb_sub().
+  Either of the pointers for the iovec array (Parameter[2]) or the number of
+ iovecs (Parameter[3]) can be the NULL pointer, in which case nothing will be
+ written to those pointers.
 
 
 Function: vstr_export_iovec_cpy_buf()
@@ -5977,9 +5981,10 @@ Function: vstr_fmt_add()
  "{Vstr}" and "{Vstr:%p%zu%zu%u}" ... the latter, with a user escape != '%',
  will do the right thing with current printf warning checks in gcc. We can
  all hope that the former will be as usable eventually.
-  If you register all your custom formatter names starting with a "{" and
- ending with a "}", and having no "{" or "}" character in it apart from those
- two ... then matching custom formatters will be much faster.
+  If you register all your custom formatter names starting with one of
+ "{", "[", "<" or "("  and ending with one of "}", "]", ">" or ")" and no
+ other instances of those characters ... then matching custom formatters will
+ be much faster.
 
 
 Function: vstr_fmt_del()
@@ -6531,6 +6536,37 @@ Function: vstr_sc_fmt_add_ref()
   The function will return 0 if it needs to allocate memory and cannot do so.
   It is recommended that you use the name "{ref}", with the gcc warning
  compatible alternates using "{ref:%p%u%zu}" etc. vstr_sc_fmt_add_all()
+ will add this formatter using those names.
+
+
+Function: vstr_sc_fmt_add_rep_chr()
+ Returns: TRUE on success and FALSE on failure
+ Type: int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Specifier name, for use with vstr_add_vfmt()
+ Type[2]: const char *
+
+ Explanation:
+
+  This function is used to add a custom specifier function to print
+ a memory block. It is equivalent to calling vstr_add_fmt() with the type
+ arguments of VSTR_TYPE_FMT_INT, VSTR_TYPE_FMT_SIZE_T and
+ VSTR_TYPE_FMT_END. These correspond to the last 2 arguments to
+ vstr_add_rep_chr().
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  As you would expect the precision and field width values are used from the
+ format, so the length of the memory block printed is the lower bound of the
+ length passed and the precision.
+  The function will return 0 if it needs to allocate memory and cannot do so.
+  It is recommended that you use the name "{rep_chr}", with the gcc warning
+ compatible alternates using "{rep_chr:%c%zu}" etc. vstr_sc_fmt_add_all()
  will add this formatter using those names.
 
 

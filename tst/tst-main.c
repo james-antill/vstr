@@ -93,10 +93,10 @@ static void die(void)
  /* make sure it isn't FAILED_OK */
 #define TST_B_RET(val) (val ? ((1U<<31) | val) : 0)
 
-#ifndef NDEBUG
-# define MFAIL_NUM_OK 1
-#else
+#ifdef VSTR_AUTOCONF_NDEBUG /* must check for VSTR assert() usage */
 # define MFAIL_NUM_OK 0
+#else
+# define MFAIL_NUM_OK 1
 #endif
 
 static int __attribute__((unused)) tst_mfail_num(unsigned long val)

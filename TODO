@@ -7,6 +7,13 @@ was needed for vstr-1.0.0
  During 1.0.x
  ------------
 
+. http://www.mibsoftware.com/libmib/astring/0001.htm (docs)
+  http://www.derkeiler.com/Mailing-Lists/securityfocus/secprog/2003-02/0007.html
+  security implications of vstr. (docs)
+
+. speed  implpications of vstr. (docs)
+. memory implpications of vstr. (docs)
+
 . Have a way to make thousands sep. group/output differently for hex numbers?
   (functionality)
 
@@ -91,10 +98,6 @@ was needed for vstr-1.0.0
 . XDR ... rpc
 
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
-
-. Max and Min ammounts for spare nodes.
-  min = when allocating a node actually do MAX(1, min_ammount - cur_ammount)
-  max = when deleting a node actually do MAX(cur_ammount - max_ammount, 1)
 
 . vstr_conv_encode_qp (quoted printable rfc2045.txt)
 . vstr_conv_encode_b64 (base64 rfc2045.txt)

@@ -264,6 +264,33 @@ int vstr_sc_fmt_add_ref(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
+static int vstr__sc_fmt_add_cb_rep_chr(Vstr_base *base, size_t pos,
+                                       Vstr_fmt_spec *spec)
+{
+  int chr       = VSTR_FMT_CB_ARG_VAL(spec, int, 0);
+  size_t sf_len = VSTR_FMT_CB_ARG_VAL(spec, size_t, 1);
+
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+    return (FALSE);
+  
+  if (!vstr_add_rep_chr(base, pos, chr, sf_len))
+    return (FALSE);
+  
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+int vstr_sc_fmt_add_rep_chr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vstr__sc_fmt_add_cb_rep_chr,
+                       VSTR_TYPE_FMT_INT,
+                       VSTR_TYPE_FMT_SIZE_T,
+                       VSTR_TYPE_FMT_END));
+}
+
 static int vstr__sc_fmt_add_cb_bkmg__uint(Vstr_base *base, size_t pos,
                                           Vstr_fmt_spec *spec,
                                           const char *buf_B,
@@ -832,6 +859,7 @@ int vstr_sc_fmt_add_all(Vstr_conf *conf)
   VSTR__SC_FMT_ADD(ptr, "ptr", "s%zu");
   VSTR__SC_FMT_ADD(non, "non", "zu");
   VSTR__SC_FMT_ADD(ref, "ref", "p%u%zu");
+  VSTR__SC_FMT_ADD(rep_chr, "rep_chr", "c%zu");
   VSTR__SC_FMT_ADD(bkmg_Byte_uint, "BKMG.u", "u");
   VSTR__SC_FMT_ADD(bkmg_Bytes_uint, "BKMG/s.u","u");
   VSTR__SC_FMT_ADD(bkmg_bit_uint, "bKMG.u", "u");

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <title>printf() implementation comparisons</title>
+    <title>printf() implementation comparison</title>
 
     <style>
       A:hover { color: #20b2aa; }
@@ -16,7 +16,7 @@
   </head>
 
   <body>
-    <h1>printf() implementation comparisons</h1>
+    <h1>printf() implementation comparison</h1>
 
     <p> This page is a rough comparison between various printf() implementaions.
       Not all printf() implementations are equal, while almost all will do
@@ -188,7 +188,7 @@
     build time options)</dd>
 	<dt>Problems:</dt> <dd>None</dd>
 	<dt>User extensions:</dt> <dd>Yes</dd>
-	<dt>Version:</dt> <dd>1.0.2</dd>
+	<dt>Version:</dt> <dd>1.0.4</dd>
 	</dl>
 
       <p>
@@ -210,18 +210,16 @@
 	<dt>Double printing:</dt> <dd>Native</dd>
 	<dt>Problems:</dt> <dd>Has a hard limit on the number of formats 
       per call.</dd>
-	<dt>User extensions:</dt> <dd>Yes, can't be done in warning compatible
-      way for static format checkers.</dd>
-	<dt>Version:</dt> <dd>1.9 (october 2002)</dd>
+	<dt>User extensions:</dt> <dd>Yes, but can't be done in warning
+ compatible way for static format checkers.</dd>
+	<dt>Version:</dt> <dd>1.10 (April 2003)</dd>
 	</dl>
 
 	<p>
-	  The printf() like function is not stds. compliant in a number of 
-	  ways, however it does try to implement most of the features of the
-	  std.
-
-    <strong>Note that after asking me what was wrong,
-      current CVS have fixed this ... but there isn't a release yet.</strong>
+	  The printf() like function appears to be stds. compliant, note that
+ the previous versions had a number of issues and as other projects just copy
+ the C files into their build you should check which version of trio they used.
+ Of particular note, glib-2.2.1 and libxml2-2.4.24 both have buggy versions.
 
 	  Also worth noting is that the i18n format parameter modifiers have
 	  an arbitrary limit, and the double output is custom code that may
@@ -487,7 +485,7 @@ Note that before 2003-02-25 the failure path was broken, and would crash.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Tue Feb 25 12:03:25 EST 2003 -->
 <!-- hhmts start -->
-Last modified: Thu Feb 27 02:24:26 EST 2003
+Last modified: Wed May  7 19:56:45 EDT 2003
 <!-- hhmts end -->
   </body>
 </html>

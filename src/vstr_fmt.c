@@ -50,10 +50,19 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   size_t fmt_max_len = 0;
   
   if (conf->fmt_usr_curly_braces)
-  { /* we know they follow a certain format of "{" [^}]* "}"
+  { /* we know they follow a format of one of...
+       "{" [^}]* "}"
+       "[" [^]]* "]"
+       "<" [^>]* ">"
+       "(" [^)]* ")"
      * so we can find the length */
-    char *ptr = strchr(fmt, '}');
+    char *ptr = NULL;
     size_t len = 0;
+
+    if (*fmt == '{') ptr = strchr(fmt, '}');
+    if (*fmt == '[') ptr = strchr(fmt, ']');
+    if (*fmt == '<') ptr = strchr(fmt, '>');
+    if (*fmt == '(') ptr = strchr(fmt, ')');
     
     if (!ptr)
       return (NULL);
@@ -103,6 +112,14 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   return (NULL);
 }
 
+#define VSTR__FMT_ADD_Q(name, len, b1, b2) ( \
+  ((name)[0] == (b1)) && \
+  ((name)[(len) - 1] == (b2)) && \
+  (((len) == 2) || ((len) > 2)) && \
+  !memchr((name) + 1, (b1), (len) - 2) && \
+  !memchr((name) + 1, (b2), (len) - 2) \
+ )
+
 int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
                  int (*func)(Vstr_base *, size_t, Vstr_fmt_spec *), ...)
 {
@@ -129,9 +146,11 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
   node->name_len = strlen(name);
   node->func = func;
 
-  if ((name[0] != '{') ||
-      (name[node->name_len - 1] != '}') ||
-      ((strchr(name, '}') != (name + node->name_len - 1))))
+  if (conf->fmt_usr_curly_braces &&
+      !VSTR__FMT_ADD_Q(name, node->name_len, '{', '}') &&
+      !VSTR__FMT_ADD_Q(name, node->name_len, '[', ']') &&
+      !VSTR__FMT_ADD_Q(name, node->name_len, '<', '>') &&
+      !VSTR__FMT_ADD_Q(name, node->name_len, '(', ')'))
     conf->fmt_usr_curly_braces = FALSE;
   
   va_start(ap, func);

@@ -175,6 +175,7 @@
 #undef vstr_sc_fmt_add_non
 #undef vstr_sc_fmt_add_ptr
 #undef vstr_sc_fmt_add_ref
+#undef vstr_sc_fmt_add_rep_chr
 #undef vstr_sc_fmt_add_vstr
 #undef vstr_sc_fmt_cb_beg
 #undef vstr_sc_fmt_cb_end

@@ -55,6 +55,8 @@ static void DIE(const char *msg, ...)
   exit (EXIT_FAILURE);
 }
 
+#define ASSERT(x) if (x) {} else DIE("Assert: %s\n", #x )
+
 #define GETOPT_NUM(name, var) \
     else if (!strncmp("--" name, argv[count], strlen("--" name))) \
     { \
@@ -92,7 +94,7 @@ static void DIE(const char *msg, ...)
     else if (0) ASSERT(FALSE)
 
 int main(int argc, char *argv[])
-{ /* This is "cat", without any command line options */
+{ /* This is "yes", without any command line options */
   Vstr_base *s1 = NULL;
   Vstr_base *cmd_line = NULL;
   int count = 1; /* skip program name */
@@ -159,7 +161,7 @@ Uses Vstr string library.\n\
     {
       vstr_add_fmt(s1, 0, "%s", "\
 Usage: yes [STRING]...\n\
-   or:  yes OPTION\n\
+   or: yes OPTION\n\
 Repeatedly output a line with all specified STRING(s), or `y'.\n\
 \n\
       --help     display this help and exit\n\

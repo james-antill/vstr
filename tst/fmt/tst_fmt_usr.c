@@ -297,6 +297,15 @@ int tst(void)
   
   TST_B_TST(ret, 6, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
 
+  vstr_del(s1, 1, s1->len);
+  vstr_del(s3, 1, s3->len);
+  vstr_add_fmt(s3, 0, "X${rep_chr:%c%zu}X", '-', 43);
+  vstr_add_rep_chr(s1, s1->len, 'X', 1);
+  vstr_add_rep_chr(s1, s1->len, '-', 43);
+  vstr_add_rep_chr(s1, s1->len, 'X', 1);
+  
+  TST_B_TST(ret, 7, !VSTR_CMP_EQ(s3, 1, s3->len, s1, 1, s1->len));
+
   tst_errno = ERANGE;
   
   vstr_del(s4, 1, s4->len);

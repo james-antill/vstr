@@ -104,11 +104,11 @@ int ex_utils_set_o_nonblock(int fd)
   return (1);
 }
 
-void ex_utils_poll_stdout(void)
+void ex_utils_poll_fds_w(int fd)
 {
   struct pollfd one;
   
-  one.fd = 1;
+  one.fd = fd;
   one.events = POLLOUT;
   one.revents = 0;
   
@@ -119,3 +119,36 @@ void ex_utils_poll_stdout(void)
   }
 }
 
+void ex_utils_poll_fds_r(int fd)
+{
+  struct pollfd one;
+  
+  one.fd = fd;
+  one.events = POLLIN;
+  one.revents = 0;
+  
+  while (poll(&one, 1, -1) == -1) /* can't timeout */
+  {
+    if (errno != EINTR)
+      DIE("poll:");
+  }
+}
+
+void ex_utils_poll_fds_rw(int rfd, int wfd)
+{
+  struct pollfd two[2];
+  
+  two->fd = rfd;
+  two->events = POLLIN;
+  two->revents = 0;
+  
+  two->fd = wfd;
+  two->events = POLLOUT;
+  two->revents = 0;
+  
+  while (poll(two, 2, -1) == -1) /* can't timeout */
+  {
+    if (errno != EINTR)
+      DIE("poll:");
+  }
+}

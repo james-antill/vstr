@@ -1,3 +1,8 @@
+ Latest stable release is 1.0.4
+
+ Version 1.0.5 ... Added speedups for vstr_fmt_add(). Added some documentation.
+added vstr_sc_fmt_add_rep_chr function.
+
  Version 1.0.4 ... fixed an ABI bug introduced in 1.0.3 ... speed up 
 export_cstr_ptr() in certain cases ... fixed problem with substituting data of
 _ptr and _ref types and having a bad position cache ... added documentation
