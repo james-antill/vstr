@@ -1508,6 +1508,7 @@ int evnt_fd_set_filter(struct Evnt *evnt, const char *fname)
   }
   else if (!s1->len)
   {
+    vstr_free_base(s1);  
     if (!evnt->flag_io_filter)
       vlg_warn(vlg, "filter_attach3(%s): Empty file\n", fname);
     else if (setsockopt(fd, SOL_SOCKET, SO_DETACH_FILTER, NULL, 0) == -1)

@@ -177,6 +177,7 @@ sub run_tst
   }
 
 {
+my $ldaemon_pid  = undef;
 my $daemon_pid  = undef;
 my $daemon_addr = undef;
 my $daemon_port = undef;
@@ -223,7 +224,17 @@ sub daemon_init
 
     unlink("${cmd}_cntl"); # So we don't try connecting to the old one
     print "TST: ${cmd} $opts -- $args\n";
-    system("./${cmd} $port $opts $cntl $dbg -- $args $no_out &");
+
+    $ldaemon_pid = tst_fork();
+    if (!defined ($ldaemon_pid))
+      { failure("fork($daemon_pid): $!"); }
+
+    if (!$ldaemon_pid)
+      {
+	if (system("./${cmd} $port $opts $cntl $dbg -- $args $no_out"))
+	  { failure("daemon($cmd): $!"); }
+	success("daemon($cmd)");
+      }
 
     # Wait for it...
     my $num = 0;
@@ -385,10 +396,16 @@ sub daemon_exit
   {
     my $cmd    = shift;
 
-    system("./ex_cntl -e close ${cmd}_cntl > /dev/null");
+    if (system("./ex_cntl -e close ${cmd}_cntl > /dev/null"))
+      { warn "cntl close: $!\n"; }
     unlink("${cmd}_cntl");
     $daemon_addr = undef;
     $daemon_port = undef;
+    if (waitpid($ldaemon_pid, 0) <= 0)
+      { warn "waitpid(ldaemon[$ldaemon_pid]): $!\n"; }
+    my $code = $?;
+    if ($code != $xit_success)
+      { warn "waitpid(ldaemon[$ldaemon_pid]) == $code\n"; }
   }
 sub daemon_cleanup
   {

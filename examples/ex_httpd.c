@@ -2358,7 +2358,7 @@ static struct Http_req_data *http_make_req(struct Con *con)
       return (NULL);
   }
   
-  req->http_hdrs->multi->comb = con->evnt->io_r;
+  req->http_hdrs->multi->comb = con ? con->evnt->io_r : NULL;
 
   http__clear_hdrs(req);
   

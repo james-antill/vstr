@@ -9,23 +9,14 @@ was needed for vstr-1.0.0
 
 . ____ make vstr_fmt.c faster ____
 
-. vstr_spn_cstr_buf_fwd etc.
+. vstr_spn_cstr_buf_fwd
+  vstr_spn_cstr_buf_rev
+  vstr_spn_bmap_fwd -- UCHAR_MAX byte mapping on span or not - fast -.
+  vstr_spn_bmap_rev
 
 . test len=0 on _sc_*()
 
-. read/write entire file with read_file/write_file
-
 . glibc printf tests ... enable all three forms of fmt for coverage?
-
-. examples/ex_relay
-
-. examples/chatserv
-
-. examples/ex_dnsd
-
-. examples/conf
-
-. Allow '-' filename, for stdin
 
 . restrict  (speed)
 

@@ -1,15 +1,17 @@
 #! /bin/sh -e
 
 tst_klibc=false
+tst_quick=false
+
+if [ "x$1" != "x" ]; then
+  tst_quick=true
+fi
+
 
 if false; then
  echo "Not reached."
-# elif [ -f ./configure ]; then
-        s=./scripts
-	doln=false
 elif [ -f ../configure ]; then
         s=../scripts
-	doln=true
 else
   echo "Not in right place, goto a seperate build directory."
   exit 1;
@@ -34,7 +36,7 @@ rm -f *.info
 
 function del()
 {
-    rm -rf Documentation/ include/ src/ tst/ \
+    rm -rf Documentation/ include/ src/ tst/ examples/ \
     Makefile config.log config.status libtool vstr.pc vstr.spec
 }
 
@@ -43,12 +45,10 @@ function linkup()
   for dir in src examples; do
   cd $dir
 
-  if $doln; then
-   lndir ../$s/../$dir
-  fi
+  lndir ../$s/../$dir
 
 # Newer GCCs put them in the $srcdir
-  if [ ! -f ex_highlight-ex_highlight.da -a ! -f vstr.da ]; then
+  if [ ! -f ex_httpd-ex_httpd.da -a -f ex_httpd -a ! -f vstr.da ]; then
     for i in .libs/*.da; do
       ln -f $i; rm -f $i
     done
@@ -69,13 +69,18 @@ function cov()
 
 cov dbg --enable-debug
 cov opt
+
+if $tst_quick; then
+ echo Doing quick coverage test...
+else
 cov noopt --enable-tst-noopt
 cov ansi --enable-noposix-host \
          --enable-tst-noattr-visibility \
          --enable-tst-noattr-alias \
          --enable-tst-nosyscall-asm
-
 CFLAGS="-DUSE_RESTRICTED_HEADERS=1" cov small-libc
+fi
+
 
 # This doesn't work, coverage with either klibc or dietlibc are NOGO...
 # However you can compile programs linked with either and Vstr ... just not with

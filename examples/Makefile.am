@@ -20,6 +20,11 @@ ex_ccount_DEPENDENCIES = ex_utils.h
 ex_ccount_CFLAGS = $(GEN_CFLAGS)
 ex_ccount_LDADD  = $(GEN_LDLIBS)
 
+ex_conf_SOURCES      = conf.c ex_conf.c
+ex_conf_DEPENDENCIES = conf.h ex_utils.h
+ex_conf_CFLAGS = $(GEN_CFLAGS)
+ex_conf_LDADD  = $(GEN_LDLIBS)
+
 ex_hello_world_DEPENDENCIES = ex_utils.h
 ex_hello_world_CFLAGS = $(GEN_CFLAGS)
 ex_hello_world_LDADD  = $(GEN_LDLIBS)
@@ -222,7 +227,7 @@ examples_PROGRAMS += \
   ex_hexdump ex_dir_list2html ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
   ex_phone_names ex_rot13 \
   ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
-  ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter
+  ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter ex_conf
 
 if TIMER_Q_AVAIL
 examples_PROGRAMS += ex_slowcat
@@ -281,6 +286,8 @@ example_code_html = \
   html/app.h.html \
   html/bag.c.html \
   html/bag.h.html \
+  html/conf.c.html \
+  html/conf.h.html \
   html/cntl.c.html \
   html/cntl.h.html \
   html/date.c.html \
@@ -294,6 +301,7 @@ example_code_html = \
   html/ex_cat.c.html \
   html/ex_ccount.c.html \
   html/ex_changelog_diff.c.html \
+  html/ex_conf.c.html \
   html/ex_cntl.c.html \
   html/ex_csv.c.html \
   html/ex_dir_filter.c.html \

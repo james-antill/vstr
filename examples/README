@@ -8,25 +8,48 @@ happily work on win32 etc.
 
  NEW
 
- ex_dir_list2webdav -- WebDAV is even more retarded than HTTP, so maybe not
+  ex_dir_list2webdav -- WebDAV is even more retarded than HTTP, so maybe not
 
- ex_dnsd
+  ex_dnsd
 
- ex_bt
+  ex_relay
+
+  ex_bt
 
 
- evnt
+ CHANGES
+
+  ex_utils
+
+	Allow '-' filename, for stdin
+
+
+  evnt
+
 	allow groups, make Evnt smaller (moveout cb's/conf to group data)
 
- ex_sock_filter
+
+  ex_sock_filter
+
 	All asm calls should have names
 
- ex_httpd
+
+  ex_dir_list2html
+
+	Should produce sort by size
+	Should produce sort by mtime
+	Should produce sort by reverse (6 html pages in all?)
+	Output mtime column
+	Keep netstr list for mime: application/dir-list ?
+
+
+  ex_httpd
 
 http://www.sans.org/top20/#u2
 
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
-	Allow POST without data?
+	mime_types speed, by having explicit filename/ext matches
+	 Also walk through configuration Vstr forwards.
 	public/symlinks path checking
 	 fd cache
 	 stat cache
@@ -47,7 +70,6 @@ http://www.sans.org/top20/#u2
          Vary: accept-language,...
          Allow custom error code pages, start with 404
 	man page
-	mime_types speed, by having explicit filename/ext matches
         limiting IO
 	  easyish to do globally, not possible other wise until conf. done
 	    not to easy to do multi proc. ... need to pass data/connections
@@ -67,10 +89,9 @@ http://www.sans.org/top20/#u2
     BUGS?
 	GMT time convertion isn't done ... fuck the broken apps.
 	CRLF should be done as (CR)?LF ... fuck the broken apps. Although we
-       make sure things doing that can't get screwed by response splitting on
-       host or request.
+       check for response splitting.
 
-  tst
+    tst
 
 	LFS
 	half response splitting requests
@@ -83,9 +104,4 @@ http://www.sans.org/top20/#u2
 	seek failure
 	sendfile failure
 	mem failure
-
- ex_dns
-
-
- ex_nc
 
