@@ -8,5 +8,5 @@ void xfail_tst(void)
   exit (EXIT_FAILED_OK);
 #endif
   
-  ASSERT(!vstr_add_fmt(s1, 0, "%lc", L'a'));
+  ASSERT(!vstr_add_fmt(s1, 0, "%lc", (wint_t)L'a'));
 }

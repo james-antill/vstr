@@ -3,18 +3,7 @@
   <head>
     <title>Costs of dealing with data using Vstr</title>
 
- <link rel="stylesheet" type="text/css" href="f_c.css">
-  <style>
-      A       { background: #FFF; color: #44F; }
-      A:hover {                   color: #20b2aa; }
-
-      A.anchor       { color: #000; }
-      A.anchor:hover { color: #000; }
-
-      P { text-indent: 2em; }
-
-      body { background: #FFF; }
-  </style>
+<!--#include file="style.shtml" -->
 
   </head>
 
@@ -47,12 +36,12 @@ For a <a href="tutorial.html">simpler starting tutorial see this page</a>. </p>
  Nodes of different type cannot be merged, so if you have 512 byte sized _BUF
 nodes and write code like...
 </p>
-<!--#exec cmd="jhighlight cost_tut/add_buf_add_ptr.c"-->
+<!--#exec cmd="ex_highlight cost_tut/add_buf_add_ptr.c"-->
 <p>
 ...you will be wasting 508 bytes of space in each of the _BUF nodes. However, if
 after the above you do...
 </p>
-<!--#exec cmd="jhighlight cost_tut/pos_add_buf.c"-->
+<!--#exec cmd="ex_highlight cost_tut/pos_add_buf.c"-->
 
 <p>...no extra _BUF node storage will have been allocated, as it's used some
 of the spare storage from the first _BUF no ... and so "only" 504 bytes are
@@ -107,13 +96,13 @@ node then the nodes are just swapped in place. For instance:
 </p>
 
 <h3> Adding data and then memcpy()ing over it with new data </h3>
-<!--#exec cmd="jhighlight cost_tut/add_buf_sub_buf.c"-->
+<!--#exec cmd="ex_highlight cost_tut/add_buf_sub_buf.c"-->
 
 <h3> Adding data and then swapping the node with new data </h3>
-<!--#exec cmd="jhighlight cost_tut/add_buf_sub_ptr.c"-->
+<!--#exec cmd="ex_highlight cost_tut/add_buf_sub_ptr.c"-->
 
 <h3> Adding data and then swapping the contents of the node with new data </h3>
-<!--#exec cmd="jhighlight cost_tut/add_ptr_sub_ptr.c"-->
+<!--#exec cmd="ex_highlight cost_tut/add_ptr_sub_ptr.c"-->
 
 
 
@@ -166,7 +155,7 @@ than if the simple <a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( .
 Other methods can be built upon those foundations such as...
 </p>
 
-<!--#exec cmd="jhighlight cost_tut/iter_mov_add_del.c"-->
+<!--#exec cmd="ex_highlight cost_tut/iter_mov_add_del.c"-->
 
 <h2>Deleting data from a Vstr_base object</h2>
 
@@ -200,7 +189,7 @@ attribute is set in the configuration.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 26 03:10:51 EST 2004 -->
 <!-- hhmts start -->
-Last modified: Mon Jan 26 22:16:12 EST 2004
+Last modified: Sun Sep 19 21:54:32 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

@@ -1306,6 +1306,19 @@ static const char *vstr__add_fmt_spec(const char *fmt,
 {
   int tmp_num = 0;
 
+  /* get i18n param number */
+  if (VSTR__ADD_FMT_ISDIGIT(*fmt) && (*fmt != '0'))
+  {
+    tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
+
+    if (*fmt != '$')
+      goto use_field_width;
+
+    ++fmt;
+    *have_dollars = TRUE;
+    spec->main_param = tmp_num;
+  }
+
   /* process flags */
   while (TRUE)
   {
@@ -1325,20 +1338,7 @@ static const char *vstr__add_fmt_spec(const char *fmt,
     ++fmt;
   }
  got_flags:
-
-  /* get i18n param number */
-  if (VSTR__ADD_FMT_ISDIGIT(*fmt))
-  {
-    tmp_num = VSTR__ADD_FMT_STRTOL(fmt);
-
-    if (*fmt != '$')
-      goto use_field_width;
-
-    ++fmt;
-    *have_dollars = TRUE;
-    spec->main_param = tmp_num;
-  }
-
+  
   /* get field width */
   if (VSTR__ADD_FMT_ISDIGIT(*fmt))
   {

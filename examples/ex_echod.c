@@ -241,7 +241,7 @@ static void usage(const char *program_name, int tst_err)
 static void cl_cmd_line(int argc, char *argv[])
 {
   char optchar = 0;
-  const char *program_name = "echod";
+  const char *program_name = "jechod";
   struct option long_options[] =
   {
    {"help", no_argument, NULL, 'h'},

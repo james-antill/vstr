@@ -11,6 +11,8 @@
 
 #include <dirent.h>
 
+#include <getopt.h>
+
 #define USE_POPEN 1 /* hacky ... */
 
 #if !USE_POPEN
@@ -211,9 +213,13 @@ static void ex_ssi_exec(Vstr_base *s1,
 {
 #if USE_POPEN
   FILE *fp = NULL; /* FIXME: hack job */
-  
+  /*  struct stat64 sbuf[1];
+   * 
+   * if (stat64(vstr_export_cstr_ptr(s2, pos, len), sbuf))
+   *   err(EXIT_FAILURE, "stat(%s)", vstr_export_cstr_ptr(s2, pos, len));
+   */
   if (!(fp = popen(vstr_export_cstr_ptr(s2, pos, len), "r")))
-    err(EXIT_FAILURE, "popen");
+    err(EXIT_FAILURE, "popen(%s)", vstr_export_cstr_ptr(s2, pos, len));
 
   ex_ssi_cat_read_fd_write_stdout(s1, fileno(fp));
 
@@ -449,7 +455,7 @@ static int ex_ssi_process(Vstr_base *s1, Vstr_base *s2, time_t last_modified,
     else if (vstr_cmp_case_bod_cstr_eq(s2, 1, s2->len, "<!--#fsize"))
     {
       size_t tmp = 0;
-      struct stat sbuf[1];
+      struct stat64 sbuf[1];
       
       ex_ssi_skip_str(s2, &srch, "<!--#fsize");
 
@@ -461,18 +467,18 @@ static int ex_ssi_process(Vstr_base *s1, Vstr_base *s2, time_t last_modified,
       if (s1->conf->malloc_bad)
         errno = ENOMEM, err(EXIT_FAILURE, "add data");
 
-      if (stat(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
+      if (stat64(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
         err(EXIT_FAILURE, "stat(%s)", vstr_export_cstr_ptr(s2, 1, tmp));
 
       if (use_size_abbrev)
-        vstr_add_fmt(s1, s1->len, "${BKMG.u:%u}", (unsigned)sbuf->st_size);
+        vstr_add_fmt(s1, s1->len, "${BKMG.ju:%ju}", (uintmax_t)sbuf->st_size);
       else
         vstr_add_fmt(s1, s1->len, "%ju", (uintmax_t)sbuf->st_size);
     }
     else if (vstr_cmp_case_bod_cstr_eq(s2, 1, s2->len, "<!--#flastmod"))
     {
       size_t tmp = 0;
-      struct stat sbuf[1];
+      struct stat64 sbuf[1];
       
       ex_ssi_skip_str(s2, &srch, "<!--#flastmod");
 
@@ -484,7 +490,7 @@ static int ex_ssi_process(Vstr_base *s1, Vstr_base *s2, time_t last_modified,
       if (s1->conf->malloc_bad)
         errno = ENOMEM, err(EXIT_FAILURE, "add data");
 
-      if (stat(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
+      if (stat64(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
         err(EXIT_FAILURE, "stat(%s)", vstr_export_cstr_ptr(s2, 1, tmp));
         
       vstr_add_cstr_buf(s1, s1->len, ex_ssi_strftime(sbuf->st_mtime, TRUE));
@@ -533,12 +539,14 @@ static void ex_ssi_process_limit(Vstr_base *s1, Vstr_base *s2,
 
 static void ex_ssi_read_fd_write_stdout(Vstr_base *s1, Vstr_base *s2, int fd)
 {
-  struct stat sbuf[1];
+  struct stat64 sbuf[1];
   time_t last_modified = time(NULL);
   
-  if (!fstat(fd, sbuf))
+  if (fstat64(fd, sbuf))
+    warn("fstat");
+  else
     last_modified = sbuf->st_mtime;
-    
+  
   while (TRUE)
   {
     int io_w_state = IO_OK;
@@ -569,14 +577,107 @@ static void ex_ssi_fin(Vstr_base *s1, time_t timestamp, const char *fname)
                fname, ex_ssi_strftime(timestamp, FALSE));
 }
 
+static void usage(const char *program_name, int tst_err)
+{
+  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-hV]\n"
+          " --help -h         - Print this message.\n"
+          " --prefix-path     - Prefix path with argument.\n"
+          " --suffix-path     - Suffix path with argument.\n"
+          " --version -V      - Print the version string.\n",
+          program_name);
+  if (tst_err)
+    exit (EXIT_FAILURE);
+  else
+    exit (EXIT_SUCCESS);
+}
+
+static void merge_path(const char *beg, const char *end, const char *name)
+{
+  Vstr_base *tmp = vstr_dup_cstr_ptr(NULL, beg);
+  
+  if (!tmp)
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", name);
+  
+  vstr_add_cstr_ptr(tmp, tmp->len, ":");
+  vstr_add_cstr_ptr(tmp, tmp->len, end);
+  
+  if (tmp->conf->malloc_bad || !vstr_export_cstr_ptr(tmp, 1, tmp->len))
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", name);
+  
+  setenv("PATH", vstr_export_cstr_ptr(tmp, 1, tmp->len), TRUE);
+  vstr_free_base(tmp);
+}
+
+static void cl_cmd_line(int *passed_argc, char ***passed_argv)
+{
+  int    argc = *passed_argc;
+  char **argv = *passed_argv;
+  
+  char optchar = 0;
+  const char *program_name = "jssi";
+  struct option long_options[] =
+  {
+   {"help", no_argument, NULL, 'h'},
+   {"prefix-path", required_argument, NULL, 1},
+   {"suffix-path", required_argument, NULL, 2},
+   {"version", no_argument, NULL, 'V'},
+   {NULL, 0, NULL, 0}
+  };
+  
+  if (argv[0])
+  {
+    if ((program_name = strrchr(argv[0], '/')))
+      ++program_name;
+    else
+      program_name = argv[0];
+  }
+
+  while ((optchar = getopt_long(argc, argv, "hV", long_options, NULL)) != EOF)
+  {
+    switch (optchar)
+    {
+      case '?':
+        fprintf(stderr, " That option is not valid.\n");
+      case 'h':
+        usage(program_name, 'h' == optchar);
+        
+      case 'V':
+        printf(" %s version 0.7.1, compiled on %s.\n",
+               program_name,
+               __DATE__);
+        printf(" %s compiled on %s.\n", program_name, __DATE__);
+        exit (EXIT_SUCCESS);
+
+      case 1:
+        merge_path(optarg, getenv("PATH"), "prefix-path");
+        break;
+        
+      case 2:
+        merge_path(getenv("PATH"), optarg, "suffix-path");
+        break;
+        
+      default:
+        abort();
+    }
+  }
+
+  argc -= optind;
+  argv += optind;
+
+  *passed_argc = argc;
+  *passed_argv = argv;
+}
+
 int main(int argc, char *argv[])
 {
   Vstr_base *s2 = NULL;
   Vstr_base *s1 = ex_init(&s2);
-  int count = 1;
+  int count = 0; /* getopt reduces it by one */
   time_t now = time(NULL);
   int beg_dir = -1;
   DIR *beg_dir_obj = NULL;
+
+  cl_cmd_line(&argc, &argv);
   
   vstr_sc_fmt_add_all(s1->conf);
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');

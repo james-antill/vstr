@@ -3,24 +3,7 @@
   <head>
     <title>Security with string APIs</title>
 
- <link rel="stylesheet" type="text/css" href="f_c.css">
-    <style type="text/css">
-      A:hover { color: #20b2aa; }
-      P { text-indent: 2em; }
-
-      body { background: #FFF; }
-
-      td.heading { background: #DDD; }
-
-      table.fig1   { text-align: center; }
-
-      td.ent1     { color: #080; }
-      td.ent2     { color: #800; }
-
-      span.blk        a.anc     {  display: none; }
-      span.blk:hover  a.anc     {  display: inline; color: #d7f;   }
-
-    </style>
+<!--#include file="style.shtml" -->
 
   </head>
 
@@ -126,7 +109,7 @@ This isn't enough as Y in the above formula can still grow due to the fact
 that you can <i>always</i> have problems like...
 </p>
 
-<!--#exec cmd="jhighlight --id=alloc-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=alloc-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex1\">&para;</a>
 ' --end='</span>' sec/alloc1.c" -->
 
 <p>
@@ -137,7 +120,7 @@ implemented with the data (the string) and the metadata (it's length) passed to
 the functions separately, this creates some great code like...
 </p>
 
-<!--#exec cmd="jhighlight --id=alloc-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex2\">&para;</a>
+<!--#exec cmd="ex_highlight --id=alloc-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex2\">&para;</a>
 ' --end='</span>' sec/alloc2.c" -->
 
 <p>
@@ -151,7 +134,7 @@ no limit at all.
 
 </p>
 
-<!--#exec cmd="jhighlight --id=alloc-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex3\">&para;</a>
+<!--#exec cmd="ex_highlight --id=alloc-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex3\">&para;</a>
 ' --end='</span>' sec/alloc3.c" -->
 
 <p>
@@ -166,7 +149,7 @@ in the destination than in the source.
 
 </p>
 
-<!--#exec cmd="jhighlight --id=alloc-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex4\">&para;</a>
+<!--#exec cmd="ex_highlight --id=alloc-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex4\">&para;</a>
 ' --end='</span>' sec/alloc4.c" -->
 
 <p>
@@ -178,7 +161,7 @@ the length isn't shortened on non-substitutions.
 
 </p>
 
-<!--#exec cmd="jhighlight --id=alloc-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex5\">&para;</a>
+<!--#exec cmd="ex_highlight --id=alloc-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex5\">&para;</a>
 ' --end='</span>' sec/alloc5.c" -->
 
 <p>
@@ -310,7 +293,7 @@ printf "language". The most obvious need is to output strings of the
 string APIs type. Eg.
 </p>
 
-<!--#exec cmd="jhighlight --id=sprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=sprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex1\">&para;</a>
 ' --end='</span>' sec/sprintf1.c" -->
 
 <p>
@@ -384,14 +367,14 @@ However a lot of C programmers <i>aren't</i> aware that strcpy(), strncpy(), str
 overlapping objects. So the following code is broken...
 </p>
 
-<!--#exec cmd="jhighlight --id=strcpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strcpy-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strcpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strcpy-ex1\">&para;</a>
 ' --end='</span>' sec/strcpy1.c" -->
 
 <p>
 ...as is the following...
 </p>
 
-<!--#exec cmd="jhighlight --id=sprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex2\">&para;</a>
+<!--#exec cmd="ex_highlight --id=sprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex2\">&para;</a>
 ' --end='</span>' sec/sprintf2.c" -->
 
 <p>
@@ -407,7 +390,7 @@ C programmers use to safely copy no more than N characters to a string is all
 but useless in all conditions. Consider...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex1\">&para;</a>
 ' --end='</span>' sec/strncpy1.c" -->
 
 <p>
@@ -426,21 +409,21 @@ the overhead can be 25,500% (a 16 byte filename into a PATH_MAX array).
 strncpy() do either...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex2\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex2\">&para;</a>
 ' --end='</span>' sec/strncpy2.c" -->
 
 <p>
 ...or...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex3\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex3\">&para;</a>
 ' --end='</span>' sec/strncpy3.c" -->
 
 <p>
 ...or...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex4\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex4\">&para;</a>
 ' --end='</span>' sec/strncpy4.c" -->
 
 <p>
@@ -453,7 +436,7 @@ way is to improve performance (using an interface that can cause over
 do...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex5\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex5\">&para;</a>
 ' --end='</span>' sec/strncpy5.c" -->
 
 <p>
@@ -463,14 +446,14 @@ overwriting that. However this is a very big trap for those that don't
 intimately know what is happening, due to...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex6 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex6\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex6 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex6\">&para;</a>
 ' --end='</span>' sec/strncpy6.c" -->
 
 <p>
 ...or...
 </p>
 
-<!--#exec cmd="jhighlight --id=strncpy-ex7 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex7\">&para;</a>
+<!--#exec cmd="ex_highlight --id=strncpy-ex7 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex7\">&para;</a>
 ' --end='</span>' sec/strncpy7.c" -->
 
 <p>
@@ -522,7 +505,7 @@ following code works everywhere
 but on those glibc based Linux systems, where it is a security problem...
 </p>
 
-<!--#exec cmd="jhighlight --id=asprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#asprintf-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=asprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#asprintf-ex1\">&para;</a>
 ' --end='</span>' sec/asprintf1.c" -->
 
 <p>
@@ -534,7 +517,7 @@ but on those glibc based Linux systems, where it is a security problem...
   So here's a quick quiz, what does "ret" contain in the following code...
 </p>
 
-<!--#exec cmd="jhighlight --id=snprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex1\">&para;</a>
+<!--#exec cmd="ex_highlight --id=snprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex1\">&para;</a>
 ' --end='</span>' sec/snprintf1.c" -->
 
 <p>
@@ -544,7 +527,7 @@ you'll have said depends on the implementation. But let's assume that in the
 following code "ret" is 14 (Fourteen)...
 </p>
 
-<!--#exec cmd="jhighlight --id=snprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex2\">&para;</a>
+<!--#exec cmd="ex_highlight --id=snprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex2\">&para;</a>
 ' --end='</span>' sec/snprintf2.c" -->
 
 <p>
@@ -578,7 +561,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Sun Jun  6 21:34:04 EDT 2004
+Last modified: Sun Sep 19 21:57:38 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

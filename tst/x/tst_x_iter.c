@@ -21,10 +21,10 @@ int tst(void)
   {  
     Vstr_iter iter[1];
     
-    vstr_iter_fwd_beg(s1, 1, s1->len, iter);
+    ASSERT(vstr_iter_fwd_beg(s1, 1, s1->len, iter));
     ASSERT(iter->num == 1);
     ASSERT(vstr_iter_len(iter) == 266);
-    vstr_iter_fwd_nxt(iter);
+    ASSERT(vstr_iter_fwd_nxt(iter));
     
     ASSERT(!vstr_iter_fwd_beg(s1, 1, 0, iter));
     ASSERT(!iter->node);

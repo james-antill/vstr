@@ -42,6 +42,7 @@ EXTRA_DIST = $(man_MANS)
 CLEANFILES = $(man_MANS)
 
 TUT_SSI_FILES= \
+  tutorial.shtml \
   ../examples/ex_hello_world.c \
   ../examples/ex_hello_world.h \
   ../examples/ex_hello_world_s.c \
@@ -60,6 +61,7 @@ TUT_SSI_FILES= \
   ../examples/ex_gmp_nums.c
 
 COST_TUT_SSI_FILES= \
+  cost_tutorial.shtml \
   cost_tut/add_buf_add_ptr.c \
   cost_tut/pos_add_buf.c \
   cost_tut/add_buf_sub_buf.c \
@@ -68,6 +70,7 @@ COST_TUT_SSI_FILES= \
   cost_tut/iter_mov_add_del.c
 
 SEC_SSI_FILES= \
+  security.shtml \
   sec/alloc1.c \
   sec/alloc2.c \
   sec/alloc3.c \
@@ -105,19 +108,32 @@ functions.3: functions.txt txt2man.pl
 constants.3: constants.txt txt2man.pl
 		$(srcdir)/txt2man.pl
 
-# FIXME: change to use examples versions...
-# at which point they'll be generated every build...
-tutorial.html: tutorial.shtml $(TUT_SSI_FILES)
-		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+if HAVE_POSIX_HOST
 
-cost_tutorial.html: cost_tutorial.shtml $(COST_TUT_SSI_FILES)
-		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+ssi_DEP = ../examples/ex_ssi
+ssi_APP = ../examples/ex_ssi --prefix-path="`pwd`/../examples"
 
-security.html: security.shtml $(SEC_SSI_FILES)
+else
+
+# can't use jssi, because it calls ex_highlight inline
+ssi_DEP =
+ssi_APP = cat
+
+endif
+
+
+
+tutorial.html: $(TUT_SSI_FILES) $(ssi_DEP)
 		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+		$(ssi_APP) $< > $@
+
+cost_tutorial.html: $(COST_TUT_SSI_FILES) $(ssi_DEP)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
+		$(ssi_APP) $< > $@
+
+security.html: $(SEC_SSI_FILES) $(ssi_DEP)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
+		$(ssi_APP) $< > $@
 
 vstr.3: ./functions.3
 		cp -p $< $@

@@ -100,6 +100,10 @@ int tst(void)
   vstr_add_fmt(s1, 0, "%#08x", 1);
   TST_B_TST(ret, 18, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "0x000001"));
 
+  vstr_del(s1, 1, s1->len);
+  vstr_add_fmt(s1, 0, "%-*d", 4, 1);
+  TST_B_TST(ret, 18, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "1   "));
+
   sprintf(buf, "%#.o", 0);
   if (!buf[0])
     return (EXIT_FAILED_OK); /* Solaris (2.8) gets this wrong at least... */

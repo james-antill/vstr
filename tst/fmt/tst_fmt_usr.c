@@ -568,8 +568,6 @@ int tst(void)
     spaces = 0;
     while (spaces <= 16)
     {
-      const char *hfgcc = "%1$*2$s<$+03$*2$[intptr:%*n]>";
-      
       vstr_del(s3, 1, s3->len);
       vstr_del(s4, 1, s4->len);
 
@@ -578,7 +576,9 @@ int tst(void)
       {
         vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
         tst_mfail_num(++mfail_count);
-      } while (!vstr_add_fmt(s3, s3->len, hfgcc, "", spaces, &num));
+      } while (!vstr_add_fmt(s3, s3->len, "%1$*2$s<$3$+0*2$[intptr:%*n]>",
+                             "", spaces, &num));
+
       tst_mfail_num(0);
       FMT("+0*");
       vstr_add_rep_chr(s4, s4->len, ' ', spaces);

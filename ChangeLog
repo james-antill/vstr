@@ -1,3 +1,8 @@
+2004-09-20  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_spec): Flags processing should
+	happen after i18n processing.
+
 2004-09-07  James Antill  <james@and.org>
 
 	* src/vstr_add_fmt.c (vstr__add_fmt_usr_write_spec): Fix endian issue

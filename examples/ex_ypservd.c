@@ -212,8 +212,8 @@ static int xdr_put_str_buf(Vstr_base *s1, size_t *pos,
     return (TRUE);
   
   ret = vstr_add_buf(s1, *pos, buf, len); /* works negative */
-  *pos += len;
-  if (!ret && (pad_len = (len % 4)))
+  if (ret) *pos += len;
+  if (ret && (pad_len = (len % 4)))
   {
     pad_len = 4 - pad_len; /*
                             * 1 % 4 = 1 == pad 3 bytes
@@ -224,7 +224,7 @@ static int xdr_put_str_buf(Vstr_base *s1, size_t *pos,
     ret = vstr_add_rep_chr(s1, *pos, 0, pad_len);
   }
   
-  *pos += pad_len;
+  if (ret) *pos += pad_len;
 
   ASSERT(ret);
   
@@ -248,10 +248,13 @@ static int xdr_put_vstr(Vstr_base *s1, size_t *pos,
     return (FALSE);
   
   ret = vstr_add_vstr(s1, *pos, s2, s2_pos, len, 0);
-  *pos += len;
+  if (ret) *pos += len;
   if (ret && (pad_len = (len % 4)))
+  {
+    pad_len = 4 - pad_len; 
     ret = vstr_add_rep_chr(s1, *pos, 0, pad_len);
-  *pos += pad_len;
+  }
+  if (ret) *pos += pad_len;
 
   ASSERT(ret);
   

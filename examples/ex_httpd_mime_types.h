@@ -5,6 +5,13 @@
     else if (((s1)->len >= strlen(end)) &&                              \
              vstr_cmp_case_eod_cstr_eq((s1), 1, (s1)->len, end))        \
       (var) = (mt)
+#define HTTP__REQ_MT_ALL(s1, var, mt, all)                              \
+    else if (((s1)->len >= strlen("/" all)) &&                          \
+             vstr_cmp_case_eod_cstr_eq((s1), 1, (s1)->len, "/" all))    \
+      (var) = (mt);                                                     \
+    else if (((s1)->len >= strlen(all)) &&                              \
+             vstr_cmp_case_cstr_eq((s1), 1, (s1)->len, all))            \
+      (var) = (mt)
 
 /* should be in a file -- so it's configurable, also allow overloads */
 #define HTTP_REQ_MIME_TYPE(s1, var) do {                                \
@@ -28,8 +35,20 @@
  HTTP__REQ_MT_END(s1, var, "image/tiff",                  ".tiff");     \
  HTTP__REQ_MT_END(s1, var, "text/comma-separated-values", ".csv");      \
  HTTP__REQ_MT_END(s1, var, "text/css",                    ".css");      \
- HTTP__REQ_MT_END(s1, var, "text/plain",                  "README");    \
- HTTP__REQ_MT_END(s1, var, "text/plain",                  "Makefile");  \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "AUTHORS");   \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "BUGS");      \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "COPYING");   \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "COPYING.LIB"); \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "INSTALL");   \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "Makefile");  \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "Makefile.am"); \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "Makefile.in"); \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "NEWS");      \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "README");    \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "SConstruct"); \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "THANKS");    \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "TODO");      \
+ HTTP__REQ_MT_ALL(s1, var, "text/plain",                  "config.log"); \
  HTTP__REQ_MT_END(s1, var, "text/plain",                  ".txt");      \
  HTTP__REQ_MT_END(s1, var, "text/plain",                  ".c");        \
  HTTP__REQ_MT_END(s1, var, "text/plain",                  ".h");        \

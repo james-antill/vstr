@@ -3,28 +3,8 @@
   <head>
     <title>Tutorial</title>
 
- <link rel="stylesheet" type="text/css" href="f_c.css">
-  <style>
-      A       { background: #FFF; color: #44F; }
-      A:hover {                   color: #20b2aa; }
+<!--#include file="style.shtml" -->
 
-      A.anchor       { color: #000; }
-      A.anchor:hover { color: #000; }
-
-      P { text-indent: 2em; }
-
-      body { background: #FFF; }
-
-      tr.heading { background: #DDD; }
-      tr.heading:hover { background: #ccc; }
-
-      table.conv       { border-bottom: solid; margin-bottom: 2em; }
-
-      table.conv tr.r1 { background: #eee; }
-      table.conv tr.r2 { }
-      table.conv tr.r1:hover { background: #ccc; }
-      table.conv tr.r2:hover { background: #ccc; }
-  </style>
   </head>
 
   <body>
@@ -79,7 +59,8 @@ the benifits of doing so. </li>
 <p> Here is about the most simple Vstr application, this is a single function
 that prints "Hello World" on a single line in a POSIX environment...</p>
 
-<!--#exec cmd="jhighlight ../examples/ex_hello_world.c"-->
+<!--#exec cmd="ex_highlight ../examples/ex_hello_world.c"-->
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world.c" --></p>
 
 <p>
 ...however this example is somewhat too simplistic because, normally, a Vstr
@@ -102,11 +83,12 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <li><b>hw_exit</b>: This does cleanup on the resources aquired in hw_init.</li>
 </ul>
 
-<!-- #exec cmd="jhighlight ../examples/ex_hello_world.h"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_hello_world.h"-->
 <blockquote>
 This example is available 
 <a href="examples/ex_hello_world.h.html">here</a>
-(<!--#fsize file="../examples/ex_hello_world.h" -->).
+(<!--#fsize file="../examples/ex_hello_world.h" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world.h" --></span>).
 </blockquote>
 
 <a class="anchor" id="hw_s2">
@@ -117,7 +99,8 @@ This example is available
  Now using the above header file, we can re-write the initial example in a much more readable form...
 </p>
 
-<!--#exec cmd="jhighlight ../examples/ex_hello_world_s.c"-->
+<!--#exec cmd="ex_highlight ../examples/ex_hello_world_s.c"-->
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world_s.c" --></span>
 
 <a class="anchor" id="hw_m">
 <h2> Hello World, using multiple sources of data </h2>
@@ -132,7 +115,8 @@ view. Although this example is obviously contrived, this is much more
 representative of what a networked application looks like...
 </p>
 
-<!--#exec cmd="jhighlight ../examples/ex_hello_world_m.c"-->
+<!--#exec cmd="ex_highlight ../examples/ex_hello_world_m.c"-->
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world_m.c" --></span>
 
 <a class="anchor" id="hw_x">
 <h2> Complicated Hello World </h2>
@@ -166,7 +150,8 @@ searching etc.).
 <tr class="r2"><td>All of X, but the first and last bytes</td><td>2 (Two)</td><td>X-&gt;len - 2 (Length of Vstr string minus Two)</td></tr>
 </table>
 
-<!--#exec cmd="jhighlight ../examples/ex_hello_world_x.c"-->
+<!--#exec cmd="ex_highlight ../examples/ex_hello_world_x.c"-->
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world_x.c" --></span>
 
 <hr>
 
@@ -206,11 +191,12 @@ objects.</li>
 <li><b>io_open</b>: This is a simple function to open a file, and set the O_NONBLOCK flag on it (note that although real files tend not to honour the O_NONBLOCK flag, file system objects might not be files).</li>
 </ul>
 
-<!-- #exec cmd="jhighlight ../examples/ex_utils.h"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_utils.h"-->
 <blockquote>
 This example is available 
 <a href="examples/ex_utils.h.html">here</a>
-(<!--#fsize file="../examples/ex_utils.h" -->).
+(<!--#fsize file="../examples/ex_utils.h" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_utils.h" --></span>).
 </blockquote>
 
 <hr>
@@ -256,7 +242,8 @@ which is very prone to error and would almost certainly make it bigger than
 ex_cat.c and ex_utils.h combined.
 </p>
 
-<!--#exec cmd="jhighlight ../examples/ex_cat.c"-->
+<!--#exec cmd="ex_highlight ../examples/ex_cat.c"-->
+<span class="lastmod">Last modified:  <!--#flastmod file="../examples/ex_cat.c" --></span>
 
 <hr>
 
@@ -273,10 +260,11 @@ objects: One for input and one for output. <b>Note</b> that as the data is
 a reference is created and shared between the two strings.
 </p>
 
-<!-- #exec cmd="jhighlight ../examples/ex_nl.c"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_nl.c"-->
 <blockquote>
 This example is available <a href="examples/ex_nl.c.html">here</a>
-(<!--#fsize file="../examples/ex_nl.c" -->).
+(<!--#fsize file="../examples/ex_nl.c" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_nl.c" --></span>).
 </blockquote>
 
 <hr>
@@ -305,11 +293,12 @@ if it was a reference on input (Ie. mmap()ed).
 is a convienience feature for when you need to specify multiple flags at once.
 </p>
 
-<!-- #exec cmd="jhighlight ../examples/ex_hexdump.c"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_hexdump.c"-->
 
 <blockquote>
 This example is available <a href="examples/ex_hexdump.c.html">here</a>
-(<!--#fsize file="../examples/ex_hexdump.c" -->).
+(<!--#fsize file="../examples/ex_hexdump.c" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hexdump.c" --></span>).
 </blockquote>
 <hr>
 
@@ -334,11 +323,13 @@ then use how you can use them.
 in a similar way to the POSIX basename function.
 </p>
 
-<!-- #exec cmd="jhighlight ../examples/ex_lookup_ip.c"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_lookup_ip.c"-->
 <blockquote>
 This example is available <a href="examples/ex_lookup_ip.c.html">here</a>
-(<!--#fsize file="../examples/ex_lookup_ip.c" -->).
-.
+(<!--#fsize file="../examples/ex_lookup_ip.c" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_lookup_ip.c" --></span>).
+
+
 </blockquote>
 
 
@@ -376,14 +367,14 @@ number of reasons...
 the GNU MP variables. This means that when running under Linux/glibc, while...
 </p>
 
-<!--#exec cmd="jhighlight tut/mpz1.c" -->
+<!--#exec cmd="ex_highlight tut/mpz1.c" -->
 
 <p>
 ...creates a C style string for the number in a readable format for the locale,
 the GNU MP variable equvilent...
 </p>
 
-<!--#exec cmd="jhighlight tut/mpz2.c" -->
+<!--#exec cmd="ex_highlight tut/mpz2.c" -->
 
 <p>
 ...doesn't do anything other than create the number.
@@ -396,13 +387,13 @@ the hard coded custom formaters are implemented. This means that although
 if you do...
 </p>
 
-<!--#exec cmd="jhighlight tut/mpz3.c" -->
+<!--#exec cmd="ex_highlight tut/mpz3.c" -->
 
 <p>
 ...gcc will tell you there is an error, when you do...
 </p>
 
-<!--#exec cmd="jhighlight tut/mpz4.c" -->
+<!--#exec cmd="ex_highlight tut/mpz4.c" -->
 
 <p>
 ...the code will happily compile, and then almost certainly crash when you
@@ -433,11 +424,11 @@ implements everything that gmp_printf() can do for that variable (safely),
 but <b>also implements grouping</b>.
 </p>
 
-<!-- #exec cmd="jhighlight ../examples/ex_gmp_factorials.c"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_gmp_factorials.c"-->
 <blockquote>
 This example is available <a href="examples/ex_gmp_factorials.c.html">here</a>
-(<!--#fsize file="../examples/ex_gmp_factorials.c" -->).
-.
+(<!--#fsize file="../examples/ex_gmp_factorials.c" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_gmp_factorials.c" --></span>).
 </blockquote>
 
 <p>
@@ -447,11 +438,12 @@ For instance, here is just the custom formatter callback code to implement all
 three...
 </p>
 
-<!-- #exec cmd="jhighlight ../examples/ex_gmp_nums.c"-->
+<!-- #exec cmd="ex_highlight ../examples/ex_gmp_nums.c"-->
 <blockquote>
 This example is available 
 <a href="examples/ex_gmp_nums.c.html">here</a>
-(<!--#fsize file="../examples/ex_gmp_nums.c" -->).
+(<!--#fsize file="../examples/ex_gmp_nums.c" -->,
+<span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_gmp_nums.c" --></span>).
 </blockquote>
 
 <hr>
@@ -555,7 +547,7 @@ Vstr string functions...
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sat Aug  3 15:35:00 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Thu Jan 15 14:33:50 EST 2004
+Last modified: Sun Sep 19 22:13:01 EDT 2004
 <!-- hhmts end -->
 <!--#config timefmt="%a %b %d %H:%M:%S %Z %Y" -->
 <BR>Last regenerated: <!--#echo encoding="none" var="DATE_LOCAL"-->

@@ -10,5 +10,5 @@ void xfail_tst(void)
   vstr_add_rep_chr(s1, s1->len, 0, 10);
   
   ASSERT(vstr_iter_fwd_beg(s1, 1, s1->len, iter));
-  ASSERT(vstr_iter_fwd_cstr(iter, 263, NULL, 0, &ern) == 0);
+  ASSERT(vstr_iter_fwd_cstr(iter, 263, TST__NULL_ptr, 0, &ern) == 0);
 }

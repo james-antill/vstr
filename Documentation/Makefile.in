@@ -255,6 +255,7 @@ EXTRA_DIST = $(man_MANS)
 CLEANFILES = $(man_MANS)
 
 TUT_SSI_FILES = \
+  tutorial.shtml \
   ../examples/ex_hello_world.c \
   ../examples/ex_hello_world.h \
   ../examples/ex_hello_world_s.c \
@@ -274,6 +275,7 @@ TUT_SSI_FILES = \
 
 
 COST_TUT_SSI_FILES = \
+  cost_tutorial.shtml \
   cost_tut/add_buf_add_ptr.c \
   cost_tut/pos_add_buf.c \
   cost_tut/add_buf_sub_buf.c \
@@ -283,6 +285,7 @@ COST_TUT_SSI_FILES = \
 
 
 SEC_SSI_FILES = \
+  security.shtml \
   sec/alloc1.c \
   sec/alloc2.c \
   sec/alloc3.c \
@@ -302,6 +305,13 @@ SEC_SSI_FILES = \
   sec/snprintf1.c \
   sec/snprintf2.c
 
+
+# can't use jssi, because it calls ex_highlight inline
+@HAVE_POSIX_HOST_FALSE@ssi_DEP = 
+
+@HAVE_POSIX_HOST_TRUE@ssi_DEP = ../examples/ex_ssi
+@HAVE_POSIX_HOST_FALSE@ssi_APP = cat
+@HAVE_POSIX_HOST_TRUE@ssi_APP = ../examples/ex_ssi --prefix-path="`pwd`/../examples"
 subdir = Documentation
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -562,19 +572,17 @@ functions.3: functions.txt txt2man.pl
 constants.3: constants.txt txt2man.pl
 		$(srcdir)/txt2man.pl
 
-# FIXME: change to use examples versions...
-# at which point they'll be generated every build...
-tutorial.html: tutorial.shtml $(TUT_SSI_FILES)
+tutorial.html: $(TUT_SSI_FILES) $(ssi_DEP)
 		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+		$(ssi_APP) $< > $@
 
-cost_tutorial.html: cost_tutorial.shtml $(COST_TUT_SSI_FILES)
+cost_tutorial.html: $(COST_TUT_SSI_FILES) $(ssi_DEP)
 		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+		$(ssi_APP) $< > $@
 
-security.html: security.shtml $(SEC_SSI_FILES)
+security.html: $(SEC_SSI_FILES) $(ssi_DEP)
 		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
-		jssi $< > $@
+		$(ssi_APP) $< > $@
 
 vstr.3: ./functions.3
 		cp -p $< $@

@@ -36,7 +36,7 @@ int tst(void)
     while (spaces < 10)
     {
       int mfail_count = 0;
-      const char *fmt = "%c%*c%*c%c" "%lc%*lc%-*lc%C";
+#define FMT "%c%*c%*c%c" "%lc%*lc%-*lc%C"
       
       vstr_del(s3, 1, s3->len);
       do
@@ -44,15 +44,16 @@ int tst(void)
         ASSERT(!s3->len);
         vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
         tst_mfail_num(++mfail_count);
-      } while (!vstr_add_fmt(s3, 0, fmt,
+      } while (!vstr_add_fmt(s3, 0, FMT,
                              'a', spaces, 'b', -spaces, 'c', 'd',
                              (wint_t) L'a', spaces, (wint_t) L'b',
                              -spaces, (wint_t) L'c', (wint_t) L'd'));
 
-      sprintf(buf, fmt,
+      sprintf(buf, FMT,
               'a', spaces, 'b', -spaces, 'c', 'd',
               (wint_t) L'a', spaces, (wint_t) L'b',
               -spaces, (wint_t) L'c', (wint_t) L'd');
+#undef FMT
       
       TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
 
