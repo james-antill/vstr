@@ -67,9 +67,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=5
-VSTR_MICRO_VERSION=3
-VSTR_INTERFACE_AGE=2
-VSTR_BINARY_AGE=2
+VSTR_MICRO_VERSION=4
+VSTR_INTERFACE_AGE=3
+VSTR_BINARY_AGE=3
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning
@@ -231,6 +231,24 @@ fi
 AC_TYPE_INTMAX_T
 AC_TYPE_UINTMAX_T
 
+AC_MSG_CHECKING(for long long)
+AC_CACHE_VAL(local_cv_has_long_long,[
+AC_TRY_RUN([
+#include <stdlib.h>
+
+long long a = 0;
+
+int main() {
+ unsigned long long b = (unsigned long long)a;
+ return (0);
+}],
+local_cv_has_long_long=yes,
+local_cv_has_long_long=no,
+)])
+AC_MSG_RESULT($local_cv_has_long_long)
+case x$local_cv_has_long_long in
+xyes) AC_DEFINE(HAVE_LONG_LONG) ;;
+esac
 
 TWOCAN_CONF_MSG(Checking for libraries to link against)
 
@@ -253,7 +271,7 @@ if test "x$LIBOBJS" = "x"; then
 fi
 LIBOBJS=""
 
-# String functions...
+# C String functions...
 AC_CHECK_FUNCS(memchr, AC_DEFINE(HAVE_MEMCHR),)
 AC_CHECK_FUNCS(memcpy, AC_DEFINE(HAVE_MEMCPY),)
 AC_CHECK_FUNCS(strspn, AC_DEFINE(HAVE_STRSPN),)
@@ -264,6 +282,7 @@ AC_CHECK_FUNCS(strcasecmp, AC_DEFINE(HAVE_STRCASECMP),)
 AC_CHECK_FUNCS(strncasecmp, AC_DEFINE(HAVE_STRNCASECMP),)
 AC_CHECK_FUNCS(strnlen, AC_DEFINE(HAVE_STRNLEN),)
 AC_CHECK_FUNCS(strnchr, AC_DEFINE(HAVE_STRNCHR),)
+AC_CHECK_FUNCS(vsnprintf, AC_DEFINE(HAVE_VSNSPRINTF),)
 AC_CHECK_FUNCS(asprintf, AC_DEFINE(HAVE_ASPRINTF),)
 
 # Other functions...
@@ -409,59 +428,6 @@ local_cv_has_poll=no,
 AC_MSG_RESULT($local_cv_has_poll)
 case x$local_cv_has_poll in
 xyes) AC_DEFINE(HAVE_POLL)
-esac
-
-AC_MSG_CHECKING(for a posix version of sprintf())
-AC_CACHE_VAL(local_cv_has_posix_sprintf,[
-AC_TRY_RUN([
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-int main() {
- char buffer[1024];
- if (sprintf(buffer, "%s%c%d\n", "abcd", ' ', 1) != 7)
-  exit (1);
- return 0;
-}],
-local_cv_has_posix_sprintf=yes,
-local_cv_has_posix_sprintf=no,
-)])
-AC_MSG_RESULT($local_cv_has_posix_sprintf)
-case x$local_cv_has_posix_sprintf in
-xyes) AC_DEFINE(HAVE_POSIX_SPRINTF)
-esac
-
-AC_MSG_CHECKING(for a posix version of vsprintf())
-AC_CACHE_VAL(local_cv_has_posix_vsprintf,[
-AC_TRY_RUN([
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-int func(char *buffer, const char *fmt, ...)
-{
- int ret = 0;
- va_list ap;
- 
- va_start(ap, fmt);
-
- ret = vsprintf(buffer, fmt, ap);
-         
- va_end(ap);
-
- return (ret);
-}
-int main() {
- char buffer[1024];
- if (func(buffer, "%s%c%d\n", "abcd", ' ', 1) != 7)
-  exit (1);
- return 0;
-}],
-local_cv_has_posix_vsprintf=yes,
-local_cv_has_posix_vsprintf=no,
-)])
-AC_MSG_RESULT($local_cv_has_posix_vsprintf)
-case x$local_cv_has_posix_vsprintf in
-xyes) AC_DEFINE(HAVE_POSIX_VSPRINTF)
 esac
 
 AC_MSG_CHECKING(for a writev that we can use)
@@ -1083,6 +1049,34 @@ AC_MSG_RESULT($local_cv_linker_have_relocationable_main)
 AM_CONDITIONAL(HAVE_LINKER_MAIN_RELOCATE, $local_cv_linker_have_relocationable_main)
 
 LDFLAGS="$XLDFLAGS"
+
+
+# You have to have one of the known locales installed...
+AC_MSG_CHECKING(for a tousands support in *sprintf())
+AC_CACHE_VAL(local_cv_has_thousands_sprintf,[
+AC_TRY_RUN([
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <locale.h>
+int main() {
+ char buffer[1024];
+ if (setlocale(LC_ALL, "en_US"))
+   if ((sprintf(buffer, "%'d", 4000) != 5) || !strcmp(buffer, "4,000"))
+    exit (1);
+ if (setlocale(LC_ALL, "en_GB"))
+   if ((sprintf(buffer, "%'d", 4000) != 5) || !strcmp(buffer, "4,000"))
+    exit (1);
+ return 0;
+}],
+local_cv_has_thousands_sprintf=yes,
+local_cv_has_thousands_sprintf=no,
+)])
+AC_MSG_RESULT($local_cv_has_thousands_sprintf)
+case x$local_cv_has_thousands_sprintf in
+xyes) AC_DEFINE(HAVE_THOUSANDS_SPRINTF)
+esac
 
 TWOCAN_CONF_MSG(Output Substitution)
 

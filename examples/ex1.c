@@ -12,6 +12,7 @@
 #include <sys/uio.h>
 #include <sys/mman.h>
 #include <limits.h>
+#include <float.h>
 #include <stdarg.h>
 #include <inttypes.h>
 #include <locale.h>
@@ -162,7 +163,8 @@ int main(int argc, char *argv[])
  str1 = vstr_make_base(conf);
  if (!str1)
    errno = ENOMEM, PROBLEM("vstr_make_base:");
- 
+
+ /* export LC_ALL=en_US to see thousands_sep in action */
  setlocale(LC_ALL, "");
  loc = localeconv();
 
@@ -294,6 +296,8 @@ int main(int argc, char *argv[])
                               "INTMAX_MIN=%'+jd\n"
                               "INTMAX_MAX=%'+jd\n"
                               "UINTMAX_MAX=%'ju\n"
+                              "DOUBLE_MIN=%'+f\n"
+                              "DOUBLE_MAX=%'f\n"
                               );
   
   if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt,
@@ -318,7 +322,9 @@ int main(int argc, char *argv[])
                     PTRDIFF_MAX,
                     INTMAX_MIN,
                     INTMAX_MAX,
-                    UINTMAX_MAX
+                    UINTMAX_MAX,
+                    -DBL_MAX, /* DBL_MIN is a very small fraction */
+                    DBL_MAX
                     ))
     errno = ENOMEM, PROBLEM("vstr_add_fmt:");
 

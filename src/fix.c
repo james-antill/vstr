@@ -1,6 +1,6 @@
 #define FIX_C
 /*
- *  Copyright (C) 1999  James Antill
+ *  Copyright (C) 1999, 2000, 2001  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,27 +19,6 @@
  *  email: james@and.org
  */
 #include "main.h"
-
-#ifndef HAVE_POSIX_SPRINTF
-int FIX_SYMBOL(posix_sprintf)(char *print_to, const char *format_line, ... )
-{
- char *tmp_ptr = print_to;
- va_list ap;
- 
- va_start(ap, format_line);
- 
-#ifdef HAVE_POSIX_VSPRINTF
- tmp_ptr += vsprintf(print_to, format_line, ap);
-#else
- vsprintf(print_to, format_line, ap);
- tmp_ptr = C_strchr(print_to, 0);
-#endif
- 
- va_end(ap);
- 
- return (tmp_ptr - print_to);
-}
-#endif
 
 #ifndef HAVE_MEMCHR
 void *FIX_SYMBOL(memchr)(const void *source, int character, size_t num)
@@ -170,7 +149,7 @@ size_t FIX_SYMBOL(strcspn)(const char *s, const char *str_reject)
 /* it is part of gnu's extentions */
 size_t FIX_SYMBOL(strnlen)(const char *str, size_t count)
 {
- const char *tmp = C_memchr(str, 0, count);
+ const char *tmp = memchr(str, 0, count);
  
  if (!tmp)
    return (count);
@@ -180,7 +159,6 @@ size_t FIX_SYMBOL(strnlen)(const char *str, size_t count)
 #endif
 
 #ifndef HAVE_STRNCMP
-# warning "Assumes ASCI"
 /* it is part of gnu's extentions */
 size_t FIX_SYMBOL(strncmp)(const char *str1, const char *str2, size_t count)
 {
@@ -264,6 +242,45 @@ char *FIX_SYMBOL(stpcpy)(char *copy, const char *from)
 
   /* returns the end of the copied string */
   return (copy); 
+}
+#endif
+
+#ifndef HAVE_VSNPRINTF
+int FIX_SYMBOL(vsnprintf)(char *str, size_t size, const char *fmt, va_list ap)
+{
+  static FILE *fp = NULL;
+
+  if (!fp)
+    fp = fopen("/dev/null", "ab");
+
+  return (vfprintf(fp, fmt, ap));
+}
+#endif
+
+#ifndef HAVE_ASPRINTF
+int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
+{
+ int sz = 0;
+ va_list ap;
+ 
+ va_start(ap, fmt);
+
+ sz = vsnprintf(NULL, 0, fmt, ap);
+
+ va_end(ap);
+
+ ++sz; /* return value from asprintf is different */
+ 
+ if (!(*ret = malloc(sz)))
+   return (-1);
+
+ va_start(ap, fmt);
+ 
+ vsprintf(*ret, fmt, ap);
+
+ va_end(ap);
+ 
+ return (sz);
 }
 #endif
 
@@ -1284,162 +1301,25 @@ int FIX_SYMBOL(inet_pton)(int af, const char *cp, void *buf)
 }
 #endif
 
-typedef struct FIX_SYMBOL(send_file_node)
-{
- struct FIX_SYMBOL(send_file_node) *next;
- struct FIX_SYMBOL(send_file_node) *prev;
- int fd;
- ino_t inum;
- size_t len;
- char buffer[1024 * 4];
-} FIX_SYMBOL(send_file_node);
-
-static FIX_SYMBOL(send_file_node) *FIX_SYMBOL(send_file_start) = NULL;
-static FIX_SYMBOL(send_file_node) *FIX_SYMBOL(send_file_free) = NULL;
-
-static void FIX_SYMBOL(send_file_unlink)(FIX_SYMBOL(send_file_node) *tmp)
-{
- if (tmp->prev)
-   tmp->prev->next = tmp->next;
- else
-   FIX_SYMBOL(send_file_start) = tmp->next;
- 
- if (tmp->next)
-   tmp->next->prev = tmp->prev;
- 
- tmp->prev = NULL;
- if ((tmp->next = FIX_SYMBOL(send_file_free)))
-   FIX_SYMBOL(send_file_free)->prev = tmp;
- FIX_SYMBOL(send_file_free) = tmp;
-}
-
+#ifndef HAVE_SENDFILE
 ssize_t FIX_SYMBOL(sendfile)(int out_fd, int in_fd,
                              off_t *offset, size_t nbytes)
 {
+#ifdef HAVE_FREEBSD_SENDFILE
  ssize_t ret = 0;
 
-#ifdef HAVE_SENDFILE
- /* don't get caught by the #define sendfile */
- ret = (sendfile)(out_fd, in_fd, offset, nbytes);
- if ((ret != -1) || (errno != EINVAL))
-   return (ret);
-#endif
-#ifdef HAVE_FREEBSD_SENDFILE
  /* don't get caught by the #define sendfile ... butcher all the arguments */
  ret = (sendfile)(in_fd, out_fd, offset ? *offset : 0, nbytes, NULL,
                   offset, 0);
- if ((ret != -1) || (errno != EINVAL))
-   return (ret); 
-#endif
-#ifdef HAVE_PREAD
- if (offset)
- {
-  char buf[1024 * 4];
-
-  if (sizeof(buf) < nbytes)
-    nbytes = sizeof(buf);
-  
-  ret = pread(in_fd, buf, sizeof(buf), *offset);
-  if (ret == -1)
-    return (ret);
-  
-  assert(nbytes >= (size_t)ret);
-  nbytes = ret;
-
-  ret = write(out_fd, buf, nbytes);
-  if (ret == -1)
-    return (ret);
-  *offset += (size_t)ret;
-
-  return (ret);
- }
- /* FALLTHROUGH */
-#endif
- if (offset)
- {
-  errno = EINVAL;
-  return (-1);
- }
- else
- {
-  struct FIX_SYMBOL(send_file_node) *tmp = FIX_SYMBOL(send_file_start);
-  /* I _think_ I can call fstat() on a socket or pipe and use st_ino ... SuS
-   * seems to suggest I can, but the wording is dodgy. If not I guess
-   * I could try getsockname() ... but that almost certainly won't work
-   * with pipes */
-  /* Ps. It does work with sockets and pipes, under Linux */
-  struct stat real_buf;
-  struct stat *buf = &real_buf;
-  
-  if (fstat(in_fd, buf) == -1)
-    return (-1);
-  
-  while (tmp)
-  {
-   if (tmp->fd == in_fd)
-   {
-    if (tmp->inum == buf->st_ino)
-      break;
-    else
-    {
-     FIX_SYMBOL(send_file_unlink)(tmp);
-     break;
-    }
-   }
-   
-   tmp = tmp->next;
-  }
-
-  if (!tmp)
-  {
-   if (FIX_SYMBOL(send_file_free))
-   {
-    tmp = FIX_SYMBOL(send_file_free);
-    if ((FIX_SYMBOL(send_file_free) = tmp->next))
-      FIX_SYMBOL(send_file_free)->prev = NULL;
-   }
-   else if (!(tmp = malloc(sizeof(struct FIX_SYMBOL(send_file_node)))))
-   {
-    errno = ENOMEM;
-    return (-1);
-   }
-
-   tmp->len = 0;
-   tmp->fd = in_fd;
-   tmp->inum = buf->st_ino;
-   tmp->prev = NULL;
-   if ((tmp->next = FIX_SYMBOL(send_file_start)))
-     FIX_SYMBOL(send_file_start)->prev = tmp;
-   FIX_SYMBOL(send_file_start) = tmp;
-  }
-
-  if (sizeof(tmp->buffer) < nbytes)
-    nbytes = sizeof(tmp->buffer);
-
-  if (tmp->len < nbytes)
-    ret = read(in_fd, tmp->buffer + tmp->len, nbytes - tmp->len);
-
-  if (ret == -1)
-    return (ret);
-
-  tmp->len += (size_t)ret;
-  ret = write(out_fd, tmp->buffer, tmp->len);
-  if (ret == -1)
-    return (ret);
-
-  assert((size_t)ret <= tmp->len);
-  
-  if ((size_t)ret != tmp->len)
-  {
-   tmp->len -= (size_t)ret;
-   memmove(tmp->buffer, tmp->buffer + (size_t)ret, tmp->len - (size_t)ret);
-   return (ret);
-  }
-
-  FIX_SYMBOL(send_file_unlink)(tmp);
- }
  return (ret);
+#else
+ errno = EINVAL; /* pretend the in_fd isn't in the page cache in Linux
+                  * as they have to fall back to read()/write() in that case
+                  * anyway */
+ return (-1);
+#endif
 }
+#endif
 
 #ifndef HAVE_WCSNRTOMBS
 size_t FIX_SYMBOL(wcsnrtombs)(char *dest, const wchar_t **src, size_t nwc,

@@ -42,6 +42,7 @@
 #undef ptrdiff_t
 #undef intmax_t
 #undef uintmax_t
+#undef HAVE_LONG_LONG
 
 /* auto macors... */
 #undef HAVE_UNISTD_H
@@ -78,6 +79,8 @@
 #undef HAVE_STRNCHR
 
 #undef HAVE_ASPRINTF
+
+#undef HAVE_VSNPRINTF
 
 
 #undef HAVE_GETOPT_LONG
@@ -157,5 +160,7 @@
 #undef HAVE_SENDFILE_FREEBSD
 
 #undef HAVE_SOCKADDR_IN6
+
+#undef HAVE_THOUSANDS_SPRINTF
 
 #undef NDEBUG

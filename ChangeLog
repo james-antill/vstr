@@ -1,3 +1,15 @@
+2001-12-07  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr__fmt_write_spec): Fix use of thousands sep. in
+	asprintf call.
+
+2001-12-06  James Antill  <james@and.org>
+
+	* examples/ex1.c (main): Print double values, so we know they at least
+	sort of work.
+
+	* src/vstr_fmt.c (vstr__fmt_write_spec): Fix printing of double values.
+
 2001-12-05  James Antill  <james@and.org>
 
 	* src/vstr_sub.c (vstr_sub_buf): Add validity checks when running in

@@ -6,8 +6,6 @@
 
  doco.
 
- vstr_mov_* (moves data from one vstr to another) ?
-
  pkg-config as well/instead of gnome-config
 
  size overflows, just don't do it (tm).

@@ -191,18 +191,6 @@ struct cmsghdr
 # define AFREE(x) FREE(x)
 #endif
 
-#ifndef HAVE_POSIX_SPRINTF
-/* for all vararg macros do it like this...
- * Inc. using a seperate base symbol name */
-extern int FIX_SYMBOL(posix_sprintf) (char *, const char *, ... );
-# if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-# define sprintf(buf, fmt, args...) FIX_SYMBOL(posix_sprintf)(buf, fmt , ## args)
-# else
-# undef sprintf
-# define sprintf FIX_SYMBOL(posix_sprintf)
-# endif
-#endif
-
 #ifndef HAVE_MEMCHR
 # undef memchr
 extern void *FIX_SYMBOL(memchr)(const void *source, int character, size_t num);
@@ -267,6 +255,22 @@ extern int FIX_SYMBOL(strcasecmp)(const char *, const char *);
 #ifndef HAVE_STPCPY
 extern char *FIX_SYMBOL(stpcpy)(char *, const char *);
 #define stpcpy(a, b) FIX_SYMBOL(stpcpy)(a, b)
+#endif
+
+#ifndef HAVE_VSNPRINTF
+# undef vsnprintf
+extern int FIX_SYMBOL(vsnprintf)(char *, size_t, const char *, va_list);
+#define vsnprintf(a, b, c, d) FIX_SYMBOL(vsnprintf)(a, b, c, d)
+#endif
+
+#ifndef HAVE_ASPRINTF
+# undef asprintf
+extern int FIX_SYMBOL(asprintf)(char **, const char *, ...);
+# if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+#  define asprintf(ret, fmt, args...) FIX_SYMBOL(asprintf)(ret, fmt , ## args)
+# else
+#  define asprintf FIX_SYMBOL(asprintf)
+# endif
 #endif
 
 #ifndef HAVE_GETOPT_LONG
@@ -464,9 +468,10 @@ extern int FIX_SYMBOL(inet_pton)(int, const char *, void *);
 
 /* the problem is that even in Linux you cannot pass anything as the fds
  * to sendfile(2) currently only local files are allowed as the in_fd */
-#undef sendfile
+#ifndef HAVE_SENDFILE
 extern ssize_t FIX_SYMBOL(sendfile)(int, int, off_t *, size_t);
 #define sendfile(a, b, c, d) FIX_SYMBOL(sendfile)(a, b, c, d)
+#endif
 
 #ifndef HAVE_WCSNRTOMBS
 #undef wcsnrtombs

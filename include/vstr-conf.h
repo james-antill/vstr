@@ -43,6 +43,7 @@
 /* #undef ptrdiff_t */
 /* #undef intmax_t */
 /* #undef uintmax_t */
+#define VSTR_AUTOCONF_HAVE_LONG_LONG 1
 
 /* auto macors... */
 #define VSTR_AUTOCONF_HAVE_UNISTD_H 1
@@ -79,6 +80,8 @@
 /* #undef HAVE_STRNCHR */
 
 #define VSTR_AUTOCONF_HAVE_ASPRINTF 1
+
+#define VSTR_AUTOCONF_HAVE_VSNPRINTF 1
 
 
 #define VSTR_AUTOCONF_HAVE_GETOPT_LONG 1

@@ -122,8 +122,8 @@ DATA =  $(confexec_DATA)
 
 DIST_COMMON =  README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
 Makefile.in NEWS TODO aclocal.m4 config.guess config.sub configure \
-configure.in gnome-config-missing.sh.in install-sh ltconfig missing \
-mkinstalldirs vstr.spec.in
+configure.in gnome-config-missing.sh.in install-sh ltconfig ltmain.sh \
+missing mkinstalldirs vstr.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

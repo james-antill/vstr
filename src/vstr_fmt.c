@@ -51,6 +51,11 @@
 #define SPECIAL (1 << 13) /* 0x */
 #define LARGE (1 << 14) /* use 'ABCDEF' instead of 'abcdef' */
 #define THOUSAND_SEP (1 << 15) /* split at grouping marks according to locale */
+#ifdef HAVE_THOUSAND_SPRINTF
+# define VSTR__OS_THOUSAND_SEP THOUSAND_SEP
+#else
+# define VSTR__OS_THOUSAND_SEP 0
+#endif
 
 
 #define IS_ZERO (1 << 29) /* is the number zero */
@@ -339,7 +344,9 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
   case SHORT_TYPE: VSTR__FMT_ADD_NUM(unsigned short); break;
   case INT_TYPE: VSTR__FMT_ADD_NUM(unsigned int); break;
   case LONG_TYPE: VSTR__FMT_ADD_NUM(unsigned long); break;
+#ifdef HAVE_LONG_LONG
   case LONG_DOUBLE_TYPE: VSTR__FMT_ADD_NUM(unsigned long long); break;
+#endif
   case SIZE_T_TYPE: VSTR__FMT_ADD_NUM(size_t); break;
     /* ptrdiff_t is actually promoted to intmax_t so the sign/unsign works */
   case PTRDIFF_T_TYPE: assert(FALSE); /* FALLTHROUGH */
@@ -380,7 +387,9 @@ struct Vstr__fmt_spec
   unsigned int data_i;
   wint_t data_wint;
   unsigned long data_l;
+#ifdef HAVE_LONG_LONG
   unsigned long long data_L;
+#endif
   size_t data_sz;
   uintmax_t data_m;
   
@@ -648,12 +657,18 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 #define VSTR__FMT_A(x) \
  (offsetof(union Vstr__fmt_sp_un, data_c) == \
  (offsetof(union Vstr__fmt_sp_un, x)))
+
+#ifdef HAVE_LONG_LONG
+# define VSTR__FMT_L_A() VSTR__FMT_A(data_L)
+#else
+# define VSTR__FMT_L_A() TRUE
+#endif
         
         assert(VSTR__FMT_A(data_s) &&
                VSTR__FMT_A(data_i) &&
                VSTR__FMT_A(data_wint) &&
                VSTR__FMT_A(data_l) &&
-               VSTR__FMT_A(data_L) &&
+               VSTR__FMT_L_A() &&
                VSTR__FMT_A(data_sz) &&
                VSTR__FMT_A(data_m) &&
                VSTR__FMT_A(data_d) &&
@@ -661,6 +676,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
                VSTR__FMT_A(data_ptr) &&
                TRUE);
 #undef VSTR__FMT_A
+#undef VSTR__FMT_L_A
         
         if (!vstr__add_number(base, pos_diff, &spec->u, spec->int_type,
                               spec->field_width, spec->precision,
@@ -678,8 +694,10 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
           VSTR__FMT_MK_N_PTR(SHORT_TYPE, signed short, unsigned short);
           VSTR__FMT_MK_N_PTR(INT_TYPE, signed int, unsigned int);
           VSTR__FMT_MK_N_PTR(LONG_TYPE, signed long, unsigned long);
+#ifdef HAVE_LONG_LONG
           VSTR__FMT_MK_N_PTR(LONG_DOUBLE_TYPE,
                              signed long long, unsigned long long);
+#endif
           VSTR__FMT_MK_N_PTR(SIZE_T_TYPE, ssize_t, size_t);
           VSTR__FMT_MK_N_PTR(INTMAX_T_TYPE, intmax_t, uintmax_t);
           
@@ -729,7 +747,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         if (spec->flags & ZEROPAD)
           fmt_buffer[tmp++] = '0';
 
-        if (spec->flags & THOUSAND_SEP)
+        if (spec->flags & VSTR__OS_THOUSAND_SEP)
           fmt_buffer[tmp++] = '\'';
 
         if (spec->field_width_usr)
@@ -778,8 +796,11 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
             ret = asprintf(&float_buffer, fmt_buffer,
                            spec->u.data_d);
         }
+
+        if (ret < 0)
+          goto failed_alloc;
         
-        if ((ret > 0) || !VSTR__FMT_ADD(base, float_buffer, ret))
+        if ((ret > 0) && !VSTR__FMT_ADD(base, float_buffer, ret))
         {
           free(float_buffer);
           goto failed_alloc;
@@ -941,6 +962,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
               u.data_l = va_arg(ap, unsigned long);
             if (!u.data_l) spec->flags |= IS_ZERO;
             break;
+#ifdef HAVE_LONG_LONG
           case LONG_DOUBLE_TYPE:
             if (spec->flags & SIGN)
             {
@@ -951,6 +973,7 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
               u.data_L = va_arg(ap, unsigned long long);
             if (!u.data_L) spec->flags |= IS_ZERO;
             break;
+#endif
           case SIZE_T_TYPE:
             if (spec->flags & SIGN)
             {
@@ -1000,8 +1023,10 @@ static int vstr__fmt_fillin_spec(va_list ap, int have_dollars)
           VSTR__FMT_MK_N_PTR(SHORT_TYPE, signed short, unsigned short);
           VSTR__FMT_MK_N_PTR(INT_TYPE, signed int, unsigned int);
           VSTR__FMT_MK_N_PTR(LONG_TYPE, signed long, unsigned long);
+#ifdef HAVE_LONG_LONG
           VSTR__FMT_MK_N_PTR(LONG_DOUBLE_TYPE,
                              signed long long, unsigned long long);
+#endif
           VSTR__FMT_MK_N_PTR(SIZE_T_TYPE, ssize_t, size_t);
           VSTR__FMT_MK_N_PTR(INTMAX_T_TYPE, intmax_t, uintmax_t);
             

@@ -719,7 +719,7 @@ Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
 {
  Vstr_node *scan = NULL;
  
- assert(base && pos && *len && ((pos + *len - 1) <= base->len));
+ assert(base && pos && len && *len && ((pos + *len - 1) <= base->len));
  
  if ((pos > base->len) || !*len)
    return (NULL);
@@ -777,7 +777,7 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
 {
   Vstr_node *scan = NULL;
   
-  assert(base && pos && *len && ((pos + *len - 1) <= base->len));
+  assert(base && pos && len && *len && ((pos + *len - 1) <= base->len));
   
   if ((pos > base->len) || !*len)
     return (FALSE);
