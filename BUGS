@@ -1,5 +1,2 @@
-. vstr_add_fmt()
-  floating point relies somewhat on the underlying implimentation.
-
 . size overflows, just don't do it (tm).
 

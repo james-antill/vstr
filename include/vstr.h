@@ -36,6 +36,13 @@ extern "C"
 #include <vstr-switch.h>
 
 #if VSTR_COMPILE_INCLUDE
+
+# ifdef VSTR_AUTOCONF_HAVE_POSIX_HOST
+#  ifndef  _LARGEFILE64_SOURCE
+#   define _LARGEFILE64_SOURCE 1
+#  endif
+# endif
+
 # include <stdlib.h> /* size_t */
 # include <stdarg.h> /* va_list */
 # include <string.h> /* strlen()/memcpy()/memset() in headers */

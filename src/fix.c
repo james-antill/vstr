@@ -1,6 +1,6 @@
 #define FIX_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,17 +21,32 @@
 #include "main.h"
 
 #ifndef HAVE_MEMCHR
-void *FIX_SYMBOL(memchr)(const void *source, int character, size_t num)
+void *FIX_SYMBOL(memchr)(const void *source, int chr, size_t num)
 {
- char *tmp = source;
+ const char *tmp = source;
 
- while (((tmp - (char *)source) < num) && (*tmp != (char) chacter))
+ while (((tmp - (char *)source) < num) && (*tmp != (char) chr))
    ++tmp;
 
- if (*tmp == chacter)
+ if (*tmp == chr)
    return (tmp);
  else
    return (NULL);
+}
+#endif
+
+#ifndef HAVE_MEMRCHR
+void *FIX_SYMBOL(memrchr)(const void *source, int chr, size_t num)
+{
+  const char *tmp = source + num;
+  
+  while (((tmp - (char *)source) > 0) && (*--tmp != (char) chr))
+  { /* do nothing */ }
+  
+  if (*tmp == chr)
+    return (tmp);
+  else
+    return (NULL);
 }
 #endif
 
@@ -48,6 +63,15 @@ void *FIX_SYMBOL(memcpy)(void *dest, const void *src, size_t n)
    *to++ = *from++;
  
  return (dest);
+}
+#endif
+
+#ifndef HAVE_MEMPCPY
+void *FIX_SYMBOL(mempcpy)(void *dest, const void *src, size_t n)
+{
+  memcpy(dest, src, n);
+  
+  return (dest + n);
 }
 #endif
 

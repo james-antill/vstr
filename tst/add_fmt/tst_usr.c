@@ -38,8 +38,8 @@ int tst(void)
   VSTR_ADD_CSTR_BUF(s2, s2->len, buf);
   vstr_add_fmt(s2, s2->len, " -- %ld $", (long)getpid());
 
-  s1->conf->fmt_usr_escape = '$'; /* FIXME: cntl */
-  s3->conf->fmt_usr_escape = '$'; /* FIXME: cntl */
+  vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
+  vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   
   vstr_fmt_add(s1->conf, "{Vstr:%p%u}", tst_usr_vstr_cb,
                VSTR_TYPE_FMT_PTR_VOID,

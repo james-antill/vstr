@@ -20,10 +20,15 @@ else
 POSIX_HOST_SRC = vstr_sc_noposix.c
 endif
 
+if FMT_DBL_glibc
+ASM_SOURCE = vstr_add_fmt_dbl_asm.S
+endif
+
 libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr.c \
                         vstr_add.c \
                         vstr_add_fmt.c \
+			$(ASM_SOURCE) \
                         vstr_add_netstr.c \
                         vstr_cache.c \
                         vstr_cmp.c \
@@ -34,7 +39,6 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_dup.c \
                         vstr_export.c \
                         vstr_inline.c \
-                        vstr_join.c \
                         vstr_mov.c \
                         vstr_parse.c \
                         vstr_parse_netstr.c \

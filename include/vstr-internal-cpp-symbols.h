@@ -96,7 +96,6 @@
 #define vstr_nx_sects_foreach vstr_sects_foreach
 #define vstr_nx_split_buf vstr_split_buf
 #define vstr_nx_split_chrs vstr_split_chrs
-#define vstr_nx_join_buf vstr_join_buf
 #define vstr_nx_cache_add_cb vstr_cache_add_cb
 #define vstr_nx_cache_srch vstr_cache_srch
 #define vstr_nx_cache_set_data vstr_cache_set_data

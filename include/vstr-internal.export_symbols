@@ -96,7 +96,6 @@ sects_srch
 sects_foreach
 split_buf
 split_chrs
-join_buf
 cache_add_cb
 cache_srch
 cache_set_data

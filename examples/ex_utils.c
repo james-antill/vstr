@@ -11,6 +11,7 @@
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/poll.h>
 
 #include "ex_utils.h"
 
@@ -89,143 +90,32 @@ void ex_utils_warn(const char *fl, unsigned int l, const char *fu,
   }
 }
 
-/* io */
-
-int ex_utils_read(Vstr_base *str1, int fd)
+int ex_utils_set_o_nonblock(int fd)
 {
-  unsigned int err = 0;
-  int ret = vstr_sc_read_iov_fd(str1, str1->len, fd, 4, 32, &err);
+  int flags = 0;
 
-  if (!ret && (err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &&
-      (errno == EAGAIN))
-    return (TRUE);
+  if ((flags = fcntl(fd, F_GETFL)) == -1)
+    return (0);
 
-  if (!ret && (err == VSTR_TYPE_SC_READ_FD_ERR_EOF))
-    return (FALSE);
+  if (!(flags & O_NONBLOCK) &&
+      (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
+    return (0);
 
-  if (!ret)
-    DIE("vstr_sc_read_iov_fd:");
-  
-  return (ret);
+  return (1);
 }
 
-int ex_utils_write(Vstr_base *base, int fd)
+void ex_utils_poll_stdout(void)
 {
-  unsigned int err = 0;
-
-  vstr_sc_write_fd(base, 1, base->len, fd, &err);
-
-  if (err == VSTR_TYPE_SC_WRITE_FILE_ERR_MEM)
-    DIE("vstr_sc_write_fd:");
-
-  if ((err == VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO) && (errno != EAGAIN))
-    DIE("writev:");
+  struct pollfd one;
   
-  return (TRUE);
-}
-
-void ex_utils_cpy_write_all(Vstr_base *base, int fd)
-{
-  Vstr_base *cpy = NULL;
+  one.fd = 1;
+  one.events = POLLOUT;
+  one.revents = 0;
   
-  if (base->conf->malloc_bad)
-    errno = ENOMEM, DIE("before ex2_cpy_write:");
-  if (!(cpy = vstr_make_base(NULL)))
-    errno = ENOMEM, DIE("vstr_make_base:");
-  
-  vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
-  if (cpy->conf->malloc_bad)
-    errno = ENOMEM, DIE("vstr_add_vstr:");
-  
-  while (cpy->len) ex_utils_write(cpy, fd);
-
-  vstr_free_base(cpy);
-}
-
-/* mmap file */
-
-typedef struct ex_utils_mmap_ref
-{
- Vstr_ref ref;
- size_t len;
-} ex_utils_mmap_ref;
-
-static int have_mmaped_file = 0;
-
-static void ex_utils_ref_munmap(Vstr_ref *passed_ref)
-{
-  ex_utils_mmap_ref *ref = (ex_utils_mmap_ref *)passed_ref;
-  munmap(ref->ref.ptr, ref->len);
-  free(ref);
-  
-  assert(have_mmaped_file > 0);
-  --have_mmaped_file;
-}
-
-void ex_utils_append_file(Vstr_base *str1, const char *filename,
-                          int out_fd, size_t max)
-{
-  int fd = open(filename, O_RDONLY);
-  ex_utils_mmap_ref *ref = malloc(sizeof(ex_utils_mmap_ref));
-  caddr_t addr = NULL;
-  struct stat stat_buf;
-  
-  if (!ref)
-    errno = ENOMEM, DIE("malloc ex_utils_mmap:");
-  
-  if (fd == -1)
-    DIE("open:");
-  
-  if (fstat(fd, &stat_buf) == -1)
-    DIE("fstat:");
-
-  if (!S_ISREG(stat_buf.st_mode))
+  while (poll(&one, 1, -1) == -1) /* can't timeout */
   {
-    int tmp_fcntl_flags = -1;
-    
-    if ((tmp_fcntl_flags = fcntl(fd, F_GETFL)) == -1)
-      DIE("fcntl(GET NONBLOCK):");
-    if (!(tmp_fcntl_flags & O_NONBLOCK) &&
-        (fcntl(fd, F_SETFL, tmp_fcntl_flags | O_NONBLOCK) == -1))
-      DIE("fcntl(SET NONBLOCK):");
-    
-    while (ex_utils_read(str1, fd))
-      if (out_fd != -1)
-      {
-        while (str1->len >= max)
-          ex_utils_write(str1, out_fd);
-      }
-    
-    if (close(fd) == -1)
-      DIE("close:");
-    return;
+    if (errno != EINTR)
+      DIE("poll:");
   }
-  
-  ref->len = stat_buf.st_size;
-  
-  addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
-  if (addr == (caddr_t)-1)
-    DIE("mmap:");
-  
-  if (close(fd) == -1)
-    DIE("close:");
-  
-  ref->ref.func = ex_utils_ref_munmap;
-  ref->ref.ptr = (char *)addr;
-  ref->ref.ref = 0;
-  
-  if (offsetof(ex_utils_mmap_ref, ref))
-    assert(FALSE);
-  
-  if (!vstr_add_ref(str1, str1->len, &ref->ref, 0, ref->len))
-    errno = ENOMEM, DIE("vstr_add_ref:");
-  
-  ++have_mmaped_file;
 }
 
-/* check everything went ok */
-
-void ex_utils_check(void)
-{
-  assert(!have_mmaped_file);
-}

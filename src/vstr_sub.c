@@ -436,7 +436,6 @@ int vstr_nx_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
     return (TRUE);
   }
 
- add_del_mode:
   ret = vstr_nx_add_rep_chr(base, pos - 1, chr, rep_len);
 
   if (!len)

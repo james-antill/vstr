@@ -88,9 +88,35 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
   else
     field_width = 0;
 
+  /* glibc %#.g is wrong ... it shouldn't print a '.' ... we are compat. with it
+   *
+   * **************************************************************
+   *
+   * C99 7.19.6.1 says...
+   *
+   * For the '#' flag
+   *
+   * For x (or X) conversion, a nonzero result has 0x (or 0X) prefixed to it.
+   * For a, A, e, E, f, F, g, and G conversions, the result of converting a
+   * floating-point number always contains a decimal-point character, even if
+   * no digits follow it.
+   *
+   * But for 'g' convertaion
+   *
+   * Trailing zeros are removed from the fractional portion of the result
+   * unless the # flag is specified; a decimal-point character appears only
+   * if it is followed by a digit.
+   *
+   * **************************************************************
+   *
+   * Also there is this, which seems to confirm their opinion...
+   * http://std.dkuug.dk/jtc1/sc22/wg14/www/docs/dr_233.htm
+   *
+   */
   if ((!have_g_or_G && (spec->flags & SPECIAL)) ||
       (!have_g_or_G && precision) ||
-      ( have_g_or_G && (spec->flags & SPECIAL) && precision))
+      ( have_g_or_G && (spec->flags & SPECIAL)))
+      /* ( have_g_or_G && (spec->flags & SPECIAL) && precision)) */
     have_dot = TRUE;
   
   if (have_dot)
@@ -163,6 +189,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
       else if (precision > 1)
         --precision;
     default:
+      break;
   }
     
   if (precision && !VSTR__FMT_ADD_REP_CHR(base, '0', precision))

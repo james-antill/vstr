@@ -111,10 +111,13 @@ INCLUDES = -I$(top_srcdir)/include
 @HAVE_POSIX_HOST_TRUE@POSIX_HOST_SRC = @HAVE_POSIX_HOST_TRUE@vstr_sc_posix.c
 @HAVE_POSIX_HOST_FALSE@POSIX_HOST_SRC = @HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.c
 
+@FMT_DBL_glibc_TRUE@ASM_SOURCE = @FMT_DBL_glibc_TRUE@vstr_add_fmt_dbl_asm.S
+
 libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr.c \
                         vstr_add.c \
                         vstr_add_fmt.c \
+			$(ASM_SOURCE) \
                         vstr_add_netstr.c \
                         vstr_cache.c \
                         vstr_cmp.c \
@@ -125,7 +128,6 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_dup.c \
                         vstr_export.c \
                         vstr_inline.c \
-                        vstr_join.c \
                         vstr_mov.c \
                         vstr_parse.c \
                         vstr_parse_netstr.c \
@@ -153,26 +155,75 @@ LTLIBRARIES =  $(lib_LTLIBRARIES)
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I../include
 libvstr_la_LIBADD = 
-@HAVE_POSIX_HOST_TRUE@libvstr_la_OBJECTS =  assert_loop.lo fix.lo \
-@HAVE_POSIX_HOST_TRUE@vstr.lo vstr_add.lo vstr_add_fmt.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_del.lo vstr_dup.lo vstr_export.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_inline.lo vstr_join.lo vstr_mov.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_parse.lo vstr_parse_netstr.lo vstr_ref.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_sc.lo vstr_sc_posix.lo vstr_sect.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_spn.lo vstr_split.lo vstr_srch.lo \
-@HAVE_POSIX_HOST_TRUE@vstr_sub.lo vstr_version.lo
-@HAVE_POSIX_HOST_FALSE@libvstr_la_OBJECTS =  assert_loop.lo fix.lo \
-@HAVE_POSIX_HOST_FALSE@vstr.lo vstr_add.lo vstr_add_fmt.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_add_netstr.lo vstr_cache.lo vstr_cmp.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_cntl.lo vstr_conv.lo vstr_cstr.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_del.lo vstr_dup.lo vstr_export.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_inline.lo vstr_join.lo vstr_mov.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_parse.lo vstr_parse_netstr.lo vstr_ref.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_sc.lo vstr_sc_noposix.lo vstr_sect.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_spn.lo vstr_split.lo vstr_srch.lo \
-@HAVE_POSIX_HOST_FALSE@vstr_sub.lo vstr_version.lo
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@libvstr_la_OBJECTS =  \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@assert_loop.lo fix.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr.lo vstr_add.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_add_fmt.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_add_netstr.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_cache.lo vstr_cmp.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_cntl.lo vstr_conv.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_cstr.lo vstr_del.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_dup.lo vstr_export.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_inline.lo vstr_mov.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_parse.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_parse_netstr.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_ref.lo vstr_sc.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_sect.lo vstr_spn.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_split.lo vstr_srch.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_FALSE@vstr_sub.lo vstr_version.lo
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@libvstr_la_OBJECTS =  \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@assert_loop.lo fix.lo vstr.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_add.lo vstr_add_fmt.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_add_fmt_dbl_asm.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_add_netstr.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_cache.lo vstr_cmp.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_cntl.lo vstr_conv.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_cstr.lo vstr_del.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_dup.lo vstr_export.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_inline.lo vstr_mov.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_parse.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_parse_netstr.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_ref.lo vstr_sc.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_sc_posix.lo vstr_sect.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_spn.lo vstr_split.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_srch.lo vstr_sub.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_TRUE@vstr_version.lo
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@libvstr_la_OBJECTS =  \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@assert_loop.lo fix.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr.lo vstr_add.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_add_fmt.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_add_fmt_dbl_asm.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_add_netstr.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_cache.lo vstr_cmp.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_cntl.lo vstr_conv.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_cstr.lo vstr_del.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_dup.lo vstr_export.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_inline.lo vstr_mov.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_parse.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_parse_netstr.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_ref.lo vstr_sc.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_sc_noposix.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_sect.lo vstr_spn.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_split.lo vstr_srch.lo \
+@FMT_DBL_glibc_TRUE@@HAVE_POSIX_HOST_FALSE@vstr_sub.lo vstr_version.lo
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@libvstr_la_OBJECTS =  \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@assert_loop.lo fix.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr.lo vstr_add.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_add_fmt.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_add_netstr.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_cache.lo vstr_cmp.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_cntl.lo vstr_conv.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_cstr.lo vstr_del.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_dup.lo vstr_export.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_inline.lo vstr_mov.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_parse.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_parse_netstr.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_ref.lo vstr_sc.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_sc_posix.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_sect.lo vstr_spn.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_split.lo vstr_srch.lo \
+@FMT_DBL_glibc_FALSE@@HAVE_POSIX_HOST_TRUE@vstr_sub.lo vstr_version.lo
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)

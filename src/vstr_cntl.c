@@ -394,6 +394,87 @@ int vstr_nx_cntl_conf(Vstr_conf *conf, int option, ...)
    }
    break;
 
+   case VSTR_CNTL_CONF_GET_FMT_CHAR_ESC:
+   {
+     char *val = va_arg(ap, char *);
+     
+     *val = conf->fmt_usr_escape;
+     
+     ret = TRUE;
+   }
+   break;
+  
+   case VSTR_CNTL_CONF_SET_FMT_CHAR_ESC:
+   {
+     int val = va_arg(ap, int);
+
+     conf->fmt_usr_escape = val;
+     
+     ret = TRUE;
+   }
+   break;
+
+   case VSTR_CNTL_CONF_GET_NUM_SPARE_BUF:
+   case VSTR_CNTL_CONF_GET_NUM_SPARE_NON:
+   case VSTR_CNTL_CONF_GET_NUM_SPARE_PTR:
+   case VSTR_CNTL_CONF_GET_NUM_SPARE_REF:
+   {
+     unsigned int *val = va_arg(ap, unsigned int *);
+     
+     switch (option)
+     {
+       case VSTR_CNTL_CONF_GET_NUM_SPARE_BUF: *val = conf->spare_buf_num; break;
+       case VSTR_CNTL_CONF_GET_NUM_SPARE_NON: *val = conf->spare_non_num; break;
+       case VSTR_CNTL_CONF_GET_NUM_SPARE_PTR: *val = conf->spare_ptr_num; break;
+       case VSTR_CNTL_CONF_GET_NUM_SPARE_REF: *val = conf->spare_ref_num; break;
+     }
+     
+     ret = TRUE;
+   }
+   break;
+   
+   case VSTR_CNTL_CONF_SET_NUM_SPARE_BUF:
+   case VSTR_CNTL_CONF_SET_NUM_SPARE_NON:
+   case VSTR_CNTL_CONF_SET_NUM_SPARE_PTR:
+   case VSTR_CNTL_CONF_SET_NUM_SPARE_REF:
+   {
+     unsigned int val = va_arg(ap, unsigned int);
+     unsigned int type = 0;
+     
+     switch (option)
+     {
+       case VSTR_CNTL_CONF_SET_NUM_SPARE_BUF: type = VSTR_TYPE_NODE_BUF; break;
+       case VSTR_CNTL_CONF_SET_NUM_SPARE_NON: type = VSTR_TYPE_NODE_NON; break;
+       case VSTR_CNTL_CONF_SET_NUM_SPARE_PTR: type = VSTR_TYPE_NODE_PTR; break;
+       case VSTR_CNTL_CONF_SET_NUM_SPARE_REF: type = VSTR_TYPE_NODE_REF; break;
+     }
+     
+     if (val == conf->spare_buf_num)
+     { /* do nothing */ }
+     else if (val > conf->spare_buf_num)
+     {
+       unsigned int num = 0;
+       
+       num = vstr_nx_make_spare_nodes(conf, type, val - conf->spare_buf_num);
+       
+       if (num != (val - conf->spare_buf_num))
+       {
+         assert(ret == FALSE);
+         break;
+       }
+     }
+     else if (val < conf->spare_buf_num)
+     {
+       unsigned int num = 0;
+       
+       num = vstr_nx_free_spare_nodes(conf, type, conf->spare_buf_num - val);
+       assert(num == (conf->spare_buf_num - val));
+     }
+     
+     ret = TRUE;
+   }
+   break;
+   
   default:
     break;
  }

@@ -23,36 +23,18 @@
 
 #include "ex_utils.h"
 
+#define MAX_R_DATA_INCORE (1024 * 1024)
+#define MAX_W_DATA_INCORE (1024 * 8)
+
 static void ex_cat_read_fd_write_stdout(Vstr_base *str1, int fd)
 {
   unsigned int err = 0;
+  int keep_going = TRUE;
   
-  while (TRUE)
+  while (keep_going)
   {
-    vstr_sc_read_iov_fd(str1, str1->len, fd, 2, 32, &err);
-    if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-      break;
-    if (err)
-      DIE("read:");
-    
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, &err))
-    { /* should really use socket_poll ...
-       * but can't be bothered requireing other library */
-      struct pollfd one;
-      
-      if (errno != EAGAIN)
-        DIE("write:");
-
-      one.fd = fd;
-      one.events = POLLOUT;
-      one.revents = 0;
-
-      while (poll(&one, 1, -1) == -1) /* can't timeout */
-      {
-        if (errno != EINTR)
-          DIE("poll:");
-      }
-    }
+    EX_UTILS_LIMBLOCK_READ_ALL(str1, fd, keep_going);
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   }
 }
 
@@ -82,13 +64,18 @@ int main(int argc, char *argv[])
  vstr_free_conf(conf);
  
  if (count == argc)  /* use stdin */
+ {
+   ex_utils_set_o_nonblock(0);
    ex_cat_read_fd_write_stdout(str1, 0);
-
+ }
+ 
  while (count < argc)
  {
    unsigned int err = 0;
 
-   vstr_sc_mmap_file(str1, str1->len, argv[count], 0, 0, &err);
+   if (str1->len < MAX_R_DATA_INCORE)
+     vstr_sc_mmap_file(str1, str1->len, argv[count], 0, 0, &err);
+   
    if ((err == VSTR_TYPE_SC_MMAP_FD_ERR_MMAP_ERRNO) ||
        (err == VSTR_TYPE_SC_MMAP_FD_ERR_TOO_LARGE))
    {
@@ -97,6 +84,7 @@ int main(int argc, char *argv[])
      if (fd == -1)
        DIE("open:");
 
+     ex_utils_set_o_nonblock(fd);
      ex_cat_read_fd_write_stdout(str1, fd);
      
      close(fd);
@@ -104,15 +92,13 @@ int main(int argc, char *argv[])
    else if (err && (err != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
      DIE("add:");
 
-   if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-     DIE("write:");
+   EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
    
   ++count;
  }
  
  while (str1->len)
-   if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-     DIE("write:");
+   EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
 
  vstr_free_base(str1);
  

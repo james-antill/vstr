@@ -68,7 +68,7 @@ void vstr_version_func(void)
  "    Have mmap system call.\n"
 #endif
     
-#if USE_RESTRICTED_HEADERS
+#ifdef USE_RESTRICTED_HEADERS
  "    Compiled with restricted functionality in lib C.\n"
 #endif
     
@@ -83,8 +83,8 @@ void vstr_version_func(void)
 #endif
 
     
-#ifdef HAVE_LINKER_SCRIPT
- "    Linker script enabled (suppresses internal symbols).\n"
+#ifdef HAVE_ATTRIB_NONNULL
+ "    Compiler supports -- nonnull -- attribute.\n"
 #endif
 
 #ifdef HAVE_ATTRIB_ALIAS
@@ -103,6 +103,10 @@ void vstr_version_func(void)
  "    Functions can be inlined for speed.\n"
 #else
  "    Functions cannot be inlined by the environment.\n"
+#endif
+
+#ifdef HAVE_LINKER_SCRIPT
+ "    Linker script enabled (suppresses internal symbols).\n"
 #endif
 
     

@@ -213,6 +213,16 @@
 <li><a href="#VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT">VSTR_CNTL_CONF_SET_FLAG_DEL_SPLIT</a>
 <li><a href="#VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_NO_ALLOC_CACHE</a>
 <li><a href="#VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE">VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE</a>
+<li><a href="#VSTR_CNTL_CONF_GET_FMT_CHAR_ESC">VSTR_CNTL_CONF_GET_FMT_CHAR_ESC</a>
+<li><a href="#VSTR_CNTL_CONF_SET_FMT_CHAR_ESC">VSTR_CNTL_CONF_SET_FMT_CHAR_ESC</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_SPARE_BUF">VSTR_CNTL_CONF_GET_NUM_SPARE_BUF</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_SPARE_NON">VSTR_CNTL_CONF_GET_NUM_SPARE_NON</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_SPARE_PTR">VSTR_CNTL_CONF_GET_NUM_SPARE_PTR</a>
+<li><a href="#VSTR_CNTL_CONF_GET_NUM_SPARE_REF">VSTR_CNTL_CONF_GET_NUM_SPARE_REF</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_BUF">VSTR_CNTL_CONF_SET_NUM_SPARE_BUF</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_NON">VSTR_CNTL_CONF_SET_NUM_SPARE_NON</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_PTR">VSTR_CNTL_CONF_SET_NUM_SPARE_PTR</a>
+<li><a href="#VSTR_CNTL_CONF_SET_NUM_SPARE_REF">VSTR_CNTL_CONF_SET_NUM_SPARE_REF</a>
 </ul><li><a href="#Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function">Constants you pass to the vstr_cntl_opt() function</a>
 <ul>
 <li><a href="#VSTR_CNTL_OPT_GET_CONF">VSTR_CNTL_OPT_GET_CONF</a>
@@ -1562,12 +1572,61 @@
  smaller due to the lack of cache.
 
 
+<a name="VSTR_CNTL_CONF_GET_FMT_CHAR_ESC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_FMT_CHAR_ESC
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of escape character for custom format specifiers<br>Type<strong>[1]</strong>: char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will return the character used for specifiying custom format
+ specifiers in the vstr_add_vfmt() function.
+
+
+<a name="VSTR_CNTL_CONF_SET_FMT_CHAR_ESC"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_FMT_CHAR_ESC
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Value of escape character for custom format specifiers<br>Type<strong>[1]</strong>: int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option will allow the Vstr strings using the Vstr configuration to
+ use custom format specifiers in the vstr_fmt_vfmt() function.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If this option is set to 0 ('\0') then vstr_fmt_vfmt() acts like
+ vstr_fmt_vsysfmt().
+
+<a name="VSTR_CNTL_CONF_GET_NUM_SPARE_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_SPARE_BUF
+</a><a name="VSTR_CNTL_CONF_GET_NUM_SPARE_NON"><br><strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_SPARE_NON
+</a><a name="VSTR_CNTL_CONF_GET_NUM_SPARE_PTR"><br><strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_SPARE_PTR
+</a><a name="VSTR_CNTL_CONF_GET_NUM_SPARE_REF"><br><strong>Constant: </strong> VSTR_CNTL_CONF_GET_NUM_SPARE_REF
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns number of spare nodes to have for the specified type<br>Type<strong>[1]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option gets the current number of spare nodes of the specified type.
+
+
+<a name="VSTR_CNTL_CONF_SET_NUM_SPARE_BUF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_SPARE_BUF
+</a><a name="VSTR_CNTL_CONF_SET_NUM_SPARE_NON"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_SPARE_NON
+</a><a name="VSTR_CNTL_CONF_SET_NUM_SPARE_PTR"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_SPARE_PTR
+</a><a name="VSTR_CNTL_CONF_SET_NUM_SPARE_REF"><br><strong>Constant: </strong> VSTR_CNTL_CONF_SET_NUM_SPARE_REF
+</a>
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Number of spare nodes to have for the specified type<br>Type<strong>[1]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This option is will set the number of specified nodes of the specified type,
+ by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  When the value specified is higher and vstr calls vstr_make_spare_nodes() then
+ a return value of FALSE means that there was a malloc error, just as if you
+ called vstr_make_nodes directly.
+
+
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Constants%20you%20pass%20to%20the%20vstr_cntl_opt%28%29%20function"><h2>Constants you pass to the vstr_cntl_opt() function</h2>
 </a>
 <a name="VSTR_CNTL_OPT_GET_CONF"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Constant: </strong> VSTR_CNTL_OPT_GET_CONF
 </a>
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Return Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the default Vstr configuration.
 

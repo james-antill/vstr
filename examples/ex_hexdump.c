@@ -4,7 +4,6 @@
 
 #include <string.h>
 #include <errno.h>
-#include <sys/poll.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 
@@ -140,70 +139,26 @@ static void ex_hexdump_process(Vstr_base *str1, Vstr_base *str2, int last)
 
     VSTR_ADD_CSTR_BUF(str1, str1->len, "\n");
 
-    vstr_del(str2, 1, 16);
+    vstr_del(str2, 1, str2->len);
   }
 
   if (str1->conf->malloc_bad)
     errno = ENOMEM, DIE("adding data:");
 }
 
-static int ex_hexdump_set_o_nonblock(int fd)
-{
-  int flags = 0;
-
-  if ((flags = fcntl(fd, F_GETFL)) == -1)
-    return (0);
-
-  if (!(flags & O_NONBLOCK) &&
-      (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1))
-    return (0);
-
-  return (1);
-}
-
-static void ex_hexdump_poll_stdout(void)
-{
-  struct pollfd one;
-  
-  one.fd = 1;
-  one.events = POLLOUT;
-  one.revents = 0;
-  
-  while (poll(&one, 1, -1) == -1) /* can't timeout */
-  {
-    if (errno != EINTR)
-      DIE("poll:");
-  }
-}
-
 static void ex_hexdump_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2,
                                             int fd)
 {
   unsigned int err = 0;
+  int keep_going = TRUE;
   
-  while (TRUE)
+  while (keep_going)
   {
-    if (str2->len < MAX_R_DATA_INCORE)
-    {
-      vstr_sc_read_iov_fd(str2, str2->len, fd, 2, 32, &err);
-      if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-        break;
-      if ((err == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) && (errno == EINTR))
-        continue;
-      if (err)
-        DIE("read:");
-    }
+    EX_UTILS_LIMBLOCK_READ_ALL(str2, fd, keep_going);
     
-    ex_hexdump_process(str1, str2, FALSE);
+    ex_hexdump_process(str1, str2, !keep_going);
 
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, &err))
-    {
-      if ((errno != EAGAIN) && (errno != EINTR))
-        DIE("write:");
-
-      if (str1->len > MAX_W_DATA_INCORE)
-        ex_hexdump_poll_stdout();
-    }
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   }
 }
 
@@ -241,11 +196,11 @@ int main(int argc, char *argv[])
 
   vstr_free_conf(conf);
 
-  ex_hexdump_set_o_nonblock(1);
+  ex_utils_set_o_nonblock(1);
   
   if (count == argc)  /* use stdin */
   {
-    ex_hexdump_set_o_nonblock(0);
+    ex_utils_set_o_nonblock(0);
     ex_hexdump_read_fd_write_stdout(str1, str2, 0);
   }
   
@@ -264,6 +219,7 @@ int main(int argc, char *argv[])
       if (fd == -1)
         WARN("open(%s):", argv[count]);
 
+      ex_utils_set_o_nonblock(fd);
       ex_hexdump_read_fd_write_stdout(str1, str2, fd);
       
       close(fd);
@@ -273,14 +229,7 @@ int main(int argc, char *argv[])
     else /* worked */
       ex_hexdump_process(str1, str2, FALSE);
 
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-    {
-      if ((errno != EAGAIN) && (errno != EINTR))
-        DIE("write:");
-
-      if (str1->len > MAX_W_DATA_INCORE)
-        ex_hexdump_poll_stdout();
-    }
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
     
     ++count;
   }
@@ -289,26 +238,13 @@ int main(int argc, char *argv[])
   {
     ex_hexdump_process(str1, str2, TRUE);
 
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-    {
-      if ((errno != EAGAIN) && (errno != EINTR))
-        DIE("write:");
-
-      if (str1->len > MAX_W_DATA_INCORE)
-        ex_hexdump_poll_stdout();
-    }
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   }
   
   vstr_free_base(str2);
 
   while (str1->len)
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-    {
-      if ((errno != EAGAIN) && (errno != EINTR))
-        DIE("write:");
-      
-      ex_hexdump_poll_stdout();
-    }
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   
   vstr_free_base(str1);
   

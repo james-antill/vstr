@@ -41,6 +41,20 @@
 <li><a href="#can_del_sz">can_del_sz</a>
 <li><a href="#alloc_double">alloc_double</a>
 <li><a href="#ptr">ptr</a>
+</ul><li><a href="#struct%20Vstr_fmt_spec%20%28aka%2e%20Vstr%20format%20specifier%29">struct Vstr_fmt_spec (aka. Vstr format specifier)</a>
+<ul>
+<li><a href="#vstr_orig_len">vstr_orig_len</a>
+<li><a href="#fmt_precision">fmt_precision</a>
+<li><a href="#obj_precision">obj_precision</a>
+<li><a href="#fmt_field_width">fmt_field_width</a>
+<li><a href="#obj_field_width">obj_field_width</a>
+<li><a href="#fmt_minus">fmt_minus</a>
+<li><a href="#fmt_plus">fmt_plus</a>
+<li><a href="#fmt_space">fmt_space</a>
+<li><a href="#fmt_hash">fmt_hash</a>
+<li><a href="#fmt_zero">fmt_zero</a>
+<li><a href="#fmt_quote">fmt_quote</a>
+<li><a href="#fmt_I">fmt_I</a>
 </ul></ul>
 
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_ref%20%28aka%2e%20Vstr%20reference%29"><h2>struct Vstr_ref (aka. Vstr reference)</h2>
@@ -169,6 +183,116 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This is a pointer to the section nodes.
 
+
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="struct%20Vstr_fmt_spec%20%28aka%2e%20Vstr%20format%20specifier%29"><h2>struct Vstr_fmt_spec (aka. Vstr format specifier)</h2>
+</a>
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> vstr_orig_len
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the length of the Vstr string prior to vstr_add_vfmt() being called,
+ this allows you to work out how much data has been added to the Vstr string
+ already.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_precision
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag specifies that the caller passed a precision, either directory or
+ via. an argument. The precision itself is then passed as obj_precision.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> obj_precision
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the value passed as the precision, if one is set.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Even though the obj_precision argument is an unsigned type, as an argument
+ the type has to be treated as signed as ISO 9899:1999 specifies that
+ a negative precision means that the precision should be ignored (hence in this
+ case fmt_precision will be 0). This doesn't apply to a precision typed
+ directly into the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_field_width
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This flag specifies that the caller passed a field width, either directory or
+ via. an argument. The field width itself is then passed as obj_field_width.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> obj_field_width
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is the value passed as the field_width, if one is set.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Even though the obj_field_width is an unsigned type, as an argument
+ the type has to be treated as signed as ISO 9899:1999 specifies that
+ a negative field width means that the fmt_minus flag should be set and 
+ the field width should become it's positive counter part (in vstr this 
+ work properly for INT_MIN). This doesn't apply to a field width typed
+ directly into the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_minus
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a '-' attribute on the format,
+ either directly or via. a negative field width value.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_plus
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a '+' attribute on the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_space
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a ' ' attribute on the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_hash
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a '#' attribute on the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_zero
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a '0' attribute on the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_quote
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a '\'' attribute on the format.
+
+
+</td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Member: </strong> fmt_I
+
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This is a flag specifing that the user put a 'I' attribute on the format.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  This is used by glibc to mean that integers should come out as locale
+ dependant bytes. This flag currently does nothing in vstr, apart from being
+ passed to custom specifiers.
 
 
 </td></tr></table>

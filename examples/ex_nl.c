@@ -11,12 +11,15 @@
 #include <unistd.h>
 
 #include "ex_utils.h"
+/* do something similar to the system "nl" command */
 
 #define SECTS_LOOP 32 /* how many sections to split into per loop */
 
-#if 1 /* this version using split isn't any slower */
-static void ex_nl_process(Vstr_base *str1, Vstr_base *str2,
-                          int last __attribute__((unused)))
+#define MAX_R_DATA_INCORE (1024 * 1024)
+#define MAX_W_DATA_INCORE (1024 * 8)
+
+#if 1 /* this version using split shouldn't be any slower */
+static void ex_nl_process(Vstr_base *str1, Vstr_base *str2, int last)
 {
   static unsigned int count = 0;
   
@@ -46,22 +49,21 @@ static void ex_nl_process(Vstr_base *str1, Vstr_base *str2,
 
       if (str1->conf->malloc_bad)
         errno = ENOMEM, DIE("adding data:");
-
-      while (str1->len > (1024 * 16))
-        if (!ex_utils_write(str1, 1))
-          DIE("write:");
     }
 
-    if (sects->num != sects->sz)
-    {
+    if ((sects->num != sects->sz) && last)
       vstr_del(str2, 1, str2->len);
-      return;
-    }
     else
     {
       size_t pos = VSTR_SECTS_NUM(sects, sects->num)->pos;
       vstr_del(str2, 1, pos - 1);
     }
+
+    if (sects->num != sects->sz)
+      return;
+    
+    if (str1->len > MAX_W_DATA_INCORE)
+      return;
   }
 }
 #else
@@ -79,6 +81,9 @@ static void ex_nl_process(Vstr_base *str1, Vstr_base *str2, int last)
     vstr_add_vstr(str1, str1->len, str2, 1, pos,
                   VSTR_TYPE_ADD_ALL_BUF);
     vstr_del(str2, 1, pos);
+
+    if (str1->len > MAX_W_DATA_INCORE)
+      return;
   }
 
   if (last)
@@ -97,35 +102,15 @@ static void ex_nl_process(Vstr_base *str1, Vstr_base *str2, int last)
 static void ex_nl_read_fd_write_stdout(Vstr_base *str1, Vstr_base *str2, int fd)
 {
   unsigned int err = 0;
+  int keep_going = TRUE;
   
-  while (TRUE)
+  while (keep_going)
   {
-    vstr_sc_read_iov_fd(str2, str2->len, fd, 2, 32, &err);
-    if (err == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-      break;
-    if (err)
-      DIE("read:");
+    EX_UTILS_LIMBLOCK_READ_ALL(str2, fd, keep_going);
     
-    ex_nl_process(str1, str2, FALSE);
-    
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, &err))
-    { /* should really use socket_poll ...
-       * but can't be bothered requireing other library */
-      struct pollfd one;
-      
-      if (errno != EAGAIN)
-        DIE("write:");
+    ex_nl_process(str1, str2, !keep_going);
 
-      one.fd = fd;
-      one.events = POLLOUT;
-      one.revents = 0;
-
-      while (poll(&one, 1, -1) == -1) /* can't timeout */
-      {
-        if (errno != EINTR)
-          DIE("poll:");
-      }
-    }
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   }
 }
 
@@ -158,14 +143,21 @@ int main(int argc, char *argv[])
 
   vstr_free_conf(conf);
   
+  ex_utils_set_o_nonblock(1);
+  
   if (count == argc)  /* use stdin */
-   ex_nl_read_fd_write_stdout(str1, str2, 0);
-
+  {
+    ex_utils_set_o_nonblock(0);
+    ex_nl_read_fd_write_stdout(str1, str2, 0);
+  }
+  
   while (count < argc)
   {
     unsigned int err = 0;
     
-    vstr_sc_mmap_file(str2, str2->len, argv[count], 0, 0, &err);
+   if (str2->len < MAX_R_DATA_INCORE)
+     vstr_sc_mmap_file(str2, str2->len, argv[count], 0, 0, &err);
+   
     if ((err == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (err == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
@@ -173,7 +165,8 @@ int main(int argc, char *argv[])
       
       if (fd == -1)
         DIE("open:");
-
+      
+      ex_utils_set_o_nonblock(fd);
       ex_nl_read_fd_write_stdout(str1, str2, fd);
       
       close(fd);
@@ -182,23 +175,24 @@ int main(int argc, char *argv[])
       DIE("add:");
     else
       ex_nl_process(str1, str2, FALSE);
-    
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-      DIE("write:");
+
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
+   
     ++count;
   }
 
-  ex_nl_process(str1, str2, TRUE);
+  while (str2->len)
+  {
+    ex_nl_process(str1, str2, TRUE);
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
+  }
   
   vstr_free_base(str2);
 
   while (str1->len)
-    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
-      DIE("write:");
+    EX_UTILS_LIMBLOCK_WRITE_ALL(str1, 1);
   
   vstr_free_base(str1);
-
-  ex_utils_check();
  
   vstr_exit();
 

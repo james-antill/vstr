@@ -1,3 +1,29 @@
+2002-09-02  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.13
+
+	* include/vstr-const.h (VSTR_CNTL_CONF_GET_FMT_CHAR_ESC): Add constant.
+	(VSTR_CNTL_CONF_SET_FMT_CHAR_ESC): Add constant.
+	(VSTR_CNTL_CONF_GET_NUM_SPARE_BUF): Add constant.
+	(VSTR_CNTL_CONF_SET_NUM_SPARE_BUF): Add constant.
+	(VSTR_CNTL_CONF_GET_NUM_SPARE_NON): Add constant.
+	(VSTR_CNTL_CONF_SET_NUM_SPARE_NON): Add constant.
+	(VSTR_CNTL_CONF_GET_NUM_SPARE_PTR): Add constant.
+	(VSTR_CNTL_CONF_SET_NUM_SPARE_PTR): Add constant.
+	(VSTR_CNTL_CONF_GET_NUM_SPARE_REF): Add constant.
+	(VSTR_CNTL_CONF_SET_NUM_SPARE_REF): Add constant.
+
+	* src/vstr_add_fmt_dbl_asm.S: Finish the glibc format double work, now
+	Vstr can be ported to output double's the same way on all platforms.
+
+	* src/vstr_join.c (vstr_join_buf): Remove undocumented function.
+
+2002-09-01  James Antill  <james@and.org>
+
+	* include/vstr.h (_LARGEFILE64_SOURCE): Allow external program to
+	compile on Linux that don't #define _GNU_SOURCE or anything which
+	brings in off64_t.
+
 2002-08-27  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.12

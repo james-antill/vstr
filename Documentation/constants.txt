@@ -1416,11 +1416,70 @@ Constant: VSTR_CNTL_CONF_SET_FLAG_NO_ALLOC_CACHE
  smaller due to the lack of cache.
 
 
+Constant: VSTR_CNTL_CONF_GET_FMT_CHAR_ESC
+
+ Parameter[1]: Returns value of escape character for custom format specifiers
+ Type[1]: char *
+
+ Explanation:
+
+  This option will return the character used for specifiying custom format
+ specifiers in the vstr_add_vfmt() function.
+
+
+Constant: VSTR_CNTL_CONF_SET_FMT_CHAR_ESC
+
+ Parameter[1]: Value of escape character for custom format specifiers
+ Type[1]: int
+
+ Explanation:
+
+  This option will allow the Vstr strings using the Vstr configuration to
+ use custom format specifiers in the vstr_fmt_vfmt() function.
+
+ Note:
+
+  If this option is set to 0 ('\0') then vstr_fmt_vfmt() acts like
+ vstr_fmt_vsysfmt().
+
+Constant: VSTR_CNTL_CONF_GET_NUM_SPARE_BUF
+Constant: VSTR_CNTL_CONF_GET_NUM_SPARE_NON
+Constant: VSTR_CNTL_CONF_GET_NUM_SPARE_PTR
+Constant: VSTR_CNTL_CONF_GET_NUM_SPARE_REF
+
+ Parameter[1]: Returns number of spare nodes to have for the specified type
+ Type[1]: unsigned int *
+
+ Explanation:
+
+  This option gets the current number of spare nodes of the specified type.
+
+
+Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_BUF
+Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_NON
+Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_PTR
+Constant: VSTR_CNTL_CONF_SET_NUM_SPARE_REF
+
+ Parameter[1]: Number of spare nodes to have for the specified type
+ Type[1]: unsigned int
+
+ Explanation:
+
+  This option is will set the number of specified nodes of the specified type,
+ by calling either vstr_make_spare_nodes() or vstr_free_spare_nodes().
+
+ Note:
+
+  When the value specified is higher and vstr calls vstr_make_spare_nodes() then
+ a return value of FALSE means that there was a malloc error, just as if you
+ called vstr_make_nodes directly.
+
+
 Section: Constants you pass to the vstr_cntl_opt() function
 
 Constant: VSTR_CNTL_OPT_GET_CONF
 
- Parameter[1]: Return Vstr configuration
+ Parameter[1]: Returns Vstr configuration
  Type[1]: struct Vstr_conf **
 
  Explanation:

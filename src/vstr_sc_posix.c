@@ -21,6 +21,10 @@
 /* functions which are shortcuts */
 #include "main.h"
 
+#ifndef HAVE_MMAP64
+# define mmap64 mmap /* FIXME: really crap */
+#endif
+
 #ifndef HAVE_MMAP
 # define VSTR__SC_ENOSYS(x) \
   if (err) \

@@ -26,6 +26,9 @@
 
 #include "ex_utils.h"
 
+#define MAX_R_DATA_INCORE (1024 * 1024)
+#define MAX_W_DATA_INCORE (1024 * 8)
+
 #define EX_SLOWCAT_WRITE_BYTES 80
 #define EX_SLOWCAT_WRITE_WAIT_SEC 1
 #define EX_SLOWCAT_WRITE_WAIT_USEC 0 /* 500000 */
@@ -209,14 +212,22 @@ static void ex_slowcat_timer_func(int type, void *data)
    }
   }
   
-  if (!v->finished_reading_file && !ex_utils_read(v->str1, v->fd))
+  if (!v->finished_reading_file)
   {
-   if (close(v->fd) == -1)
-     DIE("close:");
+    unsigned int err = 0;
+    int keep_going = TRUE;
+    
+    EX_UTILS_LIMBLOCK_READ_ALL(v->str1, v->fd, keep_going);
 
-   if (v->arg_count >= v->argc)
-     v->finished_reading_data = TRUE;
-   v->finished_reading_file = TRUE;
+    if (!keep_going)
+    {
+      if (close(v->fd) == -1)
+        DIE("close:");
+      
+      if (v->arg_count >= v->argc)
+        v->finished_reading_data = TRUE;
+      v->finished_reading_file = TRUE;
+    }
   }
  }
  
@@ -228,7 +239,13 @@ static void ex_slowcat_timer_func(int type, void *data)
  }
  
  /* do a write of the right ammount */
- ex_slowcat_del_write(v->str1, 1, v->opt_write_bytes);
+ if (!vstr_sc_write_fd(v->str1, 1, v->opt_write_bytes, v->fd, NULL))
+ {
+   if ((errno != EAGAIN) && (errno != EINTR))
+     DIE("write:");
+   if (v->str1->len > MAX_W_DATA_INCORE)
+     ex_utils_poll_stdout();
+ }
 
  if (v->finished_reading_data && !v->str1->len)
    return;

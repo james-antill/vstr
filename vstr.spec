@@ -1,11 +1,12 @@
 # This is hacked from glib
 # Note that this is NOT a relocatable package
-%define ver      0.9.12
+%define ver      0.9.13
 %define libver  0.9
-%define  RELEASE 1
-%define  rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
+%define RELEASE 1
+%define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix   /usr
-%define name vstr
+%define name    vstr
+%define fmtfloat --with-fmt-float=%{?FLOAT}%{!?FLOAT:host}
 
 %define devdoco %{_datadir}/doc/vstr-devel-%{ver}
 
@@ -38,6 +39,9 @@ Group: Development/Libraries
 Also includes a vstr.pc file for pkg-config.
 
 %changelog
+* Mon Sep  2 2002 James Antill <james@and.org>
+- Add `float' cmd line define.
+
 * Tue May 21 2002 James Antill <james@and.org>
 - Add linker script to configure.
 
@@ -58,7 +62,8 @@ fi
 
 %configure --prefix=%{prefix} \
   --mandir=%{_mandir} --datadir=%{_datadir} \
-  --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script
+  --libdir=%{_libdir} --includedir=%{_includedir} --enable-linker-script \
+  %{fmtfloat}
 
 make
 

@@ -67,7 +67,7 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=12
+VSTR_MICRO_VERSION=13
 VSTR_INTERFACE_AGE=0
 VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
@@ -174,7 +174,26 @@ AC_ARG_ENABLE(tst-noattr-visibility, [--enable-tst-noattr-visibility   turn off 
 AC_ARG_ENABLE(tst-noattr-alias, [--enable-tst-noattr-alias   turn off use of attribute alias [default=no]], local_cv_have_tst_noattr_alias=true,local_cv_have_tst_noattr_alias=false)
 
 
-AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   how to convert floats to strings in %f etc. (glibc,none,host) [default=host]], AC_DEFINE_UNQUOTED(FMT_DBL_$withval),AC_DEFINE(FMT_DBL_host))
+AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   how to convert floats to strings in %f etc. (glibc,none,host) [default=host]], local_cv_fmt_float=$withval,local_cv_fmt_float=host)
+case x$local_cv_fmt_float in
+xhost)
+   AM_CONDITIONAL(FMT_DBL_host,  true)
+   AM_CONDITIONAL(FMT_DBL_none,  false)
+   AM_CONDITIONAL(FMT_DBL_glibc, false)
+   AC_DEFINE(FMT_DBL_host) ;;
+xnone)
+   AM_CONDITIONAL(FMT_DBL_host,  false)
+   AM_CONDITIONAL(FMT_DBL_none,  true)
+   AM_CONDITIONAL(FMT_DBL_glibc, false)
+   AC_DEFINE(FMT_DBL_none) ;;
+xglibc)
+   AM_CONDITIONAL(FMT_DBL_host,  false)
+   AM_CONDITIONAL(FMT_DBL_none,  false)
+   AM_CONDITIONAL(FMT_DBL_glibc, true)
+   AC_DEFINE(FMT_DBL_glibc) ;;
+*)
+   AC_MSG_ERROR(fmt float value "$local_cv_fmt_float" unknown) ;;
+esac
 
 TWOCAN_CONF_MSG(Checking for headers)
 
@@ -317,7 +336,9 @@ AC_CHECK_FUNCS(memcmp, AC_DEFINE(HAVE_MEMCMP),)
 
 # C String functions...
 AC_CHECK_FUNCS(memchr, AC_DEFINE(HAVE_MEMCHR),)
+AC_CHECK_FUNCS(memrchr, AC_DEFINE(HAVE_MEMRCHR),)
 AC_CHECK_FUNCS(memcpy, AC_DEFINE(HAVE_MEMCPY),)
+AC_CHECK_FUNCS(mempcpy, AC_DEFINE(HAVE_MEMPCPY),)
 AC_CHECK_FUNCS(memmem, AC_DEFINE(HAVE_MEMMEM),)
 AC_CHECK_FUNCS(strspn, AC_DEFINE(HAVE_STRSPN),)
 AC_CHECK_FUNCS(strcspn, AC_DEFINE(HAVE_STRCSPN),)
@@ -331,6 +352,7 @@ AC_CHECK_FUNCS(vsnprintf, AC_DEFINE(HAVE_VSNSPRINTF),)
 AC_CHECK_FUNCS(asprintf, AC_DEFINE(HAVE_ASPRINTF),)
 
 # Other functions...
+AC_CHECK_FUNCS(mmap64, AC_DEFINE(HAVE_MMAP64),)
 AC_CHECK_FUNCS(wcsnrtombs, AC_DEFINE(HAVE_WCSNRTOMBS),)
 AC_CHECK_FUNCS(getopt_long, AC_DEFINE(HAVE_GETOPT_LONG),)
 AC_CHECK_FUNCS(sigemptyset, AC_DEFINE(HAVE_SIGEMPTYSET),)
@@ -348,7 +370,29 @@ AC_CHECK_FUNCS(pread, AC_DEFINE(HAVE_PREAD),)
 
 TWOCAN_CONF_MSG(Checking custom stuff, mainly does stuff exist/work)
 
+# Custom stuff from glibc...
+AC_CACHE_CHECK(for assembler global-symbol directive,
+               libc_cv_asm_global_directive, [dnl
+libc_cv_asm_global_directive=UNKNOWN
+for ac_globl in .globl .global .EXPORT; do
+  cat > conftest.s <<EOF
+        ${libc_cv_dot_text}
+        ${ac_globl} foo
+foo:
+EOF
+  if ${CC-cc} $CFLAGS -c conftest.s 2>/dev/null; then
+    libc_cv_asm_global_directive=${ac_globl}
+  fi
+  rm -f conftest*
+  test $libc_cv_asm_global_directive != UNKNOWN && break
+done])
+if test $libc_cv_asm_global_directive = UNKNOWN; then
+  AC_MSG_WARN(cannot determine asm global directive)
+else
+  AC_DEFINE_UNQUOTED(ASM_GLOBAL_DIRECTIVE, ${libc_cv_asm_global_directive})
+fi
 
+# My Custom stuff...
 AC_MSG_CHECKING(for an implementation of offsetof)
 AC_CACHE_VAL(local_cv_has_offsetof,[
 AC_TRY_RUN([

@@ -2,7 +2,9 @@
 
  This is a string library, it's designed so you can work optimally
 with readv()/writev() for input/output. It has features somewhat like
-the C++ STL rope (http://www.sgi.com/tech/stl/Rope.html) code.
+the C++ STL rope (http://www.sgi.com/tech/stl/Rope.html) code,
+but written in C. It also has features unavailable in Rope, and is more
+effecient for many cases.
 
    INTRODUCTION
 
@@ -25,3 +27,9 @@ program then you can create a (Vstr_base *) by calling vstr_make_base().
 if you need to use all or part of the string with a "C string" interface
 then you can call vstr_export_cstr_ptr() or vstr_export_cstr_ref().
  To delete the entire vstr you call vstr_free_base() on the (Vstr_base *).
+
+   EXAMPLES
+
+ There are a couple of examples of how to use the vstr library, they can be seen
+on the examples directory or htmlized at
+(http://www.and.org/vstr/vstr-latest/vstr/examples/).

@@ -59,7 +59,11 @@
 
 #undef HAVE_MEMCHR
 
+#undef HAVE_MEMRCHR
+
 #undef HAVE_MEMCPY
+
+#undef HAVE_MEMPCPY
 
 #undef HAVE_MEMCMP
 
@@ -86,6 +90,8 @@
 #undef HAVE_ASPRINTF
 
 
+#undef HAVE_MMAP64
+
 #undef HAVE_WCSNRTOMBS
 
 #undef HAVE_GETOPT_LONG
@@ -111,6 +117,7 @@
 
 #undef HAVE_PREAD
 
+#undef ASM_GLOBAL_DIRECTIVE
 
 #undef HAVE_OFFSETOF
 

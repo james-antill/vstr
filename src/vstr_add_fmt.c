@@ -481,11 +481,11 @@ static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
 
 /* must match with code in vstr_version.c */
 #if defined(VSTR_AUTOCONF_FMT_DBL_glibc)
-# include "vstr_add_fmt_dbl_glibc.c"
+# include "vstr_dbl/vstr_add_fmt_dbl_glibc.c"
 #elif defined(VSTR_AUTOCONF_FMT_DBL_none)
-# include "vstr_add_fmt_dbl_none.c"
+# include "vstr_dbl/vstr_add_fmt_dbl_none.c"
 #elif defined(VSTR_AUTOCONF_FMT_DBL_host)
-# include "vstr_add_fmt_dbl_host.c"
+# include "vstr_dbl/vstr_add_fmt_dbl_host.c"
 #else
 # error "Please configure properly..."
 #endif
@@ -1489,7 +1489,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
  if (userfmt)
    fmt_usr_escape = base->conf->fmt_usr_escape;
  
- for (; *fmt ; ++fmt)
+ while (*fmt)
  {
   const char *fmt_orig = fmt;
   struct Vstr__fmt_spec *spec = NULL;
@@ -1519,10 +1519,10 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       size_t len = next_escape - fmt;
       spec->precision = len;
       spec->flags |= PREC_USR;
-      fmt = fmt + len - 1;
+      fmt = fmt + len;
     }
     else
-      fmt = " ";
+      fmt = "";
     
     VSTR__FMT_MV_SPEC(FALSE);
     
@@ -1534,7 +1534,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
    spec->u.data_c = fmt[0];
    spec->fmt_code = 'c';
    VSTR__FMT_MV_SPEC(FALSE);
-   ++fmt; /* skip esc */
+   fmt += 2; /* skip escs */
    continue;
   }
   assert(fmt_orig == fmt);
@@ -1558,43 +1558,34 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       spec->u.data_c = *fmt_orig;
       spec->fmt_code = 'c';
       VSTR__FMT_MV_SPEC(FALSE);
-      fmt = fmt_orig;
+      fmt = fmt_orig + 1;
     }
     else
-      fmt = fmt_end - 1;
+      fmt = fmt_end;
     continue;
   }
 
+  spec->fmt_code = *fmt;
   vstr__fmt_sys_escapes:
   switch (*fmt)
   {
     case 'c':
       if (spec->int_type != VSTR_TYPE_FMT_ULONG) /* %lc == %C */
-      {
-        spec->fmt_code = *fmt;
-        VSTR__FMT_MV_SPEC(TRUE);
-        continue;
-      }
+        break;
       /* FALL THROUGH */
       
     case 'C':
       spec->fmt_code = 'C';
-      VSTR__FMT_MV_SPEC(TRUE);
-      continue;
+      break;
       
     case 's':
       if (spec->int_type != VSTR_TYPE_FMT_ULONG) /* %ls == %S */
-      {
-        spec->fmt_code = *fmt;
-        VSTR__FMT_MV_SPEC(TRUE);
-        continue;
-      }
+        break;
       /* FALL THROUGH */
       
     case 'S':
       spec->fmt_code = 'S';
-      VSTR__FMT_MV_SPEC(TRUE);
-      continue;
+      break;
       
     case 'd':
     case 'i':
@@ -1615,15 +1606,11 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     case 'p':
       spec->num_base = 16;
       spec->int_type = VSTR_TYPE_FMT_ULONG;
-      spec->fmt_code = 'p';
       spec->flags |= SPECIAL;
-      VSTR__FMT_MV_SPEC(TRUE);
-      continue;
+      break;
       
     case 'n':
-      spec->fmt_code = 'n';
-      VSTR__FMT_MV_SPEC(TRUE);
-      continue;
+      break;
       
     case 'A': /* print like [-]x.xxxPxx -- in hex using ABCDEF */
     case 'E': /* use big E instead */
@@ -1634,9 +1621,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     case 'e': /* print like [-]x.xxxexx */
     case 'f': /* print like an int */
     case 'g': /* use the smallest of e and f */
-      spec->fmt_code = *fmt;
-      VSTR__FMT_MV_SPEC(TRUE);
-      continue;
+      break;
       
     default:
       assert(FALSE);
@@ -1645,13 +1630,12 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
       spec->u.data_c = *fmt_orig;
       spec->fmt_code = 'c';
       VSTR__FMT_MV_SPEC(FALSE);
-      fmt = fmt_orig;
+      fmt = fmt_orig + 1;
       continue;
   }
 
-  /* one of: d, i, u, X, x, o */
-  spec->fmt_code = *fmt;
   VSTR__FMT_MV_SPEC(TRUE);
+  ++fmt;
  }
 
  if (!vstr__fmt_fillin_spec(ap, have_dollars))

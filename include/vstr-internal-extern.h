@@ -485,11 +485,6 @@ extern unsigned int vstr_nx_split_chrs(const struct Vstr_base *, size_t, size_t,
                                     unsigned int, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_H() ;
 
-extern unsigned int vstr_nx_join_buf(struct Vstr_base *, size_t,
-                                  const void *, size_t,
-                                  const struct Vstr_base *, struct Vstr_sects *,
-                                  unsigned int, unsigned int,
-                                  unsigned int) VSTR__ATTR_H() ;
 
 /* cache functions */
 extern unsigned int vstr_nx_cache_add_cb(struct Vstr_conf *, const char *,

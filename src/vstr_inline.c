@@ -19,10 +19,15 @@
  *  email: james@and.org
  */
 /* functions which are inlined */
+
+#ifndef VSTR_COMPILE_INLINE /* gcc3 SEGVs if it sees the inline's twice */
+#define VSTR_COMPILE_INLINE 0
+#endif
+
 #include "main.h"
 
-/* everything is done in vstr-inline.h.pre and vstr-internal.h
- * This works with gcc */
+/* everything is done in vstr-inline.h.pre with magic added vstr-internal.h */
+/* This works with gcc */
 # undef extern
 # define extern /* nothing */
 # undef inline

@@ -226,10 +226,22 @@ extern void *FIX_SYMBOL(memchr)(const void *source, int character, size_t num);
 #define memchr(a, b, c) FIX_SYMBOL(memchr)(a, b, c)
 #endif
 
+#ifndef HAVE_MEMRCHR
+# undef memrchr
+extern void *FIX_SYMBOL(memrchr)(const void *source, int character, size_t num);
+#define memrchr(a, b, c) FIX_SYMBOL(memrchr)(a, b, c)
+#endif
+
 #ifndef HAVE_MEMCPY
 # undef memcpy
 extern void *FIX_SYMBOL(memcpy)(void *dest, const void *src, size_t n);
 #define memcpy(a, b, c) FIX_SYMBOL(memcpy)(a, b, c)
+#endif
+
+#ifndef HAVE_MEMPCPY
+# undef mempcpy
+extern void *FIX_SYMBOL(mempcpy)(void *dest, const void *src, size_t n);
+#define mempcpy(a, b, c) FIX_SYMBOL(mempcpy)(a, b, c)
 #endif
 
 #ifndef HAVE_MEMCMP

@@ -39,9 +39,10 @@ the real extern and inline files and do all the symbol stuff.
  
  -------------- Compiling against dietlibc on Linux --------------
 
- Done by doing...
+ Just use the scripts...
 
-CC="diet gcc" CFLAGS="-O2 -g -DUSE_RESTRICTED_HEADERS" ./configure
+./scripts/b/diet-debug.sh
+./scripts/b/diet-op.sh
 
  These are warnings produced by dietlibc...
 
@@ -49,4 +50,15 @@ CC="diet gcc" CFLAGS="-O2 -g -DUSE_RESTRICTED_HEADERS" ./configure
 produces warnings in debug mode.
 
 2. stdarg produces lots of warnings about using (void *) arithmetric.
+
+3. wchar_t is defined differently by dietlibc that than by gcc, so...
+
+wchar_t *tmp = L"";
+
+...gets a warning.
+
+ -------------- Compiling against gcc3-3.1-5 on Red Hat Linux --------------
+
+ Note that gcc3-3.1-5 has a bug which will SEGV on vstr_inline.c without the
+workaround in that file.
 
