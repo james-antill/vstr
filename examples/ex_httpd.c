@@ -863,8 +863,14 @@ int main(int argc, char *argv[])
   acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
   acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
 
-  printf("READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
-  fflush(NULL);
+  if (server_daemon)
+    syslog(LOG_NOTICE, "READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
+  else
+  {
+    printf("READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
+    fflush(NULL);
+  }
+  
   while (acpt_evnt || server_clients_count)
   {
     int ready = evnt_poll();

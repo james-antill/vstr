@@ -392,8 +392,14 @@ int main(int argc, char *argv[])
 
   cl_beg();
   
-  printf("READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
-  fflush(NULL);
+  if (server_daemon)
+    syslog(LOG_NOTICE, "READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
+  else
+  {
+    printf("READY @[%s]!\n", serv_date_rfc1123(time(NULL)));
+    fflush(NULL);
+  }
+  
   while (acpt_sock || server_clients_count)
   {
     int ready = evnt_poll();
