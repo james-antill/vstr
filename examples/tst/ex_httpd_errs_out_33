@@ -1,3 +1,20 @@
+HTTP/1.1 200 OK
+Date:
+Server: jhttpd/0.9.1 (Vstr)
+Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 165
+
+HTTP/1.1 400 Bad Request
+Date:
+Server: jhttpd/0.9.1 (Vstr)
+Last-Modified:
+Connection: close
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 342
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>

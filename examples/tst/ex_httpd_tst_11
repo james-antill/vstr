@@ -4,6 +4,7 @@ Accept:
 
 GET / HTTP/1.1
 Host: 
+Range: bytes = 0-
 Accept: */*
 
 GET / HTTP/1.1

@@ -40,8 +40,8 @@ http://www.sans.org/top20/#u2
 	max timeout for keep-alive
 	max requests for keep-alive?
 	getopt conf. for gzip-r, syslog2apache and make_index
+	mime_types speed, by having explicit filename/ext matches
 	conf
-         Type map support?
 	 Support accept/accept-language per file [w3/chips]
            GALEON
               Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,image/jpeg,image/gif;q=0.2,*/*;q=0.1
@@ -55,6 +55,8 @@ http://www.sans.org/top20/#u2
 	 Per file extra headers: Content-Location; Content-Md5; 
                                  Cache-Control; etc. [w3/chips]
 	 404 pages (and other return codes)
+         Vary: accept-language,...
+         Type map support?
         mmap cache?
 	fd cache
 	stat cache

@@ -150,11 +150,12 @@ struct sock_fprog
 /* HTTP crack -- Implied linear whitespace between tokens, note that it
  * is *LWS == *([CRLF] 1*(SP | HT)) */
 #define HTTP_SKIP_LWS(s1, p, l) do {                                    \
-      char q_tst = 0;                                                   \
+      char http__q_tst_lws = 0;                                         \
                                                                         \
       if (!l) break;                                                    \
-      q_tst = vstr_export_chr(s1, p);                                   \
-      if ((q_tst != '\r') && (q_tst != ' ') && (q_tst != '\t'))         \
+      http__q_tst_lws = vstr_export_chr(s1, p);                         \
+      if ((http__q_tst_lws != '\r') && (http__q_tst_lws != ' ') &&      \
+          (http__q_tst_lws != '\t'))                                    \
         break;                                                          \
                                                                         \
       http__skip_lws(s1, &p, &l);                                       \
@@ -687,21 +688,24 @@ static void http_req_split_method(struct Con *con, struct Http_req_data *req)
   size_t pos = 1;
   size_t len = req->len;
   size_t el = 0;
+  size_t skip_len = 0;
   unsigned int orig_num = req->sects->num;
   
-  assert(VSUFFIX(s1, pos, len, HTTP_EOL));
-  
+  el = vstr_srch_cstr_buf_fwd(s1, pos, len, HTTP_EOL);
+  ASSERT(el >= pos);
+  len = el - pos; /* only parse the first line */
+
   /* split request */
   if (!(el = vstr_srch_cstr_chrs_fwd(s1, pos, len, HTTP_LWS)))
     return;
   vstr_sects_add(req->sects, pos, el - pos);
   len -= (el - pos); pos += (el - pos);
-  HTTP_SKIP_LWS(s1, pos, len);
+
+  /* just skip whitespace on method call... */
+  if ((skip_len = vstr_spn_cstr_chrs_fwd(s1, pos, len, HTTP_LWS)))
+  { len -= skip_len; pos += skip_len; }
 
   if (!len)
-    return;
-
-  if (!VPREFIX(s1, pos, len, "/") && !VIPREFIX(s1, pos, len, "http://"))
   {
     req->sects->num = orig_num;
     return;
@@ -709,21 +713,23 @@ static void http_req_split_method(struct Con *con, struct Http_req_data *req)
   
   if (!(el = vstr_srch_cstr_chrs_fwd(s1, pos, len, HTTP_LWS)))
   {
-    req->ver_0_9 = TRUE;
-    vstr_sects_add(req->sects, pos, len - strlen(HTTP_EOL));
-    vlg_dbg1(vlg, "Method(0.9):"
-             " $<http-esc.vstr.sect:%p%p%u> $<http-esc.vstr.sect:%p%p%u>\n",
-             s1, req->sects, 1, s1, req->sects, 2);
-    return;
+    vstr_sects_add(req->sects, pos, len);
+    len = 0;
   }
-  vstr_sects_add(req->sects, pos, el - pos);
-  len -= (el - pos); pos += (el - pos);
-  HTTP_SKIP_LWS(s1, pos, len);
+  else
+  {
+    vstr_sects_add(req->sects, pos, el - pos);
+    len -= (el - pos); pos += (el - pos);
+    
+    /* just skip whitespace on method call... */
+    if ((skip_len = vstr_spn_cstr_chrs_fwd(s1, pos, len, HTTP_LWS)))
+    { len -= skip_len; pos += skip_len; }
+  }
 
-  if (!(el = vstr_srch_cstr_buf_fwd(s1, pos, len, HTTP_EOL)))
-    return;
-
-  vstr_sects_add(req->sects, pos, el - pos);
+  if (len)
+    vstr_sects_add(req->sects, pos, len);
+  else
+    req->ver_0_9 = TRUE;
 }
 
 static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
@@ -734,12 +740,7 @@ static void http_req_split_hdrs(struct Con *con, struct Http_req_data *req)
   size_t el = 0;
   size_t hpos = 0;
 
-  ASSERT(req->sects->num >= 3);
-  
-  vlg_dbg1(vlg, "Method(1.x):"
-           " $<http-esc.vstr.sect:%p%p%u> $<http-esc.vstr.sect:%p%p%u>"
-           " $<http-esc.vstr.sect:%p%p%u>\n",
-           s1, req->sects, 1, s1, req->sects, 2, s1, req->sects, 3);
+  ASSERT(req->sects->num >= 3);  
     
   /* skip first line */
   el = (VSTR_SECTS_NUM(req->sects, req->sects->num)->pos +
@@ -843,7 +844,8 @@ static void http_app_def_hdrs(struct Con *con, struct Http_req_data *req,
   if (difftime(now, mtime) < 0) /* if mtime in future, chop it #14.29 */
     mtime = now;
 
-  http_app_header_cstr(out, "Last-Modified", date_rfc1123(mtime));
+  if (mtime)
+    http_app_header_cstr(out, "Last-Modified", date_rfc1123(mtime));
 
   switch (con->keep_alive)
   {
@@ -1004,10 +1006,13 @@ static time_t http_parse_date(Vstr_base *s1, size_t pos, size_t len, time_t now)
 }
 #endif
 
-static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
-                                time_t now,
-                                unsigned int *http_ret_code,
-                                const char ** http_ret_line)
+/* gets here if the GET/HEAD response is ok, we test for caching etc. using the
+ * if-* headers */
+/* FALSE = 412 Precondition Failed */
+static int http_response_ok(struct Con *con, struct Http_req_data *req,
+                            time_t now,
+                            unsigned int *http_ret_code,
+                            const char ** http_ret_line)
 {
   Vstr_base *hdrs = con->ev->io_r;
   time_t mtime = req->f_stat->st_mtime;
@@ -1043,27 +1048,27 @@ static int http_app_response_ok(struct Con *con, struct Http_req_data *req,
    Modified header field whenever possible.
   */
   date = date_rfc1123(mtime);
-  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos, h_ims->len, date))
+  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos,  h_ims->len,  date))
     cached_output = TRUE;
   if (h_iums_tst && vstr_cmp_cstr_eq(hdrs, h_iums->pos, h_iums->len, date))
     return (FALSE);
-  if (h_ir_tst && vstr_cmp_cstr_eq(hdrs, h_ir->pos, h_ir->len, date))
+  if (h_ir_tst   && vstr_cmp_cstr_eq(hdrs, h_ir->pos,   h_ir->len,   date))
     req_if_range = TRUE;
   
   date = date_rfc850(mtime);
-  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos, h_ims->len, date))
+  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos,  h_ims->len,  date))
     cached_output = TRUE;
   if (h_iums_tst && vstr_cmp_cstr_eq(hdrs, h_iums->pos, h_iums->len, date))
     return (FALSE);
-  if (h_ir_tst && vstr_cmp_cstr_eq(hdrs, h_ir->pos, h_ir->len, date))
+  if (h_ir_tst   && vstr_cmp_cstr_eq(hdrs, h_ir->pos,   h_ir->len,   date))
     req_if_range = TRUE;
   
   date = date_asctime(mtime);
-  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos, h_ims->len, date))
+  if (h_ims->pos && vstr_cmp_cstr_eq(hdrs, h_ims->pos,  h_ims->len,  date))
     cached_output = TRUE;
   if (h_iums_tst && vstr_cmp_cstr_eq(hdrs, h_iums->pos, h_iums->len, date))
     return (FALSE);
-  if (h_ir_tst && vstr_cmp_cstr_eq(hdrs, h_ir->pos, h_ir->len, date))
+  if (h_ir_tst   && vstr_cmp_cstr_eq(hdrs, h_ir->pos,   h_ir->len,   date))
     req_if_range = TRUE;
 
   if (h_ir_tst && !req_if_range)
@@ -1416,6 +1421,8 @@ static int http__parse_1_x(struct Con *con, struct Http_req_data *req)
   return (TRUE);
 }
 
+/* convert a http://abcd/foo into /foo with host=abcd ...
+ * also do sanity checking on the URI and host for valid characters */
 static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
 {
   Vstr_base *data = con->ev->io_r;
@@ -1498,6 +1505,7 @@ static int http_absolute_uri(struct Con *con, struct Http_req_data *req)
     return (FALSE);
   
   /* uri#fragment ... craptastic clients pass this and assume it is ignored */
+  /* ignore query, and opaque data too? */
   op_len = vstr_cspn_cstr_chrs_fwd(data, op_pos, op_len, "#");
   
   req->path_pos = op_pos;
@@ -2091,7 +2099,7 @@ static int http_req_1_x(struct Con *con, struct Http_req_data *req,
     }
   }
 
-  if (!http_app_response_ok(con, req, now, http_ret_code, http_ret_line))
+  if (!http_response_ok(con, req, now, http_ret_code, http_ret_line))
     HTTPD_ERR_RET(req, 412, FALSE);
 
   if (h_r->pos)
@@ -2163,10 +2171,7 @@ static int serv_add_default_hostname(Vstr_base *lfn, size_t pos)
 {
   Vstr_base *d_h = serv->default_hostname;
   
-  if (!vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF))
-    return (FALSE);
-  
-  return (TRUE);
+  return (vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF));
 }
 
 static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
@@ -2175,7 +2180,7 @@ static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
   struct stat64 v_stat[1];
 
   if (!vhost)
-    return (TRUE); /* this should use errmem_req() */
+    return (TRUE); /* dealt with as errmem_req() later */
   
   if (stat64(vhost, v_stat) == -1)
     return (FALSE);
@@ -2203,12 +2208,11 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
                 data, req->path_pos, req->path_len, VSTR_TYPE_ADD_BUF_PTR);
   vstr_conv_decode_uri(fname, 1, fname->len);
 
-  if (fname->conf->malloc_bad) /* dealt with in req_op_get */
+  if (fname->conf->malloc_bad) /* dealt with as errmem_req() later */
     return (TRUE);
   
   /* FIXME: maybe call stat() to see if vhost dir exists ? ---
    * maybe when have stat() cache */
-
   
   if (serv->use_vhosts)
   {
@@ -2436,7 +2440,7 @@ static int http_fin_err_req(struct Con *con, struct Http_req_data *req)
                           (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
 
     if ((req->error_code == 405) || (req->error_code == 501))
-      http_app_header_cstr(out, "Allow", "GET, HEAD, TRACE");
+      http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
     if (req->error_code == 301)
     { /* make sure we haven't screwed up and allowed response splitting */
       Vstr_base *loc = req->fname;
@@ -2487,12 +2491,6 @@ static int http_fin_errmem_req(struct Con *con, struct Http_req_data *req)
   req->malloc_bad = TRUE;
   
   HTTPD_ERR_RET(req, 500, http_fin_err_req(con, req));
-}
-
-static int http_fin_errmem_close_req(struct Con *con, struct Http_req_data *req)
-{
-  serv_fd_close(con);
-  return (http_fin_errmem_req(con, req));
 }
 
 static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
@@ -2598,7 +2596,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   const char * http_ret_line = "OK";
   
   if (fname->conf->malloc_bad)
-    VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(FN): %m\n"));
+    goto mem_err;
 
   if (!http__req_content_type(req))
     return (http_fin_err_req(con, req));
@@ -2610,7 +2608,7 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
   fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
   
   if (fname->conf->malloc_bad)
-    VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(FN): %m\n"));
+    goto mem_err;
   
   if ((con->f_fd = io_open_nonblock(fname_cstr)) == -1)
   {
@@ -2623,11 +2621,9 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
              (errno == ENODEV) ||
              (errno == ENXIO) ||
              (errno == ELOOP) ||
-             (errno == ENAMETOOLONG) ||
+             (errno == ENAMETOOLONG) || /* 414 ? */
              FALSE)
       HTTPD_ERR(req, 404);
-    else if (errno == ENAMETOOLONG)
-      HTTPD_ERR(req, 414);
     else
       HTTPD_ERR(req, 500);
     
@@ -2657,13 +2653,13 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
     return (http_fin_err_close_req(con, req));
   
   if (out->conf->malloc_bad)
-    VLG_WARNNOMEM_RET(http_fin_errmem_close_req(con,req), (vlg,"op_get: %m\n"));
+    goto mem_close_err;
   
   vlg_dbg2(vlg, "REPLY:\n$<vstr:%p%zu%zu>\n", out, (size_t)1, out->len);
   
   if (req->use_mmap && !vstr_mov(con->ev->io_w, con->ev->io_w->len,
                                  req->f_mmap, 1, req->f_mmap->len))
-    VLG_WARNNOMEM_RET(http_fin_errmem_close_req(con, req), (vlg, "mmap: %m\n"));
+    goto mem_close_err;
 
   /* req->head_op is set for 304 returns */
   vlg_info(vlg, "REQ $<vstr.sect:%p%p%u> from[$<sa:%p>] ret[%03u %s]"
@@ -2675,9 +2671,64 @@ static int http_req_op_get(struct Con *con, struct Http_req_data *req)
     serv_fd_close(con);
   
   return (http_fin_req(con, req));
+
+ mem_close_err:
+  serv_fd_close(con);
+ mem_err:
+  VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_get(): %m\n"));
 }
 
-static int http_parse_no_req(struct Con *con, struct Http_req_data *req)
+static int http_req_op_opts(struct Con *con, struct Http_req_data *req)
+{
+  Vstr_base *out = con->ev->io_w;
+  Vstr_base *fname = req->fname;
+  time_t now = time(NULL);
+  VSTR_AUTOCONF_uintmax_t tmp = 0;
+
+  if (fname->conf->malloc_bad)
+    goto mem_err;
+  
+  /* apache doesn't test for 404's here ... which seems weird */
+  
+  http_app_def_hdrs(con, req, 200, "OK", now, 0, NULL, 0);
+  http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
+  /* should output a vary header here ? */
+  http_app_end_hdrs(out);
+  if (out->conf->malloc_bad)
+    goto mem_err;
+  
+  vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
+           "OPTIONS", con->ev->sa, 200, "OK", tmp, tmp);
+  http_vlg_def(con, req);
+  
+  return (http_fin_req(con, req));
+  
+ mem_err:
+  VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_opts(): %m\n"));
+}
+
+static int http_req_op_trace(struct Con *con, struct Http_req_data *req)
+{
+  Vstr_base *data = con->ev->io_r;
+  Vstr_base *out  = con->ev->io_w;
+  time_t now = time(NULL);
+  VSTR_AUTOCONF_uintmax_t tmp = 0;
+      
+  http_app_def_hdrs(con, req, 200, "OK", now, now, "message/http", req->len);
+  http_app_end_hdrs(out);
+  vstr_add_vstr(out, out->len, data, 1, req->len, VSTR_TYPE_ADD_DEF);
+  if (out->conf->malloc_bad)
+    VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "op_trace(): %m\n"));
+
+  tmp = req->len;
+  vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
+           "TRACE", con->ev->sa, 200, "OK", tmp, tmp);
+  http_vlg_def(con, req);
+      
+  return (http_fin_req(con, req));
+}
+
+static int http__parse_no_req(struct Con *con, struct Http_req_data *req)
 {
   if (server_max_header_sz && (con->ev->io_r->len > server_max_header_sz))
     HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
@@ -2687,31 +2738,44 @@ static int http_parse_no_req(struct Con *con, struct Http_req_data *req)
   return (http_parse_wait_io_r(con));
 }
 
-/* http spec says to ignore leading blank lines ... *sigh* */
-#define HTTP__PARSE_REQ_ALL(x) do {                                     \
-                                                                        \
-  if (!(req->len = vstr_srch_cstr_buf_fwd(data, 1, data->len, x)))      \
-    return (http_parse_no_req(con, req));                               \
-                                                                        \
-  if (req->len == 1)                                                    \
-  {                                                                     \
-    while (VPREFIX(data, 1, data->len, HTTP_EOL))                       \
-      vstr_del(data, 1, strlen(HTTP_EOL));                              \
-                                                                        \
-    if (!(req->len = vstr_srch_cstr_buf_fwd(data, 1, data->len, x)))    \
-      return (http_parse_no_req(con, req));                             \
-                                                                        \
-    ASSERT(req->len > 1);                                               \
-  }                                                                     \
-                                                                        \
-  req->len += strlen(x) - 1;                                            \
- } while (FALSE)
+/* http spec says ignore leading LWS ... *sigh* */
+static int http__parse_req_all(struct Con *con, struct Http_req_data *req,
+                               const char *eol, int *ern)
+{
+  Vstr_base *data = con->ev->io_r;
+  
+  ASSERT(eol && ern);
+  
+  *ern = FALSE;
+  
+  if (!(req->len = vstr_srch_cstr_buf_fwd(data, 1, data->len, eol)))
+      goto no_req;
+  
+  if (req->len == 1)
+  { /* should use vstr_del(data, 1, vstr_spn_cstr_buf_fwd(..., HTTP_EOL)); */
+    while (VPREFIX(data, 1, data->len, HTTP_EOL))
+      vstr_del(data, 1, strlen(HTTP_EOL));
+    
+    if (!(req->len = vstr_srch_cstr_buf_fwd(data, 1, data->len, eol)))
+      goto no_req;
+    
+    ASSERT(req->len > 1);
+  }
+  
+  req->len += strlen(eol) - 1; /* add rest of EOL */
+
+  return (TRUE);
+
+ no_req:
+  *ern = http__parse_no_req(con, req);
+  return (FALSE);
+}
 
 static int http_parse_req(struct Con *con)
 {
   Vstr_base *data = con->ev->io_r;
-  Vstr_base *out  = con->ev->io_w;
   struct Http_req_data *req = NULL;
+  int ern_req_all = 0;
 
   ASSERT(!con->f_len);
 
@@ -2719,9 +2783,15 @@ static int http_parse_req(struct Con *con)
     return (FALSE);
 
   if (con->parsed_method_ver_1_0) /* wait for all the headers */
-    HTTP__PARSE_REQ_ALL(HTTP_END_OF_REQUEST);
+  {
+    if (!http__parse_req_all(con, req, HTTP_END_OF_REQUEST, &ern_req_all))
+      return (ern_req_all);
+  }
   else
-    HTTP__PARSE_REQ_ALL(HTTP_EOL);
+  {
+    if (!http__parse_req_all(con, req, HTTP_EOL,            &ern_req_all))
+      return (ern_req_all);
+  }
 
   con->keep_alive = HTTP_NIL_KEEP_ALIVE;
   http_req_split_method(con, req);
@@ -2734,14 +2804,25 @@ static int http_parse_req(struct Con *con)
     size_t op_pos = 0;
     size_t op_len = 0;
 
-    if (!req->ver_0_9)
+    if (req->ver_0_9)
+      vlg_dbg1(vlg, "Method(0.9):"
+               " $<http-esc.vstr.sect:%p%p%u> $<http-esc.vstr.sect:%p%p%u>\n",
+               con->ev->io_r, req->sects, 1, con->ev->io_r, req->sects, 2);
+    else
     { /* need to get all headers */
+      Vstr_base *s1 = con->ev->io_r;
+      
       if (!con->parsed_method_ver_1_0)
       {
         con->parsed_method_ver_1_0 = TRUE;
-        HTTP__PARSE_REQ_ALL(HTTP_END_OF_REQUEST);
+        if (!http__parse_req_all(con, req, HTTP_END_OF_REQUEST, &ern_req_all))
+          return (ern_req_all);
       }
       
+      vlg_dbg1(vlg, "Method(1.x):"
+               " $<http-esc.vstr.sect:%p%p%u> $<http-esc.vstr.sect:%p%p%u>"
+               " $<http-esc.vstr.sect:%p%p%u>\n",
+               s1, req->sects, 1, s1, req->sects, 2, s1, req->sects, 3);
       http_req_split_hdrs(con, req);
     }
     evnt_got_pkt(con->ev);
@@ -2766,42 +2847,46 @@ static int http_parse_req(struct Con *con)
     if (0) { }
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "GET"))
     {
+      if (!VPREFIX(data, req->path_pos, req->path_len, "/"))
+        HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
+      
       if (!http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
 
-      return (http_req_op_get(con, req));      
+      return (http_req_op_get(con, req));
     }
     else if (req->ver_0_9) /* 400 or 501? - apache does 400 */
       HTTPD_ERR_RET(req, 501, http_fin_err_req(con, req));      
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "HEAD"))
     {
-      req->head_op = TRUE;
+      req->head_op = TRUE; /* not sure where this should go here */
+      
+      if (!VPREFIX(data, req->path_pos, req->path_len, "/"))
+        HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
       
       if (!http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
 
-      return (http_req_op_get(con, req));      
+      return (http_req_op_get(con, req));
+    }
+    else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "OPTIONS"))
+    {
+      if (!vstr_cmp_cstr_eq(data, req->path_pos, req->path_len, "*"))
+      {
+        if (!VPREFIX(data, req->path_pos, req->path_len, "/"))
+          HTTPD_ERR_RET(req, 400, http_fin_err_req(con, req));
+      
+        if (!http_req_make_path(con, req))
+          return (http_fin_err_req(con, req));
+      }
+
+      return (http_req_op_opts(con, req));
     }
     else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "TRACE"))
     {
-      time_t now = time(NULL);
-      VSTR_AUTOCONF_uintmax_t tmp = 0;
-      
-      http_app_def_hdrs(con, req, 200, "OK", now,now, "message/http", req->len);
-      http_app_end_hdrs(out);
-      vstr_add_vstr(out, out->len, data, 1, req->len, VSTR_TYPE_ADD_DEF);
-      if (out->conf->malloc_bad)
-        VLG_WARNNOMEM_RET(http_fin_errmem_req(con, req), (vlg, "TRACE: %m\n"));
-
-      tmp = req->len;
-      vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
-               "TRACE", con->ev->sa, 200, "OK", tmp, tmp);
-      http_vlg_def(con, req);
-      
-      return (http_fin_req(con, req));
+      return (http_req_op_trace(con, req));
     }
-    else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "OPTIONS") ||
-             vstr_cmp_cstr_eq(data, op_pos, op_len, "POST") ||
+    else if (vstr_cmp_cstr_eq(data, op_pos, op_len, "POST") ||
              vstr_cmp_cstr_eq(data, op_pos, op_len, "PUT") ||
              vstr_cmp_cstr_eq(data, op_pos, op_len, "DELETE") ||
              vstr_cmp_cstr_eq(data, op_pos, op_len, "CONNECT") ||

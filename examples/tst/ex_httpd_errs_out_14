@@ -6,7 +6,7 @@ Connection: close
 Accept-Ranges: bytes
 Content-Type: text/html
 Content-Length: 352
-Allow: GET, HEAD, TRACE
+Allow: GET, HEAD, OPTIONS, TRACE
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>

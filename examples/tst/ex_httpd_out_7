@@ -58,6 +58,14 @@ Accept-Ranges: bytes
 Content-Type: text/html
 Content-Length: 165
 
+HTTP/1.1 200 OK
+Date:
+Server: jhttpd/0.9.1 (Vstr)
+Last-Modified: Tue, 12 Oct 2004 07:02:24 GMT
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 165
+
 HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.9.1 (Vstr)
