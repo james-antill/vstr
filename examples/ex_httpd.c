@@ -1709,12 +1709,15 @@ static int serv_send(struct Con *con)
 
         if (errno == ENOSYS) /* also logs it */
           serv->use_sendfile = FALSE;
-        if (errno != EPIPE)
+        if ((errno == EPIPE) || (errno == ECONNRESET))
+          return (FALSE);
+        else
           vlg_warn(vlg, "sendfile: %m\n");
 
         if (lseek64(con->f_fd, f_off, SEEK_SET) == -1)
           VLG_WARN_RET(FALSE, (vlg, "lseek(<sendfile>,off=%ju): %m\n", f_off));
 
+        con->use_sendfile = FALSE;
         return (serv_send(con));
       }
     }
