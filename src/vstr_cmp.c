@@ -1,6 +1,6 @@
 #define VSTR_CMP_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -137,96 +137,93 @@ int vstr_cmp_buf(const Vstr_base *base, size_t pos, size_t len,
  return (0);
 }
 
-/* only do ASCII/binary case comparisons */
-static unsigned const char vstr__cmp_lo[] = "abcdefghijklmnopqrstuvwxyz";
-static unsigned const char vstr__cmp_hi[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
+/* only do ASCII/binary case comparisons -- regardless of the OS/compiler
+ * char set default */
 static int vstr__cmp_memcasecmp(const char *str1, const char *str2, size_t len)
 {
- while (len)
- {
-  unsigned char a = *str1;
-  unsigned char b = *str2;
-  unsigned char *tmp = NULL;
-  
-  if ((tmp = memchr(vstr__cmp_hi, a, 26)))
-    a = vstr__cmp_lo[tmp - vstr__cmp_hi];
-  if ((tmp = memchr(vstr__cmp_hi, b, 26)))
-    b = vstr__cmp_lo[tmp - vstr__cmp_hi];
-  
-  if (a - b)
-    return (a - b);
+  while (len)
+  {
+    unsigned char a = *str1;
+    unsigned char b = *str2;
 
-  ++str1;
-  ++str2;
-  --len;
- }
-
+    if (VSTR__IS_ASCII_UPPER(a))
+      a = VSTR__TO_ASCII_LOWER(a);
+    if (VSTR__IS_ASCII_UPPER(b))
+      b = VSTR__TO_ASCII_LOWER(b);
+    
+    if (a - b)
+      return (a - b);
+    
+    ++str1;
+    ++str2;
+    --len;
+  }
+  
  return (0);
 }
 
-/* don't include case when comparing */
+/* don't include ASCII case when comparing */
 int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
                   const Vstr_base *base_2, size_t pos_2, size_t len_2)
 {
- Vstr_node *scan_1 = NULL;
- Vstr_node *scan_2 = NULL;
- unsigned int num_1 = 0;
- unsigned int num_2 = 0;
- char *scan_str_1 = NULL;
- char *scan_str_2 = NULL;
- size_t scan_len_1 = 0;
- size_t scan_len_2 = 0;
- 
- scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
-                                  &scan_str_1, &scan_len_1);
- scan_2 = vstr__base_scan_fwd_beg(base_2, pos_2, &len_2, &num_2,
-                                  &scan_str_2, &scan_len_2);
- if (!scan_1 && !scan_2)
-   return (0);
- if (!scan_1)
-   return (-1);
- if (!scan_2)
-   return (1);
-
- do
- {
-  size_t tmp = scan_len_1;
-  if (tmp > scan_len_2)
-    tmp = scan_len_2;
+  Vstr_node *scan_1 = NULL;
+  Vstr_node *scan_2 = NULL;
+  unsigned int num_1 = 0;
+  unsigned int num_2 = 0;
+  char *scan_str_1 = NULL;
+  char *scan_str_2 = NULL;
+  size_t scan_len_1 = 0;
+  size_t scan_len_2 = 0;
   
-  if ((scan_1->type != VSTR_TYPE_NODE_NON) &&
-      (scan_2->type != VSTR_TYPE_NODE_NON))
-  {
-   int ret = vstr__cmp_memcasecmp(scan_str_1, scan_str_2, tmp);
-   if (ret)
-     return (ret);
-   scan_str_1 += tmp;
-   scan_str_2 += tmp;
-  }
-  else if (scan_1->type != VSTR_TYPE_NODE_NON)
-    return (1);
-  else if (scan_2->type != VSTR_TYPE_NODE_NON)
+  scan_1 = vstr__base_scan_fwd_beg(base_1, pos_1, &len_1, &num_1,
+                                   &scan_str_1, &scan_len_1);
+  scan_2 = vstr__base_scan_fwd_beg(base_2, pos_2, &len_2, &num_2,
+                                   &scan_str_2, &scan_len_2);
+  if (!scan_1 && !scan_2)
+    return (0);
+  if (!scan_1)
     return (-1);
-
-  scan_len_1 -= tmp;
-  scan_len_2 -= tmp;
+  if (!scan_2)
+    return (1);
   
-  assert(!scan_len_1 || !scan_len_2);
-  if (!scan_len_1)
-    scan_1 = vstr__base_scan_fwd_nxt(base_1, &len_1, &num_1,
-                                     scan_1, &scan_str_1, &scan_len_1);
-  if (!scan_len_2)
-    scan_2 = vstr__base_scan_fwd_nxt(base_2, &len_2, &num_2,
-                                     scan_2, &scan_str_2, &scan_len_2);
- } while (scan_1 && scan_2);
-
- if (scan_1)
-   return (1);
- if (scan_2)
-   return (-1);
- 
- return (0);
+  do
+  {
+    size_t tmp = scan_len_1;
+    if (tmp > scan_len_2)
+      tmp = scan_len_2;
+    
+    if ((scan_1->type != VSTR_TYPE_NODE_NON) &&
+        (scan_2->type != VSTR_TYPE_NODE_NON))
+    {
+      int ret = vstr__cmp_memcasecmp(scan_str_1, scan_str_2, tmp);
+      if (ret)
+        return (ret);
+      scan_str_1 += tmp;
+      scan_str_2 += tmp;
+    }
+    else if (scan_1->type != VSTR_TYPE_NODE_NON)
+      return (1);
+    else if (scan_2->type != VSTR_TYPE_NODE_NON)
+      return (-1);
+    
+    scan_len_1 -= tmp;
+    scan_len_2 -= tmp;
+    
+    assert(!scan_len_1 || !scan_len_2);
+    if (!scan_len_1)
+      scan_1 = vstr__base_scan_fwd_nxt(base_1, &len_1, &num_1,
+                                       scan_1, &scan_str_1, &scan_len_1);
+    if (!scan_len_2)
+      scan_2 = vstr__base_scan_fwd_nxt(base_2, &len_2, &num_2,
+                                       scan_2, &scan_str_2, &scan_len_2);
+  } while (scan_1 && scan_2);
+  
+  if (scan_1)
+    return (1);
+  if (scan_2)
+    return (-1);
+  
+  return (0);
 }
 
 #define VSTR__CMP_BAD (-1)
@@ -241,8 +238,6 @@ int vstr_cmp_case(const Vstr_base *base_1, size_t pos_1, size_t len_1,
 #define VSTR__CMP_LEN_NEG 8 /* return negative if scan_1 length is longer */
 #define VSTR__CMP_DONE 9
 
-#define VSTR__CMP_ISDIGIT(x) (((x) >= '0') && ((x) <= '9'))
-
 static int vstr__cmp_vers(const char *scan_str_1,
                           const char *scan_str_2, size_t len,
                           int state, int *difference)
@@ -255,9 +250,9 @@ static int vstr__cmp_vers(const char *scan_str_1,
   switch (state)
   {
    case VSTR__CMP_NORM:
-     if (VSTR__CMP_ISDIGIT(*scan_str_1))
+     if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
        state = VSTR__CMP_NUMB;
-     if (*scan_str_1 == '0')
+     if (*scan_str_1 == VSTR__ASCII_DIGIT_0())
      {
       assert(state == VSTR__CMP_NUMB);
       ++state;
@@ -265,10 +260,11 @@ static int vstr__cmp_vers(const char *scan_str_1,
      }
      break;
    case VSTR__CMP_FRAC:
-     if (VSTR__CMP_ISDIGIT(*scan_str_1) && (*scan_str_1 != '0'))
+     if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+         (*scan_str_1 != VSTR__ASCII_DIGIT_0()))
        state = VSTR__CMP_NUMB;
    case VSTR__CMP_NUMB:
-     if (!VSTR__CMP_ISDIGIT(*scan_str_1))
+     if (!VSTR__IS_ASCII_DIGIT(*scan_str_1))
        state = VSTR__CMP_NORM;
      break;
      
@@ -295,13 +291,15 @@ static int vstr__cmp_vers(const char *scan_str_1,
   switch (state)
   {
    case VSTR__CMP_NORM:
-     if (VSTR__CMP_ISDIGIT(*scan_str_1) && (*scan_str_1 != '0') &&
-         VSTR__CMP_ISDIGIT(*scan_str_2) && (*scan_str_2 != '0'))
+     if (VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+         (*scan_str_1 != VSTR__ASCII_DIGIT_0()) &&
+         VSTR__IS_ASCII_DIGIT(*scan_str_2) &&
+         (*scan_str_2 != VSTR__ASCII_DIGIT_0()))
        state = VSTR__CMP_NUMB;
      break;
    case VSTR__CMP_FRAC:
    case VSTR__CMP_NUMB:
-     if (!VSTR__CMP_ISDIGIT(*scan_str_1) && !VSTR__CMP_ISDIGIT(*scan_str_2))
+     if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) && !VSTR__IS_ASCII_DIGIT(*scan_str_2))
        state = VSTR__CMP_NORM;
      break;
      
@@ -333,8 +331,8 @@ static int vstr__cmp_vers(const char *scan_str_1,
          (state == VSTR__CMP_LEN_NEG));
 
   while (len &&
-         VSTR__CMP_ISDIGIT(*scan_str_1) &&
-         VSTR__CMP_ISDIGIT(*scan_str_2))
+         VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+         VSTR__IS_ASCII_DIGIT(*scan_str_2))
   {
    ++scan_str_1;
    ++scan_str_2;
@@ -346,9 +344,9 @@ static int vstr__cmp_vers(const char *scan_str_1,
   {
    assert((VSTR__CMP_LEN_POS + 1) < VSTR__CMP_LEN_NEG);
    
-   if (VSTR__CMP_ISDIGIT(*scan_str_1))
+   if (VSTR__IS_ASCII_DIGIT(*scan_str_1))
      *difference = ((-state) + VSTR__CMP_LEN_POS + 1);
-   if (VSTR__CMP_ISDIGIT(*scan_str_2))
+   if (VSTR__IS_ASCII_DIGIT(*scan_str_2))
      *difference = (state - VSTR__CMP_LEN_POS - 1);
    /* if both are the same length then use the initial stored difference */
    

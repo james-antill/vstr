@@ -1,6 +1,6 @@
 #define VSTR_ADD_NETSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ static size_t vstr__netstr2_zero(char *str, size_t len, size_t *zeros)
  if (tmp > len)
    tmp = len;
 
- memset(str, '0', tmp);
+ memset(str, VSTR__ASCII_DIGIT_0(), tmp);
  *zeros -= tmp;
 
  if (!*zeros && (tmp != len))
@@ -72,7 +72,8 @@ size_t vstr_add_netstr2_beg(Vstr_base *base, size_t pos)
    return (0);
 
  ret = pos + 1;
- tmp = vstr_add_fmt(base, pos, "%lu:", ULONG_MAX);
+ /* number will be overwritten so it's ok in OS/compile default locale */
+ tmp = vstr_add_fmt(base, pos, "%lu%c", ULONG_MAX, VSTR__ASCII_COLON());
 
  if (!tmp)
     return (0);
@@ -98,7 +99,8 @@ static int vstr__netstr_end_start(Vstr_base *base,
  if (netstr_end_pos > base->len)
    return (FALSE);
 
- assert(vstr_export_chr(base, netstr_beg_pos + vstr__netstr2_num_len) == ':');
+ assert(vstr_export_chr(base, netstr_beg_pos + vstr__netstr2_num_len) ==
+        VSTR__ASCII_COLON());
  
  /* + 1 because of the ':' */
  *netstr_len = netstr_end_pos - (netstr_beg_pos + vstr__netstr2_num_len);
@@ -110,6 +112,7 @@ static int vstr__netstr_end_start(Vstr_base *base,
   unsigned int num = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
+  static const char comma[1] = {VSTR__ASCII_COMMA()};
   
   scan = vstr__base_scan_fwd_beg(base, netstr_end_pos, &len,
                                  &num, &scan_str, &scan_len);
@@ -117,12 +120,12 @@ static int vstr__netstr_end_start(Vstr_base *base,
 
   if (scan->type == VSTR_TYPE_NODE_BUF)
   {
-   if (!vstr_add_buf(base, netstr_end_pos, ",", 1))
+   if (!vstr_add_buf(base, netstr_end_pos, comma, 1))
      return (FALSE);
   }
   else
   {
-   if (!vstr_add_ptr(base, netstr_end_pos, ",", 1))
+   if (!vstr_add_ptr(base, netstr_end_pos, comma, 1))
      return (FALSE);
   }
  }
@@ -132,7 +135,7 @@ static int vstr__netstr_end_start(Vstr_base *base,
  {
   int off = *netstr_len % 10;
   
-  buf[--*count] = '0' + off;
+  buf[--*count] = VSTR__ASCII_DIGIT_0() + off;
   
   *netstr_len /= 10;
  }
@@ -302,7 +305,7 @@ int vstr_add_netstr_end(Vstr_base *base,
  
  if (count == vstr__netstr2_num_len)
  { /* here we delete, so need to keep something */
-  buf[--count] = '0';
+  buf[--count] = VSTR__ASCII_DIGIT_0();
  }
 
  /*

@@ -29,6 +29,18 @@ extern "C"
     /* ISO C magic, converts a ptr to ->next into ->next->prev */
 #define VSTR__CONV_PTR_NEXT_PREV(x) \
  ((Vstr_node *)(((char *)(x)) - offsetof(Vstr_node, next)))
+
+#define VSTR__IS_ASCII_LOWER(x) (((x) >= 0x61) && ((x) <= 0x7A))
+#define VSTR__IS_ASCII_UPPER(x) (((x) >= 0x41) && ((x) <= 0x5A))
+#define VSTR__IS_ASCII_DIGIT(x) (((x) >= 0x30) && ((x) <= 0x39))
+
+#define VSTR__TO_ASCII_LOWER(x) ((x) + 0x20) /* must be an ASCII upper */
+#define VSTR__TO_ASCII_UPPER(x) ((x) - 0x20) /* must be an ASCII lower */
+
+#define VSTR__ASCII_DIGIT_0() (0x30)
+#define VSTR__ASCII_COLON() (0x3A)
+#define VSTR__ASCII_COMMA() (0x2C)
+
     
 typedef struct Vstr__options
 {
@@ -50,19 +62,15 @@ extern int vstr__check_real_nodes(Vstr_base *);
 extern int vstr__check_spare_nodes(Vstr_conf *);
 #endif
 
-extern void vstr__del_conf(Vstr_conf *);
 extern void vstr__add_conf(Vstr_conf *);
-extern void vstr__base_add_conf(Vstr_base *, Vstr_conf *);
+extern void vstr__add_no_node_conf(Vstr_conf *);
+extern void vstr__add_base_conf(Vstr_base *, Vstr_conf *);
+extern void vstr__del_conf(Vstr_conf *);
 
 extern void vstr__ref_cb_free_bufnode(struct Vstr_ref *);
 extern void vstr__ref_cb_free_bufnode_ref(struct Vstr_ref *);
 
-extern char *vstr__export_node_ptr(Vstr_node *);
-
-extern int vstr__base_iovec_alloc(Vstr_base *, unsigned int);
-extern void vstr__base_iovec_reset_node(Vstr_base *base, Vstr_node *node,
-                                        unsigned int num);
-extern int vstr__base_iovec_valid(Vstr_base *);
+extern char *vstr__export_node_ptr(const Vstr_node *);
 
 extern Vstr_node *vstr__base_split_node(Vstr_base *, Vstr_node *, size_t);
 
@@ -75,9 +83,17 @@ extern Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *, size_t *,
                                           unsigned int *, Vstr_node *,
                                           char **, size_t *);
 extern int vstr__base_scan_rev_beg(const Vstr_base *, size_t, size_t *,
-                                   unsigned int *, char **, size_t *);
-extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *, unsigned int *, 
+                                   unsigned int *, unsigned int *,
                                    char **, size_t *);
+extern int vstr__base_scan_rev_nxt(const Vstr_base *, size_t *,
+                                   unsigned int *, unsigned int *,
+                                   char **, size_t *);
+
+extern int vstr__cache_iovec_alloc(Vstr_base *, unsigned int);
+extern void vstr__cache_iovec_free(Vstr_base *);
+extern void vstr__cache_iovec_reset_node(Vstr_base *base, Vstr_node *node,
+                                        unsigned int num);
+extern int vstr__cache_iovec_valid(Vstr_base *);
 
 extern void vstr__cache_free_cstr(Vstr_cache *);
 extern void vstr__cache_free_pos(Vstr_cache *);
@@ -85,7 +101,8 @@ extern void vstr__cache_del(Vstr_base *, size_t, size_t);
 extern void vstr__cache_add(Vstr_base *, size_t, size_t);
 extern void vstr__cache_cpy(Vstr_base *, size_t, size_t, Vstr_base *, size_t);
 extern void vstr__cache_chg(Vstr_base *, size_t, size_t);
-extern int vstr__make_cache(Vstr_base *);
+extern int  vstr__make_cache(Vstr_base *);
+extern void vstr__free_cache(Vstr_base *);
 
 extern void vstr__version_func(void);
     

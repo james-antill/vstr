@@ -254,6 +254,9 @@ Function: vstr_ref_cb_free_nothing()
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
 
+ Explanation:
+
+  This does nothing.
 
 Function: vstr_ref_cb_free_ref()
  Returns: nothing
@@ -262,6 +265,9 @@ Function: vstr_ref_cb_free_ref()
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
 
+ Explanation:
+
+  This will call free() on the Vstr_ref (Parameter[1]).
 
 Function: vstr_ref_cb_free_ptr()
  Returns: nothing
@@ -270,6 +276,9 @@ Function: vstr_ref_cb_free_ptr()
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
 
+ Explanation:
+
+  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr.
 
 Function: vstr_ref_cb_free_ptr_ref()
  Returns: nothing
@@ -277,6 +286,11 @@ Function: vstr_ref_cb_free_ptr_ref()
 
  Parameter[1]: Vstr memory reference
  Type[1]: struct Vstr_ref *
+
+ Explanation:
+
+  This will call free() on the data in the Vstr_ref (Parameter[1])->ptr and
+ then call free() on the Vstr_ref (Parameter[1]).
 
 
 Section: Functions to reference and dereference a Vstr memory reference
@@ -307,6 +321,8 @@ Function: vstr_make_conf()
 
  Parameter[1]: nothing
  Type[1]: void
+
+ Explanation:
 
 
 

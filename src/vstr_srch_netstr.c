@@ -1,6 +1,6 @@
 #define VSTR_SRCH_NETSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -98,7 +98,7 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
     goto next_loop;
    
   vstr_export_buf(base, pos, tmp + 1, buf);
-  if (buf[tmp] != ':')
+  if (buf[tmp] != VSTR__ASCII_COLON())
     goto next_loop;
   buf[tmp] = 0;
   assert(strlen(buf) == tmp);
@@ -122,7 +122,7 @@ static size_t vstr__srch_netstr(const Vstr_base *base, size_t pos, size_t len,
     return (0);
    }
    
-   if (vstr_export_chr(base, first_char_pos + found_len) == ',')
+   if (vstr_export_chr(base, first_char_pos + found_len) == VSTR__ASCII_COMMA())
    {
     if (ret_len)
       *ret_len = found_len;

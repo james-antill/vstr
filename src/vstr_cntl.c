@@ -51,8 +51,11 @@ int vstr_cntl_opt(int option, ...)
   {
    Vstr_conf *val = va_arg(ap, Vstr_conf *);
 
-   vstr__del_conf(vstr__options.def);
-   vstr__add_conf(vstr__options.def = val);
+   if (vstr__options.def != val)
+   {
+     vstr_free_conf(vstr__options.def);
+     vstr__add_no_node_conf(vstr__options.def = val);
+   }
    
    ret = TRUE;
   }
@@ -90,8 +93,11 @@ int vstr_cntl_base(Vstr_base *base, int option, ...)
   {
    Vstr_conf *val = va_arg(ap, Vstr_conf *);
 
-   vstr__del_conf(base->conf);
-   vstr__base_add_conf(base, val);
+   if (base->conf != val)
+   {
+     vstr__del_conf(base->conf);
+     vstr__add_base_conf(base, val);
+   }
    
    ret = TRUE;
   }
@@ -181,9 +187,13 @@ int vstr_cntl_conf(Vstr_conf *conf, int option, ...)
   {
    int val = va_arg(ap, int);
 
-   /* need to change all nodes in the base(s), and in spare_buf_beg */
-   /*  vstr__cache_add(base, base->len, bytes); -- or _del ... or ... */
-   if (!conf->spare_buf_num && !conf->ref)
+   /* this is too restrictive, but getting it "right" would require too much
+    * bookkeeping. */
+   assert(conf->no_node_ref >= 0);
+   assert(conf->no_node_ref <= 2);
+   assert(conf->no_node_ref <= conf->ref);
+   
+   if (!conf->spare_buf_num && (conf->no_node_ref == conf->ref))
    {
     conf->buf_sz = val;
     

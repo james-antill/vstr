@@ -140,242 +140,266 @@ static void ex1_cpy_write(Vstr_base *base, int fd)
  assert(!cpy->len);
 }
 
+static void do_test(Vstr_base *str2, const char *filename)
+{
+  size_t netstr_beg1 = 0;
+  size_t netstr_beg2 = 0;
+
+  /* Among other things this shows explicit memory checking ...
+   *  this is nicer in some cases/styles and you can tell what failed.
+   *
+   * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
+  
+  if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
+  
+  if (filename)
+  {
+    int fd = open(filename, O_RDONLY);
+    ex1_mmap_ref *ref = malloc(sizeof(ex1_mmap_ref));
+    caddr_t addr = NULL;
+    struct stat stat_buf;
+    
+    if (!ref)
+      errno = ENOMEM, PROBLEM("malloc ex1_mmap:");
+    
+    if (fd == -1)
+      PROBLEM("open:");
+    
+    if (fstat(fd, &stat_buf) == -1)
+      PROBLEM("fstat:");
+    ref->len = stat_buf.st_size;
+    
+    addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
+    if (addr == (caddr_t)-1)
+      PROBLEM("mmap:");
+    
+    if (close(fd) == -1)
+      PROBLEM("close:");
+    
+    ref->ref.func = ex1_ref_munmap;
+    ref->ref.ptr = (char *)addr;
+    ref->ref.ref = 0;
+    
+    if (offsetof(ex1_mmap_ref, ref))
+      PROBLEM("assert");
+    
+    if (!vstr_add_ref(str2, str2->len, &ref->ref, 0, ref->len))
+      errno = ENOMEM, PROBLEM("vstr_add_ref:");
+    
+    have_mmaped_file = 1;
+  }
+  
+  if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
+  
+  if (!vstr_add_ptr(str2, str2->len,
+                    (char *)"Hello this is a constant message.\n\n",
+                    strlen("Hello this is a constant message.\n\n")))
+    errno = ENOMEM, PROBLEM("vstr_add_ptr:");
+
+  /* FIXME: **** NOTE NOTE NOTE NOTE ****
+   * Do not just deref. like this, the api will be via. _cntl functions
+   * this code will change and may not work in the future */
+  vstr_add_fmt(str2, str2->len, "\n\nLocale information:\n"
+               "name: %s\n"
+               "thousands_sep: %s\n"
+               "grouping:",
+               str2->conf->loc->name_lc_numeric_str,
+               str2->conf->loc->thousands_sep_str);
+
+  {
+    unsigned int scan = 0;
+    
+    while (scan < strlen(str2->conf->loc->grouping))
+    {
+      vstr_add_fmt(str2, str2->len, " %d", str2->conf->loc->grouping[scan]);
+      ++scan;
+    }
+    vstr_add_fmt(str2, str2->len, "\n");
+  }
+
+  { /* gcc doesn't understand %'d */
+    const char *fool_gcc_fmt = (" Testing numbers...\n"
+                                "0=%.d\n"
+                                "0=%d\n"
+                                "SCHAR_MIN=%'+hhd\n"
+                                "SCHAR_MAX=%'+hhd\n"
+                                "UCHAR_MAX=%'hhu\n"
+                                "SHRT_MIN=%'+hd\n"
+                                "SHRT_MAX=%'+hd\n"
+                                "USHRT_MAX=%'hu\n"
+                                "INT_MIN=%'+d\n"
+                                "INT_MAX=%'+d\n"
+                                "UINT_MAX=%'u\n"
+                                "LONG_MIN=%'+ld\n"
+                                "LONG_MAX=%'+ld\n"
+                                "ULONG_MAX=%'lu\n"
+                                "LONG_LONG_MIN=%'+lld\n"
+                                "LONG_LONG_MAX=%'+lld\n"
+                                "ULONG_LONG_MAX=%'llu\n"
+                                "SIZE_MAX=%'zu\n"
+                                "PTRDIFF_MIN=%'+td\n"
+                                "PTRDIFF_MAX=%'+td\n"
+                                "INTMAX_MIN=%'+jd\n"
+                                "INTMAX_MAX=%'+jd\n"
+                                "UINTMAX_MAX=%'ju\n"
+                                "DOUBLE_MIN=%'+f\n"
+                                "DOUBLE_MAX=%'f\n"
+                                );
+    
+    if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt,
+                      0, 0,
+                      SCHAR_MIN,
+                      SCHAR_MAX,
+                      UCHAR_MAX,
+                      SHRT_MIN,
+                      SHRT_MAX,
+                      USHRT_MAX,
+                      INT_MIN,
+                      INT_MAX,
+                      UINT_MAX,
+                      LONG_MIN,
+                      LONG_MAX,
+                      ULONG_MAX,
+                      LONG_LONG_MIN,
+                      LONG_LONG_MAX,
+                      ULONG_LONG_MAX,
+                      SIZE_MAX,
+                      PTRDIFF_MIN,
+                      PTRDIFF_MAX,
+                      INTMAX_MIN,
+                      INTMAX_MAX,
+                      UINTMAX_MAX,
+                      -DBL_MAX, /* DBL_MIN is a very small fraction */
+                      DBL_MAX
+                      ))
+      errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+    
+    /* gcc doesn't understand i18n param numbers */
+    fool_gcc_fmt = (" Testing i18n explicit param numbers...\n"
+                    " 1=%1$*1$.*1$d\n"
+                    " 2=%2$*2$.*2$d\n"
+                    " 2=%2$*4$.*1$d\n"
+                    " 3=%3$*1$.*2$jd\n"
+                    " 4=%4$*4$.*4$d\n"
+                    " 1=%1$*2$.*4$d\n");
+    if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt, 1, 2, (intmax_t)3, 4))
+      errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+    
+    if (!vstr_add_fmt(str2, str2->len, " Testing wchar_t support...\n"
+                      "%s: %S\n"
+                      "%c: %C\n",
+                      "abcd", L"abcd",
+                      'z', (wint_t)L'z'))
+      errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+  }
+  
+  if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", str2))
+    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+  
+  if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
+  if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
+  
+  if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
+  if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
+  
+  if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
+  if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
+    errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
+  
+  if (!vstr_add_buf(str2, str2->len, "\n", 1))
+    errno = ENOMEM, PROBLEM("vstr_add_buf:");
+  
+  while (str2->len)
+  {
+    ex1_cpy_write(str2, 1);
+    vstr_del(str2, 1, 1);
+  }
+}
 
 int main(int argc, char *argv[])
 {
- Vstr_conf *conf = NULL;
- Vstr_base *str1 = NULL;
- Vstr_base *str2 = NULL;
- size_t netstr_beg1 = 0;
- size_t netstr_beg2 = 0;
- struct lconv *loc = NULL;
- unsigned int scan = 0;
- 
- if (!vstr_init())
-   errno = ENOMEM, PROBLEM("vstr_init:");
-
- if (!(conf = vstr_make_conf()))
-   errno = ENOMEM, PROBLEM("vstr_make_conf:");
-
- /* have only 1 character per _buf node */
- vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 1);
- 
- str1 = vstr_make_base(conf);
- if (!str1)
-   errno = ENOMEM, PROBLEM("vstr_make_base:");
-
- /* export LC_ALL=en_US to see thousands_sep in action */
- setlocale(LC_ALL, "");
- loc = localeconv();
-
- /* this shows implicit memory checking ...
-  *  this is nicer in some cases/styles but you can't tell what failed.
-  * The checking is done inside ex1_cpy_write() via. base->conf->malloc_bad
-  *
-  * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
- 
- vstr_add_fmt(str1, str1->len, "Hello %s, World is %d.\n", "vstr", 1);
- 
- ex1_cpy_write(str1, 1);
-
- vstr_add_ptr(str1, str1->len,
-              (char *)"Hello this is a constant message.\n\n",
-              strlen("Hello this is a constant message.\n\n"));
-
- vstr_add_fmt(str1, str1->len, "\n\nLocale information:\n"
-              "name: %s\n"
-              "thousands_sep: %s\n"
-              "grouping:",
-              setlocale(LC_ALL, NULL),
-              loc->thousands_sep);
-
- while (scan < strlen(loc->grouping))
- {
-   vstr_add_fmt(str1, str1->len, " %d", loc->grouping[scan]);
-   ++scan;
- }
- vstr_add_fmt(str1, str1->len, "\n");
- 
- ex1_cpy_write(str1, 1);
- 
- vstr_del(str1, strlen("Hello vstr, World "), strlen(" is"));
- vstr_del(str1, strlen("Hello "), strlen(" vstr,"));
-
- ex1_cpy_write(str1, 1);
- 
- while (str1->len)
- {
+  Vstr_conf *conf = NULL;
+  Vstr_base *str1 = NULL;
+  Vstr_base *str2 = NULL;
+  
+  /* export LC_ALL=en_US to see thousands_sep in action */
+  /* before vstr_init() so that the default conf has the locale info. */
+  setlocale(LC_ALL, "");
+  
+  if (!vstr_init())
+    errno = ENOMEM, PROBLEM("vstr_init:");
+  
+  setlocale(LC_ALL, "C"); /* the default conf has the locale... but not the
+                           * one we make. Or the rest of the program. */
+  
+  if (!(conf = vstr_make_conf()))
+    errno = ENOMEM, PROBLEM("vstr_make_conf:");
+  
+  /* have only 2 character per _buf node */
+  vstr_cntl_conf(conf, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, 2);
+  
+  str1 = vstr_make_base(conf);
+  if (!str1)
+    errno = ENOMEM, PROBLEM("vstr_make_base:");
+  
+  /* this shows implicit memory checking ...
+   *  this is nicer in some cases/styles but you can't tell what failed.
+   * The checking is done inside ex1_cpy_write() via. base->conf->malloc_bad
+   *
+   * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
+  
+  vstr_add_fmt(str1, str1->len, "Hello %s, World is %d.\n", "vstr", 1);
+  
   ex1_cpy_write(str1, 1);
-  vstr_del(str1, 1, 1);
- }
-
- /* str2 */
-
- /* this shows explicit memory checking ...
-  *  this is nicer in some cases/styles and you can tell what failed.
-  *
-  * Note that you _have_ to check vstr_init() and vstr_make_*() explicitly */
-
- if (str1->conf->malloc_bad)
-   PROBLEM("Bad malloc_bad flag\n");
- 
- str2 = vstr_make_base(NULL);
- if (!str2)
-   errno = ENOMEM, PROBLEM("vstr_make_base:");
-
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
- 
- if (argc > 1)
- {
-  int fd = open(argv[1], O_RDONLY);
-  ex1_mmap_ref *ref = malloc(sizeof(ex1_mmap_ref));
-  caddr_t addr = NULL;
-  struct stat stat_buf;
-
-  if (!ref)
-    errno = ENOMEM, PROBLEM("malloc ex1_mmap:");
-
-  if (fd == -1)
-    PROBLEM("open:");
-
-  if (fstat(fd, &stat_buf) == -1)
-    PROBLEM("fstat:");
-  ref->len = stat_buf.st_size;
-
-  addr = mmap(NULL, ref->len, PROT_READ, MAP_SHARED, fd, 0);
-  if (addr == (caddr_t)-1)
-    PROBLEM("mmap:");
   
-  if (close(fd) == -1)
-    PROBLEM("close:");
+  vstr_add_ptr(str1, str1->len,
+               (char *)"Hello this is a constant message.\n\n",
+               strlen("Hello this is a constant message.\n\n"));
+ 
+  ex1_cpy_write(str1, 1);
   
-  ref->ref.func = ex1_ref_munmap;
-  ref->ref.ptr = (char *)addr;
-  ref->ref.ref = 0;
-
-  if (offsetof(ex1_mmap_ref, ref))
-    PROBLEM("assert");
+  vstr_del(str1, strlen("Hello vstr, World "), strlen(" is"));
+  vstr_del(str1, strlen("Hello "), strlen(" vstr,"));
   
-  if (!vstr_add_ref(str2, str2->len, &ref->ref, 0, ref->len))
-    errno = ENOMEM, PROBLEM("vstr_add_ref:");
-
-  have_mmaped_file = 1;
- }
-
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
- 
- if (!vstr_add_ptr(str2, str2->len,
-                   (char *)"Hello this is a constant message.\n\n",
-                   strlen("Hello this is a constant message.\n\n")))
-   errno = ENOMEM, PROBLEM("vstr_add_ptr:");
- 
- { /* gcc doesn't understand %'d */
-  const char *fool_gcc_fmt = (" Testing numbers...\n"
-                              "0=%.d\n"
-                              "0=%d\n"
-                              "SCHAR_MIN=%'+hhd\n"
-                              "SCHAR_MAX=%'+hhd\n"
-                              "UCHAR_MAX=%'hhu\n"
-                              "SHRT_MIN=%'+hd\n"
-                              "SHRT_MAX=%'+hd\n"
-                              "USHRT_MAX=%'hu\n"
-                              "INT_MIN=%'+d\n"
-                              "INT_MAX=%'+d\n"
-                              "UINT_MAX=%'u\n"
-                              "LONG_MIN=%'+ld\n"
-                              "LONG_MAX=%'+ld\n"
-                              "ULONG_MAX=%'lu\n"
-                              "LONG_LONG_MIN=%'+lld\n"
-                              "LONG_LONG_MAX=%'+lld\n"
-                              "ULONG_LONG_MAX=%'llu\n"
-                              "SIZE_MAX=%'zu\n"
-                              "PTRDIFF_MIN=%'+td\n"
-                              "PTRDIFF_MAX=%'+td\n"
-                              "INTMAX_MIN=%'+jd\n"
-                              "INTMAX_MAX=%'+jd\n"
-                              "UINTMAX_MAX=%'ju\n"
-                              "DOUBLE_MIN=%'+f\n"
-                              "DOUBLE_MAX=%'f\n"
-                              );
+  ex1_cpy_write(str1, 1);
   
-  if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt,
-                    0, 0,
-                    SCHAR_MIN,
-                    SCHAR_MAX,
-                    UCHAR_MAX,
-                    SHRT_MIN,
-                    SHRT_MAX,
-                    USHRT_MAX,
-                    INT_MIN,
-                    INT_MAX,
-                    UINT_MAX,
-                    LONG_MIN,
-                    LONG_MAX,
-                    ULONG_MAX,
-                    LONG_LONG_MIN,
-                    LONG_LONG_MAX,
-                    ULONG_LONG_MAX,
-                    SIZE_MAX,
-                    PTRDIFF_MIN,
-                    PTRDIFF_MAX,
-                    INTMAX_MIN,
-                    INTMAX_MAX,
-                    UINTMAX_MAX,
-                    -DBL_MAX, /* DBL_MIN is a very small fraction */
-                    DBL_MAX
-                    ))
-    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+  while (str1->len)
+  {
+    ex1_cpy_write(str1, 1);
+    vstr_del(str1, 1, 1);
+  }
+  
+  /* str2 */
+  
+  if (str1->conf->malloc_bad)
+    PROBLEM("Bad malloc_bad flag\n");
+  
+  str2 = vstr_make_base(NULL); /* get a default conf */
+  if (!str2)
+    errno = ENOMEM, PROBLEM("vstr_make_base:");
+  
+  do_test(str2, (argc > 1) ? argv[1] : NULL);
+  do_test(str1, (argc > 1) ? argv[1] : NULL);
 
-  /* gcc doesn't understand i18n param numbers */
-  fool_gcc_fmt = (" Testing i18n explicit param numbers...\n"
-                  " 1=%1$*1$.*1$d\n"
-                  " 2=%2$*2$.*2$d\n"
-                  " 2=%2$*4$.*1$d\n"
-                  " 3=%3$*1$.*2$jd\n"
-                  " 4=%4$*4$.*4$d\n"
-                  " 1=%1$*2$.*4$d\n");
-  if (!vstr_add_fmt(str2, str2->len, fool_gcc_fmt, 1, 2, (intmax_t)3, 4))
-    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
+  setlocale(LC_ALL, "");
 
-  if (!vstr_add_fmt(str2, str2->len, " Testing wchar_t support...\n"
-                    "%s: %S\n"
-                    "%c: %C\n",
-                    "abcd", L"abcd",
-                    'z', (wint_t)L'z'))
-    errno = ENOMEM, PROBLEM("vstr_add_fmt:");
-}
- 
- if (!vstr_add_fmt(str2, str2->len, " Testing %%p=%p.\n", str2))
-   errno = ENOMEM, PROBLEM("vstr_add_fmt:");
- 
- if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
- if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
- 
- if (!(netstr_beg1 = vstr_add_netstr_beg(str2, str2->len)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_beg:");
- if (!vstr_add_netstr_end(str2, netstr_beg1, str2->len))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr_end:");
- 
- if (!(netstr_beg2 = vstr_add_netstr2_beg(str2, str2->len)))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_beg:");
- if (!vstr_add_netstr2_end(str2, netstr_beg2, str2->len))
-   errno = ENOMEM, PROBLEM("vstr_add_netstr2_end:");
+  do_test(str2, (argc > 1) ? argv[1] : NULL);
+  do_test(str1, (argc > 1) ? argv[1] : NULL);
 
- if (!vstr_add_buf(str2, str2->len, "\n", 1))
-   errno = ENOMEM, PROBLEM("vstr_add_buf:");
+  if (have_mmaped_file)
+    PROBLEM("bad munmap");
+  
+  vstr_free_base(str1);
+  vstr_free_base(str2);
 
- while (str2->len)
- {
-  ex1_cpy_write(str2, 1);
-  vstr_del(str2, 1, 1);
- }
-
- if (have_mmaped_file)
-   PROBLEM("bad munmap");
- 
- exit (EXIT_SUCCESS);
+  vstr_free_conf(conf);
+  
+  exit (EXIT_SUCCESS);
 }

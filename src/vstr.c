@@ -1,6 +1,6 @@
 #define VSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,36 +21,155 @@
 /* master file, contains all the base functions */
 #include "main.h"
 
+static size_t vstr__grp_strlen(const char *passed_str)
+{
+  const unsigned char *str = passed_str;
+  size_t len = 0;
+  
+  while (*str && (*str < CHAR_MAX))
+  {
+    ++len;
+    ++str;
+  }
+
+  return (len);
+}
+
 
 Vstr_conf *vstr_make_conf(void)
 {
- Vstr_conf *conf = malloc(sizeof(Vstr_conf));
+  Vstr_conf *conf = malloc(sizeof(Vstr_conf));
+  struct lconv *sys_loc = localeconv();
+  
+  if (!conf)
+    goto fail_conf;
+  
+  if (!(conf->loc = malloc(sizeof(Vstr_conf))))
+    goto fail_loc;
+  
+  if (!sys_loc)
+  {
+    if (!(conf->loc->name_lc_numeric_str = calloc(2, 1)))
+      goto fail_numeric;
+    
+    if (!(conf->loc->grouping = calloc(1, 1)))
+      goto fail_grp;
 
- conf->spare_buf_num = 0;
- conf->spare_buf_beg = NULL;
+    if (!(conf->loc->thousands_sep_str = calloc(1, 1)))
+      goto fail_thou;
 
- conf->spare_non_num = 0;
- conf->spare_non_beg = NULL;
+    if (!(conf->loc->decimal_point_str = calloc(1, 1)))
+      goto fail_deci;
 
- conf->spare_ptr_num = 0;
- conf->spare_ptr_beg = NULL;
+    *conf->loc->name_lc_numeric_str = 'C';
+    
+    conf->loc->name_lc_numeric_len = 1;
+    conf->loc->decimal_point_len = 0;
+    conf->loc->thousands_sep_len = 0;
+  }
+  else
+  {
+    const char *name_numeric = NULL;
+    size_t numeric_len = 0;
+    size_t grp_len = vstr__grp_strlen(sys_loc->grouping);
+    size_t thou_len = strlen(sys_loc->thousands_sep);
+    size_t deci_len = strlen(sys_loc->decimal_point);
 
- conf->spare_ref_num = 0;
- conf->spare_ref_beg = NULL;
+    name_numeric = setlocale(LC_NUMERIC, NULL);
+    if (!name_numeric)
+    {
+      name_numeric = "C";
+    }
+    numeric_len = strlen(name_numeric);
+    
+    if (!(conf->loc->name_lc_numeric_str = malloc(numeric_len + 1)))
+      goto fail_numeric;
+    
+    if (!(conf->loc->grouping = malloc(grp_len + 1)))
+      goto fail_grp;
 
- conf->iov_min_alloc = 0;
- conf->iov_min_offset = 0;
+    if (!(conf->loc->thousands_sep_str = malloc(thou_len + 1)))
+      goto fail_thou;
 
- conf->buf_sz = 512 - sizeof(Vstr_node_buf);
+    if (!(conf->loc->decimal_point_str = malloc(deci_len + 1)))
+      goto fail_thou;
 
- conf->free_do = TRUE;
- conf->malloc_bad = FALSE;
- conf->iovec_auto_update = TRUE;
- conf->split_buf_del = FALSE;
- 
- conf->ref = 0;
- 
- return (conf);
+    conf->loc->thousands_sep_len = thou_len;
+
+    memcpy(conf->loc->name_lc_numeric_str, name_numeric, numeric_len + 1);
+    
+    memcpy(conf->loc->grouping, sys_loc->grouping, grp_len);
+    conf->loc->grouping[grp_len] = 0; /* make sure all strs are 0 terminated */
+    
+    memcpy(conf->loc->thousands_sep_str, sys_loc->thousands_sep, thou_len + 1);
+    
+    memcpy(conf->loc->decimal_point_str, sys_loc->decimal_point, deci_len + 1);
+  }
+  
+  conf->spare_buf_num = 0;
+  conf->spare_buf_beg = NULL;
+  
+  conf->spare_non_num = 0;
+  conf->spare_non_beg = NULL;
+  
+  conf->spare_ptr_num = 0;
+  conf->spare_ptr_beg = NULL;
+  
+  conf->spare_ref_num = 0;
+  conf->spare_ref_beg = NULL;
+  
+  conf->iov_min_alloc = 0;
+  conf->iov_min_offset = 0;
+  
+  conf->buf_sz = 32 - sizeof(Vstr_node_buf);
+
+  conf->ref = 1;
+  
+  conf->free_do = TRUE;
+  conf->malloc_bad = FALSE;
+  conf->iovec_auto_update = TRUE;
+  conf->split_buf_del = TRUE;
+
+  conf->no_node_ref = 1;
+  
+  return (conf);
+
+ fail_deci:
+  free(conf->loc->thousands_sep_str);
+ fail_thou:
+  free(conf->loc->grouping);
+ fail_grp:
+  free(conf->loc->name_lc_numeric_str);
+ fail_numeric:
+  free(conf->loc);
+ fail_loc:
+  free(conf);
+ fail_conf:
+
+  return (NULL);
+}
+
+void vstr__add_conf(Vstr_conf *conf)
+{
+ ++conf->ref;
+}
+
+void vstr__add_no_node_conf(Vstr_conf *conf)
+{
+  assert(conf->no_node_ref == 1); /* only a user */
+  assert(conf->no_node_ref <= conf->ref);
+  
+  ++conf->no_node_ref;
+
+  vstr__add_conf(conf);
+}
+
+void vstr__add_base_conf(Vstr_base *base, Vstr_conf *conf)
+{
+  assert(conf->no_node_ref <= conf->ref);
+  
+ base->conf = conf;
+ vstr__add_conf(conf);
 }
 
 void vstr__del_conf(Vstr_conf *conf)
@@ -63,20 +182,27 @@ void vstr__del_conf(Vstr_conf *conf)
   vstr_del_spare_nodes(conf, VSTR_TYPE_NODE_NON, conf->spare_non_num);
   vstr_del_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);
   vstr_del_spare_nodes(conf, VSTR_TYPE_NODE_REF, conf->spare_ref_num);
+  
+  free(conf->loc->name_lc_numeric_str);
+  free(conf->loc->grouping);
+  free(conf->loc->thousands_sep_str);
+  free(conf->loc->decimal_point_str);
+  free(conf->loc);
+  
   if (conf->free_do)
     free(conf);
  }
 }
 
-void vstr__add_conf(Vstr_conf *conf)
+void vstr_free_conf(Vstr_conf *conf)
 {
- ++conf->ref;
-}
-
-void vstr__base_add_conf(Vstr_base *base, Vstr_conf *conf)
-{
- base->conf = conf;
- vstr__add_conf(conf);
+  assert(conf->no_node_ref > 0);
+  assert(conf->no_node_ref < 3); /* only a user and the default */
+  assert(conf->no_node_ref <= conf->ref);
+  
+  --conf->no_node_ref;
+  
+  vstr__del_conf(conf);
 }
 
 int vstr_init(void)
@@ -84,24 +210,22 @@ int vstr_init(void)
  if (!(vstr__options.def = vstr_make_conf()))
    return (FALSE);
 
- vstr__options.def->ref = 1;
-
  return (TRUE);
 }
 
-char *vstr__export_node_ptr(Vstr_node *node)
+char *vstr__export_node_ptr(const Vstr_node *node)
 {
  switch (node->type)
  {
   case VSTR_TYPE_NODE_BUF:
-    return (((Vstr_node_buf *)node)->buf);
+    return ((char *)((const Vstr_node_buf *)node)->buf);
   case VSTR_TYPE_NODE_NON:
     return (NULL);
   case VSTR_TYPE_NODE_PTR:
-    return (((Vstr_node_ptr *)node)->ptr);
+    return (((const Vstr_node_ptr *)node)->ptr);
   case VSTR_TYPE_NODE_REF:
-    return (((char *)((Vstr_node_ref *)node)->ref->ptr) +
-            ((Vstr_node_ref *)node)->off);
+    return (((char *)((const Vstr_node_ref *)node)->ref->ptr) +
+            ((const Vstr_node_ref *)node)->off);
     
   default:
     assert(FALSE);
@@ -109,72 +233,21 @@ char *vstr__export_node_ptr(Vstr_node *node)
  }
 }
 
-static void vstr__base_iovec_memmove(Vstr_base *base)
-{
- Vstr_iovec *vec = &base->vec;
-
- memmove(vec->v + base->conf->iov_min_offset, vec->v + vec->off,
-         sizeof(struct iovec) * base->num);
- vec->off = base->conf->iov_min_offset;
-}
-
-int vstr__base_iovec_alloc(Vstr_base *base, unsigned int sz)
-{
- Vstr_iovec *vec = &base->vec;
- 
- if (!sz)
-   return (TRUE);
-  
- if (!vec->v)
- {
-  vec->v = malloc(sizeof(struct iovec) * sz);
-
-  if (!vec->v)
-    return (FALSE);
-
-  vec->sz = sz;
-  assert(!vec->off);
- }
-
- if ((vec->off > base->conf->iov_min_offset) &&
-     (sz > (vec->sz - vec->off)))
-   vstr__base_iovec_memmove(base);
-
- if (sz > (vec->sz - base->conf->iov_min_offset))
- {
-  struct iovec *tmp = NULL;
-  size_t alloc_sz = sz + base->conf->iov_min_offset + base->conf->iov_min_alloc;
- 
-  tmp = realloc(vec->v, sizeof(struct iovec) * alloc_sz);
-
-  if (!tmp)
-  {
-   base->conf->malloc_bad = TRUE;
-   return (FALSE);
-  }
-  
-  vec->v = tmp;
-  
-  if (vec->off < base->conf->iov_min_offset)
-    vstr__base_iovec_memmove(base);
-  
-  vec->sz = sz;
- }
-
- return (TRUE);
-}
-
-void vstr__base_iovec_reset_node(Vstr_base *base, Vstr_node *node,
-                                 unsigned int num)
+void vstr__cache_iovec_reset_node(Vstr_base *base, Vstr_node *node,
+                                  unsigned int num)
 {
   struct iovec *iovs = NULL;
+  unsigned char *types = NULL;
   
   if (!base->iovec_upto_date)
     return;
   
-  iovs = base->vec.v + base->vec.off;
+  iovs = base->cache->vec->v + base->cache->vec->off;
   iovs[num - 1].iov_len = node->len;
   iovs[num - 1].iov_base = vstr__export_node_ptr(node);
+
+  types = base->cache->vec->t + base->cache->vec->off;
+  types[num - 1] = node->type;
   
   if (num == 1)
   {
@@ -187,34 +260,38 @@ void vstr__base_iovec_reset_node(Vstr_base *base, Vstr_node *node,
   }
 }
 
-int vstr__base_iovec_valid(Vstr_base *base)
+int vstr__cache_iovec_valid(Vstr_base *base)
 {
- unsigned int count = base->conf->iov_min_offset;
+ unsigned int count = 0;
  Vstr_node *scan = NULL;
  
  if (base->iovec_upto_date || !base->beg)
    return (TRUE);
 
- if (!vstr__base_iovec_alloc(base, base->num))
+ if (!vstr__cache_iovec_alloc(base, base->num))
    return (FALSE);
 
- assert(base->vec.off == base->conf->iov_min_offset);
+ assert(base->cache->vec->off == base->conf->iov_min_offset);
 
+ count = base->conf->iov_min_offset;
  scan = base->beg;
  
- base->vec.v[count].iov_len = scan->len - base->used;
+ base->cache->vec->v[count].iov_len = scan->len - base->used;
  if (scan->type == VSTR_TYPE_NODE_NON)
-   base->vec.v[count].iov_base = NULL;
+   base->cache->vec->v[count].iov_base = NULL;
  else
-   base->vec.v[count].iov_base = vstr__export_node_ptr(scan) + base->used;
- 
+   base->cache->vec->v[count].iov_base = (vstr__export_node_ptr(scan) +
+                                          base->used);
+ base->cache->vec->t[count] = scan->type;
+   
  scan = scan->next;
  ++count;
  while (scan)
  {
-  base->vec.v[count].iov_len = scan->len;
-  base->vec.v[count].iov_base = vstr__export_node_ptr(scan);
-
+  base->cache->vec->t[count] = scan->type;
+  base->cache->vec->v[count].iov_len = scan->len;
+  base->cache->vec->v[count].iov_base = vstr__export_node_ptr(scan);
+  
   ++count;
   scan = scan->next;
  }
@@ -225,30 +302,33 @@ int vstr__base_iovec_valid(Vstr_base *base)
 }
 
 #ifndef NDEBUG
-static int vstr__base_iovec_check(Vstr_base *base)
+static int vstr__cache_iovec_check(Vstr_base *base)
 {
- unsigned int count = base->vec.off;
+ unsigned int count = 0;
  Vstr_node *scan = NULL;
  
  if (!base->iovec_upto_date || !base->beg)
    return (TRUE);
 
+ count = base->cache->vec->off;
  scan = base->beg;
 
  assert(scan->len > base->used);
- assert(base->vec.v[count].iov_len == (size_t)(scan->len - base->used));
+ assert(base->cache->vec->v[count].iov_len == (size_t)(scan->len - base->used));
  if (scan->type == VSTR_TYPE_NODE_NON)
-   assert(!base->vec.v[count].iov_base);
+   assert(!base->cache->vec->v[count].iov_base);
  else
-   assert(base->vec.v[count].iov_base ==
+   assert(base->cache->vec->v[count].iov_base ==
           (vstr__export_node_ptr(scan) + base->used));
+ assert(base->cache->vec->t[count] == scan->type);
  
  scan = scan->next;
  ++count;
  while (scan)
  {
-  assert(base->vec.v[count].iov_len == scan->len);
-  assert(base->vec.v[count].iov_base == vstr__export_node_ptr(scan));
+  assert(base->cache->vec->t[count] == scan->type);
+  assert(base->cache->vec->v[count].iov_len == scan->len);
+  assert(base->cache->vec->v[count].iov_base == vstr__export_node_ptr(scan));
 
   ++count;
   scan = scan->next;
@@ -269,21 +349,20 @@ int vstr_init_base(Vstr_conf *conf, Vstr_base *base)
  base->len = 0;
  base->num = 0;
 
- base->vec.v = NULL;
- base->vec.off = 0;
- base->vec.sz = 0;
-
  base->cache = NULL;
  
- vstr__base_add_conf(base, conf);
+ vstr__add_base_conf(base, conf);
 
- if (!vstr__base_iovec_alloc(base, base->conf->iov_min_alloc))
+ if (!vstr__cache_iovec_alloc(base, base->conf->iov_min_alloc))
    return (FALSE);
 
  base->used = 0;
  base->free_do = FALSE;
- base->iovec_upto_date = TRUE;
+ base->iovec_upto_date = FALSE;
  
+ if (base->cache && base->cache->vec && base->cache->vec->sz)
+   base->iovec_upto_date = TRUE;
+
  return (TRUE);
 }
 
@@ -292,10 +371,11 @@ void vstr_free_base(Vstr_base *base)
  if (!base)
    return;
 
- if (base->len)
-   vstr_del(base, 1, base->len);
+ vstr_del(base, 1, base->len);
  
  vstr__del_conf(base->conf);
+
+ vstr__free_cache(base);
  
  if (base->free_do)
    free(base);
@@ -591,7 +671,7 @@ int vstr__check_real_nodes(Vstr_base *base)
  assert(!base->used || (base->used < base->beg->len));
  assert(((len - base->used) == base->len) && (num == base->num));
 
- vstr__base_iovec_check(base);
+ vstr__cache_iovec_check(base);
  
  return (TRUE);
 }
@@ -772,7 +852,7 @@ Vstr_node *vstr__base_scan_fwd_nxt(const Vstr_base *base, size_t *len,
 
 int vstr__base_scan_rev_beg(const Vstr_base *base,
                             size_t pos, size_t *len,
-                            unsigned int *num, 
+                            unsigned int *num, unsigned int *type,
                             char **scan_str, size_t *scan_len)
 {
   Vstr_node *scan = NULL;
@@ -790,8 +870,10 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
   assert(scan);
   
   --pos;
-  
+
+  *type = scan->type;
   *scan_len = scan->len - pos;
+  
   if (*scan_len > *len)
     *scan_len = *len;
   *len -= *scan_len;
@@ -804,10 +886,11 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
 }
 
 int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
-                            unsigned int *num, 
+                            unsigned int *num, unsigned int *type,
                             char **scan_str, size_t *scan_len)
 {
   struct iovec *iovs = NULL;
+  unsigned char *types = NULL;
   size_t pos = 0;
   
   assert(num);
@@ -815,7 +898,10 @@ int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   if (!*len || !--*num)
     return (FALSE);
 
-  iovs = base->vec.v + base->vec.off;
+  iovs = base->cache->vec->v + base->cache->vec->off;
+  types = base->cache->vec->t + base->cache->vec->off;
+
+  *type = types[*num - 1];
   *scan_len = iovs[*num - 1].iov_len;
   
   if (*scan_len > *len)
@@ -826,7 +912,7 @@ int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
   *len -= *scan_len;
   
   *scan_str = NULL;
-  if (iovs[*num - 1].iov_base)
+  if (*type != VSTR_TYPE_NODE_NON)
     *scan_str = ((char *) (iovs[*num - 1].iov_base)) + pos;
   
   return (TRUE);

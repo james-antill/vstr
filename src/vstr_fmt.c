@@ -2,7 +2,7 @@
 /* filename == vstr_fmt.c because CVS doesn't have a rename command
  * should be vstr_add_fmt.c */
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,7 @@
 #define SPECIAL (1 << 13) /* 0x */
 #define LARGE (1 << 14) /* use 'ABCDEF' instead of 'abcdef' */
 #define THOUSAND_SEP (1 << 15) /* split at grouping marks according to locale */
-#ifdef HAVE_THOUSAND_SPRINTF
+#ifdef HAVE_THOUSANDS_SPRINTF
 # define VSTR__OS_THOUSAND_SEP THOUSAND_SEP
 #else
 # define VSTR__OS_THOUSAND_SEP 0
@@ -162,7 +162,7 @@ static int vstr__add_zeros(Vstr_base *base, size_t pos_diff, size_t len)
   unsigned int char_offset = 0; \
   \
   if ((flags & THOUSAND_SEP) && !grp_num) { \
-    memcpy(buf + i, loc->thousands_sep, thou_len); \
+    memcpy(buf + i, thou, thou_len); \
     i += thou_len; } \
   \
   char_offset = (num % num_base); \
@@ -225,9 +225,9 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
  unsigned int i = 0;
  int num_base = (flags & BASE_MASK);
  const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
- struct lconv *loc = NULL;
  const char *grouping = NULL;
  unsigned char grp_num = 0;
+ const char *thou = NULL;
  size_t thou_len = 0;
 
  /* hacky spec, if precision == 0 and num ==0, then don't display anything */
@@ -327,9 +327,10 @@ static int vstr__add_number(Vstr_base *base, size_t pos_diff,
     size = 0;
    }
 
- loc = localeconv();
- grouping = loc->grouping;
- thou_len = strlen(loc->thousands_sep);
+ grouping = base->conf->loc->grouping;
+ thou_len = base->conf->loc->thousands_sep_len;
+ thou = base->conf->loc->thousands_sep_str;
+ 
  grp_num = *grouping;
  if (!thou_len || (grp_num >= CHAR_MAX) || (grp_num <= 0))
    flags &= ~THOUSAND_SEP; /* don't do it */
@@ -730,6 +731,10 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         char *float_buffer = NULL;
         unsigned int tmp = 1;
         int ret = -1;
+        struct lconv *sys_loc = NULL;
+        size_t thou_len = 0;
+        size_t decimal_len = 0;
+        const char *str = NULL;
         
         fmt_buffer[0] = '%';
         if (spec->flags & LEFT)
@@ -766,6 +771,10 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         assert(tmp <= sizeof(fmt_buffer));
         fmt_buffer[tmp] = 0;
         
+        sys_loc = localeconv();
+        thou_len = strlen(sys_loc->thousands_sep);
+        decimal_len = strlen(sys_loc->decimal_point);
+        
         if (spec->int_type == LONG_DOUBLE_TYPE)
         {
           if (spec->field_width_usr && spec->precision_usr)
@@ -799,12 +808,65 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
         if (ret < 0)
           goto failed_alloc;
-        
-        if ((ret > 0) && !VSTR__FMT_ADD(base, float_buffer, ret))
-        {
-          free(float_buffer);
-          goto failed_alloc;
+
+        tmp = ret;
+        str = float_buffer;
+        while (tmp > 0)
+        { /* NOTE: This assumes that thous and decimal don't use the same
+           * char in any locale. This is a valid assumtpion according to
+           * /usr/share/i18n/locales */
+          if ((spec->flags & VSTR__OS_THOUSAND_SEP) &&
+              thou_len && (tmp >= thou_len) &&
+              !memcmp(str, sys_loc->thousands_sep, thou_len))
+          {
+            if (base->conf->loc->thousands_sep_len)
+            {
+              if ((ret > 0) &&
+                  !VSTR__FMT_ADD(base,
+                                 base->conf->loc->thousands_sep_str,
+                                 base->conf->loc->thousands_sep_len))
+              {
+                free(float_buffer);
+                goto failed_alloc;
+              }
+
+            }
+            
+            str += thou_len;
+            tmp -= thou_len;
+          }
+          else if (decimal_len && (tmp >= decimal_len) &&
+                   !memcmp(str, sys_loc->decimal_point, decimal_len))
+          {
+            if (base->conf->loc->decimal_point_len)
+            {
+              if ((ret > 0) && 
+                  !VSTR__FMT_ADD(base,
+                                 base->conf->loc->decimal_point_str,
+                                 base->conf->loc->decimal_point_len))
+              {
+                free(float_buffer);
+                goto failed_alloc;
+              }
+            }
+            
+            str += decimal_len;
+            tmp -= decimal_len;
+          }
+          else
+          { /* NOTE: Looks like it's valid to optomize with
+             * strspn(str, "0123456789") */
+            if ((ret > 0) && !VSTR__FMT_ADD(base, str, 1))
+            {
+              free(float_buffer);
+              goto failed_alloc;
+            }
+            
+            ++str;
+            --tmp;
+          }
         }
+        assert(!tmp && !*str);
         
         free(float_buffer);
       }

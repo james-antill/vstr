@@ -1,11 +1,43 @@
 
- vstr_add_fmt()
+. vstr_add_fmt()
   floating point relies on the underlying implimentation -- this is very bad.
 
- bunch of the _rev functions don't have a fast path.
+. bunch of the _rev functions don't have a fast path.
 
- doco.
+. doco.
 
- pkg-config as well/instead of gnome-config
+. pkg-config as well/instead of gnome-config
 
- size overflows, just don't do it (tm).
+. size overflows, just don't do it (tm).
+
+. vstr_conv_node_type -- Ie. vstr_add_vstr(..., _BUF_REF) without the copy ?
+                         Also allow conv. REF/PTR to BUF nodes ?
+
+. Make the vstr__netstr2_num_len value constant.
+
+. More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
+
+. Max and Min ammounts for spare nodes.
+  min = when allocating a node actually do MAX(1, min_ammount - cur_ammount)
+  max = when deleting a node actually do MAX(cur_ammount - max_ammount, 1)
+
+. Size of Vstr_base/Vstr_node
+  base = 32 bytes could be 24
+         (used becomes short and part of bitflags [4];
+          num disappears ? ... becomes part of iovec ? [4]).
+  node = 12 could be 8 + (conf->buf_sz for buf;
+                          4 for ptr;
+                          8 for ref)
+         (len becomes part of bitflags).
+         making it smaller would also require spliting large ptr/ref's up.
+
+. Allow conf to say don't allocate a cache.
+
+. Make const string a object, so you can share a Vstr between multiple const
+objects.
+   struct Vstr_const_base { Vstr_base *base; size_t pos; size_t len }; ??
+
+. Add some way to include system headers.
+
+. Cache reg./unreg.
+

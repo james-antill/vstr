@@ -1,4 +1,56 @@
+2002-01-07  James Antill  <james@and.org>
+
+	* src/vstr_srch_netstr.c (vstr__srch_netstr): Make ASCII everywhere.
+
+	* src/vstr.c (vstr__base_scan_rev_beg): Add type information.
+	(vstr__base_scan_rev_nxt): Add type information.
+
+	* src/vstr_fmt.c (vstr__add_number): Use the Vstr locale for ints.
+	(vstr__fmt_write_spec): Use the Vstr locale for floats/doubles.
+
+	* src/vstr.c (vstr_make_conf): Add vstr locale.
+
+	* src/vstr_cmp.c (vstr_cmp_vers): Make ASCII everywhere.
+
+	* src/vstr_add_netstr.c (vstr_add_netstr2_beg): Make ASCII everywhere.
+	(vstr_add_netstr2_end): Make ASCII everywhere.
+
+	* include/vstr-def.h (Vstr_base): Saved some space.
+
+	* src/vstr_fmt.c 
+
+	* src/vstr_conv.c (vstr_conv_unprintable): Added function (not atomic
+	atm.)
+	(vstr_conv_lowercase): Added function (not atomic atm.)
+	(vstr_conv_uppercase): Added function (not atomic atm.)
+
+2002-01-05  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_make_conf): Bookkeep when a non Vstr_base has a
+	reference to a conf.
+
+2001-12-30  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_make_conf): Change default buf_sz, given size_cmp
+	documentation.
+
+2001-12-27  James Antill  <james@and.org>
+
+	* src/vstr_cmp.c (vstr__cmp_memcasecmp): Make ASCII everywhere.
+
 2001-12-07  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_free_base): Remove test on vstr_del() for all of
+	the Vstr.
+
+	* src/vstr_cstr.c (vstr__export_cstr): Allow len == 0, when Vstr_base
+	is empty. This is so you can always do 
+	vstr_export_vstr_*(a, 1, a->len); and not get assert() fails.
+
+
+	* src/vstr_del.c (vstr_del): Allow len == 0, when Vstr_base is empty.
+	This is so you can always do vstr_del(a, 1, a->len); and not get
+	assert() fails.
 
 	* src/vstr_fmt.c (vstr__fmt_write_spec): Fix use of thousands sep. in
 	asprintf call.

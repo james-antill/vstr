@@ -21,38 +21,39 @@
 /* function to add data to a vstr */
 #include "main.h"
 
-static int vstr__base_iovec_add_end(Vstr_base *base, Vstr_node *node,
-                                    unsigned int len)
+static int vstr__cache_iovec_add_end(Vstr_base *base, Vstr_node *node,
+                                     unsigned int len)
 {
  char *tmp = NULL;
  
  if (!base->iovec_upto_date)
    return (TRUE);
  
- if (!vstr__base_iovec_alloc(base, base->num))
+ if (!vstr__cache_iovec_alloc(base, base->num))
    return (FALSE);
 
  tmp = vstr__export_node_ptr(node);
  if (node == base->beg)
    tmp += base->used;
  
- base->vec.v[base->vec.off + base->num - 1].iov_len = len;
- base->vec.v[base->vec.off + base->num - 1].iov_base = tmp;
+ base->cache->vec->v[base->cache->vec->off + base->num - 1].iov_len = len;
+ base->cache->vec->v[base->cache->vec->off + base->num - 1].iov_base = tmp;
+ base->cache->vec->t[base->cache->vec->off + base->num - 1] = node->type;
 
  return (TRUE);
 }
 
-static void vstr__base_iovec_add_node_end(Vstr_base *base, unsigned int num,
-                                          unsigned int len)
+static void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
+                                           unsigned int len)
 {
  if (!base->iovec_upto_date)
    return;
 
- base->vec.v[num - 1].iov_len += len;
+ base->cache->vec->v[num - 1].iov_len += len;
 }
 
-static int vstr__base_iovec_maybe_add_end(Vstr_base *base, Vstr_node *node,
-                                          unsigned int len)
+static int vstr__cache_iovec_maybe_add_end(Vstr_base *base, Vstr_node *node,
+                                           unsigned int len)
 {
  if (!base->conf->iovec_auto_update)
    base->iovec_upto_date = FALSE;
@@ -62,8 +63,8 @@ static int vstr__base_iovec_maybe_add_end(Vstr_base *base, Vstr_node *node,
 
  if (base->iovec_upto_date)
  {
-  if (base->num <= (base->vec.sz - base->vec.off))
-    return (vstr__base_iovec_add_end(base, node, len));
+  if (base->num <= (base->cache->vec->sz - base->cache->vec->off))
+    return (vstr__cache_iovec_add_end(base, node, len));
   else
     base->iovec_upto_date = FALSE;
  }
@@ -168,7 +169,7 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
    memcpy(((Vstr_node_buf *)scan)->buf + scan->len, buffer, tmp);
    scan->len += tmp;
    
-   vstr__base_iovec_add_node_end(base, num, tmp);
+   vstr__cache_iovec_add_node_end(base, num, tmp);
    
    base->len += tmp;
    buffer = ((char *)buffer) + tmp;
@@ -217,7 +218,7 @@ int vstr_add_buf(Vstr_base *base, size_t pos,
   memcpy(((Vstr_node_buf *)scan)->buf, buffer, tmp);
   scan->len = tmp;
 
-  if (!vstr__base_iovec_maybe_add_end(base, scan, tmp))
+  if (!vstr__cache_iovec_maybe_add_end(base, scan, tmp))
   {
    vstr__add_fail_cleanup(base, pos_scan, pos_scan_next,
                           num, len, orig_pos_scan_len);
@@ -309,7 +310,7 @@ int vstr_add_ptr(Vstr_base *base, size_t pos,
  ((Vstr_node_ptr *)scan)->ptr = ptr;
  scan->len = len;
 
- if (!vstr__base_iovec_maybe_add_end(base, scan, len))
+ if (!vstr__cache_iovec_maybe_add_end(base, scan, len))
  {
   vstr__add_fail_cleanup(base, pos_scan, pos_scan_next,
                          num, len, pos_scan->len);
@@ -364,7 +365,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
   {
    scan->len += len;
    base->len += len;
-   vstr__base_iovec_add_node_end(base, num, len);
+   vstr__cache_iovec_add_node_end(base, num, len);
    return (TRUE);
   }
   
@@ -398,7 +399,7 @@ int vstr_add_non(Vstr_base *base, size_t pos, size_t len)
  scan->type = VSTR_TYPE_NODE_NON;
  scan->len = len;
 
- if (!vstr__base_iovec_maybe_add_end(base, scan, len))
+ if (!vstr__cache_iovec_maybe_add_end(base, scan, len))
  {
   vstr__add_fail_cleanup(base, pos_scan, pos_scan_next,
                          num, len, pos_scan->len);
@@ -482,7 +483,7 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
  ((Vstr_node_ref *)scan)->off = off;
  scan->len = len;
 
- if (!vstr__base_iovec_maybe_add_end(base, scan, len))
+ if (!vstr__cache_iovec_maybe_add_end(base, scan, len))
  {
   vstr__add_fail_cleanup(base, pos_scan, pos_scan_next,
                          num, len, pos_scan->len);
@@ -512,14 +513,19 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
   Vstr_node **scan = &base->beg;
   Vstr_ref *ref = NULL;
   Vstr_node *ref_node = NULL;
+  unsigned int num = 0;
   
   /* hand coded vstr__base_pos() because we need a double ptr */
   pos += base->used;
+
+  if (base->iovec_upto_date)
+    num += base->cache->vec->off;
   
   while (*scan && (pos > (*scan)->len))
   {
     pos -= (*scan)->len;
     scan = &(*scan)->next;
+    ++num;
   }
   len += pos - 1;
     
@@ -553,10 +559,15 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
       if (!(ref_node->next = (*scan)->next))
         base->end = ref_node;
 
-      /* FIXME: hack */
+      /* FIXME: hack alteration of type of node */
       if (base->cache && base->cache->pos.node &&
           (base->cache->pos.node == *scan))
         base->cache->pos.node = ref_node;
+      if (base->iovec_upto_date)
+      {
+        assert(base->cache->vec->t[num] == VSTR_TYPE_NODE_BUF);
+        base->cache->vec->t[num] = VSTR_TYPE_NODE_REF;
+      }
       
       *scan = ref_node;
     }
@@ -566,6 +577,7 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
     len -= (*scan)->len;
     
     scan = &(*scan)->next;
+    ++num;
   }
   assert(!len || (*scan && ((*scan)->len >= len)));
   
@@ -769,6 +781,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
 {
   unsigned int sz = max;
   struct iovec *iovs = NULL;
+  unsigned char *types = NULL;
   size_t bytes = 0;
   Vstr_node *scan = NULL;
   
@@ -794,12 +807,13 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   if (sz > base->conf->spare_buf_num)
     sz = base->conf->spare_buf_num;
   
-  if (!vstr__base_iovec_alloc(base, base->num + sz))
+  if (!vstr__cache_iovec_alloc(base, base->num + sz))
     return (0);
   
-  vstr__base_iovec_valid(base);
+  vstr__cache_iovec_valid(base);
   
-  iovs = base->vec.v + base->vec.off;
+  iovs = base->cache->vec->v + base->cache->vec->off;
+  types = base->cache->vec->t + base->cache->vec->off;
   *num = 0;
   
   if (pos)
@@ -829,6 +843,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
         ++sz;
       
       iovs += scan_num - 1;
+      types += scan_num - 1;
       
       iovs[0].iov_len = (base->conf->buf_sz - pos);
       iovs[0].iov_base = (((Vstr_node_buf *)scan)->buf + pos);
@@ -841,6 +856,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
     else
     {
       iovs += scan_num;
+      types += scan_num;
       
       if (scan != base->end)
       {
@@ -861,6 +877,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
     
     iovs[*num].iov_len = base->conf->buf_sz;
     iovs[*num].iov_base = ((Vstr_node_buf *)scan)->buf;
+    types[*num] = VSTR_TYPE_NODE_BUF;
     
     bytes += iovs[*num].iov_len;
     ++*num;
@@ -875,6 +892,7 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
 void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
 {
   struct iovec *iovs = NULL;
+  unsigned char *types = NULL;
   unsigned int count = 0;
   Vstr_node *scan = NULL;
   Vstr_node **adder = NULL;
@@ -884,14 +902,16 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
   
   base->len += bytes;
   
-  iovs = base->vec.v + base->vec.off;
+  iovs = base->cache->vec->v + base->cache->vec->off;
+  types = base->cache->vec->t + base->cache->vec->off;
   if (pos)
   {
     unsigned int scan_num = 0;
     
     scan = vstr__base_pos(base, &pos, &scan_num, TRUE);
     iovs += scan_num - 1;
-
+    types += scan_num - 1;
+    
     assert(pos == scan->len);
     
     if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
@@ -914,7 +934,7 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
       
       scan->len += first_iov_len;
 
-      vstr__base_iovec_reset_node(base, scan, scan_num);
+      vstr__cache_iovec_reset_node(base, scan, scan_num);
 
       bytes -= first_iov_len;
     }
@@ -925,7 +945,8 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
     }
     
     ++iovs;
-
+    ++types;
+    
     adder = &scan->next;
   }
   else
@@ -947,6 +968,7 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
       {
         iovs[count].iov_len = scan->len;
         iovs[count].iov_base = vstr__export_node_ptr(scan);
+        types[count] = scan->type;
         
         ++count;
         scan = scan->next;
@@ -1012,6 +1034,7 @@ void vstr_add_iovec_buf_end(Vstr_base *base, size_t pos, size_t bytes)
     {
       iovs[count].iov_len = tmp->len;
       iovs[count].iov_base = vstr__export_node_ptr(tmp);
+      types[count] = tmp->type;
       
       ++count;
       tmp = tmp->next;

@@ -1,6 +1,6 @@
 #define VSTR_SPN_C
 /*
- *  Copyright (C) 1999, 2000, 2001  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
  *  
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -131,21 +131,23 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
                                      const char *spn_buf, size_t spn_len)
 {
   unsigned int num = 0;
+  unsigned int type = 0;
   size_t ret = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
   
-  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &scan_str, &scan_len))
+  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &type,
+                               &scan_str, &scan_len))
     return (0);
   
   do
   {
     size_t count = 0;
     
-    if (!scan_str && spn_buf)
+    if ((type == VSTR_TYPE_NODE_NON) && spn_buf)
       return (ret);
     
-    if (!scan_str)
+    if (type == VSTR_TYPE_NODE_NON)
     {
       assert(!spn_buf);
       goto next_loop;
@@ -164,7 +166,8 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
     
    next_loop:
     ret += scan_len;
-  } while (vstr__base_scan_rev_nxt(base, &len, &num, &scan_str, &scan_len));
+  } while (vstr__base_scan_rev_nxt(base, &len, &num, &type,
+                                   &scan_str, &scan_len));
   
   return (ret);
 }
@@ -172,7 +175,7 @@ static size_t vstr__spn_buf_rev_fast(const Vstr_base *base,
 size_t vstr_spn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                         const char *spn_buf, size_t spn_len)
 {
-  if (!vstr__base_iovec_valid((Vstr_base *)base))
+  if (!vstr__cache_iovec_valid((Vstr_base *)base))
     return (vstr__spn_buf_rev_fast(base, pos, len, spn_buf, spn_len));
   
   return (vstr__spn_buf_rev_slow(base, pos, len, spn_buf, spn_len));
@@ -284,21 +287,23 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
                                       const char *spn_buf, size_t spn_len)
 {
   unsigned int num = 0;
+  unsigned int type = 0;
   size_t ret = 0;
   char *scan_str = NULL;
   size_t scan_len = 0;
   
-  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &scan_str, &scan_len))
+  if (!vstr__base_scan_rev_beg(base, pos, &len, &num, &type,
+                               &scan_str, &scan_len))
     return (0);
   
   do
   {
     size_t count = 0;
     
-    if (!scan_str && spn_buf)
+    if ((type == VSTR_TYPE_NODE_NON) && spn_buf)
       return (ret);
     
-    if (!scan_str)
+    if (type == VSTR_TYPE_NODE_NON)
     {
       assert(!spn_buf);
       goto next_loop;
@@ -317,7 +322,8 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
     
    next_loop:
     ret += scan_len;
-  } while (vstr__base_scan_rev_nxt(base, &len, &num, &scan_str, &scan_len));
+  } while (vstr__base_scan_rev_nxt(base, &len, &num, &type,
+                                   &scan_str, &scan_len));
   
   return (ret);
 }
@@ -325,7 +331,7 @@ static size_t vstr__cspn_buf_rev_fast(const Vstr_base *base,
 size_t vstr_cspn_buf_rev(const Vstr_base *base, size_t pos, size_t len,
                          const char *cspn_buf, size_t cspn_len)
 {  
-  if (!vstr__base_iovec_valid((Vstr_base *)base))
+  if (!vstr__cache_iovec_valid((Vstr_base *)base))
     return (vstr__cspn_buf_rev_fast(base, pos, len, cspn_buf, cspn_len));
   
   return (vstr__cspn_buf_rev_slow(base, pos, len, cspn_buf, cspn_len));

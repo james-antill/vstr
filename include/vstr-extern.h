@@ -35,6 +35,7 @@ extern void vstr_ref_del_ref(struct Vstr_ref *);
 extern int vstr_init(void);
 
 extern struct Vstr_conf *vstr_make_conf(void);
+extern void vstr_free_conf(struct Vstr_conf *);
 
 extern int vstr_init_base(struct Vstr_conf *, struct Vstr_base *);
 extern struct Vstr_base *vstr_make_base(struct Vstr_conf *);
@@ -95,6 +96,13 @@ extern int vstr_sub_ref(struct Vstr_base *, size_t, size_t,
 extern int vstr_sub_vstr(struct Vstr_base *, size_t, size_t,
                          const struct Vstr_base *, size_t, size_t,
                          unsigned int);
+
+/* convertion functions */
+extern int vstr_conv_lowercase(struct Vstr_base *, size_t, size_t);
+extern int vstr_conv_uppercase(struct Vstr_base *, size_t, size_t);
+extern int vstr_conv_unprintable(struct Vstr_base *, size_t, size_t,
+                                 unsigned int, char);
+
 
 /* move functions */
 extern int vstr_mov(struct Vstr_base *, size_t,

@@ -24,6 +24,9 @@
 static int vstr__export_cstr(const Vstr_base *base, size_t pos, size_t len)
 {
  struct Vstr__cstr_ref *ref = NULL;
+
+ assert(base && pos && ((pos + len - 1) <= base->len));
+ assert(len || (!base->len && (pos == 1)));
  
  if (!base->cache)
  {
@@ -44,8 +47,9 @@ static int vstr__export_cstr(const Vstr_base *base, size_t pos, size_t len)
  ref->ref.func = vstr_ref_cb_free_ref;
  ref->ref.ptr = ref->buf;
  ref->ref.ref = 1;
- 
- vstr_export_buf(base, pos, len, ref->buf);
+
+ if (len)
+   vstr_export_buf(base, pos, len, ref->buf);
  ref->buf[len] = 0;
 
  base->cache->cstr.ref = &ref->ref;

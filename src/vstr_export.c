@@ -28,10 +28,10 @@ size_t vstr_export_iovec_ptr_all(const Vstr_base *base,
  if (!base->num || !iovs || !ret_num)
    return (0);
 
- if (!vstr__base_iovec_valid((Vstr_base *)base))
+ if (!vstr__cache_iovec_valid((Vstr_base *)base))
    return (0);
 
- *iovs = base->vec.v + base->vec.off;
+ *iovs = base->cache->vec->v + base->cache->vec->off;
 
  *ret_num = base->num;
  

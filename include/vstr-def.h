@@ -73,6 +73,18 @@ VSTR__DECL_TYPEDEF1(struct Vstr_node_ref)
  unsigned int off;
 } VSTR__DECL_TYPEDEF2(Vstr_node_ref);
 
+
+VSTR__DECL_TYPEDEF1(struct Vstr_locale)
+{
+  char *name_lc_numeric_str; /* private */
+  char *decimal_point_str; /* private */
+  char *thousands_sep_str; /* private */
+  char *grouping; /* private */
+  size_t name_lc_numeric_len; /* private */
+  size_t decimal_point_len; /* private */
+  size_t thousands_sep_len; /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_locale);
+
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
  unsigned int spare_buf_num; /* private */
@@ -87,34 +99,38 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
  unsigned int spare_ref_num; /* private */
  struct Vstr_node_ref *spare_ref_beg; /* private */
 
- /* FIXME: struct Vstr_locale *cur_locale; */
+ struct Vstr_locale *loc; /* private */
  
  unsigned int iov_min_alloc; /* private */
  unsigned int iov_min_offset; /* private */
  
  unsigned int buf_sz; /* private */
 
+ int ref; /* private */
+ 
  unsigned int free_do : 1; /* private */
  unsigned int malloc_bad : 1; /* public/read */
  unsigned int iovec_auto_update : 1; /* private */
  unsigned int split_buf_del : 1; /* private */
- 
- VSTR__DEF_BITFLAG_1_4(2); /* private */
+
+ unsigned int no_node_ref : 2; /* private */
+ unsigned int unused03 : 1; /* private */
+ unsigned int unused04 : 1; /* private */
+
  VSTR__DEF_BITFLAG_1_4(3); /* private */
  VSTR__DEF_BITFLAG_1_4(4); /* private */
  VSTR__DEF_BITFLAG_1_4(5); /* private */
  VSTR__DEF_BITFLAG_1_4(6); /* private */
  VSTR__DEF_BITFLAG_1_4(7); /* private */
  VSTR__DEF_BITFLAG_1_4(8); /* private */
- 
- int ref; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
 
 VSTR__DECL_TYPEDEF1(struct Vstr_iovec)
 {
  struct iovec *v; /* private */
- /* num == base->num, or base->conf->spare_buf_num */
+ unsigned char *t; /* private */
+ /* num == base->num */
  unsigned int off; /* private */
  unsigned int sz; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_iovec);
@@ -134,6 +150,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_cache)
   unsigned int num; /* private */
   struct Vstr_node *node; /* private */
  } pos; /* private */
+
+ struct Vstr_iovec *vec; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_cache);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)
@@ -143,8 +161,6 @@ VSTR__DECL_TYPEDEF1(struct Vstr_base)
  
  size_t len; /* public/read -- bytes in vstr */
  unsigned int num; /* public/read -- nodes for export_iovec */
- 
- struct Vstr_iovec vec; /* private */
 
  struct Vstr_conf *conf; /* public/read */
 

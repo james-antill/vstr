@@ -1,7 +1,8 @@
    ABOUT
 
  This is a string library, it's designed so you can work optimally
-with readv()/writev() for input/output.
+with readv()/writev() for input/output. It has features somewhat like
+the C++ STL rope (http://www.sgi.com/tech/stl/Rope.html) code.
 
    INTRODUCTION
 
