@@ -33,9 +33,16 @@ static unsigned int cmp(size_t boff, size_t blen,
   TST_B_TST(ret, 1,
             !((vtotlen == s1->len) &&
               VSTR_CMP_BUF_EQ(s1, voff, vlen, g + boff, blen)));
-
+  
   A_PTR(s1);
-  vstr_conv_unprintable_del(s1, 1, s1->len, flags);
+  do
+  {
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_PTR, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_conv_unprintable_del(s1, 1, s1->len, flags));
+  tst_mfail_num(0);
+  
   TST_B_TST(ret, 2,
             !((vtotlen == s1->len) &&
               VSTR_CMP_BUF_EQ(s1, voff, vlen, g + boff, blen)));
@@ -53,7 +60,13 @@ static unsigned int cmp(size_t boff, size_t blen,
             !VSTR_CMP_BUF_EQ(s1, 1, s1->len, g, UCHAR_MAX + 1));
 
   A_PTR(s1);
-  vstr_conv_unprintable_chr(s1, 1, s1->len, flags, 'X');
+  do
+  {
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_PTR, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_conv_unprintable_chr(s1, 1, s1->len, flags, 'X'));
+  tst_mfail_num(0);
   TST_B_TST(ret, 4,
             !VSTR_CMP_BUF_EQ(s1, 1, s1->len, g, UCHAR_MAX + 1));
 

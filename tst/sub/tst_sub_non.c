@@ -35,6 +35,24 @@ int tst(void)
   TST_B_TST(ret, 5, !vstr_sub_non(s1, 1, s1->len, 0));
   TST_B_TST(ret, 6, (s1->len != 0));
   TST_B_TST(ret, 7, (s1->num != 0));
-  
+
+  vstr_del(s1, 1, s1->len);
+  vstr_add_non(s1, 0, 128);
+
+  mfail_count = 0;
+  do
+  {
+    ASSERT(vstr_cmp_buf_eq(s1, 1, s1->len, NULL, 128));
+
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_PTR, 1000);
+    vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_NON, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!vstr_add_ptr(s1, 64, "", 1));
+  tst_mfail_num(0);
+
+  TST_B_TST(ret,  8, !VSTR_CMP_BUF_EQ(s1,  1, 64, NULL, 64));
+  TST_B_TST(ret,  9, !VSTR_CMP_BUF_EQ(s1, 65,  1,   "",  1));
+  TST_B_TST(ret, 10, !VSTR_CMP_BUF_EQ(s1, 66, 64, NULL, 64));
+
   return (TST_B_RET(ret));
 }

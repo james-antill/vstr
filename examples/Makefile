@@ -88,19 +88,24 @@ endif
 FILES= ex_cat \
   ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
   ex_hexdump ex_nl ex_rot13 ex_yes ex_mon_cp ex_lookup_ip \
-  ex_csv ex_highlight ex_ssi \
+  ex_csv ex_highlight ex_ssi ex_netstr ex_rainbow \
   ex_perf_nodesize \
   ex_perf_nodesize_foreach \
   $(GMP_APPS) \
   $(ZCAT) \
   $(TIMER_Q_PROGS) \
   $(SSL_PROGS)
+HTML=$(patsubst %.c,html/%.c.html,$(wildcard *.c)) $(patsubst %.h,html/%.h.html,$(wildcard *.h))
 
-all: $(FILES)
+all: $(FILES) $(HTML)
 
 ex%.o: ex%.c
 		@echo "Compiling $<"
 		@$(CC) $(EX_CFLAGS) -o $@ -c $<
+
+html/ex%.html: ex% ex_highlight
+		@echo "Converting to HTML $<"
+		@./ex_highlight --cssfile=f_c.css $< > $@
 
 ex%: ex%.o
 		@echo "Linking $@"

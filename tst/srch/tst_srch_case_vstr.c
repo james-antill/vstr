@@ -7,6 +7,10 @@ static int ret = 0;
 
 static void tst_srch_vstr(Vstr_base *t1, unsigned int off)
 {
+  Vstr_base *sx = vstr_make_base(t1->conf);
+
+  ASSERT(sx);
+  
   TST_B_TST(ret, off + 1,
             vstr_srch_case_vstr_fwd(t1, 1, t1->len, s2, 1, 4) != lens_fwd[0]);
   TST_B_TST(ret, off + 2,
@@ -36,6 +40,18 @@ static void tst_srch_vstr(Vstr_base *t1, unsigned int off)
   
   ASSERT(!vstr_srch_case_vstr_fwd(t1, 4, t1->len - 3, s2, 1, s2->len / 2));
   ASSERT(!vstr_srch_case_vstr_rev(t1, 4, t1->len - 3, s2, 1, s2->len / 2));
+
+  vstr_add_rep_chr(sx, 0, 'C', 4);
+  
+  ASSERT(!vstr_srch_case_vstr_fwd(t1, 1, t1->len, sx, 1, sx->len));
+  ASSERT(!vstr_srch_case_vstr_rev(t1, 1, t1->len, sx, 1, sx->len));
+
+  vstr_add_non(sx, 0, 1);
+  
+  ASSERT(!vstr_srch_case_vstr_fwd(t1, 1, t1->len, sx, 1, sx->len));
+  ASSERT(!vstr_srch_case_vstr_rev(t1, 1, t1->len, sx, 1, sx->len));
+
+  vstr_free_base(sx);
 }
 
 int tst(void)

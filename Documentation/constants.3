@@ -1,4 +1,4 @@
-.TH vstr_const 3 "15-Dec-2003" "Vstr 1.0.11" "Vstr String Library"
+.TH vstr_const 3 "26-Jan-2004" "Vstr 1.0.12" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -2332,7 +2332,7 @@ Type\fB[1]\fR: struct Vstr_conf *
 \fBNote:\fR
 
 .br
-  This will only return successfully if either the Vstr string is empty, or the Vstr configurations have the same value for the NUM_BUF_SZ attribute and the new configuration has the same caches registered. See vstr_swap_cache() for a function that tries to do what you want.
+  This will only return successfully if either the Vstr string is empty, or the Vstr configurations have the same value for the _NUM_BUF_SZ attribute and the new configuration has the same caches registered. See vstr_swap_cache() for a function that tries to do what you want.
 .br
   If the Vstr configuration (Parameter[1]) is NULL, then the default Vstr configuration will be used.
 
@@ -2379,6 +2379,11 @@ Type\fB[1]\fR: unsigned int *
 
 .br
   This option will get the size of the allocated portion of a _BUF type node.
+.sp
+\fBNote:\fR
+
+.br
+  The default value of this attribute is currently 48, the reason for this is that 8 bytes are used for generic node storage and 8 more bytes are overhead used as in glibc's malloc() implementation. This means that 64 bytes are allocated for each node of data. Looking at the data given in the size_cmp  spreadsheet and the ex_perf_nodesize example my guess is that node sizes above 512 probably gain very little, while consumiung more space.
 
 .br
 \fBConstant: \fR VSTR_CNTL_CONF_SET_NUM_BUF_SZ

@@ -1,6 +1,6 @@
 #define VSTR_SPN_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,8 @@ size_t vstr_spn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   Vstr_iter iter[1];
   size_t ret = 0;
 
+  ASSERT_RET(base, 0);
+  
   if (!spn_chrs && !base->node_non_used)
     return (0);
 
@@ -97,13 +99,12 @@ size_t vstr_spn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   return (ret);
 }
 
-/* go through fwd, reset everytime it fails then start doing it again */
 #if 0
-static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
+static size_t VSTR__ATTR_I() vstr__spn_chrs_rev_slow(const Vstr_base *base,
                                       size_t pos, size_t len,
-                                      const char *spn_chrs, size_t spn_len)
-    VSTR__ATTR_I();
+                                      const char *spn_chrs, size_t spn_len);
 #endif
+/* go through fwd, reset everytime it fails then start doing it again */
 static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
                                       size_t pos, size_t len,
                                       const char *spn_chrs, size_t spn_len)
@@ -212,6 +213,8 @@ static size_t vstr__spn_chrs_rev_fast(const Vstr_base *base,
 size_t vstr_spn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
                          const char *spn_chrs, size_t spn_len)
 {
+  ASSERT_RET(base, 0);
+  
   if (base->iovec_upto_date)
     return (vstr__spn_chrs_rev_fast(base, pos, len, spn_chrs, spn_len));
 
@@ -224,6 +227,7 @@ size_t vstr_cspn_chrs_fwd(const Vstr_base *base, size_t pos, size_t len,
   Vstr_iter iter[1];
   size_t ret = 0;
 
+  ASSERT_RET(base, 0);
   if (!cspn_chrs && !base->node_non_used)
     return (len);
 
@@ -369,6 +373,8 @@ static size_t vstr__cspn_chrs_rev_fast(const Vstr_base *base,
 size_t vstr_cspn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
                           const char *cspn_chrs, size_t cspn_len)
 {
+  ASSERT_RET(base, 0);
+  
   if (!cspn_chrs && !base->node_non_used)
     return (len);
 

@@ -11,6 +11,7 @@ static void tst_b(Vstr_base *t1, unsigned int off)
   unsigned long lu = 0;
   size_t        zu = 0;
   uintmax_t     ju = 0;
+  size_t set = 0;
   
   vstr_del(t1, 1, t1->len);
   vstr_add_fmt(t1, 0, "$06{B.u:%u}", 1);
@@ -62,232 +63,256 @@ static void tst_b(Vstr_base *t1, unsigned int off)
   lu = 0xFF00F0UL;
   zu = 0xAFF00F0UL;
   ju = 0xA5FF00F0UL;
-  
+
+while (set <= 128)
+{
+  vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$#012{B.u:%u}", u));
+  } while (!vstr_add_fmt(t1, t1->len, "$#012{B.u:%u}", u));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "0B0011110000"));
+  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set, "0B0011110000"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$#-12{b.u:%u}", u));
+  } while (!vstr_add_fmt(t1, t1->len, "$#-12{b.u:%u}", u));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "0b11110000  "));
+  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set, "0b11110000  "));
   if (ret) PRNT_VSTR(t1);
 
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-12{B.u:%u}", u));
+  } while (!vstr_add_fmt(t1, t1->len, "$-12{B.u:%u}", u));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "11110000    "));
+  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set, "11110000    "));
   if (ret) PRNT_VSTR(t1);
 
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$#12{b.u:%u}", u));
+  } while (!vstr_add_fmt(t1, t1->len, "$#12{b.u:%u}", u));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len, "  0b11110000"));
+  TST_B_TST(ret, off +  6, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set, "  0b11110000"));
   if (ret) PRNT_VSTR(t1);
 
   /* lu */
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$#.28{b.lu:%lu}", lu));
+  } while (!vstr_add_fmt(t1, t1->len, "$#.28{b.lu:%lu}", lu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "0b0000111111110000000011110000"));
   if (ret) PRNT_VSTR(t1);
 
   vstr_del(t1, 1, t1->len);  
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-38.{B.lu:%lu}||", lu));
+  } while (!vstr_add_fmt(t1, t1->len, "$-38.{B.lu:%lu}||", lu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "111111110000000011110000              ||"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$#28{b.lu:%lu}", lu));
+  } while (!vstr_add_fmt(t1, t1->len, "$#28{b.lu:%lu}", lu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "  0b111111110000000011110000"));
   if (ret) PRNT_VSTR(t1);
 
   vstr_del(t1, 1, t1->len);  
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "||$38.{B.lu:%lu}||", lu));
+  } while (!vstr_add_fmt(t1, t1->len, "||$38.{B.lu:%lu}||", lu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  7, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "||              111111110000000011110000||"));
   if (ret) PRNT_VSTR(t1);
   
   /* zu */
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-38.{B.zu:%zu}||", zu));
+  } while (!vstr_add_fmt(t1, t1->len, "$-38.{B.zu:%zu}||", zu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "1010111111110000000011110000          ||"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-38.{b.zu:%zu}||", zu));
+  } while (!vstr_add_fmt(t1, t1->len, "$-38.{b.zu:%zu}||", zu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "1010111111110000000011110000          ||"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$38.{B.zu:%zu}", zu));
+  } while (!vstr_add_fmt(t1, t1->len, "$38.{B.zu:%zu}", zu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "          1010111111110000000011110000"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "||$38.{b.zu:%zu}||", zu));
+  } while (!vstr_add_fmt(t1, t1->len, "||$38.{b.zu:%zu}||", zu));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  8, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "||          1010111111110000000011110000||"));
   if (ret) PRNT_VSTR(t1);
   
   /* ju */
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-38.{B.ju:%ju}||", ju));
+  } while (!vstr_add_fmt(t1, t1->len, "$-38.{B.ju:%ju}||", ju));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "10100101111111110000000011110000      ||"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$-38.{b.ju:%ju}||", ju));
+  } while (!vstr_add_fmt(t1, t1->len, "$-38.{b.ju:%ju}||", ju));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "10100101111111110000000011110000      ||"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$38.{B.ju:%ju}", ju));
+  } while (!vstr_add_fmt(t1, t1->len, "$38.{B.ju:%ju}", ju));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "      10100101111111110000000011110000"));
   if (ret) PRNT_VSTR(t1);
   
   vstr_del(t1, 1, t1->len);
+  vstr_add_rep_chr(t1, 0, 'x', set);
   mfail_count = 0;
   do
   {
-    ASSERT(!t1->len);
+    ASSERT(vstr_cmp_buf_eq(t1, 1, t1->len, buf, set));
     vstr_free_spare_nodes(t1->conf, VSTR_TYPE_NODE_BUF, 1000);
     tst_mfail_num(++mfail_count);
-  } while (!vstr_add_fmt(t1, 0, "$38.{b.ju:%ju}", ju));
+  } while (!vstr_add_fmt(t1, t1->len, "$38.{b.ju:%ju}", ju));
   tst_mfail_num(0);
 
-  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, 1, t1->len,
+  TST_B_TST(ret, off +  9, !VSTR_CMP_CSTR_EQ(t1, set + 1, t1->len - set,
                                              "      10100101111111110000000011110000"));
   if (ret) PRNT_VSTR(t1);
+
+  ++set;
+}
 }
 
 int tst(void)
 {
+  memset(buf, 'x', sizeof(buf));
+  
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s4->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');

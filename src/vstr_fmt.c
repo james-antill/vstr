@@ -74,15 +74,14 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
 
       if ((scan->name_len == len) &&
           !vstr_wrap_memcmp(scan->name_str, fmt, len))
-        return (scan);
-
-      if (scan->name_len > len)
         break;
+
+      ASSERT_RET(scan->name_len <= len, NULL);
 
       scan = scan->next;
     }
 
-    return (NULL);
+    return (scan);
   }
 
   if (!conf->fmt_name_max)

@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -121,10 +121,27 @@ struct Vstr_base; /* fwd declaration for callbacks */
 
 VSTR__DECL_TYPEDEF1(struct Vstr_cache_cb)
 {
-  const char *name;
+  const char *name; /* private */
   void *(*cb_func)(const struct Vstr_base *, size_t, size_t,
-                   unsigned int, void *);
+                   unsigned int, void *); /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_cache_cb);
+
+VSTR__DECL_TYPEDEF1(struct Vstr_data_usr)
+{
+  const char *name; /* private */
+  struct Vstr_ref *data; /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_data_usr);
+
+VSTR__DECL_TYPEDEF1(struct Vstr_ref_grp_ptr)
+{
+ unsigned char make_num; /* private */
+ unsigned char free_num; /* private */
+ unsigned char flags; /* private */
+ 
+ void (*func)(struct Vstr_ref *); /* private */
+ 
+ struct Vstr_ref VSTR__STRUCT_HACK_ARRAY(refs); /* private */
+} VSTR__DECL_TYPEDEF2(Vstr_ref_grp_ptr);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 {
@@ -184,9 +201,17 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
   VSTR__DEF_BITFLAG_1_4(6); /* private */
   VSTR__DEF_BITFLAG_1_4(7); /* private */
   VSTR__DEF_BITFLAG_1_4(8); /* private */
-  
+
+  /* ABI compat... */
   unsigned int spare_base_num; /* private */
   struct Vstr_base *spare_base_beg; /* private */
+  
+  struct Vstr_data_usr *data_usr_ents; /* private */
+  unsigned int data_usr_len; /* private */
+  unsigned int data_usr_sz; /* private */
+
+  struct Vstr_ref_grp_ptr *ref_grp_ptr; /* private */
+  struct Vstr_ref_grp_ptr *ref_grp_buf2ref; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)

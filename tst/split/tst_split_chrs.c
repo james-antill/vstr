@@ -189,8 +189,45 @@ int tst(void)
   TST_B_TST(ret, 26, split8_num != 4);
   sects8->num = 0;
   split8_num = vstr_split_cstr_chrs(s1, 1, s1->len - 1, "!:",
-                                    sects8, 3,
-                                    VSTR_FLAG_SPLIT_BEG_NULL);
+                                    sects8, 5,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  TST_B_TST(ret, 27, split8_num != 0);
 
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_chrs(s1, 1, s1->len - 1, "!:",
+                                    sects8, 5,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_END_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  TST_B_TST(ret, 28, split8_num != 4);
+
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, "a:",
+                                    sects8, 5,
+                                    VSTR_FLAG_SPLIT_BEG_NULL |
+                                    VSTR_FLAG_SPLIT_END_NULL);
+  TST_B_TST(ret, 29, split8_num != 3);
+  
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_chrs(s1, 1, 3, "!:",
+                                    sects8, 0,
+                                    VSTR_FLAG_SPLIT_END_NULL |
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  TST_B_TST(ret, 30, split8_num  != 0);
+  TST_B_TST(ret, 30, sects8->num != 0);
+
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_chrs(s1, 1, s1->len, "a",
+                                    sects8, 0,
+                                    VSTR_FLAG_SPLIT_POST_NULL);
+  
+  TST_B_TST(ret, 30, split8_num  != 2);
+  TST_B_TST(ret, 30, sects8->num != 2);
+  TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 1)->pos != 1));
+  TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 1)->len != 3));
+  TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 2)->pos != 5));
+  TST_B_TST(ret, 30, (VSTR_SECTS_NUM(sects8, 2)->len != 0));
+  
   return (TST_B_RET(ret));
 }

@@ -121,9 +121,6 @@ static void vstr__del_all(Vstr_base *base)
   assert(vstr__check_spare_nodes(base->conf));
   assert(vstr__check_real_nodes(base));
 
-  if (!base->len)
-    return;
-
   scan = &base->beg;
   type = (*scan)->type;
 
@@ -293,7 +290,10 @@ int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
   unsigned int saved_num = 0;
   unsigned int del_nodes = 0;
 
-  assert(base && pos && len && ((pos + len - 1) <= base->len));
+  ASSERT(len); /* inline version deals with !len */
+  ASSERT_RET(base && pos &&
+             ((pos <= base->len) &&
+              (vstr_sc_poslast(pos, len) <= base->len)), FALSE);
 
   assert(pos);
 

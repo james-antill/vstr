@@ -425,10 +425,7 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
     tmp = vstr_parse_uint(base, pos, num_len, 10 | num_flags,
                           &num_len, NULL);
     if (!num_len)
-    {
-      *cidr = scan * 8;
       break;
-    }
 
     pos += num_len;
     len -= num_len;
@@ -446,7 +443,7 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
         return (FALSE);
       }
 
-      if ((tmp != 255) || (scan == 3))
+      if (tmp != 255)
       {
         *cidr = scan * 8;
         switch (tmp)
@@ -483,6 +480,9 @@ static int vstr__parse_ipv4_netmask(const struct Vstr_base *base,
       --len;
     }
   }
+  if (!zero_rest)
+    *cidr = scan * 8;
+  
   if ((flags & VSTR_FLAG_PARSE_IPV4_NETMASK_FULL) && (scan != 4))
   {
     *err = VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL;

@@ -291,9 +291,9 @@ Uses Vstr string library.\n\
     else if (!strcmp("--help", argv[count]))
     { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
-Usage: jhexdump [STRING]...\n\
+Usage: jhexdump [FILENAME]...\n\
    or: jhexdump OPTION\n\
-Repeatedly output a line with all specified STRING(s), or `y'.\n\
+Output filenames in human hexdump format.\n\
 \n\
       --help     Display this help and exit\n\
       --version  Output version information and exit\n\

@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_gmp_nums.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_gmp_nums.c</h1>
+<pre class="c2html">
+<span class="comment">/* libgmp formatters */</span>
+
+<span class="comment">/* we only need output here, so turn off other IO functions */</span>
+#<span class="cppdefine">define</span> EX_UTILS_NO_USE_INPUT 1
+#<span class="cppdefine">define</span> EX_UTILS_NO_USE_OPEN 1
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span> <span class="comment">/* helper functions */</span>
+
+#<span class="cppinclude">include</span> &lt;limits.h&gt;
+#<span class="cppinclude">include</span> &lt;gmp.h&gt;
+#<span class="cppinclude">include</span> &lt;locale.h&gt;
+
+<span class="comment">/* if this is enabled we add the malloc()d string as a reference,
+ * which saves doing an extra copy. */</span>
+#<span class="cppdefine">define</span> EX_GMP_NUMS_USE_REFS <span class="num0">0</span>
+
+<span class="comment">/* This is the custom formatter.
+ * Note that this deals with grouping unlike the gmp_*printf() calls */</span>
+<span class="static">static</span> <span class="int">int</span> ex__usr_mpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec,
+                          <span class="char">char</span> fmt, <span class="const">const</span> <span class="mpzt">mpz_t</span> val)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> nb = 10;
+  <span class="int">int</span> flags = VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM; <span class="comment">/* it's a number */</span>
+  <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+  <span class="int">int</span> ret = <span class="false">FALSE</span>;
+  <span class="char">char</span> ui_buf[sizeof(<span class="unsigned">unsigned</span> <span class="long">long</span>) * CHAR_BIT];
+  <span class="char">char</span> *buf = <span class="null">NULL</span>;
+  <span class="char">char</span> *out_buf = ui_buf;
+  
+  <span class="switch">switch</span> (fmt)
+  {
+    <span class="case">case</span> <span class="chr">'d'</span>:                                                         <span class="break">break</span>;
+    <span class="case">case</span> <span class="chr">'x'</span>: nb = 16; flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L; <span class="break">break</span>;
+    <span class="case">case</span> <span class="chr">'o'</span>: nb =  8; flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM;   <span class="break">break</span>;
+    <span class="case">case</span> <span class="chr">'b'</span>: nb =  2; flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_BINNUM_L; <span class="break">break</span>;
+    <span class="default">default</span>: <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);                                           <span class="break">break</span>;
+  }
+  
+  <span class="if">if</span> (mpz_sgn(val) == <span class="numm1">-1</span>)
+    flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NEG;
+  
+  <span class="if">if</span> (mpz_fits_ulong_p(val))
+    len = vstr_sc_conv_num_ulong(ui_buf, sizeof(ui_buf), mpz_get_ui(val),
+                                 <span class="str">"0123456789abcdef"</span>, nb);
+  <span class="else">else</span>
+  {
+    len = mpz_sizeinbase(val, nb);
+    out_buf = buf = mpz_get_str(<span class="null">NULL</span>, nb, val); <span class="comment">/* dies on malloc error */</span>
+
+    <span class="if">if</span> (mpz_sgn(val) == <span class="numm1">-1</span>) ++out_buf;
+    <span class="if">if</span> (!out_buf[len - 1])  --len; <span class="comment">/* see documentation for mpz_sizeinbase() */</span>
+  }
+
+  <span class="assert">ASSERT</span>(strlen(out_buf) == len);
+  
+  <span class="if">if</span> (!vstr_sc_fmt_cb_beg(base, &amp;pos, spec, &amp;len, flags))
+    <span class="goto">goto</span> mem_fail;
+ 
+  <span class="if">if</span> (spec-&gt;fmt_quote) <span class="comment">/* add number including grouping */</span>
+    ret = vstr_sc_add_grpbasenum_buf(base, pos, nb, out_buf, len);
+  <span class="else">else</span> <span class="if">if</span> (!EX_GMP_NUMS_USE_REFS || !buf) <span class="comment">/* just add the number */</span>
+    ret = vstr_add_buf(base, pos, out_buf, len);
+  <span class="else">else</span>
+  { <span class="comment">/* assumes mp_set_memory_functions() hasn't been called */</span>
+    Vstr_ref *ref = vstr_ref_make_ptr(buf, vstr_ref_cb_free_ptr_ref);
+
+    <span class="if">if</span> (!ref)
+      <span class="goto">goto</span> mem_fail;
+
+    ret = vstr_add_ref(base, pos, ref, out_buf - buf, len);
+    
+    buf = <span class="null">NULL</span>; <span class="comment">/* memory is free'd when the reference is used up */</span>
+
+    <span class="comment">/* if !ret then this will free buf */</span>
+    vstr_ref_del(ref);
+  }
+  
+  <span class="if">if</span> (!ret || !vstr_sc_fmt_cb_end(base, pos, spec, len))
+    <span class="goto">goto</span> mem_fail;
+
+  free(buf);
+  
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+
+ mem_fail:
+  free(buf);
+  <span class="return">return</span> (<span class="false">FALSE</span>);
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_dmpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, <span class="num0">0</span>);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'d'</span>, mpz));
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_ompz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, <span class="num0">0</span>);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'o'</span>, mpz));
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_usr_xmpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, <span class="num0">0</span>);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'x'</span>, mpz));
+}
+
+<span class="comment">/* Extra, do binary output... */</span>
+<span class="static">static</span> <span class="int">int</span> ex_usr_bmpz_cb(<span class="vstrbase">Vstr_base</span> *base, <span class="sizet">size_t</span> pos, <span class="vstrfmt">Vstr_fmt_spec</span> *spec)
+{
+  <span class="void">void</span> *mpz = VSTR_FMT_CB_ARG_PTR(spec, <span class="num0">0</span>);
+
+  <span class="return">return</span> (ex__usr_mpz_cb(base, pos, spec, <span class="chr">'b'</span>, mpz));
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(<span class="null">NULL</span>);
+  <span class="mpzt">mpz_t</span> bignum;
+  <span class="const">const</span> <span class="char">char</span> *loc_num_name = <span class="null">NULL</span>;
+  
+  <span class="if">if</span> (argc &lt; 2)
+    <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"No count specified"</span>);
+
+  vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;dMPZ:%p&gt;"</span>, ex_usr_dmpz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;oMPZ:%p&gt;"</span>, ex_usr_ompz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;xMPZ:%p&gt;"</span>, ex_usr_xmpz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1-&gt;conf, <span class="str">"&lt;bMPZ:%p&gt;"</span>, ex_usr_bmpz_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+
+  setlocale(LC_ALL, <span class="str">""</span>);
+  loc_num_name = setlocale(LC_NUMERIC, <span class="null">NULL</span>);
+  
+  <span class="if">if</span> (!vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_LOC_CSTR_AUTO_NAME_NUMERIC,
+                      loc_num_name))
+    <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Couldn't change numeric locale info"</span>);
+  
+  mpz_init_set_str(bignum, argv[1], <span class="num0">0</span>);
+
+  mpz_abs(bignum, bignum);
+  mpz_neg(bignum, bignum);
+  
+  do
+  {
+    mpz_neg(bignum, bignum);
+
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40d = &lt;$'20.40&lt;dMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> (mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40d = &lt;%'20.40ld&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20d = &lt;$'40.20&lt;dMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> (mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20d = &lt;%'40.20ld&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40o = &lt;$'20.40&lt;oMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40o = &lt;%'20.40lo&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20o = &lt;$'40.20&lt;oMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20o = &lt;%'40.20lo&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40x = &lt;$'20.40&lt;xMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'20.40x = &lt;%'20.40lx&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20x = &lt;$'40.20&lt;xMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%'40.20x = &lt;%'40.20lx&gt;\n"</span>,
+                 mpz_get_si(bignum));
+
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40d   = &lt;$#'40&lt;dMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> (mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40d   = &lt;%#'40ld&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40d  = &lt;$#'-40&lt;dMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> (mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40d  = &lt;%#'-40ld&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40o   = &lt;$#'40&lt;oMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40o   = &lt;%#'40lo&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40o  = &lt;$#'-40&lt;oMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40o  = &lt;%#'-40lo&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40x   = &lt;$#'40&lt;xMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'40x   = &lt;%#'40lx&gt;\n"</span>,
+                 mpz_get_si(bignum));
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40x  = &lt;$#'-40&lt;xMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    <span class="if">if</span> ((mpz_sgn(bignum) != <span class="numm1">-1</span>) &amp;&amp; mpz_fits_slong_p(bignum))
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'-40x  = &lt;%#'-40lx&gt;\n"</span>,
+                 mpz_get_si(bignum));
+
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%%#'b  = &lt;$#'&lt;bMPZ:%p&gt;&gt;\n"</span>,
+                 (<span class="void">void</span> *)bignum);
+    
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'-'</span>, 79);
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\n'</span>, 1);
+    
+  } <span class="while">while</span> (mpz_sgn(bignum) &gt; <span class="num0">0</span>);
+  
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Add string data"</span>);
+  
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, <span class="null">NULL</span>));
+}
+</pre>
+<!-- C to html convertion of ex_gmp_nums.c -->
+<!--   done on Mon Jan 26 05:27:53 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

@@ -16,8 +16,7 @@ int main(void)
 
 #ifndef VSTR_AUTOCONF_HAVE_POSIX_HOST
   return (77); /* Failed .. ok */
-#endif
-
+#else
   if ((fd = open("/dev/null", O_WRONLY)) == -1)
     return (EXIT_FAILURE);
 
@@ -25,6 +24,7 @@ int main(void)
     return (EXIT_FAILURE);
 
   vstr_version_func();
+#endif
 
   return (EXIT_FAILURE);
 }

@@ -61,34 +61,21 @@ size_t vstr_srch_case_chr_fwd(const Vstr_base *base, size_t pos, size_t len,
   return (0);
 }
 
-static size_t vstr__srch_case_chr_rev_slow(const Vstr_base *base,
-                                           size_t pos, size_t len,
-                                           char srch)
-{
-  size_t ret = 0;
-  size_t scan_pos = pos;
-  size_t scan_len = len;
-
-  while ((scan_pos < (pos + len - 1)) &&
-         scan_len)
-  {
-    size_t tmp = vstr_srch_case_chr_fwd(base, scan_pos, scan_len, srch);
-    if (!tmp)
-      break;
-
-    ret = tmp;
-
-    scan_pos = ret + 1;
-    scan_len = len - VSTR_SC_POSDIFF(pos, ret);
-  }
-
-  return (ret);
-}
-
 size_t vstr_srch_case_chr_rev(const Vstr_base *base, size_t pos, size_t len,
-                              char srch)
+                              char passed_srch)
 {
-  return (vstr__srch_case_chr_rev_slow(base, pos, len, srch));
+  char srch[2];
+
+  srch[0] = passed_srch; /* not searching for a case dependant char */
+  if (!VSTR__IS_ASCII_ALPHA(srch[0]))
+    return (vstr_srch_chr_rev(base, pos, len, srch[0]));
+
+  if (VSTR__IS_ASCII_LOWER(srch[0]))
+    srch[1] = VSTR__TO_ASCII_UPPER(srch[0]);
+  else
+    srch[1] = VSTR__TO_ASCII_LOWER(srch[0]);
+  
+  return (vstr_srch_chrs_rev(base, pos, len, srch, 2));
 }
 
 size_t vstr_srch_case_buf_fwd(const Vstr_base *base, size_t pos, size_t len,
@@ -228,7 +215,7 @@ size_t vstr_srch_case_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
                                          iter->ptr, iter->len)))
         return (0);
 
-      assert(tmp > scan_pos);
+      ASSERT(tmp >= scan_pos);
       scan_len -= tmp - scan_pos;
       scan_pos = tmp;
     }

@@ -57,6 +57,15 @@ Vstr_ref *vstr_ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *))
   return (ref);
 }
 
+#ifndef NDEBUG
+static void vstr__ref_cb_free_ref(Vstr_ref *ref)
+{
+  VSTR__F(ref);
+}
+#else
+#define     vstr__ref_cb_free_ref vstr_ref_cb_free_ref
+#endif
+
 Vstr_ref *vstr_ref_make_malloc(size_t len)
 {
   struct Vstr__buf_ref *ref = VSTR__MK(sizeof(Vstr__buf_ref) + len);
@@ -86,32 +95,159 @@ Vstr_ref *vstr_ref_make_memdup(const void *ptr, size_t len)
 static void vstr__ref_cb_free_vstr_base(Vstr_ref *ref)
 {
   vstr_free_base(ref->ptr);
-  VSTR__F(ref);
+  free(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_base(Vstr_base *base)
 {
-  return (vstr__ref_make_ptr(base, vstr__ref_cb_free_vstr_base));
+  return (vstr_ref_make_ptr(base, vstr__ref_cb_free_vstr_base));
 }
 
 static void vstr__ref_cb_free_vstr_conf(Vstr_ref *ref)
 {
   vstr_free_conf(ref->ptr);
-  VSTR__F(ref);
+  free(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_conf(Vstr_conf *conf)
 {
-  return (vstr__ref_make_ptr(conf, vstr__ref_cb_free_vstr_conf));
+  return (vstr_ref_make_ptr(conf, vstr__ref_cb_free_vstr_conf));
 }
 
 static void vstr__ref_cb_free_vstr_sects(Vstr_ref *ref)
 {
   vstr_sects_free(ref->ptr);
-  VSTR__F(ref);
+  free(ref);
 }
 
 Vstr_ref *vstr_ref_make_vstr_sects(Vstr_sects *sects)
 {
-  return (vstr__ref_make_ptr(sects, vstr__ref_cb_free_vstr_sects));
+  return (vstr_ref_make_ptr(sects, vstr__ref_cb_free_vstr_sects));
 }
+
+static void vstr__ref_cb_free_grp_main(Vstr_ref_grp_ptr *parent,
+                                       Vstr_ref *ref, unsigned int off)
+{
+  ASSERT(&parent->refs[off] == ref);
+  
+  parent->func(ref);
+
+  ref->func = NULL;
+
+  ASSERT(parent->free_num <  parent->make_num);
+  ASSERT(parent->make_num <= VSTR__REF_MAKE_PTR_SZ);
+  
+  if (++parent->free_num == parent->make_num)
+  {
+    if (!(parent->flags & VSTR__FLAG_REF_GRP_REF))
+      VSTR__F(parent);
+    else
+    {
+      parent->free_num = 0;
+      parent->make_num = 0;
+    }
+  }
+  else
+  {
+    unsigned int scan = parent->make_num - 1;
+  
+    ASSERT(parent->free_num <  parent->make_num);
+    
+    while (!parent->refs[scan].func)
+    {
+      ASSERT(parent->free_num > 0);
+      
+      --parent->make_num;
+      --parent->free_num;
+      --scan;
+    }
+  }
+}
+
+#define VSTR__REF_GRP_CB(x)                                             \
+    static void vstr__ref_cb_free_grp_ref_ ## x (Vstr_ref *ref)         \
+    {                                                                   \
+      unsigned int off = (x);                                           \
+      Vstr_ref_grp_ptr *parent = NULL;                                  \
+      char *ptr = (char *)(ref - off);                                  \
+                                                                        \
+      ptr -= offsetof(Vstr_ref_grp_ptr, refs);                          \
+      parent = (Vstr_ref_grp_ptr *)ptr;                                 \
+                                                                        \
+      vstr__ref_cb_free_grp_main(parent, ref, off);                     \
+    }
+
+#include "vstr-ref_grp-data.h"
+
+#undef VSTR__REF_GRP_CB
+
+Vstr_ref_grp_ptr *vstr__ref_grp_make(void (*func) (Vstr_ref *),
+                                     unsigned int flags)
+{
+  Vstr_ref_grp_ptr *parent = NULL;
+
+  if (!(parent = VSTR__MK(sizeof(Vstr_ref_grp_ptr) +
+                          (VSTR__REF_MAKE_PTR_SZ * sizeof(Vstr_ref)))))
+    return (NULL);
+
+  parent->make_num = 0;
+  parent->free_num = 0;
+
+  parent->func     = func;
+  parent->flags    = flags | VSTR__FLAG_REF_GRP_REF;
+  
+  return (parent);
+}
+
+void vstr__ref_grp_free(Vstr_ref_grp_ptr *parent)
+{
+  if (!parent)
+    return;
+
+  if (!parent->make_num)
+  {
+    ASSERT(!parent->free_num);
+    VSTR__F(parent);
+    return;
+  }
+  
+  parent->flags &= ~VSTR__FLAG_REF_GRP_REF;
+  
+  ASSERT(parent->make_num == VSTR__REF_MAKE_PTR_SZ);
+  ASSERT(parent->free_num <  VSTR__REF_MAKE_PTR_SZ);
+}
+
+/* needs to be reset each time, so we can tell which are free */
+#define VSTR__REF_GRP_CB(x)                                             \
+    case (x): ref->func = vstr__ref_cb_free_grp_ref_ ## x; break;
+
+Vstr_ref *vstr__ref_grp_add(Vstr_ref_grp_ptr **parent, const void *ptr)
+{
+  Vstr_ref *ref = NULL;
+  
+  ASSERT(parent && *parent);
+  
+  if ((*parent)->make_num == VSTR__REF_MAKE_PTR_SZ)
+  {
+    Vstr_ref_grp_ptr *tmp = NULL;
+    
+    if (!(tmp = vstr__ref_grp_make((*parent)->func, (*parent)->flags)))
+      return (NULL);
+    
+    vstr__ref_grp_free(*parent);
+    *parent = tmp;
+  }
+  
+  ref = &(*parent)->refs[(*parent)->make_num];
+  
+  ref->ref = 1;
+  ref->ptr = (void *)ptr; /* get rid of const */
+  switch ((*parent)->make_num++)
+  {
+#include "vstr-ref_grp-data.h"
+  }
+  
+  return (ref);
+}
+#undef VSTR__REF_GRP_CB
+

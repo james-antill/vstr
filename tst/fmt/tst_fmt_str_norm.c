@@ -13,7 +13,11 @@ int tst(void)
   vstr_add_fmt(s1, 0, t_fmt);
   vstr_add_fmt(s1, 0, "%.*s %.*ls", -1, t_str, -3, t_wstr);
   TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "(null) (null)"));
+  vstr_del(s1, 1, s1->len);
 
+  vstr_add_fmt(s1, 0, "%.*s %.*ls", 1, t_str, 2, t_wstr);
+  TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "( (n"));
+  
   ref = vstr_ref_make_strdup(".");
   ASSERT(ref);
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_LOC_REF_NULL_PTR,
@@ -23,18 +27,18 @@ int tst(void)
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, t_fmt);
   vstr_add_fmt(s1, 0, "%.*s %.*ls", -1, t_str, -3, t_wstr);
-  TST_B_TST(ret, 1, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, ". ."));
+  TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, ". ."));
   
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%-3s%3s%3.1s%-3.1s%.s", "a", "b", "cdef", "def", "abcd");
 
-  TST_B_TST(ret, 2, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
+  TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
 
   vstr_del(s1, 1, s1->len);
   vstr_add_fmt(s1, 0, "%-3ls%3ls%3.1ls%-3.1ls%.ls",
                L"a", L"b", L"cdef", L"def", L"abcd");
 
-  TST_B_TST(ret, 3, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
+  TST_B_TST(ret, 5, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a    bcd"));
 
   {
     int spaces = 2;
@@ -59,11 +63,28 @@ int tst(void)
               "a", spaces, "b", -spaces, "c", "d",
               L"a", spaces, L"b", -spaces, L"c", L"d");
       
-      TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+      TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
       tst_mfail_num(0);
       ++spaces;
     }
   }
+
+  s1->conf->malloc_bad = FALSE;
+  vstr_del(s1, 1, s1->len);
+  vstr_add_fmt(s1, 0, "%.*s %.*ls", 8, "abcd", 32, L"abcd");
+  TST_B_TST(ret, 7, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "abcd abcd"));
+
+  vstr_del(s1, 1, s1->len);
+  ASSERT(!vstr_add_fmt(s1, 0, "%s%lc", "abcd", L'\xFEFE'));
+  ASSERT(!s1->len && !s1->conf->malloc_bad);
+  /* ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd",
+   *                      L"\x80\x80\x80\x80 123456789")); */
+  ASSERT(!vstr_add_fmt(s1, 0, "%s%ls", "abcd", L"\xFEFE 123456789"));
+  ASSERT(!s1->len && !s1->conf->malloc_bad);
+  
+  vstr_add_fmt(s1, 0, "%.*s", 1, L"abcd");
+  TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "a"));
+
   
   return (TST_B_RET(ret));
 }

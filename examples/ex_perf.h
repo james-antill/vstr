@@ -54,7 +54,7 @@
 
 #define TST_END(name) TST__END() \
 		vstr_add_fmt(out, out->len, \
-                             "| %34s | %'8lu.%-6lu | %'16lu |\n", \
+                             "| %34s | %'8lu.%06lu | %'16lu |\n", \
                              (name), \
 		             tv_end.tv_sec  - tv_beg.tv_sec, \
                              tv_end.tv_usec - tv_beg.tv_usec, \

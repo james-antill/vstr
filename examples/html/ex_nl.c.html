@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_nl.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_nl.c</h1>
+<pre class="c2html">
+<span class="comment">/* Unix nl command -- no arguments */</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppdefine">define</span> EX_NL_SECTS_LOOP 32 <span class="comment">/* how many sections to split into per loop */</span>
+#<span class="cppdefine">define</span> EX_NL_USE_SRCH_MOV <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_NL_USE_SPLIT <span class="num0">0</span>
+
+#<span class="cppif">if</span> EX_NL_USE_SPLIT <span class="comment">/* this version using split shouldn't be any slower */</span>
+<span class="static">static</span> <span class="int">int</span> ex_nl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> count = <span class="num0">0</span>;
+  <span class="int">int</span> ret = <span class="false">FALSE</span>;
+  
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="while">while</span> (s2-&gt;len)
+  {
+    <span class="const">const</span> <span class="int">int</span> flags = (VSTR_FLAG_SPLIT_REMAIN |
+                       VSTR_FLAG_SPLIT_BEG_NULL |
+                       VSTR_FLAG_SPLIT_MID_NULL |
+                       VSTR_FLAG_SPLIT_END_NULL |
+                       VSTR_FLAG_SPLIT_NO_RET);
+    VSTR_SECTS_DECL(sects, EX_NL_SECTS_LOOP);
+    <span class="unsigned">unsigned</span> <span class="int">int</span> num = <span class="num0">0</span>;
+
+    VSTR_SECTS_DECL_INIT(sects);
+    vstr_split_buf(s2, 1, s2-&gt;len, <span class="str">"\n"</span>, 1, sects, sects-&gt;sz, flags);
+
+    <span class="if">if</span> ((sects-&gt;num != sects-&gt;sz) &amp;&amp; !last)
+      <span class="return">return</span> (ret);
+
+    <span class="while">while</span> ((++num &lt; EX_NL_SECTS_LOOP) &amp;&amp; (num &lt;= sects-&gt;num))
+    {
+      <span class="sizet">size_t</span> split_pos = VSTR_SECTS_NUM(sects, num)-&gt;pos;
+      <span class="sizet">size_t</span> split_len = VSTR_SECTS_NUM(sects, num)-&gt;len;
+
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">"% 6d\t"</span>, ++count);
+      <span class="if">if</span> (split_len)
+        vstr_add_vstr(s1, s1-&gt;len, s2, split_pos, split_len,
+                      VSTR_TYPE_ADD_BUF_REF);
+      vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
+
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad) <span class="comment">/* checks all three above */</span>
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data"</span>);
+    }
+
+    <span class="if">if</span> (sects-&gt;num != sects-&gt;sz)
+      vstr_del(s2, 1, s2-&gt;len);
+    <span class="else">else</span>
+    {
+      <span class="sizet">size_t</span> pos = VSTR_SECTS_NUM(sects, sects-&gt;num)-&gt;pos;
+      vstr_del(s2, 1, pos - 1);
+    }
+
+    <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      <span class="return">return</span> (<span class="true">TRUE</span>);
+
+    ret = <span class="true">TRUE</span>;
+  }
+
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+}
+#<span class="cppelse">else</span>
+<span class="static">static</span> <span class="int">int</span> ex_nl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> count = <span class="num0">0</span>;
+  <span class="sizet">size_t</span> pos = <span class="num0">0</span>;
+
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="if">if</span> (!s2-&gt;len)
+    <span class="return">return</span> (<span class="true">TRUE</span>);
+
+  <span class="while">while</span> ((pos = vstr_srch_chr_fwd(s2, 1, s2-&gt;len, <span class="chr">'\n'</span>)))
+  {
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"% 6d\t"</span>, ++count);
+
+    <span class="if">if</span> (EX_NL_USE_SRCH_MOV)
+      vstr_mov(s1, s1-&gt;len, s2, 1, pos);
+    <span class="else">else</span>
+    { <span class="comment">/* The flag turns _BUF nodes into sharable _REF nodes */</span>
+      vstr_add_vstr(s1, s1-&gt;len, s2, 1, pos, VSTR_TYPE_ADD_BUF_REF);
+      vstr_del(s2, 1, pos);
+    }
+    
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad) <span class="comment">/* checks all three above */</span>
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data"</span>);
+    
+    <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      <span class="return">return</span> (<span class="true">TRUE</span>);
+  }
+
+  <span class="if">if</span> (s2-&gt;len &amp;&amp; last)
+  {
+    vstr_add_fmt(s1, s1-&gt;len, <span class="str">"% 6d\t"</span>, ++count);
+    <span class="if">if</span> (s2-&gt;len)
+      vstr_mov(s1, s1-&gt;len, s2, 1, s2-&gt;len);
+    vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
+
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad) <span class="comment">/* checks all three above */</span>
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data"</span>);
+  }
+
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+}
+#<span class="cppendif">endif</span>
+
+<span class="comment">/* files are merged */</span>
+<span class="static">static</span> <span class="void">void</span> ex_nl_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> fd)
+{
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+
+    ex_nl_process(s1, s2, <span class="false">FALSE</span>);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_nl_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  {
+    <span class="int">int</span> proc_data = ex_nl_process(s1, s2, !lim);
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(<span class="numm1">-1</span>, <span class="stdout">STDOUT_FILENO</span>);
+  }
+}
+
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2);
+  <span class="int">int</span> count = 1;
+
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_nl_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
+  }
+
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = <span class="num0">0</span>;
+
+    <span class="if">if</span> (s2-&gt;len &lt;= EX_MAX_R_DATA_INCORE)
+      vstr_sc_mmap_file(s2, s2-&gt;len, argv[count], <span class="num0">0</span>, <span class="num0">0</span>, &amp;ern);
+
+    <span class="if">if</span> ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    {
+      <span class="int">int</span> fd = io_open(argv[count]);
+
+      ex_nl_read_fd_write_stdout(s1, s2, fd);
+
+      <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+    }
+    <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add"</span>);
+    <span class="else">else</span>
+      ex_nl_process_limit(s1, s2, EX_MAX_R_DATA_INCORE);
+    
+    ++count;
+  }
+
+  ex_nl_process_limit(s1, s2, <span class="num0">0</span>);
+
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_nl.c -->
+<!--   done on Mon Jan 26 05:27:54 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

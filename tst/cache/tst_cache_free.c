@@ -24,9 +24,9 @@ static void tst_base(Vstr_base *base)
 {
   vstr_add_rep_chr(base, 0, 'X', 1);
   
-  tst_cache_pos = vstr_cache_add(base->conf, "/tst_usr/dummy", tst_cache_cb);
+  tst_cache_pos = vstr_cache_srch(base->conf, "/tst_usr/dummy");
   if (!tst_cache_pos)
-    tst_cache_pos = vstr_cache_srch(base->conf, "/tst_usr/dummy");
+    tst_cache_pos = vstr_cache_add(base->conf, "/tst_usr/dummy", tst_cache_cb);
   ASSERT(tst_cache_pos);
 
   if (vstr_cache_set(base, tst_cache_pos, &dummy))

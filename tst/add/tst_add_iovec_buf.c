@@ -75,5 +75,27 @@ int tst(void)
   vstr_add_iovec_buf_beg(s3, s3->len, 2, 2, &iovs, &num);
   vstr_add_iovec_buf_end(s3, s3->len, 0);
 
-  return (!VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, buf));
+
+  vstr_del(s3, 1, s3->len);
+  vstr_add_cstr_ptr(s3, s3->len, "1234");
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "1234"));
+  assert(vstr_num(s3, 1, s3->len) == 1);
+
+  mfail_count = 0;
+  do
+  {
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_PTR, 1000);
+    tst_mfail_num(++mfail_count);
+  } while (!(len = vstr_add_iovec_buf_beg(s3, 2, 32, 32, &iovs, &num)));
+  tst_mfail_num(0);
+
+  vstr_add_iovec_buf_end(s3, 2, 0);
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "1234"));
+  assert(vstr_num(s3, 1, s3->len) == 2);
+  
+  return (EXIT_SUCCESS);
 }

@@ -38,15 +38,27 @@ int tst(void)
   if (MFAIL_NUM_OK)
   {
     Vstr_ref *ref2 = NULL;
+    Vstr_ref *ref3 = NULL;
+    Vstr_ref *ref4 = NULL;
 
     vstr_add_ptr(s3, 0, ref->ptr, s2->len);
+    
     TST_B_TST(ret, 10, !tst_mfail_num(1));
     TST_B_TST(ret, 11, (ref2 = vstr_export_ref(s3, 1, s3->len, &off)));
-
+    TST_B_TST(ret, 12, !tst_mfail_num(2));
+    TST_B_TST(ret, 13, !(ref2 = vstr_export_ref(s3, 1, s3->len, &off)));
+    TST_B_TST(ret, 14, !(ref3 = vstr_export_ref(s3, 1, s3->len, &off)));
+    TST_B_TST(ret, 15,  (ref4 = vstr_export_ref(s3, 1, s3->len, &off)));
+    
+    vstr_ref_del(ref2);
+    vstr_ref_del(ref3);
+    vstr_ref_del(ref4);
+    
     vstr_del(s3, 1, 8);
     vstr_add_buf(s3, 0, ref->ptr, s2->len);
-    TST_B_TST(ret, 12, !tst_mfail_num(1));
-    TST_B_TST(ret, 13, (ref2 = vstr_export_ref(s3, 2, 2, &off)));
+    TST_B_TST(ret, 19, !tst_mfail_num(1));
+    TST_B_TST(ret, 20, (ref2 = vstr_export_ref(s3, 2, 2, &off)));
+    vstr_ref_del(ref2);
   }
 
   vstr_ref_del(ref);

@@ -164,7 +164,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   int ret = 0;
   va_list ap;
-
+  
   assert(conf->user_ref <= conf->ref);
 
   va_start(ap, option);

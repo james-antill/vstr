@@ -1,5 +1,6 @@
 /* Header file for constants used in floating point <-> decimal conversions.
-   Copyright (C) 1995,1996,1997,1998,1999,2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2002, 2003
+   Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -23,7 +24,7 @@
 #if 0 /* vstr */
 #include <float.h>
 #include <math.h>
-#include "gmp.h"
+#include <gmp.h>
 #endif /* vstr */
 
 

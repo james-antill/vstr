@@ -21,7 +21,6 @@ $c \
   --enable-tst-noassert-loop \
   --enable-tst-noattr-alias \
   --enable-tst-noopt \
-  --enable-debug \
   --enable-wrap-memcpy \
   --enable-wrap-memcmp \
   --enable-wrap-memchr \

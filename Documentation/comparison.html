@@ -73,9 +73,9 @@ IO is easy anywhere into or out of a string, appending and writing from the begi
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
 <!-- sloccount ../src/*.c ../include/vstr-*inline.h ../src/vstr_dbl/vstr_add_fmt_dbl_host.c src/vstr_version.c  -->
 <!-- sloccount ../tst/**/*.c -->
- Small amount of user testing. Testsuite <b>tests all functions and constants</b> ... over 98% coverage of lines of code of implementation (66% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>, with host sprintf for doubles).
+ Small amount of user testing. Testsuite <b>tests all functions and constants</b> ... over 99% coverage of lines of code of implementation (76% size ratio between implementation and testsuite -- <a href="http://www.dwheeler.com/sloccount/">sloccount</a>, with host sprintf for doubles).
  </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
-1.0.11
+1.0.12
 </td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
 Heavily recommended for IO,
  is as good as it gets when talking to many network connections with
@@ -798,6 +798,46 @@ that instead.
 
 
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
+<a id="pingutil">
+<a id="cfl" href="http://www2.dystance.net:8080/software/cfl/">cfl</a>
+</a>
+</td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
+</td> </tr><tr> <td class="sn">Type:</td> <td class="sv">General purpose Library
+</td> </tr><tr> <td class="sn">Model:</td> <td class="sv">Dynamic allocation with pointer, length, and size and "C style strings".
+</td> </tr><tr> <td class="sn">License:</td> <td class="sv">
+<a href="http://www.gnu.org/copyleft/lesser.html">LGPL (Lesser)</a>
+</td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">Mostly confined to namespace of "c_", however types are in the POSIX
+namespace of *_t and there are preprocessing symbols in the system
+namespace __*. Has exceptions for `TRUE', `FALSE', `NUL', and `CRLF'
+</td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
+Has a few different IO functions, all designed for sync. c_buffer can but used
+for <a href="req_trunc_io.html">request/truncate</a>, but it is very simple and
+you can't convert that into something more useful. C_dstring_load can
+overflow memory.
+</td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
+No public test suite.
+</td> </tr><tr> <td class="sn">Version:</td> <td class="sv">1.2
+</td> </tr><tr> <td class="sn">Pro:</td> <td class="sv"> Has at least 4, string
+like APIs. c_dstring, c_string, c_strbuffer and c_buffer.
+ Pretty good documentation.
+</td> </tr><tr> <td class="sn">Con:</td> <td class="sv"> Has at least 4, string
+like APIs. Some of which differ mostly by their allocation policies, and there
+seems no way to move data between them (without just copying it). c_string and c_strbuffer call strncpy() which is grossly inifficent.
+</td> </tr><tr> <td class="sn">Notes:</td> </tr><tr> <td colspan="2" class="main"> <p>
+	      It has functions for slightly saner versions of the
+ ISO C str* functions. And also has dynamic allocation APIs.
+	  The library has some vector functions, but it uses (char **) as the
+	  vector type and alters the original string in it's verison of split.
+ As a general observation the library seems like it should split out some of
+ the code, as it has low level code like strings, trees, linked lists ... and
+ high level things like http server, and fortune file loader. Bad direct uses
+of ISO C str* functions in other parts of API (specifically strncpy() in
+httpserver allows non-terminated strings).
+	</p>
+	<p> Has nice texinfo documentation.
+</p></td></tr></table>
+
+<table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
 <a id="mimelib" href="http://www.kde.org/">Mimelib DwString (part of kdenetwork)</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C++ (std::string compat. API)
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">Mime Library, which includes a string API
@@ -1047,32 +1087,8 @@ limited data (note that at least "firestring_estr_trim()" calls this function).
 	</p>
 	<p>
 Gratuitous usage of "restrict" in the API makes a lot of the functions severly
-suspect, and some just plainly broken. Note that the test suite "tests" this
+suspect, and some just obviously broken. Note that the test suite "tests" this
 case, so it's likely that the default compiler is ignoring these obvious errors.
-</p></td></tr></table>
-
-
-<table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
-<a id="pingutil" href="http://www.dystance.net/ping/pingutil">pingutil</a>
-</td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
-</td> </tr><tr> <td class="sn">Type:</td> <td class="sv">General purpose Library
-<!--
-</td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
-</td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-</td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
-</td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
--->
-</td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
-</td> </tr><tr> <td class="sn">Con:</td> <td class="sv">
-The web page doesn't seem to be available anymore. Saftey and security are big problems. There are much better implementations of the design.
-</td> </tr><tr> <td class="sn">Notes:</td> </tr><tr> <td colspan="2" class="main"> <p>
-	  This library is a slightly saner version of the ISO C str* functions,
-	  with a few extentions. It works with (char *) as the native type,
-	  and doesn't do automatic allocation ... but <b>almost</b> all
-	  functions are size limited so buffer overflows aren't a big concern,
-	  but losing data is.
-	  The library has some vector functions, but it uses (char **) as the
-	  vector type and alters the original string in it's verison of split.
 </p></td></tr></table>
 
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
@@ -1198,16 +1214,68 @@ It would be better to use the std::string class.
 
  <!-- OTHERS -->
 
-   <!-- http://www.nongnu.org/nsl/libutils/libutils.html#0005 -->
-   <!-- http://kfa.cx/products/libcuf/docs/strings_8c.html -->
-   <!-- http://openvpn.sourceforge.net/ -->
-   <!-- http://libh.slashusr.org/ -->
-<!-- http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/gift/giFT/lib/fdbuf.c?rev=1.4&content-type=text/vnd.viewcvs-markup -->
-   <!-- http://www.robertnz.net/string.htm -- C++ compat. dito ? -->
-   <!-- http://open.nit.ca/wvstreams/tutorial/ -- C++ compat. (+ extra functions) -->
-   <!-- http://www.rainingdata.com/support/techpubs/0852head.html --
-        proprietary ? + wierd namespace -->
-   <!-- http://vigna.dsi.unimi.it/ViolinStrings/docs/ViolinStrings/package-summary.html -->
+<p> There are a few other string APIs that, for one reason or another, I haven't
+got artound to looking at. Feel free to have a look at them, or check back every
+now and again when I might have looked at them.
+</p>
+
+<ul>
+
+<li>
+<a href="http://www.wxwindows.org/manuals/2.4.2/wx368.htm#wxstring">wxString</a>
+, C++, diff. API from std::string
+</li>
+
+<li>
+<a href="http://www.nongnu.org/nsl/libutils/libutils.html#0005">nsl/libutils</a>
+</li>
+
+<li>
+<a href="http://kfa.cx/products/libcuf/docs/strings_8c.html">libcuf</a>
+</li>
+
+<li>
+<a href="http://openvpn.sourceforge.net/">openvpn</a>
+</li>
+
+<li>
+<a href="http://libh.slashusr.org/">libh</a>
+</li>
+
+<li>
+<a href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/gift/giFT/lib/fdbuf.c?rev=1.4&content-type=text/vnd.viewcvs-markup">giFT</a>
+</li>
+
+<li>
+<a href="http://www.robertnz.net/string.htm">robertnz string</a>
+, maybe std::string compat. API
+</li>
+
+<li>
+<a href="http://open.nit.ca/wvstreams/tutorial/">wvstreams</a>
+, maybe std::string compat. API + extra functions
+</li>
+
+<li>
+<a href="http://www.rainingdata.com/support/techpubs/0852head.html">rainingdata</a>
+, maybe proprietary ... looks like it uses a weird namespace.
+</li>
+
+<li>
+<a href="http://vigna.dsi.unimi.it/ViolinStrings/docs/ViolinStrings/package-summary.html">violin strings</a>
+</li>
+
+<li>
+<a href="http://www.roguewave.com/support/docs/sourcepro/toolsref/rwcstring.html">Rogue Wave</a>
+, std::string with extensions ... proprietary but used a lot.
+</li>
+
+<li>
+<a href="http://www.perl.com/">perl</a>
+</li>
+
+</ul>
+
    <!-- need to do perl/python/ruby/rep -->
 
     <!-- END OF string libraries -->
@@ -1219,7 +1287,7 @@ It would be better to use the std::string class.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Mon Dec 15 03:15:31 EST 2003
+Last modified: Mon Jan 26 05:11:50 EST 2004
 <!-- hhmts end -->
   </body>
 </html>

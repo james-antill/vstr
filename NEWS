@@ -1,5 +1,11 @@
  Latest stable release is 1.0.11
 
+2004-01-25: Version 1.0.12 ... More testing, now at over 99% code coverage.
+One largish bug was found, and regression tests added for it. A couple of
+smaller bugs were also found and fixed. A couple of new functions for storing
+constant data in the configuration, for use in callbacks or whatever. And
+a group allocator for Vstr_ref is now used internally for some operations.
+
 2003-12-14: Version 1.0.11 ... Make vstr_export_chr() easier to optimize for
 GCC. Custom formatters now accept %d instead of the field width or precision in
 the static format checkers compat. (this fixes custom formatters starting with a

@@ -38,8 +38,16 @@
 	      standards compliance.
 	    </li>
 
+	    <li> <a href="http://www.freshmeat.net/projects/vstr/">subscription</a> - If you wish to subscribe to new releases, you should go here.
+	    </li>
+
 	    <li> <a href="tutorial.html">Tutorial</a> - A tutorial of how you
 	      can use the library, and it's features.
+	    </li>
+
+	    <li> <a href="cost_tutorial.html">Cost Tutorial</a> - A tutorial of
+	      the costs accociated with the different interfaces for
+	      manipulating data.
 	    </li>
 
 	    <li> <a href="#testing">Testing</a> - A description of the
@@ -120,7 +128,6 @@
 [and-org-james]
 name=And.org James' packages
 baseurl=ftp://ftp.and.org/yum/fc$releasever-james
-        ftp://code.and.org/yum/fc$releasever-james
 </pre>
 	      ...at which point you can just "yum install vstr".
 	    </li>
@@ -538,7 +545,7 @@ struct in_addr ipv4;
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*{ipv4.p:%p}", 20,
              (void *)&sa.sin_addr.s_addr);
 
-<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%*.*p%zu%zu%u}", 50, 50,
+<a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%d%d%p%zu%zu%u}", 50, 50,
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
 	  ...which isn't as good as true support for customer formatters in gcc,
@@ -567,33 +574,33 @@ struct in_addr ipv4;
 can see the following <b>heavily commented</b> examples:</p>
 <ul>
 <li>
-<a href="vstr-latest/vstr/examples/ex_hello_world.c.html">hello world</a> - A program
+<a href="examples/ex_hello_world.c.html">hello world</a> - A program
 that just does a "Hello World".
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_cat.c.html">cat</a> - A program that just
+<a href="examples/ex_cat.c.html">cat</a> - A program that just
 transfers information from stdin to stdout ... mmap() is never used.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_nl.c.html">nl</a> - This does something
+<a href="examples/ex_nl.c.html">nl</a> - This does something
 similar to the Unix "nl" program. Each input line is printed along with a
 number. This uses the split functions to get each line.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_hexdump.c.html">hexdump</a> - An ASCII
+<a href="examples/ex_hexdump.c.html">hexdump</a> - An ASCII
 hexdump utility, it prints in the "programmer" format of 16 bytes per line
 with Hex first, and then ASCII. High ASCII characters are printed, or not
 depending on a configuration. This also
 uses mmap() on the input files, if possible.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_lookup_ip.c.html">lookup_ip</a> -
+<a href="examples/ex_lookup_ip.c.html">lookup_ip</a> -
 A program that will change a DNS domain name (Ie. www.and.org) into an IPv4
 address (or print an error). This uses the std. custom formatter for printing
 IPv4 addresses.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_gmp_factorials.c.html">gmp_factorials</a> -
+<a href="examples/ex_gmp_factorials.c.html">gmp_factorials</a> -
 A program that will output each factorial leading upto a number supplied on
 the cmd line. This creates a custom formatter for printing GMP mpz_t variables.
 </li>
@@ -606,45 +613,52 @@ problems. They are:</p>
 
 <ul>
 <li>
-<a href="vstr-latest/vstr/examples/ex_rot13.c.html">rot13</a> - This does a
+<a href="examples/ex_rot13.c.html">rot13</a> - This does a
 rot13 transform (or Caesar cipher) on the input, and then outputs it. This shows
 the different methods you can use for iterating through a string. You can also
 use it to measure the differences between those methods.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_yes.c.html">yes</a> - This just
+<a href="examples/ex_yes.c.html">yes</a> - This just
 shows text repeatedly, it does show the difference between the different
 methods of copying data between Vstr strings. You can use this program to
 measure those copying affects. One minor note is that it does allow you to use the string "--version" as the output ... which the GNU version doesn't (as of
 fileutils-2.0.12).
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_csv.c.html">csv</a> - This is a csv parser
+<a href="examples/ex_csv.c.html">csv</a> - This is a csv parser
 I wrote for a thread on <a href="http://groups.google.com/groups?frame=right&rnum=31&thl=1073158423,1073070142,1072982584,1072441920,1072224867,1073014437,1072922046,1072792273,1072704301,1072628334,1072576581,1072221362&seekm=57b29eef.0305191804.518f8f67%40posting.google.com#link34">comp.lang.c</a>. I'll probably
 turn into a library function at some point, but for now it's useful on it's own.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_mon_cp.c.html">monitor copy</a> - This
+<a href="examples/ex_mon_cp.c.html">monitor copy</a> - This
 program will monitor a file as it gets bigger, and report Bytes per second etc.
 statistics. This is done through Vstr string custom formatter API calls, and
 should show how much simpler you can make your code using those features.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_slowcat.c.html">slowcat</a> (this also requires the
+<a href="examples/ex_slowcat.c.html">slowcat</a> (this also requires the
 <a href="http://www.and.org/timer_q/">Timer_q</a> library, and getopt_long) - This is like the cat program, except that you can specify a delay between blocks of output ... this is especially useful for ASCII art programs.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_highlight.c.html">C to html converter</a> - This program implements something similar to
+<a href="examples/ex_highlight.c.html">C to html converter</a> - This program implements something similar to
 <a href="http://freshmeat.net/projects/highlight/"></a>, but just for C,
 this is used to turn the tutorial examples into html.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_ssi.c.html">Simple Server Side Includes processor</a> - This program implements something similar to Apache httpd SSI,
+<a href="examples/ex_ssi.c.html">Simple Server Side Includes processor</a> - This program implements something similar to Apache httpd SSI,
 but it only does the include statement. I use this to generate some
 documentation.
 </li>
 <li>
-<a href="vstr-latest/vstr/examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
+<a href="examples/ex_netstr.c.html">Netstring generator</a> - Takes text on the cmd line and outputs it as a netstring within which each parameter is a single
+netstring.
+</li>
+<li>
+<a href="examples/ex_rainbow.c.html">html text rainbow</a> - Turn text into an assortment of html span tags to produce a "rainbow" of colors.
+</li>
+<li>
+<a href="examples/ex_perf_sgopenssl.c.html">scatter gather comparison</a> (this also requires the
 <a href="http://www.openssl.org/">OpenSSL</a> library) - This program times
 the usage of the MD5 or SHA1 functions from OpenSSL, with a all of: A single chunk of data, an iovec list of the data at the default buffer size, and
 an iovec list of the data at a configured buffer size. This was written to
@@ -654,14 +668,17 @@ size is probably good enough).
 </li>
 </ul>
 
+<p> All of the examples can be seen <a href="examples/">HERE</a>.
+</p>
+
 <p>
  For the truly adventurous the "make check" test suite root
 is <a href="vstr-latest/vstr/tst/">HERE</a>
 (<b>NOTE:</b> the test suite is written to try and break the Vstr string
 library, so although it uses all of the APIs it may not be code you want to
 copy and paste into your programs/libraries --  however given that everything in
-the test suite passes, you know that those uses do work). However do note that
-some of the tests do use undocumentation members of structs etc., and you
+the test suite works, you know that those uses do work). However do note that
+a couple of the tests do use undocumentation members of structs etc., and you
 still shouldn't use those.
 </p><p>
  There is also a <i>full application</i>, an FTP server,
@@ -677,7 +694,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Mon Dec 15 03:15:11 EST 2003
+Last modified: Mon Jan 26 05:42:27 EST 2004
 <!-- hhmts end -->
   </body>
 </html>

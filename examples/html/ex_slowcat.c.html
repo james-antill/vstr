@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_slowcat.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_slowcat.c</h1>
+<pre class="c2html">
+<span class="comment">/* This is a slowcat program, you can limit the number of bytes written and
+ * how often they are written.
+ * Does stdin if no args are given */</span>
+
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppinclude">include</span> &lt;timer_q.h&gt;
+#<span class="cppinclude">include</span> &lt;getopt.h&gt;
+#<span class="cppinclude">include</span> &lt;stdio.h&gt;
+#<span class="cppinclude">include</span> &lt;sys/time.h&gt;
+#<span class="cppinclude">include</span> &lt;time.h&gt;
+
+#<span class="cppdefine">define</span> EX_SLOWCAT_WRITE_BYTES 80
+#<span class="cppdefine">define</span> EX_SLOWCAT_WRITE_WAIT_SEC 1
+#<span class="cppdefine">define</span> EX_SLOWCAT_WRITE_WAIT_USEC <span class="num0">0</span> <span class="comment">/* 500000 */</span>
+
+typedef struct ex_slowcat_vars
+{
+ <span class="unsigned">unsigned</span> <span class="int">int</span> opt_write_bytes;
+ <span class="unsigned">unsigned</span> <span class="int">int</span> opt_write_wait_sec;
+ <span class="unsigned">unsigned</span> <span class="int">int</span> opt_write_wait_usec;
+
+ <span class="int">int</span> argc;
+ <span class="char">char</span> **argv;
+ <span class="vstrbase">Vstr_base</span> *str1;
+ <span class="int">int</span> arg_count;
+ <span class="int">int</span> fcntl_flags;
+ Timer_q_base *base;
+ Timer_q_node *node;
+ <span class="int">int</span> fd;
+
+ <span class="unsigned">unsigned</span> <span class="int">int</span> finished_reading_data : 1;
+ <span class="unsigned">unsigned</span> <span class="int">int</span> finished_reading_file : 1;
+} ex_slowcat_vars;
+
+#undef MIN
+#<span class="cppdefine">define</span> MIN(x, y, z) ((((z) (x)) &lt; ((z) (y))) ? ((z) (x)) : ((z) (y)))
+
+<span class="static">static</span> <span class="void">void</span> ex_slowcat_timer_func(<span class="int">int</span> type, <span class="void">void</span> *data)
+{
+ ex_slowcat_vars *v = data;
+ struct timeval s_tv;
+ <span class="int">int</span> fin_data = v-&gt;finished_reading_data;
+ <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+ 
+ <span class="if">if</span> (type == TIMER_Q_TYPE_CALL_DEL)
+   <span class="return">return</span>;
+
+ <span class="if">if</span> (!v-&gt;finished_reading_data &amp;&amp; (v-&gt;str1-&gt;len &lt; v-&gt;opt_write_bytes))
+ {
+   <span class="if">if</span> (!v-&gt;argc &amp;&amp; !v-&gt;arg_count)
+   {
+     v-&gt;finished_reading_file = <span class="false">FALSE</span>;
+     v-&gt;fd = <span class="num0">0</span>; <span class="comment">/* use stdin -- do read on already open file */</span>
+   }
+   <span class="else">else</span>
+   {
+     <span class="if">if</span> (v-&gt;finished_reading_file)
+     {
+       <span class="assert">assert</span>(v-&gt;arg_count &lt; v-&gt;argc);
+
+       v-&gt;finished_reading_file = <span class="false">FALSE</span>;
+
+       v-&gt;fd = open(v-&gt;argv[v-&gt;arg_count], O_RDONLY | O_LARGEFILE | O_NOCTTY);
+
+       <span class="if">if</span> (v-&gt;fd == <span class="numm1">-1</span>)
+         <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"open(%s)"</span>, v-&gt;argv[v-&gt;arg_count]);
+
+       ++v-&gt;arg_count;
+
+       <span class="if">if</span> (vstr_sc_mmap_fd(v-&gt;str1, v-&gt;str1-&gt;len, v-&gt;fd, <span class="num0">0</span>, <span class="num0">0</span>, <span class="null">NULL</span>))
+       {
+         <span class="if">if</span> (v-&gt;arg_count &gt;= v-&gt;argc)
+           v-&gt;finished_reading_data = <span class="true">TRUE</span>;
+         v-&gt;finished_reading_file = <span class="true">TRUE</span>;
+       }
+       <span class="else">else</span>
+         io_fd_set_o_nonblock(v-&gt;fd);
+     }
+   }
+
+   <span class="if">if</span> (!v-&gt;finished_reading_file)
+     do
+     {
+       <span class="int">int</span> state = io_get(v-&gt;str1, v-&gt;fd);
+
+       <span class="if">if</span> (state == IO_EOF)
+       {
+         <span class="if">if</span> (close(v-&gt;fd) == <span class="numm1">-1</span>)
+           <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"close"</span>);
+       
+         <span class="if">if</span> (v-&gt;arg_count &gt;= v-&gt;argc)
+           v-&gt;finished_reading_data = <span class="true">TRUE</span>;
+         v-&gt;finished_reading_file = <span class="true">TRUE</span>;
+       }
+     } <span class="while">while</span> (v-&gt;opt_write_bytes &gt; v-&gt;str1-&gt;len);
+ }
+
+ <span class="if">if</span> (!fin_data &amp;&amp; v-&gt;finished_reading_data)
+ { <span class="comment">/* we've just finished */</span>
+  <span class="if">if</span> (v-&gt;str1-&gt;len) <span class="comment">/* set it back to blocking, to be nice */</span>
+    <span class="if">if</span> (fcntl(1, F_SETFL, v-&gt;fcntl_flags &amp; ~O_NONBLOCK) == <span class="numm1">-1</span>)
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fcntl(SET BLOCK)"</span>);
+ }
+
+ len = MIN(v-&gt;opt_write_bytes, v-&gt;str1-&gt;len, <span class="sizet">size_t</span>);
+ <span class="comment">/* do a write of the right ammount */</span>
+ <span class="if">if</span> (!vstr_sc_write_fd(v-&gt;str1, 1, len, <span class="stdout">STDOUT_FILENO</span>, <span class="null">NULL</span>))
+ {
+   <span class="if">if</span> (<span class="errno">errno</span> != EAGAIN)
+     <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
+   <span class="if">if</span> (v-&gt;str1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+     io_block(<span class="numm1">-1</span>, <span class="stdout">STDOUT_FILENO</span>);
+ }
+
+ <span class="if">if</span> (v-&gt;finished_reading_data &amp;&amp; !v-&gt;str1-&gt;len)
+   <span class="return">return</span>;
+
+ <span class="if">if</span> (type == TIMER_Q_TYPE_CALL_RUN_ALL)
+   <span class="return">return</span>;
+
+ gettimeofday(&amp;s_tv, <span class="null">NULL</span>);
+ TIMER_Q_TIMEVAL_ADD_SECS(&amp;s_tv, v-&gt;opt_write_wait_sec, v-&gt;opt_write_wait_usec);
+
+ v-&gt;node = timer_q_add_node(v-&gt;base, v, &amp;s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
+ <span class="if">if</span> (!v-&gt;node)
+   <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"timer_q_add_node"</span>);
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_slowcat_init_cmd_line(ex_slowcat_vars *v, <span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+ <span class="char">char</span> optchar = <span class="num0">0</span>;
+ <span class="const">const</span> <span class="char">char</span> *program_name = <span class="str">"talker"</span>;
+ struct option long_options[] =
+   {
+    {<span class="str">"bytes"</span>, required_argument, <span class="null">NULL</span>, <span class="chr">'b'</span>},
+    {<span class="str">"help"</span>, no_argument, <span class="null">NULL</span>, <span class="chr">'h'</span>},
+    {<span class="str">"seconds"</span>, required_argument, <span class="null">NULL</span>, <span class="chr">'s'</span>},
+    {<span class="str">"useconds"</span>, required_argument, <span class="null">NULL</span>, <span class="chr">'u'</span>},
+    {<span class="str">"version"</span>, no_argument, <span class="null">NULL</span>, <span class="chr">'V'</span>},
+    {NULL, <span class="num0">0</span>, <span class="null">NULL</span>, 0}
+   };
+ FILE *help_stdout = <span class="null">NULL</span>;
+
+ help_stdout = <span class="stdout">stdout</span>;
+
+ <span class="if">if</span> (argv[0])
+ {
+  <span class="if">if</span> ((program_name = strrchr(argv[0], <span class="chr">'/'</span>)))
+    ++program_name;
+  <span class="else">else</span>
+    program_name = argv[0];
+ }
+
+ <span class="while">while</span> ((optchar = getopt_long(argc, argv, <span class="str">"b:hs:u:vHV"</span>,
+                               long_options, <span class="null">NULL</span>)) != EOF)
+   <span class="switch">switch</span> (optchar)
+   {
+    <span class="case">case</span> <span class="chr">'b'</span>:
+      v-&gt;opt_write_bytes = atoi(optarg);
+      <span class="break">break</span>;
+
+    <span class="case">case</span> <span class="chr">'?'</span>:
+      fprintf(<span class="stderr">stderr</span>, <span class="str">" The option -- %c -- is not valid.\n"</span>, optchar);
+      help_stdout = <span class="stderr">stderr</span>;
+    <span class="case">case</span> <span class="chr">'H'</span>:
+    <span class="case">case</span> <span class="chr">'h'</span>:
+      fprintf(help_stdout, <span class="str">"\n Format: %s [-bhsuvHV] [files]\n"</span>
+              <span class="str">" --bytes -b        - Number of bytes to write at once.\n"</span>
+              <span class="str">" --help -h         - Print this message.\n"</span>
+              <span class="str">" --seconds -s      - Number of seconds to wait between write calls.\n"</span>
+              <span class="str">" --useconds -u     - Number of micro seconds to wait between write calls.\n"</span>
+              <span class="str">" --version -v      - Print the version string.\n"</span>,
+              program_name);
+      <span class="if">if</span> (optchar == <span class="chr">'?'</span>)
+        <span class="exit">exit</span> (<span class="exitfail">EXIT_FAILURE</span>);
+      <span class="else">else</span>
+        <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+
+    <span class="case">case</span> <span class="chr">'s'</span>:
+      v-&gt;opt_write_wait_sec = atoi(optarg);
+      <span class="break">break</span>;
+
+    <span class="case">case</span> <span class="chr">'u'</span>:
+      v-&gt;opt_write_wait_usec = atoi(optarg);
+      <span class="break">break</span>;
+
+    <span class="case">case</span> <span class="chr">'v'</span>:
+    <span class="case">case</span> <span class="chr">'V'</span>:
+      printf(<span class="str">" %s is version 0.1, compiled on -- "</span>
+             <span class="compdate">__DATE__</span> <span class="str">" -- at -- "</span> __TIME__<span class="str">" --.\n"</span>,
+             program_name);
+      <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+
+   }
+
+ <span class="return">return</span> (optind);
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{ <span class="comment">/* This is "slowcat" */</span>
+ ex_slowcat_vars v;
+ struct timeval s_tv;
+ <span class="const">const</span> struct timeval *tv = <span class="null">NULL</span>;
+
+ <span class="comment">/* init stuff... */</span>
+ v.opt_write_bytes = EX_SLOWCAT_WRITE_BYTES;
+ v.opt_write_wait_sec = EX_SLOWCAT_WRITE_WAIT_SEC;
+ v.opt_write_wait_usec = EX_SLOWCAT_WRITE_WAIT_USEC;
+
+ v.argc = argc;
+ v.argv = argv;
+ v.str1 = <span class="null">NULL</span>;
+ v.arg_count = <span class="num0">0</span>;
+ v.fcntl_flags = <span class="num0">0</span>;
+ v.base = <span class="null">NULL</span>;
+ v.node = <span class="null">NULL</span>;
+ v.finished_reading_data = <span class="false">FALSE</span>;
+ v.finished_reading_file = <span class="true">TRUE</span>;
+
+ <span class="if">if</span> (!vstr_init())
+   <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"vstr_init"</span>);
+
+ <span class="comment">/* setup code... */</span>
+
+ ex_slowcat_init_cmd_line(&amp;v, argc, argv);
+
+ v.argc -= optind;
+ v.argv += optind;
+
+ v.base = timer_q_add_base(ex_slowcat_timer_func, TIMER_Q_FLAG_BASE_DEFAULT);
+ <span class="if">if</span> (!v.base)
+   <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"timer_q_add_base"</span>);
+
+ gettimeofday(&amp;s_tv, <span class="null">NULL</span>);
+ TIMER_Q_TIMEVAL_ADD_SECS(&amp;s_tv, 1, 500000); <span class="comment">/* 1.5 seconds */</span>
+
+ v.node = timer_q_add_node(v.base, &amp;v, &amp;s_tv, TIMER_Q_FLAG_NODE_DEFAULT);
+ <span class="if">if</span> (!v.node)
+   <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"timer_q_add_node"</span>);
+
+ v.str1 = vstr_make_base(<span class="null">NULL</span>);
+ <span class="if">if</span> (!v.str1)
+   <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"vstr_make_base"</span>);
+
+ <span class="if">if</span> ((v.fcntl_flags = fcntl(1, F_GETFL)) == <span class="numm1">-1</span>)
+   <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fcntl(GET NONBLOCK)"</span>);
+ <span class="if">if</span> (!(v.fcntl_flags &amp; O_NONBLOCK) &amp;&amp;
+     (fcntl(1, F_SETFL, v.fcntl_flags | O_NONBLOCK) == <span class="numm1">-1</span>))
+   <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fcntl(SET NONBLOCK)"</span>);
+
+ <span class="while">while</span> ((tv = timer_q_first_timeval()))
+ {
+  <span class="long">long</span> wait_period = <span class="num0">0</span>;
+
+  gettimeofday(&amp;s_tv, <span class="null">NULL</span>);
+
+  wait_period = timer_q_timeval_diff_usecs(tv, &amp;s_tv);
+  <span class="if">if</span> (wait_period &gt; <span class="num0">0</span>)
+    usleep(wait_period);
+
+  gettimeofday(&amp;s_tv, <span class="null">NULL</span>);
+
+  timer_q_run_norm(&amp;s_tv);
+ }
+
+ timer_q_del_base(v.base);
+
+ vstr_free_base(v.str1);
+
+ vstr_exit();
+
+ <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+}
+</pre>
+<!-- C to html convertion of ex_slowcat.c -->
+<!--   done on Mon Jan 26 05:27:56 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

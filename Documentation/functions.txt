@@ -1465,7 +1465,7 @@ Function: vstr_add_iovec_buf_beg()
   This function is used to add a copy of data directly into the Vstr string,
  the amount of data available will be between the minimum (Parameter[4]) and
  maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of
- data in _BUF type nodes. The obvious use for the data if to call readv() on it.
+ data in _BUF type nodes. The obvious use for the data is to call readv() on it.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
   The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1481,6 +1481,19 @@ Function: vstr_add_iovec_buf_beg()
  a _BUF node just before the start of where the data is to go, this is almost
  guaranteed to happen when adding to the end of a Vstr string and saves a lot
  of wasted space.
+  It is currently believed that, on Linux, doing disk IO in amounts greater than
+ 8k gives little real performance improvement. This can be converted into iovec
+ numbers by using a formula like...
+
+    min = (8k / buf_sz) + 2;
+    max = min + (min / 2);    
+
+ ...where the +2 is due to both the extra space at the end of the current last
+ node, and rounding errors due to the division. The max being slightly bigger
+ is an attempt to make the constant overhead of the call slightly less, and may
+ not be useful. It is very possible that some kind of dynamic scaling of the
+ values would result in the best performance, however the solution to that
+ doesn't fit in the margin :).
 
 
 Function: vstr_add_iovec_buf_end()
@@ -6121,7 +6134,7 @@ Function: vstr_cache_set()
 
 
 Function: vstr_cache_srch()
- Returns: Cookie reference for cache function
+ Returns: Cookie reference for cache functions
  Type: unsigned int
 
  Parameter[1]: Vstr configuration
@@ -6187,6 +6200,128 @@ Function: vstr_cache_cb_free()
  data. Note that this can cause severe performance degradation if overly used.
 
 
+Section: Functions for hooking into the data system for the Vstr configuration
+
+Function: vstr_data_add()
+ Returns: Cookie reference for cache function
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of cache function
+ Type[2]: const char *
+
+ Parameter[3]: Reference to data to store in the configuration
+ Type[3]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will add the data reference (Parameter[3]) to the
+ Vstr configuration. The name of the data reference (Parameter[2]) should be
+ unique, the vstr library will use names starting "/vstr__/".
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  The name of the cache function should be placed in permanent storage, Ie.
+ only the pointer to the name will be stored so you cannot malloc() the name
+ and then free() it after calling the function (you can free it after calling
+ vstr_data_del()).
+  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+
+
+Function: vstr_data_srch()
+ Returns: Cookie reference for data configuration functions
+ Type: unsigned int
+
+ Parameter[1]: Vstr configuration
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Name of data configuration function
+ Type[2]: const char *
+
+ Explanation:
+
+  This function will find a configuration data name (Parameter[2]) and return
+ the cookie reference for use in the other data functions.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_del()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will release the reference on the configuration data, and allow
+ the cookie to be reused on a later vstr_data_add() call.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_get()
+ Returns: Data for configuration data function
+ Type: void *
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Explanation:
+
+  This function will get the data for the configuration data storage function.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+Function: vstr_data_set()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Vstr string
+ Type[1]: struct Vstr_conf *
+
+ Parameter[2]: Cookie reference for configuration data function
+ Type[2]: unsigned int
+
+ Parameter[3]: Reference to data to store in the configuration
+ Type[3]: struct Vstr_ref *
+
+ Explanation:
+
+  This function will set the data for the configuration data storage function.
+
+ Note:
+
+  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+  All allocations are done at vstr_data_add() time, so this function can never
+ fail.
+
+
 Section: Short cut helper functions
 
 Function: vstr_sc_posdiff()
@@ -6218,6 +6353,38 @@ Function: VSTR_SC_POSDIFF()
 
   This macro function is used to find the length between two positions
  inclusive.
+
+
+Function: vstr_sc_poslast()
+ Returns: Last position of the given start and length
+ Type: size_t
+
+ Parameter[2]: Start position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: Length of a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This function is used to find the last poition, given a position and a length
+ (it's basically the oposite of vstr_sc_posdiff()).
+
+
+Function: VSTR_SC_POSLAST()
+ Returns: Last position of the given start and length
+ Type: size_t
+
+ Parameter[2]: Start position in a Vstr string
+ Type[2]: size_t
+
+ Parameter[3]: Length of a Vstr string
+ Type[3]: size_t
+
+ Explanation:
+
+  This macro function is used to find the last poition, given a position and
+ a length (it's basically the oposite of VSTR_SC_POSDIFF()).
 
 
 Function: vstr_sc_reduce()

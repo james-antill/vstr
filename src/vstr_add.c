@@ -1,6 +1,6 @@
 #define VSTR_ADD_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,41 +21,38 @@
 /* function to add data to a vstr */
 #include "main.h"
 
-static int vstr__cache_iovec_add_end(Vstr_base *base, Vstr_node *node,
-                                     unsigned int len)
+static void vstr__cache_iovec_add_end(Vstr_base *base, Vstr_node *node,
+                                      unsigned int len)
 {
   char *tmp = NULL;
   unsigned int num = 0;
 
-  if (!vstr__cache_iovec_alloc(base, base->num))
-    return (FALSE);
-
   tmp = vstr_export__node_ptr(node);
-  assert((node != base->beg) || !base->used);
+  ASSERT((node != base->beg) || !base->used);
 
   num = VSTR__CACHE(base)->vec->off + base->num - 1;
+  
+  ASSERT(num < VSTR__CACHE(base)->vec->sz);
+  
   VSTR__CACHE(base)->vec->v[num].iov_len  = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
   VSTR__CACHE(base)->vec->t[num]          = node->type;
-
-  return (TRUE);
 }
 
-static int vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
-                                     unsigned int len)
+static void vstr__cache_iovec_add_beg(Vstr_base *base, Vstr_node *node,
+                                      unsigned int len)
 {
   char *tmp = NULL;
   unsigned int num = 0;
 
   tmp = vstr_export__node_ptr(node);
 
+  ASSERT(VSTR__CACHE(base)->vec->off);
   num = --VSTR__CACHE(base)->vec->off;
 
   VSTR__CACHE(base)->vec->v[num].iov_len  = len;
   VSTR__CACHE(base)->vec->v[num].iov_base = tmp;
   VSTR__CACHE(base)->vec->t[num]          = node->type;
-
-  return (TRUE);
 }
 
 void vstr__cache_iovec_add_node_end(Vstr_base *base, unsigned int num,
@@ -100,6 +97,7 @@ Vstr_node *vstr__add_setup_pos(Vstr_base *base, size_t *pos, unsigned int *num,
 
   if ((*pos != scan->len) && !(scan = vstr__base_split_node(base, scan, *pos)))
     return (NULL);
+  assert(*pos == scan->len);
 
   return (scan);
 }
@@ -552,7 +550,7 @@ static size_t vstr__add_vstr_nodes(Vstr_base *base, size_t pos,
     DO_CP_LOOP_BEG(off);
 
     if (!vstr__add_vstr_node(base, pos, scan, off, tmp, add_type))
-      return (FALSE);
+      return (0);
 
     DO_CP_LOOP_END();
   }
@@ -562,12 +560,12 @@ static size_t vstr__add_vstr_nodes(Vstr_base *base, size_t pos,
     DO_CP_LOOP_BEG(0);
 
     if (!vstr__add_vstr_node(base, pos, scan, 0, tmp, add_type))
-      return (FALSE);
+      return (0);
 
     DO_CP_LOOP_END();
   }
 
-  return (TRUE);
+  return (pos);
 }
 
 # undef DO_CP_LOOP_BEG
@@ -585,16 +583,19 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
                   const Vstr_base *from_base, size_t from_pos, size_t len,
                   unsigned int add_type)
 {
+  Vstr_base *nonconst_from_base = (Vstr_base *)from_base;
   size_t orig_pos = pos;
   size_t orig_from_pos = from_pos;
   size_t orig_len = len;
-  size_t orig_base_len = base->len;
+  size_t orig_base_len = 0;
   Vstr_node *scan = NULL;
   unsigned int dummy_num = 0;
 
   ASSERT_RET(!(!base || (pos > base->len) ||
                !from_base || ((from_pos > from_base->len) && len)), FALSE);
 
+  orig_base_len = base->len;
+  
   if (!len)
     return (TRUE);
 
@@ -604,7 +605,7 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
    * from_base in certain cases */
   if (add_type == VSTR_TYPE_ADD_ALL_REF)
   {
-    if (!vstr__add_all_ref(base, pos, (Vstr_base *)from_base, from_pos, len))
+    if (!vstr__add_all_ref(base, pos, nonconst_from_base, from_pos, len))
       goto fail_beg;
 
     DO_VALID_CHK();
@@ -615,24 +616,30 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
   /* make sure there are no buf nodes */
   if (add_type == VSTR_TYPE_ADD_BUF_REF)
   {
-    if (!vstr__convert_buf_ref((Vstr_base *)from_base, from_pos, len))
+    if (!vstr__convert_buf_ref(nonconst_from_base, from_pos, len))
       goto fail_beg;
 
     DO_VALID_CHK();
   }
 
-  /* do the real copying */
-  if (!(scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
-    goto fail_beg;
-
-  /* do an initial split where it's going to be added, so that we don't
-   * corrupt the data */
+  scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE);
+  
+  /* do an initial split where it's comming from, if needed (Ie. not a buffer,
+   * or it's at the start of the buffer), this is just so we don't call
+   * memcpy() on overlapping data... however with split poisoning it'll do
+   * bad things */
   if ((from_base == base) && (scan->type == VSTR_TYPE_NODE_BUF) &&
-      !vstr_base__pos(base, &pos, &dummy_num, TRUE))
-    goto fail_beg;
-
-  pos = orig_pos;
-
+      (from_pos != (((scan == base->beg) ? base->used : 0U) + 1)))
+  {
+    if (!(scan = vstr__base_split_node(nonconst_from_base, scan, from_pos - 1)))
+      goto fail_beg;
+    
+    ASSERT((from_pos - 1) == scan->len);
+    ASSERT(scan->next);
+    scan = scan->next;
+    from_pos = 1;
+  }
+  
   if ((from_base == base) && (orig_from_pos <= orig_pos) &&
       ((orig_from_pos + orig_len - 1) > orig_pos))
   { /* ok the vstr has to be copied inside itself, Ie.
@@ -642,7 +649,8 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
      * Where a is the From vstr data, and X is the To vstr data,
      * so we have to copy the first part, skip the middle and copy the
      * second part */
-    size_t before = orig_pos - orig_from_pos;
+    size_t before = vstr_sc_posdiff(orig_from_pos, orig_pos);
+    //    size_t before = orig_pos - orig_from_pos;
 
     assert(before < len);
 
@@ -652,15 +660,14 @@ int vstr_add_vstr(Vstr_base *base, size_t pos,
 
     len -= before;
     from_pos = orig_from_pos + (before * 2);
-    if (!(scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE)))
-      goto fail_end;
+    scan = vstr_base__pos(from_base, &from_pos, &dummy_num, TRUE);
   }
 
   if (!vstr__add_vstr_nodes(base, pos, scan, from_pos, len, add_type))
     goto fail_end;
 
   vstr__cache_cstr_cpy(base, orig_pos, orig_len,
-                       (Vstr_base *)from_base, orig_from_pos);
+                       nonconst_from_base, orig_from_pos);
 
   DO_VALID_CHK();
 
@@ -724,20 +731,11 @@ size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
   {
     unsigned int scan_num = 0;
 
-    ASSERT(base && pos && (pos <= base->len));
-    ASSERT_RET(pos && (pos <= base->len), 0);
+    ASSERT(base);
+    ASSERT_RET((pos <= base->len), 0);
     
-    scan = vstr_base__pos(base, &pos, &scan_num, TRUE);
-    assert(scan);
-
-    if (pos != scan->len)
-    {
-      scan = vstr__base_split_node(base, scan, pos);
-
-      if (!scan)
-        return (0);
-    }
-    assert(pos == scan->len);
+    if (!(scan = vstr__add_setup_pos(base, &pos, &scan_num, NULL)))
+      return (0);
 
     if ((scan->type == VSTR_TYPE_NODE_BUF) && (base->conf->buf_sz > scan->len))
     {
@@ -982,9 +980,7 @@ int vstr_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
   Vstr_node *pos_scan_next = NULL;
   size_t orig_pos_scan_len = 0;
 
-  assert(!(!base || !len || (pos > base->len)));
-  if (!base || !len || (pos > base->len))
-    return (FALSE);
+  ASSERT_RET(!(!base || !len || (pos > base->len)), FALSE);
 
   VSTR__ADD_BEG(base->conf->buf_sz, BUF, &orig_pos_scan_len);
 

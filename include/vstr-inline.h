@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -29,17 +29,22 @@
 #endif
 
 #ifndef VSTR__ASSERT_RET
-#  define VSTR__ASSERT_RET(x, y) do { if (x) {} else return (y); } while (0)
+#  define VSTR__ASSERT_RET(x, y)   do { if (x) {} else return (y); } while (0)
+#endif
+
+#ifndef VSTR__ASSERT_RET_VOID
+#  define VSTR__ASSERT_RET_VOID(x) do { if (x) {} else return;     } while (0)
 #endif
 
 #ifndef VSTR__ASSERT_NO_SWITCH_DEF
 #  define VSTR__ASSERT_NO_SWITCH_DEF() break; default: break
 #endif
 
+/* cast so it warns for ptrs */
 #undef  VSTR__TRUE
-#define VSTR__TRUE  1
+#define VSTR__TRUE  ((int)1)
 #undef  VSTR__FALSE
-#define VSTR__FALSE 0
+#define VSTR__FALSE ((int)0)
 
 #ifdef VSTR_AUTOCONF_USE_WRAP_MEMCPY
 extern inline void *vstr_wrap_memcpy(void *passed_s1, const void *passed_s2,
@@ -205,6 +210,34 @@ extern inline void *vstr_cache_get(const struct Vstr_base *base,
   return (VSTR__CACHE(base)->data[pos]);
 }
 
+extern inline void *vstr_data_get(struct Vstr_conf *conf,
+                                  unsigned int pos)
+{
+  struct Vstr_ref *data = NULL;
+  
+  if (!conf)
+    return (vstr_extern_inline_data_get(pos));
+  
+  VSTR__ASSERT_RET(pos && (pos <= conf->data_usr_len), NULL);
+
+  if (!(data = conf->data_usr_ents[pos - 1].data))
+    return (NULL);
+  
+  return (data->ptr);
+}
+
+extern inline void vstr_data_set(struct Vstr_conf *conf,
+                                 unsigned int pos,  struct Vstr_ref *ref)
+{
+  if (!conf)
+    return (vstr_extern_inline_data_set(pos, ref));
+  
+  VSTR__ASSERT_RET_VOID(pos && (pos <= conf->data_usr_len));
+
+  vstr_ref_del(conf->data_usr_ents[pos - 1].data);
+  conf->data_usr_ents[pos - 1].data = ref ? vstr_ref_add(ref) : NULL;
+}
+
 extern inline
 int vstr_cache__pos(const struct Vstr_base *base,
                     struct Vstr_node *node, size_t pos, unsigned int num)
@@ -222,6 +255,16 @@ int vstr_cache__pos(const struct Vstr_base *base,
   data->num = num;
 
   return (VSTR__TRUE);
+}
+
+extern inline size_t vstr_sc_posdiff(size_t beg_pos, size_t end_pos)
+{
+  return ((end_pos - beg_pos) + 1);
+}
+
+extern inline size_t vstr_sc_poslast(size_t beg_pos, size_t diff_pos)
+{
+  return (beg_pos + (diff_pos - 1));
 }
 
 extern inline
@@ -261,6 +304,7 @@ struct Vstr_node *vstr_base__pos(const struct Vstr_base *base,
   {
     *pos -= scan->len;
 
+    VSTR__ASSERT(scan->next);
     scan = scan->next;
     ++*num;
   }
@@ -292,25 +336,30 @@ extern inline char *vstr_export__node_ptr(const struct Vstr_node *node)
 extern inline char vstr_export_chr(const struct Vstr_base *base, size_t pos)
 {
   struct Vstr_node *node = NULL;
+  const char *tmp = NULL;
   
   node = vstr_base__pos(base, &pos, NULL, VSTR__TRUE);
-
+  VSTR__ASSERT(pos);
+  
   /* errors, requests for data from NON nodes and real data are all == 0 */
   if (!node) return (0);
 
-  return (*(vstr_export__node_ptr(node) + --pos));
+  if (!(tmp = vstr_export__node_ptr(node)))
+    return (0);
+  
+  return (*(tmp + --pos));
 }
 
 extern inline int vstr_iter_fwd_beg(const struct Vstr_base *base,
                                     size_t pos, size_t len,
                                     struct Vstr_iter *iter)
 {
-  VSTR__ASSERT(base && iter);
+  VSTR__ASSERT_RET(base && iter, 0);
 
   iter->node = NULL;
 
   VSTR__ASSERT_RET(pos && (((pos <= base->len) &&
-                            ((pos + len - 1) <= base->len)) || !len), 0);
+                            (vstr_sc_poslast(pos, len) <= base->len)) || !len), 0);
 
   if (!len)
     return (VSTR__FALSE);
@@ -366,6 +415,8 @@ extern inline unsigned int vstr_num(const struct Vstr_base *base,
   struct Vstr_iter *iter = &dummy_iter;
   unsigned int beg_num = 0;
 
+  VSTR__ASSERT_RET(base, VSTR__FALSE);
+  
   if (pos == 1 && len == base->len)
     return (base->num);
 
@@ -382,7 +433,7 @@ extern inline unsigned int vstr_num(const struct Vstr_base *base,
 extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
                                const void *buffer, size_t len)
 {
-  VSTR__ASSERT(!(!base || !buffer || (pos > base->len)));
+  VSTR__ASSERT_RET(!(!base || !buffer || (pos > base->len)), VSTR__FALSE);
 
   if (!len) return (VSTR__TRUE);
 
@@ -419,7 +470,7 @@ extern inline int vstr_add_buf(struct Vstr_base *base, size_t pos,
 extern inline int vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
                                    char chr, size_t len)
 { /* almost embarassingly similar to add_buf */
-  VSTR__ASSERT(!(!base || (pos > base->len)));
+  VSTR__ASSERT_RET(!(!base || (pos > base->len)), VSTR__FALSE);
 
   if (!len) return (VSTR__TRUE);
 
@@ -452,14 +503,9 @@ extern inline int vstr_add_rep_chr(struct Vstr_base *base, size_t pos,
   return (vstr_extern_inline_add_rep_chr(base, pos, chr, len));
 }
 
-extern inline size_t vstr_sc_posdiff(size_t beg_pos, size_t end_pos)
-{
-  return ((end_pos - beg_pos) + 1);
-}
-
 extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 {
-  VSTR__ASSERT(!(!base || ((pos > base->len) && len)));
+  VSTR__ASSERT_RET(!(!base || ((pos > base->len) && len)), VSTR__FALSE);
 
   if (!len) return (VSTR__TRUE);
 
@@ -501,16 +547,13 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 
       if ((cdata = vstr_cache_get(base, 3)) && cdata->ref && cdata->len)
       {
-        size_t data_end_pos = cdata->pos + cdata->len - 1;
-        size_t end_pos = len;
+        size_t data_end_pos = vstr_sc_poslast(cdata->pos, cdata->len);
+        size_t end_pos = vstr_sc_poslast(1, len);
 
         if (cdata->pos > end_pos)
           cdata->pos -= len;
         else if (data_end_pos <= end_pos)
-        {
-          vstr_ref_del(cdata->ref);
-          cdata->ref = NULL;
-        }
+          cdata->len = 0;
         else
         {
           cdata->len -= vstr_sc_posdiff(cdata->pos, end_pos);
@@ -561,15 +604,10 @@ extern inline int vstr_del(struct Vstr_base *base, size_t pos, size_t len)
 
       if ((cdata = vstr_cache_get(base, 3)) && cdata->ref && cdata->len)
       {
-        size_t data_end_pos = cdata->pos + cdata->len - 1;
+        size_t data_end_pos = vstr_sc_poslast(cdata->pos, cdata->len);
 
         if (data_end_pos >= pos)
-        {
           cdata->len = 0;
-
-          vstr_ref_del(cdata->ref);
-          cdata->ref = NULL;
-        }
       }
       if (base->iovec_upto_date)
       {

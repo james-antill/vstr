@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_mon_cp.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_mon_cp.c</h1>
+<pre class="c2html">
+<span class="comment">/* This monitors a copy to a file, and prints nice stats */</span>
+
+#<span class="cppdefine">define</span> EX_UTILS_NO_USE_INPUT 1
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppinclude">include</span> &lt;sys/time.h&gt;
+#<span class="cppinclude">include</span> &lt;time.h&gt;
+
+#<span class="cppdefine">define</span> CUR_RATE_NUM_SECS 60
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s2 = ex_init(&amp;s1);
+  <span class="int">int</span> fd = <span class="numm1">-1</span>;
+  struct stat stat_buf;
+  time_t beg_time;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> beg_sz = <span class="num0">0</span>;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> last_sz = <span class="num0">0</span>;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> count = <span class="num0">0</span>;
+  struct
+  {
+   time_t timestamp;
+   <span class="unsigned">unsigned</span> <span class="int">int</span> sz;
+  } cur[CUR_RATE_NUM_SECS];
+
+  <span class="if">if</span> (argc != 2)
+  {
+    <span class="sizet">size_t</span> pos = <span class="num0">0</span>;
+
+    VSTR_ADD_CSTR_PTR(s1, <span class="num0">0</span>, argc ? argv[0] : <span class="str">"mon_cp"</span>);
+
+    <span class="if">if</span> ((pos = vstr_srch_chr_rev(s1, 1, s1-&gt;len, <span class="chr">'/'</span>)))
+      vstr_del(s1, 1, pos);
+
+    VSTR_ADD_CSTR_PTR(s1, <span class="num0">0</span>, <span class="str">" Format: "</span>);
+    VSTR_ADD_CSTR_PTR(s1, s1-&gt;len, <span class="str">" &lt;filename&gt;\n"</span>);
+
+    io_put_all(s1, <span class="stderr">STDERR_FILENO</span>);
+
+    <span class="exit">exit</span> (<span class="exitfail">EXIT_FAILURE</span>);
+  }
+
+  fd = io_open(argv[1]);
+
+  <span class="if">if</span> (fstat(fd, &amp;stat_buf) == <span class="numm1">-1</span>)
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fstat"</span>);
+
+  vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_cntl_conf(s2-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_sc_fmt_add_bkmg_Byte_uint(s1-&gt;conf, <span class="str">"{BKMG:%u}"</span>);
+  vstr_sc_fmt_add_bkmg_Byte_uint(s2-&gt;conf, <span class="str">"{BKMG:%u}"</span>);
+  vstr_sc_fmt_add_bkmg_Bytes_uint(s2-&gt;conf, <span class="str">"{BKMG/s:%u}"</span>);
+
+  <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad || s2-&gt;conf-&gt;malloc_bad)
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"conf"</span>);
+  
+  beg_time = time(<span class="null">NULL</span>); --beg_time;
+  beg_sz = last_sz = stat_buf.st_size;
+  <span class="while">while</span> (count &lt; CUR_RATE_NUM_SECS)
+  {
+    cur[count].timestamp = beg_time;
+    cur[count].sz = beg_sz;
+    ++count;
+  }
+
+  vstr_add_fmt(s1, <span class="num0">0</span>, <span class="str">"Start size = ${BKMG:%u}, current period = %u seconds.\n"</span>,
+               beg_sz, CUR_RATE_NUM_SECS);
+
+  count = <span class="num0">0</span>;
+  <span class="while">while</span> (count &lt; (5 * 60)) <span class="comment">/* same for 5 minutes */</span>
+  {
+    <span class="sizet">size_t</span> prev_len = s2-&gt;len;
+    time_t now;
+
+    <span class="if">if</span> (fstat(fd, &amp;stat_buf) == <span class="numm1">-1</span>)
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"fstat:"</span>);
+
+    ++count;
+    <span class="if">if</span> (last_sz != (<span class="unsigned">unsigned</span> <span class="int">int</span>)stat_buf.st_size)
+      count = <span class="num0">0</span>;
+    <span class="if">if</span> (last_sz &gt; (<span class="unsigned">unsigned</span> <span class="int">int</span>)stat_buf.st_size)
+      <span class="break">break</span>;
+    last_sz = stat_buf.st_size;
+
+    now = time(<span class="null">NULL</span>);
+    memmove(cur, cur + 1, sizeof(cur[0]) * (CUR_RATE_NUM_SECS - 1));
+    cur[CUR_RATE_NUM_SECS - 1].timestamp = now;
+    cur[CUR_RATE_NUM_SECS - 1].sz = last_sz;
+
+    vstr_del(s2, 1, s2-&gt;len);
+    vstr_add_fmt(s2, <span class="num0">0</span>,
+                 <span class="str">"CP = $8{BKMG:%u} | "</span>
+                 <span class="str">"Rate = $10{BKMG/s:%u} | "</span>
+                 <span class="str">"CP(C) = $8{BKMG:%u} | "</span>
+                 <span class="str">"Rate(C) = $10{BKMG/s:%u}"</span>,
+                 (last_sz - beg_sz),
+                 (<span class="unsigned">unsigned</span> <span class="int">int</span>)((last_sz - beg_sz) /
+                                (now - beg_time)),
+                 (last_sz - cur[0].sz),
+                 (<span class="unsigned">unsigned</span> <span class="int">int</span>)((last_sz - cur[0].sz) /
+                                (now - cur[0].timestamp)));
+
+    <span class="if">if</span> (s2-&gt;len &lt; prev_len)
+    {
+      vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\b'</span>, prev_len - s2-&gt;len);
+      vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">' '</span>,  prev_len - s2-&gt;len);
+    }
+
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\b'</span>, prev_len);
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, s2-&gt;len, <span class="num0">0</span>);
+
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad || s2-&gt;conf-&gt;malloc_bad)
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"data"</span>);
+  
+    io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+    sleep(1);
+  }
+
+  close(fd);
+
+  vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\n'</span>, 1);
+
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_mon_cp.c -->
+<!--   done on Mon Jan 26 05:27:54 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

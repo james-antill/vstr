@@ -349,7 +349,8 @@ __printf_fphex (FILE *fp,
 	  --wnumend;
 	  --numend;
 	}
-
+      ASSERT(numend >= numbuf);
+      
       if (precision == -1)
 	precision = numend - numstr;
       else if (precision < numend - numstr

@@ -33,6 +33,7 @@
  pre.c2html  span.long        { color: #628; }
  pre.c2html  span.float       { color: #628; }
  pre.c2html  span.double      { color: #628; }
+ pre.c2html  span.ssizet      { color: #628; }
  pre.c2html  span.sizet       { color: #628; }
  pre.c2html  span.offt        { color: #628; }
  pre.c2html  span.off64t      { color: #628; }
@@ -72,9 +73,13 @@
  pre.c2html  span.stdout      { color: #628; }
  pre.c2html  span.stderr      { color: #F22; font-weight: bold; }
 
+ pre.c2html  span.errno       { color: #F22; }
+
  pre.c2html  span.exitsucs    { color: #292; font-weight: bold; }
  pre.c2html  span.exitfail    { color: #F22; font-weight: bold; }
 
  pre.c2html  span.true        { color: #44F; }
  pre.c2html  span.false       { color: #44F; }
  pre.c2html  span.null        { color: #44F; }
+ pre.c2html  span.num0        { color: #F22; }
+ pre.c2html  span.numm1       { color: #F22; font-weight: bold; }

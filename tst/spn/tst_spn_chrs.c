@@ -50,6 +50,8 @@ static void tst_chrs(Vstr_base *t1, unsigned int off)
 
 static void tst_non_chrs(Vstr_base *t1, unsigned int off)
 {
+  char pos_4_chr[1];
+  
   TST_B_TST(ret, off + 1,
             VSTR_SPN_CSTR_CHRS_FWD(t1, 1, t1->len, "0123456789") != 4);
   TST_B_TST(ret, off + 2,
@@ -58,6 +60,13 @@ static void tst_non_chrs(Vstr_base *t1, unsigned int off)
             vstr_spn_chrs_fwd(t1, 5, t1->len - 4, NULL, 1) != 4);
   TST_B_TST(ret, off + 4,
             vstr_spn_chrs_rev(t1, 1, 8,           NULL, 1) != 4);
+
+  pos_4_chr[0] = vstr_export_chr(t1, 4);
+  
+  TST_B_TST(ret, off + 5,
+            vstr_spn_cstr_chrs_fwd(t1, 4, t1->len - 8, "0123456789") != 1);
+  TST_B_TST(ret, off + 5,
+            vstr_spn_chrs_fwd(t1, 4, t1->len - 8, pos_4_chr, 1) != 1);
 }
 
 int tst(void)

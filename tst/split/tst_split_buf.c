@@ -12,7 +12,9 @@ int tst(void)
   unsigned int split2_num = 0;
   unsigned int split4_num = 0;
   unsigned int split8_num = 0;
-
+  int mfail_count = 0;
+  Vstr_sects *msects = NULL;
+  
   VSTR_SECTS_DECL_INIT(sects8);
   VSTR_SECTS_DECL_INIT(sects4);
   VSTR_SECTS_DECL_INIT(sects2);
@@ -283,5 +285,102 @@ int tst(void)
                                    VSTR_FLAG_SPLIT_POST_NULL);
   TST_B_TST(ret, 28, split8_num != 2);
 
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_buf(s1, 1, 3, "::",
+                                   sects8, 0,
+                                   VSTR_FLAG_SPLIT_BEG_NULL |
+                                   VSTR_FLAG_SPLIT_END_NULL |
+                                   VSTR_FLAG_SPLIT_POST_NULL);
+  TST_B_TST(ret, 29, split8_num != 2);
+  
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_buf(s1, 1, 3, ":",
+                                   sects8, 0,
+                                   VSTR_FLAG_SPLIT_BEG_NULL |
+                                   VSTR_FLAG_SPLIT_END_NULL |
+                                   VSTR_FLAG_SPLIT_POST_NULL);
+  TST_B_TST(ret, 29, split8_num != 4);
+  
+  sects8->num = 0;
+  split8_num = vstr_split_cstr_buf(s1, 1, 3, ":",
+                                   sects8, 0, VSTR_FLAG_SPLIT_DEF);
+  ASSERT(!split8_num);
+
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(0);
+    vstr_sects_free(msects);
+    msects = vstr_sects_make(1);
+    ASSERT(msects && (msects->sz == 1) && !msects->num);
+    
+    ASSERT(!sects8->num);
+    tst_mfail_num(++mfail_count);
+  } while (!(split8_num = vstr_split_cstr_buf(s1, 1, 3, ":",
+                                              msects, 2,
+                                              VSTR_FLAG_SPLIT_BEG_NULL |
+                                              VSTR_FLAG_SPLIT_END_NULL |
+                                              VSTR_FLAG_SPLIT_POST_NULL)));
+  tst_mfail_num(0);
+  TST_B_TST(ret, 30, split8_num  != 2);
+  TST_B_TST(ret, 30, msects->num != 2);
+  
+  vstr_add_cstr_ptr(s1, 0, "x");
+  
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(0);
+    vstr_sects_free(msects);
+    msects = vstr_sects_make(1);
+    ASSERT(msects && (msects->sz == 1) && !msects->num);
+    
+    tst_mfail_num(++mfail_count);
+  } while (!(split8_num = vstr_split_cstr_buf(s1, 1, s1->len, ":",
+                                              msects, 3,
+                                              VSTR_FLAG_SPLIT_REMAIN)));
+  tst_mfail_num(0);
+  TST_B_TST(ret, 30, split8_num  != 2);
+  TST_B_TST(ret, 30, msects->num != 2);
+
+  vstr_sc_reduce(s1, 1, s1->len, 1);
+  
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(0);
+    vstr_sects_free(msects);
+    msects = vstr_sects_make(1);
+    ASSERT(msects && (msects->sz == 1) && !msects->num);
+    
+    tst_mfail_num(++mfail_count);
+  } while (!(split8_num = vstr_split_cstr_buf(s1, 1, s1->len, ":",
+                                              msects, 3,
+                                              VSTR_FLAG_SPLIT_REMAIN |
+                                              VSTR_FLAG_SPLIT_POST_NULL )));
+  tst_mfail_num(0);
+  TST_B_TST(ret, 30, split8_num  != 2);
+  TST_B_TST(ret, 30, msects->num != 2);
+
+  mfail_count = 0;
+  do
+  {
+    tst_mfail_num(0);
+    vstr_sects_free(msects);
+    msects = vstr_sects_make(1);
+    ASSERT(msects && (msects->sz == 1) && !msects->num);
+    
+    tst_mfail_num(++mfail_count);
+  } while (!(split8_num = vstr_split_cstr_buf(s1, 1, s1->len, ":",
+                                              msects, 0,
+                                              VSTR_FLAG_SPLIT_BEG_NULL |
+                                              VSTR_FLAG_SPLIT_END_NULL |
+                                              VSTR_FLAG_SPLIT_POST_NULL)));
+  tst_mfail_num(0);
+  TST_B_TST(ret, 30, split8_num  != 4);
+  TST_B_TST(ret, 30, msects->num != 4);
+
+  vstr_sects_free(msects);
+  
   return (TST_B_RET(ret));
 }

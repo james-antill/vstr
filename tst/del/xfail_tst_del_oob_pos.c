@@ -4,5 +4,5 @@ static const char *rf = __FILE__;
 
 void xfail_tst(void)
 {
-  vstr_del(s1, 1, 1);
+  ASSERT(!vstr_del(s1, 1, 1));
 }

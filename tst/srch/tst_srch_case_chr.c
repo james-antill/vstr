@@ -27,6 +27,9 @@ static void tst_srch_chr(Vstr_base *t1, unsigned int off)
   TST_B_TST(ret, off + 8,
             vstr_srch_case_chr_rev(t1, lens_fwd[0], t1->len - lens_fwd[0],
                                    'A') != lens_fwd[3]);
+  
+  ASSERT(!vstr_srch_case_chr_fwd(t1, 1, t1->len, 'J'));
+  ASSERT(!vstr_srch_case_chr_rev(t1, 1, t1->len, 'J'));
 }
 
 int tst(void)

@@ -1,4 +1,5 @@
 /* vstr stuff and bug fixes by james antill ... LGPL and above MIT.
+   timesstamp() function by Michael B Allen <mba2000@ioplex.com>
    gcc -g -Wall -W -O2 -o csv_vstr csv_vstr.c `pkg-config --cflags --libs vstr`
  */
 
@@ -79,7 +80,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
   while (len)
   {
     if (!iter->len)
-      vstr_iter_fwd_nxt(iter);
+      if (!vstr_iter_fwd_nxt(iter)) abort();
 
     switch (state)
     {
@@ -199,7 +200,7 @@ vcsv_row_parse(Vstr_base *s1, size_t pos, size_t len,
             --beg_len;
             len -= 2;   /* for above */
 
-            vstr_iter_fwd_beg(s1, tpos + 1, len, iter);
+            if (!vstr_iter_fwd_beg(s1, tpos + 1, len, iter)) abort();
             state = VCSV_ST_GET_BEG_DQUOT;
             continue;
           }

@@ -3,7 +3,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -91,6 +91,7 @@
 #if VSTR_COMPILE_MACRO_FUNCTIONS
 /* these are also inline functions... */
 #define VSTR_SC_POSDIFF(bp, ep) (((ep) - (bp)) + 1)
+#define VSTR_SC_POSLAST(bp, l)  ( (bp) + ((l)  - 1))
 #define VSTR_CMP_EQ(x, p1, l1, y, p2, l2) (((l1) == (l2)) && \
  !vstr_cmp(x, p1, l1, y, p2, l1))
 #define VSTR_CMP_BUF_EQ(x, p1, l1, y, l2) (((l1) == (l2)) && \
@@ -198,7 +199,8 @@ extern struct Vstr_ref *vstr_ref_add(struct Vstr_ref *)
 extern void vstr_ref_del(struct Vstr_ref *);
 extern struct Vstr_ref *vstr_ref_make_ptr(const void *,
                                           void (*)(struct Vstr_ref *))
-    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_MALLOC()
+   VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_malloc(size_t)
     VSTR__COMPILE_ATTR_MALLOC() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern struct Vstr_ref *vstr_ref_make_memdup(const void *, size_t)
@@ -340,14 +342,12 @@ extern int vstr_sub_rep_chr(struct Vstr_base *, size_t, size_t,
                             char, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
-extern inline int vstr_sub_cstr_buf(struct Vstr_base *, size_t, size_t,
-                                    const char *)
+extern int vstr_sub_cstr_buf(struct Vstr_base *, size_t, size_t, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A();
-extern inline int vstr_sub_cstr_ptr(struct Vstr_base *, size_t, size_t,
-                                    const char *)
+extern int vstr_sub_cstr_ptr(struct Vstr_base *, size_t, size_t, const char *)
     VSTR__COMPILE_ATTR_NONNULL_A();
-extern inline int vstr_sub_cstr_ref(struct Vstr_base *, size_t, size_t,
-                                    struct Vstr_ref *, size_t)
+extern int vstr_sub_cstr_ref(struct Vstr_base *, size_t, size_t,
+                             struct Vstr_ref *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
 /* convertion functions */
@@ -819,6 +819,17 @@ extern void vstr_cache_cb_free(const struct Vstr_base *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A();
 
 
+/* configuration data functions... */
+unsigned int vstr_data_add(struct Vstr_conf *, const char *, struct Vstr_ref *)
+   VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+unsigned int vstr_data_srch(struct Vstr_conf *, const char *)
+   VSTR__COMPILE_ATTR_NONNULL_L((2)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+void vstr_data_del(struct Vstr_conf *, unsigned int);
+void *vstr_data_get(struct Vstr_conf *, unsigned int)
+   VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+void  vstr_data_set(struct Vstr_conf *, unsigned int, struct Vstr_ref *);
+
+
 /* custom format specifier registration functions */
 extern int vstr_fmt_add(struct Vstr_conf *, const char *,
                         int (*)(struct Vstr_base *, size_t,
@@ -840,6 +851,8 @@ extern int vstr_iter_fwd_nxt(struct Vstr_iter *)
 
 /* shortcut functions ... */
 extern size_t vstr_sc_posdiff(size_t, size_t)
+    VSTR__COMPILE_ATTR_CONST() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_sc_poslast(size_t, size_t)
     VSTR__COMPILE_ATTR_CONST() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern int vstr_sc_reduce(struct Vstr_base *, size_t, size_t, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
@@ -993,24 +1006,30 @@ extern size_t vstr_sc_conv_num10_uintmax(char *, size_t,
     VSTR__COMPILE_ATTR_NONNULL_A();
 
 /* == inline helper functions == */
-/* indented because they aren't documented */
+/* indented because they aren't a documented part of the API ...
+ * just used from the inline calls */
  extern int vstr_extern_inline_add_buf(struct Vstr_base *, size_t,
                                        const void *, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern int vstr_extern_inline_del(struct Vstr_base *, size_t, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern int vstr_extern_inline_sects_add(struct Vstr_sects *, size_t, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern int vstr_extern_inline_add_rep_chr(struct Vstr_base *, size_t,
                                            char, size_t)
-    VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+ extern void *vstr_extern_inline_data_get(unsigned int)
+    VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern void  vstr_extern_inline_data_set(unsigned int, struct Vstr_ref *);
 
  extern void *vstr_wrap_memcpy(void *, const void *, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern int   vstr_wrap_memcmp(const void *, const void *, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A()
+    VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern void *vstr_wrap_memchr(const void *, int, size_t)
-    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A();
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A()
+    VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
  extern void *vstr_wrap_memset(void *, int, size_t)
     VSTR__COMPILE_ATTR_NONNULL_A();
  extern void *vstr_wrap_memmove(void *, const void *, size_t)

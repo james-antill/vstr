@@ -50,6 +50,7 @@ int tst(void)
   vstr_add_ptr(s3, s3->len, "a", 1);
   vstr_add_vstr(s4, s4->len, s3, 1, s3->len, 0);
 
+  mfail_count = 0;
   do
   {
     TST_B_TST(ret, 5, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));

@@ -1,6 +1,6 @@
 #define VSTR_CACHE_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -118,7 +118,16 @@ void vstr_cache_cb_free(const Vstr_base *base, unsigned int num)
 
   switch (base->grpalloc_cache)
   {
-    case VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR:  if (num == 3) return;
+    case VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR:
+      if (num == 3)
+      {
+        struct Vstr__cache_data_cstr *data = NULL;
+
+        data = vstr_cache_get(base, base->conf->cache_pos_cb_cstr);
+        vstr_ref_del(data->ref);
+        data->ref = NULL;
+        return;
+      }
     case VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC: if (num == 2) return;
     case VSTR_TYPE_CNTL_CONF_GRPALLOC_POS:   if (num == 1) return;
       ASSERT_NO_SWITCH_DEF();
@@ -154,7 +163,7 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   Vstr__cache_data_cstr *from_data = NULL;
   unsigned int off      = 3;
   unsigned int from_off = 3;
-
+  
   ASSERT(off      == base->conf->cache_pos_cb_cstr);
   ASSERT(from_off == from_base->conf->cache_pos_cb_cstr);
 
@@ -169,20 +178,33 @@ void vstr__cache_cstr_cpy(const Vstr_base *base, size_t pos, size_t len,
   if (!(from_data = vstr_cache_get(from_base, from_off)))
     return;
 
-  if (data->len || !from_data->len)
+  if ((data->ref && data->len) || (!from_data->ref || !from_data->len))
     return;
 
-  if ((from_pos >= from_data->pos) &&
-      (len == (from_data->len - (from_data->pos - from_pos))))
+  if ((from_pos <= vstr_sc_poslast(from_data->pos, from_data->len)) &&
+      (vstr_sc_poslast(from_pos,       len) >=
+       vstr_sc_poslast(from_data->pos, from_data->len)))
   {
+    size_t overlap = from_data->len;
+    size_t begskip = 0;
+    size_t offskip = 0;
+    
+    if (from_pos < from_data->pos)
+      begskip  = (from_data->pos - from_pos);
+    else
+    {
+      overlap -= (from_pos - from_data->pos);
+      offskip  = (from_pos - from_data->pos);
+    }
+    
     if (data->ref)
       vstr_ref_del(data->ref);
 
     data->ref = vstr_ref_add(from_data->ref);
-    data->pos = pos + 1;
-    data->len = len;
+    data->pos = pos + 1 + begskip;
+    data->len = overlap;
     data->sz  = from_data->sz;
-    data->off = from_data->off + (from_data->pos - from_pos);
+    data->off = from_data->off + offskip;
   }
 }
 
@@ -358,6 +380,7 @@ static void *vstr__cache_iovec_cb(const Vstr_base *base
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
+    assert(VSTR__DEBUG_MALLOC_CHECK_MEM(data));
     VSTR__F(data->v);
     VSTR__F(data->t);
     VSTR__F(data);
@@ -377,8 +400,8 @@ static void *vstr__cache_cstr_cb(const Vstr_base *base __attribute__((unused)),
                                  unsigned int type, void *passed_data)
 {
   Vstr__cache_data_cstr *data = passed_data;
-  const size_t end_pos = (pos + len - 1);
-  const size_t data_end_pos = (data->pos + data->len - 1);
+  const size_t end_pos = vstr_sc_poslast(pos, len);
+  const size_t data_end_pos = vstr_sc_poslast(data->pos, data->len);
 
   ASSERT(passed_data);
 
@@ -458,14 +481,32 @@ int vstr__cache_conf_init(Vstr_conf *conf)
 }
 
 /* initial stuff done in vstr.c */
+unsigned int vstr_cache_srch(Vstr_conf *passed_conf, const char *name)
+{
+  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
+  unsigned int pos = 0;
+
+  ASSERT(name);
+  
+  while (pos < conf->cache_cbs_sz)
+  {
+    if (!strcmp(name, conf->cache_cbs_ents[pos++].name))
+      return (pos);
+  }
+
+  return (0);
+}
+
 unsigned int vstr_cache_add(Vstr_conf *passed_conf, const char *name,
                             void *(*func)(const Vstr_base *, size_t, size_t,
                                           unsigned int, void *))
 {
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
-  unsigned int sz  = conf->cache_cbs_sz + 1;
+  unsigned int sz = conf->cache_cbs_sz + 1;
   struct Vstr_cache_cb *ents = NULL;
 
+  ASSERT(!vstr_cache_srch(conf, name));
+  
   if (!VSTR__MV(conf->cache_cbs_ents, ents, sizeof(Vstr_cache_cb) * sz))
   {
     conf->malloc_bad = TRUE;
@@ -476,21 +517,9 @@ unsigned int vstr_cache_add(Vstr_conf *passed_conf, const char *name,
   conf->cache_cbs_ents[sz - 1].name    = name;
   conf->cache_cbs_ents[sz - 1].cb_func = func;
 
+  ASSERT(vstr_cache_srch(conf, name));
+  
   return (sz);
-}
-
-unsigned int vstr_cache_srch(Vstr_conf *passed_conf, const char *name)
-{
-  Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
-  unsigned int pos = 0;
-
-  while (pos < conf->cache_cbs_sz)
-  {
-    if (!strcmp(name, conf->cache_cbs_ents[pos++].name))
-      return (pos);
-  }
-
-  return (0);
 }
 
 int vstr_cache_set(const Vstr_base *base, unsigned int pos, void *data)

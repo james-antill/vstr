@@ -1,6 +1,6 @@
 #define VSTR_EXPORT_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -145,6 +145,8 @@ size_t vstr_export_buf(const Vstr_base *base, size_t pos, size_t len,
   Vstr_iter iter[1];
   size_t ret = 0;
 
+  ASSERT_RET(buf, 0);
+
   if (!buf_len)
     return (0);
 
@@ -203,7 +205,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     Vstr__cache_data_cstr *data = NULL;
     unsigned int off = base->conf->cache_pos_cb_cstr;
 
-    if ((data = vstr_cache_get(base, off)) && data->ref)
+    if ((data = vstr_cache_get(base, off)) && data->ref && data->len)
     {
       if (pos >= data->pos)
       {
@@ -233,7 +235,20 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     {
       void *ptr = ((char *)((Vstr_node_ptr *)*scan)->ptr) + pos;
 
-      if (!(ref = vstr__ref_make_ptr(ptr, vstr__ref_cb_free_ref)))
+      if (!base->conf->ref_grp_ptr)
+      {
+        Vstr_ref_grp_ptr *tmp = NULL;
+        
+        if (!(tmp = vstr__ref_grp_make(vstr_ref_cb_free_nothing, 0)))
+        {
+          base->conf->malloc_bad = TRUE;
+          return (NULL);
+        }
+        
+        base->conf->ref_grp_ptr = tmp;
+      }
+
+      if (!(ref = vstr__ref_grp_add(&base->conf->ref_grp_ptr, ptr)))
       {
         base->conf->malloc_bad = TRUE;
         return (NULL);
@@ -246,7 +261,7 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
     else if ((*scan)->type == VSTR_TYPE_NODE_BUF)
     {
       if (!vstr__chg_node_buf_ref(base, scan, num))
-        return (FALSE);
+        return (NULL);
 
       /* NOTE: pos can include ->used stuff, which is now gone */
       assert(pos >= ((Vstr_node_ref *)*scan)->off);

@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_utils.h</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_utils.h</h1>
+<pre class="c2html">
+#<span class="cppifndef">ifndef</span> EX_UTILS_H
+#<span class="cppdefine">define</span> EX_UTILS_H 1
+
+<span class="comment">/* ************************************************************************** */</span>
+<span class="comment">/* headers: Vstr (and all supporting system headers), plus extra ones we need */</span>
+<span class="comment">/* ************************************************************************** */</span>
+
+#<span class="cppdefine">define</span> VSTR_COMPILE_INCLUDE 1 <span class="comment">/* make Vstr include it's system headers */</span>
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
+
+#<span class="cppinclude">include</span> &lt;errno.h&gt;
+
+#<span class="cppinclude">include</span> &lt;err.h&gt; <span class="comment">/* BSD/Linux header see: man errx */</span>
+
+#<span class="cppinclude">include</span> &lt;sys/poll.h&gt;
+
+#<span class="cppinclude">include</span> &lt;sys/types.h&gt; <span class="comment">/* stat + open + STDXXX_FILENO */</span>
+#<span class="cppinclude">include</span> &lt;sys/stat.h&gt;
+#<span class="cppinclude">include</span> &lt;unistd.h&gt;
+#<span class="cppinclude">include</span> &lt;fcntl.h&gt;
+
+#<span class="cppinclude">include</span> &lt;string.h&gt; <span class="comment">/* strncmp() etc. in GETOPT macros */</span>
+
+<span class="comment">/* **************************************************************** */</span>
+<span class="comment">/* defines: TRUE/FALSE and assert(), Note that GETOPT is used later */</span>
+<span class="comment">/* **************************************************************** */</span>
+
+#<span class="cppifndef">ifndef</span> <span class="false">FALSE</span>
+# <span class="cppdefine">define</span> <span class="false">FALSE</span> <span class="num0">0</span>
+#<span class="cppendif">endif</span>
+
+#<span class="cppifndef">ifndef</span> <span class="true">TRUE</span>
+# <span class="cppdefine">define</span> <span class="true">TRUE</span> 1
+#<span class="cppendif">endif</span>
+
+<span class="comment">/* Simple getopt code... */</span>
+#<span class="cppdefine">define</span> EX_UTILS_GETOPT_NUM(name, var) \
+    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
+    { \
+      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
+        (var) = strtol(argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>), <span class="null">NULL</span>, <span class="num0">0</span>); \
+      <span class="else">else</span> \
+      { \
+        (var) = <span class="num0">0</span>; \
+        \
+        ++count; \
+        <span class="if">if</span> (count &gt;= argc) \
+          break; \
+        \
+        (var) = strtol(argv[count], <span class="null">NULL</span>, <span class="num0">0</span>); \
+      } \
+    } \
+    <span class="else">else</span> <span class="if">if</span> (<span class="num0">0</span>) <span class="assert">ASSERT</span>(<span class="false">FALSE</span>)
+
+#<span class="cppdefine">define</span> EX_UTILS_GETOPT_CSTR(name, var) \
+    <span class="else">else</span> <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name, argv[count], strlen(<span class="str">"--"</span> name))) \
+    { \
+      <span class="if">if</span> (!strncmp(<span class="str">"--"</span> name <span class="str">"="</span>, argv[count], strlen(<span class="str">"--"</span> name <span class="str">"="</span>))) \
+        (var) = argv[count] + strlen(<span class="str">"--"</span> name <span class="str">"="</span>); \
+      <span class="else">else</span> \
+      { \
+        (var) = <span class="null">NULL</span>; \
+        \
+        ++count; \
+        <span class="if">if</span> (count &gt;= argc) \
+          break; \
+        \
+        (var) = argv[count]; \
+      } \
+    } \
+    <span class="else">else</span> <span class="if">if</span> (<span class="num0">0</span>) <span class="assert">ASSERT</span>(<span class="false">FALSE</span>)
+
+
+
+#<span class="cppdefine">define</span> <span class="assert">assert</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"assert("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
+#<span class="cppdefine">define</span> <span class="assert">ASSERT</span>(x) do { <span class="if">if</span> (x) {} <span class="else">else</span> <span class="err">errx</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"ASSERT("</span> #x <span class="str">"), FAILED at line %u"</span>, <span class="compline">__LINE__</span>); } <span class="while">while</span> (<span class="false">FALSE</span>)
+
+
+
+<span class="comment">/* ********************************* */</span>
+<span class="comment">/* generic POSIX IO helper functions */</span>
+<span class="comment">/* ********************************* */</span>
+
+<span class="comment">/* limits on amount of data we keep in core -- can be overridden */</span>
+<span class="comment">/* Note that EX_UTILS_NO_USE_INPUT should be defined if Input IO isn't needed */</span>
+#<span class="cppifndef">ifndef</span> EX_MAX_R_DATA_INCORE
+# <span class="cppdefine">define</span> EX_MAX_R_DATA_INCORE (8 * 1024)
+#<span class="cppendif">endif</span>
+#<span class="cppifndef">ifndef</span> EX_MAX_W_DATA_INCORE
+# <span class="cppdefine">define</span> EX_MAX_W_DATA_INCORE (8 * 1024)
+#<span class="cppendif">endif</span>
+
+#<span class="cppdefine">define</span> IO_OK    <span class="num0">0</span>
+#<span class="cppdefine">define</span> IO_BLOCK 1
+#<span class="cppdefine">define</span> IO_EOF   2
+#<span class="cppdefine">define</span> IO_NONE  3
+
+<span class="comment">/* block waiting for IO read, write or both... */</span>
+<span class="static">static</span> <span class="void">void</span> io_block(<span class="int">int</span> io_r_fd, <span class="int">int</span> io_w_fd)
+{
+  <span class="pollfd">struct pollfd</span> ios_beg[2];
+  <span class="pollfd">struct pollfd</span> *ios = ios_beg;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> num = <span class="num0">0</span>;
+  
+  ios[0].revents = ios[1].revents = <span class="num0">0</span>;
+  
+  <span class="if">if</span> (io_r_fd == io_w_fd)
+  { <span class="comment">/* block on both read and write, same fds */</span>
+    num = 1;
+    ios[0].events = POLLIN | POLLOUT;
+    ios[0].fd     = io_w_fd;
+  }
+  <span class="else">else</span>
+  { <span class="comment">/* block on read or write or both */</span>
+    <span class="if">if</span> (io_r_fd != <span class="numm1">-1</span>)
+    {
+      ios-&gt;events = POLLIN;
+      ios-&gt;fd     = io_r_fd;
+      ++num; ++ios;
+    }
+    <span class="if">if</span> (io_w_fd != <span class="numm1">-1</span>)
+    {
+      ios-&gt;events = POLLOUT;
+      ios-&gt;fd     = io_w_fd;
+      ++num; ++ios;
+    }
+  }
+  
+  <span class="while">while</span> (poll(ios_beg, num, <span class="numm1">-1</span>) == <span class="numm1">-1</span>) <span class="comment">/* can't timeout */</span>
+  {
+    <span class="if">if</span> (<span class="errno">errno</span> != EINTR)
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"poll"</span>);
+  }
+}
+
+<span class="comment">/* Try and move some data from Vstr string to fd */</span>
+<span class="static">static</span> <span class="int">int</span> io_put(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
+{
+  <span class="if">if</span> (!io_w-&gt;len)
+    <span class="return">return</span> (IO_NONE);
+
+  <span class="if">if</span> (!vstr_sc_write_fd(io_w, 1, io_w-&gt;len, fd, <span class="null">NULL</span>))
+  {
+    <span class="if">if</span> (<span class="errno">errno</span> == EAGAIN)
+      <span class="return">return</span> (IO_BLOCK);
+    
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"write"</span>);
+  }
+
+  <span class="return">return</span> (IO_OK);
+}
+
+<span class="comment">/* loop outputting data until empty, blocking when needed */</span>
+<span class="static">static</span> <span class="void">void</span> io_put_all(<span class="vstrbase">Vstr_base</span> *io_w, <span class="int">int</span> fd)
+{
+  <span class="int">int</span> state = IO_NONE;
+
+  <span class="while">while</span> ((state = io_put(io_w, fd)) != IO_NONE)
+  {
+    <span class="if">if</span> (state == IO_BLOCK)
+      io_block(<span class="numm1">-1</span>, fd);
+  }
+}
+    
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_INPUT
+<span class="comment">/* Try and move some data from fd to Vstr string */</span>
+<span class="static">static</span> <span class="int">int</span> io_get(<span class="vstrbase">Vstr_base</span> *io_r, <span class="int">int</span> fd)
+{
+  <span class="if">if</span> (io_r-&gt;len &lt; EX_MAX_R_DATA_INCORE)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = <span class="num0">0</span>;
+
+    vstr_sc_read_iov_fd(io_r, io_r-&gt;len, fd, 8, 16, &amp;ern);
+    
+    <span class="if">if</span> (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
+      <span class="return">return</span> (IO_EOF);
+    <span class="else">else</span> <span class="if">if</span> ((ern == VSTR_TYPE_SC_READ_FD_ERR_READ_ERRNO) &amp;&amp; (<span class="errno">errno</span> == EAGAIN))
+      <span class="return">return</span> (IO_BLOCK);
+    <span class="else">else</span> <span class="if">if</span> (ern)
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"read"</span>);
+  }
+
+  <span class="return">return</span> (IO_OK);
+}
+
+<span class="comment">/* block read or writting, depending on limits */</span>
+<span class="static">static</span> <span class="void">void</span> io_limit(<span class="int">int</span> io_r_state, <span class="int">int</span> io_r_fd,
+                     <span class="int">int</span> io_w_state, <span class="int">int</span> io_w_fd, <span class="vstrbase">Vstr_base</span> *s_w)
+{
+  <span class="if">if</span> (io_w_state == IO_BLOCK) <span class="comment">/* allow 16k to build up */</span>
+  {
+    <span class="if">if</span> (io_r_state == IO_BLOCK) <span class="comment">/* block to either get or put some data */</span>
+      io_block(io_r_fd, io_w_fd);
+    <span class="else">else</span> <span class="if">if</span> (s_w-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      io_block(<span class="numm1">-1</span>, io_w_fd); <span class="comment">/* block to put more data */</span>
+  }
+  <span class="else">else</span> <span class="if">if</span> ((io_w_state == IO_NONE) &amp;&amp; (io_r_state == IO_BLOCK))
+    io_block(io_r_fd, <span class="numm1">-1</span>); <span class="comment">/* block to get more data */</span>
+}
+#<span class="cppendif">endif</span>
+
+<span class="comment">/* generic POSIX IO functions that _don't_ call Vstr functions */</span>
+
+<span class="static">static</span> <span class="int">int</span> io_fd_set_o_nonblock(<span class="int">int</span> fd)
+{
+  <span class="int">int</span> flags = <span class="num0">0</span>;
+
+  <span class="comment">/* see if the NONBLOCK flag is set... */</span>
+  <span class="if">if</span> ((flags = fcntl(fd, F_GETFL)) == <span class="numm1">-1</span>)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="comment">/* if it isn't try and add it to the current flags */</span>
+  <span class="if">if</span> (!(flags &amp; O_NONBLOCK) &amp;&amp;
+      (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == <span class="numm1">-1</span>))
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+}
+
+#<span class="cppifndef">ifndef</span> EX_UTILS_NO_USE_OPEN
+# <span class="cppifndef">ifndef</span> VSTR_AUTOCONF_HAVE_OPEN64
+#  <span class="cppdefine">define</span> open64 open
+# <span class="cppendif">endif</span>
+<span class="static">static</span> <span class="int">int</span> io_open(<span class="const">const</span> <span class="char">char</span> *filename)
+{
+  <span class="int">int</span> fd = open64(filename, O_RDONLY | O_NOCTTY);
+
+  <span class="if">if</span> (fd == <span class="numm1">-1</span>)
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"open(%s)"</span>, filename);
+
+  <span class="comment">/* When doing IO, it should always be non-blocking */</span>
+  io_fd_set_o_nonblock(fd);
+
+  <span class="return">return</span> (fd);
+}
+#<span class="cppendif">endif</span>
+
+<span class="comment">/* ************************ */</span>
+<span class="comment">/* generic helper functions */</span>
+<span class="comment">/* ************************ */</span>
+
+<span class="comment">/* Example init function */</span>
+<span class="static">static</span> <span class="vstrbase">Vstr_base</span> *ex_init(<span class="vstrbase">Vstr_base</span> **s2)
+{
+  <span class="vstrbase">Vstr_base</span> *s1 = <span class="null">NULL</span>;
+  struct stat stat_buf;
+
+  <span class="if">if</span> (!vstr_init()) <span class="comment">/* init the library */</span>
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"init"</span>);
+
+  
+  <span class="comment">/* alter the node buffer size to be whatever the stdout block size is */</span>
+  <span class="if">if</span> (fstat(1, &amp;stat_buf) == <span class="numm1">-1</span>)
+    <span class="warn">warn</span>(<span class="str">"fstat(STDOUT)"</span>);
+  <span class="else">else</span>
+  {
+    <span class="if">if</span> (!stat_buf.st_blksize) <span class="comment">/* this is allowed to be Zero */</span>
+      stat_buf.st_blksize = 4096;
+
+    <span class="if">if</span> (!vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_NUM_BUF_SZ,
+                        stat_buf.st_blksize / 8))
+      <span class="warn">warnx</span>(<span class="str">"Couldn't alter node size to match block size"</span>);
+  }
+
+  <span class="comment">/* create strings... */</span>  
+  <span class="if">if</span> (!(s1 = vstr_make_base(<span class="null">NULL</span>)) ||
+      (s2 &amp;&amp; !(*s2 = vstr_make_base(<span class="null">NULL</span>))))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"Create string"</span>);
+
+  <span class="comment">/* create some data storage for _both_ of the above strings */</span>
+  vstr_make_spare_nodes(<span class="null">NULL</span>, VSTR_TYPE_NODE_BUF, 32);
+  
+  <span class="comment">/* Try and make stdout non-blocking, if it is a file this won't do anything */</span>
+  io_fd_set_o_nonblock(<span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="return">return</span> (s1);
+}
+
+<span class="comment">/* Example exit function */</span>
+<span class="static">static</span> <span class="int">int</span> ex_exit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2)
+{
+  <span class="comment">/* These next calls are only really needed for debugging,
+   * in that when they are done any memory leaks can be seen in debugging mode.
+   */</span>
+
+  <span class="comment">/* As with the system free() both of these are ok if passed NULL */</span>
+  
+  <span class="comment">/* free s1, our String object */</span>
+  vstr_free_base(s1);
+  <span class="comment">/* free s2, our String object */</span>
+  vstr_free_base(s2);
+
+  <span class="comment">/* "exit" Vstr, this free's all internal data and no library calls apart from
+   * vstr_init() should be called after this.
+   */</span>
+  vstr_exit();
+
+  <span class="return">return</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+}
+
+#<span class="cppendif">endif</span>
+</pre>
+<!-- C to html convertion of ex_utils.h -->
+<!--   done on Mon Jan 26 05:27:57 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

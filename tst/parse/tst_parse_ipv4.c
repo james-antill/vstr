@@ -10,11 +10,11 @@ static const char *rf = __FILE__;
   \
   if (err != (er)) return (1); \
   if (!err || (err == VSTR_TYPE_PARSE_IPV4_ERR_ONLY)) { \
-  if (ips[0] != (ip0)) return (2); \
-  if (ips[1] != (ip1)) return (3); \
-  if (ips[2] != (ip2)) return (4); \
-  if (ips[3] != (ip3)) return (5); \
-  if (cidr != (ci)) return (6); \
+  if (ips[0] != (ip0))  return (2); \
+  if (ips[1] != (ip1))  return (3); \
+  if (ips[2] != (ip2))  return (4); \
+  if (ips[3] != (ip3))  return (5); \
+  if (cidr != (ci))     return (6); \
   if (num_len != (num)) return (7); \
   } \
 } while (FALSE);
@@ -73,10 +73,17 @@ int tst(void)
          127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128.0"), 0);
   TST_IP(VSTR_FLAG02(PARSE_IPV4, NETMASK, NETMASK_FULL),
          127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128.0"), 0);
-  TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
-         127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128.0"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV4_ONLY,
          127, 0, 0, 1, 32, strlen("127.0.0.1"), VSTR_TYPE_PARSE_IPV4_ERR_ONLY);
+  vstr_sub_cstr_buf(s1, s1->len, 1, "X");
+  TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
+         127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128."), 0);
+  vstr_sc_reduce(s1, 1, s1->len, 1);
+  TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
+         127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128."), 0);
+  vstr_sc_reduce(s1, 1, s1->len, 1);
+  TST_IP(VSTR_FLAG02(PARSE_IPV4, CIDR, NETMASK),
+         127, 0, 0, 1, 17, strlen("127.0.0.1/255.255.128"), 0);
 
 
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "127.0.0.1/255.255.255.255");

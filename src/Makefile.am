@@ -44,6 +44,7 @@ libvstr_la_SOURCES = assert_loop.c fix.c \
                         vstr_cntl.c \
                         vstr_conv.c \
                         vstr_cstr.c \
+                        vstr_data.c \
                         vstr_del.c \
                         vstr_dup.c \
                         vstr_export.c \

@@ -1,4 +1,4 @@
-%define ver      1.0.11
+%define ver      1.0.12
 %define libver  1.0
 %define real_release_num 1
 %define RELEASE %{real_release_num}
@@ -60,6 +60,9 @@ Requires: %{name} = %{ver}
  Also includes a %{name}.pc file for pkg-config.
 
 %changelog
+* Wed Jan 14 2004 James Antill <james@and.org>
+- Change to glob for examples.
+
 * Fri Aug  8 2003 James Antill <james@and.org>
 - Extra example programs to be installed
 
@@ -129,37 +132,17 @@ rm -rf $RPM_BUILD_ROOT
 
 make DESTDIR=$RPM_BUILD_ROOT install
 
-cp TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
+cp -p TODO BUGS $RPM_BUILD_ROOT/%{devdoco}/
 
 # Copy the examples somewhere...
 mkdir $RPM_BUILD_ROOT/%{devdoco}/examples
-cp   \
+cp -p \
  examples/Makefile \
- examples/ex_cat.c \
- examples/ex_csv.c \
- examples/ex_gmp_factorials.c \
- examples/ex_gmp_nums.c \
- examples/ex_hello_world.c \
- examples/ex_hello_world.h \
- examples/ex_hello_world_s.c \
- examples/ex_hello_world_m.c \
- examples/ex_hello_world_x.c \
- examples/ex_hexdump.c \
- examples/ex_highlight.c \
- examples/ex_lookup_ip.c \
- examples/ex_mon_cp.c \
- examples/ex_nl.c \
- examples/ex_perf.h \
- examples/ex_perf_nodesize.c \
- examples/ex_perf_nodesize_foreach.c \
- examples/ex_perf_sgopenssl.c \
- examples/ex_rot13.c \
- examples/ex_slowcat.c \
- examples/ex_ssi.c \
- examples/ex_utils.h \
- examples/ex_yes.c \
- examples/ex_zcat.c \
+ examples/*.c \
+ examples/*.h \
  examples/hexdump_data \
+   $RPM_BUILD_ROOT/%{devdoco}/examples/
+cp -a examples/html \
    $RPM_BUILD_ROOT/%{devdoco}/examples/
 
 rm -f $RPM_BUILD_ROOT/usr/lib/lib%{name}.la
@@ -222,28 +205,7 @@ rm -rf $RPM_BUILD_ROOT
 %{devdoco}/size_cmp.gnumeric
 %{devdoco}/tutorial.html
 %{devdoco}/examples/Makefile
-%{devdoco}/examples/ex_cat.c
-%{devdoco}/examples/ex_csv.c
-%{devdoco}/examples/ex_gmp_factorials.c
-%{devdoco}/examples/ex_gmp_nums.c
-%{devdoco}/examples/ex_hello_world.c
-%{devdoco}/examples/ex_hello_world.h
-%{devdoco}/examples/ex_hello_world_s.c
-%{devdoco}/examples/ex_hello_world_m.c
-%{devdoco}/examples/ex_hello_world_x.c
-%{devdoco}/examples/ex_hexdump.c
-%{devdoco}/examples/ex_highlight.c
-%{devdoco}/examples/ex_lookup_ip.c
-%{devdoco}/examples/ex_mon_cp.c
-%{devdoco}/examples/ex_nl.c
-%{devdoco}/examples/ex_perf.h
-%{devdoco}/examples/ex_perf_nodesize.c
-%{devdoco}/examples/ex_perf_nodesize_foreach.c
-%{devdoco}/examples/ex_perf_sgopenssl.c
-%{devdoco}/examples/ex_rot13.c
-%{devdoco}/examples/ex_slowcat.c
-%{devdoco}/examples/ex_ssi.c
-%{devdoco}/examples/ex_utils.h
-%{devdoco}/examples/ex_yes.c
-%{devdoco}/examples/ex_zcat.c
+%{devdoco}/examples/ex_*.c
+%{devdoco}/examples/ex_*.h
+%{devdoco}/examples/html/*.html
 %{devdoco}/examples/hexdump_data

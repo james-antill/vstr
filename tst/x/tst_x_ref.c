@@ -84,6 +84,30 @@ int tst(void)
     vstr_ref_del(ref);
     vstr_ref_del(ref);
   }
+  
+  {
+    Vstr_ref *refs[128];
+    unsigned int scan = 0;
+    size_t off;
 
+    vstr_add_cstr_ptr(s1, 0, "abcd");
+
+    scan = 0;
+    while (scan < (sizeof(refs) / sizeof(refs[0])))
+      refs[scan++] = vstr_export_ref(s1, 1, 1, &off);
+
+    scan = 0;
+    while (scan < (sizeof(refs) / sizeof(refs[0])))
+      vstr_ref_del(refs[scan++]);
+    
+    scan = 0;
+    while (scan < (sizeof(refs) / sizeof(refs[0])))
+      refs[scan++] = vstr_export_ref(s1, 1, 1, &off);
+
+    scan = (sizeof(refs) / sizeof(refs[0]));
+    while (scan-- > 0)
+      vstr_ref_del(refs[scan]);
+  }
+  
   return (0);
 }

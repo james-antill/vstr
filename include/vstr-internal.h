@@ -2,7 +2,7 @@
 #define VSTR__INTERNAL_HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,12 @@
  *
  *  email: james@and.org
  */
+
+#ifdef __GNUC__
+/* debug call */
+# define D(x, ...) \
+    fprintf(stderr, "DBG: %d:%s <" x ">\n", __LINE__, __FILE__, __VA_ARGS__)
+#endif
 
 #if defined(HAVE_ATTRIB_DEPRECATED)
 # define VSTR__ATTR_D() __attribute__((deprecated))
@@ -72,8 +78,6 @@
 #define VSTR__ASCII_DIGIT_0() (0x30)
 #define VSTR__ASCII_COLON()   (0x3A)
 #define VSTR__ASCII_COMMA()   (0x2C)
-
-#define VSTR_REF_INIT() { vstr_nx_ref_cb_free_nothing, NULL, 0 }
 
 #define VSTR__MK(sz) \
    vstr__debug_malloc(sz, __FILE__, __LINE__)
@@ -275,6 +279,12 @@ extern int  vstr__cache_subset_cbs(Vstr_conf *, Vstr_conf *)
 extern int  vstr__cache_dup_cbs(Vstr_conf *, Vstr_conf *)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
 
+extern int  vstr__data_conf_init(Vstr_conf *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
+    VSTR__ATTR_I();
+extern void vstr__data_conf_free(Vstr_conf *)
+    VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+
 extern unsigned int vstr__add_fmt_grouping_mod(const char *, unsigned int)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET()
     VSTR__ATTR_I();
@@ -328,8 +338,7 @@ extern void *vstr_wrap_memrchr(const void *, int, size_t)
 # define VSTR__SECTS_SZ 8
 # define VSTR__STACK_BUF_SZ 64
 # define VSTR__FMT_USR_SZ 8
-# define vstr__ref_cb_free_ref vstr_ref_cb_free_ref
-# define vstr__ref_make_ptr vstr_ref_make_ptr
+# define VSTR__REF_MAKE_PTR_SZ 42 /* makes 512 bytes ia32: 4 + 4 + 12*x */
 #else
 #define VSTR__DEBUG_MALLOC_CHECK_MEM(x) vstr__debug_malloc_check_mem(x)
 #define VSTR__DEBUG_MALLOC_CHECK_EMPTY() vstr__debug_malloc_check_empty()
@@ -354,9 +363,17 @@ extern void vstr__debug_free(void *)
 # define VSTR__SECTS_SZ 2
 # define VSTR__STACK_BUF_SZ 2
 # define VSTR__FMT_USR_SZ 2
-extern void vstr__ref_cb_free_ref(Vstr_ref *);
-extern Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *));
+# define VSTR__REF_MAKE_PTR_SZ 2
 #endif
+
+#define VSTR__FLAG_REF_GRP_REF (1U<<6)
+extern Vstr_ref_grp_ptr *vstr__ref_grp_make(void (*func) (struct Vstr_ref *),
+                                            unsigned int flags)
+   VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
+extern Vstr_ref *vstr__ref_grp_add(Vstr_ref_grp_ptr **parent, const void *ptr)
+   VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__ATTR_I();
+extern void vstr__ref_grp_free(Vstr_ref_grp_ptr *parent)
+   VSTR__ATTR_I();
 
 extern size_t vstr__loc_thou_grp_strlen(const char *)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();

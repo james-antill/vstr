@@ -29,7 +29,8 @@ int tst(void)
   ASSERT(vstr_sub_rep_chr(s3, 1, 0, 'a', 0));
   ASSERT(vstr_cmp_eq(s3, 1, s3->len, s4, 1, s4->len));
   
-  vstr_sub_rep_chr(s3, 1, 1, 'a', 1);
+  vstr_sub_rep_chr(s3, 1, 2, 'a', 1);
+  vstr_sub_rep_chr(s3, 1, 2, 'a', 2);
   
   vstr_sub_rep_chr(s3, 1, s3->len, 'a', 10);
 

@@ -17,5 +17,11 @@ int tst(void)
       return (len * 2);
   }
 
+  vstr_add_non(s2, 0, 16);
+
+  len = 0;
+  while (++len <= 16)
+    ASSERT(!vstr_export_chr(s2, len));
+  
   return (EXIT_SUCCESS);
 }

@@ -18,6 +18,7 @@ int tst(void)
   do
   {
     vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+    vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_PTR, 1000);
     ASSERT(vstr_cmp_eq(s1, 1, s1->len, s3, 1, s3->len));
     tst_mfail_num(++mfail_count);
   } while (!vstr_conv_encode_uri(s3, 1, s3->len));

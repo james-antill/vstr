@@ -33,6 +33,15 @@ static void tst_srch_buf(Vstr_base *t1, unsigned int off)
 
   ASSERT(!vstr_srch_case_buf_fwd(t1, 1, 0, "a", 1));
   ASSERT(!vstr_srch_case_buf_rev(t1, 1, 0, "a", 1));
+  
+  {
+    unsigned int scan = 0;
+    while (++scan <= t1->len)
+    {
+      ASSERT(vstr_srch_case_buf_fwd(t1, scan, 1, "", 0) == scan);
+      ASSERT(vstr_srch_case_buf_rev(t1, scan, 1, "", 0) == scan);
+    }
+  }
 }
 
 int tst(void)
@@ -103,6 +112,10 @@ int tst(void)
 
   TST_B_TST(ret, 29,
             vstr_srch_case_buf_rev(s1, 4, 8, "", 0) != 11);
+
+  TST_B_TST(ret, 30,
+            vstr_srch_case_cstr_buf_rev(s1, 1, s1->len, "Xyz") !=
+            (lens_fwd[1] + 12));
 
 
   return (TST_B_RET(ret));

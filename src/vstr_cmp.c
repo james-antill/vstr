@@ -1,6 +1,6 @@
 #define VSTR_CMP_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -292,12 +292,8 @@ static int vstr__cmp_vers(const char *scan_str_1,
       case VSTR__CMP_NUMB:
         if (!VSTR__IS_ASCII_DIGIT(*scan_str_1))
           state = VSTR__CMP_NORM;
-        break;
 
-      default:
-        state = VSTR__CMP_NORM;
-        assert(FALSE);
-        break;
+        ASSERT_NO_SWITCH_DEF();
     }
 
     ++scan_str_1;
@@ -325,14 +321,11 @@ static int vstr__cmp_vers(const char *scan_str_1,
         break;
       case VSTR__CMP_FRAC:
       case VSTR__CMP_NUMB:
-        if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) && !VSTR__IS_ASCII_DIGIT(*scan_str_2))
+        if (!VSTR__IS_ASCII_DIGIT(*scan_str_1) &&
+            !VSTR__IS_ASCII_DIGIT(*scan_str_2))
           state = VSTR__CMP_NORM;
-        break;
-
-      default:
-        state = VSTR__CMP_NORM;
-        assert(FALSE);
-        break;
+        
+        ASSERT_NO_SWITCH_DEF();
     }
 
     if (state == VSTR__CMP_NORM)

@@ -1,0 +1,627 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_ssi.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_ssi.c</h1>
+<pre class="c2html">
+<span class="comment">/* quick and qirty static ssi processor. Only does ...
+
+&lt;!--#include file="foo" --&gt;
+
+*/</span>
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppinclude">include</span> &lt;stdio.h&gt;
+
+#<span class="cppinclude">include</span> &lt;sys/time.h&gt;
+#<span class="cppinclude">include</span> &lt;time.h&gt;
+
+#<span class="cppinclude">include</span> &lt;pwd.h&gt;
+
+#<span class="cppinclude">include</span> &lt;spawn.h&gt;
+
+
+#<span class="cppdefine">define</span> EX_SSI_FAILED(x) do {                                           \
+        vstr_add_fmt(s1, s1-&gt;len,                                       \
+                     <span class="str">"&lt;!-- \"%s\" SSI command FAILED --&gt;\n"</span>, (x));      \
+        <span class="goto">goto</span> ssi_parse_failed;                                          \
+    }                                                                   \
+    <span class="while">while</span> (<span class="false">FALSE</span>)
+
+#warning <span class="str">"ALL_REF on upgrade"</span>
+#<span class="cppdefine">define</span> EX_SSI_OK(x, sf, p, l, end) do {                                \
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">"&lt;!-- \"%s ${vstr:%p%zu%zu%u}"</span>          \
+                   <span class="str">"\" SSI command OK --&gt;%s"</span>,                           \
+                   (x), (sf), (p), (l), VSTR_TYPE_ADD_DEF,              \
+                   (end) ? <span class="str">"\n"</span> : <span class="str">""</span>);                                  \
+    }                                                                   \
+    <span class="while">while</span> (<span class="false">FALSE</span>)
+
+
+
+
+<span class="static">static</span> Vstr_ref *dname_ref = <span class="null">NULL</span>;
+<span class="static">static</span> <span class="sizet">size_t</span>    dname_off = <span class="num0">0</span>;
+<span class="static">static</span> <span class="sizet">size_t</span>    dname_len = <span class="num0">0</span>;
+
+<span class="static">static</span> <span class="char">char</span> *timespec = <span class="null">NULL</span>;
+<span class="static">static</span> <span class="int">int</span> use_size_abbrev = <span class="true">TRUE</span>;
+
+<span class="static">static</span> <span class="void">void</span> ex_ssi_cat_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="int">int</span> fd)
+{
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s1, fd);
+ 
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+                                                                                
+    io_w_state = io_put(s1, 1);
+                                                                                
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+}
+
+<span class="static">static</span> <span class="sizet">size_t</span> ex_ssi_srch_end(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> pos, <span class="sizet">size_t</span> len)
+{
+  <span class="int">int</span> instr = <span class="false">FALSE</span>;
+  
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="sizet">size_t</span> srch = vstr_cspn_cstr_chrs_fwd(s2, pos, len, <span class="str">"\\\"-"</span>);
+      
+    pos += srch;
+    len -= srch;
+
+    <span class="if">if</span> (!len)
+      <span class="break">break</span>;
+
+    <span class="if">if</span> (<span class="num0">0</span>) { }
+    <span class="else">else</span> <span class="if">if</span> (!instr &amp;&amp; vstr_export_chr(s2, pos) == <span class="chr">'-'</span>)
+    { <span class="comment">/* see if it's the end... */</span>
+      <span class="if">if</span> (len &lt; strlen(<span class="str">"--&gt;"</span>))
+        <span class="return">return</span> (<span class="num0">0</span>);
+      
+      <span class="if">if</span> (vstr_cmp_bod_cstr_eq(s2, pos, len, <span class="str">"--&gt;"</span>))
+        <span class="return">return</span> (pos + strlen(<span class="str">"-&gt;"</span>));
+    }
+    <span class="else">else</span> <span class="if">if</span> (!instr &amp;&amp; vstr_export_chr(s2, pos) == <span class="chr">'\\'</span>)
+    { <span class="comment">/* do nothing */</span> }
+    <span class="else">else</span> <span class="if">if</span> ( instr &amp;&amp; vstr_export_chr(s2, pos) == <span class="chr">'\\'</span>)
+    {
+      <span class="if">if</span> (len &gt; 1)
+      {
+        ++pos;
+        --len;
+      }
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_export_chr(s2, pos) == <span class="chr">'"'</span>)
+    { instr = !instr; }
+
+    ++pos;
+    --len;
+  }
+  
+  <span class="return">return</span> (<span class="num0">0</span>);
+}
+
+<span class="static">static</span> <span class="inline">inline</span> <span class="void">void</span> ex_ssi_skip_val(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> *srch, <span class="sizet">size_t</span> val)
+{
+  vstr_del(s2, 1, val);
+  *srch        -= val;  
+}
+
+<span class="static">static</span> <span class="inline">inline</span> <span class="void">void</span> ex_ssi_skip_wsp(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> *srch)
+{
+  <span class="sizet">size_t</span> val = vstr_spn_cstr_chrs_fwd(s2, 1, *srch, <span class="str">" "</span>);
+
+  ex_ssi_skip_val(s2, srch, val);
+}
+
+<span class="static">static</span> <span class="inline">inline</span> <span class="void">void</span> ex_ssi_skip_str(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> *srch,
+                                    <span class="const">const</span> <span class="char">char</span> *passed_val)
+{
+  <span class="sizet">size_t</span> val = strlen(passed_val);
+  
+  ex_ssi_skip_val(s2, srch, val);
+}
+
+<span class="static">static</span> <span class="sizet">size_t</span> ex_ssi_attr_val(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> *srch)
+{
+  <span class="sizet">size_t</span> pos = 1;
+  <span class="sizet">size_t</span> len = *srch;
+  <span class="sizet">size_t</span> ret = <span class="num0">0</span>;
+  
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="sizet">size_t</span> scan = vstr_cspn_cstr_chrs_fwd(s2, pos, len, <span class="str">"\\\""</span>);
+
+    <span class="if">if</span> (scan == len)
+      <span class="return">return</span> (<span class="num0">0</span>);
+
+    ret += scan;
+    
+    <span class="if">if</span> (vstr_export_chr(s2, pos + scan) != <span class="chr">'\\'</span>)
+      <span class="break">break</span>;
+
+    <span class="if">if</span> (scan == (len - 1))
+      <span class="return">return</span> (<span class="num0">0</span>);
+
+    ++ret;
+    
+    vstr_del(s2, pos + scan, 1);
+    pos += scan + 1;
+    len -= scan + 1;
+    --*srch;
+
+    <span class="assert">ASSERT</span>(len);
+  }
+
+  <span class="return">return</span> (ret);
+}
+
+<span class="static">static</span> <span class="sizet">size_t</span> ex_ssi_file_attr(<span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> *srch)
+{
+  <span class="sizet">size_t</span> ret = <span class="num0">0</span>;
+  
+  ex_ssi_skip_wsp(s2, srch);
+  
+  <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, *srch, <span class="str">"file=\""</span>))
+    ex_ssi_skip_str(s2, srch, <span class="str">"file=\""</span>);
+  <span class="else">else</span>
+    <span class="return">return</span> (<span class="num0">0</span>);
+
+  <span class="if">if</span> (!(ret = ex_ssi_attr_val(s2, srch)))
+    <span class="return">return</span> (<span class="num0">0</span>);
+  
+  <span class="if">if</span> (vstr_export_chr(s2, 1) != <span class="chr">'/'</span>)
+  {
+    vstr_add_ref(s2, <span class="num0">0</span>, dname_ref, dname_off, dname_len);
+    ret                                    += dname_len;
+    *srch                                  += dname_len;
+  }
+
+  <span class="return">return</span> (ret);
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_ssi_exec(<span class="vstrbase">Vstr_base</span> *s1,
+                        <span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> pos, <span class="sizet">size_t</span> len,
+                        <span class="sizet">size_t</span> *add_len)
+{
+#<span class="cppif">if</span> <span class="num0">0</span>
+  <span class="vstrsects">Vstr_sects</span> *sects = vstr_sects_make(4);
+  <span class="int">int</span> instr = <span class="false">FALSE</span>;
+  <span class="char">char</span> **argv;
+  <span class="char">char</span> **argp;
+  
+  <span class="comment">/* FIXME: doesn't handle &lt;foo "bar baz" arg2&gt;... */</span>
+  vstr_split_cstr_buf(s2, pos, len, <span class="str">" "</span>, sects, <span class="num0">0</span>, VSTR_FLAG_SPLIT_NO_RET);
+  
+    
+  <span class="if">if</span> (vstr_export_chr(s2, 1) != <span class="chr">'/'</span>)
+  {
+    vstr_add_ref(s2, <span class="num0">0</span>, dname_ref, dname_off, dname_len);
+    ret                                    += dname_len;
+    *srch                                  += dname_len;
+  }
+#<span class="cppelse">else</span>
+  FILE *fp = <span class="null">NULL</span>; <span class="comment">/* FIXME: hack job */</span>
+  <span class="sizet">size_t</span> srch = <span class="num0">0</span>;
+  <span class="sizet">size_t</span> tpos = pos;
+  <span class="sizet">size_t</span> tlen = len;
+  
+  <span class="while">while</span> ((srch = vstr_srch_cstr_buf_fwd(s2, tpos, tlen, <span class="str">" "</span>)) &amp;&amp; (srch &lt; tlen))
+  {
+    <span class="switch">switch</span> (vstr_export_chr(s2, srch + 1))
+    {
+      <span class="case">case</span> <span class="chr">'-'</span>: <span class="comment">/* skip options...*/</span>
+      <span class="case">case</span> <span class="chr">'/'</span>: <span class="comment">/* and absolute paths... */</span>
+        <span class="break">break</span>;
+        
+      <span class="default">default</span>:
+        vstr_add_ref(s2, srch, dname_ref, dname_off, dname_len);
+        len                                       += dname_len;
+        tlen                                      += dname_len;
+        *add_len                                  += dname_len;
+    }
+    
+    tlen -= vstr_sc_posdiff(tpos, srch) + 1;
+    tpos  = srch + 1;
+  }
+#<span class="cppendif">endif</span>
+  
+  <span class="if">if</span> (!(fp = popen(vstr_export_cstr_ptr(s2, 1, len), <span class="str">"r"</span>)))
+    <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"popen"</span>);
+
+  ex_ssi_cat_read_fd_write_stdout(s1, fileno(fp));
+
+  pclose(fp);
+}
+
+<span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *ex_ssi_strftime(time_t val, <span class="int">int</span> use_gmt)
+{
+  <span class="static">static</span> <span class="char">char</span> ret[4096];
+  <span class="const">const</span> <span class="char">char</span> *spec = timespec;
+  
+  <span class="if">if</span> (!spec)
+    spec = <span class="str">"%c"</span>;
+
+  strftime(ret, sizeof(ret), spec, use_gmt ? gmtime(&amp;val) : localtime(&amp;val));
+
+  <span class="return">return</span> (ret);
+}
+
+<span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *ex_ssi_getpwuid_name(uid_t uid)
+{
+  struct passwd *pw = getpwuid(uid);
+
+  <span class="if">if</span> (!pw)
+    <span class="return">return</span> (<span class="str">":unknown:"</span>);
+
+  <span class="return">return</span> (pw-&gt;pw_name);
+}
+
+<span class="static">static</span> <span class="int">int</span> ex_ssi_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, time_t last_modified,
+                          <span class="int">int</span> last)
+{
+  <span class="sizet">size_t</span> srch = <span class="num0">0</span>;
+  <span class="int">int</span> ret = <span class="false">FALSE</span>;
+  
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+  
+  <span class="while">while</span> (s2-&gt;len &gt;= strlen(<span class="str">"&lt;!--#"</span>))
+  {
+    <span class="if">if</span> (!(srch = vstr_srch_cstr_buf_fwd(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#"</span>)))
+    {
+      <span class="if">if</span> (last)
+        <span class="break">break</span>;
+      
+      ret = <span class="true">TRUE</span>;
+      vstr_mov(s1, s1-&gt;len, s2, 1, s2-&gt;len - strlen(<span class="str">"&lt;!--#"</span>));
+      <span class="break">break</span>;
+    }
+    
+    <span class="if">if</span> (srch &gt; 1)
+    {
+      ret = <span class="true">TRUE</span>;
+      vstr_add_vstr(s1, s1-&gt;len, s2, 1, srch - 1, VSTR_TYPE_ADD_BUF_REF);
+      vstr_del(s2, 1, srch - 1);
+    }
+
+    <span class="if">if</span> (!(srch = ex_ssi_srch_end(s2, 1, s2-&gt;len)))
+      <span class="break">break</span>;
+    
+    ret = <span class="true">TRUE</span>;
+
+    <span class="if">if</span> (<span class="num0">0</span>) { }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"&lt;!--#include"</span>))
+    {
+      <span class="int">int</span> fd = <span class="numm1">-1</span>;
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#include"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_file_attr(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"include"</span>);
+
+      EX_SSI_OK(<span class="str">"include"</span>, s2, 1, tmp, <span class="true">TRUE</span>);
+
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+
+      fd = io_open(vstr_export_cstr_ptr(s2, 1, tmp));
+
+      ex_ssi_cat_read_fd_write_stdout(s1, fd);
+
+      <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, vstr_export_cstr_ptr(s2, 1, tmp));
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#exec"</span>))
+    {
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+      
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#exec"</span>);
+      ex_ssi_skip_wsp(s2, &amp;srch);
+
+      <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"cmd=\""</span>))
+        ex_ssi_skip_str(s2, &amp;srch, <span class="str">"cmd=\""</span>);
+      <span class="else">else</span>
+        EX_SSI_FAILED(<span class="str">"exec"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_attr_val(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"exec"</span>);
+
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+
+      EX_SSI_OK(<span class="str">"exec"</span>, s2, 1, tmp, <span class="true">TRUE</span>);
+
+      ex_ssi_exec(s1, s2, 1, tmp, &amp;srch);
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#config"</span>))
+    {
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+      enum { tERR = <span class="numm1">-1</span>,
+             tsize, ttime } type = tERR;
+      <span class="const">const</span> <span class="char">char</span> *tname[2] = {<span class="str">"config sizefmt"</span>, <span class="str">"config timefmt"</span>};
+      
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#config"</span>);
+      ex_ssi_skip_wsp(s2, &amp;srch);
+
+      <span class="if">if</span> (<span class="num0">0</span>) { }
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"timefmt=\""</span>))
+        ex_ssi_skip_str(s2, &amp;srch, <span class="str">"timefmt=\""</span>), type = ttime;
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"sizefmt=\""</span>))
+        ex_ssi_skip_str(s2, &amp;srch, <span class="str">"sizefmt=\""</span>), type = tsize;
+      <span class="else">else</span>
+        EX_SSI_FAILED(<span class="str">"config"</span>);
+
+      <span class="assert">ASSERT</span>(type &gt;= <span class="num0">0</span>);
+      
+      <span class="if">if</span> (!(tmp = ex_ssi_attr_val(s2, &amp;srch)))
+        EX_SSI_FAILED(tname[type]);
+
+      EX_SSI_OK(tname[type], s2, 1, tmp, <span class="false">FALSE</span>);
+
+      <span class="switch">switch</span> (type)
+      {
+        <span class="case">case</span> ttime:
+          free(timespec);
+          timespec = vstr_export_cstr_malloc(s2, 1, tmp);
+          <span class="break">break</span>;
+        <span class="case">case</span> tsize:
+          <span class="if">if</span> (<span class="num0">0</span>){ }
+          <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"bytes"</span>))
+            use_size_abbrev = <span class="false">FALSE</span>;
+          <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"abbrev"</span>))
+            use_size_abbrev = <span class="true">TRUE</span>;
+          <span class="break">break</span>;
+        <span class="default">default</span>:
+          <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);
+      }
+
+      <span class="comment">/* &lt;!--#config errmsg="foo" --&gt; ? */</span>
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#echo"</span>))
+    {
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+      
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#echo"</span>);
+      ex_ssi_skip_wsp(s2, &amp;srch);
+
+      <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"encoding=\""</span>))
+        ex_ssi_skip_str(s2, &amp;srch, <span class="str">"encoding=\""</span>);
+      <span class="else">else</span>
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_attr_val(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      <span class="if">if</span> (!vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"none"</span>))
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      srch -= tmp + 1;
+      vstr_del(s2, 1, tmp + 1);
+      ex_ssi_skip_wsp(s2, &amp;srch);
+      
+      <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, srch, <span class="str">"var=\""</span>))
+        ex_ssi_skip_str(s2, &amp;srch, <span class="str">"var=\""</span>);
+      <span class="else">else</span>
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_attr_val(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      <span class="if">if</span> (<span class="num0">0</span>) { }
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"LAST_MODIFIED"</span>))
+        vstr_add_cstr_buf(s1, s1-&gt;len, ex_ssi_strftime(last_modified, <span class="false">FALSE</span>));
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"DATE_GMT"</span>))
+        vstr_add_cstr_buf(s1, s1-&gt;len, ex_ssi_strftime(time(<span class="null">NULL</span>), <span class="true">TRUE</span>));
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"DATE_LOCAL"</span>))
+        vstr_add_cstr_buf(s1, s1-&gt;len, ex_ssi_strftime(time(<span class="null">NULL</span>), <span class="false">FALSE</span>));
+      <span class="else">else</span> <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, tmp, <span class="str">"USER_NAME"</span>))
+        vstr_add_cstr_buf(s1, s1-&gt;len, ex_ssi_getpwuid_name(getuid()));
+      <span class="else">else</span>
+        EX_SSI_FAILED(<span class="str">"echo"</span>);
+
+      EX_SSI_OK(<span class="str">"echo"</span>, s2, 1, tmp, <span class="false">FALSE</span>);
+
+      
+      <span class="comment">/* &lt;!--#echo encoding="none" var="LAST_MODIFIED" --&gt; */</span>
+      <span class="comment">/* &lt;!--#echo encoding="url" var="LAST_MODIFIED" --&gt; */</span>
+      <span class="comment">/* &lt;!--#echo encoding="entity" var="LAST_MODIFIED" --&gt; */</span>
+      
+      <span class="comment">/* &lt;!--#echo var="DOCUMENT_NAME" --&gt; */</span>
+      <span class="comment">/* &lt;!--#echo var="DOCUMENT_URI" --&gt; */</span>
+      
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#fsize"</span>))
+    {
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+      struct stat sbuf[1];
+      
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#fsize"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_file_attr(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"fsize"</span>);
+
+      EX_SSI_OK(<span class="str">"fsize"</span>, s2, 1, tmp, <span class="false">FALSE</span>);
+
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+
+      <span class="if">if</span> (stat(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
+        <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"stat(%s)"</span>, vstr_export_cstr_ptr(s2, 1, tmp));
+
+      <span class="if">if</span> (use_size_abbrev)
+        vstr_add_fmt(s1, s1-&gt;len, <span class="str">"${BKMG.u:%u}"</span>, (<span class="unsigned">unsigned</span>)sbuf-&gt;st_size);
+      <span class="else">else</span>
+        vstr_add_fmt(s1, s1-&gt;len, <span class="str">"%ju"</span>, (<span class="uintmaxt">uintmax_t</span>)sbuf-&gt;st_size);
+    }
+    <span class="else">else</span> <span class="if">if</span> (vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#flastmod"</span>))
+    {
+      <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+      struct stat sbuf[1];
+      
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#flastmod"</span>);
+
+      <span class="if">if</span> (!(tmp = ex_ssi_file_attr(s2, &amp;srch)))
+        EX_SSI_FAILED(<span class="str">"flastmod"</span>);
+
+      EX_SSI_OK(<span class="str">"flastmod"</span>, s2, 1, tmp, <span class="false">FALSE</span>);
+
+      <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+
+      <span class="if">if</span> (stat(vstr_export_cstr_ptr(s2, 1, tmp), sbuf))
+        <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"stat(%s)"</span>, vstr_export_cstr_ptr(s2, 1, tmp));
+        
+      vstr_add_cstr_buf(s1, s1-&gt;len, ex_ssi_strftime(sbuf-&gt;st_mtime, <span class="true">TRUE</span>));
+    }
+    <span class="else">else</span> <span class="if">if</span> (<span class="num0">0</span> &amp;&amp; vstr_cmp_case_bod_cstr_eq(s2, 1, s2-&gt;len, <span class="str">"&lt;!--#if"</span>))
+    {
+      ex_ssi_skip_str(s2, &amp;srch, <span class="str">"&lt;!--#if"</span>);
+      ex_ssi_skip_wsp(s2, &amp;srch);
+
+      <span class="comment">/* &lt;!--#if expr="foo" --&gt; ? */</span>
+      <span class="comment">/* &lt;!--#elif expt="foo" --&gt; ? */</span>
+      <span class="comment">/* &lt;!--#else --&gt; ? */</span>
+      <span class="comment">/* &lt;!--#endif --&gt; ? */</span>
+      
+    }
+    <span class="else">else</span>
+      vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;!-- UNKNOWN SSI command --&gt;\n"</span>);
+
+    <span class="assert">ASSERT</span>(vstr_export_chr(s2, srch) == <span class="chr">'&gt;'</span>);
+    
+    vstr_del(s2, 1, srch);
+  }
+  
+ ssi_parse_failed:
+
+  <span class="if">if</span> (last &amp;&amp; s2-&gt;len)
+  {
+    ret = <span class="true">TRUE</span>;
+    vstr_mov(s1, s1-&gt;len, s2, 1, s2-&gt;len);
+  }
+  
+  <span class="return">return</span> (ret);  
+}
+
+
+<span class="static">static</span> <span class="void">void</span> ex_ssi_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2,
+                                 time_t last_modified, <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  {
+    <span class="int">int</span> proc_data = ex_ssi_process(s1, s2, last_modified, !lim);
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(<span class="numm1">-1</span>, <span class="stdout">STDOUT_FILENO</span>);
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_ssi_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> fd)
+{
+  struct stat sbuf[1];
+  time_t last_modified = time(<span class="null">NULL</span>);
+  
+  <span class="if">if</span> (!fstat(fd, sbuf))
+    last_modified = sbuf-&gt;st_mtime;
+    
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+
+    ex_ssi_process(s1, s2, last_modified, <span class="false">FALSE</span>);
+    
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);    
+  }
+
+  ex_ssi_process_limit(s1, s2, last_modified, <span class="num0">0</span>);
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2);
+  <span class="int">int</span> count = 1;
+  time_t now = time(<span class="null">NULL</span>);
+
+  vstr_sc_fmt_add_all(s1-&gt;conf);
+  vstr_cntl_conf(s1-&gt;conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  
+  <span class="if">if</span> (!(dname_ref = vstr_ref_make_strdup(<span class="str">""</span>)))
+    <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+    
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_ssi_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
+    vstr_add_fmt(s1, s1-&gt;len,
+                 <span class="str">"&lt;!-- SSI processing of %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done by jssi --&gt;\n"</span>,
+                 <span class="str">"stdin"</span>, ctime(&amp;now));
+  }
+  
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="int">int</span> fd = io_open(argv[count]);
+    <span class="sizet">size_t</span> len = strlen(argv[count]);
+    <span class="sizet">size_t</span> dbeg = <span class="num0">0</span>;
+    <span class="sizet">size_t</span> tdname_len = <span class="num0">0</span>;
+    
+    <span class="if">if</span> (!vstr_add_buf(s1, s1-&gt;len, argv[count], len))
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+
+    dbeg = s1-&gt;len - len + 1;
+    vstr_sc_dirname(s1, dbeg, len, &amp;tdname_len);
+    <span class="if">if</span> (tdname_len)
+    {
+      dname_len = tdname_len;
+      vstr_ref_del(dname_ref);
+      <span class="if">if</span> (!(dname_ref = vstr_export_ref(s1, dbeg, dname_len, &amp;dname_off)))
+        <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add data"</span>);
+    }
+    vstr_del(s1, s1-&gt;len - len + 1, len);
+    
+    ex_ssi_read_fd_write_stdout(s1, s2, fd);
+
+    <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
+      <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+
+    vstr_add_fmt(s1, s1-&gt;len,
+                 <span class="str">"&lt;!-- SSI processing of %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done by jssi --&gt;\n"</span>,
+                 argv[count], ctime(&amp;now));
+    
+    ++count;
+  }
+
+  vstr_ref_del(dname_ref);
+  
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_ssi.c -->
+<!--   done on Mon Jan 26 05:27:56 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

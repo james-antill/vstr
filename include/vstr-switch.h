@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 #endif
 
 #ifndef VSTR_COMPILE_INCLUDE
-# define VSTR_COMPILE_INCLUDE 0
+# define VSTR_COMPILE_INCLUDE 1
 #endif
 
 #ifndef VSTR_COMPILE_INLINE

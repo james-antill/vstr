@@ -1463,7 +1463,7 @@ Constant: VSTR_CNTL_BASE_SET_CONF
  Note:
 
   This will only return successfully if either the Vstr string is empty, or
- the Vstr configurations have the same value for the NUM_BUF_SZ attribute and
+ the Vstr configurations have the same value for the _NUM_BUF_SZ attribute and
  the new configuration has the same caches registered. See vstr_swap_cache()
  for a function that tries to do what you want.
   If the Vstr configuration (Parameter[1]) is NULL, then the default
@@ -1504,6 +1504,15 @@ Constant: VSTR_CNTL_CONF_GET_NUM_BUF_SZ
  Explanation:
 
   This option will get the size of the allocated portion of a _BUF type node.
+
+ Note:
+
+  The default value of this attribute is currently 48, the reason for this is
+ that 8 bytes are used for generic node storage and 8 more bytes are overhead
+ used as in glibc's malloc() implementation. This means that 64 bytes are
+ allocated for each node of data. Looking at the data given in the size_cmp 
+ spreadsheet and the ex_perf_nodesize example my guess is that node sizes above
+ 512 probably gain very little, while consumiung more space.
 
 
 Constant: VSTR_CNTL_CONF_SET_NUM_BUF_SZ

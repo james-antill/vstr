@@ -11,6 +11,8 @@
 # define USE_WIDE_CHAR_T 1
 #endif
 
+#undef NULL
+#define NULL ((void *)0)
 
 #ifdef HAVE_PRCTL
 /* from linux/prctl.h ... but user space isn't supposed to use that */

@@ -1,6 +1,6 @@
 #define VSTR_SPLIT_C
 /*
- *  Copyright (C) 2002, 2003  James Antill
+ *  Copyright (C) 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,9 @@
  */
 /* functions to split a Vstr into sections (ala. perl split()) */
 #include "main.h"
+
+
+#define VSTR__SPLIT_LIM(x) (!limit || (limit > (x)))
 
 /* do the null fields go to the end ? */
 static int vstr__split_buf_null_end(const Vstr_base *base,
@@ -75,10 +78,10 @@ static unsigned int vstr__split_hdl_null_beg(size_t *pos, size_t *len,
 {
   const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
 
+  ASSERT(count);
+
   if (limit && (count >= (limit - added)))
     count = (limit - is_remain) - added;
-
-  assert(count);
 
   while (count)
   {
@@ -108,10 +111,10 @@ static unsigned int vstr__split_hdl_null_mid(size_t *pos, size_t *len,
 {
   const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
 
+  ASSERT(count);
+
   if (limit && (count >= (limit - added)))
     count = (limit - is_remain) - added;
-
-  assert(count);
 
   while (count)
   {
@@ -139,13 +142,15 @@ static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
                                              unsigned int limit,
                                              unsigned int added)
 {
+  const int is_remain = !!(flags & VSTR_FLAG_SPLIT_REMAIN);
+  
   assert(len);
 
   if (!(flags & VSTR_FLAG_SPLIT_END_NULL))
     goto no_end_null;
 
-  if (limit && (count > (limit - added)))
-    count = limit - added;
+  if (limit && (count >= (limit - added)))
+    count = (limit - is_remain) - added;
 
   while (count)
   {
@@ -158,10 +163,6 @@ static unsigned int vstr__split_hdl_null_end(size_t pos, size_t len,
     len -= buf_len;
     --count;
   }
-  assert(added);
-
-  if (!(flags & VSTR_FLAG_SPLIT_POST_NULL) && !len)
-    return (added);
 
  no_end_null:
   if (((len &&  (flags & VSTR_FLAG_SPLIT_REMAIN)) ||
@@ -346,8 +347,12 @@ unsigned int vstr_split_chrs(const Vstr_base *base, size_t pos, size_t len,
     }
   }
   else if ((flags & VSTR_FLAG_SPLIT_POST_NULL) && (!limit || (added < limit)))
+  {
     if (!vstr_sects_add(sects, pos, 0))
       VSTR__SPLIT_HDL_ERR();
+    
+    ++added;
+  }
 
   return (added);
 }

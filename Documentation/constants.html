@@ -1807,7 +1807,7 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This will only return successfully if either the Vstr string is empty, or
- the Vstr configurations have the same value for the NUM_BUF_SZ attribute and
+ the Vstr configurations have the same value for the _NUM_BUF_SZ attribute and
  the new configuration has the same caches registered. See <a href="functions.html#vstr_swap_cache()">vstr_swap_cache()</a>
  for a function that tries to do what you want.
 </p><p>  If the Vstr configuration (Parameter[1]) is NULL, then the default
@@ -1845,6 +1845,14 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns allocated size of data portion of _BUF nodes<br>Type<strong>[1]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the size of the allocated portion of a _BUF type node.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  The default value of this attribute is currently 48, the reason for this is
+ that 8 bytes are used for generic node storage and 8 more bytes are overhead
+ used as in glibc's malloc() implementation. This means that 64 bytes are
+ allocated for each node of data. Looking at the data given in the size_cmp 
+ spreadsheet and the ex_perf_nodesize example my guess is that node sizes above
+ 512 probably gain very little, while consumiung more space.
 
 
 <a name="VSTR_CNTL_CONF_SET_NUM_BUF_SZ"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

@@ -38,7 +38,7 @@ size_t vstr_add_netstr2_beg(Vstr_base *base, size_t pos)
   size_t tmp = 0;
   size_t ret = 0;
 
-  ASSERT(base);
+  ASSERT_RET(base, 0);
   ASSERT_RET(pos <= base->len, 0);
 
   ret = pos + 1;
@@ -69,8 +69,7 @@ static int vstr__netstr_end_start(Vstr_base *base,
   ASSERT(beg_pos);
   ASSERT(end_pos);
   
-  if (!VSTR__ULONG_MAX_LEN)
-    return (FALSE);
+  ASSERT_RET(VSTR__ULONG_MAX_LEN, FALSE);
 
   ASSERT_RET(beg_pos < end_pos, FALSE);
   ASSERT_RET(end_pos <= base->len, FALSE);

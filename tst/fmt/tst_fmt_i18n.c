@@ -6,7 +6,7 @@ static const char *rf = __FILE__;
  const char *t_fmt = (fmt); \
   vstr_del(s1, 1, s1->len); \
   vstr_add_fmt(s1, s1->len, t_fmt, \
-               1, 3, "twoXXXX", (uintmax_t)3, 8, L"four"); \
+               1, 3, "twoXXXX", (uintmax_t)3, 8, L"four");     \
  } while (FALSE)
 
 int tst(void)
@@ -27,5 +27,11 @@ int tst(void)
   TST_I18N("<%6$*5$ls> %3$.*2$s %4$ju %1$d");
   TST_B_TST(ret, 4, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "<    four> two 3 1"));
 
+  TST_I18N("<%6$*5$ls> %3$.*2$s %4$ju %d");
+  TST_B_TST(ret, 5, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "<    four> two 3 1"));
+
+  TST_I18N("<%1$*2$d> %3$.*2$s %4$ju %d");
+  TST_B_TST(ret, 6, !VSTR_CMP_CSTR_EQ(s1, 1, s1->len, "<  1> two 3 1"));
+  
   return (TST_B_RET(ret));
 }

@@ -206,7 +206,8 @@ __printf_fp (FILE *fp,
 
   const size_t strlen_decimal = vstr__loc_num_pnt_len(fp->base->conf->loc, 10);
   const size_t strlen_thousands_sep = vstr__loc_num_sep_len(fp->base->conf->loc, 10);
-
+  mp_size_t bignum_size = 0;
+  
   auto wchar_t hack_digit (void);
 
   wchar_t hack_digit (void)
@@ -217,6 +218,7 @@ __printf_fp (FILE *fp,
 	hi = 0;
       else if (scalesize == 0)
 	{
+          ASSERT(fracsize <= bignum_size);
 	  hi = frac[fracsize - 1];
 	  frac[fracsize - 1] = __mpn_mul_1 (frac, frac, fracsize - 1, 10);
 	}
@@ -231,6 +233,7 @@ __printf_fp (FILE *fp,
 	      hi = tmp[0];
 
 	      fracsize = scalesize;
+              ASSERT(fracsize <= bignum_size);
 	      while (fracsize != 0 && frac[fracsize - 1] == 0)
 		--fracsize;
 	      if (fracsize == 0)
@@ -247,6 +250,7 @@ __printf_fp (FILE *fp,
 	  if (_cy != 0)
 	    frac[fracsize++] = _cy;
 }
+          ASSERT(fracsize <= bignum_size);
 	}
 
       return L'0' + hi;
@@ -439,11 +443,13 @@ __printf_fp (FILE *fp,
      efficient to use variables of the fixed maximum size but because this
      would be really big it could lead to memory problems.  */
   {
-    mp_size_t bignum_size = ((ABS (exponent) + BITS_PER_MP_LIMB - 1)
+              bignum_size = ((ABS (exponent) + BITS_PER_MP_LIMB - 1)
 			     / BITS_PER_MP_LIMB + 4) * sizeof (mp_limb_t);
     frac = (mp_limb_t *) alloca (bignum_size);
     tmp = (mp_limb_t *) alloca (bignum_size);
     scale = (mp_limb_t *) alloca (bignum_size);
+    bignum_size /= sizeof(mp_limb_t);
+    ASSERT(fracsize <= bignum_size);
   }
 
   /* We now have to distinguish between numbers with positive and negative
@@ -471,6 +477,7 @@ __printf_fp (FILE *fp,
 			     fp_input, fracsize,
 			     (exponent + to_shift) % BITS_PER_MP_LIMB);
 	  fracsize += (exponent + to_shift) / BITS_PER_MP_LIMB;
+          ASSERT(fracsize <= bignum_size);
 	  if (cy)
 	    frac[fracsize++] = cy;
 	}
@@ -549,6 +556,8 @@ __printf_fp (FILE *fp,
 	  for (i = 0; scale[i] == 0 && frac[i] == 0; i++)
 	    ;
 
+          ASSERT((i >= 0) && ((mp_size_t)i <= bignum_size));
+          
 	  /* Determine number of bits the scaling factor is misplaced.	*/
 	  count_leading_zeros (cnt_h, scale[scalesize - 1]);
 
@@ -662,6 +671,7 @@ __printf_fp (FILE *fp,
 	      if (cy == 0)
 		--tmpsize;
 
+              ASSERT(tmpsize <= bignum_size);
 	      count_leading_zeros (cnt_h, tmp[tmpsize - 1]);
 	      incr = (tmpsize - fracsize) * BITS_PER_MP_LIMB
 		     + BITS_PER_MP_LIMB - 1 - cnt_h;
@@ -748,6 +758,7 @@ __printf_fp (FILE *fp,
 					       BITS_PER_MP_LIMB - 1 - cnt_h);
 			  fracsize = tmpsize - (i - 1);
 			}
+                      ASSERT(fracsize <= bignum_size);
 		    }
 		  used_limbs = fracsize - 1;
 		}
@@ -776,6 +787,7 @@ __printf_fp (FILE *fp,
 	    (void) __mpn_rshift (frac, tmp, tmpsize, MIN (4, exponent));
 	  fracsize = tmpsize;
 	  exp10 |= 1;
+          ASSERT(fracsize <= bignum_size);
 	  assert (frac[fracsize - 1] < 10);
 	}
       exponent = exp10;
@@ -791,13 +803,14 @@ __printf_fp (FILE *fp,
 
       /* Now shift the input value to its right place.	*/
       cy = __mpn_lshift (frac, fp_input, fracsize, (exponent + to_shift));
+      ASSERT(fracsize <= bignum_size);
       frac[fracsize++] = cy;
       exponent = 0;
     }
 
   {
     int width = info->width;
-    wchar_t *wbuffer, *wstartp, *wcp;
+    wchar_t *wbuffer, *wstartp, *wcp, *wbufend;
     int buffer_malloced;
     int chars_needed;
     int expscale;
@@ -888,6 +901,8 @@ __printf_fp (FILE *fp,
     else
       wbuffer = (wchar_t *) alloca ((2 + chars_needed) * sizeof (wchar_t));
     wcp = wstartp = wbuffer + 2;	/* Let room for rounding.  */
+    wbufend = wbuffer + 2 + chars_needed;
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 
     /* Do the real work: put digits in allocated buffer.  */
     if (expsign == 0 || type != 'f')
@@ -897,12 +912,14 @@ __printf_fp (FILE *fp,
 	  {
 	    ++intdig_no;
 	    *wcp++ = hack_digit ();
+            ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 	  }
 	significant = 1;
 	if (info->alt
-	    || fracdig_min > 0
-	    || (fracdig_max > 0 && (fracsize > 1 || frac[0] != 0)))
+            || fracdig_min > 0
+            || (fracdig_max > 0 && (fracsize > 1 || frac[0] != 0)))
 	  *wcp++ = decimalwc;
+        ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
       }
     else
       {
@@ -913,9 +930,10 @@ __printf_fp (FILE *fp,
 	*wcp++ = decimalwc;
       }
 
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
     /* Generate the needed number of fractional digits.	 */
     while (fracdig_no < fracdig_min
-	   || (fracdig_no < fracdig_max && (fracsize > 1 || frac[0] != 0)))
+           || (fracdig_no < fracdig_max && (fracsize > 1 || frac[0] != 0)))
       {
 	++fracdig_no;
 	*wcp = hack_digit ();
@@ -927,14 +945,17 @@ __printf_fp (FILE *fp,
 	    if (fracdig_min > 0)
 	      ++fracdig_min;
 	  }
+        ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
       }
 
     /* Do rounding.  */
     digit = hack_digit ();
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
     if (digit > L'4')
       {
 	wchar_t *wtp = wcp;
 
+        ASSERT(fracsize <= bignum_size);
 	if (digit == L'5'
 	    && ((*(wcp - 1) != decimalwc && (*(wcp - 1) & 1) == 0)
 		|| ((*(wcp - 1) == decimalwc && (*(wcp - 2) & 1) == 0))))
@@ -969,6 +990,7 @@ __printf_fp (FILE *fp,
 	      (*wtp)++;
 	  }
 
+        ASSERT((wtp >= wbuffer) && (wtp <= wbufend));
 	if (fracdig_no == 0 || *wtp == decimalwc)
 	  {
 	    /* Round the integer digits.  */
@@ -1029,7 +1051,9 @@ __printf_fp (FILE *fp,
 		  }
 	      }
 	  }
+        ASSERT((wtp >= wbuffer) && (wtp <= wbufend));
       }
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 
   do_expo:
     /* Now remove unnecessary '0' at the end of the string.  */
@@ -1038,10 +1062,13 @@ __printf_fp (FILE *fp,
 	--wcp;
 	--fracdig_no;
       }
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
+    
     /* If we eliminate all fractional digits we perhaps also can remove
        the radix character.  */
     if (fracdig_no == 0 && !info->alt && *(wcp - 1) == decimalwc)
       --wcp;
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 
     if (grouping)
       /* Add in separator characters, overwriting the same buffer.  */
@@ -1072,6 +1099,7 @@ __printf_fp (FILE *fp,
 	  while (expscale > 10);
 	*wcp++ = L'0' + exponent;
       }
+    ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 
     /* Compute number of characters which must be filled with the padding
        character.  */
@@ -1123,6 +1151,7 @@ __printf_fp (FILE *fp,
 	    buffer = (char *) alloca (2 + chars_needed + decimal_len
 				      + ngroups * thousands_sep_len);
 
+          ASSERT((wcp >= wbuffer) && (wcp <= wbufend));
 	  /* Now copy the wide character string.  Since the character
 	     (except for the decimal point and thousands separator) must
 	     be coming from the ASCII range we can esily convert the

@@ -1,4 +1,4 @@
-.TH vstr 3 "15-Dec-2003" "Vstr 1.0.11" "Vstr String Library"
+.TH vstr 3 "26-Jan-2004" "Vstr 1.0.12" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -1002,6 +1002,27 @@ void \fBvstr_cache_cb_sub\fR(const struct Vstr_base *, size_t, size_t);
 void \fBvstr_cache_cb_free\fR(const struct Vstr_base *, unsigned int);
 .sp
 .br
+.in \w'  unsigned int \fBvstr_data_add\fR('u
+.ti \w'  'u
+unsigned int \fBvstr_data_add\fR(struct Vstr_conf *, const char *, struct Vstr_ref *);
+.br
+.in \w'  unsigned int \fBvstr_data_srch\fR('u
+.ti \w'  'u
+unsigned int \fBvstr_data_srch\fR(struct Vstr_conf *, const char *);
+.br
+.in \w'  void \fBvstr_data_del\fR('u
+.ti \w'  'u
+void \fBvstr_data_del\fR(struct Vstr_conf *, unsigned int);
+.br
+.in \w'  void *\fBvstr_data_get\fR('u
+.ti \w'  'u
+void *\fBvstr_data_get\fR(struct Vstr_conf *, unsigned int);
+.br
+.in \w'  void \fBvstr_data_set\fR('u
+.ti \w'  'u
+void \fBvstr_data_set\fR(struct Vstr_conf *, unsigned int, struct Vstr_ref *);
+.sp
+.br
 .in \w'  size_t \fBvstr_sc_posdiff\fR('u
 .ti \w'  'u
 size_t \fBvstr_sc_posdiff\fR(size_t, size_t);
@@ -1009,6 +1030,14 @@ size_t \fBvstr_sc_posdiff\fR(size_t, size_t);
 .in \w'  size_t \fBVSTR_SC_POSDIFF\fR('u
 .ti \w'  'u
 size_t \fBVSTR_SC_POSDIFF\fR(size_t, size_t);
+.br
+.in \w'  size_t \fBvstr_sc_poslast\fR('u
+.ti \w'  'u
+size_t \fBvstr_sc_poslast\fR(size_t, size_t);
+.br
+.in \w'  size_t \fBVSTR_SC_POSLAST\fR('u
+.ti \w'  'u
+size_t \fBVSTR_SC_POSLAST\fR(size_t, size_t);
 .br
 .in \w'  int \fBvstr_sc_reduce\fR('u
 .ti \w'  'u
@@ -3307,7 +3336,7 @@ Type\fB[6]\fR: unsigned int *
 \fBExplanation:\fR
 
 .br
-  This function is used to add a copy of data directly into the Vstr string, the amount of data available will be between the minimum (Parameter[4]) and maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of data in _BUF type nodes. The obvious use for the data if to call readv() on it.
+  This function is used to add a copy of data directly into the Vstr string, the amount of data available will be between the minimum (Parameter[4]) and maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of data in _BUF type nodes. The obvious use for the data is to call readv() on it.
 .br
   If the function can detect that the values of parameters are in error the function will return 0 to indicate an error.
 .br
@@ -3319,6 +3348,16 @@ Type\fB[6]\fR: unsigned int *
   You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg() and vstr_add_iovec_buf_end(), unless you know that they are operating on a different Vstr string which is using a different Vstr configuration.
 .br
   The reason there is a +1 on the maximum value is that data may be appended to a _BUF node just before the start of where the data is to go, this is almost guaranteed to happen when adding to the end of a Vstr string and saves a lot of wasted space.
+.br
+  It is currently believed that, on Linux, doing disk IO in amounts greater than 8k gives little real performance improvement. This can be converted into iovec numbers by using a formula like...
+
+.Vb 4
+    min = (8k / buf_sz) + 2;
+    max = min + (min / 2);    
+
+.Ve
+ ...where the +2 is due to both the extra space at the end of the current last
+ node, and rounding errors due to the division. The max being slightly bigger is an attempt to make the constant overhead of the call slightly less, and may not be useful. It is very possible that some kind of dynamic scaling of the values would result in the best performance, however the solution to that doesn't fit in the margin :).
 
 .ti -2
 .br
@@ -10218,7 +10257,7 @@ Type\fB[3]\fR: void *
 .br
 \fBFunction: \fR vstr_cache_srch()
 .br
-Returns: Cookie reference for cache function
+Returns: Cookie reference for cache functions
 .br
 Type: unsigned int
 
@@ -10306,6 +10345,171 @@ Type\fB[2]\fR: unsigned int
 .br
   A Cookie reference of "zero" means tell all cache functions to free cached data. Note that this can cause severe performance degradation if overly used.
 
+.SH Functions for hooking into the data system for the Vstr configuration
+
+.ti -2
+.br
+\fBFunction: \fR vstr_data_add()
+.br
+Returns: Cookie reference for cache function
+.br
+Type: unsigned int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Name of cache function
+.br
+Type\fB[2]\fR: const char *
+
+.br
+Parameter\fB[3]\fR: Reference to data to store in the configuration
+.br
+Type\fB[3]\fR: struct Vstr_ref *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will add the data reference (Parameter[3]) to the Vstr configuration. The name of the data reference (Parameter[2]) should be unique, the vstr library will use names starting "/vstr__/".
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  The name of the cache function should be placed in permanent storage, Ie. only the pointer to the name will be stored so you cannot malloc() the name and then free() it after calling the function (you can free it after calling vstr_data_del()).
+.br
+  Storing a reference that is NULL is valid, and will act like storing a reference to NULL.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_data_srch()
+.br
+Returns: Cookie reference for data configuration functions
+.br
+Type: unsigned int
+
+.br
+Parameter\fB[1]\fR: Vstr configuration
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Name of data configuration function
+.br
+Type\fB[2]\fR: const char *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will find a configuration data name (Parameter[2]) and return the cookie reference for use in the other data functions.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_data_del()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Cookie reference for configuration data function
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will release the reference on the configuration data, and allow the cookie to be reused on a later vstr_data_add() call.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_data_get()
+.br
+Returns: Data for configuration data function
+.br
+Type: void *
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Cookie reference for configuration data function
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will get the data for the configuration data storage function.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_data_set()
+.br
+Returns: Nothing
+.br
+Type: void
+
+.br
+Parameter\fB[1]\fR: Vstr string
+.br
+Type\fB[1]\fR: struct Vstr_conf *
+
+.br
+Parameter\fB[2]\fR: Cookie reference for configuration data function
+.br
+Type\fB[2]\fR: unsigned int
+
+.br
+Parameter\fB[3]\fR: Reference to data to store in the configuration
+.br
+Type\fB[3]\fR: struct Vstr_ref *
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function will set the data for the configuration data storage function.
+.sp
+\fBNote:\fR
+
+.br
+  If the configuration (Parameter[1]) is NULL, then the global configuration is used.
+.br
+  Storing a reference that is NULL is valid, and will act like storing a reference to NULL.
+.br
+  All allocations are done at vstr_data_add() time, so this function can never fail.
+
 .SH Short cut helper functions
 
 .ti -2
@@ -10355,6 +10559,54 @@ Type\fB[3]\fR: size_t
 
 .br
   This macro function is used to find the length between two positions inclusive.
+
+.ti -2
+.br
+\fBFunction: \fR vstr_sc_poslast()
+.br
+Returns: Last position of the given start and length
+.br
+Type: size_t
+
+.br
+Parameter\fB[2]\fR: Start position in a Vstr string
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length of a Vstr string
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This function is used to find the last poition, given a position and a length (it's basically the oposite of vstr_sc_posdiff()).
+
+.ti -2
+.br
+\fBFunction: \fR VSTR_SC_POSLAST()
+.br
+Returns: Last position of the given start and length
+.br
+Type: size_t
+
+.br
+Parameter\fB[2]\fR: Start position in a Vstr string
+.br
+Type\fB[2]\fR: size_t
+
+.br
+Parameter\fB[3]\fR: Length of a Vstr string
+.br
+Type\fB[3]\fR: size_t
+
+.br
+\fBExplanation:\fR
+
+.br
+  This macro function is used to find the last poition, given a position and a length (it's basically the oposite of VSTR_SC_POSDIFF()).
 
 .ti -2
 .br

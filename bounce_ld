@@ -1,3 +1,0 @@
-#! /bin/sh
-
-exec /usr/bin/ld -Wl,-e,vstr__version_func "$@"

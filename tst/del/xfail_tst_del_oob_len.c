@@ -5,5 +5,5 @@ static const char *rf = __FILE__;
 void xfail_tst(void)
 {
   vstr_add_rep_chr(s1, 0, 'a', 1);
-  vstr_del(s1, 1, 2);
+  ASSERT(!vstr_del(s1, 1, 2));
 }

@@ -67,7 +67,7 @@ static Vstr__cache_data_cstr *vstr__export_cstr_cache(const Vstr_base *base,
       return (NULL);
     }
     data->ref = NULL;
-
+    
     ret = vstr_cache_set(base, off, data);
     ASSERT(ret);
   }

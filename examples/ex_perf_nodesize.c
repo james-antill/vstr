@@ -8,11 +8,11 @@
 #include <vstr.h>
 
 #ifndef TST_SZ /* chunk size for custom Vstr */
-# define TST_SZ (128 - (sizeof(Vstr_node) + 16)) /* one page each */
+# define TST_SZ (4096 - (sizeof(Vstr_node) + 8)) /* one page each */
 #endif
 
 #ifndef TST_NUM /* number of times to perform each test */
-# define TST_NUM (128)
+# define TST_NUM (1024 * 128)
 #endif
 
 #ifndef TST_LEN /* length of data for each test */
@@ -28,7 +28,7 @@
 #endif
 
 #ifndef TST_REUSE
-# define TST_REUSE (1)
+# define TST_REUSE (0)
 #endif
 
 #include "ex_perf.h"

@@ -308,10 +308,19 @@
 <li class="obj"><a href="#vstr_cache_srch%28%29">vstr_cache_srch()</a>
 <li class="obj"><a href="#vstr_cache_cb_sub%28%29">vstr_cache_cb_sub()</a>
 <li class="obj"><a href="#vstr_cache_cb_free%28%29">vstr_cache_cb_free()</a>
+</ul><li><a href="#Functions%20for%20hooking%20into%20the%20data%20system%20for%20the%20Vstr%20configuration">Functions for hooking into the data system for the Vstr configuration</a>
+<ul>
+<li class="obj"><a href="#vstr_data_add%28%29">vstr_data_add()</a>
+<li class="obj"><a href="#vstr_data_srch%28%29">vstr_data_srch()</a>
+<li class="obj"><a href="#vstr_data_del%28%29">vstr_data_del()</a>
+<li class="obj"><a href="#vstr_data_get%28%29">vstr_data_get()</a>
+<li class="obj"><a href="#vstr_data_set%28%29">vstr_data_set()</a>
 </ul><li><a href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
 <li class="obj"><a href="#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
 <li class="obj"><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
+<li class="obj"><a href="#vstr_sc_poslast%28%29">vstr_sc_poslast()</a>
+<li class="obj"><a href="#VSTR_SC_POSLAST%28%29">VSTR_SC_POSLAST()</a>
 <li class="obj"><a href="#vstr_sc_reduce%28%29">vstr_sc_reduce()</a>
 <li class="obj"><a href="#vstr_sc_basename%28%29">vstr_sc_basename()</a>
 <li class="obj"><a href="#vstr_sc_add_grpbasenum_buf%28%29">vstr_sc_add_grpbasenum_buf()</a>
@@ -1339,7 +1348,7 @@
 </p><p>  This function is used to add a copy of data directly into the Vstr string,
  the amount of data available will be between the minimum (Parameter[4]) and
  maximum ((Parameter[5]) + 1) number of iovecs multiplied by the length of
- data in _BUF type nodes. The obvious use for the data if to call readv() on it.
+ data in _BUF type nodes. The obvious use for the data is to call readv() on it.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
 </p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
@@ -1354,6 +1363,19 @@
  a _BUF node just before the start of where the data is to go, this is almost
  guaranteed to happen when adding to the end of a Vstr string and saves a lot
  of wasted space.
+</p><p>  It is currently believed that, on Linux, doing disk IO in amounts greater than
+ 8k gives little real performance improvement. This can be converted into iovec
+ numbers by using a formula like...
+<br><pre>
+    min = (8k / buf_sz) + 2;
+    max = min + (min / 2);    
+
+</pre> ...where the +2 is due to both the extra space at the end of the current last
+ node, and rounding errors due to the division. The max being slightly bigger
+ is an attempt to make the constant overhead of the call slightly less, and may
+ not be useful. It is very possible that some kind of dynamic scaling of the
+ values would result in the best performance, however the solution to that
+ doesn't fit in the margin :).
 
 
 <a name="vstr_add_iovec_buf_end%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -3996,7 +4018,7 @@
 
 <a name="vstr_cache_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
 <strong>Function: </strong> vstr_cache_srch()
-</a><br>Returns: Cookie reference for cache function<br>Type: unsigned int
+</a><br>Returns: Cookie reference for cache functions<br>Type: unsigned int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Name of cache function<br>Type<strong>[2]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
@@ -4038,6 +4060,89 @@
  data. Note that this can cause severe performance degradation if overly used.
 
 
+</td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Functions%20for%20hooking%20into%20the%20data%20system%20for%20the%20Vstr%20configuration"><h2>Functions for hooking into the data system for the Vstr configuration</h2>
+</a>
+<a name="vstr_data_add%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_data_add()
+</a><br>Returns: Cookie reference for cache function<br>Type: unsigned int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of cache function<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Reference to data to store in the configuration<br>Type<strong>[3]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will add the data reference (Parameter[3]) to the
+ Vstr configuration. The name of the data reference (Parameter[2]) should be
+ unique, the vstr library will use names starting "/vstr__/".
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  The name of the cache function should be placed in permanent storage, Ie.
+ only the pointer to the name will be stored so you cannot malloc() the name
+ and then free() it after calling the function (you can free it after calling
+ <a href="functions.html#vstr_data_del()">vstr_data_del()</a>).
+</p><p>  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+
+
+<a name="vstr_data_srch%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_data_srch()
+</a><br>Returns: Cookie reference for data configuration functions<br>Type: unsigned int
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr configuration<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Name of data configuration function<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will find a configuration data name (Parameter[2]) and return
+ the cookie reference for use in the other data functions.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+<a name="vstr_data_del%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_data_del()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for configuration data function<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will release the reference on the configuration data, and allow
+ the cookie to be reused on a later <a href="functions.html#vstr_data_add()">vstr_data_add()</a> call.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+<a name="vstr_data_get%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_data_get()
+</a><br>Returns: Data for configuration data function<br>Type: void *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for configuration data function<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will get the data for the configuration data storage function.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+
+
+<a name="vstr_data_set%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_data_set()
+</a><br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Cookie reference for configuration data function<br>Type<strong>[2]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Reference to data to store in the configuration<br>Type<strong>[3]</strong>: struct Vstr_ref *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function will set the data for the configuration data storage function.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  If the configuration (Parameter[1]) is NULL, then the global configuration is
+ used.
+</p><p>  Storing a reference that is NULL is valid, and will act like storing a
+ reference to NULL.
+</p><p>  All allocations are done at <a href="functions.html#vstr_data_add()">vstr_data_add()</a> time, so this function can never
+ fail.
+
+
 </td></tr></table><table width="90%"><tr><td bgcolor="#DDDDFF"><a name="Short%20cut%20helper%20functions"><h2>Short cut helper functions</h2>
 </a>
 <a name="vstr_sc_posdiff%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
@@ -4057,6 +4162,26 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function is used to find the length between two positions
  inclusive.
+
+
+<a name="vstr_sc_poslast%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> vstr_sc_poslast()
+</a><br>Returns: Last position of the given start and length<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a Vstr string<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a Vstr string<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to find the last poition, given a position and a length
+ (it's basically the oposite of <a href="functions.html#vstr_sc_posdiff()">vstr_sc_posdiff()</a>).
+
+
+<a name="VSTR_SC_POSLAST%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">
+<strong>Function: </strong> VSTR_SC_POSLAST()
+</a><br>Returns: Last position of the given start and length<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a Vstr string<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a Vstr string<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This macro function is used to find the last poition, given a position and
+ a length (it's basically the oposite of <a href="functions.html#VSTR_SC_POSDIFF()">VSTR_SC_POSDIFF()</a>).
 
 
 <a name="vstr_sc_reduce%28%29"></td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD">

@@ -1,6 +1,6 @@
 #define VSTR_SUB_C
 /*
- *  Copyright (C) 2001, 2002, 2003  James Antill
+ *  Copyright (C) 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -166,12 +166,14 @@ static int vstr__sub_buf_slow(Vstr_base *base, size_t pos, size_t len,
 int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
                  const void *buf, size_t buf_len)
 {
+  ASSERT_RET(base, FALSE);
+  
   if (!len)
     return (vstr_add_buf(base, pos - 1, buf, buf_len));
 
   if (!buf_len)
     return (vstr_del(base, pos, len));
-
+  
   if ((len == buf_len) &&
       !base->node_non_used &&
       !base->node_ptr_used &&
@@ -204,8 +206,8 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
   if (!len || !ptr_len)
     goto simple_sub;
 
-  ret = vstr_iter_fwd_beg(base, pos, len, iter);
-  ASSERT_RET(ret, FALSE);
+  if (!(ret = vstr_iter_fwd_beg(base, pos, len, iter)))
+    return (FALSE);
 
   if ((ptr_len <= VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
   {
@@ -281,8 +283,8 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
   if (!len || !ref_len)
     goto simple_sub;
 
-  ret = vstr_iter_fwd_beg(base, pos, len, iter);
-  ASSERT_RET(ret, FALSE);
+  if (!(ret = vstr_iter_fwd_beg(base, pos, len, iter)))
+    return (FALSE);
 
   if ((ref_len <= VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
   {
@@ -300,6 +302,7 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
       --base->conf->spare_ref_num;
       ref_node = base->conf->spare_ref_beg;
       base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->s.next;
+      ref_node->ref = NULL;
     }
 
     if (ref_len < len)
@@ -379,10 +382,15 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
                      char chr, size_t rep_len)
 {
   int ret = TRUE;
-
+  
+  ASSERT_RET(ret, FALSE);
+  
   if (!len && !rep_len)
     return (TRUE);
 
+  if (rep_len == 1)
+    return (vstr_sub_buf(base, pos, len, &chr, 1));
+  
   /* TODO: this is a simple opt. */
   if ((len == rep_len) &&
       !base->node_non_used &&
@@ -391,8 +399,8 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
   {
     Vstr_iter iter[1];
 
-    ret = vstr_iter_fwd_beg(base, pos, len, iter);
-    ASSERT_RET(ret, FALSE);
+    if (!(ret = vstr_iter_fwd_beg(base, pos, len, iter)))
+      return (FALSE);
 
     do
     {

@@ -26,8 +26,8 @@ static void *tst_cache_cb(const Vstr_base *base __attribute__((unused)),
                            unsigned int type, void *passed_data)
 { /* this is a simple version, it could chop the cache when something changes */
   struct tst_cache_chr *data = passed_data;
-  const size_t end_pos = (pos + len - 1);
-  const size_t data_end_pos = (data->pos + data->len - 1);
+  const size_t end_pos = vstr_sc_poslast(pos, len);
+  const size_t data_end_pos = VSTR_SC_POSLAST(data->pos, data->len);
 
   --called_cache_cb;
 

@@ -53,24 +53,24 @@ static int tst_usr_intptr_cb(Vstr_base *st, size_t pos, Vstr_fmt_spec *spec)
     num = -num;
   }
 
-  if (num == 0xff)
+  if ((num == 0xff) || (num == 0xeeb100b))
   {
     spec->fmt_plus = 0;
-    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyyyyyyyyyyf", 16);
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "01yyyyyyyyybyyef", 16);
     flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_L;
   }
-  else if (num == 0xfe)
+  else if ((num == 0xfe) || (num == 0xeeb100c))
   {
     spec->fmt_plus = 0;
-    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyyyyyyyyyEF", 16);
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "01yyyyyyyyyBCyEF", 16);
     flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_HEXNUM_H;
   }
-  else if (num == 0777)
+  else if ((num == 0777) || (num == 01000))
   {
     spec->fmt_plus = 0;
     if (spec->fmt_hash && spec->fmt_precision)
       --spec->obj_precision;
-    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "yyyyyyy7", 8);
+    len = vstr_sc_conv_num_uint(buf, sizeof(buf), num, "01yyyyy7", 8);
     flags |= VSTR_FLAG_SC_FMT_CB_BEG_OBJ_OCTNUM;
   }
   else    
@@ -262,6 +262,7 @@ int tst(void)
   ASSERT(s3->conf->fmt_usr_curly_braces);
 
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
+  vstr_cntl_conf(s2->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s3->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_cntl_conf(s4->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '%');
 
@@ -342,6 +343,11 @@ int tst(void)
   ASSERT(vstr_fmt_srch(s3->conf, "PID"));
   ASSERT(!s3->conf->fmt_usr_curly_braces);
 
+  vstr_fmt_add(s2->conf, "{intptr:%n}", tst_usr_intptr_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s2->conf, "{intptr:%*n}", tst_usr_intptr_cb,
+               VSTR_TYPE_FMT_PTR_VOID, VSTR_TYPE_FMT_END);
+  
   vstr_fmt_add(s4->conf, "m", tst_usr_strerror_cb, VSTR_TYPE_FMT_END);
 
   /* output */
@@ -354,18 +360,6 @@ int tst(void)
                (void *)s2, (size_t)3, strlen(buf), 0);
 
   TST_B_TST(ret, 2, !VSTR_CMP_EQ(s3, 1, s3->len, s2, 1, s2->len));
-
-  vstr_del(s3, 1, s3->len);
-  vstr_add_fmt(s3, 0, "<$.4{buf:%s%zu}> <${buf:%s%zu}> <${buf:%s%zu}>",
-               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
-
-  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
-
-  vstr_del(s3, 1, s3->len);
-  vstr_add_fmt(s3, 0, "<$.4{ptr:%s%zu}> <${ptr:%s%zu}> <${ptr:%s%zu}>",
-               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
-
-  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
 
   vstr_del(s3, 1, s3->len);
   vstr_add_fmt(s3, 0, "$$ ${buf:%s%zu} -- $PID $$",
@@ -468,9 +462,9 @@ int tst(void)
   while (num--)
   {
     const char *fmt = NULL;
-    int spaces = 2;  
+    int spaces = 2;
     
-#define FMT(x) (fmt = ((num == 0xff) ? "<%" x "x>" : (num == 0xfe) ? "<%" x "X>" : (num == 0777) ? "<%" x "o>" : "<%" x "d>"))
+    #define FMT(x) (fmt = (((num == 0xff) || (num == 0xeeb100b)) ? "<%" x "x>" : ((num == 0xfe) || (num == 0xeeb100c)) ? "<%" x "X>" : ((num == 0777) || (num == 01000)) ? "<%" x "o>" : "<%" x "d>"))
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
     vstr_add_fmt(s3, s3->len, "<${intptr:%n}>", &num);
@@ -485,94 +479,173 @@ int tst(void)
     
     TST_B_TST(ret, 14, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
     
+    vstr_del(s2, 1, s2->len);
+    spaces = 0;
+    while (spaces <= 16)
+    {
+      const char *hfgcc = "%1$*2$s<$+03$*2${intptr:%*n}>";
+      
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
 
-    while (spaces < 10)
-    {
-      const char *hfgcc = "<$+0*{intptr:%*n}>";
-      
       mfail_count = 0;
       do
       {
         vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
         tst_mfail_num(++mfail_count);
-      } while (!vstr_add_fmt(s3, s3->len, hfgcc, spaces, &num));
+      } while (!vstr_add_fmt(s3, s3->len, hfgcc, "", spaces, &num));
       tst_mfail_num(0);
       FMT("+0*");
+      vstr_add_rep_chr(s4, s4->len, ' ', spaces);
       vstr_add_fmt(s4, s4->len, fmt, spaces, num);
-
-      ++spaces;
-    }
-    
+      
     TST_B_TST(ret, 15, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
-    
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
+
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$.7{intptr:%n}>", &num);
+
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$.7{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT(".7");
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
     vstr_add_fmt(s4, s4->len, fmt, num);
     
     TST_B_TST(ret, 16, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
     
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$#-7{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$#-7{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("#-7");
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 17, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$-16.8{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$-16.8{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("-16.8");
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 18, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$16.8{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$16.8{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("16.8");
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 19, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$#8.16{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$#8.16{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("#8.16");
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
     vstr_add_fmt(s4, s4->len, fmt, num);
   
     TST_B_TST(ret, 20, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$'-8.16{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$'-8.16{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("'-8.16");
-    vstr_add_fmt(s4, s4->len, fmt, num);
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
+    vstr_add_fmt(s2, s2->len, fmt, num);
+    vstr_mov(s4, s4->len, s2, 1, s2->len);
   
     TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
 
     vstr_del(s3, 1, s3->len);
     vstr_del(s4, 1, s4->len);
-    vstr_add_fmt(s3, s3->len, "<$#'-16.8{intptr:%n}>", &num);
+    mfail_count = 0;
+    do
+    {
+      ASSERT(!s3->len);
+      vstr_free_spare_nodes(s3->conf, VSTR_TYPE_NODE_BUF, 1000);
+      tst_mfail_num(++mfail_count);
+    } while (!vstr_add_fmt(s3, s3->len, "%*s<$#'-16.8{intptr:%n}>", spaces, "",
+                           &num));
+    tst_mfail_num(0);
     FMT("#'-16.8");
-    vstr_add_fmt(s4, s4->len, fmt, num);
+    vstr_add_rep_chr(s4, s4->len, ' ', spaces);
+    vstr_add_fmt(s2, s2->len, fmt, num);
+    vstr_mov(s4, s4->len, s2, 1, s2->len);
   
     TST_B_TST(ret, 21, !VSTR_CMP_EQ(s3, 1, s3->len, s4, 1, s4->len));
+    if (ret) { PRNT_VSTR(s3); PRNT_VSTR(s4); }
+    
+    ++spaces;
+    }
 
     switch (num)
     {
-      case    4: num =    -3; break;
-      case   -4: num = 0x100; break;
-      case 0xff:              break;
-      case 0xfe: num = 01000; break;
-      case 0777: num =     1; break;
-      case    0:              break;
+      case    4:      num =         -3; break;
+      case   -4:      num =      0x100; break;
+      case 0xfe:      num =  0xeeb100d; break;
+      case 0xeeb100b: num =      01001; break;
+      case 0777:      num =          1; break;
+      case    0:                        break;
+      default:                          break;
     }
   }
+  
   
   vstr_fmt_del(s1->conf, "{VSTR:%p%u}");
   assert(!vstr_fmt_srch(s1->conf, "{VSTR:%p%u}"));
@@ -737,6 +810,37 @@ int tst(void)
   vstr_fmt_add(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}",
                tst_usr_pid_cb, VSTR_TYPE_FMT_END);
   vstr_fmt_del(s3->conf, "{ref-xxxxxxxxxxxxxxxxxxxxxxx}");
+
+  /* this also tests look without max names... */
+
+  vstr_del(s3, 1, s3->len);
+  vstr_add_fmt(s3, 0, "<$.4{buf:%s%zu}> <${buf:%s%zu}> <${buf:%s%zu}>",
+               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
+
+  vstr_del(s3, 1, s3->len);
+  vstr_add_fmt(s3, 0, "<$.4{ptr:%s%zu}> <${ptr:%s%zu}> <${ptr:%s%zu}>",
+               tst_NULL, 20, tst_NULL, 4, tst_NULL, 20);
+
+  assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<(BAD> <(BAD> <(BAD-BAD)>"));
+
+  /* i18n on usr fmt */
+  {
+    const char *fmt_hide_gcc = ("<$3$.*7${buf:%s%zu}> "
+                                "<$1$*8${buf:%s%zu}> "
+                                "<$5${buf:%s%zu}>");
+    
+    vstr_del(s3, 1, s3->len);
+    vstr_add_fmt(s3, 0, fmt_hide_gcc,
+                 "1abcd", 5, "2abcd", 5, "3abcd", 5,
+                 3 /* precision for first */,
+                 8 /* field width for second */);
+
+    assert(VSTR_CMP_CSTR_EQ(s3, 1, s3->len, "<2ab> <   1abcd> <3abcd>"));
+  }
   
+
+
   return (TST_B_RET(ret));
 }

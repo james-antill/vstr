@@ -17,7 +17,9 @@ int tst(void)
   TEST_CMP_EQ_0("",           "");
   TEST_CMP_EQ_0("abcd",       "abcd");
   TEST_CMP_EQ_0("abcd1",      "abcd1");
+  TEST_CMP_EQ_0("abcd1a",     "abcd1a");
   TEST_CMP_EQ_0("abcd12345",  "abcd12345");
+  TEST_CMP_EQ_0("abcd01a",    "abcd01a");
   TEST_CMP_EQ_0("abcd012345", "abcd012345");
 
   TEST_CMP_GT_0("a",          "");

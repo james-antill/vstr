@@ -3,10 +3,13 @@
 static const char *rf = __FILE__;
 
 #define TST_IP(flags, ip0, ip1, ip2, ip3, ip4, ip5, ip6, ip7, ci, num, er) do{ \
+  int tret = 0; \
   memset(ips, -1, 4 * sizeof(unsigned int)); \
   cidr = -1; \
   \
-  ret = vstr_parse_ipv6(s1, 1, s1->len, ips, &cidr, flags, &num_len, &err); \
+  tret = vstr_parse_ipv6(s1, 1, s1->len, ips, &cidr, flags, &num_len, NULL); \
+  ret  = vstr_parse_ipv6(s1, 1, s1->len, ips, &cidr, flags, &num_len, &err); \
+  ASSERT(ret == tret); \
   \
   if (err != (er))      { PRNT_VSTR(s1); return (1); } \
   if (!err || (err == VSTR_TYPE_PARSE_IPV6_ERR_ONLY)) { \
@@ -63,6 +66,9 @@ int tst(void)
          0xFFF, 0, 0, 0, 0, 0, 0, 1, 128, strlen("FFF::1"), 0);
   TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
          0xFFF, 0, 0, 0, 0, 0, 0, 1,   8, strlen("FFF::1/8"), 0);
+  vstr_sc_reduce(s1, 1, s1->len, 1);
+  TST_IP(VSTR_FLAG_PARSE_IPV6_CIDR,
+         0xFFF, 0, 0, 0, 0, 0, 0, 1, 128, strlen("FFF::1/"), 0);
 
   VSTR_SUB_CSTR_BUF(s1, 1, s1->len, "FFF::1/138");
 

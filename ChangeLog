@@ -1,3 +1,98 @@
+2004-01-25  James Antill  <james@and.org>
+
+	* NEWS (2004-01-25): Release 1.0.12.
+
+2004-01-25  James Antill  <james@and.org>
+
+	* src/vstr_split.c (vstr_split_chrs): Fix _POST_NULL flag to be the
+	same as the _buf function and increment the return value.
+
+	* src/vstr_sect.c (vstr_sects_update_add): Set malloc_bad flag in wrong
+	side of test in the 1.0.10 changes.
+
+	* src/vstr_sub.c (vstr_sub_ref): Fix bug when doing a fast replacement
+	of a non _REF node.
+
+2004-01-23  James Antill  <james@and.org>
+
+	* src/vstr_parse.c (vstr__parse_ipv4_netmask): Allow non-full netmasks
+	that don't end in ".".
+
+	* include/vstr-inline.h (vstr_export_chr): Fixed NULL de-reference with
+	_NON nodes.
+
+	* src/vstr_add.c (vstr_add_vstr): Fix bug where memcpy() was called on
+	overlapping data.
+
+2004-01-22  James Antill  <james@and.org>
+
+	* src/vstr_split.c (vstr__split_hdl_null_end): Fix handling of end run
+	of null splits.
+
+	* src/vstr_add_fmt.c (vstr__fmt_fillin_spec): Allow multiple parameters
+	to be used via. i18n including fieldwidth and precision.
+
+	* src/vstr_srch.c (vstr__cmp_eq_rev_buf): Fixed bug when searching
+	backwards with _NON nodes just before a partial match.
+
+2004-01-21  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__add_fmt_usr_esc): Allow mixed i18n in
+	custom formatters.
+
+	* src/vstr_srch_case.c (vstr_srch_case_chr_rev): Made function much
+	faster.
+
+2004-01-20  James Antill  <james@and.org>
+
+	* src/vstr_srch_case.c (vstr_srch_case_vstr_fwd): Fix assert().
+
+	* src/vstr_srch.c (vstr_srch_vstr_fwd): Fix assert().
+
+2004-01-19  James Antill  <james@and.org>
+
+	* include/vstr-switch.h (VSTR_COMPILE_INLINE): Change default to 1.
+
+2004-01-17  James Antill  <james@and.org>
+
+	* src/vstr_cache.c (vstr_cache_add): Added dup checks.
+
+	* scripts/export_check.sh: Add script to check exported symbols.
+	Found out no versioning was happening for
+
+2004-01-14  James Antill  <james@and.org>
+
+	* src/vstr_conv.c (vstr_conv_lowercase): Fix memory allocation for split
+	nodes.
+	(vstr_conv_uppercase): Fix memory allocation for split nodes.
+	(vstr_conv_unprintable_chr): Fix memory allocation for split nodes.
+
+	* src/vstr.c (vstr__make_base_cache): Fixed allocation of vector when
+	mimum allocations are set to zero.
+
+	* include/vstr-extern.h (VSTR_SC_POSLAST): Added macro function of
+	vstr_sc_poslast() inline.
+
+	* include/vstr-inline.h (vstr_sc_poslast): Added inline function to
+	calc. the position of the last character.
+
+	* include/vstr-inline.h (vstr_del): Don't free the reference, just 0
+	the length. This is what the callback does.
+
+	* src/vstr_export.c (vstr_export_ref): Fix bug when export a cached
+	cstr ptr that has been deallocated (added regression test).
+
+	* src/vstr_cache.c (vstr__cache_cstr_cpy): Fix bug when export a cached
+	cstr ptr that has been deallocated (added regression test). Also make
+	section tests correct.
+
+2004-01-09  James Antill  <james@and.org>
+
+	* include/vstr-extern.h (vstr_sub_cstr_buf): Removed inline keyword
+	from prototype.
+	(vstr_sub_cstr_ptr): Removed inline keyword from prototype.
+	(vstr_sub_cstr_ref): Removed inline keyword from prototype.
+
 2003-12-14  James Antill  <james@and.org>
 
 	* NEWS: Release 1.0.11
@@ -11,10 +106,18 @@
 	NULL string.
 	(vstr__sc_fmt_add_cb_ptr): Fix custom formatter to use the Vstr locale
 	NULL string.
-	* src/vstr_sc.c (vstr__sc_fmt_add_cb_ptr): Fix type passed to
-	vstr_sc_fmt_cb_beg() in the callback.
+	(vstr__sc_fmt_add_cb_ptr): Fix type passed to vstr_sc_fmt_cb_beg() in
+	the callback.
 
-2003-12-14  Martin Pool <mbp@hp.com>
+	* configure.in (debug): Remove -Winline from warning list.
+
+	* Documentation/txt2man.pl (convert): Fix vstr_const man page
+	generation.
+
+	* src/vstr.c (vstr__del_conf): Fix check for internally allocated
+	memory in debug mode, on objects that can come from externally.
+
+2003-12-14  Martin Pool <mbp@sourcefrog.net>
 
 	* src/vstr_sc.c (vstr__sc_fmt_num_ipv6_compact): 64bit clean patch.
 

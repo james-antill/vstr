@@ -1,0 +1,377 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_hexdump.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_hexdump.c</h1>
+<pre class="c2html">
+<span class="comment">/* This is a fairly simple hexdump program, it has command line options to
+ * enable printing of high latin symbols, and/or use mmap() to load the input
+ * data.
+ *
+ * Reads from stdin if no args are given.
+ *
+ * This shows how to use the Vstr library for simple data convertion.
+ *
+ * This file is more commented than normal code, so as to make it easy to follow
+ * while knowing almost nothing about Vstr or Linux IO programming.
+ */</span>
+
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+<span class="comment">/* hexdump in "readable" format ... note this is a bit more fleshed out than
+ * some of the other examples mainly because I actually use it */</span>
+
+<span class="comment">/* this is roughly equiv. to the Linux hexdump command...
+% rpm -qf /usr/bin/hexdump
+util-linux-2.11r-10
+% hexdump -e '"%08_ax:"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"
+            " " 2/1 "%02X"'
+        -e '"  " 16 "%_p" "\n"'
+
+       
+ * ...except that it prints the address in big hex digits, and it doesn't take
+ * you 30 minutes to remember how to type it out.
+ *  It also acts differently in that seperate files aren't merged
+ * into one output line (Ie. in this version each file starts on a new line,
+ * however the addresses are continuious).
+
+ * It's also similar to "xxd" in vim. 
+ */</span>
+
+#<span class="cppdefine">define</span> PRNT_NONE <span class="num0">0</span>
+#<span class="cppdefine">define</span> PRNT_SPAC 1
+#<span class="cppdefine">define</span> PRNT_HIGH 2
+
+
+<span class="comment">/* number of characters we output per line (assumes 80 char width screen)... */</span>
+#<span class="cppdefine">define</span> EX_HEXDUMP_CHRS_PER_LINE 16
+
+<span class="comment">/* configure what ASCII characters we print */</span>
+<span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> prnt_high_chars = PRNT_NONE;
+
+#<span class="cppif">if</span> <span class="num0">0</span>
+<span class="comment">/* simple print of a number */</span>
+
+<span class="comment">/* print the address */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X8(s1, num) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">"0x%08X:"</span>, (num))
+<span class="comment">/* print a set of two bytes */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2X2(s1, num1, num2) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">" %02X%02X"</span>, (num1), (num2))
+<span class="comment">/* print a byte and spaces for the missing byte */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2__(s1, num1) \
+  vstr_add_fmt(s1, (s1)-&gt;len, <span class="str">" %02X  "</span>,   (num1))
+#<span class="cppelse">else</span>
+<span class="comment">/* fast print of a number ... used because I actually use this program
+ */</span>
+<span class="static">static</span> <span class="const">const</span> <span class="char">char</span> *hexnums = <span class="str">"0123456789ABCDEF"</span>;
+
+# <span class="cppdefine">define</span> EX_HEXDUMP_BYTE(buf, b) do { \
+  (buf)[1] = hexnums[((b) &gt;&gt; <span class="num0">0</span>) &amp; 0xf]; \
+  (buf)[0] = hexnums[((b) &gt;&gt; 4) &amp; 0xf]; \
+ } <span class="while">while</span> (<span class="false">FALSE</span>)
+
+# <span class="cppdefine">define</span> EX_HEXDUMP_UINT(buf, i) do { \
+  EX_HEXDUMP_BYTE((buf) + 6, (i) &gt;&gt;  <span class="num0">0</span>); \
+  EX_HEXDUMP_BYTE((buf) + 4, (i) &gt;&gt;  8); \
+  EX_HEXDUMP_BYTE((buf) + 2, (i) &gt;&gt; 16); \
+  EX_HEXDUMP_BYTE((buf) + <span class="num0">0</span>, (i) &gt;&gt; 24); \
+ } <span class="while">while</span> (<span class="false">FALSE</span>)
+
+<span class="comment">/* print the address */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X8(s1, num) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[9]; \
+  xbuf[8] = <span class="chr">':'</span>; \
+  EX_HEXDUMP_UINT(xbuf, num); \
+  vstr_add_buf(s1, (s1)-&gt;len, xbuf, sizeof(xbuf)); } <span class="while">while</span> (<span class="false">FALSE</span>)
+<span class="comment">/* print a set of two bytes */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2X2(s1, num1, num2) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
+  xbuf[0] = <span class="chr">' '</span>; \
+  EX_HEXDUMP_BYTE(xbuf + 3, num2); \
+  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
+  vstr_add_buf(s1, (s1)-&gt;len, xbuf, sizeof(xbuf)); } <span class="while">while</span> (<span class="false">FALSE</span>)
+<span class="comment">/* print a byte and spaces for the missing byte */</span>
+# <span class="cppdefine">define</span> EX_HEXDUMP_X2__(s1, num1) do { <span class="unsigned">unsigned</span> <span class="char">char</span> xbuf[5]; \
+  xbuf[4] = <span class="chr">' '</span>; \
+  xbuf[3] = <span class="chr">' '</span>; \
+  EX_HEXDUMP_BYTE(xbuf + 1, num1); \
+  xbuf[0] = <span class="chr">' '</span>; \
+  vstr_add_buf(s1, (s1)-&gt;len, xbuf, sizeof(xbuf)); } <span class="while">while</span> (<span class="false">FALSE</span>)
+#<span class="cppendif">endif</span>
+
+
+<span class="static">static</span> <span class="int">int</span> ex_hexdump_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> addr = <span class="num0">0</span>;
+  <span class="comment">/* normal ASCII chars, just allow COMMA and DOT flags */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags = VSTR_FLAG02(CONV_UNPRINTABLE_ALLOW, COMMA, DOT);
+  <span class="comment">/* allow spaces, allow COMMA, DOT, underbar _, and space */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags_sp = VSTR_FLAG04(CONV_UNPRINTABLE_ALLOW,
+                                      COMMA, DOT, _, SP);
+  <span class="comment">/* high ascii too, allow
+   * COMMA, DOT, underbar _, space, high space and other high characters */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> flags_hsp = VSTR_FLAG06(CONV_UNPRINTABLE_ALLOW,
+                                       COMMA, DOT, _, SP, HSP, HIGH);
+  <span class="unsigned">unsigned</span> <span class="char">char</span> buf[EX_HEXDUMP_CHRS_PER_LINE];
+
+  <span class="switch">switch</span> (prnt_high_chars)
+  {
+    <span class="case">case</span> PRNT_HIGH: flags = flags_hsp; <span class="break">break</span>;
+    <span class="case">case</span> PRNT_SPAC: flags = flags_sp;  <span class="break">break</span>;
+    <span class="case">case</span> PRNT_NONE:                    <span class="break">break</span>;
+    <span class="default">default</span>: <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);            <span class="break">break</span>;
+  }
+
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="comment">/* while we have a hexdump line ... */</span>
+  <span class="while">while</span> (s2-&gt;len &gt;= EX_HEXDUMP_CHRS_PER_LINE)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> count = <span class="num0">0</span>;
+    
+    <span class="comment">/* get a hexdump line from the vstr */</span>
+    vstr_export_buf(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, buf, sizeof(buf));
+
+    <span class="comment">/* write out a hexdump line address */</span>
+    EX_HEXDUMP_X8(s1, addr);
+
+    <span class="comment">/* write out hex values */</span>
+    <span class="while">while</span> (count &lt; EX_HEXDUMP_CHRS_PER_LINE)
+    {
+      EX_HEXDUMP_X2X2(s1, buf[count], buf[count + 1]);
+      count += 2;
+    }
+
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">' '</span>, 2);
+
+    <span class="comment">/* convert unprintable characters to the '.' character */</span>
+    vstr_conv_unprintable_chr(s2, 1, EX_HEXDUMP_CHRS_PER_LINE, flags, <span class="chr">'.'</span>);
+
+    <span class="comment">/* write out characters, converting reference and pointer nodes to
+     * _BUF nodes */</span>
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, EX_HEXDUMP_CHRS_PER_LINE,
+                  VSTR_TYPE_ADD_ALL_BUF);
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">'\n'</span>, 1);
+
+    addr += EX_HEXDUMP_CHRS_PER_LINE;
+    
+    <span class="comment">/* delete the set of characters just processed */</span>
+    vstr_del(s2, 1, EX_HEXDUMP_CHRS_PER_LINE);
+
+    <span class="comment">/* if any of the above memory mgmt failed, error */</span>
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data"</span>);
+
+    <span class="comment">/* note that we don't want to create data indefinitely, so stop
+     * according to in core configuration */</span>
+    <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+      <span class="return">return</span> (<span class="true">TRUE</span>);
+  }
+
+  <span class="if">if</span> (last &amp;&amp; s2-&gt;len)
+  { <span class="comment">/* do the same as above, but print the partial line for
+     * the end of a file */</span>
+    <span class="sizet">size_t</span> got = s2-&gt;len;
+    <span class="sizet">size_t</span> missing = EX_HEXDUMP_CHRS_PER_LINE - s2-&gt;len;
+    <span class="const">const</span> <span class="char">char</span> *ptr = buf;
+
+    missing -= (missing % 2);
+    vstr_export_buf(s2, 1, s2-&gt;len, buf, sizeof(buf));
+
+    EX_HEXDUMP_X8(s1, addr);
+
+    <span class="while">while</span> (got &gt;= 2)
+    {
+      EX_HEXDUMP_X2X2(s1, ptr[0], ptr[1]);
+      got -= 2;
+      ptr += 2;
+    }
+    <span class="if">if</span> (got)
+    {
+      EX_HEXDUMP_X2__(s1, ptr[0]);
+      got -= 2;
+    }
+
+    <span class="comment">/* Add spaces until the point where the characters should start */</span>
+    vstr_add_rep_chr(s1, s1-&gt;len, <span class="chr">' '</span>, (missing * 2) + (missing / 2) + 2);
+
+    vstr_conv_unprintable_chr(s2, 1, s2-&gt;len, flags, <span class="chr">'.'</span>);
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, s2-&gt;len, VSTR_TYPE_ADD_ALL_BUF);
+
+    vstr_add_cstr_buf(s1, s1-&gt;len, <span class="str">"\n"</span>);
+
+    addr += s2-&gt;len;
+    vstr_del(s2, 1, s2-&gt;len);
+
+    <span class="comment">/* if any of the above memory mgmt failed, error */</span>
+    <span class="if">if</span> (s1-&gt;conf-&gt;malloc_bad)
+      <span class="errno">errno</span> = ENOMEM, <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"adding data"</span>);
+
+    <span class="return">return</span> (<span class="true">TRUE</span>);
+  }
+
+  <span class="return">return</span> (<span class="false">FALSE</span>);
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_hexdump_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2,
+                                     <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  { <span class="comment">/* Finish processing read data (try writing if we need memory) */</span>
+    <span class="int">int</span> proc_data = ex_hexdump_process(s1, s2, !lim);
+
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(<span class="numm1">-1</span>, <span class="stdout">STDOUT_FILENO</span>);
+  }
+}
+
+<span class="comment">/* we process an entire file at a time... */</span>
+<span class="static">static</span> <span class="void">void</span> ex_hexdump_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2,
+                                            <span class="int">int</span> fd)
+{
+  <span class="comment">/* read/process/write loop */</span>
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+    
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+    
+    ex_hexdump_process(s1, s2, <span class="false">FALSE</span>);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+
+  <span class="comment">/* write out all of the end of the file,
+   * so the next file starts on a new line */</span>
+  ex_hexdump_process_limit(s1, s2, <span class="num0">0</span>);
+}
+
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{ <span class="comment">/* This is "hexdump", as it should be by default */</span>
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2); <span class="comment">/* init the library, and create two strings */</span>
+  <span class="int">int</span> count = 1; <span class="comment">/* skip the program name */</span>
+  <span class="unsigned">unsigned</span> <span class="int">int</span> use_mmap = <span class="false">FALSE</span>;
+
+  <span class="comment">/* parse command line arguments... */</span>
+  <span class="while">while</span> (count &lt; argc)
+  { <span class="comment">/* quick hack getopt_long */</span>
+    <span class="if">if</span> (!strcmp(<span class="str">"--"</span>, argv[count]))
+    {
+      ++count;
+      <span class="break">break</span>;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--mmap"</span>, argv[count])) <span class="comment">/* toggle use of mmap */</span>
+      use_mmap = !use_mmap;
+    
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--none"</span>, argv[count])) <span class="comment">/* choose what is displayed */</span>
+      prnt_high_chars = PRNT_NONE; <span class="comment">/* just simple 7 bit ASCII, no spaces */</span>
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--space"</span>, argv[count]))
+      prnt_high_chars = PRNT_SPAC; <span class="comment">/* allow spaces */</span>
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--high"</span>, argv[count]))
+      prnt_high_chars = PRNT_HIGH; <span class="comment">/* allow high bit characters */</span>
+    
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--version"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, <span class="num0">0</span>, <span class="str">"%s"</span>, <span class="str">"\
+jhexdump 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--help"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, <span class="num0">0</span>, <span class="str">"%s"</span>, <span class="str">"\
+Usage: jhexdump [FILENAME]...\n\
+   or: jhexdump OPTION\n\
+Output filenames in human hexdump format.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --high     Allow space and high characters in ASCII output\n\
+      --none     Allow only small amount of characters ASCII output (default)\n\
+      --space    Allow space characters in ASCII output\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill &lt;james@and.org&gt;.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span>
+      <span class="break">break</span>;
+    ++count;
+  }
+
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    ex_hexdump_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
+  }
+
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = <span class="num0">0</span>;
+
+    <span class="assert">ASSERT</span>(!s2-&gt;len); <span class="comment">/* all input is fully processed before each new file */</span>
+    
+    <span class="comment">/* try to mmap the file */</span>
+    <span class="if">if</span> (use_mmap)
+      vstr_sc_mmap_file(s2, s2-&gt;len, argv[count], <span class="num0">0</span>, <span class="num0">0</span>, &amp;ern);
+
+    <span class="if">if</span> (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    { <span class="comment">/* if mmap didn't work ... do a read/alter/write loop */</span>
+      <span class="int">int</span> fd = io_open(argv[count]);
+      
+      ex_hexdump_read_fd_write_stdout(s1, s2, fd);
+
+      <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+    }
+    <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"add"</span>);
+    <span class="else">else</span> <span class="comment">/* mmap worked so processes the entire file at once */</span>
+      ex_hexdump_process_limit(s1, s2, <span class="num0">0</span>);
+    
+    ++count;
+  }
+  <span class="assert">ASSERT</span>(!s2-&gt;len); <span class="comment">/* all input is fully processed before each new file */</span>
+  
+  <span class="comment">/* Cleanup... */</span>
+ out:
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+  
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_hexdump.c -->
+<!--   done on Mon Jan 26 05:27:53 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

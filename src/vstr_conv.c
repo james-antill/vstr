@@ -1,6 +1,6 @@
 #define VSTR_CONV_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,66 +25,101 @@
  * everytime you get a new node but it's not a big problem.
  * Also note that if you just have _NON nodes and _BUF nodes ot doesn't do
  * anything */
-#define VSTR__BUF_NEEDED(test, val_count) do { \
-  if (!vstr_iter_fwd_beg(base, pos, len, iter)) \
-    return (FALSE); \
+#define VSTR__BUF_NEEDED(test, sub) do {                                \
+  Vstr_iter iter[1];                                                    \
+  unsigned int extra_nodes[4] = {0};                                    \
+                                                                        \
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))                         \
+    return (FALSE);                                                     \
+                                                                        \
+  if (base->node_ptr_used || base->node_ref_used ||                     \
+      (!(sub) && !base->conf->split_buf_del))                           \
+    do                                                                  \
+    {                                                                   \
+      int done = FALSE;                                                 \
+      int first_pass = TRUE;                                            \
+                                                                        \
+      if ((iter->node->type == VSTR_TYPE_NODE_BUF) &&                   \
+          ((sub) || !base->conf->split_buf_del))                        \
+        continue;                                                       \
+      if (iter->node->type == VSTR_TYPE_NODE_NON)                       \
+        continue;                                                       \
+                                                                        \
+      while (iter->len > 0)                                             \
+      {                                                                 \
+        if (test)                                                       \
+        {                                                               \
+          done = TRUE;                                                  \
+          first_pass = TRUE;                                            \
+        }                                                               \
+        else if ((sub) || done)                                         \
+          /* deleteing from the begining of a node is always ok */      \
+        {                                                               \
+          size_t start_scan_len = iter->len;                            \
+                                                                        \
+          if (done && first_pass)                                       \
+            ++ extra_nodes[iter->node->type   - 1];                     \
+          if (sub)                                                      \
+            ++ extra_nodes[VSTR_TYPE_NODE_BUF - 1];                     \
+                                                                        \
+          first_pass = FALSE;                                           \
+                                                                        \
+          do                                                            \
+          {                                                             \
+            --iter->len;                                                \
+          ++iter->ptr;                                                  \
+          } while ((iter->len > 0) &&                                   \
+                   (!(sub) ||                                           \
+                    ((start_scan_len - iter->len) <= base->conf->buf_sz)) && \
+                   !(test));                                            \
+                                                                        \
+          continue;                                                     \
+        }                                                               \
+                                                                        \
+        --iter->len;                                                    \
+        ++iter->ptr;                                                    \
+      }                                                                 \
+    } while (vstr_iter_fwd_nxt(iter));                                  \
+                                                                        \
+  assert(!extra_nodes[VSTR_TYPE_NODE_NON - 1]);                         \
+  assert(!extra_nodes[VSTR_TYPE_NODE_BUF - 1] || (sub) ||               \
+         base->conf->split_buf_del);                                    \
+                                                                        \
+  if ((base->node_ptr_used || base->node_ref_used) &&                   \
+      ((sub) || base->conf->split_buf_del) &&                           \
+      !extra_nodes[0] && !extra_nodes[1] &&                             \
+      !extra_nodes[2] && !extra_nodes[3])                               \
+    return (TRUE);                                                      \
+                                                                        \
+  ++extra_nodes[VSTR_TYPE_NODE_BUF - 1];                                \
+                                                                        \
+  if (FALSE ||                                                          \
+      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF, \
+                      extra_nodes[VSTR_TYPE_NODE_BUF - 1], UINT_MAX) || \
+      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR, \
+                      extra_nodes[VSTR_TYPE_NODE_PTR - 1], UINT_MAX) || \
+      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF, \
+                      extra_nodes[VSTR_TYPE_NODE_REF - 1], UINT_MAX) || \
+      FALSE)                                                            \
+    return (FALSE);                                                     \
   \
-  if (base->node_ptr_used || base->node_ref_used) { do \
-  { \
-    if (iter->node->type == VSTR_TYPE_NODE_BUF) \
-      continue; \
-    if (iter->node->type == VSTR_TYPE_NODE_NON) \
-      continue; \
-    \
-    while (iter->len > 0) \
-    { \
-      if (test) \
-      { \
-        size_t start_scan_len = iter->len; \
-        \
-        ++ (val_count); \
-        \
-        do \
-        { \
-          --iter->len; \
-          ++iter->ptr; \
-        } while ((iter->len > 0) && \
-                 ((start_scan_len - iter->len) <= base->conf->buf_sz) && \
-                 (test)); \
-        \
-        continue; \
-      } \
-      \
-      --iter->len; \
-      ++iter->ptr; \
-    } \
-  } while (vstr_iter_fwd_nxt(iter)); \
-  } \
-  len = passed_len; \
 } while (FALSE)
 
-int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
+int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t len)
 {
-  size_t len = passed_len;
-  Vstr_iter iter[1];
-  unsigned int extra_nodes = 0;
-
-  VSTR__BUF_NEEDED(VSTR__IS_ASCII_UPPER(*iter->ptr), extra_nodes);
-
-  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes, UINT_MAX))
-    return (FALSE);
+  VSTR__BUF_NEEDED(!VSTR__IS_ASCII_UPPER(*iter->ptr), TRUE);
 
   while (len)
   {
     char tmp = vstr_export_chr(base, pos);
-
+    int ret = FALSE;
+    
     if (VSTR__IS_ASCII_UPPER(tmp))
     {
       tmp = VSTR__TO_ASCII_LOWER(tmp);
 
-      if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
-        return (FALSE);
+      ret = vstr_sub_buf(base, pos, 1, &tmp, 1);
+      ASSERT(ret);
     }
 
     ++pos;
@@ -94,31 +129,21 @@ int vstr_conv_lowercase(Vstr_base *base, size_t pos, size_t passed_len)
   return (TRUE);
 }
 
-int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
+int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t len)
 {
-  size_t len = passed_len;
-  Vstr_iter iter[1];
-  unsigned int extra_nodes = 0;
-
-  VSTR__BUF_NEEDED(VSTR__IS_ASCII_LOWER(*iter->ptr), extra_nodes);
-
-  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes, UINT_MAX))
-    return (FALSE);
+  VSTR__BUF_NEEDED(!VSTR__IS_ASCII_LOWER(*iter->ptr), TRUE);
 
   while (len)
   {
     char tmp = vstr_export_chr(base, pos);
+    int ret = FALSE;
 
     if (VSTR__IS_ASCII_LOWER(tmp))
     {
       tmp = VSTR__TO_ASCII_UPPER(tmp);
 
-      if (!vstr_sub_buf(base, pos, 1, &tmp, 1))
-      {
-        assert(FALSE);
-        return (FALSE);
-      }
+      ret = vstr_sub_buf(base, pos, 1, &tmp, 1);
+      ASSERT(ret);
     }
 
     ++pos;
@@ -148,18 +173,10 @@ int vstr_conv_uppercase(Vstr_base *base, size_t pos, size_t passed_len)
  (VSTR__UC(x) >= 0xA1) ? (flags & VSTR_FLAG_CONV_UNPRINTABLE_ALLOW_HIGH) : \
  (unsigned int)((VSTR__UC(x) >= 0x21) && (VSTR__UC(x) <= 0x7E)))
 
-int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
+int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t len,
                               unsigned int flags, char swp)
 {
-  size_t len = passed_len;
-  Vstr_iter iter[1];
-  unsigned int extra_nodes = 0;
-
-  VSTR__BUF_NEEDED(!VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags), extra_nodes);
-
-  if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes, UINT_MAX))
-    return (FALSE);
+  VSTR__BUF_NEEDED(VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags), TRUE);
 
   while (len)
   {
@@ -174,11 +191,10 @@ int vstr_conv_unprintable_chr(Vstr_base *base, size_t pos, size_t passed_len,
     {
       char tmp = vstr_export_chr(base, pos);
 
-      if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags) &&
-          !vstr_sub_buf(base, pos, 1, &swp, 1))
+      if (!VSTR__IS_ASCII_PRINTABLE(tmp, flags))
       {
-        assert(FALSE);
-        return (FALSE);
+        int ret = vstr_sub_buf(base, pos, 1, &swp, 1);
+        ASSERT(ret);
       }
 
       ++pos;
@@ -193,61 +209,9 @@ int vstr_conv_unprintable_del(Vstr_base *base, size_t pos, size_t passed_len,
                               unsigned int flags)
 {
   size_t len = passed_len;
-  Vstr_iter iter[1];
-  unsigned int extra_nodes[4] = {0};
   size_t del_pos = 0;
 
-  if (!vstr_iter_fwd_beg(base, pos, len, iter))
-    return (FALSE);
-
-  do
-  {
-    int done = FALSE;
-
-    if ((iter->node->type == VSTR_TYPE_NODE_BUF) && !base->conf->split_buf_del)
-      continue;
-    if (iter->node->type == VSTR_TYPE_NODE_NON)
-      continue;
-
-    while (iter->len > 0)
-    {
-      if (VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags))
-        done = TRUE;
-      else if (done) /* deleteing from the begining of a node is always ok */
-      {
-        assert((iter->node->type > 0) && (iter->node->type <= 4));
-
-        ++extra_nodes[iter->node->type - 1];
-
-        do
-        {
-          --iter->len;
-          ++iter->ptr;
-        } while ((iter->len > 0) && !VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags));
-
-        continue;
-      }
-
-      --iter->len;
-      ++iter->ptr;
-    }
-
-  } while (vstr_iter_fwd_nxt(iter));
-
-  assert(!extra_nodes[VSTR_TYPE_NODE_NON - 1]);
-  assert(!extra_nodes[VSTR_TYPE_NODE_BUF - 1] || base->conf->split_buf_del);
-
-  len = passed_len;
-
-  if (FALSE ||
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                      extra_nodes[VSTR_TYPE_NODE_BUF - 1], UINT_MAX) ||
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR,
-                      extra_nodes[VSTR_TYPE_NODE_PTR - 1], UINT_MAX) ||
-      !vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
-                      extra_nodes[VSTR_TYPE_NODE_REF - 1], UINT_MAX) ||
-      FALSE)
-    return (FALSE);
+  VSTR__BUF_NEEDED(VSTR__IS_ASCII_PRINTABLE(*iter->ptr, flags), FALSE);
 
   while (len)
   {
@@ -355,7 +319,8 @@ int vstr_conv_encode_uri(Vstr_base *base, size_t pos, size_t len)
 
   if (base->conf->buf_sz >= 3)
     multi = 1;
-  
+
+  /* overestimates */
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       (sects->num * multi) + 2, UINT_MAX))
     goto nodes_malloc_bad;
@@ -437,6 +402,7 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
     len -= 2;
   }
 
+  /* overestimates */
   if (!vstr_cntl_conf(base->conf, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
                       sects->num + 2, UINT_MAX))
     goto sects_malloc_bad;

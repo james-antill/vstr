@@ -507,17 +507,20 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
 
   vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
   len_mbs = wcrtomb(NULL, spec->u.data_wint, &state);
+  if (len_mbs != (size_t)-1)
+  { /* stupid glibc only returns -1 when you pass a buf */
+    len_mbs += wcrtomb(NULL, L'\0', &state);
+
+    if (!(buf_mbs = VSTR__MK(len_mbs)))
+    {
+      base->conf->malloc_bad = TRUE;
+      goto failed_alloc;
+    }
+    vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
+    len_mbs = wcrtomb(buf_mbs, spec->u.data_wint, &state);
+  }
   if (len_mbs == (size_t)-1)
     goto failed_EILSEQ;
-  len_mbs += wcrtomb(NULL, L'\0', &state);
-
-  if (!(buf_mbs = VSTR__MK(len_mbs)))
-  {
-    base->conf->malloc_bad = TRUE;
-    goto failed_alloc;
-  }
-  vstr_wrap_memset(&state, 0, sizeof(mbstate_t));
-  len_mbs = wcrtomb(buf_mbs, spec->u.data_wint, &state);
   len_mbs += wcrtomb(buf_mbs + len_mbs, L'\0', &state);
   --len_mbs; /* remove terminator */
 
@@ -545,11 +548,9 @@ static int vstr__add_fmt_wide_char(Vstr_base *base, size_t pos_diff,
   return (TRUE);
 
  C_failed_alloc_free_buf_mbs:
+ failed_EILSEQ: /* FIXME: need a good way to see this */
   VSTR__F(buf_mbs);
-  return (FALSE);
-
  failed_alloc:
- failed_EILSEQ: /* FIXME: */
   return (FALSE);
 }
 #else
@@ -629,7 +630,7 @@ static int vstr__add_fmt_wide_cstr(Vstr_base *base, size_t pos_diff,
   len_mbs = wcsnrtombs(NULL, &tmp, spec->precision, 0, &state);
   if (len_mbs == (size_t)-1)
     goto failed_EILSEQ;
-  if (tmp) /* wcslen() > spec->precision */
+  if (*tmp) /* wcslen() > spec->precision */
   {
     size_t tmp_mbs = wcrtomb(NULL, L'\0', &state);
 
@@ -785,7 +786,7 @@ vstr__add_fmt_usr_write_spec(Vstr_base *base, size_t orig_len, size_t pos_diff,
 
   if (!(*beg->usr_spec->func)(base, base->len - pos_diff, usr_spec))
     last = NULL;
-
+  
   if (beg->usr_spec->sz > VSTR__FMT_USR_SZ)
     VSTR__F(usr_spec);
 
@@ -806,19 +807,22 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
   struct Vstr__fmt_spec *const end  = base->conf->vstr__fmt_spec_list_end;
   struct Vstr__fmt_spec *      spec = base->conf->vstr__fmt_spec_list_beg;
 
-  assert(beg && end);
+  if (!end) /* invalid format... */
+    return (TRUE);
+  
+  ASSERT(beg && end);
 
   /* allow vstr_add_vfmt() to be called form a usr cb */
   base->conf->vstr__fmt_spec_list_beg = NULL;
   base->conf->vstr__fmt_spec_list_end = NULL;
-
+  
   while (spec)
   {
     if (spec->escape_usr)
     {
       if (!(spec = vstr__add_fmt_usr_write_spec(base, orig_len,
                                                 pos_diff, spec, sve_errno)))
-        goto failed_alloc;
+        goto failed_user;
     }
     else switch (spec->fmt_code)
     {
@@ -910,6 +914,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
   return (TRUE);
 
  failed_alloc:
+ failed_user:
   end->next = base->conf->vstr__fmt_spec_make;
   base->conf->vstr__fmt_spec_make = beg;
 
@@ -923,234 +928,237 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
 static int vstr__fmt_fillin_spec(Vstr_conf *conf, va_list ap, int have_dollars)
 {
- struct Vstr__fmt_spec *beg = conf->vstr__fmt_spec_list_beg;
- unsigned int count = 0;
- unsigned int need_to_fin_now = FALSE;
+  struct Vstr__fmt_spec *beg = conf->vstr__fmt_spec_list_beg;
+  unsigned int count = 0;
+  unsigned int need_to_fin_now = FALSE;
 
- while (beg)
- {
-  struct Vstr__fmt_spec *spec = NULL;
-  int done = FALSE;
-  union Vstr__fmt_sp_un u;
-
-  ++count;
-  assert(beg);
-
-  while (beg &&
-         !beg->field_width_param &&
-         !beg->precision_param &&
-         !beg->main_param)
-    beg = beg->next;
-
-  ASSERT_RET(!(beg && need_to_fin_now), FALSE);
-
-  spec = beg;
-  while (spec)
+  while (beg)
   {
-    int tmp_fw_p = 0;
+    struct Vstr__fmt_spec *spec = NULL;
+    int done = FALSE;
+    union Vstr__fmt_sp_un u;
 
-   if (count == spec->field_width_param)
-   {
-    if (!done) tmp_fw_p = va_arg(ap, int); done = TRUE;
+    ++count;
+    ASSERT(beg);
 
-    assert(spec->field_width_usr);
+    while (beg &&
+           !beg->field_width_param &&
+           !beg->precision_param &&
+           !beg->main_param)
+      beg = beg->next;
+    
+    ASSERT_RET(!(beg && need_to_fin_now), FALSE); /* incomplete spec */
 
-    if (tmp_fw_p < 0) /* negative field width == flag '-' */
+    spec = beg;
+    while (spec)
     {
-      spec->flags |= LEFT;
-      VSTR__FMT_S2U_NUM(spec->field_width, tmp_fw_p);
-    }
-    else
-      spec->field_width = tmp_fw_p;
-
-    spec->field_width_param = 0;
-    if (!have_dollars)
-      break;
-   }
-
-   if (count == spec->precision_param)
-   {
-     if (!done) tmp_fw_p = va_arg(ap, int); done = TRUE;
-
-     assert(spec->flags & PREC_USR);
-
-     if (tmp_fw_p < 0) /* negative precision == pretend one wasn't given */
-       spec->flags &= ~PREC_USR;
-     else
-       spec->precision = tmp_fw_p;
-     spec->precision_param = 0;
-     if (!have_dollars)
-       break;
-   }
-
-   if (count == spec->main_param)
-   {
-    if (!done)
-      switch (spec->fmt_code)
+      if (count == spec->field_width_param)
       {
-        case 'c':
-          u.data_c = va_arg(ap, int);
+        int tmp_fw_p = 0;
+        if (!done) u.data_i = va_arg(ap, int); done = TRUE;
+
+        assert(spec->field_width_usr);
+
+        tmp_fw_p = u.data_i;
+        if (tmp_fw_p < 0) /* negative field width == flag '-' */
+        {
+          spec->flags |= LEFT;
+          VSTR__FMT_S2U_NUM(spec->field_width, tmp_fw_p);
+        }
+        else
+          spec->field_width = tmp_fw_p;
+        
+        spec->field_width_param = 0;
+        if (!have_dollars)
           break;
-
-        case 'C':
-          u.data_wint = va_arg(ap, wint_t);
-          break;
-
-        case 'm':
-          break;
-
-        case 's':
-          u.data_ptr = va_arg(ap, char *);
-          break;
-
-        case 'S':
-          u.data_ptr = va_arg(ap, wchar_t *);
-          break;
-
-        case 'd':
-        case 'i':
-        case 'u':
-        case 'X':
-        case 'x':
-        case 'o':
-         switch (spec->int_type)
-         {
-          case VSTR_TYPE_FMT_UCHAR:
-            if (spec->flags & SIGN)
-            {
-             signed char tmp = (signed char) va_arg(ap, int);
-             VSTR__FMT_ABS_NUM(u.data_c, tmp);
-            }
-            else
-              u.data_c = (unsigned char) va_arg(ap, unsigned int);
-            if (!u.data_c) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_USHORT:
-            if (spec->flags & SIGN)
-            {
-             signed short tmp = (signed short) va_arg(ap, int);
-             VSTR__FMT_ABS_NUM(u.data_s, tmp);
-            }
-            else
-              u.data_s = (unsigned short) va_arg(ap, unsigned int);
-            if (!u.data_s) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_UINT:
-            if (spec->flags & SIGN)
-            {
-             int tmp = va_arg(ap, int);
-             VSTR__FMT_ABS_NUM(u.data_i, tmp);
-            }
-            else
-              u.data_i = va_arg(ap, unsigned int);
-            if (!u.data_i) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_ULONG:
-            if (spec->flags & SIGN)
-            {
-             long tmp = va_arg(ap, long);
-             VSTR__FMT_ABS_NUM(u.data_l, tmp);
-            }
-            else
-              u.data_l = va_arg(ap, unsigned long);
-            if (!u.data_l) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_ULONG_LONG:
-            if (spec->flags & SIGN)
-            {
-             Vstr__long_long tmp = va_arg(ap, Vstr__long_long);
-             VSTR__FMT_ABS_NUM(u.data_L, tmp);
-            }
-            else
-              u.data_L = va_arg(ap, Vstr__unsigned_long_long);
-            if (!u.data_L) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_SIZE_T:
-            if (spec->flags & SIGN)
-            {
-             ssize_t tmp = va_arg(ap, ssize_t);
-             VSTR__FMT_ABS_NUM(u.data_sz, tmp);
-            }
-            else
-              u.data_sz = va_arg(ap, size_t);
-            if (!u.data_sz) spec->flags |= NUM_IS_ZERO;
-            break;
-          case VSTR_TYPE_FMT_PTRDIFF_T:
-            if (1)
-            { /* no unsigned type ... */
-	     /* FIXME: volatile for bug in gcc-2.95.x */
-             volatile intmax_t tmp = va_arg(ap, ptrdiff_t);
-             VSTR__FMT_ABS_NUM(u.data_m, tmp);
-            }
-            if (!u.data_m) spec->flags |= NUM_IS_ZERO;
-            spec->int_type = VSTR_TYPE_FMT_UINTMAX_T;
-            break;
-          case VSTR_TYPE_FMT_UINTMAX_T:
-            if (spec->flags & SIGN)
-            {
-             intmax_t tmp = va_arg(ap, intmax_t);
-             VSTR__FMT_ABS_NUM(u.data_m, tmp);
-            }
-            else
-              u.data_m = va_arg(ap, uintmax_t);
-            if (!u.data_m) spec->flags |= NUM_IS_ZERO;
-            
-            ASSERT_NO_SWITCH_DEF();
-         }
-         break;
-
-       case 'p':
-       {
-        void *tmp = va_arg(ap, void *);
-        u.data_ptr = tmp;
-       }
-       break;
-
-       case 'n':
-         switch (spec->int_type)
-         {
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, char);                 break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);               break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);                   break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);                 break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, Vstr__long_long); break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);             break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);         break;
-           VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);
-           ASSERT_NO_SWITCH_DEF();
-         }
-         break;
-
-       case 'e': /* print like [-]x.xxxexx */
-       case 'E': /* use big E instead */
-       case 'f': /* print like an int */
-       case 'F': /* print like an int - upper case infinity/nan */
-       case 'g': /* use the smallest of e and f */
-       case 'G': /* use the smallest of E and F */
-       case 'a': /* print like [-]x.xxxpxx -- in hex using abcdef */
-       case 'A': /* print like [-]x.xxxPxx -- in hex using ABCDEF */
-         if (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG)
-           u.data_Ld = va_arg(ap, long double);
-         else
-           u.data_d = va_arg(ap, double);
-         
-         ASSERT_NO_SWITCH_DEF();
       }
-    done = TRUE;
-    spec->u = u;
-    spec->main_param = 0;
 
-    if (!have_dollars)
-      break;
-   }
+      if (count == spec->precision_param)
+      {
+        int tmp_fw_p = 0;
+        if (!done) u.data_i = va_arg(ap, int); done = TRUE;
 
-   spec = spec->next;
+        assert(spec->flags & PREC_USR);
+
+        tmp_fw_p = u.data_i;
+        if (tmp_fw_p < 0) /* negative precision == pretend one wasn't given */
+          spec->flags &= ~PREC_USR;
+        else
+          spec->precision = tmp_fw_p;
+        spec->precision_param = 0;
+        if (!have_dollars)
+          break;
+      }
+      
+      if (count == spec->main_param)
+      {
+        if (!done)
+          switch (spec->fmt_code)
+          {
+            case 'c':
+              u.data_c = va_arg(ap, int);
+              break;
+
+            case 'C':
+              u.data_wint = va_arg(ap, wint_t);
+              break;
+
+            case 'm':
+              break;
+
+            case 's':
+              u.data_ptr = va_arg(ap, char *);
+              break;
+
+            case 'S':
+              u.data_ptr = va_arg(ap, wchar_t *);
+              break;
+
+            case 'd':
+            case 'i':
+            case 'u':
+            case 'X':
+            case 'x':
+            case 'o':
+              switch (spec->int_type)
+              {
+                case VSTR_TYPE_FMT_UCHAR:
+                  if (spec->flags & SIGN)
+                  {
+                    signed char tmp = (signed char) va_arg(ap, int);
+                    VSTR__FMT_ABS_NUM(u.data_c, tmp);
+                  }
+                  else
+                    u.data_c = (unsigned char) va_arg(ap, unsigned int);
+                  if (!u.data_c) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_USHORT:
+                  if (spec->flags & SIGN)
+                  {
+                    signed short tmp = (signed short) va_arg(ap, int);
+                    VSTR__FMT_ABS_NUM(u.data_s, tmp);
+                  }
+                  else
+                    u.data_s = (unsigned short) va_arg(ap, unsigned int);
+                  if (!u.data_s) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_UINT:
+                  if (spec->flags & SIGN)
+                  {
+                    int tmp = va_arg(ap, int);
+                    VSTR__FMT_ABS_NUM(u.data_i, tmp);
+                  }
+                  else
+                    u.data_i = va_arg(ap, unsigned int);
+                  if (!u.data_i) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_ULONG:
+                  if (spec->flags & SIGN)
+                  {
+                    long tmp = va_arg(ap, long);
+                    VSTR__FMT_ABS_NUM(u.data_l, tmp);
+                  }
+                  else
+                    u.data_l = va_arg(ap, unsigned long);
+                  if (!u.data_l) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_ULONG_LONG:
+                  if (spec->flags & SIGN)
+                  {
+                    Vstr__long_long tmp = va_arg(ap, Vstr__long_long);
+                    VSTR__FMT_ABS_NUM(u.data_L, tmp);
+                  }
+                  else
+                    u.data_L = va_arg(ap, Vstr__unsigned_long_long);
+                  if (!u.data_L) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_SIZE_T:
+                  if (spec->flags & SIGN)
+                  {
+                    ssize_t tmp = va_arg(ap, ssize_t);
+                    VSTR__FMT_ABS_NUM(u.data_sz, tmp);
+                  }
+                  else
+                    u.data_sz = va_arg(ap, size_t);
+                  if (!u.data_sz) spec->flags |= NUM_IS_ZERO;
+                  break;
+                case VSTR_TYPE_FMT_PTRDIFF_T:
+                  if (1)
+                  { /* no unsigned type ... */
+                    /* FIXME: volatile for bug in gcc-2.95.x */
+                    volatile intmax_t tmp = va_arg(ap, ptrdiff_t);
+                    VSTR__FMT_ABS_NUM(u.data_m, tmp);
+                  }
+                  if (!u.data_m) spec->flags |= NUM_IS_ZERO;
+                  spec->int_type = VSTR_TYPE_FMT_UINTMAX_T;
+                  break;
+                case VSTR_TYPE_FMT_UINTMAX_T:
+                  if (spec->flags & SIGN)
+                  {
+                    intmax_t tmp = va_arg(ap, intmax_t);
+                    VSTR__FMT_ABS_NUM(u.data_m, tmp);
+                  }
+                  else
+                    u.data_m = va_arg(ap, uintmax_t);
+                  if (!u.data_m) spec->flags |= NUM_IS_ZERO;
+                  
+                  ASSERT_NO_SWITCH_DEF();
+              }
+              break;
+              
+            case 'p':
+            {
+              void *tmp = va_arg(ap, void *);
+              u.data_ptr = tmp;
+            }
+            break;
+            
+            case 'n':
+              switch (spec->int_type)
+              {
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UCHAR, char);               break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_USHORT, short);             break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINT, int);                 break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG, long);               break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_ULONG_LONG, Vstr__long_long);
+                break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_SIZE_T, ssize_t);           break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_UINTMAX_T, intmax_t);       break;
+                VSTR__FMT_N_PTR(VSTR_TYPE_FMT_PTRDIFF_T, ptrdiff_t);
+                ASSERT_NO_SWITCH_DEF();
+              }
+              break;
+
+            case 'e': /* print like [-]x.xxxexx */
+            case 'E': /* use big E instead */
+            case 'f': /* print like an int */
+            case 'F': /* print like an int - upper case infinity/nan */
+            case 'g': /* use the smallest of e and f */
+            case 'G': /* use the smallest of E and F */
+            case 'a': /* print like [-]x.xxxpxx -- in hex using abcdef */
+            case 'A': /* print like [-]x.xxxPxx -- in hex using ABCDEF */
+              if (spec->int_type == VSTR_TYPE_FMT_ULONG_LONG)
+                u.data_Ld = va_arg(ap, long double);
+              else
+                u.data_d = va_arg(ap, double);
+              
+              ASSERT_NO_SWITCH_DEF();
+          }
+        done = TRUE;
+        spec->u = u;
+        spec->main_param = 0;
+        
+        if (!have_dollars)
+          break;
+      }
+      
+      spec = spec->next;
+    }
+    
+    if (!done)
+      need_to_fin_now = 1;
   }
-
-  if (!done)
-    need_to_fin_now = 1;
- }
-
+  
  return (TRUE);
 }
 
@@ -1159,10 +1167,10 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
                                          struct Vstr__fmt_spec *spec,
                                          unsigned int *passed_params)
 {
-  struct Vstr__fmt_spec *beg_spec = spec;
   unsigned int params = *passed_params;
   Vstr__fmt_usr_name_node *node = NULL;
-
+  unsigned int have_i18n_args = spec->main_param;
+  
   if ((node = vstr__fmt_usr_match(conf, fmt)))
   {
     unsigned int scan = 0;
@@ -1180,6 +1188,9 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
         case VSTR_TYPE_FMT_END:
           spec->fmt_code = 0;
           have_arg = FALSE;
+          /* it's possible, but stupid, with i18n */
+          ASSERT(!scan && !spec->main_param);
+          spec->main_param = 0;
           break;
         case VSTR_TYPE_FMT_INT:
           spec->flags |= SIGN;
@@ -1246,16 +1257,21 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
           spec->fmt_code = 'S';
           break;
         case VSTR_TYPE_FMT_ERRNO:
+          /* it's possible, but stupid, with i18n */
+          ASSERT(!spec->main_param);
+          spec->main_param = 0;
           spec->fmt_code = 0;
           have_arg = FALSE;
           
           ASSERT_NO_SWITCH_DEF();
       }
 
-      if (scan && (params == *passed_params))
-        spec->main_param = beg_spec->main_param + scan;
+      /* custom formatters have multiple args, they _must_ follow each other
+       * so if the first is set, set the rest based off that */
+      if (have_i18n_args && have_arg)
+        spec->main_param = have_i18n_args++;
       VSTR__FMT_MV_SPEC(conf, have_arg);
-
+      
       /* allow _END to be the only thing passed */
       if (!node->types[scan] || !node->types[++scan])
         break;
@@ -1270,7 +1286,7 @@ static const char *vstr__add_fmt_usr_esc(Vstr_conf *conf,
 
     return (fmt + node->name_len);
   }
-
+  
   return (fmt);
 
  failed_alloc:
@@ -1393,17 +1409,17 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
 {
   int sve_errno = errno;
   size_t start_pos = pos + 1;
-  size_t orig_len = base->len;
+  size_t orig_len = 0;
   size_t pos_diff = 0;
   unsigned int params = 0;
   unsigned int have_dollars = FALSE; /* have posix %2$d etc. stuff */
   unsigned char fmt_usr_escape = 0;
   unsigned int orig_malloc_bad = FALSE;
+  
+  ASSERT_RET(!(!base || !fmt || (pos > base->len)), 0);
 
-  ASSERT(!(!base || !fmt || (pos > base->len)));
-  if (!base || !fmt || !*fmt || (pos > base->len))
-    return (0);
-
+  orig_len = base->len;
+  
   /* so things can use this as a flag */
   orig_malloc_bad = base->conf->malloc_bad;
   base->conf->malloc_bad = FALSE;
@@ -1413,15 +1429,15 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
 
   if (userfmt)
     fmt_usr_escape = base->conf->fmt_usr_escape;
-
+  
   while (*fmt)
   {
     const char *fmt_orig = fmt;
     struct Vstr__fmt_spec *spec = NULL;
-
+    
     if (!base->conf->vstr__fmt_spec_make && !vstr__fmt_add_spec(base->conf))
       goto failed_alloc;
-
+    
     spec = base->conf->vstr__fmt_spec_make;
     vstr__fmt_init_spec(spec);
 
@@ -1477,18 +1493,19 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
            (spec->field_width_usr || !spec->field_width));
     assert(VSTR__FMT_ANAL_ZERO &&
            ((spec->flags & PREC_USR) || !spec->precision));
-
+    
     if (fmt_usr_escape && (*fmt_orig == fmt_usr_escape))
     {
       const char *fmt_end = vstr__add_fmt_usr_esc(base->conf, fmt,
                                                   spec, &params);
+      
       if (!fmt_end)
         goto failed_alloc;
       else if (fmt_end == fmt)
       {
         if (fmt_usr_escape == '%')
           goto vstr__fmt_sys_escapes;
-
+        
         assert(FALSE); /* $$ etc. is already done before here */
         fmt = ""; /* should end because we don't know if the types are
                    * screwed up */
@@ -1497,7 +1514,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
         fmt = fmt_end;
       continue;
     }
-
+    
    vstr__fmt_sys_escapes:
     /* get width of type */
     switch (*fmt)
@@ -1544,6 +1561,8 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
         break;
 
       case 'm':
+        ASSERT(!spec->main_param); /* it's possible, but stupid, with i18n */
+        spec->main_param = 0;
         break;
 
       case 's':
@@ -1600,17 +1619,17 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     VSTR__FMT_MV_SPEC(base->conf, TRUE);
     ++fmt;
   }
-
+  
   if (!vstr__fmt_fillin_spec(base->conf, ap, have_dollars))
     goto failed_alloc;
-
+  
   errno = sve_errno;
   if (!vstr__fmt_write_spec(base, pos_diff, orig_len, sve_errno))
     goto failed_write_spec;
-
+  
   /* restore the original state of the bad malloc flag... */
   base->conf->malloc_bad = orig_malloc_bad;
-
+  
   return (base->len - orig_len);
 
  failed_write_spec:
@@ -1627,7 +1646,7 @@ static size_t vstr__add_vfmt(Vstr_base *base, size_t pos, unsigned int userfmt,
     base->conf->vstr__fmt_spec_list_beg = NULL;
     base->conf->vstr__fmt_spec_list_end = NULL;
   }
-  base->conf->malloc_bad = TRUE;
+  base->conf->malloc_bad |= orig_malloc_bad;
 
   return (0);
 }
@@ -1648,7 +1667,7 @@ size_t vstr_add_fmt(Vstr_base *base, size_t pos, const char *fmt, ...)
 {
   size_t len = 0;
   va_list ap;
-
+  
   va_start(ap, fmt);
 
   len =   vstr__add_vfmt(base, pos, TRUE,  fmt, ap);

@@ -1,0 +1,646 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_highlight.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_highlight.c</h1>
+<pre class="c2html">
+<span class="comment">/* quick and dirty copy of the
+ * highlight (http://freshmeat.net/projects/highlight/) command */</span>
+#<span class="cppdefine">define</span> VSTR_COMPILE_INLINE <span class="num0">0</span>
+
+#<span class="cppinclude">include</span> <span class="str">"ex_utils.h"</span>
+
+#<span class="cppinclude">include</span> &lt;sys/time.h&gt;
+#<span class="cppinclude">include</span> &lt;time.h&gt;
+
+<span class="static">static</span> struct 
+{
+ <span class="const">const</span> <span class="char">char</span> *name;
+ <span class="const">const</span> <span class="char">char</span> *seq;
+ <span class="sizet">size_t</span> off;
+ <span class="sizet">size_t</span> eoff;
+ <span class="sizet">size_t</span> len;
+} ex_hl_seqs[] = 
+<span class="comment">/* This assumes a certain style...
+   
+   for instance neither of...
+
+   if(foo)
+   foo;if (bar)
+
+   ...will be seen as an if statement, as there is no space before and after
+   the if. And using TABs instead of spaces will make it not work.
+   These are all features, as the style should be the same.
+*/</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_T(x, y) \
+   x, <span class="str">" "</span>  y <span class="str">" "</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"("</span>  y <span class="str">" "</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span>  y <span class="str">")"</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"("</span>  y <span class="str">")"</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"*"</span>  y <span class="str">" "</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"\n"</span> y <span class="str">" "</span>, 1, 1, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_SP(x, y) \
+   x, <span class="str">" "</span> y <span class="str">" "</span>,  1, 1, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_WS(x, y) \
+   x, <span class="str">" "</span> y <span class="str">" "</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span> y <span class="str">"\n"</span>, 1, 1, <span class="num0">0</span>
+<span class="comment">/* custom for default and break */</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_DEF(x, y) \
+   x, <span class="str">" "</span> y <span class="str">": "</span>, 1, 2, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span> y <span class="str">":\n"</span>, 1, 2, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_BRK(x, y) \
+   x, <span class="str">" "</span> y <span class="str">";\n"</span>, 1, 2, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_SB(x, y) \
+   x, <span class="str">" "</span> y <span class="str">" ("</span>, 1, 2, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_RET(x, y) \
+   x, <span class="str">" "</span> y <span class="str">" ("</span>,  1, 2, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span> y <span class="str">";\n"</span>, 1, 2, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_B(x, y)  \
+   x, <span class="str">" "</span> y <span class="str">"("</span>, 1, 1, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_VAL(x, y) \
+   x, <span class="str">" "</span>  y <span class="str">" "</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span>  y <span class="str">"\n"</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span>  y <span class="str">";"</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span>  y <span class="str">","</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">" "</span>  y <span class="str">")"</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"("</span>  y <span class="str">" "</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"("</span>  y <span class="str">")"</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"("</span>  y <span class="str">","</span>,  1, 1, <span class="num0">0</span>
+#<span class="cppdefine">define</span> EX_HL_SEQ_CPP(x, y) \
+   x, <span class="str">"#"</span>     y <span class="str">" "</span>,  1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#"</span>     y <span class="str">"\n"</span>, 1, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"# "</span>    y <span class="str">" "</span>,  2, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"# "</span>    y <span class="str">"\n"</span>, 2, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#  "</span>   y <span class="str">" "</span>,  3, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#  "</span>   y <span class="str">"\n"</span>, 3, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#   "</span>  y <span class="str">" "</span>,  4, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#   "</span>  y <span class="str">"\n"</span>, 4, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#    "</span> y <span class="str">" "</span>,  5, 1, <span class="num0">0</span> }, \
+ { x, <span class="str">"#    "</span> y <span class="str">"\n"</span>, 5, 1, <span class="num0">0</span>
+{
+ <span class="comment">/* order matters */</span>
+ { EX_HL_SEQ_T(<span class="str">"vstrbase"</span>, <span class="str">"Vstr_base"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"vstrsects"</span>, <span class="str">"Vstr_sects"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"vstrfmt"</span>, <span class="str">"Vstr_fmt_spec"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"pollfd"</span>, <span class="str">"struct pollfd"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"mpzt"</span>, <span class="str">"mpz_t"</span>) },
+ 
+ { EX_HL_SEQ_CPP(<span class="str">"cppif"</span>, <span class="str">"if"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppifndef"</span>, <span class="str">"ifndef"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppifdef"</span>, <span class="str">"ifdef"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppelse"</span>, <span class="str">"else"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppendif"</span>, <span class="str">"endif"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppdefine"</span>, <span class="str">"define"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppinclude"</span>, <span class="str">"include"</span>) },
+ { EX_HL_SEQ_CPP(<span class="str">"cppelif"</span>, <span class="str">"elif"</span>) },
+ { EX_HL_SEQ_SB(<span class="str">"cppdefined"</span>, <span class="str">"defined"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"cppdefined"</span>, <span class="str">"defined"</span>) },
+ 
+ { EX_HL_SEQ_SB(<span class="str">"if"</span>, <span class="str">"if"</span>) },
+ { EX_HL_SEQ_WS(<span class="str">"else"</span>, <span class="str">"else"</span>) },
+ { EX_HL_SEQ_SB(<span class="str">"while"</span>, <span class="str">"while"</span>) },
+ { EX_HL_SEQ_SB(<span class="str">"for"</span>, <span class="str">"for"</span>) },
+ { EX_HL_SEQ_RET(<span class="str">"return"</span>, <span class="str">"return"</span>) },
+ { EX_HL_SEQ_SB(<span class="str">"switch"</span>, <span class="str">"switch"</span>) },
+ { EX_HL_SEQ_SP(<span class="str">"case"</span>, <span class="str">"case"</span>) },
+ { EX_HL_SEQ_DEF(<span class="str">"default"</span>, <span class="str">"default"</span>) },
+ { EX_HL_SEQ_BRK(<span class="str">"break"</span>, <span class="str">"break"</span>) },
+ { EX_HL_SEQ_SP(<span class="str">"goto"</span>, <span class="str">"goto"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"extern"</span>, <span class="str">"extern"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"static"</span>, <span class="str">"static"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"const"</span>, <span class="str">"const"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"restrict"</span>, <span class="str">"restrict"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"inline"</span>, <span class="str">"inline"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"void"</span>, <span class="str">"void"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"unsigned"</span>, <span class="str">"unsigned"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"char"</span>, <span class="str">"char"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"short"</span>, <span class="str">"short"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"int"</span>, <span class="str">"int"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"long"</span>, <span class="str">"long"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"float"</span>, <span class="str">"float"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"double"</span>, <span class="str">"double"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"ssizet"</span>, <span class="str">"ssize_t"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"sizet"</span>, <span class="str">"size_t"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"offt"</span>, <span class="str">"off_t"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"off64t"</span>, <span class="str">"off64_t"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"intmaxt"</span>, <span class="str">"intmax_t"</span>) },
+ { EX_HL_SEQ_T(<span class="str">"uintmaxt"</span>, <span class="str">"uintmax_t"</span>) },
+ 
+ { EX_HL_SEQ_SB(<span class="str">"exit"</span>, <span class="str">"exit"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"err"</span>, <span class="str">"err"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"err"</span>, <span class="str">"errx"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"warn"</span>, <span class="str">"warn"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"warn"</span>, <span class="str">"warnx"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"assert"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"ASSERT"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"assert_ret"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"ASSERT_RET"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"assert_ret_void"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"ASSERT_RET_VOID"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"assert_no_switch_def"</span>) },
+ { EX_HL_SEQ_B(<span class="str">"assert"</span>, <span class="str">"ASSERT_NO_SWITCH_DEF"</span>) },
+
+ { EX_HL_SEQ_VAL(<span class="str">"compdate"</span>, <span class="str">"__DATE__"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"compversion"</span>, <span class="str">"__VERSION__"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"compfile"</span>, <span class="str">"__FILE__"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"compline"</span>, <span class="str">"__LINE__"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"charbit"</span>, <span class="str">"CHAR_BIT"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"intmax"</span>, <span class="str">"INT_MAX"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"intmin"</span>, <span class="str">"INT_MIN"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"intjmax"</span>, <span class="str">"INTMAX_MAX"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"intjmin"</span>, <span class="str">"INTMAX_MIN"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stdin"</span>, <span class="str">"stdin"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stdout"</span>, <span class="str">"stdout"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stderr"</span>, <span class="str">"stderr"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stdin"</span>, <span class="str">"STDIN_FILENO"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stdout"</span>, <span class="str">"STDOUT_FILENO"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"stderr"</span>, <span class="str">"STDERR_FILENO"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"errno"</span>, <span class="str">"errno"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"exitsucs"</span>, <span class="str">"EXIT_SUCCESS"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"exitfail"</span>, <span class="str">"EXIT_FAILURE"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"true"</span>, <span class="str">"TRUE"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"false"</span>, <span class="str">"FALSE"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"null"</span>, <span class="str">"NULL"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"num0"</span>,   <span class="str">"0"</span>) },
+ { EX_HL_SEQ_VAL(<span class="str">"numm1"</span>, <span class="str">"-1"</span>) },
+ 
+ {NULL, <span class="null">NULL</span>, <span class="num0">0</span>, <span class="num0">0</span>, 0},
+};
+<span class="static">static</span> <span class="sizet">size_t</span> ex_hl_max_seq_len = <span class="num0">0</span>;
+
+#<span class="cppdefine">define</span> C_DEF <span class="num0">0</span>
+#<span class="cppdefine">define</span> C_SEQ 1
+#<span class="cppdefine">define</span> C_STR 2
+#<span class="cppdefine">define</span> C_CHR 3
+#<span class="cppdefine">define</span> C_CMO 4
+#<span class="cppdefine">define</span> C_CMN 5
+
+<span class="static">static</span> <span class="void">void</span> ex_hl_mov_clean(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="sizet">size_t</span> len)
+{ <span class="comment">/* html the elements... */</span>
+  <span class="while">while</span> (len &gt; <span class="num0">0</span>)
+  {
+    <span class="sizet">size_t</span> count = vstr_cspn_cstr_chrs_fwd(s2, 1, len, <span class="str">"&amp;&lt;&gt;"</span>);
+    
+    vstr_add_vstr(s1, s1-&gt;len, s2, 1, count, VSTR_TYPE_ADD_BUF_REF);
+    vstr_del(s2, 1, count);
+    len -= count;
+
+    <span class="if">if</span> (count)
+      continue;
+
+    --len;
+    
+    <span class="switch">switch</span> (vstr_export_chr(s2, 1))
+    {
+      <span class="case">case</span> <span class="chr">'&lt;'</span>: <span class="comment">/* html stuff ... */</span>
+        vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;lt;"</span>);
+        vstr_del(s2, 1, 1);
+        continue;
+        
+      <span class="case">case</span> <span class="chr">'&gt;'</span>:
+        vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;gt;"</span>);
+        vstr_del(s2, 1, 1);
+        continue;
+        
+      <span class="case">case</span> <span class="chr">'&amp;'</span>:
+        vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;amp;"</span>);
+        vstr_del(s2, 1, 1);
+        continue;
+        
+      <span class="default">default</span>:
+        <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);
+        <span class="break">break</span>;
+    }  
+  }
+}
+
+<span class="static">static</span> <span class="int">int</span> first_time = <span class="false">FALSE</span>;
+
+<span class="static">static</span> <span class="int">int</span> ex_hl_process(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> last)
+{
+  <span class="static">static</span> <span class="unsigned">unsigned</span> <span class="int">int</span> state = C_DEF;
+
+  <span class="comment">/* we don't want to create more data, if we are over our limit */</span>
+  <span class="if">if</span> (s1-&gt;len &gt; EX_MAX_W_DATA_INCORE)
+    <span class="return">return</span> (<span class="false">FALSE</span>);
+
+  <span class="if">if</span> (s2-&gt;len &lt; ex_hl_max_seq_len)
+  {
+    <span class="if">if</span> (!s2-&gt;len || !last)
+      <span class="return">return</span> (<span class="false">FALSE</span>);
+  }
+  
+  <span class="while">while</span> (((s2-&gt;len &gt;= ex_hl_max_seq_len) || (s2-&gt;len &amp;&amp; last)) &amp;&amp;
+         (s1-&gt;len &lt;= EX_MAX_W_DATA_INCORE))
+  {
+    <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+  
+    <span class="switch">switch</span> (state)
+    {
+      <span class="case">case</span> C_DEF:
+        <span class="comment">/* this is pretty intimately tied with the array above */</span>
+        len = vstr_cspn_cstr_chrs_fwd(s2, 1, s2-&gt;len, <span class="str">"# \n(*\"'/&amp;&lt;&gt;"</span>);
+        vstr_add_vstr(s1, s1-&gt;len, s2, 1, len, VSTR_TYPE_ADD_BUF_REF);
+        vstr_del(s2, 1, len);
+        state = C_SEQ;
+        <span class="break">break</span>;
+        
+      <span class="case">case</span> C_SEQ:
+      {
+        <span class="unsigned">unsigned</span> <span class="int">int</span> scan = <span class="num0">0</span>;
+        <span class="const">const</span> <span class="char">char</span> *seq = <span class="null">NULL</span>;
+
+        <span class="switch">switch</span> (vstr_export_chr(s2, 1))
+        {
+          <span class="case">case</span> <span class="chr">'\''</span>:
+            state = C_CHR;
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;span class=\"chr\"&gt;'"</span>);
+            vstr_del(s2, 1, 1);
+            continue;
+            
+          <span class="case">case</span> <span class="chr">'/'</span>:
+            <span class="if">if</span> (s2-&gt;len &lt; 2)
+              <span class="break">break</span>;
+            
+            <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, 2, <span class="str">"/*"</span>))
+            {
+              state = C_CMO;
+              vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;span class=\"comment\"&gt;/*"</span>);
+              vstr_del(s2, 1, 2);
+              continue;
+            }
+            <span class="if">if</span> (vstr_cmp_cstr_eq(s2, 1, 2, <span class="str">"//"</span>))
+            {
+              state = C_CMN;
+              vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;span class=\"comment\"&gt;//"</span>);
+              vstr_del(s2, 1, 2);
+              continue;
+            }
+            <span class="break">break</span>;
+            
+          <span class="case">case</span> <span class="chr">'"'</span>:
+            state = C_STR;
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;span class=\"str\"&gt;\""</span>);
+            vstr_del(s2, 1, 1);
+            continue;
+
+          <span class="case">case</span> <span class="chr">'&lt;'</span>: <span class="comment">/* html stuff ... */</span>
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;lt;"</span>);
+            vstr_del(s2, 1, 1);
+            continue;
+            
+          <span class="case">case</span> <span class="chr">'&gt;'</span>:
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;gt;"</span>);
+            vstr_del(s2, 1, 1);
+            continue;
+            
+          <span class="case">case</span> <span class="chr">'&amp;'</span>:
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&amp;amp;"</span>);
+            vstr_del(s2, 1, 1);
+            continue;
+            
+          <span class="default">default</span>:
+            <span class="break">break</span>;
+        }
+        
+        <span class="while">while</span> (ex_hl_seqs[scan].name)
+        {
+          seq = ex_hl_seqs[scan].seq;
+          len = ex_hl_seqs[scan].len;
+          
+          <span class="if">if</span> ((len &lt;= s2-&gt;len) &amp;&amp; vstr_cmp_buf_eq(s2, 1, len, seq, len))
+          {
+            <span class="sizet">size_t</span> off  = ex_hl_seqs[scan].off;
+            <span class="sizet">size_t</span> eoff = ex_hl_seqs[scan].eoff;
+            <span class="unsigned">unsigned</span> <span class="int">int</span> mid = len - (off + eoff);
+
+            <span class="if">if</span> (first_time)
+            {
+              <span class="assert">ASSERT</span>(off &amp;&amp; (vstr_export_chr(s2, 1) == <span class="chr">'\n'</span>));
+              vstr_del(s2, 1, 1);
+              --off;
+              first_time = <span class="false">FALSE</span>;
+            }
+            
+            vstr_add_vstr(s1, s1-&gt;len, s2, 1, off, VSTR_TYPE_ADD_BUF_REF);
+            vstr_del(s2, 1, off);
+            
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;span class=\""</span>);
+            vstr_add_cstr_ptr(s1, s1-&gt;len, ex_hl_seqs[scan].name);
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"\"&gt;"</span>);
+
+            vstr_add_vstr(s1, s1-&gt;len, s2, 1, mid, VSTR_TYPE_ADD_BUF_REF);
+            vstr_del(s2, 1, mid);
+            
+            vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/span&gt;"</span>);
+            <span class="comment">/* don't output end marker */</span>
+            <span class="break">break</span>;
+          }
+          
+          ++scan;
+        }
+
+        <span class="if">if</span> (!ex_hl_seqs[scan].name)
+        {
+          <span class="if">if</span> (first_time)
+          {
+            <span class="assert">ASSERT</span>(vstr_export_chr(s2, 1) == <span class="chr">'\n'</span>);
+            first_time = <span class="false">FALSE</span>;
+          }
+          <span class="else">else</span>
+            vstr_add_vstr(s1, s1-&gt;len, s2, 1, 1, VSTR_TYPE_ADD_BUF_REF);
+          vstr_del(s2, 1, 1);
+        }
+        
+        state = C_DEF;
+      }
+      <span class="break">break</span>;
+
+      <span class="case">case</span> C_CMO:
+        len = vstr_srch_cstr_buf_fwd(s2, 1, s2-&gt;len, <span class="str">"*/"</span>);
+        <span class="if">if</span> (!len)
+        {
+          ex_hl_mov_clean(s1, s2, s2-&gt;len);
+          <span class="return">return</span> (<span class="true">TRUE</span>);
+        }
+
+        ++len; <span class="comment">/* move to last character */</span>
+        
+        state = C_DEF;
+        ex_hl_mov_clean(s1, s2, len);
+        vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/span&gt;"</span>);
+        <span class="break">break</span>;
+        
+      <span class="case">case</span> C_CMN:
+        len = vstr_srch_chr_fwd(s2, 1, s2-&gt;len, <span class="chr">'\n'</span>);
+        <span class="if">if</span> (!len)
+        {
+          ex_hl_mov_clean(s1, s2, s2-&gt;len);
+          <span class="return">return</span> (<span class="true">TRUE</span>);
+        }
+        
+        state = C_DEF;
+        ex_hl_mov_clean(s1, s2, len);
+        vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/span&gt;"</span>);
+        <span class="break">break</span>;
+        
+      <span class="case">case</span> C_CHR:
+        len = vstr_srch_cstr_buf_fwd(s2, 1, s2-&gt;len, <span class="str">"'"</span>);
+        <span class="if">if</span> (!len)
+        {
+          ex_hl_mov_clean(s1, s2, s2-&gt;len);
+          <span class="return">return</span> (<span class="true">TRUE</span>);
+        }
+        
+        <span class="if">if</span> ((len == 1) || <span class="comment">/* even number of \'s going backwards */</span>
+            (!(vstr_spn_cstr_chrs_rev(s2, 1, len - 1, <span class="str">"\\"</span>) &amp; 1)))
+          state = C_DEF;
+        ex_hl_mov_clean(s1, s2, len);
+        <span class="if">if</span> (state == C_DEF)
+          vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/span&gt;"</span>);
+        <span class="break">break</span>;
+        
+      <span class="case">case</span> C_STR:
+        len = vstr_srch_cstr_buf_fwd(s2, 1, s2-&gt;len, <span class="str">"\""</span>);
+        <span class="if">if</span> (!len)
+        {
+          ex_hl_mov_clean(s1, s2, s2-&gt;len);
+          <span class="return">return</span> (<span class="true">TRUE</span>);
+        }
+        
+        <span class="if">if</span> ((len == 1) || <span class="comment">/* even number of \'s going backwards */</span>
+            (!(vstr_spn_cstr_chrs_rev(s2, 1, len - 1, <span class="str">"\\"</span>) &amp; 1)))
+          state = C_DEF;
+        ex_hl_mov_clean(s1, s2, len);
+        <span class="if">if</span> (state == C_DEF)
+          vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/span&gt;"</span>);
+        <span class="break">break</span>;
+        
+
+      <span class="default">default</span>:
+        <span class="assert">ASSERT</span>(<span class="false">FALSE</span>);
+    }
+  }
+  
+  <span class="return">return</span> (<span class="true">TRUE</span>);
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_hl_process_limit(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="unsigned">unsigned</span> <span class="int">int</span> lim)
+{
+  <span class="while">while</span> (s2-&gt;len &gt; lim)
+  {
+    <span class="int">int</span> proc_data = ex_hl_process(s1, s2, !lim);
+    <span class="if">if</span> (!proc_data &amp;&amp; (io_put(s1, <span class="stdout">STDOUT_FILENO</span>) == IO_BLOCK))
+      io_block(<span class="numm1">-1</span>, <span class="stdout">STDOUT_FILENO</span>);
+  }
+}
+
+<span class="static">static</span> <span class="void">void</span> ex_hl_read_fd_write_stdout(<span class="vstrbase">Vstr_base</span> *s1, <span class="vstrbase">Vstr_base</span> *s2, <span class="int">int</span> fd)
+{
+  <span class="while">while</span> (<span class="true">TRUE</span>)
+  {
+    <span class="int">int</span> io_w_state = IO_OK;
+    <span class="int">int</span> io_r_state = io_get(s2, fd);
+
+    <span class="if">if</span> (io_r_state == IO_EOF)
+      <span class="break">break</span>;
+
+    ex_hl_process(s1, s2, <span class="false">FALSE</span>);
+
+    io_w_state = io_put(s1, 1);
+
+    io_limit(io_r_state, fd, io_w_state, 1, s1);
+  }
+
+  ex_hl_process_limit(s1, s2, <span class="num0">0</span>);
+}
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  <span class="vstrbase">Vstr_base</span> *s2 = <span class="null">NULL</span>;
+  <span class="vstrbase">Vstr_base</span> *s1 = ex_init(&amp;s2);
+  <span class="int">int</span> count = 1;
+  time_t now = time(<span class="null">NULL</span>);
+  <span class="unsigned">unsigned</span> <span class="int">int</span> use_mmap = <span class="false">FALSE</span>;
+  <span class="const">const</span> <span class="char">char</span> *cssfile = <span class="null">NULL</span>;
+  
+  {
+    <span class="sizet">size_t</span> scan = <span class="num0">0</span>;
+    
+    <span class="while">while</span> (ex_hl_seqs[scan].name)
+    {
+      <span class="sizet">size_t</span> len = strlen(ex_hl_seqs[scan].seq);
+
+      ex_hl_seqs[scan].len = len;
+      
+      <span class="if">if</span> (ex_hl_max_seq_len &lt; len)
+        ex_hl_max_seq_len = len;
+      
+      ++scan;
+    }
+  }
+  
+  <span class="comment">/* parse command line arguments... */</span>
+  <span class="while">while</span> (count &lt; argc)
+  { <span class="comment">/* quick hack getopt_long */</span>
+    <span class="if">if</span> (!strcmp(<span class="str">"--"</span>, argv[count]))
+    {
+      ++count;
+      <span class="break">break</span>;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--mmap"</span>, argv[count])) <span class="comment">/* toggle use of mmap */</span>
+      use_mmap = !use_mmap;
+    EX_UTILS_GETOPT_CSTR(<span class="str">"cssfile"</span>, cssfile);
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--version"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, <span class="num0">0</span>, <span class="str">"%s"</span>, <span class="str">"\
+jhighlight 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span> <span class="if">if</span> (!strcmp(<span class="str">"--help"</span>, argv[count]))
+    { <span class="comment">/* print version and exit */</span>
+      vstr_add_fmt(s1, <span class="num0">0</span>, <span class="str">"%s"</span>, <span class="str">"\
+Usage: jhighlight [STRING]...\n\
+   or: jhighlight OPTION\n\
+Output filenames in html converteed from C.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --cssfile  Output entuire html file, using cssfile as the stylesheet\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill &lt;james@and.org&gt;.\n\
+"</span>);
+      <span class="goto">goto</span> out;
+    }
+    <span class="else">else</span>
+      <span class="break">break</span>;
+    ++count;
+  }
+
+  <span class="if">if</span> (cssfile &amp;&amp; !*cssfile)
+    cssfile = <span class="null">NULL</span>;
+  
+  <span class="if">if</span> (cssfile)
+  {
+    <span class="int">int</span> scan = count;
+    <span class="sizet">size_t</span> url = <span class="num0">0</span>;
+    
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"\
+&lt;!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"&gt;\n\
+&lt;html&gt;\n\
+  &lt;head&gt;\n\
+    &lt;title&gt;"</span>);
+
+    <span class="if">if</span> (scan &gt;= argc)
+      vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"c2html for: STDIN"</span>);
+    <span class="else">else</span>
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">"c2html for: %s"</span>, argv[scan++]);
+    
+    <span class="while">while</span> (scan &lt; argc)
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">", %s"</span>, argv[scan++]);
+    
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;/title&gt;\n\
+    &lt;link rel=\"stylesheet\" type=\"text/css\" href=\""</span>);
+
+    url = s1-&gt;len + 1;
+    vstr_add_cstr_ptr(s1, s1-&gt;len, cssfile);
+    vstr_conv_encode_uri(s1, url, vstr_sc_posdiff(url, s1-&gt;len));
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"\"&gt;\n\
+  &lt;/head&gt;\n\
+  &lt;body&gt;\n"</span>);
+  }
+  
+  <span class="comment">/* if no arguments are given just do stdin to stdout */</span>
+  <span class="if">if</span> (count &gt;= argc)
+  {
+    io_fd_set_o_nonblock(<span class="stdin">STDIN_FILENO</span>);
+    
+    <span class="if">if</span> (cssfile)
+      vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"     &lt;h1&gt;STDIN&lt;/h1&gt;\n"</span>);
+    
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;pre class=\"c2html\"&gt;\n"</span>);
+    first_time = <span class="true">TRUE</span>;
+    vstr_add_rep_chr(s2, s2-&gt;len, <span class="chr">'\n'</span>, 1);
+    ex_hl_read_fd_write_stdout(s1, s2, <span class="stdin">STDIN_FILENO</span>);
+    vstr_add_fmt(s1, s1-&gt;len,
+                 <span class="str">"&lt;/pre&gt;\n"</span>
+                 <span class="str">"&lt;!-- C to html convertion of %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done by jhighlight --&gt;\n"</span>,
+                 <span class="str">"stdin"</span>, ctime(&amp;now));
+  }
+
+  <span class="comment">/* loop through all arguments, open the file specified
+   * and do the read/write loop */</span>
+  <span class="while">while</span> (count &lt; argc)
+  {
+    <span class="unsigned">unsigned</span> <span class="int">int</span> ern = <span class="num0">0</span>;
+
+    <span class="assert">ASSERT</span>(!s2-&gt;len);
+    first_time = <span class="true">TRUE</span>;
+    vstr_add_rep_chr(s2, s2-&gt;len, <span class="chr">'\n'</span>, 1); <span class="comment">/* add to begining */</span>
+    
+    <span class="if">if</span> (use_mmap &amp;&amp; (s2-&gt;len &lt;= EX_MAX_R_DATA_INCORE))
+      vstr_sc_mmap_file(s2, s2-&gt;len, argv[count], <span class="num0">0</span>, <span class="num0">0</span>, &amp;ern);
+
+    <span class="if">if</span> (cssfile)
+      vstr_add_fmt(s1, s1-&gt;len, <span class="str">"     &lt;h1&gt;%s&lt;/h1&gt;\n"</span>, argv[count]);
+    
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"&lt;pre class=\"c2html\"&gt;\n"</span>);
+
+    <span class="if">if</span> (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
+    {
+      <span class="int">int</span> fd = io_open(argv[count]);
+
+      ex_hl_read_fd_write_stdout(s1, s2, fd);
+
+      <span class="if">if</span> (close(fd) == <span class="numm1">-1</span>)
+        <span class="warn">warn</span>(<span class="str">"close(%s)"</span>, argv[count]);
+    }
+    <span class="else">else</span> <span class="if">if</span> (ern &amp;&amp; (ern != VSTR_TYPE_SC_MMAP_FILE_ERR_CLOSE_ERRNO))
+      <span class="err">err</span>(<span class="exitfail">EXIT_FAILURE</span>, <span class="str">"mmap"</span>);
+    <span class="else">else</span>
+      ex_hl_process_limit(s1, s2, <span class="num0">0</span>);
+    
+    vstr_add_fmt(s1, s1-&gt;len,
+                 <span class="str">"&lt;/pre&gt;\n"</span>
+                 <span class="str">"&lt;!-- C to html convertion of %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done on %s --&gt;\n"</span>
+                 <span class="str">"&lt;!--   done by ex_highlight --&gt;\n"</span>,
+                 argv[count], ctime(&amp;now));
+    
+    ++count;
+  }
+  
+  <span class="if">if</span> (cssfile)
+  {
+    vstr_add_cstr_ptr(s1, s1-&gt;len, <span class="str">"\n\
+  &lt;/body&gt;\n\
+&lt;/html&gt;"</span>);
+  }
+  
+ out:
+  io_put_all(s1, <span class="stdout">STDOUT_FILENO</span>);
+
+  <span class="exit">exit</span> (ex_exit(s1, s2));
+}
+</pre>
+<!-- C to html convertion of ex_highlight.c -->
+<!--   done on Mon Jan 26 05:27:53 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

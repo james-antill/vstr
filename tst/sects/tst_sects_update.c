@@ -9,6 +9,7 @@ int tst(void)
   Vstr_sects *sects2 = vstr_sects_make(1);
   Vstr_sects *sects3 = vstr_sects_make(1);
   int mfail_count = 0;
+  unsigned int num = 0;
   
   VSTR_ADD_CSTR_BUF(s1, 0, "123456789 123456789 123456789 123456789 ");
   vstr_add_vstr(s2, 0, s1, 1, s1->len, 0);
@@ -26,28 +27,30 @@ int tst(void)
   vstr_sects_add(sects3,  1, 10);
   vstr_sects_add(sects3, 11, 10);
 
-  mfail_count = 2;
+  mfail_count = 3;
   do
   {
-    tst_mfail_num(++mfail_count / 3);
+    tst_mfail_num(++mfail_count / 4);
   } while (!vstr_sects_update_add(s1, sects1));
   tst_mfail_num(0);
 
-  mfail_count = 0;
+  mfail_count = 3;
   do
   {
-    tst_mfail_num(++mfail_count);
+    tst_mfail_num(++mfail_count / 4);
   } while (!vstr_sects_update_add(s1, sects2));
   tst_mfail_num(0);
 
-  mfail_count = 0;
+  mfail_count = 3;
   do
   {
-    tst_mfail_num(++mfail_count);
+    tst_mfail_num(++mfail_count / 4);
   } while (!vstr_sects_update_add(s1, sects3));
   tst_mfail_num(0);
 
+  ASSERT(!s2->conf->malloc_bad);
   TST_B_TST(ret,  2, !vstr_sects_update_add(s2, sects2));
+  ASSERT(!s2->conf->malloc_bad);
 
   TST_B_TST(ret,  3, !vstr_sects_update_del(s1, sects2)); /* out of order */
   TST_B_TST(ret,  4, !vstr_sects_update_del(s1, sects3));

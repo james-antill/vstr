@@ -74,6 +74,11 @@ int tst(void)
 
   TST_B_TST(ret, 16, !vstr_add_rep_chr(s1, 0, 'x', 16));
   TST_B_TST(ret, 16, !vstr_add_vstr(s1, 0, s1, 1, 16, VSTR_TYPE_ADD_BUF_PTR));
+#ifndef VSTR_AUTOCONF_NDEBUG
+  /* split poisoning screws this up in debug mode ...
+   * should work ok otherwise */
+  TST_B_TST(ret, 16, !vstr_sub_cstr_ptr(s1, 1, 16, "xxxxxxxxxxxxxxxx"));
+#endif
   do
   {
     vstr_free_spare_nodes(s1->conf, VSTR_TYPE_NODE_BUF, 1000);

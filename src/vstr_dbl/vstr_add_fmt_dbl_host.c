@@ -119,8 +119,7 @@ static int vstr__add_fmt_dbl(Vstr_base *base, size_t pos_diff,
                      spec->u.data_d);
   }
 
-  if (ret < 0)
-    return (FALSE);
+  ASSERT_RET(ret != -1, FALSE);
 
   tmp = ret;
   str = float_buffer;

@@ -70,5 +70,14 @@ int tst(void)
   tst_srch_vstr(s3, 8);
   tst_srch_vstr(s4, 16);
 
+  vstr_del(s1, 1, s1->len);
+  vstr_del(s2, 1, s2->len);
+  vstr_add_cstr_buf(s1, s1->len, "Xabcd");
+  vstr_add_cstr_buf(s2, s2->len, "abcd");
+
+  ASSERT(vstr_srch_vstr_fwd(s1, 1, s1->len, s2, 1, s2->len));
+  vstr_add_cstr_ptr(s2, s2->len, "X");
+  ASSERT(!vstr_srch_vstr_fwd(s1, 1, s1->len, s2, 1, s2->len));
+
   return (TST_B_RET(ret));
 }

@@ -55,6 +55,12 @@
           #x , __func__, __LINE__, __FILE__); \
   abort(); } } \
  while (FALSE)
+#  define VSTR__ASSERT_RET_VOID(x)  do { \
+ if (x) {} else { \
+  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+          #x , __func__, __LINE__, __FILE__); \
+  abort(); } } \
+ while (FALSE)
 # endif
 # define VSTR__ASSERT_NO_SWITCH_DEF() break; default: VSTR__ASSERT(FALSE)
 #endif

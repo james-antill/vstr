@@ -1,0 +1,387 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>c2html for: ex_csv.c</title>
+    <link rel="stylesheet" type="text/css" href="f_c.css">
+  </head>
+  <body>
+     <h1>ex_csv.c</h1>
+<pre class="c2html">
+<span class="comment">/* vstr stuff and bug fixes by james antill ... LGPL and above MIT.
+   timesstamp() function by Michael B Allen &lt;mba2000@ioplex.com&gt;
+   gcc -g -Wall -W -O2 -o csv_vstr csv_vstr.c `pkg-config --cflags --libs vstr`
+ */</span>
+
+<span class="comment">/* configuration... */</span>
+#<span class="cppdefine">define</span> VCSV_OPT_FLAGS VCSV_FLAG_LINE
+#<span class="cppdefine">define</span> USE_VDUMP 1
+#<span class="cppdefine">define</span> USE_DEBUG <span class="num0">0</span>
+
+
+#<span class="cppif">if</span> !(USE_DEBUG)
+# <span class="cppdefine">define</span> NDEBUG 1
+#<span class="cppendif">endif</span>
+
+#<span class="cppdefine">define</span> VSTR_COMPILE_INCLUDE 1
+#<span class="cppinclude">include</span> &lt;vstr.h&gt;
+#<span class="cppinclude">include</span> &lt;assert.h&gt;
+#<span class="cppinclude">include</span> &lt;string.h&gt;
+#<span class="cppinclude">include</span> &lt;unistd.h&gt;
+
+<span class="comment">/* option flags... */</span>
+#<span class="cppdefine">define</span> VCSV_FLAG_NONE <span class="num0">0</span>
+#<span class="cppdefine">define</span> VCSV_FLAG_LINE 1 <span class="comment">/* only parse one line */</span>
+
+
+#<span class="cppdefine">define</span> <span class="true">TRUE</span>  1
+#<span class="cppdefine">define</span> <span class="false">FALSE</span> <span class="num0">0</span>
+
+
+#<span class="cppdefine">define</span> VCSV_ST_PRE           <span class="num0">0</span>
+#<span class="cppdefine">define</span> VCSV_ST_BEG           1
+#<span class="cppdefine">define</span> VCSV_ST_GET_BEG_DQUOT 2
+#<span class="cppdefine">define</span> VCSV_ST_GET_END_DQUOT 3
+#<span class="cppdefine">define</span> VCSV_ST_GET_NORM      4
+#<span class="cppdefine">define</span> VCSV_ST_SKIP_COMMA    5
+#<span class="cppdefine">define</span> VCSV_ST_SKIP_TRASH    6
+#<span class="cppdefine">define</span> VCSV_ST_SKIP_RET      7
+#<span class="cppdefine">define</span> VCSV_ST_INIT          8
+
+#<span class="cppdefine">define</span> VCSV__MEMCHR(x) memchr(iter-&gt;ptr, (x), iter-&gt;len)
+
+#<span class="cppdefine">define</span> VCSV__INC(x) do { <span class="sizet">size_t</span> local_inc_tmp = (x); \
+    <span class="assert">assert</span>(local_inc_tmp &lt;= iter-&gt;len); \
+    \
+    iter-&gt;ptr += local_inc_tmp; \
+    iter-&gt;len -= local_inc_tmp; \
+    \
+    len -= local_inc_tmp; \
+ } <span class="while">while</span> (<span class="false">FALSE</span>)
+
+<span class="static">static</span> <span class="vstrbase">Vstr_base</span> *out = <span class="null">NULL</span>;
+<span class="static">static</span> <span class="vstrbase">Vstr_base</span> *vcsv_data = <span class="null">NULL</span>;
+
+<span class="static">static</span> <span class="inline">inline</span> <span class="void">void</span> vcsv_end(<span class="sizet">size_t</span> pos, <span class="sizet">size_t</span> data_len,
+                            <span class="sizet">size_t</span> beg_len, <span class="sizet">size_t</span> len,
+                            <span class="vstrsects">Vstr_sects</span> *rows)
+{
+  vstr_sects_add(rows, pos + (data_len - beg_len), beg_len - len);
+}
+
+<span class="static">static</span> int
+vcsv_row_parse(<span class="vstrbase">Vstr_base</span> *s1, <span class="sizet">size_t</span> pos, <span class="sizet">size_t</span> len,
+               <span class="vstrsects">Vstr_sects</span> *rows, <span class="unsigned">unsigned</span> <span class="int">int</span> flags)
+{
+  <span class="sizet">size_t</span> data_len = len;
+  <span class="sizet">size_t</span> ret_len  = len;
+  <span class="sizet">size_t</span> beg_len  = <span class="num0">0</span>;
+  <span class="unsigned">unsigned</span> <span class="int">int</span> state = VCSV_ST_INIT;
+  <span class="const">const</span> <span class="char">char</span> *ptr = <span class="null">NULL</span>;
+  <span class="sizet">size_t</span> tmp = <span class="num0">0</span>;
+  Vstr_iter iter[1];
+
+  <span class="if">if</span> (!len)
+    <span class="return">return</span> (<span class="num0">0</span>);
+
+  <span class="if">if</span> (!vstr_iter_fwd_beg(s1, pos, len, iter))
+    abort();
+
+  <span class="while">while</span> (len)
+  {
+    <span class="if">if</span> (!iter-&gt;len)
+      <span class="if">if</span> (!vstr_iter_fwd_nxt(iter)) abort();
+
+    <span class="switch">switch</span> (state)
+    {
+      <span class="case">case</span> VCSV_ST_SKIP_TRASH:
+        <span class="if">if</span> (!(ptr = VCSV__MEMCHR(<span class="chr">','</span>)))
+        {
+          VCSV__INC(iter-&gt;len);
+          <span class="break">break</span>;
+        }
+        tmp = ptr - iter-&gt;ptr;
+
+        VCSV__INC(tmp);
+        state = VCSV_ST_SKIP_COMMA;
+        <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_SKIP_COMMA:
+        <span class="assert">assert</span>(*iter-&gt;ptr == <span class="chr">','</span>);
+
+        VCSV__INC(1);
+        state = VCSV_ST_PRE;
+        beg_len = len;
+        <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_PRE:
+        <span class="if">if</span> ((*iter-&gt;ptr == <span class="chr">'\n'</span>) || (*iter-&gt;ptr == <span class="chr">'\r'</span>))
+        {
+          vcsv_end(pos, data_len, beg_len, len, rows);
+          state = VCSV_ST_SKIP_RET;
+        }
+        <span class="else">else</span>
+          state = VCSV_ST_BEG;
+        <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_SKIP_RET:
+        <span class="if">if</span> (flags &amp; VCSV_FLAG_LINE)
+          <span class="return">return</span> (ret_len - len);
+      <span class="case">case</span> VCSV_ST_INIT:
+
+        <span class="while">while</span> ((*iter-&gt;ptr == <span class="chr">'\n'</span>) || (*iter-&gt;ptr == <span class="chr">'\r'</span>))
+        { <span class="comment">/* skip blanks to start... */</span>
+          VCSV__INC(1);
+
+          <span class="if">if</span> (!iter-&gt;len &amp;&amp; !vstr_iter_fwd_nxt(iter))
+            <span class="return">return</span> (ret_len);
+        }
+        beg_len = len;
+        <span class="comment">/* FALL THROUGH */</span>
+
+      <span class="case">case</span> VCSV_ST_BEG:
+        <span class="if">if</span> (*iter-&gt;ptr == <span class="chr">'"'</span>)
+        {
+          state = VCSV_ST_GET_BEG_DQUOT;
+          --beg_len;
+        }
+        <span class="else">else</span> <span class="if">if</span> (*iter-&gt;ptr == <span class="chr">','</span>)
+        {
+          vcsv_end(pos, data_len, beg_len, len, rows);
+          state = VCSV_ST_SKIP_COMMA;
+          continue;
+        }
+        <span class="else">else</span>
+        {
+          beg_len = len; <span class="comment">/* mark start */</span>
+          state = VCSV_ST_GET_NORM;
+        }
+        VCSV__INC(1);
+        <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_GET_BEG_DQUOT:
+        <span class="if">if</span> (!(ptr = VCSV__MEMCHR(<span class="chr">'"'</span>)))
+        {
+          VCSV__INC(iter-&gt;len);
+          <span class="break">break</span>;
+        }
+        tmp = ptr - iter-&gt;ptr;
+        VCSV__INC(tmp + 1);
+        state = VCSV_ST_GET_END_DQUOT;
+        <span class="if">if</span> (!len)
+        {
+          vcsv_end(pos, data_len, beg_len, 1, rows);
+          <span class="return">return</span> (ret_len);
+        }
+        <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_GET_END_DQUOT:
+      {
+        <span class="unsigned">unsigned</span> <span class="int">int</span> found_ret = <span class="false">FALSE</span>;
+
+        ++len; <span class="comment">/* go back to the '"' */</span>
+        <span class="switch">switch</span> (*iter-&gt;ptr)
+        {
+          <span class="case">case</span> <span class="chr">'\r'</span>:
+          <span class="case">case</span> <span class="chr">'\n'</span>:
+            found_ret = <span class="true">TRUE</span>;
+          <span class="case">case</span> <span class="chr">','</span>:
+            vcsv_end(pos, data_len, beg_len, len, rows);
+            beg_len = <span class="num0">0</span>;
+            <span class="if">if</span> (found_ret)
+              state = VCSV_ST_SKIP_RET;
+            <span class="else">else</span>
+              state = VCSV_ST_SKIP_COMMA;
+            <span class="break">break</span>;
+
+          <span class="default">default</span>:
+            vcsv_end(pos, data_len, beg_len, len, rows);
+            beg_len = <span class="num0">0</span>;
+            state = VCSV_ST_SKIP_TRASH;
+            <span class="break">break</span>;
+
+          <span class="case">case</span> <span class="chr">'"'</span>:
+          {
+            <span class="sizet">size_t</span> tpos = pos + (data_len - beg_len) + (beg_len - len);
+
+            vstr_del(s1, tpos, 1);
+
+            --data_len; <span class="comment">/* update lengths and re-init iter */</span>
+            --beg_len;
+            len -= 2;   <span class="comment">/* for above */</span>
+
+            <span class="if">if</span> (!vstr_iter_fwd_beg(s1, tpos + 1, len, iter)) abort();
+            state = VCSV_ST_GET_BEG_DQUOT;
+            continue;
+          }
+          <span class="break">break</span>;
+        }
+        --len; <span class="comment">/* reverse above */</span>
+      }
+      <span class="break">break</span>;
+
+      <span class="case">case</span> VCSV_ST_GET_NORM:
+        tmp = <span class="num0">0</span>;
+        <span class="while">while</span> (tmp &lt; iter-&gt;len)
+        {
+          <span class="if">if</span> ((iter-&gt;ptr[tmp] == <span class="chr">','</span>) ||
+              (iter-&gt;ptr[tmp] == <span class="chr">'\r'</span>) ||
+              (iter-&gt;ptr[tmp] == <span class="chr">'\n'</span>))
+            <span class="break">break</span>;
+
+          ++tmp;
+        }
+        VCSV__INC(tmp);
+        <span class="if">if</span> (!iter-&gt;len)
+          <span class="break">break</span>;
+
+        vcsv_end(pos, data_len, beg_len, len, rows);
+        <span class="if">if</span> (iter-&gt;ptr[0] == <span class="chr">','</span>)
+          state = VCSV_ST_SKIP_COMMA;
+        <span class="else">else</span>
+          state = VCSV_ST_SKIP_RET;
+        <span class="break">break</span>;
+
+      <span class="default">default</span>:
+        abort();
+    }
+  }
+
+  <span class="if">if</span> ((state != VCSV_ST_SKIP_RET) &amp;&amp; (state != VCSV_ST_SKIP_TRASH))
+    vcsv_end(pos, data_len, beg_len, len, rows);
+
+  <span class="return">return</span> (ret_len);
+}
+
+#<span class="cppif">if</span> USE_VDUMP
+# <span class="cppdefine">define</span> VDUMP(ret, rows) vdump(ret, rows)
+<span class="static">static</span> <span class="void">void</span> vdump(<span class="unsigned">unsigned</span> <span class="int">int</span> ret, <span class="vstrsects">Vstr_sects</span> *rows)
+{
+  <span class="unsigned">unsigned</span> <span class="int">int</span> scan = <span class="num0">0</span>;
+
+  vstr_add_fmt(out, out-&gt;len,
+               <span class="str">"${rep_chr:%c%zu}\n"</span> <span class="str">"%d\n"</span> <span class="str">"${rep_chr:%c%zu}\n"</span>,
+               <span class="chr">'='</span>, 79, ret, <span class="chr">'='</span>, 79);
+
+  <span class="while">while</span> (scan &lt; rows-&gt;num)
+  {
+    <span class="sizet">size_t</span> pos = 1;
+    <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+
+    ++scan;
+
+    len = VSTR_SECTS_NUM(rows, scan)-&gt;len;
+    <span class="if">if</span> (len)
+      pos = VSTR_SECTS_NUM(rows, scan)-&gt;pos;
+
+    vstr_add_fmt(out, out-&gt;len, <span class="str">"|${vstr:%p%zu%zu%u}|\n"</span>,
+                 vcsv_data, pos, len, <span class="num0">0</span>);
+  }
+
+  vstr_add_fmt(out, out-&gt;len, <span class="str">"${rep_chr:%c%zu}\n"</span>, <span class="chr">'-'</span>, 79);
+
+  <span class="while">while</span> (out-&gt;len)
+    <span class="if">if</span> (!vstr_sc_write_fd(out, 1, out-&gt;len, 1, <span class="null">NULL</span>))
+      abort();
+}
+#<span class="cppelse">else</span>
+# <span class="cppdefine">define</span> VDUMP(ret, rows) <span class="comment">/* nothing */</span>
+#<span class="cppendif">endif</span>
+
+#<span class="cppif">if</span> <span class="cppdefined">defined</span>(_WIN32)
+#<span class="cppinclude">include</span> &lt;Windows.h&gt;
+
+#<span class="cppdefine">define</span> MILLISECONDS_BETWEEN_1970_AND_1601 11644473600000Ui64
+typedef <span class="unsigned">unsigned</span> __int64 uint64_t;
+
+uint64_t
+timestamp(<span class="void">void</span>)
+{
+        FILETIME ftime;
+        uint64_t ret;
+
+        GetSystemTimeAsFileTime(&amp;ftime);
+
+        ret = ftime.dwHighDateTime;
+        ret &lt;&lt;= 32Ui64;
+        ret |= ftime.dwLowDateTime;
+        ret = ret / 10000Ui64 - MILLISECONDS_BETWEEN_1970_AND_1601;
+
+        return ret;
+}
+
+#<span class="cppelse">else</span>
+#<span class="cppinclude">include</span> &lt;sys/time.h&gt;
+#<span class="cppinclude">include</span> &lt;inttypes.h&gt;
+
+
+<span class="static">static</span> <span class="inline">inline</span> uint64_t
+timestamp(<span class="void">void</span>)
+{
+        struct timeval tval;
+
+        gettimeofday(&amp;tval, <span class="null">NULL</span>);
+
+        return tval.tv_sec * 1000LL + tval.tv_usec / 1000;
+}
+
+#<span class="cppendif">endif</span>
+
+<span class="int">int</span> main(<span class="int">int</span> argc, <span class="char">char</span> *argv[])
+{
+  VSTR_SECTS_DECL(vrows, 256);
+
+    <span class="int">int</span> ret = <span class="num0">0</span>;
+
+  <span class="if">if</span> (argc != 2) abort();
+
+  <span class="if">if</span> (!vstr_init())
+    abort();
+
+  VSTR_SECTS_DECL_INIT(vrows);
+
+  vcsv_data = vstr_make_base(<span class="null">NULL</span>);
+
+  out       = vstr_make_base(<span class="null">NULL</span>);
+  vstr_cntl_conf(<span class="null">NULL</span>, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, <span class="chr">'$'</span>);
+  vstr_sc_fmt_add_all(<span class="null">NULL</span>);
+
+  do
+  {
+    <span class="sizet">size_t</span> pos = 1;
+    <span class="sizet">size_t</span> len = <span class="num0">0</span>;
+    <span class="unsigned">unsigned</span> <span class="int">int</span> err = <span class="num0">0</span>;
+    uint64_t t0 = timestamp();
+
+    <span class="if">if</span> (!vstr_sc_mmap_file(vcsv_data, <span class="num0">0</span>, argv[1], <span class="num0">0</span>, <span class="num0">0</span>, &amp;err))
+      <span class="break">break</span>;
+
+    len = vcsv_data-&gt;len;
+    <span class="if">if</span> (err)
+      abort();
+
+    <span class="while">while</span> ((ret = vcsv_row_parse(vcsv_data, pos, len, vrows, VCSV_OPT_FLAGS)))
+    {
+      VDUMP(ret, vrows);
+
+      pos += ret;
+      len -= ret;
+      vrows-&gt;num = <span class="num0">0</span>;
+    }
+
+    vstr_add_fmt(out, out-&gt;len, <span class="str">"%'llu milliseconds\n"</span>, (timestamp() - t0));
+
+    <span class="while">while</span> (out-&gt;len)
+      <span class="if">if</span> (!vstr_sc_write_fd(out, 1, out-&gt;len, 2, <span class="null">NULL</span>))
+        abort();
+  } <span class="while">while</span> (<span class="false">FALSE</span>);
+
+  <span class="exit">exit</span> (<span class="exitsucs">EXIT_SUCCESS</span>);
+}
+</pre>
+<!-- C to html convertion of ex_csv.c -->
+<!--   done on Mon Jan 26 05:27:53 2004
+ -->
+<!--   done by ex_highlight -->
+
+  </body>
+</html>

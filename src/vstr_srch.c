@@ -1,6 +1,6 @@
 #define VSTR_SRCH_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -270,30 +270,34 @@ static int vstr__cmp_eq_rev_buf(const Vstr_base *base, size_t len,
 {
   assert((type != VSTR_TYPE_NODE_NON) && str && str_len &&
          scan_str && scan_len);
-
-  do
+  
+  if (str_len > (len + scan_len))
+    return (FALSE);
+  
+  while (str_len)
   {
-    while (scan_len)
-    {
-      size_t tmp = scan_len;
+    size_t tmp = scan_len;
 
-      if (tmp > str_len)
-        tmp = str_len;
+    if (type == VSTR_TYPE_NODE_NON)
+      return (FALSE);
+    
+    if (tmp > str_len)
+      tmp = str_len;
 
-      if (vstr_wrap_memcmp((str + str_len) - tmp,
-                           (scan_str + scan_len) - tmp, tmp))
-        return (FALSE);
-
-      str_len -= tmp;
-      if (!str_len)
-        return (TRUE);
-
-      scan_len -= tmp;
-    }
-  } while (vstr__base_scan_rev_nxt(base, &len, &num, &type,
-                                   &scan_str, &scan_len));
-
-  return (FALSE);
+    if (vstr_wrap_memcmp((str + str_len) - tmp,
+                         (scan_str + scan_len) - tmp, tmp))
+      return (FALSE);
+    ASSERT(tmp);
+    
+    str_len  -= tmp;
+    scan_len -= tmp;
+    if (!scan_len)
+      tmp = vstr__base_scan_rev_nxt(base, &len, &num, &type,
+                                    &scan_str, &scan_len);
+    ASSERT(tmp || (!str_len && !scan_len));
+  }
+  
+  return (TRUE);
 }
 
 /* only to be used from srch_buf_rev_fast ... assumes a bunch of crap */
@@ -302,8 +306,12 @@ static int vstr__cmp_eq_rev_non(const Vstr_base *base, size_t len,
                                 size_t str_len, size_t scan_len)
 {
   char *scan_str = NULL;
-
+  int tmp = FALSE;
+  
   assert(type == VSTR_TYPE_NODE_NON);
+  
+  if (str_len > (len + scan_len))
+    return (FALSE);
 
   while (type == VSTR_TYPE_NODE_NON)
   {
@@ -312,9 +320,9 @@ static int vstr__cmp_eq_rev_non(const Vstr_base *base, size_t len,
 
     str_len -= scan_len;
 
-    if (!vstr__base_scan_rev_nxt(base, &len, &num, &type,
-                                 &scan_str, &scan_len))
-      return (FALSE);
+    tmp = vstr__base_scan_rev_nxt(base, &len, &num, &type,
+                                  &scan_str, &scan_len);
+    ASSERT(tmp);
   }
 
   return (FALSE);
@@ -434,7 +442,7 @@ size_t vstr_srch_vstr_fwd(const Vstr_base *base, size_t pos, size_t len,
                                     iter->ptr, iter->len)))
         return (0);
 
-      assert(tmp > scan_pos);
+      ASSERT(tmp >= scan_pos);
       scan_len -= tmp - scan_pos;
       scan_pos = tmp;
     }

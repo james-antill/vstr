@@ -33,6 +33,8 @@ static struct
  { x, "("  y ")", 1, 1, 0 }, \
  { x, "*"  y " ", 1, 1, 0 }, \
  { x, "\n" y " ", 1, 1, 0
+#define EX_HL_SEQ_SP(x, y) \
+   x, " " y " ",  1, 1, 0
 #define EX_HL_SEQ_WS(x, y) \
    x, " " y " ",  1, 1, 0 }, \
  { x, " " y "\n", 1, 1, 0
@@ -44,6 +46,9 @@ static struct
    x, " " y ";\n", 1, 2, 0
 #define EX_HL_SEQ_SB(x, y) \
    x, " " y " (", 1, 2, 0
+#define EX_HL_SEQ_RET(x, y) \
+   x, " " y " (",  1, 2, 0 }, \
+ { x, " " y ";\n", 1, 2, 0
 #define EX_HL_SEQ_B(x, y)  \
    x, " " y "(", 1, 1, 0
 #define EX_HL_SEQ_VAL(x, y) \
@@ -52,6 +57,7 @@ static struct
  { x, " "  y ";",  1, 1, 0 }, \
  { x, " "  y ",",  1, 1, 0 }, \
  { x, " "  y ")",  1, 1, 0 }, \
+ { x, "("  y " ",  1, 1, 0 }, \
  { x, "("  y ")",  1, 1, 0 }, \
  { x, "("  y ",",  1, 1, 0
 #define EX_HL_SEQ_CPP(x, y) \
@@ -86,14 +92,14 @@ static struct
  
  { EX_HL_SEQ_SB("if", "if") },
  { EX_HL_SEQ_WS("else", "else") },
- { EX_HL_SEQ_WS("while", "while") },
- { EX_HL_SEQ_WS("for", "for") },
- { EX_HL_SEQ_WS("return", "return") },
- { EX_HL_SEQ_WS("switch", "switch") },
- { EX_HL_SEQ_WS("case", "case") },
+ { EX_HL_SEQ_SB("while", "while") },
+ { EX_HL_SEQ_SB("for", "for") },
+ { EX_HL_SEQ_RET("return", "return") },
+ { EX_HL_SEQ_SB("switch", "switch") },
+ { EX_HL_SEQ_SP("case", "case") },
  { EX_HL_SEQ_DEF("default", "default") },
  { EX_HL_SEQ_BRK("break", "break") },
- { EX_HL_SEQ_WS("goto", "goto") },
+ { EX_HL_SEQ_SP("goto", "goto") },
  { EX_HL_SEQ_T("extern", "extern") },
  { EX_HL_SEQ_T("static", "static") },
  { EX_HL_SEQ_T("const", "const") },
@@ -107,6 +113,7 @@ static struct
  { EX_HL_SEQ_T("long", "long") },
  { EX_HL_SEQ_T("float", "float") },
  { EX_HL_SEQ_T("double", "double") },
+ { EX_HL_SEQ_T("ssizet", "ssize_t") },
  { EX_HL_SEQ_T("sizet", "size_t") },
  { EX_HL_SEQ_T("offt", "off_t") },
  { EX_HL_SEQ_T("off64t", "off64_t") },
@@ -120,6 +127,12 @@ static struct
  { EX_HL_SEQ_B("warn", "warnx") },
  { EX_HL_SEQ_B("assert", "assert") },
  { EX_HL_SEQ_B("assert", "ASSERT") },
+ { EX_HL_SEQ_B("assert", "assert_ret") },
+ { EX_HL_SEQ_B("assert", "ASSERT_RET") },
+ { EX_HL_SEQ_B("assert", "assert_ret_void") },
+ { EX_HL_SEQ_B("assert", "ASSERT_RET_VOID") },
+ { EX_HL_SEQ_B("assert", "assert_no_switch_def") },
+ { EX_HL_SEQ_B("assert", "ASSERT_NO_SWITCH_DEF") },
 
  { EX_HL_SEQ_VAL("compdate", "__DATE__") },
  { EX_HL_SEQ_VAL("compversion", "__VERSION__") },
@@ -136,11 +149,14 @@ static struct
  { EX_HL_SEQ_VAL("stdin", "STDIN_FILENO") },
  { EX_HL_SEQ_VAL("stdout", "STDOUT_FILENO") },
  { EX_HL_SEQ_VAL("stderr", "STDERR_FILENO") },
+ { EX_HL_SEQ_VAL("errno", "errno") },
  { EX_HL_SEQ_VAL("exitsucs", "EXIT_SUCCESS") },
  { EX_HL_SEQ_VAL("exitfail", "EXIT_FAILURE") },
  { EX_HL_SEQ_VAL("true", "TRUE") },
  { EX_HL_SEQ_VAL("false", "FALSE") },
  { EX_HL_SEQ_VAL("null", "NULL") },
+ { EX_HL_SEQ_VAL("num0",   "0") },
+ { EX_HL_SEQ_VAL("numm1", "-1") },
  
  {NULL, NULL, 0, 0, 0},
 };
@@ -191,7 +207,9 @@ static void ex_hl_mov_clean(Vstr_base *s1, Vstr_base *s2, size_t len)
     }  
   }
 }
-   
+
+static int first_time = FALSE;
+
 static int ex_hl_process(Vstr_base *s1, Vstr_base *s2, int last)
 {
   static unsigned int state = C_DEF;
@@ -289,10 +307,17 @@ static int ex_hl_process(Vstr_base *s1, Vstr_base *s2, int last)
             size_t off  = ex_hl_seqs[scan].off;
             size_t eoff = ex_hl_seqs[scan].eoff;
             unsigned int mid = len - (off + eoff);
+
+            if (first_time)
+            {
+              ASSERT(off && (vstr_export_chr(s2, 1) == '\n'));
+              vstr_del(s2, 1, 1);
+              --off;
+              first_time = FALSE;
+            }
             
             vstr_add_vstr(s1, s1->len, s2, 1, off, VSTR_TYPE_ADD_BUF_REF);
             vstr_del(s2, 1, off);
-
             
             vstr_add_cstr_ptr(s1, s1->len, "<span class=\"");
             vstr_add_cstr_ptr(s1, s1->len, ex_hl_seqs[scan].name);
@@ -311,7 +336,13 @@ static int ex_hl_process(Vstr_base *s1, Vstr_base *s2, int last)
 
         if (!ex_hl_seqs[scan].name)
         {
-          vstr_add_vstr(s1, s1->len, s2, 1, 1, VSTR_TYPE_ADD_BUF_REF);
+          if (first_time)
+          {
+            ASSERT(vstr_export_chr(s2, 1) == '\n');
+            first_time = FALSE;
+          }
+          else
+            vstr_add_vstr(s1, s1->len, s2, 1, 1, VSTR_TYPE_ADD_BUF_REF);
           vstr_del(s2, 1, 1);
         }
         
@@ -424,6 +455,8 @@ int main(int argc, char *argv[])
   Vstr_base *s1 = ex_init(&s2);
   int count = 1;
   time_t now = time(NULL);
+  unsigned int use_mmap = FALSE;
+  const char *cssfile = NULL;
   
   {
     size_t scan = 0;
@@ -441,13 +474,93 @@ int main(int argc, char *argv[])
     }
   }
   
+  /* parse command line arguments... */
+  while (count < argc)
+  { /* quick hack getopt_long */
+    if (!strcmp("--", argv[count]))
+    {
+      ++count;
+      break;
+    }
+    else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
+      use_mmap = !use_mmap;
+    EX_UTILS_GETOPT_CSTR("cssfile", cssfile);
+    else if (!strcmp("--version", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+jhighlight 1.0.0\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+");
+      goto out;
+    }
+    else if (!strcmp("--help", argv[count]))
+    { /* print version and exit */
+      vstr_add_fmt(s1, 0, "%s", "\
+Usage: jhighlight [STRING]...\n\
+   or: jhighlight OPTION\n\
+Output filenames in html converteed from C.\n\
+\n\
+      --help     Display this help and exit\n\
+      --version  Output version information and exit\n\
+      --mmap     Toggle use of mmap() to load input files\n\
+      --cssfile  Output entuire html file, using cssfile as the stylesheet\n\
+      --         Treat rest of cmd line as input filenames\n\
+\n\
+Report bugs to James Antill <james@and.org>.\n\
+");
+      goto out;
+    }
+    else
+      break;
+    ++count;
+  }
+
+  if (cssfile && !*cssfile)
+    cssfile = NULL;
+  
+  if (cssfile)
+  {
+    int scan = count;
+    size_t url = 0;
+    
+    vstr_add_cstr_ptr(s1, s1->len, "\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
+<html>\n\
+  <head>\n\
+    <title>");
+
+    if (scan >= argc)
+      vstr_add_cstr_ptr(s1, s1->len, "c2html for: STDIN");
+    else
+      vstr_add_fmt(s1, s1->len, "c2html for: %s", argv[scan++]);
+    
+    while (scan < argc)
+      vstr_add_fmt(s1, s1->len, ", %s", argv[scan++]);
+    
+    vstr_add_cstr_ptr(s1, s1->len, "</title>\n\
+    <link rel=\"stylesheet\" type=\"text/css\" href=\"");
+
+    url = s1->len + 1;
+    vstr_add_cstr_ptr(s1, s1->len, cssfile);
+    vstr_conv_encode_uri(s1, url, vstr_sc_posdiff(url, s1->len));
+    vstr_add_cstr_ptr(s1, s1->len, "\">\n\
+  </head>\n\
+  <body>\n");
+  }
+  
   /* if no arguments are given just do stdin to stdout */
   if (count >= argc)
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
     
+    if (cssfile)
+      vstr_add_cstr_ptr(s1, s1->len, "     <h1>STDIN</h1>\n");
+    
     vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
-    vstr_add_rep_chr(s2, s2->len, '\n', 2);
+    first_time = TRUE;
+    vstr_add_rep_chr(s2, s2->len, '\n', 1);
     ex_hl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
     vstr_add_fmt(s1, s1->len,
                  "</pre>\n"
@@ -464,20 +577,24 @@ int main(int argc, char *argv[])
     unsigned int ern = 0;
 
     ASSERT(!s2->len);
-    vstr_add_cstr_ptr(s2, 0, "\n"); /* add to begining */
+    first_time = TRUE;
+    vstr_add_rep_chr(s2, s2->len, '\n', 1); /* add to begining */
     
-    if (s2->len <= EX_MAX_R_DATA_INCORE)
+    if (use_mmap && (s2->len <= EX_MAX_R_DATA_INCORE))
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
+    if (cssfile)
+      vstr_add_fmt(s1, s1->len, "     <h1>%s</h1>\n", argv[count]);
+    
     vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
 
-    if ((ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
+    if (!use_mmap ||
+        (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_MMAP_ERRNO) ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_TOO_LARGE))
     {
       int fd = io_open(argv[count]);
 
-      
       ex_hl_read_fd_write_stdout(s1, s2, fd);
 
       if (close(fd) == -1)
@@ -497,7 +614,15 @@ int main(int argc, char *argv[])
     
     ++count;
   }
-
+  
+  if (cssfile)
+  {
+    vstr_add_cstr_ptr(s1, s1->len, "\n\
+  </body>\n\
+</html>");
+  }
+  
+ out:
   io_put_all(s1, STDOUT_FILENO);
 
   exit (ex_exit(s1, s2));

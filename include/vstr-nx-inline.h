@@ -83,7 +83,9 @@ extern inline void *vstr__debug_malloc(size_t sz,
   ASSERT(sz);
 
   ret = malloc(sz);
-  ASSERT_RET (ret, NULL);
+  ASSERT_RET(ret, NULL);
+  
+  memset(ret, 0xef, sz); /* poison */
 
   vstr__options.mem_vals[vstr__options.mem_num - 1].ptr  = ret;
   vstr__options.mem_vals[vstr__options.mem_num - 1].file = file;
@@ -143,9 +145,9 @@ extern inline void *vstr__debug_realloc(void *ptr, size_t sz,
     return (NULL);
 
   ret = realloc(ptr, sz);
-  ASSERT_RET (ret, NULL);
+  ASSERT_RET(ret, NULL);
 
-  if (ptr != ret)
+  if (ptr != ret) /* not ISO C compliant */
   {
     unsigned int scan = vstr__debug_malloc_check_mem(ptr);
 
@@ -158,13 +160,14 @@ extern inline void *vstr__debug_realloc(void *ptr, size_t sz,
 }
 extern inline void vstr__debug_malloc_check_empty(void)
 {
-  if (0 && vstr__options.mem_num)
+  if (0 && vstr__options.mem_num) /* needs to be zero'd for coverage testing */
   {
     unsigned int scan = 0;
 
     while (vstr__options.mem_vals[scan].ptr)
     {
-      fprintf(stderr, " MEM DEBUG: ptr from %u:%s\n",
+      fprintf(stderr, " FAILED MEM CHECK EMPTY: ptr %p from %u:%s\n",
+              vstr__options.mem_vals[scan].ptr,
               vstr__options.mem_vals[scan].line,
               vstr__options.mem_vals[scan].file);
       ++scan;
@@ -353,27 +356,6 @@ extern inline int vstr__base_scan_rev_nxt(const Vstr_base *base, size_t *len,
 
   return (TRUE);
 }
-
-#ifndef NDEBUG
-extern inline void vstr__ref_cb_free_ref(Vstr_ref *ref)
-{
-  VSTR__F(ref);
-}
-
-extern inline Vstr_ref *vstr__ref_make_ptr(const void *ptr, void (*func)(struct Vstr_ref *))
-{
-  Vstr_ref *ref = VSTR__MK(sizeof(Vstr_ref));
-
-  if (!ref)
-    return (NULL);
-
-  ref->ref = 1;
-  ref->ptr = (void *)ptr;
-  ref->func = func;
-
-  return (ref);
-}
-#endif
 
 extern inline const char *
 vstr__loc_num_grouping(Vstr_locale *loc, unsigned int num_base)

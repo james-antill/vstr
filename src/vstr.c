@@ -1,6 +1,6 @@
 #define VSTR_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,7 @@ static void vstr__cache_cstr_check(const Vstr_base *base)
     return;
   if (!data->ref || !data->len)
     return;
-
+  
   ASSERT(data->len < data->sz);
 
   ptr  = data->ref->ptr;
@@ -319,6 +319,7 @@ static int vstr__make_conf_loc_def_numeric(Vstr_conf *conf)
 
   return (TRUE);
 
+  /* vstr_ref_del(conf->loc->null_ref); */
  fail_null:
   vstr_ref_del(conf->loc->num_beg->decimal_point_ref);
  fail_deci:
@@ -448,6 +449,9 @@ Vstr_conf *vstr_make_conf(void)
   if (!vstr__cache_conf_init(conf))
     goto fail_cache;
 
+  if (!vstr__data_conf_init(conf))
+    goto fail_data;
+
   if (!(conf->loc = VSTR__MK(sizeof(Vstr_locale))))
     goto fail_loc;
 
@@ -485,6 +489,9 @@ Vstr_conf *vstr_make_conf(void)
 
   conf->ref_link = NULL;
 
+  conf->ref_grp_ptr     = NULL;
+  conf->ref_grp_buf2ref = NULL;
+
   conf->free_do = TRUE;
   conf->malloc_bad = FALSE;
   conf->iovec_auto_update = TRUE;
@@ -508,6 +515,8 @@ Vstr_conf *vstr_make_conf(void)
  fail_loc_num:
   VSTR__F(conf->loc);
  fail_loc:
+  VSTR__F(conf->data_usr_ents);
+ fail_data:
   VSTR__F(conf->cache_cbs_ents);
  fail_cache:
   VSTR__F(conf);
@@ -580,6 +589,9 @@ void vstr__del_conf(Vstr_conf *conf)
   {
     ASSERT(!conf->ref_link);
 
+    vstr__ref_grp_free(conf->ref_grp_ptr);
+    vstr__ref_grp_free(conf->ref_grp_buf2ref);
+    
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_BUF, conf->spare_buf_num);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_NON, conf->spare_non_num);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);
@@ -606,6 +618,8 @@ void vstr__del_conf(Vstr_conf *conf)
 
     VSTR__F(conf->loc);
 
+    vstr__data_conf_free(conf);
+    
     VSTR__F(conf->cache_cbs_ents);
 
     vstr__add_fmt_free_conf(conf);
@@ -888,7 +902,7 @@ static Vstr_base *vstr__make_base_cache(Vstr_conf *conf)
     {
       struct Vstr__base_pi_cache *ubase = (struct Vstr__base_pi_cache *)base;
       Vstr__cache_data_iovec *data = &ubase->real_iov;
-      size_t alloc_sz = conf->iov_min_alloc + conf->iov_min_offset;
+      size_t alloc_sz = 1 + conf->iov_min_alloc + conf->iov_min_offset;
     
       VSTR__CACHE(base)->vec = data;
     
@@ -1047,6 +1061,10 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
 
       vstr_wrap_memcpy(((Vstr_node_buf *)beg)->buf,
                        ((Vstr_node_buf *)node)->buf + pos, node->len - pos);
+
+      /* poison the split */
+      ASSERT(vstr_wrap_memset(((Vstr_node_buf *)node)->buf + pos, 0xFE,
+                              node->len - pos));
       break;
 
     case VSTR_TYPE_NODE_NON:
@@ -1126,8 +1144,7 @@ static int vstr__make_spare_node(Vstr_conf *conf, unsigned int type)
       break;
 
     default:
-      assert(FALSE);
-      return (FALSE);
+      ASSERT_RET(FALSE, FALSE);
   }
 
   if (!node)
@@ -1280,6 +1297,7 @@ unsigned int vstr_free_spare_nodes(Vstr_conf *passed_conf, unsigned int type,
   return (count);
 }
 
+/* vstr_base__pos() but returns a (Vstr_node **) instead of (Vstr_node *) */
 Vstr_node **vstr__base_ptr_pos(const Vstr_base *base, size_t *pos,
                                unsigned int *num)
 {
@@ -1294,7 +1312,7 @@ Vstr_node **vstr__base_ptr_pos(const Vstr_base *base, size_t *pos,
   {
     *pos -= (*scan)->len;
 
-    assert((*scan)->next);
+    ASSERT((*scan)->next);
     scan = &(*scan)->next;
     ++*num;
   }
@@ -1327,6 +1345,7 @@ static int vstr__convert_buf_ref_add(Vstr_conf *conf, Vstr_node *node)
   ASSERT(ln_ref->l_ref < VSTR__CONF_REF_LINKED_SZ);
 
   ++ln_ref->l_ref;
+  /* this cast isn't ISO 9899:1999 compliant ... but fuck it */
   node->next = (Vstr_node *)ln_ref;
 
   if (ln_ref->l_ref >= VSTR__CONF_REF_LINKED_SZ)
@@ -1353,7 +1372,7 @@ static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
 
     conf = ln_ref->conf;
 
-    /* manual relink ... easy */
+    /* manual relink ... Also ISO 9899:1999 violation */
     node->s.next = (Vstr_node *)ln_ref->conf->spare_buf_beg;
     ln_ref->conf->spare_buf_beg = node;
     ++ln_ref->conf->spare_buf_num;
@@ -1367,8 +1386,6 @@ static void vstr__ref_cb_relink_bufnode_ref(Vstr_ref *ref)
       vstr__del_conf(conf);
     }
   }
-  
-  VSTR__F(ref); /* make_ptr()'d reference */
 }
 
 void vstr__swap_node_X_X(const Vstr_base *base, size_t pos,
@@ -1411,9 +1428,8 @@ void vstr__swap_node_X_X(const Vstr_base *base, size_t pos,
       case VSTR_TYPE_NODE_NON: ((Vstr_base *)base)->node_non_used = TRUE; break;
     */
     case VSTR_TYPE_NODE_PTR: ((Vstr_base *)base)->node_ptr_used = TRUE; break;
-    case VSTR_TYPE_NODE_REF: ((Vstr_base *)base)->node_ref_used = TRUE; break;
-    default:
-      ASSERT(FALSE);
+    case VSTR_TYPE_NODE_REF: ((Vstr_base *)base)->node_ref_used = TRUE;
+      ASSERT_NO_SWITCH_DEF();
   }
 
   vstr__cache_iovec_reset_node(base, node, num);
@@ -1424,9 +1440,9 @@ int vstr__chg_node_buf_ref(const Vstr_base *base,
                            Vstr_node **scan, unsigned int num)
 {
   Vstr__cache_data_pos *data = NULL;
-  Vstr_node *tmp = (*scan)->next; /* must be done now... */
+  Vstr_node *next_node = (*scan)->next; /* must be done now... */
   Vstr_ref *ref = NULL;
-  Vstr_node *ref_node = NULL;
+  Vstr_node_ref *node_ref = NULL;
 
   assert((*scan)->type == VSTR_TYPE_NODE_BUF);
 
@@ -1434,35 +1450,44 @@ int vstr__chg_node_buf_ref(const Vstr_base *base,
                       1, UINT_MAX))
     goto fail_malloc_nodes;
 
-  if (!(ref = vstr__ref_make_ptr(((Vstr_node_buf *)(*scan))->buf,
-                                 vstr__ref_cb_relink_bufnode_ref)))
+  if (!base->conf->ref_grp_buf2ref)
+  {
+    Vstr_ref_grp_ptr *tmp = NULL;
+
+    if (!(tmp = vstr__ref_grp_make(vstr__ref_cb_relink_bufnode_ref, 0)))
+      goto fail_malloc_ref;
+    base->conf->ref_grp_buf2ref = tmp;
+  }
+
+  if (!(ref = vstr__ref_grp_add(&base->conf->ref_grp_buf2ref,
+                                ((Vstr_node_buf *)(*scan))->buf)))
     goto fail_malloc_ref;
   if (!vstr__convert_buf_ref_add(base->conf, *scan))
     goto fail_malloc_conv_buf;
 
   --base->conf->spare_ref_num;
-  ref_node = (Vstr_node *)base->conf->spare_ref_beg;
-  base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
+  node_ref = base->conf->spare_ref_beg;
+  base->conf->spare_ref_beg = (Vstr_node_ref *)node_ref->s.next;
 
   ((Vstr_base *)base)->node_ref_used = TRUE;
 
-  ref_node->len = (*scan)->len;
-  ((Vstr_node_ref *)ref_node)->ref = ref;
-  ((Vstr_node_ref *)ref_node)->off = 0;
+  node_ref->s.len = (*scan)->len;
+  node_ref->ref = ref;
+  node_ref->off = 0;
   if ((base->beg == *scan) && base->used)
   {
-    ref_node->len -= base->used;
-    ((Vstr_node_ref *)ref_node)->off = base->used;
+    node_ref->s.len -= base->used;
+    node_ref->off = base->used;
     ((Vstr_base *)base)->used = 0;
   }
 
-  if (!(ref_node->next = tmp))
-    ((Vstr_base *)base)->end = ref_node;
+  if (!(node_ref->s.next = next_node))
+    ((Vstr_base *)base)->end = &node_ref->s;
 
   /* NOTE: we have just changed the type of the node, must update the cache */
   if ((data = vstr_cache_get(base, base->conf->cache_pos_cb_pos)) &&
       (data->node == *scan))
-    data->node = ref_node;
+    data->node = &node_ref->s;
   if (base->iovec_upto_date)
   {
     ASSERT(num);
@@ -1471,7 +1496,7 @@ int vstr__chg_node_buf_ref(const Vstr_base *base,
     VSTR__CACHE(base)->vec->t[num] = VSTR_TYPE_NODE_REF;
   }
 
-  *scan = ref_node;
+  *scan = &node_ref->s;
 
   return (TRUE);
 

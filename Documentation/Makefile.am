@@ -56,16 +56,11 @@ functions.3: functions.txt
 constants.3: constants.txt
 		$(srcdir)/txt2man.pl
 
-vstr.3: functions.3
-		for i in functions.3; do \
-		 if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
-		 else file=$$i; fi; \
-		 cp -p $$file vstr.3; \
-		done
+tutorial.html: tutorial.shtml
+		jssi $< > $@
 
-vstr_const.3: constants.3
-		for i in constants.3; do \
-		 if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
-		 else file=$$i; fi; \
-		 cp -p $$file vstr_const.3; \
-		done
+vstr.3: ./functions.3
+		cp -p $< $@
+
+vstr_const.3: ./constants.3
+		cp -p $< $@

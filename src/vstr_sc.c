@@ -680,8 +680,8 @@ static unsigned int vstr__sc_fmt_num_ipv6_std(unsigned int *ips,
   return (ret);
 }
 
-static void vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
-                                  size_t *pos_compact, size_t *ret_len)
+static int vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
+                                 size_t *pos_compact, size_t *ret_len)
 {
   size_t len = 0;
 
@@ -722,12 +722,11 @@ static void vstr__sc_fmt_num_ipv6(unsigned int *ips, unsigned int type,
     len += 3;
   }
   else
-  {
-    assert(FALSE);
-    len = 7 + 4*8;
-  }
+    assert_ret(FALSE, FALSE);
 
   *ret_len = len;
+
+  return (TRUE);
 }
 
 static int vstr__sc_fmt_prnt_ipv6_compact(Vstr_base *base, size_t pos,
@@ -840,7 +839,8 @@ static int vstr__sc_fmt_add_cb_ipv6_vec(Vstr_base *base, size_t pos,
   size_t len = 0;
   size_t pos_compact = 9;
 
-  vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len);
+  if (!vstr__sc_fmt_num_ipv6(ips, type, &pos_compact, &len))
+    return (FALSE);
 
   if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &len,
                           VSTR_FLAG_SC_FMT_CB_BEG_OBJ_ATOM))
@@ -1082,7 +1082,7 @@ int vstr_sc_fmt_add_lower_base2_uintmax(Vstr_conf *conf, const char *name)
 int vstr_sc_fmt_add_all(Vstr_conf *conf)
 {
   int ret = TRUE;
-
+  
   VSTR__SC_FMT_ADD(vstr, "vstr", "p%zu%zu%u");
   VSTR__SC_FMT_ADD(buf, "buf", "s%zu");
   VSTR__SC_FMT_ADD(ptr, "ptr", "s%zu");
@@ -1133,7 +1133,7 @@ void vstr_sc_basename(const Vstr_base *base, size_t pos, size_t len,
                       size_t *ret_pos, size_t *ret_len)
 {
   size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
-  size_t end_pos = (pos + len) - 1;
+  size_t end_pos = vstr_sc_poslast(pos, len);
 
   if (!ls)
   {
@@ -1164,7 +1164,7 @@ void vstr_sc_dirname(const Vstr_base *base, size_t pos, size_t len,
                      size_t *ret_len)
 {
   size_t ls = vstr_srch_chr_rev(base, pos, len, '/');
-  size_t end_pos = (pos + len) - 1;
+  size_t end_pos = vstr_sc_poslast(pos, len);
   const char buf[1] = {'/'};
 
 
@@ -1322,7 +1322,7 @@ int vstr_sc_add_grpbasenum_ref(Vstr_base *base, size_t pos,
   char *buf = buf_beg + sizeof(buf_beg); \
   size_t ret = 0; \
   \
-  ASSERT(out && chrs_base); \
+  ASSERT_RET(out && chrs_base, 0); \
   ASSERT_RET(num_base >= 2, 0); \
   ASSERT_RET(len >= 2, 0); \
   \

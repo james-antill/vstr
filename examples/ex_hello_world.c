@@ -18,7 +18,8 @@ int main(void)
   if (!(s1 = vstr_dup_cstr_buf(NULL, "Hello World\n")))
     err(EXIT_FAILURE, "Create string");
 
-  /* output the data to the user -- assumes POSIX */
+  /* output the data to the user --
+   *    assumes POSIX, assumes blocking IO but should work without */
   while (s1->len)
     if (!vstr_sc_write_fd(s1, 1, s1->len, STDOUT_FILENO, NULL))
     {

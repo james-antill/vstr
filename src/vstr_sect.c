@@ -185,16 +185,15 @@ int vstr_sects_foreach(const Vstr_base *base,
 
       switch ((*foreach_func)(base, pos, len, data))
       {
-        default:
-          assert(FALSE);
-        case VSTR_TYPE_SECTS_FOREACH_DEF:
-          break;
-        case VSTR_TYPE_SECTS_FOREACH_DEL:
-          sects->ptr[scan].pos = 0;
-          break;
-
         case VSTR_TYPE_SECTS_FOREACH_RET:
           goto shorten_and_return;
+
+        case VSTR_TYPE_SECTS_FOREACH_DEL:
+          sects->ptr[scan].pos = 0;
+          /* FALL THROUGH */
+        case VSTR_TYPE_SECTS_FOREACH_DEF:
+          
+          ASSERT_NO_SWITCH_DEF();
       }
     }
 
@@ -374,8 +373,9 @@ int vstr_sects_update_add(const Vstr_base *base,
   
   sz = data->len + 1;
 
-  /* this is basically impossible to test... done this way for coverage */
-  ASSERT_RET((sz > data->len) && (base->conf->malloc_bad = TRUE), FALSE);
+  /* this is basically impossible to test (size overflow)...
+   * done this way for coverage */
+  ASSERT_RET((sz > data->len) || !(base->conf->malloc_bad = TRUE), FALSE);
   
   ASSERT(data->sz);
   ASSERT(data->len <= data->sz);
