@@ -272,8 +272,9 @@ static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
   
   if (fcntl(fd, F_SETFD, TRUE) == -1)
     goto fcntl_fail;
-  
-  if (!(evnt->sa = calloc(1, sa_len)))
+
+  evnt->sa = NULL;
+  if (sa_len && !(evnt->sa = calloc(1, sa_len)))
     goto malloc_sockaddr_fail;
   
   evnt_fd_set_nonblock(fd, TRUE);
@@ -540,7 +541,7 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   
   if (!evnt_init(evnt, fd, alloc_len))
     goto init_fail;
-                                                                              
+
   EVNT_SA_UN(evnt)->sun_family = AF_LOCAL;
   memcpy(EVNT_SA_UN(evnt)->sun_path, fname, len);
 
@@ -568,6 +569,24 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname)
   evnt__fd_close_noerrno(fd);
  sock_fail:
   return (FALSE);
+}
+
+int evnt_make_custom(struct Evnt *evnt, int fd, socklen_t sa_len, int flags)
+{
+  if (!evnt_init(evnt, fd, sa_len))
+  {
+    evnt__fd_close_noerrno(fd);
+    return (FALSE);
+  }
+  
+  if (flags & POLLIN)
+  {
+    evnt->flag_q_recv = TRUE;
+    return (evnt__make_true(&q_recv, evnt, POLLIN));
+  }
+  
+  evnt->flag_q_none = TRUE;
+  return (evnt__make_true(&q_none, evnt, 0));
 }
 
 static void evnt__close(struct Evnt *evnt)

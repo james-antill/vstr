@@ -266,8 +266,8 @@ void cntl_init(Vlg *passed_vlg, const char *fname,
 }
 
 void cntl_free_acpt(struct Evnt *evnt)
-{
-  ASSERT(acpt_evnt == evnt);
+{ /* can be NULL if we didn't use a cntl-file */
+  ASSERT(!acpt_evnt || (acpt_evnt == evnt));
 
   acpt_evnt = NULL;
 }
@@ -278,27 +278,47 @@ static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
   
   ASSERT(acpt_cntl_evnt == evnt);
   
-  free(evnt);
-
   acpt_cntl_evnt = NULL;
+
+  free(evnt);
 
   if (acpt_evnt)
     evnt_close(acpt_evnt);
 }
 
 /* only used to get death sig atm. */
-void cntl_pipe_acpt_fds(int fd_r, int fd_w)
+void cntl_pipe_acpt_fds(Vlg *passed_vlg, int fd_r, int fd_w,
+                        struct Evnt *passed_acpt_evnt)
 {
   ASSERT(fd_w == -1);
   
-  if (acpt_evnt)
+  if (!acpt_cntl_evnt)
+  {
+    ASSERT(!vlg && passed_vlg);
+
+    vlg = passed_vlg;
+  
+    ASSERT(!acpt_evnt && passed_acpt_evnt);
+  
+    acpt_evnt = passed_acpt_evnt;
+  
+    if (!(acpt_cntl_evnt = malloc(sizeof(struct Evnt))))
+      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl file"));
+
+    if (!evnt_make_custom(acpt_cntl_evnt, fd_r, 0, 0))
+      vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "cntl file");
+  
+    acpt_cntl_evnt->cbs->cb_func_free   = cntl__cb_func_pipe_acpt_free;
+  }
+  else
   {
     int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
     
-    ASSERT(acpt_cntl_evnt);
+    ASSERT(vlg       == passed_vlg);
+    ASSERT(acpt_evnt == passed_acpt_evnt);
     
     if (!evnt_poll_swap(acpt_cntl_evnt, fd_r))
-      vlg_abort(vlg, "swap_acpt: %m\n");
+      vlg_abort(vlg, "%s: %m\n", "swap_acpt");
 
     close(old_fd);
     

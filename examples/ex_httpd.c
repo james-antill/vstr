@@ -1756,9 +1756,11 @@ static void http_req_free(struct Http_req_data *req)
 
   ASSERT(req->done_once && req->using_req);
 
-  vstr_del(req->fname, 1, req->fname->len); /* free mem */
+  /* we do vstr deletes here to return the nodes back to the pool */
+  vstr_del(req->fname, 1, req->fname->len);
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
+  
   req->content_type_vs1 = NULL;
     
   req->using_req = FALSE;
@@ -2777,7 +2779,7 @@ static void cl_cmd_line(int argc, char *argv[])
 
       if (!cpid)
       { /* child */
-        cntl_pipe_acpt_fds(pfds[0], -1);
+        cntl_pipe_acpt_fds(vlg, pfds[0], -1, acpt_evnt);
         close(pfds[1]); pfds[1] = -1;
         break;
       }
@@ -2834,6 +2836,9 @@ int main(int argc, char *argv[])
   }
   evnt_out_dbg3("E");
 
+  if (child_exited)
+    vlg_warn(vlg, "Child exited\n");
+  
   timer_q_del_base(cl_timeout_base);
 
   evnt_close_all();

@@ -24,14 +24,11 @@ happily work on win32 etc.
 	All asm calls should have names
 
  ex_httpd
-	 This should be a HTTP/1.1 compliant server, does most everything you'd
-	want (as long as you don't want CGI's :).
 
 http://www.sans.org/top20/#u2
 
 	condrestart doesn't work?
 	man page
-	Documentation/httpd.html
 	jhttpd -> vstr-httpd
 	O(1) timer_q_add_node
 	Multi procs "cntl list" command pass through

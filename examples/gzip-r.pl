@@ -7,6 +7,8 @@ use File::Temp qw/tempfile/;
 
 use FileHandle;
 
+my $force_compress = 0;
+
 my $have_perl_cmpstat = 0;
 
 #  Might want to add .iso or some .mov type exts ... however non-trivial savings
@@ -16,6 +18,7 @@ my $filter_exts_re = qr/(?:
 			[.]bz2 |
 			[.]rpm |
 			[.]zip |
+			[.]tmp |
 			~      |
 			\#
 		       )$/x;
@@ -50,6 +53,17 @@ sub gzip_file
     if (! -f _)
       {
 	return;
+      }
+
+    if (!$force_compress)
+      {
+	my @st_name   = stat _;
+	if (-f $namegz)
+	  { # If .gz file is already newer, skip it...
+	    my @st_namegz = stat _;
+	if ($st_name[9] < $st_namegz[9])
+	  { return; }
+	  }
       }
 
     ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");

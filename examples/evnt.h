@@ -88,6 +88,7 @@ extern int evnt_make_con_local(struct Evnt *, const char *);
 extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short);
 extern int evnt_make_bind_local(struct Evnt *, const char *);
 extern int evnt_make_acpt(struct Evnt *, int, struct sockaddr *, socklen_t);
+extern int evnt_make_custom(struct Evnt *, int, socklen_t, int);
 
 extern void evnt_free(struct Evnt *);
 extern void evnt_close(struct Evnt *);

@@ -10323,7 +10323,7 @@ html/dir_list.css: ../examples/dir_list.css
 
 html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
-		gzip-r.pl html
+		$(srcdir)/gzip-r.pl html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --cssfile=f_c.css $< > $@

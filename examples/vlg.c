@@ -197,10 +197,15 @@ static int vlg__fmt__add_vstr_add_sa(Vstr_base *base, size_t pos,
   const char *ptr2 = NULL;
   size_t len2 = 0;
 
-  assert(sa);
   assert(sizeof(buf1) >= INET_ADDRSTRLEN);
   assert(sizeof(buf1) >= INET6_ADDRSTRLEN);
 
+  if (!sa)
+  {
+    ptr1 = "<none>";
+    len1 = strlen(ptr1);
+  }
+  else
   switch (sa->sa_family)
   {
     case AF_INET:
