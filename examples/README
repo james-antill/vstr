@@ -8,20 +8,15 @@ happily work on win32 etc.
 
  NEW
 
- ex_dir_list2webdav -- webdav is even more retarded than HTTP, so maybe not
+ ex_dir_list2webdav -- WebDAV is even more retarded than HTTP, so maybe not
 
  ex_dnsd
 
  ex_bt
 
 
- TODO for existing code
-
- --cssfile
- --css-filename
-
  evnt
-	fixing nagle off/on for cork (allow groups)
+	allow groups, make Evnt smaller (moveout cb's to groups)
 
  ex_sock_filter
 	All asm calls should have names
@@ -30,6 +25,7 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
+	Check config, Ie. --dir-filename="foo bar"
 	condrestart doesn't work?
 	man page
         syslog2apache, do merge/catchup

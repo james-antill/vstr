@@ -23,6 +23,23 @@ use strict;
 # %{User-Agent}i <user-agent header from request>
 # % %U - The URL path requested, not including any query string.
 
+use Getopt::Long;
+use Pod::Usage;
+
+my $man = 0;
+my $help = 0;
+
+my $output_file = 0;
+my $sync_file = 0;
+
+pod2usage(0) if !
+GetOptions ("output|o=s"  => \$output_file,
+	    "sync=s"  => \$sync_file,
+	    "help|?"   => \$help,
+	    "man"      => \$man);
+pod2usage(-exitstatus => 0, -verbose => 1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
 while (<>)
   {
     next unless(/^
@@ -72,3 +89,51 @@ EOL
       {
       }
   }
+
+__END__
+
+=head1 NAME
+
+jhttpd-syslog2apache-http-log.pl - Convert log file to apache combined format
+
+=head1 SYNOPSIS
+
+jhttpd-syslog2apache-http-log.pl [options] <jhttpd files...>
+
+ Options:
+  --help -?         brief help message
+  --man             full documentation
+  --sync-file       Only add enteries after last one in specified file
+  --output -o       Append output to this file instead of stdout
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--help>
+
+Print a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=item B<--sync-file>
+
+Only add enteries after last one in specified file.
+
+=item B<--output>
+
+Append output to this file instead of stdout.
+
+=back
+
+
+=head1 DESCRIPTION
+
+B<jhttpd-syslog2apache-http-log.pl> converts files from jhttpd syslog format
+into apache httpd combined log format. It can also be run from cron and
+told to "sync" with an output file.
+
+
+=cut

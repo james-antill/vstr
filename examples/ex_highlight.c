@@ -541,7 +541,10 @@ int main(int argc, char *argv[])
     else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
       use_mmap = !use_mmap;
     EX_UTILS_GETOPT_CSTR("beg",     block_beg);
-    EX_UTILS_GETOPT_CSTR("cssfile", cssfile);
+    EX_UTILS_GETOPT_CSTR("cssfile",      cssfile);
+    EX_UTILS_GETOPT_CSTR("css-file",     cssfile);
+    EX_UTILS_GETOPT_CSTR("cssfilename",  cssfile);
+    EX_UTILS_GETOPT_CSTR("css-filename", cssfile);
     EX_UTILS_GETOPT_CSTR("class",   attr_class);
     EX_UTILS_GETOPT_CSTR("end",     block_end);
     EX_UTILS_GETOPT_CSTR("id",      attr_id);
@@ -563,17 +566,17 @@ Usage: jhighlight [STRING]...\n\
    or: jhighlight OPTION\n\
 Output filenames in html converteed from C.\n\
 \n\
-      --help     Display this help and exit\n\
-      --version  Output version information and exit\n\
-      --mmap     Toggle use of mmap() to load input files\n\
-      --comments Toggle output of attribution comments\n\
-      --beg      Extra text to output at the begining\n\
-      --cssfile  Output entuire html file, using cssfile as the stylesheet\n\
-      --class    Class name for block\n\
-      --end      Extra text to output at the ending\n\
-      --id       Id name for block\n\
-      --type     Name for block (Eg. \"pre\" or \"code\" etc.)\n\
-      --         Treat rest of cmd line as input filenames\n\
+      --help         - Display this help and exit\n\
+      --version      - Output version information and exit\n\
+      --mmap         - Toggle use of mmap() to load input files\n\
+      --comments     - Toggle output of attribution comments\n\
+      --beg          - Extra text to output at the begining\n\
+      --css-filename - Location of css used in HTML.\n\
+      --class        - Class name for block\n\
+      --end          - Extra text to output at the ending\n\
+      --id           - Id name for block\n\
+      --type         - Name for block (Eg. \"pre\" or \"code\" etc.)\n\
+      --             - Treat rest of cmd line as input filenames\n\
 \n\
 Report bugs to James Antill <james@and.org>.\n\
 ");
@@ -595,7 +598,6 @@ Report bugs to James Antill <james@and.org>.\n\
   if (cssfile)
   {
     int scan = count;
-    size_t url = 0;
     
     vstr_add_cstr_ptr(s1, s1->len, "\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
@@ -613,10 +615,7 @@ Report bugs to James Antill <james@and.org>.\n\
     
     vstr_add_cstr_ptr(s1, s1->len, "</title>\n\
     <link rel=\"stylesheet\" type=\"text/css\" href=\"");
-
-    url = s1->len + 1;
     vstr_add_cstr_ptr(s1, s1->len, cssfile);
-    vstr_conv_encode_uri(s1, url, vstr_sc_posdiff(url, s1->len));
     vstr_add_cstr_ptr(s1, s1->len, "\">\n\
   </head>\n\
   <body>\n");

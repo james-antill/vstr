@@ -268,9 +268,12 @@ int main(int argc, char *argv[])
       ++count;
       break;
     }
-    EX_UTILS_GETOPT_CSTR("prefix-path", def_prefix);
+    EX_UTILS_GETOPT_CSTR("prefix-path",  def_prefix);
+    EX_UTILS_GETOPT_CSTR("css-file",     css_fname);
+    EX_UTILS_GETOPT_CSTR("cssfile",      css_fname);
     EX_UTILS_GETOPT_CSTR("css-filename", css_fname);
-    EX_UTILS_GETOPT_CSTR("name", def_name);
+    EX_UTILS_GETOPT_CSTR("cssfilename",  css_fname);
+    EX_UTILS_GETOPT_CSTR("name",         def_name);
     else if (!strcmp("--version", argv[count]))
     { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
@@ -290,7 +293,7 @@ Output filenames.\n\
 \n\
       --help         - Display this help and exit\n\
       --version      - Output version information and exit\n\
-      --css-filename - Location of css used in directory listing\n\
+      --css-filename - Location of css used HTML.\n\
       --name         - Name to be used if input from stdin\n\
       --prefix-path  - Prefix for href on each name in directory listing\n\
       --             - Treat rest of cmd line as input filenames\n\

@@ -122,6 +122,8 @@ static int ex_dir_filter_process(Vstr_base *s1, Vstr_base *s2,
       else if (FILTER_MATCH("deny-name-end", vsuffix))         keep = FALSE;
       else if (FILTER_MATCH("acpt-name-any", vany))            keep = TRUE;
       else if (FILTER_MATCH("deny-name-any", vany))            keep = FALSE;
+      else if (CSTREQ(obj->key, "acpt-all"))                   keep = TRUE;
+      else if (CSTREQ(obj->key, "deny-all"))                   keep = FALSE;
       else
         continue;
 
@@ -188,18 +190,21 @@ static void usage(const char *program_name, int ret)
   fprintf(ret ? stderr : stdout, "\n "
           "Usage: %s [-hV] [FILES]\n"
           "   or: %s OPTION\n"
-          " --accept-name-eq -A - Accept names equal to argument.\n"
+          " --accept-name-eq\n"
           " --acpt-name-eq   -A - Accept names equal to argument.\n"
           " --deny-name-eq   -D - Deny names equal to argument.\n"
-          " --accept-name-beg   - Accept names begining with the argument.\n"
+          " --accept-name-beg\n"
           " --acpt-name-beg     - Accept names begining with the argument.\n"
           " --deny-name-beg     - Deny names begining with the argument.\n"
-          " --accept-name-end   - Accept names ending with the argument.\n"
+          " --accept-name-end\n"
           " --acpt-name-end     - Accept names ending with the argument.\n"
           " --deny-name-end     - Deny names ending with the argument.\n"
-          " --accept-name-any   - Accept names with the argument.\n"
+          " --accept-name-any\n"
           " --acpt-name-any     - Accept names with the argument.\n"
           " --deny-name-any     - Deny names with the argument.\n"
+          " --accept-all\n"
+          " --acpt-all          - Accept everything.\n"
+          " --deny-all          - Deny everything.\n"
           " --help -h           - Print this message.\n"
           " --version -V        - Print the version string.\n",
           program_name, program_name);
@@ -225,12 +230,19 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
    {"accept-name-beg", required_argument, NULL, 1},
    {"acpt-name-beg",   required_argument, NULL, 1},
    {"deny-name-beg",   required_argument, NULL, 2},
+   
    {"accept-name-end", required_argument, NULL, 3},
    {"acpt-name-end",   required_argument, NULL, 3},
    {"deny-name-end",   required_argument, NULL, 4},
+   
    {"accept-name-any", required_argument, NULL, 5},
    {"acpt-name-any",   required_argument, NULL, 5},
    {"deny-name-any",   required_argument, NULL, 6},
+   
+   {"accept-all", no_argument, NULL, 7},
+   {"acpt-all",   no_argument, NULL, 7},
+   {"deny-all",   no_argument, NULL, 8},
+   
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
@@ -268,6 +280,8 @@ Uses Vstr string library.\n\
       case   4: bag_add_cstr(filters, "deny-name-end", optarg); break;
       case   5: bag_add_cstr(filters, "acpt-name-any", optarg); break;
       case   6: bag_add_cstr(filters, "deny-name-any", optarg); break;
+      case   7: bag_add_cstr(filters, "acpt-all",      NULL);   break;
+      case   8: bag_add_cstr(filters, "deny-all",      NULL);   break;
         
       default:
         ASSERT(FALSE);

@@ -71,6 +71,8 @@
 
 #define CONF_SERV_VERSION "0.9.1"
 
+/* **** compile time conf **** */
+
 #if !defined(SO_DETACH_FILTER) || !defined(SO_ATTACH_FILTER)
 # define CONF_SERV_USE_SOCKET_FILTERS FALSE
 struct sock_fprog { int dummy; };
@@ -95,13 +97,19 @@ struct sock_fprog
 };
 #endif
 
-/* defaults for runtime conf */
+/* strip www. from front of host names, strip trailing . */
+#define CONF_SERV_USE_CANONIZE_HOST TRUE
+/* allow any old host header, if it fails fall back to default */
+#define CONF_SERV_USE_NON_HOST_ERR_400 TRUE
+
+
+/* **** defaults for runtime conf **** */
 #define CONF_SERV_DEF_NAME "jhttpd/" CONF_SERV_VERSION " (Vstr)"
 #define CONF_SERV_USE_MMAP FALSE
 #define CONF_SERV_USE_SENDFILE TRUE
 #define CONF_SERV_USE_KEEPA TRUE
 #define CONF_SERV_USE_KEEPA_1_0 TRUE
-#define CONF_SERV_USE_VHOST FALSE
+#define CONF_SERV_USE_VHOSTS FALSE
 #define CONF_SERV_USE_RANGE TRUE
 #define CONF_SERV_USE_RANGE_1_0 TRUE
 #define CONF_SERV_USE_PUBLIC_ONLY FALSE
@@ -217,6 +225,7 @@ struct Http_req_data
  const Vstr_base *content_type_vs1;
  size_t           content_type_pos;
  size_t           content_type_len;
+ Vstr_base *content_location;
  unsigned int ver_0_9 : 1;
  unsigned int ver_1_1 : 1;
  unsigned int use_mmap : 1;
@@ -300,7 +309,7 @@ static struct
 } serv[1] = {{CONF_SERV_DEF_NAME,
               CONF_SERV_USE_MMAP, CONF_SERV_USE_SENDFILE,
               CONF_SERV_USE_KEEPA, CONF_SERV_USE_KEEPA_1_0,
-              CONF_SERV_USE_VHOST,
+              CONF_SERV_USE_VHOSTS,
               CONF_SERV_USE_RANGE, CONF_SERV_USE_RANGE_1_0,
               CONF_SERV_USE_PUBLIC_ONLY,
               CONF_SERV_USE_GZIP_CONTENT_REPLACEMENT,
@@ -372,7 +381,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(CONF_SERV_USE_SENDFILE),
                opt_def_toggle(CONF_SERV_USE_KEEPA),
                opt_def_toggle(CONF_SERV_USE_KEEPA_1_0),
-               opt_def_toggle(CONF_SERV_USE_VHOST),
+               opt_def_toggle(CONF_SERV_USE_VHOSTS),
                opt_def_toggle(CONF_SERV_USE_RANGE),
                opt_def_toggle(CONF_SERV_USE_RANGE_1_0),
                opt_def_toggle(CONF_SERV_USE_PUBLIC_ONLY),
@@ -2178,7 +2187,7 @@ static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
 {
   const char *vhost = vstr_export_cstr_ptr(lfn, pos, len);
   struct stat64 v_stat[1];
-
+  
   if (!vhost)
     return (TRUE); /* dealt with as errmem_req() later */
   
@@ -2188,6 +2197,51 @@ static int serv_check_vhost(Vstr_base *lfn, size_t pos, size_t len)
   if (!S_ISDIR(v_stat->st_mode))
     return (FALSE);
 
+  return (TRUE);
+}
+
+static int serv_add_vhost(struct Con *con, struct Http_req_data *req)
+{
+  Vstr_base *data = con->ev->io_r;
+  Vstr_base *fname = req->fname;
+  Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
+  size_t h_h_len = h_h->len;
+    
+  if (h_h_len && CONF_SERV_USE_CANONIZE_HOST)
+  {
+    size_t h_h_pos = h_h->pos;
+    size_t dots = 0;
+    
+    if (VIPREFIX(fname, 1, fname->len, "www."))
+    { h_h_len -= strlen("www."); h_h_pos += strlen("www."); }
+    
+    dots = vstr_spn_cstr_chrs_rev(fname, 1, fname->len, ".");
+    h_h_len -= dots;
+  }
+  
+  if (!h_h_len)
+    serv_add_default_hostname(fname, 0);
+  else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
+                         h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
+  {
+    vstr_conv_lowercase(fname, 1, h_h->len);
+    
+    if (!serv_check_vhost(fname, 1, h_h->len))
+    {
+      if (CONF_SERV_USE_NON_HOST_ERR_400)
+        HTTPD_ERR_RET(req, 400, FALSE); /* rfc 5.2 */
+      else
+      { /* what everything else does ... *sigh* */
+        if (fname->conf->malloc_bad)
+          return (TRUE);
+      
+        vstr_del(fname, 1, h_h->len);
+        serv_add_default_hostname(fname, 0);
+      }  
+    }
+  }
+
+  vstr_add_cstr_ptr(fname, 0, "/");
   return (TRUE);
 }
 
@@ -2215,22 +2269,8 @@ static int http_req_make_path(struct Con *con, struct Http_req_data *req)
    * maybe when have stat() cache */
   
   if (serv->use_vhosts)
-  {
-    Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
-    
-    if (!h_h->len)
-      serv_add_default_hostname(fname, 0);
-    else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
-                           h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
-    {
-      vstr_conv_lowercase(fname, 1, h_h->len);
-      
-      if (!serv_check_vhost(fname, 1, h_h->len)) /* 5.2 */
-        HTTPD_ERR_RET(req, 400, FALSE);
-    }
-  }
-
-  vstr_add_cstr_ptr(fname, 0, "/");
+    if (!serv_add_vhost(con, req))
+      return (FALSE);
   
   /* check path ... */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
@@ -2314,7 +2354,7 @@ static struct Http_req_data *http_make_req(struct Con *con)
   req->content_type_vs1 = NULL;
   req->content_type_pos = 0;
   req->content_type_len = 0;
-  
+
   req->sects->malloc_bad = FALSE;
 
   req->advertise_accept_ranges = CONF_SERV_USE_RANGE;
@@ -2493,11 +2533,11 @@ static int http_fin_errmem_req(struct Con *con, struct Http_req_data *req)
   HTTPD_ERR_RET(req, 500, http_fin_err_req(con, req));
 }
 
-static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
+static void http__req_absolute_uri(struct Con *con, struct Http_req_data *req,
+                                   Vstr_base *lfn)
 {
   Vstr_base *data = con->ev->io_r;
   Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
-  Vstr_base *lfn = req->fname;
 
   vstr_del(lfn, 1, lfn->len);
   
@@ -2512,14 +2552,25 @@ static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
   vstr_add_vstr(lfn, lfn->len, con->ev->io_r, req->path_pos, req->path_len,
                 VSTR_TYPE_ADD_ALL_BUF);
 
+  /* we got:       http://foo/bar/
+   * and so tried: http://foo/bar/index.html
+   *
+   * but foo/bar/index.html is a directory (fun), so redirect to:
+   *               http://foo/bar/index.html/
+   */
   if (VSUFFIX(lfn, 1, lfn->len, "/"))
-    vstr_add_cstr_buf(lfn, lfn->len, serv->dir_filename);
+    vstr_add_cstr_ptr(lfn, lfn->len, serv->dir_filename);
   
   vstr_add_cstr_buf(lfn, lfn->len, "/");
+}
+
+static int http__req_redirect_dir(struct Con *con, struct Http_req_data *req)
+{
+  http__req_absolute_uri(con, req, req->fname);
   
   req->error_code = 301;
   req->error_line = CONF_LINE_RET_301;
-  req->error_len  = CONF_MSG_LEN_301(lfn);
+  req->error_len  = CONF_MSG_LEN_301(req->fname);
   
   return (http_fin_err_req(con, req));
 }

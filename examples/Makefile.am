@@ -384,5 +384,5 @@ html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(srcdir)/gzip-r.pl html
 
 html/%.html: % html/f_c.css $(hi_DEP)
-		$(hi_APP) --cssfile=f_c.css $< > $@
+		$(hi_APP) --css-filename=f_c.css $< > $@
 

@@ -49,39 +49,41 @@
 
 /* Simple getopt code... */
 #define EX_UTILS_GETOPT_NUM(name, var) \
-    else if (!strncmp("--" name, argv[count], strlen("--" name))) \
-    { \
-      if (!strncmp("--" name "=", argv[count], strlen("--" name "="))) \
-        (var) = strtol(argv[count] + strlen("--" name "="), NULL, 0); \
-      else \
-      { \
-        (var) = 0; \
-        \
-        ++count; \
-        if (count >= argc) \
-          break; \
-        \
-        (var) = strtol(argv[count], NULL, 0); \
-      } \
-    } \
+    else if (!strncmp("--" name "=", argv[count], strlen("--" name "=")) || \
+             !strncmp("--" name, argv[count], strlen(argv[count])))     \
+    {                                                                   \
+      if (strncmp("--" name, argv[count], strlen(argv[count])))         \
+        (var) = strtol(argv[count] + strlen("--" name "="), NULL, 0);   \
+      else                                                              \
+      {                                                                 \
+        (var) = 0;                                                      \
+                                                                        \
+        ++count;                                                        \
+        if (count >= argc)                                              \
+          break;                                                        \
+                                                                        \
+        (var) = strtol(argv[count], NULL, 0);                           \
+      }                                                                 \
+    }                                                                   \
     else if (0) ASSERT(FALSE)
 
 #define EX_UTILS_GETOPT_CSTR(name, var) \
-    else if (!strncmp("--" name, argv[count], strlen("--" name))) \
-    { \
-      if (!strncmp("--" name "=", argv[count], strlen("--" name "="))) \
-        (var) = argv[count] + strlen("--" name "="); \
-      else \
-      { \
-        (var) = NULL; \
-        \
-        ++count; \
-        if (count >= argc) \
-          break; \
-        \
-        (var) = argv[count]; \
-      } \
-    } \
+    else if (!strncmp("--" name "=", argv[count], strlen("--" name "=")) || \
+             !strncmp("--" name, argv[count], strlen(argv[count])))     \
+    {                                                                   \
+      if (strncmp("--" name, argv[count], strlen(argv[count])))         \
+        (var) = argv[count] + strlen("--" name "=");                    \
+      else                                                              \
+      {                                                                 \
+        (var) = NULL;                                                   \
+                                                                        \
+        ++count;                                                        \
+        if (count >= argc)                                              \
+          break;                                                        \
+                                                                        \
+        (var) = argv[count];                                            \
+      }                                                                 \
+    }                                                                   \
     else if (0) ASSERT(FALSE)
 
 
