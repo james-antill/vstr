@@ -1,3 +1,27 @@
+2001-12-05  James Antill  <james@and.org>
+
+	* src/vstr_sub.c (vstr_sub_buf): Add validity checks when running in
+	debugging mode.
+
+	* src/vstr_add.c (vstr_add_vstr): Add validity checks when running in
+	debugging mode.
+
+	* src/vstr.c (vstr_free_base): Don't delete if there is no data in the
+	VStr.
+	(vstr__check_spare_nodes): Check that the nodes are the right type for
+	the list they are on.
+	(vstr__base_scan_fwd_beg): Insist len > 0.
+	(vstr__base_scan_rev_beg): Insist len > 0.
+
+	* src/vstr_add.c (vstr__convert_buf_ref): Decrement count of available
+	ref nodes when you convert a _buf to a ref.
+	(vstr__convert_buf_ref): Fix positioning code.
+	(vstr__convert_buf_ref): Change the position cache to point to the
+	_ref node if it points to a _buf node we are changing.
+
+	* src/vstr.c (vstr_add_spare_nodes): Added checks.
+	(vstr_del_spare_nodes): Added checks.
+
 2001-12-04  James Antill  <james@and.org>
 
 	* src/vstr_spn.c (vstr__spn_buf_rev_fast): Added function to speed up

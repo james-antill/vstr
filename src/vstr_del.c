@@ -335,7 +335,7 @@ int vstr_del(Vstr_base *base, size_t pos, size_t len)
 
  if (!len || (pos > base->len))
    return (FALSE);
- 
+
  if (pos <= 1)
  {
   vstr__cache_del(base, pos, len);

@@ -291,8 +291,9 @@ void vstr_free_base(Vstr_base *base)
 {
  if (!base)
    return;
- 
- vstr_del(base, 1, base->len);
+
+ if (base->len)
+   vstr_del(base, 1, base->len);
  
  vstr__del_conf(base->conf);
  
@@ -400,81 +401,89 @@ Vstr_node *vstr__base_split_node(Vstr_base *base, Vstr_node *node, size_t pos)
 
 static int vstr_add_spare_node(Vstr_conf *conf, unsigned int type)
 {
- Vstr_node *node = NULL;
-
- switch (type)
- {
-  case VSTR_TYPE_NODE_BUF:
-    node = malloc(sizeof(Vstr_node_buf) + conf->buf_sz);
-    break;
-  case VSTR_TYPE_NODE_NON:
-    node = malloc(sizeof(Vstr_node_non));
-    break;
-  case VSTR_TYPE_NODE_PTR:
-    node = malloc(sizeof(Vstr_node_ptr));
-    break;
-  case VSTR_TYPE_NODE_REF:
-    node = malloc(sizeof(Vstr_node_ref));
-    break;
-
-  default:
+  Vstr_node *node = NULL;
+  
+  switch (type)
+  {
+    case VSTR_TYPE_NODE_BUF:
+      node = malloc(sizeof(Vstr_node_buf) + conf->buf_sz);
+      break;
+    case VSTR_TYPE_NODE_NON:
+      node = malloc(sizeof(Vstr_node_non));
+      break;
+    case VSTR_TYPE_NODE_PTR:
+      node = malloc(sizeof(Vstr_node_ptr));
+      break;
+    case VSTR_TYPE_NODE_REF:
+      node = malloc(sizeof(Vstr_node_ref));
+      break;
+      
+    default:
+      return (FALSE);
+  }
+  
+  if (!node)
+  {
+    conf->malloc_bad = TRUE;
     return (FALSE);
- }
- 
- if (!node)
- {
-  conf->malloc_bad = TRUE;
-  return (FALSE);
- }
-
- node->len = 0;
- node->type = type;
- 
- switch (type)
- {
-  case VSTR_TYPE_NODE_BUF:
-    node->next = (Vstr_node *)conf->spare_buf_beg;
-    conf->spare_buf_beg = (Vstr_node_buf *)node;
-    ++conf->spare_buf_num;
-    break;
-    
-  case VSTR_TYPE_NODE_NON:
-    node->next = (Vstr_node *)conf->spare_non_beg;
-    conf->spare_non_beg = (Vstr_node_non *)node;
-    ++conf->spare_non_num;
-    break;
-
-  case VSTR_TYPE_NODE_PTR:
-    node->next = (Vstr_node *)conf->spare_ptr_beg;
-    conf->spare_ptr_beg = (Vstr_node_ptr *)node;
-    ++conf->spare_ptr_num;
-    break;
-    
-  case VSTR_TYPE_NODE_REF:
-    node->next = (Vstr_node *)conf->spare_ref_beg;
-    conf->spare_ref_beg = (Vstr_node_ref *)node;
-    ++conf->spare_ref_num;
-    break;
- }
-
- return (TRUE);
+  }
+  
+  node->len = 0;
+  node->type = type;
+  
+  switch (type)
+  {
+    case VSTR_TYPE_NODE_BUF:
+      node->next = (Vstr_node *)conf->spare_buf_beg;
+      conf->spare_buf_beg = (Vstr_node_buf *)node;
+      ++conf->spare_buf_num;
+      break;
+      
+    case VSTR_TYPE_NODE_NON:
+      node->next = (Vstr_node *)conf->spare_non_beg;
+      conf->spare_non_beg = (Vstr_node_non *)node;
+      ++conf->spare_non_num;
+      break;
+      
+    case VSTR_TYPE_NODE_PTR:
+      node->next = (Vstr_node *)conf->spare_ptr_beg;
+      conf->spare_ptr_beg = (Vstr_node_ptr *)node;
+      ++conf->spare_ptr_num;
+      break;
+      
+    case VSTR_TYPE_NODE_REF:
+      node->next = (Vstr_node *)conf->spare_ref_beg;
+      conf->spare_ref_beg = (Vstr_node_ref *)node;
+      ++conf->spare_ref_num;
+      break;
+  }
+  
+  return (TRUE);
 }
 
 unsigned int vstr_add_spare_nodes(Vstr_conf *conf, unsigned int type,
                                   unsigned int num)
 {
- unsigned int count = 0;
-
- while (count < num)
- {
-  if (!vstr_add_spare_node(conf, type))
-    return (count);
+  unsigned int count = 0;
+  
+  assert(vstr__check_spare_nodes(conf));
+  
+  while (count < num)
+  {
+    if (!vstr_add_spare_node(conf, type))
+    {
+      assert(vstr__check_spare_nodes(conf));
+      
+      return (count);
+    }
     
-  ++count;
- }
- assert(count == num);
-
- return (count);
+    ++count;
+  }
+  assert(count == num);
+  
+  assert(vstr__check_spare_nodes(conf));
+  
+  return (count);
 }
 
 static int vstr_del_spare_node(Vstr_conf *conf, unsigned int type)
@@ -545,18 +554,22 @@ static int vstr_del_spare_node(Vstr_conf *conf, unsigned int type)
 unsigned int vstr_del_spare_nodes(Vstr_conf *conf, unsigned int type,
                                   unsigned int num)
 {
- unsigned int count = 0;
-
- while (count < num)
- {
-  if (!vstr_del_spare_node(conf, type))
-    return (count);
+  unsigned int count = 0;
+  
+  assert(vstr__check_spare_nodes(conf));
+  
+  while (count < num)
+  {
+    if (!vstr_del_spare_node(conf, type))
+      return (count);
     
-  ++count;
- }
- assert(count == num);
+    ++count;
+  }
+  assert(count == num);
 
- return (count);
+  assert(vstr__check_spare_nodes(conf));
+  
+  return (count);
 }
 
 #ifndef NDEBUG
@@ -594,6 +607,8 @@ int vstr__check_spare_nodes(Vstr_conf *conf)
  {
   ++num;
 
+  assert(scan->type == VSTR_TYPE_NODE_BUF);
+  
   scan = scan->next;
  }
  assert(conf->spare_buf_num == num);
@@ -603,6 +618,8 @@ int vstr__check_spare_nodes(Vstr_conf *conf)
  while (scan)
  {
   ++num;
+
+  assert(scan->type == VSTR_TYPE_NODE_NON);
   
   scan = scan->next;
  }
@@ -613,6 +630,8 @@ int vstr__check_spare_nodes(Vstr_conf *conf)
  while (scan)
  {
   ++num;
+
+  assert(scan->type == VSTR_TYPE_NODE_PTR);
   
   scan = scan->next;
  }
@@ -624,6 +643,8 @@ int vstr__check_spare_nodes(Vstr_conf *conf)
  {
   ++num;
 
+  assert(scan->type == VSTR_TYPE_NODE_REF);
+  
   scan = scan->next;
  }
  assert(conf->spare_ref_num == num);
@@ -698,7 +719,7 @@ Vstr_node *vstr__base_scan_fwd_beg(const Vstr_base *base,
 {
  Vstr_node *scan = NULL;
  
- assert(base && pos && ((pos + *len - 1) <= base->len));
+ assert(base && pos && *len && ((pos + *len - 1) <= base->len));
  
  if ((pos > base->len) || !*len)
    return (NULL);
@@ -756,7 +777,7 @@ int vstr__base_scan_rev_beg(const Vstr_base *base,
 {
   Vstr_node *scan = NULL;
   
-  assert(base && pos && ((pos + *len - 1) <= base->len));
+  assert(base && pos && *len && ((pos + *len - 1) <= base->len));
   
   if ((pos > base->len) || !*len)
     return (FALSE);

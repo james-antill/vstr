@@ -249,7 +249,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_buf()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const void *
@@ -266,7 +266,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_ptr()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Pointer to data<br>Type<strong>[3]</strong>: const void *
@@ -285,7 +285,7 @@
  is often easier to create a memory reference and use vstr_add_ref() instead.
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_non()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length of non data<br>Type<strong>[3]</strong>: size_t
@@ -299,7 +299,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_ref()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr memory reference<br>Type<strong>[3]</strong>: struct Vstr_ref *
@@ -315,7 +315,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_vstr()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr string<br>Type<strong>[3]</strong>: const struct Vstr_base *
@@ -379,7 +379,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_vfmt()
-<br>Returns: <br>Type: size_t
+<br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: <br>Type<strong>[3]</strong>: const char *
@@ -401,7 +401,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_fmt()
-<br>Returns: <br>Type: size_t
+<br>Returns: Number of bytes added<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: <br>Type<strong>[3]</strong>: const char *
@@ -423,17 +423,42 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_iovec_buf_beg()
-<br>Returns: <br>Type: size_t
+<br>Returns: Number of bytes in the iovec array<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: <br>Type<strong>[2]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[3]</strong>: <br>Type<strong>[3]</strong>: unsigned int
-</td></tr><tr><td>Parameter<strong>[4]</strong>: <br>Type<strong>[4]</strong>: struct iovec **
-</td></tr><tr><td>Parameter<strong>[5]</strong>: <br>Type<strong>[5]</strong>: unsigned int *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Minimum ammount of iovecs to add<br>Type<strong>[3]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Maximum ammount of iovecs to add<br>Type<strong>[4]</strong>: unsigned int
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Returns the start of the iovec array<br>Type<strong>[5]</strong>: struct iovec **
+</td></tr><tr><td>Parameter<strong>[6]</strong>: Returns the number of iovec structures in the array<br>Type<strong>[6]</strong>: unsigned int *
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to add a copy of data directly into the Vstr string,
+ the obvious use being a call to readv().
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+</p><p>  The function will return 0 if it needs to allocate memory and cannot do so,
+ although if it does fail the Vstr string won't have changed (Ie. the function
+ is atomic).
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  You shouldn't call any other vstr functions between vstr_add_iovec_buf_beg()
+ and vstr_add_iovec_buf_end(), unless you know that they are operating on a
+ different Vstr string which is using a different Vstr configuration.
+
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_iovec_buf_end()
 <br>Returns: nothing<br>Type: void
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
-</td></tr><tr><td>Parameter<strong>[2]</strong>: <br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Number of bytes added to the iovec array<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used after calling vstr_add_iovec_buf_beg() and you've then
+ filled in a bunch of data.
+
+</td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
+</p><p>  Although it's safe to not bother calling this function if you didn't have
+ anything to add to the Vstr string it is often more efficient to call this
+ function with Parameter[3] as 0.
+
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_add_netstr_beg()
 <br>Returns: <br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
@@ -484,7 +509,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_sub_buf()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -511,7 +536,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_sub_ptr()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -533,7 +558,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_sub_non()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -554,7 +579,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_sub_ref()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -577,7 +602,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_sub_vstr()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the Vstr string (Parameter[1])<br>Type<strong>[3]</strong>: size_t
@@ -608,7 +633,7 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_mov()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Append position in the Vstr string (Parameter[1])<br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Vstr string<br>Type<strong>[3]</strong>: struct Vstr_base *
@@ -628,17 +653,17 @@
 
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_cntl_opt()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: option type<br>Type<strong>[1]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: options depending on value of Parameter[1]<br>Type<strong>[ ... ]</strong>: Default stdarg/vararg promotion
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_cntl_base()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Vstr string<br>Type<strong>[1]</strong>: const struct Vstr_base *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: option type<br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: Default stdarg/vararg promotion
 
 </td></tr></table><table width="80%"><tr><td bgcolor="#DDDDDD"><strong>Function: </strong> vstr_cntl_conf()
-<br>Returns: <br>Type: int
+<br>Returns: TRUE on success and FALSE on failure<br>Type: int
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td>Parameter<strong>[2]</strong>: option type<br>Type<strong>[2]</strong>: int
 </td></tr><tr><td>Parameter<strong>[ ... ]</strong>: options depending on value of Parameter[2]<br>Type<strong>[ ... ]</strong>: Default stdarg/vararg promotion

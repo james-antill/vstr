@@ -509,60 +509,67 @@ int vstr_add_ref(Vstr_base *base, size_t pos,
  * vectors if they are there */
 static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
 {
- Vstr_node **scan = &base->beg;
- Vstr_ref *ref = NULL;
- Vstr_node *ref_node = NULL;
- 
- pos += base->used;
- --pos;
- 
- while (*scan && (pos > (*scan)->len))
- {
-  pos -= (*scan)->len;
-  scan = &(*scan)->next;
- }
- 
- while (*scan)
- {
-  if ((*scan)->type == VSTR_TYPE_NODE_BUF)
+  Vstr_node **scan = &base->beg;
+  Vstr_ref *ref = NULL;
+  Vstr_node *ref_node = NULL;
+  
+  /* hand coded vstr__base_pos() because we need a double ptr */
+  pos += base->used;
+  
+  while (*scan && (pos > (*scan)->len))
   {
-   if (base->conf->spare_ref_num < 1)
-   {
-    if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
-      return (FALSE);
-   }
-   
-   if (!(ref = malloc(sizeof(Vstr_ref))))
-   {
-    base->conf->malloc_bad = TRUE;
-    base->conf->malloc_bad = TRUE;
-    return (FALSE);
-   }
-   ref->func = vstr__ref_cb_free_bufnode_ref;
-   ref->ptr = ((Vstr_node_buf *)(*scan))->buf;
-   ref->ref = 0;
-   
-    ref_node = (Vstr_node *)base->conf->spare_ref_beg;
-    base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
-    
-    ref_node->len = (*scan)->len;
-    ((Vstr_node_ref *)ref_node)->ref = vstr_ref_add_ref(ref);
-    ((Vstr_node_ref *)ref_node)->off = 0;
-    
-    if (!(ref_node->next = (*scan)->next))
-      base->end = ref_node;
-    
-    *scan = ref_node;
+    pos -= (*scan)->len;
+    scan = &(*scan)->next;
   }
-  
-  if (len <= (*scan)->len)
-    break;
-  len -= (*scan)->len;
-  
-  scan = &(*scan)->next;
- }
+  len += pos - 1;
+    
+  while (*scan)
+  {
+    if ((*scan)->type == VSTR_TYPE_NODE_BUF)
+    {
+      if (base->conf->spare_ref_num < 1)
+      {
+        if (vstr_add_spare_nodes(base->conf, VSTR_TYPE_NODE_REF, 1) != 1)
+          return (FALSE);
+      }
+      
+      if (!(ref = malloc(sizeof(Vstr_ref))))
+      {
+        base->conf->malloc_bad = TRUE;
+        return (FALSE);
+      }
+      ref->func = vstr__ref_cb_free_bufnode_ref;
+      ref->ptr = ((Vstr_node_buf *)(*scan))->buf;
+      ref->ref = 0;
+      
+      --base->conf->spare_ref_num;
+      ref_node = (Vstr_node *)base->conf->spare_ref_beg;
+      base->conf->spare_ref_beg = (Vstr_node_ref *)ref_node->next;
+      
+      ref_node->len = (*scan)->len;
+      ((Vstr_node_ref *)ref_node)->ref = vstr_ref_add_ref(ref);
+      ((Vstr_node_ref *)ref_node)->off = 0;
+      
+      if (!(ref_node->next = (*scan)->next))
+        base->end = ref_node;
 
- return (TRUE);
+      /* FIXME: hack */
+      if (base->cache && base->cache->pos.node &&
+          (base->cache->pos.node == *scan))
+        base->cache->pos.node = ref_node;
+      
+      *scan = ref_node;
+    }
+    
+    if (len <= (*scan)->len)
+      break;
+    len -= (*scan)->len;
+    
+    scan = &(*scan)->next;
+  }
+  assert(!len || (*scan && ((*scan)->len >= len)));
+  
+  return (TRUE);
 }
 
 static void vstr__add_cleanup_cache(Vstr_base *base,
@@ -618,108 +625,142 @@ static int vstr__add_all_ref(Vstr_base *base, size_t pos, size_t len,
   return (FALSE);
 }
 
+/* it's so big it looks cluncky, so wrap in a define */
+# define DO_VALID_CHK() do { \
+    assert(vstr__check_spare_nodes(base->conf)); \
+    assert(vstr__check_real_nodes(base)); \
+    assert(vstr__check_spare_nodes(from_base->conf)); \
+    assert(vstr__check_real_nodes((Vstr_base *)from_base)); \
+} while (FALSE)
+    
 int vstr_add_vstr(Vstr_base *base, size_t pos, 
                   const Vstr_base *from_base, size_t from_pos, size_t len,
-                  unsigned int type)
+                  unsigned int add_type)
 {
- size_t orig_pos = pos;
- size_t orig_from_pos = from_pos;
- size_t orig_len = len;
- size_t orig_base_len = base->len;
- Vstr_node *scan = NULL;
- size_t off = 0;
- unsigned int dummy_num = 0;
-
- assert(!(!base || !len || (pos > base->len) ||
-          !from_base || (from_pos > from_base->len) || base->conf->malloc_bad));
- if (!base || !len || (pos > base->len) ||
-     !from_base || (from_pos > from_base->len) || base->conf->malloc_bad)
-   return (FALSE);
-
- /* quick short cut instead of using export_cstr_ref() also doesn't change
-  * from_base in certain cases */
- if (type == VSTR_TYPE_ADD_ALL_REF)
- {
-  if (!vstr__add_all_ref(base, pos, len, (Vstr_base *)from_base, from_pos))
+  size_t orig_pos = pos;
+  size_t orig_from_pos = from_pos;
+  size_t orig_len = len;
+  size_t orig_base_len = base->len;
+  Vstr_node *scan = NULL;
+  size_t off = 0;
+  unsigned int dummy_num = 0;
+  
+  assert(!(!base || !len || (pos > base->len) ||
+           !from_base || (from_pos > from_base->len) ||
+           base->conf->malloc_bad));
+  if (!base || !len || (pos > base->len) ||
+      !from_base || (from_pos > from_base->len) || base->conf->malloc_bad)
     return (FALSE);
 
-  return (TRUE);
- }
-
- /* make sure there are no buf nodes */
- if (type == VSTR_TYPE_ADD_BUF_REF)
- {
-   if (!vstr__convert_buf_ref((Vstr_base *)from_base, from_pos, len))
-   {
-     base->conf->malloc_bad = TRUE;
-     return (FALSE);
-   }
- }
- 
- /* do the real copying */
- if (!(scan = vstr__base_pos(from_base, &from_pos, &dummy_num, TRUE)))
-   return (TRUE);
-
- off = from_pos - 1;
- while (len > 0)
- {
-  size_t tmp = scan->len;
-
-  tmp -= off;
-  if (tmp > len)
-    tmp = len;
+  DO_VALID_CHK();
   
-  switch (scan->type)
+  /* quick short cut instead of using export_cstr_ref() also doesn't change
+   * from_base in certain cases */
+  if (add_type == VSTR_TYPE_ADD_ALL_REF)
   {
-   case VSTR_TYPE_NODE_BUF:
-    assert(type != VSTR_TYPE_ADD_BUF_REF); /* all bufs should now be refs */
-    
-    if (type == VSTR_TYPE_ADD_BUF_PTR)
+    if (!vstr__add_all_ref(base, pos, len, (Vstr_base *)from_base, from_pos))
     {
-     if (!vstr_add_ptr(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
-       goto fail;
+      DO_VALID_CHK();
+      
+      return (FALSE);
+    }
+
+    DO_VALID_CHK();
+    
+    return (TRUE);
+  }
+  
+  /* make sure there are no buf nodes */
+  if (add_type == VSTR_TYPE_ADD_BUF_REF)
+  {
+    if (!vstr__convert_buf_ref((Vstr_base *)from_base, from_pos, len))
+    {
+      base->conf->malloc_bad = TRUE;
+
+      DO_VALID_CHK();
+      
+      return (FALSE);
+    }
+
+    DO_VALID_CHK();
+  }
+  
+  /* do the real copying */
+  if (!(scan = vstr__base_pos(from_base, &from_pos, &dummy_num, TRUE)))
+  {
+    DO_VALID_CHK();
+    
+    return (TRUE);
+  }
+  
+  off = from_pos - 1;
+  while (len > 0)
+  {
+    size_t tmp = scan->len;
+    
+    tmp -= off;
+    if (tmp > len)
+      tmp = len;
+    
+    switch (scan->type)
+    {
+      case VSTR_TYPE_NODE_BUF:
+        /* all bufs should now be refs */
+        assert(add_type != VSTR_TYPE_ADD_BUF_REF);
+        
+        if (add_type == VSTR_TYPE_ADD_BUF_PTR)
+        {
+          if (!vstr_add_ptr(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
+            goto fail;
+          break;
+        }
+        if (!vstr_add_buf(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
+          goto fail;
+        break;
+      case VSTR_TYPE_NODE_NON:
+        if (!vstr_add_non(base, pos, tmp))
+          goto fail;
+        break;
+      case VSTR_TYPE_NODE_PTR:
+        if (!vstr_add_ptr(base, pos,
+                          ((char *)((Vstr_node_ptr *)scan)->ptr) + off, tmp))
+          goto fail;
+        break;
+      case VSTR_TYPE_NODE_REF:
+        off += ((Vstr_node_ref *)scan)->off;
+        if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, tmp))
+          goto fail;
+        break;
+      default:
+        assert(FALSE);
      break;
     }
-    if (!vstr_add_buf(base, pos, ((Vstr_node_buf *)scan)->buf + off, tmp))
-      goto fail;
-    break;
-  case VSTR_TYPE_NODE_NON:
-    if (!vstr_add_non(base, pos, tmp))
-      goto fail;
-    break;
-  case VSTR_TYPE_NODE_PTR:
-    if (!vstr_add_ptr(base, pos,
-                      ((char *)((Vstr_node_ptr *)scan)->ptr) + off, tmp))
-      goto fail;
-    break;
-  case VSTR_TYPE_NODE_REF:
-    if (!vstr_add_ref(base, pos, ((Vstr_node_ref *)scan)->ref, off, tmp))
-      goto fail;
-    break;
-   default:
-     assert(FALSE);
-     break;
+    
+    pos += tmp;
+    len -= tmp;
+    
+    off = 0;
+    
+    scan = scan->next;
   }
-
-  pos += tmp;
-  len -= tmp;
   
-  off = 0;
+  vstr__cache_cpy(base, orig_pos, orig_len,
+                  (Vstr_base *)from_base, orig_from_pos);
+
+  DO_VALID_CHK();
+
+  return (TRUE);
   
-  scan = scan->next;
- }
-
- vstr__cache_cpy(base, orig_pos, orig_len,
-                 (Vstr_base *)from_base, orig_from_pos);
- 
- return (TRUE);
-
  fail:
- /* must work as orig_pos must now be at the begining of a node */
- vstr_del(base, orig_pos, base->len - orig_base_len);
- assert(base->len == orig_len);
- return (FALSE);
+  /* must work as orig_pos must now be at the begining of a node */
+  vstr_del(base, orig_pos, base->len - orig_base_len);
+  assert(base->len == orig_len);
+
+  DO_VALID_CHK();
+
+  return (FALSE);
 }
+# undef DO_VALID_CHK
 
 size_t vstr_add_iovec_buf_beg(Vstr_base *base, size_t pos,
                               unsigned int min, unsigned int max,

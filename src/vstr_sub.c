@@ -35,7 +35,10 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
   int ret = TRUE;
 
   assert(len && buf_len);
-  
+
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
+
   scan = vstr__base_scan_fwd_beg(base, pos, &len, &num, &scan_str, &scan_len);
   while (scan && (scan->type == VSTR_TYPE_NODE_BUF))
   {
@@ -98,7 +101,10 @@ int vstr_sub_buf(Vstr_base *base, size_t pos, size_t len,
     scan = vstr__base_scan_fwd_nxt(base, &len, &num,
                                    scan, &scan_str, &scan_len);
   }  
-  
+
+  assert(vstr__check_spare_nodes(base->conf));
+  assert(vstr__check_real_nodes(base));
+
   return (ret);
 }
 
