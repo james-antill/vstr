@@ -97,6 +97,13 @@ int main(void)
  do_test(str2, str1);
 
  ex_utils_check();
- 
+
+ vstr_free_base(str1);
+ vstr_free_base(str2);
+
+ vstr_free_conf(conf);
+
+ vstr_exit();
+
  exit (EXIT_SUCCESS);
 }

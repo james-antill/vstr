@@ -54,6 +54,8 @@ void ex_utils_die(const char *msg, ...)
       
       len = vstr_export_iovec_ptr_all(str, &vec, &num);
     }
+
+    vstr_free_base(str);
   }
   
   _exit (EXIT_FAILURE);
@@ -87,36 +89,26 @@ int ex_utils_read(Vstr_base *str1, int fd)
 
 int ex_utils_write(Vstr_base *base, int fd)
 {
-  struct iovec *vec;
-  unsigned int num = 0;
-  size_t len = 0;
-  ssize_t bytes = 0;
-  
-  len = vstr_export_iovec_ptr_all(base, &vec, &num);
-  if (!len)
-    errno = ENOMEM, DIE("vstr_export_iovec_ptr_all:");
-  
-  bytes = writev(fd, vec, num);
-  
-  if ((bytes == -1) && (errno != EAGAIN))
+  unsigned int err = 0;
+
+  vstr_sc_write_fd(base, 1, base->len, fd, &err);
+
+  if (err == VSTR_TYPE_SC_WRITE_FILE_ERR_MEM)
+    DIE("vstr_sc_write_fd:");
+
+  if ((err == VSTR_TYPE_SC_WRITE_FILE_ERR_WRITE_ERRNO) && (errno != EAGAIN))
     DIE("writev:");
-  if (bytes == -1)
-    bytes = 0;
   
-  assert((size_t)bytes <= len);
-  
-  vstr_del(base, 1, (size_t)bytes);
-  
-  return (!!bytes);
+  return (TRUE);
 }
 
 void ex_utils_cpy_write_all(Vstr_base *base, int fd)
 {
-  static Vstr_base *cpy = NULL;
+  Vstr_base *cpy = NULL;
   
   if (base->conf->malloc_bad)
     errno = ENOMEM, DIE("before ex2_cpy_write:");
-  if ((!cpy && !(cpy = vstr_make_base(NULL))) || cpy->conf->malloc_bad)
+  if (!(cpy = vstr_make_base(NULL)))
     errno = ENOMEM, DIE("vstr_make_base:");
   
   vstr_add_vstr(cpy, 0, base, 1, base->len, VSTR_TYPE_ADD_BUF_PTR);
@@ -124,6 +116,8 @@ void ex_utils_cpy_write_all(Vstr_base *base, int fd)
     errno = ENOMEM, DIE("vstr_add_vstr:");
   
   while (cpy->len) ex_utils_write(cpy, fd);
+
+  vstr_free_base(cpy);
 }
 
 /* mmap file */

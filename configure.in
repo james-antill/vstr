@@ -1,5 +1,5 @@
 dnl #
-dnl #  Copyright (C) 1999, 2000, 2001 James Antill
+dnl #  Copyright (C) 1999, 2000, 2001, 2002 James Antill
 dnl #
 dnl #  This program is free software; you can redistribute it and/or modify
 dnl #  it under the terms of the GNU General Public License as published by
@@ -67,9 +67,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=0
 VSTR_MINOR_VERSION=9
-VSTR_MICRO_VERSION=3
-VSTR_INTERFACE_AGE=1
-VSTR_BINARY_AGE=1
+VSTR_MICRO_VERSION=4
+VSTR_INTERFACE_AGE=0
+VSTR_BINARY_AGE=0
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning

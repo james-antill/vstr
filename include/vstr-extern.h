@@ -116,7 +116,8 @@ extern void vstr_ref_del(struct Vstr_ref *);
 
 /* real start of vector string functions */
 
-extern int vstr_init(void);
+extern int  vstr_init(void);
+extern void vstr_exit(void);
 
 extern struct Vstr_conf *vstr_make_conf(void);
 extern void vstr_free_conf(struct Vstr_conf *);

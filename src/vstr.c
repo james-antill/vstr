@@ -287,6 +287,17 @@ int vstr_init(void)
   return (TRUE);
 }
 
+void vstr_exit(void)
+{ /* have count of mmaped files and do check */
+  vstr__add_fmt_cleanup_spec();
+
+  assert((vstr__options.def->no_node_ref == 1) &&
+         (vstr__options.def->ref == 1));
+  
+  vstr_free_conf(vstr__options.def);
+  vstr__options.def = NULL;
+}
+
 char *vstr__export_node_ptr(const Vstr_node *node)
 {
  switch (node->type)

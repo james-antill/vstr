@@ -1,3 +1,16 @@
+2002-05-07  James Antill  <james@and.org>
+
+	* NEWS: Release 0.9.4
+
+2002-05-03  James Antill  <james@and.org>
+
+	* src/vstr.c (vstr_exit): Added vstr_exit() function which will cleanup
+	memory used by vstr, the only function that's valid to call after this
+	is vstr_init().
+
+	* src/vstr_add_fmt.c (vstr__fmt_init_spec): Fixed memory leak in fmt
+	spec allocation.
+
 2002-04-17  James Antill  <james@and.org>
 
 	* NEWS: Release 0.9.3

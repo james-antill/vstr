@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
      
      close(fd);
    }
-   else if (err != VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO)
+   else if (err && (err != VSTR_TYPE_SC_ADD_FILE_ERR_CLOSE_ERRNO))
      DIE("add:");
 
    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
@@ -109,6 +109,12 @@ int main(int argc, char *argv[])
  while (str1->len)
    if (!vstr_sc_write_fd(str1, 1, str1->len, 1, NULL))
      DIE("write:");
+
+ vstr_free_base(str1);
+
+ vstr_free_conf(conf);
+ 
+ vstr_exit();
  
  exit (EXIT_SUCCESS);
 }

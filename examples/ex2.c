@@ -240,5 +240,12 @@ int main(void /* int argc, char *argv[] */)
  ex_utils_cpy_write_all(str2, 1);
  vstr_del(str2, 1, str2->len);
 
+ vstr_free_base(str1);
+ vstr_free_base(str2);
+
+ vstr_free_conf(conf);
+
+ vstr_exit();
+ 
  exit (EXIT_SUCCESS);
 }

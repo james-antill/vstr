@@ -380,6 +380,12 @@ int main(int argc, char *argv[])
  }
  
  assert(!have_mmaped_file);
+
+ timer_q_del_base(v.base);
+ 
+ vstr_free_base(v.str1);
+
+ vstr_exit();
  
  exit (EXIT_SUCCESS);
 }

@@ -453,7 +453,7 @@ struct Vstr__fmt_spec
  unsigned int precision_param;
 
  /* these two needed for double, not used elsewhere */
- unsigned int precision_usr : 1; /* did the usr specify a precision */
+ /* unsigned int precision_usr : 1; done with the IS_USR_PREC flag */
  unsigned int field_width_usr : 1; /* did the usr specify a field width */
  
  struct Vstr__fmt_spec *next;
@@ -473,8 +473,25 @@ static struct Vstr__fmt_spec *spec_list_end = NULL;
   spec_list_end->next = tmp; \
   spec_list_end = tmp; \
  } \
+ tmp->next = NULL; \
  if (x && !tmp->main_param) tmp->main_param = ++params; \
  } while (FALSE);
+
+void vstr__add_fmt_cleanup_spec(void)
+{ /* only done so leak detection is easier */
+ struct Vstr__fmt_spec *scan = spec_make;
+
+ assert(!spec_list_beg && !spec_list_beg);
+ 
+ while (scan)
+ {
+   struct Vstr__fmt_spec *scan_next = scan->next;
+   free(scan);
+   scan = scan_next;
+ }
+
+ spec_make = NULL;
+}
 
 static int vstr__fmt_add_spec(void)
 {
@@ -489,19 +506,34 @@ static int vstr__fmt_add_spec(void)
  return (TRUE);
 }
 
+static void vstr__fmt_mv_spec(void)
+{
+  spec_list_end->next = spec_make;
+  spec_make = spec_list_beg;
+  spec_list_beg = NULL;
+  spec_list_end = NULL;
+}
+
 static void vstr__fmt_init_spec(struct Vstr__fmt_spec *spec)
 {
  spec->num_base = 10;
  spec->int_type = INT_TYPE;
  spec->flags = 0;
  spec->field_width = 0;
+ spec->precision = 0;
 
  spec->main_param = 0;
  spec->field_width_param = 0;
  spec->precision_param = 0;
 
- spec->next = NULL;
+ spec->field_width_usr = 0;
 }
+
+#if 0
+# include "vstr_add_fmt_dbl_glibc.c"
+#else
+# include "vstr_add_fmt_dbl_host.c"
+#endif
 
 #define VSTR__FMT_MK_N_PTR(x, y, z) \
      case x: \
@@ -599,7 +631,13 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
       
       case 's':
       {
-        size_t len = strnlen(spec->u.data_ptr, spec->precision);
+        size_t len = 0;
+        const char *str = spec->u.data_ptr;
+        
+        if (spec->flags & IS_USR_PREC)
+          len = strnlen(str, spec->precision);
+        else
+          len = strlen(str);
         
         if (spec->field_width > spec->precision)
           spec->field_width = spec->precision;
@@ -614,7 +652,7 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
 
         if (len)
         {
-          if (!VSTR__FMT_ADD(base, spec->u.data_ptr, len))
+          if (!VSTR__FMT_ADD(base, str, len))
             goto failed_alloc;
         }
         
@@ -756,8 +794,6 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
       }
       break;
       
-      /* floats ... hey you can't _work_ with fp portably, you expect me to
-       * write a portable fp decoder :p :P */
       case 'e':
       case 'E':
       case 'f':
@@ -766,159 +802,9 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
       case 'G':
       case 'a':
       case 'A':
-# warning "A/a might not be there..."
-      {
-        char fmt_buffer[12];
-        char *float_buffer = NULL;
-        unsigned int tmp = 1;
-        int ret = -1;
-        struct lconv *sys_loc = NULL;
-        size_t decimal_len = 0;
-        const char *str = NULL;
-        
-        fmt_buffer[0] = '%';
-        if (spec->flags & LEFT)
-          fmt_buffer[tmp++] = '-';
-        
-        if (spec->flags & PLUS)
-          fmt_buffer[tmp++] = '+';
-        
-        if (spec->flags & SPACE)
-          fmt_buffer[tmp++] = ' ';
-        
-        if (spec->flags & SPECIAL)
-          fmt_buffer[tmp++] = '#';
-        
-        if (spec->flags & ZEROPAD)
-          fmt_buffer[tmp++] = '0';
-
-        if (spec->field_width_usr)
-          fmt_buffer[tmp++] = '*';
-
-        if (spec->precision_usr)
-        {
-          fmt_buffer[tmp++] = '.';
-          fmt_buffer[tmp++] = '*';
-        }
-        
-        if (spec->int_type == LONG_DOUBLE_TYPE)
-          fmt_buffer[tmp++] = 'L';
-        
-        fmt_buffer[tmp++] = spec->fmt_code;
-        assert(tmp <= sizeof(fmt_buffer));
-        fmt_buffer[tmp] = 0;
-        
-        sys_loc = localeconv();
-        decimal_len = strlen(sys_loc->decimal_point);
-        
-        if (spec->int_type == LONG_DOUBLE_TYPE)
-        {
-          if (spec->field_width_usr && spec->precision_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->field_width, spec->precision, spec->u.data_Ld);
-          else if (spec->field_width_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->field_width, spec->u.data_Ld);
-          else if (spec->precision_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->precision, spec->u.data_Ld);
-          else
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->u.data_Ld);
-        }
-        else
-        {
-          if (spec->field_width_usr && spec->precision_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->field_width, spec->precision, spec->u.data_d);
-          else if (spec->field_width_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->field_width, spec->u.data_d);
-          else if (spec->precision_usr)
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->precision, spec->u.data_d);
-          else
-            ret = asprintf(&float_buffer, fmt_buffer,
-                           spec->u.data_d);
-        }
-
-        if (ret < 0)
+        if (!vstr__add_fmt_dbl(base, pos_diff, spec))
           goto failed_alloc;
-
-        tmp = ret;
-        str = float_buffer;
-
-        /* hand code thousands_sep into the number if it's a %f or %F */
-        if (((spec->fmt_code == 'f') || (spec->fmt_code == 'F')) &&
-            (spec->flags & THOUSAND_SEP) &&
-            base->conf->loc->thousands_sep_len)
-        {
-          const char *num_beg = str;
-          const char *num_end = NULL;
-          
-          num_beg += strspn(num_beg, " 0+-");
-          
-          if ((num_beg != str) && !VSTR__FMT_ADD(base, str, num_beg - str))
-          {
-            free(float_buffer);
-            goto failed_alloc;
-          }
-          
-          num_end = num_beg;
-          num_end += strspn(num_end, "0123456789");
-
-          if (!vstr__grouping_add_num(base, pos_diff,
-                                      num_beg, num_end - num_beg))
-          {
-            free(float_buffer);
-            goto failed_alloc;
-          }
-
-          tmp -= (num_end - str);
-          str = num_end;
-        }
-
-        while (tmp > 0)
-        {
-          if (decimal_len && (tmp >= decimal_len) &&
-              !memcmp(str, sys_loc->decimal_point, decimal_len))
-          {
-            if (base->conf->loc->decimal_point_len)
-            {
-              if (!VSTR__FMT_ADD(base,
-                                 base->conf->loc->decimal_point_str,
-                                 base->conf->loc->decimal_point_len))
-              {
-                free(float_buffer);
-                goto failed_alloc;
-              }
-            }
-            
-            str += decimal_len;
-            tmp -= decimal_len;
-          }
-          else
-          {
-            size_t num_len = strspn(str, "0123456789");
-            
-            if (!num_len)
-              num_len = 1;
-            
-            if (!VSTR__FMT_ADD(base, str, num_len))
-            {
-              free(float_buffer);
-              goto failed_alloc;
-            }
-            
-            str += num_len;
-            tmp -= num_len;
-          }
-        }
-        assert(!tmp && !*str);
-        
-        free(float_buffer);
-      }
-      break;
+        break;
       
       default:
         assert(FALSE);
@@ -1213,19 +1099,25 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   if (*fmt != '%')
   {
    char *next_percent = strchr(fmt, '%');
-   size_t len = 0;
    
-   if (!next_percent)
-     len = strlen(fmt);
-   else
-     len = next_percent - fmt;
-
-   spec_make->u.data_ptr = (char *)fmt;
-   spec_make->precision = len;
    spec_make->fmt_code = 's';
+   spec_make->u.data_ptr = (char *)fmt;
+   
+   if (next_percent)
+   {
+     size_t len = next_percent - fmt;
+     spec_make->precision = len;
+     spec_make->flags |= IS_USR_PREC;
+     fmt = fmt + len - 1;
+   }
+   else
+   {
+     spec_make->precision = str_precision;
+     fmt = "";
+   }
+
    VSTR__FMT_MV_SPEC(FALSE);
    
-   fmt = fmt + len - 1;
    continue;
   }
   
@@ -1317,7 +1209,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
   /* get the precision */
   if (*fmt == '.')
   {
-    spec_make->precision_usr = TRUE;
+    spec_make->flags |= IS_USR_PREC;
     
     ++fmt;
     if (vstr__fmt_isdigit(*fmt))
@@ -1350,8 +1242,6 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
     }
     else
       numb_precision = str_precision = 0;
-
-    spec_make->flags |= IS_USR_PREC;
   }
   
   /* get width of type */
@@ -1483,11 +1373,8 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
  
  if (!vstr__fmt_write_spec(base, pos_diff, orig_len))
    goto failed_alloc;
- 
- spec_list_end->next = spec_make;
- spec_make = spec_list_beg;
- spec_list_beg = NULL;
- spec_list_end = NULL;
+
+ vstr__fmt_mv_spec();
  
  return (base->len - orig_len);
 
@@ -1496,10 +1383,7 @@ size_t vstr_add_vfmt(Vstr_base *base, size_t pos, const char *fmt, va_list ap)
    vstr_del(base, start_pos, base->len - orig_len);
  
  no_format_for_arg:
- spec_list_end->next = spec_make;
- spec_make = spec_list_beg;
- spec_list_beg = NULL;
- spec_list_end = NULL;
+ vstr__fmt_mv_spec();
  
  return (0);
 }

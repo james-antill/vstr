@@ -1,4 +1,4 @@
-confexecdir := $(prefix)/share/doc/vstr-devel-$(VERSION)/
+confexecdir := $(datadir)/doc/vstr-devel-$(VERSION)/
 confexec_DATA =                         \
                 functions.txt \
                 functions.html \

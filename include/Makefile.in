@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -104,10 +104,22 @@ WARNS = @WARNS@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-include_HEADERS =                    vstr-conf.h                   vstr-switch.h                   vstr-const.h                   vstr-def.h                   vstr-extern.h                   vstr.h
+include_HEADERS = \
+                  vstr-conf.h \
+                  vstr-switch.h \
+                  vstr-const.h \
+                  vstr-def.h \
+                  vstr-extern.h \
+                  vstr.h
 
 
-noinst_HEADERS =  		  main.h 		  main_system.h 		  assert_loop-def.h 		  assert_loop-extern.h 		  tools-extern.h 		  fix.h
+noinst_HEADERS = \
+		  main.h \
+		  main_system.h \
+		  assert_loop-def.h \
+		  assert_loop-extern.h \
+		  tools-extern.h \
+		  fix.h
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = autoconf.h
@@ -119,7 +131,7 @@ DIST_COMMON =  ./stamp-h.in Makefile.am Makefile.in autoconf.h.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

@@ -42,6 +42,8 @@ int main(void)
     ex_utils_write(str1, 1);
 
   vstr_free_base(str1);
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

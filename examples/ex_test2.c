@@ -85,6 +85,8 @@ int main(void)
     errno = ENOMEM, DIE("vstr_add_fmt:");
   
   vstr_free_base(str1);
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

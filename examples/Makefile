@@ -1,8 +1,10 @@
-CC=gcc-3.0
+CC=gcc
 WARNS=-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O0 -ggdb3 # -ansi -pedantic
 
-CFLAGS=`pkg-config --cflags vstr` $(WARNS)
-LDFLAGS=`pkg-config --libs vstr`
+# CFLAGS=`pkg-config --cflags vstr` $(WARNS)
+CFLAGS=-I../include $(WARNS)
+# LDFLAGS=`pkg-config --libs vstr`
+LDFLAGS=../src/.libs/libvstr.a
 
 # Isn't converted to pkg-config yet...
 TQ_CFLAGS=`gnome-config --cflags timer_q`
@@ -24,7 +26,7 @@ ex%: ex%.o ex_utils.o
 		$(CC) -o $@ $< ex_utils.o $(LDFLAGS) 
 
 ex_slowcat: ex_slowcat.c ex_utils.o
-		$(CC) $(TQ_CFLAGS) $(CFLAGS) -o ex_slowcat.o -c $<
+		$(CC) $(CFLAGS) $(TQ_CFLAGS) -o ex_slowcat.o -c $<
 		$(CC) -o $@ ex_slowcat.o ex_utils.o $(TQ_LDFLAGS) $(LDFLAGS) 
 
 clean:

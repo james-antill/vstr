@@ -37,6 +37,14 @@ int main(int argc, char *argv[])
     vstr_add_fmt(str1, str1->len, " Format: %s <filename>\n", "ex11");
     while (str1->len)
       ex_utils_write(str1, 2);
+    
+    vstr_free_base(str1);
+    vstr_free_base(str2);
+    
+    ex_utils_check();
+    
+    vstr_exit();
+    
     exit (EXIT_FAILURE);
   }
 
@@ -100,6 +108,8 @@ int main(int argc, char *argv[])
   vstr_free_base(str2);
 
   ex_utils_check();
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

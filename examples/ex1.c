@@ -22,7 +22,8 @@
 
 #include "ex_utils.h"
 
-#define EX1_CUSTOM_BUF_SZ 4
+#define EX1_CUSTOM_BUF_SZ 2
+#define EX1_CUSTOM_DEL_SZ 1
 
 static void do_test(Vstr_base *str2, const char *filename)
 {
@@ -59,7 +60,7 @@ static void do_test(Vstr_base *str2, const char *filename)
                    &decimal_point);
     vstr_cntl_conf(str2->conf, VSTR_CNTL_CONF_GET_LOC_CSTR_THOU_SEP,
                    &thousands_sep);
-    
+
     vstr_add_fmt(str2, str2->len, "\n\nLocale information:\n"
                  "name: %s\n"
                  "decimal: %s\n"
@@ -178,8 +179,14 @@ static void do_test(Vstr_base *str2, const char *filename)
   
   while (str2->len)
   {
+    size_t tmp = EX1_CUSTOM_DEL_SZ;
+    
     ex_utils_cpy_write_all(str2, 1);
-    vstr_del(str2, 1, 1);
+    
+    if (tmp > str2->len)
+      tmp = str2->len;
+    
+    vstr_del(str2, 1, tmp);
   }
 }
 
@@ -232,8 +239,14 @@ int main(int argc, char *argv[])
   
   while (str1->len)
   {
+    size_t tmp = EX1_CUSTOM_DEL_SZ;
+    
     ex_utils_cpy_write_all(str1, 1);
-    vstr_del(str1, 1, 1);
+
+    if (tmp > str1->len)
+      tmp = str1->len;
+    
+    vstr_del(str1, 1, tmp);
   }
   
   /* str2 */
@@ -275,6 +288,8 @@ int main(int argc, char *argv[])
   vstr_free_base(str2);
 
   vstr_free_conf(conf);
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

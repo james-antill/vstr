@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -97,11 +97,24 @@ VERSION = @VERSION@
 VSTR_LIBS = @VSTR_LIBS@
 WARNS = @WARNS@
 
-confexecdir := $(prefix)/share/doc/vstr-devel-$(VERSION)/
-confexec_DATA =                  functions.txt                 functions.html                 functions.3                 constants.txt                 constants.html                 namespace.txt                 namespace.html                 overview.txt                 overview.html                 structs.txt                 structs.html 		size_cmp.gnumeric
+confexecdir := $(datadir)/doc/vstr-devel-$(VERSION)/
+confexec_DATA = \
+                functions.txt \
+                functions.html \
+                functions.3 \
+                constants.txt \
+                constants.html \
+                namespace.txt \
+                namespace.html \
+                overview.txt \
+                overview.html \
+                structs.txt \
+                structs.html \
+		size_cmp.gnumeric
 
 
-man_MANS =                  vstr.3
+man_MANS = \
+                vstr.3
 
 
 EXTRA_DIST = $(man_MANS)
@@ -119,7 +132,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

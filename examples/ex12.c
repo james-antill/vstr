@@ -259,6 +259,8 @@ int main(void)
   vstr_free_base(str1);
 
   ex_utils_check();
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

@@ -80,6 +80,8 @@ int main(void)
 
   vstr_free_base(str1);
   vstr_free_base(out);
+
+  vstr_exit();
   
   exit (EXIT_SUCCESS);
 }

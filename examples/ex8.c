@@ -27,5 +27,7 @@ int main(void)
   
   vstr_free_base(str1);
   
+  vstr_exit();
+ 
   exit (EXIT_SUCCESS);
 }

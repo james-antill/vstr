@@ -164,6 +164,8 @@ extern int  vstr__cache_conf_init(Vstr_conf *);
 extern size_t vstr__loc_thou_grp_strlen(const char *);
 extern int vstr__make_conf_loc_numeric(Vstr_conf *, const char *);
 
+extern void vstr__add_fmt_cleanup_spec(void);
+
 extern void vstr__version_func(void);
     
 
