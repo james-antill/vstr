@@ -1,5 +1,5 @@
 dnl #
-dnl #  Copyright (C) 1999, 2000, 2001, 2002, 2003 James Antill
+dnl #  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 James Antill
 dnl #
 dnl #  This program is free software; you can redistribute it and/or modify
 dnl #  it under the terms of the GNU General Public License as published by
@@ -161,8 +161,48 @@ else
   AC_MSG_WARN([*** pkg-config too old; version 0.5 or better required. See http://www.freedesktop.org/software/pkgconfig/])
 fi
 
+if $PKG_CONFIG --exists timer_q ; then
+  AM_CONDITIONAL(TIMER_Q_AVAIL, true)
+  TIMER_Q_CFLAGS="`$PKG_CONFIG --cflags timer_q`"
+  TIMER_Q_LDLIBS="`$PKG_CONFIG --libs   timer_q`"
+  AC_SUBST(TIMER_Q_CFLAGS)
+  AC_SUBST(TIMER_Q_LDLIBS)
+else
+  AM_CONDITIONAL(TIMER_Q_AVAIL, false)
+fi
+
+if $PKG_CONFIG --exists socket_poll ; then
+  AM_CONDITIONAL(SOCKET_POLL_AVAIL, true)
+  SOCKET_POLL_CFLAGS="`$PKG_CONFIG --cflags socket_poll`"
+  SOCKET_POLL_LDLIBS="`$PKG_CONFIG --libs   socket_poll`"
+  AC_SUBST(SOCKET_POLL_CFLAGS)
+  AC_SUBST(SOCKET_POLL_LDLIBS)
+else
+  AM_CONDITIONAL(SOCKET_POLL_AVAIL, false)
+fi
+
+if $PKG_CONFIG --exists openssl ; then
+  AM_CONDITIONAL(OPENSSL_AVAIL, true)
+  OPENSSL_CFLAGS="`$PKG_CONFIG --cflags openssl`"
+  OPENSSL_LDLIBS="`$PKG_CONFIG --libs   openssl`"
+  AC_SUBST(OPENSSL_CFLAGS)
+  AC_SUBST(OPENSSL_LDLIBS)
+else
+  AM_CONDITIONAL(OPENSSL_AVAIL, false)
+fi
+
+if $PKG_CONFIG --exists glib-2.0 ; then
+  AM_CONDITIONAL(GLIB20_AVAIL, true)
+  GLIB20_CFLAGS="`$PKG_CONFIG --cflags glib-2.0`"
+  GLIB20_LDLIBS="`$PKG_CONFIG --libs   glib-2.0`"
+  AC_SUBST(GLIB20_CFLAGS)
+  AC_SUBST(GLIB20_LDLIBS)
+else
+  AM_CONDITIONAL(GLIB20_AVAIL, false)
+fi
+
 WARNS=""
-AC_ARG_ENABLE(debug, [  --enable-debug          turn on debugging (assumes gcc/gdb) [[default=no]]],[ WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -O1 -ggdb3"; AM_CONDITIONAL(NDEBUG, false) ],[ AC_DEFINE(NDEBUG) AM_CONDITIONAL(NDEBUG, true) ])
+AC_ARG_ENABLE(debug, [  --enable-debug          turn on debugging (assumes gcc/gdb) [[default=no]]],[ WARNS="-W -Wall -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Wno-format-zero-length -Wformat-nonliteral -Wformat-security -O1 -ggdb3"; AM_CONDITIONAL(NDEBUG, false) ],[ AC_DEFINE(NDEBUG) AM_CONDITIONAL(NDEBUG, true) ])
 AC_ARG_ENABLE(ansi, [  --enable-ansi           turn on ansi stuff (assumes gcc/gdb) [[default=no]]],WARNS="$WARNS -ansi -pedantic",)
 AC_ARG_ENABLE(tst-noopt, [  --enable-tst-noopt      turn on no optomizations (assumes gcc/gdb) [[default=no]]],WARNS="$WARNS -O0",)
 AC_SUBST(WARNS)
@@ -217,6 +257,20 @@ case x$local_cv_linker_use_wrap_memmove in
 xtrue) AC_DEFINE(USE_WRAP_MEMMOVE) ;;
 esac
 
+LOCAL_EX_PROG_LIBS="-L../src -lvstr"
+AC_ARG_ENABLE(examples-static, [  --enable-examples-static   turn on static compilation of example program binaries [[default=no]]], local_cv_ex_static=true,local_cv_ex_static=false)
+case x$local_cv_ex_static in
+xtrue) LOCAL_EX_PROG_LIBS="../src/.libs/libvstr.a" ;;
+esac
+AC_SUBST(LOCAL_EX_PROG_LIBS)
+
+LOCAL_TST_PROG_LIBS="-L../src -lvstr"
+AC_ARG_ENABLE(tsts-static, [  --enable-tsts-static   turn on static compilation of test suite binaries [[default=no]]], local_cv_tst_static=true,local_cv_tst_static=false)
+case x$local_cv_tst_static in
+xtrue) LOCAL_TST_PROG_LIBS="../src/.libs/libvstr.a" ;;
+esac
+AC_SUBST(LOCAL_TST_PROG_LIBS)
+
 
 AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   float conversion (glibc,none,host) [[default=host]]], local_cv_fmt_float=$withval,local_cv_fmt_float=host)
 case x$local_cv_fmt_float in
@@ -238,6 +292,7 @@ xglibc)
 *)
    AC_MSG_ERROR(fmt float value "$local_cv_fmt_float" unknown) ;;
 esac
+
 
 TWOCAN_CONF_MSG(Checking for headers)
 
@@ -273,6 +328,24 @@ AC_CHECK_HEADER(sys/prctl.h, AC_DEFINE(HAVE_SYS_PRCTL_H))
 # crappy FreeBSD version too (don't argue the interface is sick --
 # hello TCP_CORK).
 AC_CHECK_HEADER(sys/sendfile.h, AC_DEFINE(HAVE_SENDFILE))
+
+AC_CHECK_HEADER(gmp.h, [
+AM_CONDITIONAL(GMP_AVAIL, true)
+GMP_CFLAGS="";      AC_SUBST(GMP_CFLAGS)
+GMP_LDLIBS="-lgmp"; AC_SUBST(GMP_LDLIBS)
+],AM_CONDITIONAL(GMP_AVAIL, false))
+
+AC_CHECK_HEADER(zlib.h, [
+AM_CONDITIONAL(ZLIB_AVAIL, true)
+ZLIB_CFLAGS="";    AC_SUBST(ZLIB_CFLAGS)
+ZLIB_LDLIBS="-lz"; AC_SUBST(ZLIB_LDLIBS)
+],AM_CONDITIONAL(ZLIB_AVAIL, false))
+
+AC_CHECK_HEADER(bzlib.h, [
+AM_CONDITIONAL(BZ2_AVAIL, true)
+BZ2_CFLAGS="";      AC_SUBST(BZ2_CFLAGS)
+BZ2_LDLIBS="-lbz2"; AC_SUBST(BZ2_LDLIBS)
+],AM_CONDITIONAL(BZ2_AVAIL, false))
 
 TWOCAN_CONF_MSG(Checking for types, and defing if needed)
 
@@ -1466,6 +1539,7 @@ AC_OUTPUT([Makefile
            include/Makefile
            Documentation/Makefile
            tst/Makefile
+           examples/Makefile
            src/vstr_version.c
            vstr.spec
            VERSION

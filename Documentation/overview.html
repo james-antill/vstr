@@ -9,7 +9,7 @@
 
       P { text-indent: 1cm; }
 
-      body { background: #FFFFFF; }
+      body { background: #FFF; color: #000; }
 
       td.heading { background: #DDDDDD; }
     </style>
@@ -157,6 +157,7 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
             <li> BUGS file can be found
               <a href="BUGS">here</a>
 	    </li>
+	  </ul>
 </td></tr></table>
 
 <!-- Section -->
@@ -338,7 +339,7 @@ baseurl=ftp://ftp.and.org/yum/fc$releasever-james
 guaranteed by the API or the ABI of the library ... so don't use it. There is a
 script as part of the distribution "scripts/diff_symbols.sh" which checks this.
 So I haven't just forgotten, if it isn't documented it's undefined what it does
-and it might change type signature or disappear completely.
+and it might change type signature or disappear completely.</p>
 <ul>
 <li>
 	  <a href="functions.html">functions.html</a> - List, and explanation,
@@ -362,7 +363,7 @@ in this namespace is a bug (so report it if you see it, but I don't think
 there is any).
 </li>
 </ul>
-</p></td></tr>
+</td></tr>
 
 </table>
 
@@ -432,7 +433,7 @@ functions that you can use to search for data in a vstr...<br>
  vstr_spn_cstr_chrs_rev() <br>
  <br>
 ...which is a <u>lot</u> of functions just to search for
-some data. However that can be broken up into... <br>
+some data. However that can be broken up into... </p>
 
 <table>
 <tr>
@@ -445,7 +446,7 @@ some data. However that can be broken up into... <br>
 <tr><td>       </td><td> srch_case </td><td> cstr_chrs </td><td>     </td></tr>
 <tr><td>       </td><td>           </td><td> vstr      </td><td>     </td></tr>
 </table>
- <br>
+ <p>
 ...which is much less information to remember. It is also consistent in that
 the same object names are used everywhere and are prefixed by cstr_ when
 they're length is assumed by looking for a NIL terminator.
@@ -515,14 +516,17 @@ they're length is assumed by looking for a NIL terminator.
 
 <table width="80%"><tr><td><p>
 	    If you want to write a number to a string in C, you would normally
-	    write code such as...
+	    write code such as...</p>
 	  <pre>
  sprintf(my_str, "%d", num);
 	  </pre>
+	<p>
 	  ...and in with a Vstr string would normally write that as...
+	</p>
 	  <pre>
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, "%d", num);
 	  </pre>
+	<p>
 	  ...however if you want to write an IPv4 addres, a Vstr
 	  string or any other type that isn't in ISO 9899:1999 to a string
 	  you have to resort to doing to by hand. And if you want to format that
@@ -534,12 +538,12 @@ they're length is assumed by looking for a NIL terminator.
 	    This is where custom formatters should help and give you back
 	    code clarity, reliability, speed and ease of use. Assuming you want
 	    to print an IPv4 address, then you would initialize
-	    the Vstr configuration like so...
+	    the Vstr configuration like so...</p>
 	  <pre>
 <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all</a>(my_vstr->conf);
 <a href="functions.html#vstr_cntl_conf()">vstr_cntl_conf</a>(my_vstr->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '%');
 	  </pre>
-	  ...you then you can write...
+	  <p>...you then you can write...</p>
 	  <pre>
 struct sockaddr_in sa;
 struct in_addr ipv4;
@@ -548,12 +552,12 @@ struct in_addr ipv4;
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*{ipv4.p}", 20,
              (void *)&sa.sin_addr.s_addr);
 	  </pre>
-	  ...and to add the Vstr string you do...
+	  <p>...and to add the Vstr string you do...</p>
 	  <pre>
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%*.*{vstr}", 50, 50,
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
-	  ...all normal printf() like formatting options work, as you would
+	  <p>...all normal printf() like formatting options work, as you would
 	  expect them to including being able to use i18n format specifiers to
 	  change the order. However if you try the above, you'll note that all
 	  of the calls to <a href="functions.html#vstr_add_fmt()">vstr_add_fmt()</a>
@@ -564,11 +568,14 @@ struct in_addr ipv4;
 	  usage of a custom formatter.
 	  </p><p>
 	    To deal with this, you can use the following initialization code...
+	  </p>
 	  <pre>
 <a href="functions.html#vstr_sc_fmt_add_all()">vstr_sc_fmt_add_all</a>(my_vstr->conf);
 <a href="functions.html#vstr_cntl_conf()">vstr_cntl_conf</a>(my_vstr->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
 	  </pre>
+<p>
 	  ...now you can call the custom formatters, using code like...
+</p>
 	  <pre>
 struct sockaddr_in sa;
 struct in_addr ipv4;
@@ -580,6 +587,7 @@ struct in_addr ipv4;
 <a href="functions.html#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "$*.*{vstr:%d%d%p%zu%zu%u}", 50, 50,
              (void *)my_vstr, 1, my_vstr->len);
 	  </pre>
+	  <p>
 	  ...which isn't as good as true support for customer formatters in gcc,
 	  however it does make sure that custom
 	  formatters will not crash, provides complete protection for
@@ -726,7 +734,7 @@ use the Vstr string library. It can be found
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Thu May 13 01:29:01 EDT 2004
+Last modified: Thu May 20 12:49:35 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

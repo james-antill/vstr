@@ -15,12 +15,19 @@ cd ./vstr-$v
 
 ./scripts/clean.sh
 
+# Perf output...
 rm -rf ./examples/perf*
 
+# Backup files...
 find . \
  \( -name "*.o" -o -name ".*[%~]" -o -name "*[%~]" -o -name "#*#" \) \
  -print0 | xargs --no-run-if-empty -0 rm -f
 
+# Arch stuff...
+rm -rf ./{arch}
+find . -name .arch-ids -type d -print0 | xargs -0 rm -rf
+
+# Create tarballs/RPMS
 cp $s/vstr.spec .
 
 cd ..

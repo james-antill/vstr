@@ -20,3 +20,6 @@ noinst_HEADERS = \
 		  assert_loop-extern.h \
 		  tools-extern.h \
 		  fix.h
+
+
+DISTCLEANFILES=vstr-conf.h

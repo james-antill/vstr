@@ -1,3 +1,7 @@
+2004-06-08  James Antill  <james@and.org>
+
+	* include/fix.h: open63 -> open for FreeBSD builds.
+
 2004-05-14  James Antill  <james@and.org>
 
 	* include/vstr-const.h (VSTR_TYPE_FMT_PTR_SIGNED_CHAR): Added type.

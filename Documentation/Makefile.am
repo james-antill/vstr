@@ -1,4 +1,4 @@
-docmaindir := $(datadir)/doc/vstr-devel-$(VERSION)/
+docmaindir = $(datadir)/doc/vstr-devel-$(VERSION)
 docmain_DATA =                         \
                 basic_cat.c.html \
                 comparison.html \
@@ -39,28 +39,84 @@ man_MANS = \
 
 EXTRA_DIST = $(man_MANS)
 
-security_problems.html: security_problems.txt
-		$(srcdir)/sec_txt2html.pl
+CLEANFILES = $(man_MANS)
 
-functions.html: functions.txt
-		$(srcdir)/txt2html.pl
+TUT_SSI_FILES= \
+  ../examples/ex_hello_world.c \
+  ../examples/ex_hello_world.h \
+  ../examples/ex_hello_world_s.c \
+  ../examples/ex_hello_world_m.c \
+  ../examples/ex_hello_world_x.c \
+  ../examples/ex_utils.h \
+  ../examples/ex_cat.c \
+  ../examples/ex_nl.c \
+  ../examples/ex_hexdump.c \
+  ../examples/ex_lookup_ip.c \
+  tut/mpz1.c \
+  tut/mpz2.c \
+  tut/mpz3.c \
+  tut/mpz4.c \
+  ../examples/ex_gmp_factorials.c \
+  ../examples/ex_gmp_nums.c
 
-constants.html: constants.txt
-		$(srcdir)/txt2html.pl
+COST_TUT_SSI_FILES= \
+  cost_tut/add_buf_add_ptr.c \
+  cost_tut/pos_add_buf.c \
+  cost_tut/add_buf_sub_buf.c \
+  cost_tut/add_buf_sub_ptr.c \
+  cost_tut/add_ptr_sub_ptr.c \
+  cost_tut/iter_mov_add_del.c
 
-structs.html: structs.txt
-		$(srcdir)/txt2html.pl
+SEC_SSI_FILES= \
+  sec/alloc1.c \
+  sec/alloc2.c \
+  sec/alloc3.c \
+  sec/alloc4.c \
+  sec/alloc5.c \
+  sec/sprintf1.c \
+  sec/sprintf2.c \
+  sec/strcpy1.c \
+  sec/strncpy1.c \
+  sec/strncpy2.c \
+  sec/strncpy3.c \
+  sec/strncpy4.c \
+  sec/strncpy5.c \
+  sec/strncpy6.c \
+  sec/strncpy7.c \
+  sec/asprintf1.c \
+  sec/snprintf1.c \
+  sec/snprintf2.c
 
-functions.3: functions.txt
-		$(srcdir)/txt2man.pl
+security_problems.html: security_problems.txt sec_txt2html.pl
+		sec_txt2html.pl
 
-constants.3: constants.txt
-		$(srcdir)/txt2man.pl
+functions.html: functions.txt txt2html.pl
+		txt2html.pl
 
-tutorial.html: tutorial.shtml
+constants.html: constants.txt txt2html.pl
+		txt2html.pl
+
+structs.html: structs.txt txt2html.pl
+		txt2html.pl
+
+functions.3: functions.txt txt2man.pl
+		txt2man.pl
+
+constants.3: constants.txt txt2man.pl
+		txt2man.pl
+
+# FIXME: change to use examples versions...
+# at which point they'll be generated every build...
+tutorial.html: tutorial.shtml $(TUT_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
 		jssi $< > $@
 
-cost_tutorial.html: cost_tutorial.shtml
+cost_tutorial.html: cost_tutorial.shtml $(COST_TUT_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
+		jssi $< > $@
+
+security.html: security.shtml $(SEC_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
 		jssi $< > $@
 
 vstr.3: ./functions.3

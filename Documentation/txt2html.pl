@@ -55,7 +55,7 @@ my $html_footer = "\n</td></tr></table>\n</body></html>";
 sub convert_index
   {
     my $ftype = shift;
-    my $in_pre_tag = "";
+    my $in_pre_tag = 0;
     my $txt_indx_ful = "<ul>\n";
     my $txt_indx_min = "<ul>\n";
 
@@ -90,17 +90,17 @@ sub convert_index
 	    $done = 1;
 
 	    $txt_indx_min .= "<li><a href=\"#indx-$uri\">$section";
-	    $txt_indx_ful .= "<li><a name=\"indx-$uri\" href=\"#$uri\">$section</a>\n<ul>\n";
+	    $txt_indx_ful .= "<li><a id=\"indx-$uri\" href=\"#$uri\">$section</a>\n<ul>\n";
 	  }
       }
     $mem_tot += $mem_count;
 
     OUT->print("<h1>", "$name -- $ftype ($mem_tot)", "</h1>", "\n");
     OUT->print("</td></tr></table><table width=\"90%\"><tr><td>\n");
-    OUT->print("<h2 class=\"ind\">Index of sections</h3>\n");
+    OUT->print("<h2 class=\"ind\">Index of sections</h2>\n");
 
     OUT->print($txt_indx_min . " ($mem_count)</a></ul>\n");
-    OUT->print("<h2 class=\"ind\">Index of sections, and their contents</h3>\n");
+    OUT->print("<h2 class=\"ind\">Index of sections, and their contents</h2>\n");
     OUT->print($txt_indx_ful . "</ul></ul>\n");
   }
 
@@ -134,9 +134,9 @@ sub conv_A_refs
       {$1<a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">$2</a>$3}g;
 
     s{([^#"_0-9a-z])vstr_([_0-9a-z]+)\(\)}
-      {$1<a href="functions.html#vstr_$2()">vstr_$2()</a>}g;
+      {$1<a href="functions.html#vstr_$2%28%29">vstr_$2()</a>}g;
     s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+)\(\)}
-      {$1<a href="functions.html#VSTR_$2()">VSTR_$2()</a>}g;
+      {$1<a href="functions.html#VSTR_$2%28%29">VSTR_$2()</a>}g;
 
     if ($params && defined($current_function))
       {
@@ -150,7 +150,7 @@ sub conv_A_refs
 
 sub convert()
   {
-    my $in_pre_tag = "";
+    my $in_pre_tag = 0;
     my $in_const = 0;
 
     while (<IN>)
@@ -182,7 +182,7 @@ EOL
 		$next_in_const = 1;
 
 		$uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
-		s!(: </strong> )(.*)!$1<a name="$uri">$2</a>!;
+		s!(: </strong> )(.*)!$1<a id="$uri">$2</a>!;
 
 		$current_function = undef;
 	      }
@@ -191,7 +191,7 @@ EOL
                 my $uri = $2;
                 $uri =~ s/([^[:alnum:]:_])/sprintf("%%%02x", ord($1))/eg;
 
-		s!(: </strong> )(.*)!$1<a name="$uri">$2</a>!;
+		s!(: </strong> )(.*)!$1<a id="$uri">$2</a>!;
 
 		$current_function = $uri;
               }
@@ -211,12 +211,12 @@ EOL
 		       ([^#"_0-9a-z])(vstr_[_0-9a-z]+)\(\)
 		      }
 		      {
-			$1\t<a name=\"$2()\">$2()</a>\n
+			$1\t<a id=\"$2()\">$2()</a>\n
 		      }gx;
 		  }
 
-                s/<h2>/<a name="$uri"><h2>/;
-                $_ .= "</a>";
+                s/<h2>/<h2><a id="$uri">/;
+                s!</h2>!</a></h2>!;
 		conv_A_refs(0);
               }
             }
@@ -258,20 +258,20 @@ EOL
 	  {
 	    if (/\.\.\.$/)
 	      {
-		$_ = "</pre>$_<br><pre>";
-		$in_pre_tag = "</pre>";
+		$_ = "</pre><p>$_</p><pre>";
+		$in_pre_tag = 1;
 	      }
 	    else
 	      {
-		$_ = "</pre>$_";
-		$in_pre_tag = "";
+		$_ = "</pre><p>$_";
+		$in_pre_tag = 0;
 	      }
 	  }
 	elsif (/\.\.\.$/)
 	  {
             conv_html();
-	    $_ = "$_<br><pre>";
-	    $in_pre_tag = "</pre>";
+	    $_ = "$_</p><pre>";
+	    $in_pre_tag = 1;
 	  }
 	elsif (!$in_pre_tag && /^  /)
 	  {

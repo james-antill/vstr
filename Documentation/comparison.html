@@ -123,7 +123,7 @@ implementation than what code may be written assuming.
 Using it directly for lots of small strings can cause a lot of memory overhead.
 </td> </tr><tr> <td class="sn">Notes:</td> </tr><tr> <td colspan="2" class="main"> <p>
  This library tries to do something similar to what Vstr does.
-	  The major differences are that:
+	  The major differences are that:</p>
 	  <ul>
 	    <li> ropes can have a function as a string
 	      generator whereas Vstr doesn't allow that (error cases are
@@ -136,7 +136,7 @@ Using it directly for lots of small strings can cause a lot of memory overhead.
 	    you can make sure it isn't copied and/or cleanup properly when no
     strings references the data (this may be possible with inheritance).</li>
 	  </ul>
-      </p><p>
+      <p>
 Also, due to conforming to the std::string C++ API, it isn't
       possible to act with a substring of a Rope, you
       can only make a copy of a substring using the substr call (however
@@ -207,7 +207,7 @@ Pointer, length, size and reference count (shares entire strings only)
 <a href="http://www.trolltech.com/licenses/qpl-annotated.html">QPL</a>
 <a href="http://www.trolltech.com/products/qt/licensing.html">(comercial license specifically offered)</a>
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
-Needs entire Qt API, so mostly self contained namespace of "Q". </dd>
+Needs entire Qt API, so mostly self contained namespace of "Q".
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
 Can be used as both a consumer and a producer in the C++ IO model.
 Deals with any binary data. No <a href="http://cr.yp.to/proto/netstrings.txt">netstring</a> support.
@@ -392,7 +392,7 @@ Self contained namespace of "str_" on all functions and "mystr" and "str_" for s
 reads aren't bad. But writing non-blocking is non-trivial.
 Internally the program uses blocking IO.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
-User testing as part of the application. </dd>
+User testing as part of the application.
 </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
 1.0.0 of vsftpd
 </td> </tr><tr> <td class="sn">Notes:</td> </tr><tr> <td colspan="2" class="main"> <p>
@@ -479,13 +479,13 @@ The stream design will be hard to use for any non-IO related string operations (
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
 <a id="qmail"></a> <!-- most famous -->
 <a id="daemontools"></a> <!-- released in -->
-<a id="djb" href="http://cr.yp.to/daemontools.html"">DJB string APIs</a>
+<a id="djb" href="http://cr.yp.to/daemontools.html">DJB string APIs</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">String APIs
 </td> </tr><tr> <td class="sn">Model:</td> <td class="sv">
 Pointer, length and size
 </td> </tr><tr> <td class="sn">License:</td> <td class="sv">
-Marked as "Public Domain" inside daemontools</a>
+Marked as "Public Domain" inside daemontools
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Each bit is in a seperate namesapce (most of the dynamic string API is in the "stralloc_" namespace)
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
@@ -695,7 +695,7 @@ Allows you to specify a max size for the string.
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
 <a id="boehm"></a>
 <a id="bohem"></a> <!-- typos -->
-<a id="cords" href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/cordh.txt">Cords, part of Boehm GC</a></h2>
+<a id="cords" href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/cordh.txt">Cords, part of Boehm GC</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">String API
 </td> </tr><tr> <td class="sn">Model:</td> <td class="sv">
@@ -939,7 +939,7 @@ Some nice helper functions for blocking IO.
 Binary data with NIL values will screw up the representation of the string.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
 No public testsuite, private testsuite doesn't
- cover everything (I've not seen it, just spoken to the author). </dd>
+ cover everything (I've not seen it, just spoken to the author).
 </td> </tr><tr> <td class="sn">Version:</td> <td class="sv">
 unknown (2003-02-25)
 </td> </tr><tr> <td class="sn">Pro:</td> <td class="sv">
@@ -1166,7 +1166,7 @@ There are much better implementations of the design.
 
 <!-- More C++ -->
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
-<a id="c++vstring" href="http://cade.webbg.com/away/vstring/">VSTRING</a>
+<a id="cppvstring" href="http://cade.webbg.com/away/vstring/">VSTRING</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C++
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">String Library
 <!--
@@ -1287,7 +1287,7 @@ now and again when I might have looked at them.
     <address><a href="mailto:james@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Mon Jan 26 05:11:50 EST 2004
+Last modified: Thu May 20 12:43:29 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>

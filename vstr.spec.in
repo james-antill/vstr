@@ -34,7 +34,7 @@ Copyright: LGPL
 Group: Development/Libraries
 Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
-BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool
+BuildRequires: pkgconfig >= 0.8, autoconf, automake, libtool, gcc
 URL: http://www.and.org/vstr/
 
 %description
@@ -59,6 +59,9 @@ Requires: %{name} = %{ver}
  Also includes a %{name}.pc file for pkg-config.
 
 %changelog
+* Fri Jun  4 2004 James Antill <james@and.org>
+- Add build requires on gcc
+
 * Wed Jan 14 2004 James Antill <james@and.org>
 - Change to glob for examples.
 

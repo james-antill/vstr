@@ -46,6 +46,10 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BZ2_AVAIL_FALSE = @BZ2_AVAIL_FALSE@
+BZ2_AVAIL_TRUE = @BZ2_AVAIL_TRUE@
+BZ2_CFLAGS = @BZ2_CFLAGS@
+BZ2_LDLIBS = @BZ2_LDLIBS@
 BZIP2_PATH = @BZIP2_PATH@
 CC = @CC@
 CCAS = @CCAS@
@@ -77,6 +81,14 @@ FMT_DBL_host_FALSE = @FMT_DBL_host_FALSE@
 FMT_DBL_host_TRUE = @FMT_DBL_host_TRUE@
 FMT_DBL_none_FALSE = @FMT_DBL_none_FALSE@
 FMT_DBL_none_TRUE = @FMT_DBL_none_TRUE@
+GLIB20_AVAIL_FALSE = @GLIB20_AVAIL_FALSE@
+GLIB20_AVAIL_TRUE = @GLIB20_AVAIL_TRUE@
+GLIB20_CFLAGS = @GLIB20_CFLAGS@
+GLIB20_LDLIBS = @GLIB20_LDLIBS@
+GMP_AVAIL_FALSE = @GMP_AVAIL_FALSE@
+GMP_AVAIL_TRUE = @GMP_AVAIL_TRUE@
+GMP_CFLAGS = @GMP_CFLAGS@
+GMP_LDLIBS = @GMP_LDLIBS@
 GZIP_PATH = @GZIP_PATH@
 HAVE_LINKER_MAIN_RELOCATE_FALSE = @HAVE_LINKER_MAIN_RELOCATE_FALSE@
 HAVE_LINKER_MAIN_RELOCATE_TRUE = @HAVE_LINKER_MAIN_RELOCATE_TRUE@
@@ -94,6 +106,8 @@ LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
 LN_S = @LN_S@
+LOCAL_EX_PROG_LIBS = @LOCAL_EX_PROG_LIBS@
+LOCAL_TST_PROG_LIBS = @LOCAL_TST_PROG_LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 LT_AGE = @LT_AGE@
 LT_CURRENT = @LT_CURRENT@
@@ -104,6 +118,10 @@ MAKE_PATH = @MAKE_PATH@
 NDEBUG_FALSE = @NDEBUG_FALSE@
 NDEBUG_TRUE = @NDEBUG_TRUE@
 OBJEXT = @OBJEXT@
+OPENSSL_AVAIL_FALSE = @OPENSSL_AVAIL_FALSE@
+OPENSSL_AVAIL_TRUE = @OPENSSL_AVAIL_TRUE@
+OPENSSL_CFLAGS = @OPENSSL_CFLAGS@
+OPENSSL_LDLIBS = @OPENSSL_LDLIBS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -118,8 +136,16 @@ SED_PATH = @SED_PATH@
 SENDMAIL_PATH = @SENDMAIL_PATH@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SOCKET_POLL_AVAIL_FALSE = @SOCKET_POLL_AVAIL_FALSE@
+SOCKET_POLL_AVAIL_TRUE = @SOCKET_POLL_AVAIL_TRUE@
+SOCKET_POLL_CFLAGS = @SOCKET_POLL_CFLAGS@
+SOCKET_POLL_LDLIBS = @SOCKET_POLL_LDLIBS@
 STRIP = @STRIP@
 TAR_PATH = @TAR_PATH@
+TIMER_Q_AVAIL_FALSE = @TIMER_Q_AVAIL_FALSE@
+TIMER_Q_AVAIL_TRUE = @TIMER_Q_AVAIL_TRUE@
+TIMER_Q_CFLAGS = @TIMER_Q_CFLAGS@
+TIMER_Q_LDLIBS = @TIMER_Q_LDLIBS@
 TRUE_PATH = @TRUE_PATH@
 USE_ASSERT_LOOP_FALSE = @USE_ASSERT_LOOP_FALSE@
 USE_ASSERT_LOOP_TRUE = @USE_ASSERT_LOOP_TRUE@
@@ -137,6 +163,10 @@ USE_WRAP_MEMSET_FALSE = @USE_WRAP_MEMSET_FALSE@
 USE_WRAP_MEMSET_TRUE = @USE_WRAP_MEMSET_TRUE@
 VERSION = @VERSION@
 WARNS = @WARNS@
+ZLIB_AVAIL_FALSE = @ZLIB_AVAIL_FALSE@
+ZLIB_AVAIL_TRUE = @ZLIB_AVAIL_TRUE@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
+ZLIB_LDLIBS = @ZLIB_LDLIBS@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -177,7 +207,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-docmaindir := $(datadir)/doc/vstr-devel-$(VERSION)/
+docmaindir = $(datadir)/doc/vstr-devel-$(VERSION)
 docmain_DATA = \
                 basic_cat.c.html \
                 comparison.html \
@@ -219,6 +249,57 @@ man_MANS = \
 
 
 EXTRA_DIST = $(man_MANS)
+
+CLEANFILES = $(man_MANS)
+
+TUT_SSI_FILES = \
+  ../examples/ex_hello_world.c \
+  ../examples/ex_hello_world.h \
+  ../examples/ex_hello_world_s.c \
+  ../examples/ex_hello_world_m.c \
+  ../examples/ex_hello_world_x.c \
+  ../examples/ex_utils.h \
+  ../examples/ex_cat.c \
+  ../examples/ex_nl.c \
+  ../examples/ex_hexdump.c \
+  ../examples/ex_lookup_ip.c \
+  tut/mpz1.c \
+  tut/mpz2.c \
+  tut/mpz3.c \
+  tut/mpz4.c \
+  ../examples/ex_gmp_factorials.c \
+  ../examples/ex_gmp_nums.c
+
+
+COST_TUT_SSI_FILES = \
+  cost_tut/add_buf_add_ptr.c \
+  cost_tut/pos_add_buf.c \
+  cost_tut/add_buf_sub_buf.c \
+  cost_tut/add_buf_sub_ptr.c \
+  cost_tut/add_ptr_sub_ptr.c \
+  cost_tut/iter_mov_add_del.c
+
+
+SEC_SSI_FILES = \
+  sec/alloc1.c \
+  sec/alloc2.c \
+  sec/alloc3.c \
+  sec/alloc4.c \
+  sec/alloc5.c \
+  sec/sprintf1.c \
+  sec/sprintf2.c \
+  sec/strcpy1.c \
+  sec/strncpy1.c \
+  sec/strncpy2.c \
+  sec/strncpy3.c \
+  sec/strncpy4.c \
+  sec/strncpy5.c \
+  sec/strncpy6.c \
+  sec/strncpy7.c \
+  sec/asprintf1.c \
+  sec/snprintf1.c \
+  sec/snprintf2.c
+
 subdir = Documentation
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -393,6 +474,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f $(CONFIG_CLEAN_FILES)
@@ -460,28 +542,36 @@ uninstall-man: uninstall-man3
 	uninstall-man uninstall-man3
 
 
-security_problems.html: security_problems.txt
-		$(srcdir)/sec_txt2html.pl
+security_problems.html: security_problems.txt sec_txt2html.pl
+		sec_txt2html.pl
 
-functions.html: functions.txt
-		$(srcdir)/txt2html.pl
+functions.html: functions.txt txt2html.pl
+		txt2html.pl
 
-constants.html: constants.txt
-		$(srcdir)/txt2html.pl
+constants.html: constants.txt txt2html.pl
+		txt2html.pl
 
-structs.html: structs.txt
-		$(srcdir)/txt2html.pl
+structs.html: structs.txt txt2html.pl
+		txt2html.pl
 
-functions.3: functions.txt
-		$(srcdir)/txt2man.pl
+functions.3: functions.txt txt2man.pl
+		txt2man.pl
 
-constants.3: constants.txt
-		$(srcdir)/txt2man.pl
+constants.3: constants.txt txt2man.pl
+		txt2man.pl
 
-tutorial.html: tutorial.shtml
+# FIXME: change to use examples versions...
+# at which point they'll be generated every build...
+tutorial.html: tutorial.shtml $(TUT_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
 		jssi $< > $@
 
-cost_tutorial.html: cost_tutorial.shtml
+cost_tutorial.html: cost_tutorial.shtml $(COST_TUT_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
+		jssi $< > $@
+
+security.html: security.shtml $(SEC_SSI_FILES)
+		-@$(LN_S) $(top_srcdir)/Documentation/f_c.css f_c.css
 		jssi $< > $@
 
 vstr.3: ./functions.3

@@ -4,7 +4,6 @@
 /* ************************************************************************** */
 /* headers: Vstr (and all supporting system headers), plus extra ones we need */
 /* ************************************************************************** */
-
 #define VSTR_COMPILE_INCLUDE 1 /* make Vstr include it's system headers */
 #include <vstr.h>
 
@@ -194,7 +193,7 @@ static int io_get(Vstr_base *io_r, int fd)
 static void io_limit(int io_r_state, int io_r_fd,
                      int io_w_state, int io_w_fd, Vstr_base *s_w)
 {
-  if (io_w_state == IO_BLOCK) /* allow 16k to build up */
+  if (io_w_state == IO_BLOCK) /* maybe allow data to build up */
   {
     if (io_r_state == IO_BLOCK) /* block to either get or put some data */
       io_block(io_r_fd, io_w_fd);

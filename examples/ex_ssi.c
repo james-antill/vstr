@@ -9,8 +9,10 @@
 
 #include <pwd.h>
 
+#include <dirent.h>
 #include <spawn.h>
 
+#define USE_POPEN 1 /* hacky ... */
 
 #define EX_SSI_FAILED(x) do {                                           \
         vstr_add_fmt(s1, s1->len,                                       \
@@ -29,10 +31,6 @@
 
 
 
-
-static Vstr_ref *dname_ref = NULL;
-static size_t    dname_off = 0;
-static size_t    dname_len = 0;
 
 static char *timespec = NULL;
 static int use_size_abbrev = TRUE;
@@ -165,68 +163,76 @@ static size_t ex_ssi_file_attr(Vstr_base *s2, size_t *srch)
   if (!(ret = ex_ssi_attr_val(s2, srch)))
     return (0);
   
-  if (vstr_export_chr(s2, 1) != '/')
-  {
-    vstr_add_ref(s2, 0, dname_ref, dname_off, dname_len);
-    ret                                    += dname_len;
-    *srch                                  += dname_len;
-  }
-
   return (ret);
 }
 
-static void ex_ssi_exec(Vstr_base *s1,
-                        Vstr_base *s2, size_t pos, size_t len,
-                        size_t *add_len)
+#if !USE_POPEN
+static int ex_ssi_spawn_r(const char *prog, pid_t *pid,
+                          char *argv[], char *env[])
 {
-#if 0
-  Vstr_sects *sects = vstr_sects_make(4);
-  int instr = FALSE;
-  char **argv;
-  char **argp;
+  posix_spawn_file_actions_t acts[1];
+  int fds[2];
+  char *dummy_env[] = {NULL};
+
+  if (!env)
+    env = dummy_env;
   
-  /* FIXME: doesn't handle <foo "bar baz" arg2>... */
-  vstr_split_cstr_buf(s2, pos, len, " ", sects, 0, VSTR_FLAG_SPLIT_NO_RET);
+  if ((errno = posix_spawn_file_actions_init(acts)))
+    err(EXIT_FAILURE, "spawn_make");
+
+  if (pipe(fds) == -1)
+    err(EXIT_FAILURE, "pipe");
+
+  if ((errno = posix_spawn_file_actions_adddup2(attr, fds[1], FILENO_STDOUT)))
+    err(EXIT_FAILURE, "spawn_dup2");
+  if ((errno = posix_spawn_file_actions_addclose(attr, fds[0])))
+    err(EXIT_FAILURE, "spawn_close");
+  if ((errno = posix_spawn_file_actions_addclose(attr, fds[1])))
+    err(EXIT_FAILURE, "spawn_close");
+
+  if ((errno = posix_spawnp(pid, prog, acts, NULL, argv, NULL)))
+    err(EXIT_FAILURE, "spawn");
   
-    
-  if (vstr_export_chr(s2, 1) != '/')
-  {
-    vstr_add_ref(s2, 0, dname_ref, dname_off, dname_len);
-    ret                                    += dname_len;
-    *srch                                  += dname_len;
-  }
-#else
-  FILE *fp = NULL; /* FIXME: hack job */
-  size_t srch = 0;
-  size_t tpos = pos;
-  size_t tlen = len;
-  
-  while ((srch = vstr_srch_cstr_buf_fwd(s2, tpos, tlen, " ")) && (srch < tlen))
-  {
-    switch (vstr_export_chr(s2, srch + 1))
-    {
-      case '-': /* skip options...*/
-      case '/': /* and absolute paths... */
-        break;
-        
-      default:
-        vstr_add_ref(s2, srch, dname_ref, dname_off, dname_len);
-        len                                       += dname_len;
-        tlen                                      += dname_len;
-        *add_len                                  += dname_len;
-    }
-    
-    tlen -= vstr_sc_posdiff(tpos, srch) + 1;
-    tpos  = srch + 1;
-  }
+  if ((errno = posix_spawn_file_actions_destroy(acts)))
+    err(EXIT_FAILURE, "spawn_free");
+
+  close(fds[1]);
+
+  return (fds[0]);
+}
 #endif
+
+static void ex_ssi_exec(Vstr_base *s1,
+                        Vstr_base *s2, size_t pos, size_t len)
+{
+#if USE_POPEN
+  FILE *fp = NULL; /* FIXME: hack job */
   
-  if (!(fp = popen(vstr_export_cstr_ptr(s2, 1, len), "r")))
+  if (!(fp = popen(vstr_export_cstr_ptr(s2, pos, len), "r")))
     err(EXIT_FAILURE, "popen");
 
   ex_ssi_cat_read_fd_write_stdout(s1, fileno(fp));
 
   pclose(fp);
+#else
+  Vstr_sects *sects = vstr_sects_make(4);
+  size_t srch = 0;
+  size_t tpos = pos;
+  size_t tlen = len;
+  pid_t pid;
+  
+  while ((srch < tlen) &&
+         (tmp = vstr_cspn_cstr_chrs_fwd(s2, , tlen, " ")))
+  {
+  }
+
+  /* FIXME: doesn't handle <foo "bar baz" arg2>... */
+  vstr_split_cstr_buf(s2, pos, len, " ", sects, 0, VSTR_FLAG_SPLIT_NO_RET);
+  
+  ex_ssi_cat_read_fd_write_stdout(s1,
+                                  ex_ssi_spawn_r(argv[0], &pid, argv, NULL));
+  waitpid(pid, NULL, 0);
+#endif
 }
 
 static const char *ex_ssi_strftime(time_t val, int use_gmt)
@@ -234,8 +240,7 @@ static const char *ex_ssi_strftime(time_t val, int use_gmt)
   static char ret[4096];
   const char *spec = timespec;
   
-  if (!spec)
-    spec = "%c";
+  if (!spec)  spec = "%c";
 
   strftime(ret, sizeof(ret), spec, use_gmt ? gmtime(&val) : localtime(&val));
 
@@ -329,7 +334,7 @@ static int ex_ssi_process(Vstr_base *s1, Vstr_base *s2, time_t last_modified,
 
       EX_SSI_OK("exec", s2, 1, tmp, TRUE);
 
-      ex_ssi_exec(s1, s2, 1, tmp, &srch);
+      ex_ssi_exec(s1, s2, 1, tmp);
     }
     else if (vstr_cmp_case_bod_cstr_eq(s2, 1, s2->len, "<!--#config"))
     {
@@ -557,20 +562,23 @@ int main(int argc, char *argv[])
   Vstr_base *s1 = ex_init(&s2);
   int count = 1;
   time_t now = time(NULL);
-
+  int beg_dir = -1;
+  DIR *beg_dir_obj = NULL;
+  
   vstr_sc_fmt_add_all(s1->conf);
   vstr_cntl_conf(s1->conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   
-  if (!(dname_ref = vstr_ref_make_strdup("")))
-    errno = ENOMEM, err(EXIT_FAILURE, "add data");
-    
   if (count >= argc)
   {
     io_fd_set_o_nonblock(STDIN_FILENO);
     ex_ssi_read_fd_write_stdout(s1, s2, STDIN_FILENO);
     ex_ssi_fin(s1, now, "stdin");    
   }
-  
+
+  if (!(beg_dir_obj = opendir(".")))
+    err(EXIT_FAILURE, "opendir(.)");
+  beg_dir = dirfd(beg_dir_obj);
+    
   while (count < argc)
   {
     int fd = io_open(argv[count]);
@@ -581,14 +589,17 @@ int main(int argc, char *argv[])
     if (!vstr_add_buf(s1, s1->len, argv[count], len))
       errno = ENOMEM, err(EXIT_FAILURE, "add data");
 
+    if (fchdir(beg_dir) == -1)
+      err(EXIT_FAILURE, "fchdir()");
+    
     dbeg = s1->len - len + 1;
     vstr_sc_dirname(s1, dbeg, len, &tdname_len);
     if (tdname_len)
     {
-      dname_len = tdname_len;
-      vstr_ref_del(dname_ref);
-      if (!(dname_ref = vstr_export_ref(s1, dbeg, dname_len, &dname_off)))
-        errno = ENOMEM, err(EXIT_FAILURE, "add data");
+      const char *tmp = vstr_export_cstr_ptr(s1, dbeg, tdname_len);
+      
+      if (chdir(tmp) == -1)
+        err(EXIT_FAILURE, "chdir(%s)", tmp);
     }
     vstr_del(s1, s1->len - len + 1, len);
     
@@ -600,9 +611,8 @@ int main(int argc, char *argv[])
 
     ++count;
   }
+  closedir(beg_dir_obj);
 
-  vstr_ref_del(dname_ref);
-  
   io_put_all(s1, STDOUT_FILENO);
 
   exit (ex_exit(s1, s2));

@@ -36,7 +36,7 @@ util-linux-2.11r-10
  * into one output line (Ie. in this version each file starts on a new line,
  * however the addresses are continuious).
 
- * It's also similar to "xxd" in vim. 
+ * It's also similar to "xxd" in vim, and "od -tx1z -Ax".
  */
 
 #define PRNT_NONE 0

@@ -370,4 +370,4 @@ TESTS = $(tst) $(F_TST) $(XF_TST)
 XFAIL_TESTS = $(XF_TST)
 
 CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
-LDADD = -L../src/ -lvstr
+LDADD = @LOCAL_TST_PROG_LIBS@

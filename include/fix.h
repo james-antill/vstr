@@ -35,6 +35,10 @@ extern int prctl(int, unsigned long, unsigned long,
 # define O_LARGEFILE 0
 #endif
 
+#ifndef HAVE_OPEN64
+# define open64 open
+#endif
+
 #ifndef SHUT_RD
 # define SHUT_RD 0
 #endif

@@ -460,14 +460,41 @@ static const char *ex_hl_ctime(time_t val)
   return (ret);
 }
 
-static void ex_hl_fin(Vstr_base *s1, time_t timestamp, const char *fname)
+static const char *base_fname(const char *s1)
 {
-  vstr_add_fmt(s1, s1->len,
-               "</pre>\n"
-               "<!-- C to html convertion of %s -->\n"
-               "<!--   done on %s -->\n"
-               "<!--   done by ex_highlight -->\n",
-               fname, ex_hl_ctime(timestamp));
+      const char *sname = strrchr(s1, '/');
+
+      if (sname)
+        ++sname;
+      else
+         sname = s1;
+
+      return (sname);
+}
+
+static void ex_hl_block_beg(Vstr_base *s1, const char *block_type,
+                            const char *block_beg,
+                            const char *attr_id, const char *attr_class)
+{
+  vstr_add_fmt(s1, s1->len, "<%s", block_type);
+  if (attr_id)
+    vstr_add_fmt(s1, s1->len, " id=\"%s\"", attr_id);
+  if (attr_class)
+    vstr_add_fmt(s1, s1->len, " class=\"%s\"", attr_class);
+  vstr_add_fmt(s1, s1->len, ">%s", block_beg);
+}
+static void ex_hl_block_end(Vstr_base *s1, const char *block_end,
+                            const char *block_type,
+                            unsigned int comments,
+                            time_t timestamp, const char *fname)
+{
+  vstr_add_fmt(s1, s1->len, "%s</%s>\n", block_end, block_type);
+  if (comments)
+    vstr_add_fmt(s1, s1->len,
+                 "<!-- C to html convertion of %s -->\n"
+                 "<!--   done on %s -->\n"
+                 "<!--   done by jhighlight -->\n",
+                 fname, ex_hl_ctime(timestamp));
 }
 
 int main(int argc, char *argv[])
@@ -477,7 +504,13 @@ int main(int argc, char *argv[])
   int count = 1;
   time_t now = time(NULL);
   unsigned int use_mmap = FALSE;
+  unsigned int comments = TRUE;
   const char *cssfile = NULL;
+  const char *block_type = NULL;
+  const char *block_beg = "\n";
+  const char *block_end = NULL;
+  const char *attr_id = NULL;
+  const char *attr_class = "c2html";
   
   {
     size_t scan = 0;
@@ -503,9 +536,16 @@ int main(int argc, char *argv[])
       ++count;
       break;
     }
+    else if (!strcmp("--comments", argv[count])) /* toggle use of mmap */
+      comments = !comments;
     else if (!strcmp("--mmap", argv[count])) /* toggle use of mmap */
       use_mmap = !use_mmap;
+    EX_UTILS_GETOPT_CSTR("beg",     block_beg);
     EX_UTILS_GETOPT_CSTR("cssfile", cssfile);
+    EX_UTILS_GETOPT_CSTR("class",   attr_class);
+    EX_UTILS_GETOPT_CSTR("end",     block_end);
+    EX_UTILS_GETOPT_CSTR("id",      attr_id);
+    EX_UTILS_GETOPT_CSTR("type",    block_type);
     else if (!strcmp("--version", argv[count]))
     { /* print version and exit */
       vstr_add_fmt(s1, 0, "%s", "\
@@ -526,7 +566,13 @@ Output filenames in html converteed from C.\n\
       --help     Display this help and exit\n\
       --version  Output version information and exit\n\
       --mmap     Toggle use of mmap() to load input files\n\
+      --comments Toggle output of attribution comments\n\
+      --beg      Extra text to output at the begining\n\
       --cssfile  Output entuire html file, using cssfile as the stylesheet\n\
+      --class    Class name for block\n\
+      --end      Extra text to output at the ending\n\
+      --id       Id name for block\n\
+      --type     Name for block (Eg. \"pre\" or \"code\" etc.)\n\
       --         Treat rest of cmd line as input filenames\n\
 \n\
 Report bugs to James Antill <james@and.org>.\n\
@@ -538,8 +584,13 @@ Report bugs to James Antill <james@and.org>.\n\
     ++count;
   }
 
-  if (cssfile && !*cssfile)
-    cssfile = NULL;
+  if (cssfile    && !*cssfile)    cssfile    = NULL;
+  if (block_type && !*block_type) block_type = NULL;
+  if (attr_id    && !*attr_id)    attr_id    = NULL;
+  if (attr_class && !*attr_class) attr_class = NULL;
+  
+  if (!block_type) block_type = "pre";
+  if (!block_end)  block_end  = "";
   
   if (cssfile)
   {
@@ -555,10 +606,10 @@ Report bugs to James Antill <james@and.org>.\n\
     if (scan >= argc)
       vstr_add_cstr_ptr(s1, s1->len, "c2html for: STDIN");
     else
-      vstr_add_fmt(s1, s1->len, "c2html for: %s", argv[scan++]);
+      vstr_add_fmt(s1, s1->len, "c2html for: %s", base_fname(argv[scan++]));
     
     while (scan < argc)
-      vstr_add_fmt(s1, s1->len, ", %s", argv[scan++]);
+      vstr_add_fmt(s1, s1->len, ", %s", base_fname(argv[scan++]));
     
     vstr_add_cstr_ptr(s1, s1->len, "</title>\n\
     <link rel=\"stylesheet\" type=\"text/css\" href=\"");
@@ -578,12 +629,12 @@ Report bugs to James Antill <james@and.org>.\n\
     
     if (cssfile)
       vstr_add_cstr_ptr(s1, s1->len, "     <h1>STDIN</h1>\n");
-    
-    vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
+
+    ex_hl_block_beg(s1, block_type, block_beg, attr_id, attr_class);
     first_time = TRUE;
     vstr_add_rep_chr(s2, s2->len, '\n', 1);
     ex_hl_read_fd_write_stdout(s1, s2, STDIN_FILENO);
-    ex_hl_fin(s1, now, "stdin");
+    ex_hl_block_end(s1, block_end, block_type, comments, now, "stdin");
   }
 
   /* loop through all arguments, open the file specified
@@ -600,9 +651,9 @@ Report bugs to James Antill <james@and.org>.\n\
       vstr_sc_mmap_file(s2, s2->len, argv[count], 0, 0, &ern);
 
     if (cssfile)
-      vstr_add_fmt(s1, s1->len, "     <h1>%s</h1>\n", argv[count]);
+      vstr_add_fmt(s1, s1->len, "     <h1>%s</h1>\n", base_fname(argv[count]));
     
-    vstr_add_cstr_ptr(s1, s1->len, "<pre class=\"c2html\">\n");
+    ex_hl_block_beg(s1, block_type, block_beg, attr_id, attr_class);
 
     if (!use_mmap ||
         (ern == VSTR_TYPE_SC_MMAP_FILE_ERR_FSTAT_ERRNO) ||
@@ -621,7 +672,7 @@ Report bugs to James Antill <james@and.org>.\n\
     else
       ex_hl_process_limit(s1, s2, 0);
 
-    ex_hl_fin(s1, now, argv[count]);
+    ex_hl_block_end(s1, block_end, block_type, comments, now, argv[count]);
     
     ++count;
   }

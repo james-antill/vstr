@@ -3,7 +3,7 @@
 
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
-SUBDIRS = src include Documentation tst
+SUBDIRS = src include Documentation tst examples
 
 pkgconfigdir   = $(libdir)/pkgconfig
 pkgconfig_DATA = vstr.pc

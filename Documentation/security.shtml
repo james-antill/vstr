@@ -126,20 +126,8 @@ This isn't enough as Y in the above formula can still grow due to the fact
 that you can <i>always</i> have problems like...
 </p>
 
-<!-- "exec jhighlight --id=alloc-ex1 --beg='<span class="blk"><a class="anc" href="#alloc-ex1">&para;</a>
-' --end='</span>' sec/alloc1.c" SSI command OK -->
-<pre id="alloc-ex1" class="c2html"><span class="blk"><a class="anc" href="#alloc-ex1">&para;</a>
-<span class="comment">/* broken example when using a limiting string type API */</span>
-API_TYPE s1;
-...
-API_add(s1, <span class="str">"abcd "</span>);
-API_add(s1, external_data);
-API_add(s1, <span class="str">" xyz"</span>);
-</span></pre>
-<!-- C to html convertion of sec/alloc1.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=alloc-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex1\">&para;</a>
+' --end='</span>' sec/alloc1.c" -->
 
 <p>
 ...where both "abcd " and " xyz" need to be in s1 at the end, of course the
@@ -149,21 +137,8 @@ implemented with the data (the string) and the metadata (it's length) passed to
 the functions separately, this creates some great code like...
 </p>
 
-<!-- "exec jhighlight --id=alloc-ex2 --beg='<span class="blk"><a class="anc" href="#alloc-ex2">&para;</a>
-' --end='</span>' sec/alloc2.c" SSI command OK -->
-<pre id="alloc-ex2" class="c2html"><span class="blk"><a class="anc" href="#alloc-ex2">&para;</a>
-* broken example */
-<span class="char">char</span>  *s1;
-<span class="sizet">size_t</span> l1;
-...
-API_add(s1, l1, <span class="str">"abcd "</span>);       l1 -= strlen(<span class="str">"abcd "</span>);
-API_add(s1, l1, external_data); l1 -= strlen(external_data);
-API_add(s1, l1, <span class="str">" xyz"</span>);        l1 -= strlen(<span class="str">" xyz"</span>);
-</span></pre>
-<!-- C to html convertion of sec/alloc2.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=alloc-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex2\">&para;</a>
+' --end='</span>' sec/alloc2.c" -->
 
 <p>
 ...which looks OK at first glance, but of course the middle add didn't add
@@ -176,43 +151,8 @@ no limit at all.
 
 </p>
 
-<!-- "exec jhighlight --id=alloc-ex3 --beg='<span class="blk"><a class="anc" href="#alloc-ex3">&para;</a>
-' --end='</span>' sec/alloc3.c" SSI command OK -->
-<pre id="alloc-ex3" class="c2html"><span class="blk"><a class="anc" href="#alloc-ex3">&para;</a>
-<span class="comment">/* broken example ...
- * code supposedly OK because the input and the output are the same
- * maximum size */</span>
-<span class="char">char</span> buf1[X];
-<span class="char">char</span> buf2[X];
-<span class="char">char</span> buf3[X];
-<span class="char">char</span>  *s1 = buf1;
-<span class="char">char</span>  *s2 = buf2;
-<span class="char">char</span>  *s3 = buf3;
-<span class="char">char</span>  *last = s2;
-...
-<span class="comment">/* find biggest shared prefix, and skip that */</span>
-while (*s1 &amp;&amp; (*s1 == *s2))
-{
-  <span class="if">if</span> (*s2++ == <span class="chr">'/'</span>)
-    last = s2;
-  ++s1;
-}
-
-<span class="comment">/* relative point to shared part of path */</span>
-while (*s1)
-{
-  <span class="if">if</span> (*s1++ == <span class="chr">'/'</span>)
-  {
-     memcpy(s3, <span class="str">"../"</span>, strlen(<span class="str">"../"</span>));
-     s3             += strlen(<span class="str">"../"</span>);
-  }
-}
-strcpy(s3, last);
-</span></pre>
-<!-- C to html convertion of sec/alloc3.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=alloc-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex3\">&para;</a>
+' --end='</span>' sec/alloc3.c" -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>. And even looks
@@ -226,53 +166,8 @@ in the destination than in the source.
 
 </p>
 
-<!-- "exec jhighlight --id=alloc-ex4 --beg='<span class="blk"><a class="anc" href="#alloc-ex4">&para;</a>
-' --end='</span>' sec/alloc4.c" SSI command OK -->
-<pre id="alloc-ex4" class="c2html"><span class="blk"><a class="anc" href="#alloc-ex4">&para;</a>
-<span class="comment">/* broken example ...
- * code supposedly OK due to count */</span>
-<span class="int">int</span> func(<span class="char">char</span> *dst, <span class="sizet">size_t</span> len, <span class="const">const</span> <span class="char">char</span> *src)
-{
-  <span class="while">while</span> (*src)
-  {
-    <span class="const">const</span> <span class="char">char</span> *tmp = <span class="null">NULL</span>;
-
-    <span class="if">if</span> ((src[0] == <span class="chr">'$'</span>) &amp;&amp; (src[1] == <span class="chr">'{'</span>) &amp;&amp; (tmp = strchr(src, <span class="chr">'}'</span>)))
-    { <span class="comment">/* sub a variable */</span>
-      <span class="sizet">size_t</span> var_len = (tmp - (src + 2));
-      <span class="sizet">size_t</span> sub_len = <span class="num0">0</span>;
-
-      src += strlen(<span class="str">"${"</span>);
-
-      <span class="if">if</span> ((tmp = lookup(src, var_len)) &amp;&amp; (sub_len = strlen(tmp)))
-      {
-        <span class="if">if</span> (sub_len &gt; len)
-          sub_len = len;
-
-        memcpy(dst, tmp, sub_len);
-        len -= sub_len;
-        dst += sub_len;
-      }
-
-      src += var_len + 1;
-    }
-    <span class="else">else</span> <span class="comment">/* no substitution */</span>
-      *dst++ = *src++;
-  }
-
-  <span class="if">if</span> (len)
-  {
-    *dst = <span class="num0">0</span>;
-    <span class="return">return</span> (1);
-  }
-
-  <span class="return">return</span> (<span class="num0">0</span>);
-}
-</span></pre>
-<!-- C to html convertion of sec/alloc4.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=alloc-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex4\">&para;</a>
+' --end='</span>' sec/alloc4.c" -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>, until somone sees that
@@ -283,43 +178,8 @@ the length isn't shortened on non-substitutions.
 
 </p>
 
-<!-- "exec jhighlight --id=alloc-ex5 --beg='<span class="blk"><a class="anc" href="#alloc-ex5">&para;</a>
-' --end='</span>' sec/alloc5.c" SSI command OK -->
-<pre id="alloc-ex5" class="c2html"><span class="blk"><a class="anc" href="#alloc-ex5">&para;</a>
-<span class="comment">/* broken example ...
- * code supposedly OK because the input and the output are the same
- * maximum size */</span>
-
-<span class="int">int</span> func(<span class="const">const</span> <span class="char">char</span> *src)
-{
-  <span class="char">char</span> buf[X];
-  <span class="unsigned">unsigned</span> <span class="int">int</span> count = 1;
-
-  strcpy(buf, src);
-
-  strtok(buf, <span class="str">","</span>);
-  <span class="while">while</span> (strtok(<span class="null">NULL</span>, <span class="str">","</span>))
-  {
-    ++count;
-  }
-
-  <span class="return">return</span> (count);
-}
-
-<span class="comment">/* callsite 1... */</span>
-<span class="char">char</span> buf[X];
-func(buf);
-
-<span class="comment">/* callsite 2... */</span>
-func(<span class="str">"a,b,c"</span>);
-
-<span class="comment">/* callsite N... */</span>
-func(tmp);
-</span></pre>
-<!-- C to html convertion of sec/alloc5.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=alloc-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#alloc-ex5\">&para;</a>
+' --end='</span>' sec/alloc5.c" -->
 
 <p>
  And, again, the above code <b>seems to work fine</b>, until someone sees
@@ -450,20 +310,8 @@ printf "language". The most obvious need is to output strings of the
 string APIs type. Eg.
 </p>
 
-<!-- "exec jhighlight --id=sprintf-ex1 --beg='<span class="blk"><a class="anc" href="#sprintf-ex1">&para;</a>
-' --end='</span>' sec/sprintf1.c" SSI command OK -->
-<pre id="sprintf-ex1" class="c2html"><span class="blk"><a class="anc" href="#sprintf-ex1">&para;</a>
-APT_string *s1;
-APT_string *s2;
-...
-API_add(s1, data);
-
-API_fmt(s2, <span class="str">"%s %d %{API_string}"</span>, <span class="str">"abcd"</span>, 4, s1);
-</span></pre>
-<!-- C to html convertion of sec/sprintf1.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=sprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex1\">&para;</a>
+' --end='</span>' sec/sprintf1.c" -->
 
 <p>
 However extensions for printing IP addresses or other types of data can be
@@ -536,36 +384,15 @@ However a lot of C programmers <i>aren't</i> aware that strcpy(), strncpy(), str
 overlapping objects. So the following code is broken...
 </p>
 
-<!-- "exec jhighlight --id=strcpy-ex1 --beg='<span class="blk"><a class="anc" href="#strcpy-ex1">&para;</a>
-' --end='</span>' sec/strcpy1.c" SSI command OK -->
-<pre id="strcpy-ex1" class="c2html"><span class="blk"><a class="anc" href="#strcpy-ex1">&para;</a>
-<span class="comment">/* broken example ... common mistake */</span>
-<span class="char">char</span> *s1;
-...
-strcpy(s1, s1 + 1); <span class="comment">/* chop the first character from the C string */</span>
-</span></pre>
-<!-- C to html convertion of sec/strcpy1.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strcpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strcpy-ex1\">&para;</a>
+' --end='</span>' sec/strcpy1.c" -->
 
 <p>
 ...as is the following...
 </p>
 
-<!-- "exec jhighlight --id=sprintf-ex2 --beg='<span class="blk"><a class="anc" href="#sprintf-ex2">&para;</a>
-' --end='</span>' sec/sprintf2.c" SSI command OK -->
-<pre id="sprintf-ex2" class="c2html"><span class="blk"><a class="anc" href="#sprintf-ex2">&para;</a>
-<span class="comment">/* broken example ... fairly common mistake */</span>
-<span class="char">char</span> *s1;
-<span class="int">int</span> X;
-...
-sprintf(s1, <span class="str">"%s:%d"</span>, s1, X); <span class="comment">/* append a number */</span>
-</span></pre>
-<!-- C to html convertion of sec/sprintf2.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=sprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#sprintf-ex2\">&para;</a>
+' --end='</span>' sec/sprintf2.c" -->
 
 <p>
 ...it also means that <b>there is no way to
@@ -580,20 +407,8 @@ C programmers use to safely copy no more than N characters to a string is all
 but useless in all conditions. Consider...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex1 --beg='<span class="blk"><a class="anc" href="#strncpy-ex1">&para;</a>
-' --end='</span>' sec/strncpy1.c" SSI command OK -->
-<pre id="strncpy-ex1" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex1">&para;</a>
-#<span class="cppdefine">define</span> SZ 4
-<span class="char">char</span> s1[SZ];
-
-strncpy(s1, <span class="str">"abcd"</span>,   SZ); <span class="comment">/* 1 */</span>
-strncpy(s1, <span class="str">"abc"</span>,    SZ); <span class="comment">/* 2 */</span>
-strncpy(s1, <span class="str">"a"</span>,      SZ); <span class="comment">/* 3 */</span>
-</span></pre>
-<!-- C to html convertion of sec/strncpy1.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex1\">&para;</a>
+' --end='</span>' sec/strncpy1.c" -->
 
 <p>
 ...in case 1 strncpy() copies {'a', 'b', 'c', 'd'}, which means that the
@@ -611,51 +426,22 @@ the overhead can be 25,500% (a 16 byte filename into a PATH_MAX array).
 strncpy() do either...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex2 --beg='<span class="blk"><a class="anc" href="#strncpy-ex2">&para;</a>
-' --end='</span>' sec/strncpy2.c" SSI command OK -->
-<pre id="strncpy-ex2" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex2">&para;</a>
-<span class="char">char</span> s1[SZ];
-...
-strncpy(s1, external_data, SZ - 1);
-s1[SZ - 1] = <span class="num0">0</span>;
-</span></pre>
-<!-- C to html convertion of sec/strncpy2.c -->
-<!--   done on Tue Jun  8 02:54:41 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex2\">&para;</a>
+' --end='</span>' sec/strncpy2.c" -->
 
 <p>
 ...or...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex3 --beg='<span class="blk"><a class="anc" href="#strncpy-ex3">&para;</a>
-' --end='</span>' sec/strncpy3.c" SSI command OK -->
-<pre id="strncpy-ex3" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex3">&para;</a>
-<span class="char">char</span> s1[SZ + 1];
-...
-strncpy(s1, external_data, SZ);
-s1[SZ] = <span class="num0">0</span>;
-</span></pre>
-<!-- C to html convertion of sec/strncpy3.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex3 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex3\">&para;</a>
+' --end='</span>' sec/strncpy3.c" -->
 
 <p>
 ...or...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex4 --beg='<span class="blk"><a class="anc" href="#strncpy-ex4">&para;</a>
-' --end='</span>' sec/strncpy4.c" SSI command OK -->
-<pre id="strncpy-ex4" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex4">&para;</a>
-<span class="static">static</span> <span class="char">char</span> s1[SZ + 1];
-...
-strncpy(s1, external_data, SZ);
-</span></pre>
-<!-- C to html convertion of sec/strncpy4.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex4 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex4\">&para;</a>
+' --end='</span>' sec/strncpy4.c" -->
 
 <p>
       All of which are a source of bugs, when one of the values is even
@@ -667,17 +453,8 @@ way is to improve performance (using an interface that can cause over
 do...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex5 --beg='<span class="blk"><a class="anc" href="#strncpy-ex5">&para;</a>
-' --end='</span>' sec/strncpy5.c" SSI command OK -->
-<pre id="strncpy-ex5" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex5">&para;</a>
-<span class="static">static</span> <span class="char">char</span> s1[SZ + 1];
-...
-strncpy(s1, external_data, SZ);
-</span></pre>
-<!-- C to html convertion of sec/strncpy5.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex5 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex5\">&para;</a>
+' --end='</span>' sec/strncpy5.c" -->
 
 <p>
 ...here you "get rid" of the problem of the programer remembering to write NIL
@@ -686,35 +463,15 @@ overwriting that. However this is a very big trap for those that don't
 intimately know what is happening, due to...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex6 --beg='<span class="blk"><a class="anc" href="#strncpy-ex6">&para;</a>
-' --end='</span>' sec/strncpy6.c" SSI command OK -->
-<pre id="strncpy-ex6" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex6">&para;</a>
-<span class="comment">/* broken example */</span>
-<span class="char">char</span> s1[SZ + 1];
-...
-strncpy(s1, external_data, SZ);
-</span></pre>
-<!-- C to html convertion of sec/strncpy6.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex6 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex6\">&para;</a>
+' --end='</span>' sec/strncpy6.c" -->
 
 <p>
 ...or...
 </p>
 
-<!-- "exec jhighlight --id=strncpy-ex7 --beg='<span class="blk"><a class="anc" href="#strncpy-ex7">&para;</a>
-' --end='</span>' sec/strncpy7.c" SSI command OK -->
-<pre id="strncpy-ex7" class="c2html"><span class="blk"><a class="anc" href="#strncpy-ex7">&para;</a>
-<span class="comment">/* broken example */</span>
-<span class="char">char</span> *s1 = malloc(SZ + 1);
-...
-strncpy(s1, external_data, SZ);
-</span></pre>
-<!-- C to html convertion of sec/strncpy7.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=strncpy-ex7 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#strncpy-ex7\">&para;</a>
+' --end='</span>' sec/strncpy7.c" -->
 
 <p>
 ...being errors.
@@ -765,29 +522,8 @@ following code works everywhere
 but on those glibc based Linux systems, where it is a security problem...
 </p>
 
-<!-- "exec jhighlight --id=asprintf-ex1 --beg='<span class="blk"><a class="anc" href="#asprintf-ex1">&para;</a>
-' --end='</span>' sec/asprintf1.c" SSI command OK -->
-<pre id="asprintf-ex1" class="c2html"><span class="blk"><a class="anc" href="#asprintf-ex1">&para;</a>
-<span class="comment">/* broken code, on Linux only */</span>
-<span class="char">char</span> *s1;
-<span class="int">int</span> off;
-
-asprintf(&amp;s1, <span class="str">"%d:%n%s,"</span>, strlen(data), &amp;off, data);
-if (!s1) <span class="goto">goto</span> error;
-
-...
-if (strlen(other_data) == strlen(data))
-  strcpy(s1 + off, other_data);
-else
-{
-  free(s1);
-  asprintf(&amp;s1, <span class="str">"%d:%s,"</span>, strlen(other_data), other_data);
-}
-</span></pre>
-<!-- C to html convertion of sec/asprintf1.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=asprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#asprintf-ex1\">&para;</a>
+' --end='</span>' sec/asprintf1.c" -->
 
 <p>
 ...due to a strcpy() buffer overflow and an invalid value passed to free().
@@ -798,16 +534,8 @@ else
   So here's a quick quiz, what does "ret" contain in the following code...
 </p>
 
-<!-- "exec jhighlight --id=snprintf-ex1 --beg='<span class="blk"><a class="anc" href="#snprintf-ex1">&para;</a>
-' --end='</span>' sec/snprintf1.c" SSI command OK -->
-<pre id="snprintf-ex1" class="c2html"><span class="blk"><a class="anc" href="#snprintf-ex1">&para;</a>
-<span class="char">char</span> buf[4];
-<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%.*s"</span>, 14, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
-</span></pre>
-<!-- C to html convertion of sec/snprintf1.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=snprintf-ex1 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex1\">&para;</a>
+' --end='</span>' sec/snprintf1.c" -->
 
 <p>
 ...of course after the discussion about
@@ -816,16 +544,8 @@ you'll have said depends on the implementation. But let's assume that in the
 following code "ret" is 14 (Fourteen)...
 </p>
 
-<!-- "exec jhighlight --id=snprintf-ex2 --beg='<span class="blk"><a class="anc" href="#snprintf-ex2">&para;</a>
-' --end='</span>' sec/snprintf2.c" SSI command OK -->
-<pre id="snprintf-ex2" class="c2html"><span class="blk"><a class="anc" href="#snprintf-ex2">&para;</a>
-<span class="char">char</span> buf[4];
-<span class="int">int</span> ret = snprintf(buf, sizeof(buf), <span class="str">"%s"</span>, <span class="str">"\x80\x80\x80\x80 123456789"</span>);
-</span></pre>
-<!-- C to html convertion of sec/snprintf2.c -->
-<!--   done on Tue Jun  8 02:54:42 2004 -->
-<!--   done by jhighlight -->
-
+<!--#exec cmd="jhighlight --id=snprintf-ex2 --beg='<span class=\"blk\"><a class=\"anc\" href=\"#snprintf-ex2\">&para;</a>
+' --end='</span>' sec/snprintf2.c" -->
 
 <p>
   Ah, you say "it follows the ISO 9899:1999 behaviour" so the value of ret
@@ -862,6 +582,3 @@ Last modified: Sun Jun  6 21:34:04 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>
-<!-- SSI processing of security.shtml -->
-<!--   done on Tue Jun  8 02:54:40 2004 -->
-<!--   done by jssi -->
