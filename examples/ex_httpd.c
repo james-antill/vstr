@@ -40,6 +40,7 @@
 
 #include <signal.h>
 #include <grp.h>
+#include <sys/resource.h>
 
 /* need better way to test for this */
 #ifndef __GLIBC__
