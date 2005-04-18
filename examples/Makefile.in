@@ -75,7 +75,7 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@ @WARNS@
+CFLAGS = 
 CHMOD_PATH = @CHMOD_PATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -238,7 +238,9 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 EX_B_DIR = $(top_builddir)/examples
 EX_INST_DIR = $(libdir)/vstr-$(VERSION)/examples
 
-GEN_CFLAGS = -I- -I../include -I../../include
+# GEN__CFLAGS for stupid openssl builds, moron packaging
+GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
+GEN_CFLAGS = -I- $(GEN__CFLAGS)
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 
 ex_cat_DEPENDENCIES = ex_utils.h
@@ -249,8 +251,8 @@ ex_ccount_DEPENDENCIES = ex_utils.h
 ex_ccount_CFLAGS = $(GEN_CFLAGS)
 ex_ccount_LDADD = $(GEN_LDLIBS)
 
-ex_conf_SOURCES = conf.c ex_conf.c
-ex_conf_DEPENDENCIES = conf.h ex_utils.h
+ex_conf_SOURCES = conf.c ex_conf.c conf_inline.c
+ex_conf_DEPENDENCIES = conf.h ex_utils.h mk.h
 ex_conf_CFLAGS = $(GEN_CFLAGS)
 ex_conf_LDADD = $(GEN_LDLIBS)
 
@@ -345,7 +347,7 @@ ex_slowcat_LDADD = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
 # For command line stuff that uses events...
 CMDLINE_FILES_SRCS = date.c evnt.c hexdump.c opt.c vlg.c
-CMDLINE_FILES_HDRS = date.h evnt.h hexdump.h opt.h vlg.h vlg_assert.h
+CMDLINE_FILES_HDRS = date.h evnt.h hexdump.h opt.h vlg.h
 
 ex_dns_SOURCES = dns.c $(CMDLINE_FILES_SRCS) ex_dns.c
 ex_dns_DEPENDENCIES = dns.h $(CMDLINE_FILES_HDRS)
@@ -353,21 +355,23 @@ ex_dns_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 ex_cntl_SOURCES = $(CMDLINE_FILES_SRCS) ex_cntl.c
-ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
+ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS) mk.h
 ex_cntl_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
-                    opt.c opt_serv.c vlg.c
+                    opt.c opt_serv.c vlg.c conf_inline.c
 
 DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
-                    opt.h opt_serv.h vlg.h vlg_assert.h
+                    opt.h opt_serv.h vlg.h
 
 
 ex_httpd_SOURCES = mime_types.c httpd_conf_main.c httpd_conf_req.c \
+			httpd_policy.c httpd_policy_inline.c \
                         $(DAEMON_FILES_SRCS) httpd.c ex_httpd.c
 
 ex_httpd_DEPENDENCIES = mime_types.h httpd_conf_main.h httpd_conf_req.h \
+			httpd_policy.h \
                         $(DAEMON_FILES_HDRS) httpd.h httpd_err_codes.h
 
 ex_httpd_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
@@ -383,12 +387,6 @@ ex_ypservd_DEPENDENCIES = $(DAEMON_FILES_HDRS)
 ex_ypservd_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_ypservd_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-# BEG: Not a Vstr app.
-ex_tdns_CFLAGS = -pthread $(GEN_CFLAGS) 
-ex_tdns_LDADD = $(GEN_LDLIBS)
-ex_tdns_LDFLAGS = -pthread
-
-# END: Not a Vstr app.
 ex_zcat_DEPENDENCIES = ex_utils.h
 ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
 ex_zcat_LDADD = $(GEN_LDLIBS) $(ZLIB_LDLIBS) $(BZ2_LDLIBS)
@@ -397,8 +395,10 @@ ex_sock_filter_DEPENDENCIES = ex_utils.h
 ex_sock_filter_CFLAGS = $(GEN_CFLAGS)
 ex_sock_filter_LDADD = $(GEN_LDLIBS)
 
+# Note: can't use GEN_CFLAGS because FC[23] use include "" inside openssl system
+# headers, and the obvious fix was refused as "not a bug".
 ex_perf_sgopenssl_DEPENDENCIES = ex_perf.h
-ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
+ex_perf_sgopenssl_CFLAGS = $(GEN__CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
 ex_perf_sgopenssl_LDADD = $(GEN_LDLIBS) $(OPENSSL_LDLIBS)
 
 ex_gmp_factorials_DEPENDENCIES = ex_utils.h
@@ -430,6 +430,12 @@ ex_perf_add_DEPENDENCIES = ex_perf.h
 ex_perf_add_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_add_LDADD = $(GEN_LDLIBS)
 
+# BEG: Not a Vstr app.
+ex_tdns_CFLAGS = -pthread $(GEN_CFLAGS) 
+ex_tdns_LDADD = $(GEN_LDLIBS)
+ex_tdns_LDFLAGS = -pthread
+
+# END: Not a Vstr app.
 examplesdir = $(EX_INST_DIR)
 examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(am__append_4) $(am__append_5) $(am__append_6) $(am__append_7) $(am__append_8)
 
@@ -529,6 +535,7 @@ example_code_html = \
   html/httpd_conf_main.h.html \
   html/httpd_conf_req.c.html \
   html/httpd_conf_req.h.html \
+  html/mk.h.html \
   html/opt.h.html \
   html/opt_serv.c.html \
   html/opt_serv.h.html \
@@ -9364,7 +9371,8 @@ am__objects_1 = ex_cntl-date.$(OBJEXT) ex_cntl-evnt.$(OBJEXT) \
 am_ex_cntl_OBJECTS = $(am__objects_1) ex_cntl-ex_cntl.$(OBJEXT)
 ex_cntl_OBJECTS = $(am_ex_cntl_OBJECTS)
 ex_cntl_LDFLAGS =
-am_ex_conf_OBJECTS = ex_conf-conf.$(OBJEXT) ex_conf-ex_conf.$(OBJEXT)
+am_ex_conf_OBJECTS = ex_conf-conf.$(OBJEXT) ex_conf-ex_conf.$(OBJEXT) \
+	ex_conf-conf_inline.$(OBJEXT)
 ex_conf_OBJECTS = $(am_ex_conf_OBJECTS)
 ex_conf_LDFLAGS =
 ex_csv_SOURCES = ex_csv.c
@@ -9396,7 +9404,7 @@ am__objects_3 = ex_echod-bag.$(OBJEXT) ex_echod-conf.$(OBJEXT) \
 	ex_echod-cntl.$(OBJEXT) ex_echod-date.$(OBJEXT) \
 	ex_echod-evnt.$(OBJEXT) ex_echod-hexdump.$(OBJEXT) \
 	ex_echod-opt.$(OBJEXT) ex_echod-opt_serv.$(OBJEXT) \
-	ex_echod-vlg.$(OBJEXT)
+	ex_echod-vlg.$(OBJEXT) ex_echod-conf_inline.$(OBJEXT)
 am_ex_echod_OBJECTS = $(am__objects_3) ex_echod-ex_echod.$(OBJEXT)
 ex_echod_OBJECTS = $(am_ex_echod_OBJECTS)
 ex_echod_LDFLAGS =
@@ -9436,10 +9444,12 @@ am__objects_4 = ex_httpd-bag.$(OBJEXT) ex_httpd-conf.$(OBJEXT) \
 	ex_httpd-cntl.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
 	ex_httpd-evnt.$(OBJEXT) ex_httpd-hexdump.$(OBJEXT) \
 	ex_httpd-opt.$(OBJEXT) ex_httpd-opt_serv.$(OBJEXT) \
-	ex_httpd-vlg.$(OBJEXT)
+	ex_httpd-vlg.$(OBJEXT) ex_httpd-conf_inline.$(OBJEXT)
 am_ex_httpd_OBJECTS = ex_httpd-mime_types.$(OBJEXT) \
 	ex_httpd-httpd_conf_main.$(OBJEXT) \
-	ex_httpd-httpd_conf_req.$(OBJEXT) $(am__objects_4) \
+	ex_httpd-httpd_conf_req.$(OBJEXT) \
+	ex_httpd-httpd_policy.$(OBJEXT) \
+	ex_httpd-httpd_policy_inline.$(OBJEXT) $(am__objects_4) \
 	ex_httpd-httpd.$(OBJEXT) ex_httpd-ex_httpd.$(OBJEXT)
 ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_httpd_LDFLAGS =
@@ -9814,6 +9824,15 @@ ex_conf-ex_conf.obj: ex_conf.c
 ex_conf-ex_conf.lo: ex_conf.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_conf_CFLAGS) $(CFLAGS) -c -o ex_conf-ex_conf.lo `test -f 'ex_conf.c' || echo '$(srcdir)/'`ex_conf.c
 
+ex_conf-conf_inline.o: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_conf_CFLAGS) $(CFLAGS) -c -o ex_conf-conf_inline.o `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
+ex_conf-conf_inline.obj: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_conf_CFLAGS) $(CFLAGS) -c -o ex_conf-conf_inline.obj `if test -f 'conf_inline.c'; then $(CYGPATH_W) 'conf_inline.c'; else $(CYGPATH_W) '$(srcdir)/conf_inline.c'; fi`
+
+ex_conf-conf_inline.lo: conf_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_conf_CFLAGS) $(CFLAGS) -c -o ex_conf-conf_inline.lo `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
 ex_csv-ex_csv.o: ex_csv.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_csv_CFLAGS) $(CFLAGS) -c -o ex_csv-ex_csv.o `test -f 'ex_csv.c' || echo '$(srcdir)/'`ex_csv.c
 
@@ -10039,6 +10058,15 @@ ex_echod-vlg.obj: vlg.c
 ex_echod-vlg.lo: vlg.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
 
+ex_echod-conf_inline.o: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf_inline.o `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
+ex_echod-conf_inline.obj: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf_inline.obj `if test -f 'conf_inline.c'; then $(CYGPATH_W) 'conf_inline.c'; else $(CYGPATH_W) '$(srcdir)/conf_inline.c'; fi`
+
+ex_echod-conf_inline.lo: conf_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf_inline.lo `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
 ex_echod-ex_echod.o: ex_echod.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-ex_echod.o `test -f 'ex_echod.c' || echo '$(srcdir)/'`ex_echod.c
 
@@ -10174,6 +10202,24 @@ ex_httpd-httpd_conf_req.obj: httpd_conf_req.c
 ex_httpd-httpd_conf_req.lo: httpd_conf_req.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.lo `test -f 'httpd_conf_req.c' || echo '$(srcdir)/'`httpd_conf_req.c
 
+ex_httpd-httpd_policy.o: httpd_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy.o `test -f 'httpd_policy.c' || echo '$(srcdir)/'`httpd_policy.c
+
+ex_httpd-httpd_policy.obj: httpd_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy.obj `if test -f 'httpd_policy.c'; then $(CYGPATH_W) 'httpd_policy.c'; else $(CYGPATH_W) '$(srcdir)/httpd_policy.c'; fi`
+
+ex_httpd-httpd_policy.lo: httpd_policy.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy.lo `test -f 'httpd_policy.c' || echo '$(srcdir)/'`httpd_policy.c
+
+ex_httpd-httpd_policy_inline.o: httpd_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy_inline.o `test -f 'httpd_policy_inline.c' || echo '$(srcdir)/'`httpd_policy_inline.c
+
+ex_httpd-httpd_policy_inline.obj: httpd_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy_inline.obj `if test -f 'httpd_policy_inline.c'; then $(CYGPATH_W) 'httpd_policy_inline.c'; else $(CYGPATH_W) '$(srcdir)/httpd_policy_inline.c'; fi`
+
+ex_httpd-httpd_policy_inline.lo: httpd_policy_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy_inline.lo `test -f 'httpd_policy_inline.c' || echo '$(srcdir)/'`httpd_policy_inline.c
+
 ex_httpd-bag.o: bag.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-bag.o `test -f 'bag.c' || echo '$(srcdir)/'`bag.c
 
@@ -10254,6 +10300,15 @@ ex_httpd-vlg.obj: vlg.c
 
 ex_httpd-vlg.lo: vlg.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.lo `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
+
+ex_httpd-conf_inline.o: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.o `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
+ex_httpd-conf_inline.obj: conf_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.obj `if test -f 'conf_inline.c'; then $(CYGPATH_W) 'conf_inline.c'; else $(CYGPATH_W) '$(srcdir)/conf_inline.c'; fi`
+
+ex_httpd-conf_inline.lo: conf_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.lo `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
 
 ex_httpd-httpd.o: httpd.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.o `test -f 'httpd.c' || echo '$(srcdir)/'`httpd.c

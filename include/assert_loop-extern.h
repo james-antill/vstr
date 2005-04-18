@@ -55,7 +55,7 @@ extern void vstr__assert_loop(const char *,
 # else
 #  define assert(x) do { \
  if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+  fprintf(stderr, " -=> assert (%s) failed in (%s) from %d %s.\n", \
           #x , __func__, __LINE__, __FILE__); \
   abort(); } \
  } while (FALSE)
@@ -68,7 +68,7 @@ extern void vstr__assert_loop(const char *,
 
 #  define assert_ret(x, y) do { \
  if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+  fprintf(stderr, " -=> assert (%s) failed in (%s) from %d %s.\n", \
           #x , __func__, __LINE__, __FILE__); \
   abort(); } \
  } while (FALSE)
@@ -80,7 +80,7 @@ extern void vstr__assert_loop(const char *,
  } while (FALSE)
 #  define assert_ret_void(x) do { \
  if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+  fprintf(stderr, " -=> assert (%s) failed in (%s) from %d %s.\n", \
           #x , __func__, __LINE__, __FILE__); \
   abort(); } \
  } while (FALSE)
@@ -92,7 +92,7 @@ extern void vstr__assert_loop(const char *,
  } while (FALSE)
 #  define assert_goto(x, y) do { \
  if (x) {} else { \
-  fprintf(stderr, " -=> ASSERT (%s) failed in (%s) from %d %s.\n", \
+  fprintf(stderr, " -=> assert (%s) failed in (%s) from %d %s.\n", \
           #x , __func__, __LINE__, __FILE__); \
   abort(); } \
  } while (FALSE)

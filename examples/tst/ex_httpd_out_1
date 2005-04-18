@@ -3,8 +3,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 339
 
@@ -33,8 +31,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 327
 
@@ -43,8 +39,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: Keep-Alive
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 327
 

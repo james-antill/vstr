@@ -7,13 +7,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
 
-#define TRUE 1
-#define FALSE 0
+#define EX_UTILS_NO_FUNCS  1
+#include "ex_utils.h"
+
+#include "mk.h"
 
 #include "bag.h"
-
-#include "vlg_assert.h"
 
 struct Cntl_child_obj
 {
@@ -33,8 +34,6 @@ static struct Evnt *acpt_cntl_evnt = NULL;
 
 static Bag *childs  = NULL;
 static Bag *waiters = NULL;
-
-static int cntl__is_child = FALSE;
 
 static unsigned int potential_waiters = 0;
 
@@ -84,12 +83,12 @@ static int cntl_waiter_add(struct Evnt *evnt, size_t pos, size_t len, int *stop)
     return (TRUE);
   }
   
-  if (!(val = malloc(sizeof(struct Cntl_waiter_obj))))
+  if (!(val = MK(sizeof(struct Cntl_waiter_obj))))
     return (FALSE);
   
   if (!(tmp = bag_add_obj(waiters, NULL, val)))
   {
-    free(val);
+    F(val);
     VLG_WARNNOMEM_RET(FALSE, (vlg, "%s: %m\n", "cntl waiters"));
   }
   
@@ -147,7 +146,7 @@ static void cntl_waiter_del(struct Evnt *child_evnt,
         evnt_wait_cntl_add(val->evnt, POLLIN);
     }
     
-    if (waiters->num == waiters->sz) /* FIXME: hacky */
+    if (!cntl_waiter_get_first()) /* no more left... */
       bag_del_all(waiters);
   }
 }
@@ -200,7 +199,7 @@ static void cntl__close(Vstr_base *out)
   vlg_dbg3(vlg, "evnt_close acpt %p\n", acpt_evnt);
   evnt_close(acpt_evnt);
 
-  if (!cntl__is_child)
+  if (!evnt_is_child())
   {
     vlg_dbg3(vlg, "evnt_close acpt cntl %p\n", acpt_cntl_evnt);
     evnt_close(acpt_cntl_evnt);
@@ -299,7 +298,7 @@ static void cntl__cb_func_free(struct Evnt *evnt)
     }
   }
   
-  free(evnt);
+  F(evnt);
   
   ASSERT(potential_waiters >= 1);
   --potential_waiters;
@@ -405,7 +404,7 @@ static void cntl__cb_func_acpt_free(struct Evnt *evnt)
   
   ASSERT(acpt_cntl_evnt == evnt);
   
-  free(evnt);
+  F(evnt);
 
   acpt_cntl_evnt = NULL;
 
@@ -413,17 +412,18 @@ static void cntl__cb_func_acpt_free(struct Evnt *evnt)
     bag_del_all(childs);
 }
 
-static struct Evnt *cntl__cb_func_accept(int fd,
+static struct Evnt *cntl__cb_func_accept(struct Evnt *from_evnt, int fd,
                                          struct sockaddr *sa, socklen_t len)
 {
   struct Evnt *evnt = NULL;
 
   ASSERT(acpt_cntl_evnt);
+  ASSERT(acpt_cntl_evnt == from_evnt);
   
   if (sa->sa_family != AF_LOCAL)
     goto make_acpt_fail;
   
-  if (!(evnt = malloc(sizeof(struct Evnt))) ||
+  if (!(evnt = MK(sizeof(struct Evnt))) ||
       !evnt_make_acpt(evnt, fd, sa, len))
     goto make_acpt_fail;
 
@@ -436,7 +436,7 @@ static struct Evnt *cntl__cb_func_accept(int fd,
   return (evnt);
 
  make_acpt_fail:
-  free(evnt);
+  F(evnt);
   VLG_WARNNOMEM_RET(NULL, (vlg, "%s: %m\n", "accept"));
 
   return (NULL);
@@ -457,7 +457,7 @@ void cntl_make_file(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
   
   acpt_evnt = passed_acpt_evnt;
     
-  if (!(evnt = malloc(sizeof(struct Evnt))))
+  if (!(evnt = MK(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "cntl file: %m\n"));
   
   if (!evnt_make_bind_local(evnt, fname, 8))
@@ -484,21 +484,22 @@ static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
   
   acpt_cntl_evnt = NULL;
 
-  free(evnt);
+  F(evnt);
 
   if (acpt_evnt)
     evnt_close(acpt_evnt);
 }
 
 /* used to get death sig or pass through cntl data */
-void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
+void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
+                        int fd, int allow_pdeathsig)
 {
-  cntl__is_child = TRUE;
+  ASSERT(fd != -1);
 
   if (acpt_cntl_evnt)
   {
     int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
-    
+
     ASSERT(vlg       == passed_vlg);
     ASSERT(acpt_evnt == passed_acpt_evnt);
 
@@ -520,7 +521,13 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
       acpt_evnt = passed_acpt_evnt;
     ASSERT(acpt_evnt == passed_acpt_evnt);
   
-    if (!(acpt_cntl_evnt = malloc(sizeof(struct Evnt))))
+    if (allow_pdeathsig && (PROC_CNTL_PDEATHSIG(SIGCHLD) != -1))
+    {
+      close(fd);
+      return;
+    }
+    
+    if (!(acpt_cntl_evnt = MK(sizeof(struct Evnt))))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl file"));
 
     if (!evnt_make_custom(acpt_cntl_evnt, fd, 0, 0))
@@ -529,18 +536,23 @@ void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt, int fd)
   acpt_cntl_evnt->cbs->cb_func_free = cntl__cb_func_pipe_acpt_free;
 }
 
-static void bag_cb_free_evnt(void *val)
+static void cntl__bag_cb_free_evnt(void *val)
 {
   evnt_close(val);
+}
+
+static void cntl__bag_cb_free_F(void *val)
+{
+  F(val);
 }
 
 void cntl_child_make(unsigned int num)
 {
   ASSERT(!childs && !waiters && acpt_cntl_evnt);
   
-  if (!(childs  = bag_make(num, bag_cb_free_nothing, bag_cb_free_evnt)))
+  if (!(childs  = bag_make(num, bag_cb_free_nothing, cntl__bag_cb_free_evnt)))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl children"));
-  if (!(waiters = bag_make(4,   bag_cb_free_nothing, bag_cb_free_malloc)))
+  if (!(waiters = bag_make(4,   bag_cb_free_nothing, cntl__bag_cb_free_F)))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl children"));
 }
 
@@ -627,7 +639,7 @@ static void cntl__cb_func_child_free(struct Evnt *evnt)
       ((Bag_obj *)obj)->val = NULL;
   }
   
-  free(evnt);
+  F(evnt);
 }
 
 void cntl_child_pid(pid_t pid, int fd)
@@ -636,7 +648,7 @@ void cntl_child_pid(pid_t pid, int fd)
 
   ASSERT(acpt_cntl_evnt);
     
-  if (!(obj = malloc(sizeof(struct Cntl_child_obj))))
+  if (!(obj = MK(sizeof(struct Cntl_child_obj))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", "cntl children"));
 
   obj->pid = pid;
@@ -662,7 +674,7 @@ void cntl_child_pid(pid_t pid, int fd)
  *  The children also kill themselves if the parent fd has an error.
  */
 void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
-                       unsigned int num, int use_cntl)
+                       unsigned int num, int use_cntl, int allow_pdeathsig)
 {
   int pfds[2] = {-1, -1};
   
@@ -692,7 +704,7 @@ void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
         vlg_err(vlg, EXIT_FAILURE, "socketpair(): %m\n");
     }
 
-    if ((cpid = fork()) == -1)
+    if ((cpid = evnt_make_child()) == -1)
       vlg_err(vlg, EXIT_FAILURE, "fork(): %m\n");
 
     if (use_cntl && cpid) /* parent */
@@ -700,7 +712,7 @@ void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
     else if (!cpid)
     { /* child */
       cntl_child_free();
-      cntl_pipe_acpt_fds(vlg, passed_acpt_evnt, pfds[0]);
+      cntl_pipe_acpt_fds(vlg, passed_acpt_evnt, pfds[0], allow_pdeathsig);
       close(pfds[1]); pfds[1] = -1;
       break;
     }
@@ -709,4 +721,7 @@ void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
   /* close child pipe(), or last child socketpair() */
   if (pfds[1] != -1)
     close(pfds[0]);
+
+  evnt_scan_q_close();
 }
+

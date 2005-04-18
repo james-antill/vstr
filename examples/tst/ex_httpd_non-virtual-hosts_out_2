@@ -11,8 +11,6 @@ HTTP/1.1 200 OK
 Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: message/http
 Content-Length: 50
 
@@ -51,7 +49,6 @@ HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Sun, 10 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
 Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 8
@@ -62,7 +59,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 386
 Location: http://X/foo.example.com/
@@ -72,7 +68,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 386
 Location: http://X/foo.example.com/
@@ -93,7 +88,6 @@ HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
 Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 8
@@ -103,8 +97,6 @@ DOCTYPE HTTP/1.1 403 Forbidden
 Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 327
 
@@ -124,7 +116,6 @@ HTTP/1.1 206 Partial content
 Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
-Accept-Ranges: bytes
 Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 8
@@ -136,7 +127,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 390
 Location: http://X/foo.example.com/nxt/
@@ -158,7 +148,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 396
 Location: http://default/foo.example.com/nxt/
@@ -180,7 +169,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified: Mon, 11 Oct 2004 07:02:24 GMT
 Connection: close
-Accept-Ranges: bytes
 Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 8

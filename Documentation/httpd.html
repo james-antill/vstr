@@ -24,7 +24,7 @@ HTTP/1.1 after implementing a server is
 <pre>
     Simple. Secure. Unit tests (over 90% coverage).
 
-% egrep '\<(mem|rawmem|bcopy|bzero|bcmp|str(n?cpy|n?cat|n?cmp|coll|xfrm|n?dup|r?chr|c?spn|str|pbrk|tok|n?case|sep|verscmp|fry|_)|stpn?cpy|r?index[^.]|basename|dirname|a?sn?printf|byte_)' examples/ex_httpd.c
+% LC_ALL=C egrep '[^_.>a-zA-Z0-9](mem|rawmem|bcopy|bzero|bcmp|str(n?cpy|n?cat|n?cmp|coll|xfrm|n?dup|r?chr|c?spn|str|pbrk|tok|n?case|sep|verscmp|fry|_)|stpn?cpy|r?index[^.]|basename|dirname|a?sn?printf|byte_)' examples/ex_httpd.c
 %
 
     Design is a statemachine triggering off IO events, somewhat like thttpd.
@@ -53,8 +53,20 @@ HTTP/1.1 after implementing a server is
      accept-encoding/content-encoding for gzip (via. pre-generated files)
       Also obeys identity
 
-    /etc/mime.types file
+    Parses /etc/mime.types file
       plus extensions for disallowing certain file types.
+
+    Configuration file parser.
+     Also has optional "per request" configuration files (using the same code, 
+     and thus layout, as the main configuration files), allowing you to:
+      Generate explicit Content-Type's.
+      Generate Content-MD5 data.
+      Generate Content-Location data.
+      Generate Expires and Cache-Control data.
+      Generate all four types of redirect's.
+      Generate the usable types of error conditions.
+      Change the file object used to serve the data.
+      Change other configuration parameters for this request, etc.
 
     includes init.d file, and allows "local controller" connections for soft
     restarts etc.
@@ -69,10 +81,7 @@ HTTP/1.1 after implementing a server is
       Run programs (doesn't call exec at all, only calls fork() at startup
                     for MP systems).
 
-      Call any NSS or i18n libc functions (this does allow it to be compiled
-                                           statically).
-
-      Have a configuration file (will be fixed).
+      Call any i18n/gettext libc functions (will be fixed).
 
       Have a native ACL configuration (will be fixed, can use socket filters).
 
@@ -96,7 +105,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Thu Mar 10 13:11:57 EST 2005
+Last modified: Fri Apr  8 16:01:35 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

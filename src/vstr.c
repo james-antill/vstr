@@ -21,6 +21,7 @@
 /* master file, contains most of the base functions */
 #include "main.h"
 
+MALLOC_CHECK_DECL();
 
 /* validity checking function... only called from asserts */
 #ifndef NDEBUG
@@ -106,7 +107,7 @@ int vstr__check_real_nodes(const Vstr_base *base)
   unsigned int node_ref_used = FALSE;
   Vstr_node *scan = base->beg;
 
-  vstr__debug_malloc_check_mem(base);
+  MALLOC_CHECK_MEM(base);
 
   ASSERT(!base->used || (base->used < base->beg->len));
   ASSERT(!base->used || (base->beg->type == VSTR_TYPE_NODE_BUF));
@@ -153,7 +154,7 @@ int vstr__check_spare_nodes(const Vstr_conf *conf)
   unsigned int num = 0;
   Vstr_node *scan = NULL;
 
-  vstr__debug_malloc_check_mem(conf);
+  MALLOC_CHECK_MEM(conf);
   
   num = 0;
   scan = (Vstr_node *)conf->spare_buf_beg;
@@ -359,7 +360,7 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
     size_t deci_len =                    strlen(SYS_LOC(decimal_point));
     Vstr_ref *ref = NULL;
     
-    if (VSTR__DEBUG_MALLOC_TST() ||
+    if (MALLOC_CHECK_DEC() ||
         !(name_numeric = setlocale(LC_NUMERIC, NULL))) /* name for "name" */
       name_numeric = "C";
     numeric_len = strlen(name_numeric);
@@ -367,7 +368,6 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
     if (!(ref = vstr_ref_make_strdup(name_numeric)))
       goto fail_numeric;
     loc->name_lc_numeric_ref        = ref;
-    
     
     if (!(ref = vstr_ref_make_malloc(grp_len + 1)))
       goto fail_grp;
@@ -597,14 +597,14 @@ void vstr__del_conf(Vstr_conf *conf)
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_PTR, conf->spare_ptr_num);
     vstr_free_spare_nodes(conf, VSTR_TYPE_NODE_REF, conf->spare_ref_num);
 
-    VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->name_lc_numeric_ref);
+    MALLOC_CHECK_MEM(conf->loc->name_lc_numeric_ref);
     vstr_ref_del(conf->loc->name_lc_numeric_ref);
     
     while (conf->loc->num_beg)
     {
       Vstr_locale_num_base *next = conf->loc->num_beg->next;
       
-      VSTR__DEBUG_MALLOC_CHECK_MEM(conf->loc->num_beg);
+      MALLOC_CHECK_MEM(conf->loc->num_beg);
       
       vstr_ref_del(conf->loc->num_beg->grouping);
       vstr_ref_del(conf->loc->num_beg->thousands_sep_ref);
@@ -694,11 +694,7 @@ int vstr_init(void)
     
     vstr__options.fd_count = 0;
 
-    vstr__options.mem_sz = 0;
-    vstr__options.mem_num = 0;
-    vstr__options.mem_vals = NULL;
-
-    /* NOTE: don't set fail nums */
+    MALLOC_CHECK_REINIT();
     
     if (!(vstr__options.def = vstr_make_conf()))
       return (FALSE);
@@ -718,7 +714,7 @@ void vstr_exit(void)
   ASSERT(!vstr__options.mmap_count);
   ASSERT(!vstr__options.fd_count);
   
-  VSTR__DEBUG_MALLOC_CHECK_EMPTY();
+  MALLOC_CHECK_EMPTY();
 }
 
 int vstr__cache_iovec_valid(Vstr_base *base)
@@ -985,7 +981,7 @@ Vstr_base *vstr_make_base(Vstr_conf *conf)
 
     cache = VSTR__CACHE(base);
     if (base->grpalloc_cache != VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE)
-      VSTR__DEBUG_MALLOC_CHECK_MEM(cache);
+      MALLOC_CHECK_MEM(cache);
     
     switch (conf->grpalloc_cache)
     {

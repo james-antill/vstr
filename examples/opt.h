@@ -26,8 +26,8 @@
                                                                         \
       OPT_SC_EXPORT_CSTR(name, opts->vpriv_uid, FALSE, "privilage uid"); \
                                                                         \
-      if ((pw = getpwnam(name)))                                        \
-        opts->priv_uid = pw->pw_uid;                                    \
+      if (name && (pw = getpwnam(name)))                                \
+        (opts)->priv_uid = pw->pw_uid;                                  \
     } while (FALSE)
 # define OPT_SC_RESOLVE_GID(opts) do {                                  \
       const char *name = NULL;                                          \
@@ -35,8 +35,8 @@
                                                                         \
       OPT_SC_EXPORT_CSTR(name, opts->vpriv_gid, FALSE, "privilage gid"); \
                                                                         \
-      if ((gr = getgrnam(name)))                                        \
-        opts->priv_uid = gr->gr_gid;                                    \
+      if (name && (gr = getgrnam(name)))                                \
+        (opts)->priv_uid = gr->gr_gid;                                  \
     } while (FALSE)
 #else
 # define OPT_SC_RESOLVE_UID(opts)

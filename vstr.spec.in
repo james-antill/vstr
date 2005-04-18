@@ -35,6 +35,7 @@ Group: Development/Libraries
 Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
 BuildRequires: pkgconfig >= 0.8, gcc, make, glibc-devel
+Conflicts: vstr-debuginfo <> %{ver}
 URL: http://www.and.org/%{name}/
 
 %description

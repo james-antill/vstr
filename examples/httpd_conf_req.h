@@ -4,10 +4,11 @@
 #include <vstr.h>
 
 struct Con;
-struct Httpd_opts;
 struct Httpd_req_data;
 
-extern int httpd_conf_req_parse_file(Vstr_base *, struct Httpd_opts *,
-                                     struct Con *, struct Httpd_req_data *);
+extern int httpd_conf_req_d0(struct Con *, struct Httpd_req_data *,
+                             Conf_parse *, Conf_token *);
+extern int httpd_conf_req_parse_file(Conf_parse *,
+				     struct Con *, struct Httpd_req_data *);
 
 #endif

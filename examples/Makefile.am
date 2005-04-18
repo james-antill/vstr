@@ -7,9 +7,11 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 EX_B_DIR=$(top_builddir)/examples
 EX_INST_DIR=$(libdir)/vstr-$(VERSION)/examples
 
-GEN_CFLAGS = -I- -I../include -I../../include
+# GEN__CFLAGS for stupid openssl builds, moron packaging
+GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
+GEN_CFLAGS = -I- $(GEN__CFLAGS)
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
-CFLAGS = @CFLAGS@ @WARNS@
+CFLAGS =
 
 
 ex_cat_DEPENDENCIES = ex_utils.h
@@ -20,8 +22,8 @@ ex_ccount_DEPENDENCIES = ex_utils.h
 ex_ccount_CFLAGS = $(GEN_CFLAGS)
 ex_ccount_LDADD  = $(GEN_LDLIBS)
 
-ex_conf_SOURCES      = conf.c ex_conf.c
-ex_conf_DEPENDENCIES = conf.h ex_utils.h
+ex_conf_SOURCES      = conf.c ex_conf.c conf_inline.c
+ex_conf_DEPENDENCIES = conf.h ex_utils.h mk.h
 ex_conf_CFLAGS = $(GEN_CFLAGS)
 ex_conf_LDADD  = $(GEN_LDLIBS)
 
@@ -116,7 +118,7 @@ ex_slowcat_LDADD    = $(GEN_LDLIBS) $(TIMER_Q_LDLIBS)
 
 # For command line stuff that uses events...
 CMDLINE_FILES_SRCS = date.c evnt.c hexdump.c opt.c vlg.c
-CMDLINE_FILES_HDRS = date.h evnt.h hexdump.h opt.h vlg.h vlg_assert.h
+CMDLINE_FILES_HDRS = date.h evnt.h hexdump.h opt.h vlg.h
 
 ex_dns_SOURCES      = dns.c $(CMDLINE_FILES_SRCS) ex_dns.c
 ex_dns_DEPENDENCIES = dns.h $(CMDLINE_FILES_HDRS)
@@ -124,18 +126,20 @@ ex_dns_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_dns_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 ex_cntl_SOURCES      = $(CMDLINE_FILES_SRCS) ex_cntl.c
-ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS)
+ex_cntl_DEPENDENCIES = $(CMDLINE_FILES_HDRS) mk.h
 ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
-                    opt.c opt_serv.c vlg.c
+                    opt.c opt_serv.c vlg.c conf_inline.c
 DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
-                    opt.h opt_serv.h vlg.h vlg_assert.h
+                    opt.h opt_serv.h vlg.h
 
 ex_httpd_SOURCES      = mime_types.c httpd_conf_main.c httpd_conf_req.c \
+			httpd_policy.c httpd_policy_inline.c \
                         $(DAEMON_FILES_SRCS) httpd.c ex_httpd.c
 ex_httpd_DEPENDENCIES = mime_types.h httpd_conf_main.h httpd_conf_req.h \
+			httpd_policy.h \
                         $(DAEMON_FILES_HDRS) httpd.h httpd_err_codes.h
 ex_httpd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_httpd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
@@ -150,12 +154,6 @@ ex_ypservd_DEPENDENCIES = $(DAEMON_FILES_HDRS)
 ex_ypservd_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_ypservd_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
-# BEG: Not a Vstr app.
-ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
-ex_tdns_LDADD    = $(GEN_LDLIBS)
-ex_tdns_LDFLAGS  = -pthread
-# END: Not a Vstr app.
-
 ex_zcat_DEPENDENCIES = ex_utils.h
 ex_zcat_CFLAGS = $(GEN_CFLAGS) $(ZLIB_CFLAGS) $(BZ2_CFLAGS)
 ex_zcat_LDADD  = $(GEN_LDLIBS) $(ZLIB_LDLIBS) $(BZ2_LDLIBS)
@@ -164,8 +162,10 @@ ex_sock_filter_DEPENDENCIES = ex_utils.h
 ex_sock_filter_CFLAGS = $(GEN_CFLAGS)
 ex_sock_filter_LDADD  = $(GEN_LDLIBS)
 
+# Note: can't use GEN_CFLAGS because FC[23] use include "" inside openssl system
+# headers, and the obvious fix was refused as "not a bug".
 ex_perf_sgopenssl_DEPENDENCIES = ex_perf.h
-ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
+ex_perf_sgopenssl_CFLAGS = $(GEN__CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
 ex_perf_sgopenssl_LDADD  = $(GEN_LDLIBS) $(OPENSSL_LDLIBS)
 
 ex_gmp_factorials_DEPENDENCIES = ex_utils.h
@@ -196,6 +196,13 @@ ex_perf_nodesize_LDADD  = $(GEN_LDLIBS)
 ex_perf_add_DEPENDENCIES = ex_perf.h
 ex_perf_add_CFLAGS = $(GEN_CFLAGS) -Wno-aggregate-return
 ex_perf_add_LDADD  = $(GEN_LDLIBS)
+
+
+# BEG: Not a Vstr app.
+ex_tdns_CFLAGS   = -pthread $(GEN_CFLAGS) 
+ex_tdns_LDADD    = $(GEN_LDLIBS)
+ex_tdns_LDFLAGS  = -pthread
+# END: Not a Vstr app.
 
 
 examplesdir = $(EX_INST_DIR)
@@ -352,6 +359,7 @@ example_code_html = \
   html/httpd_conf_main.h.html \
   html/httpd_conf_req.c.html \
   html/httpd_conf_req.h.html \
+  html/mk.h.html \
   html/opt.h.html \
   html/opt_serv.c.html \
   html/opt_serv.h.html \

@@ -1,3 +1,16 @@
+2005-04-17  James Antill  <james@and.org>
+
+	* include/vstr-switch.h: Added VSTR_COMPILE_BUILTINS switch.
+	(VSTR__AT_COMPILE_STRLEN): Added code to use __builtin_strlen() in GCC.
+
+	* src/vstr.c (vstr_init): Factor the malloc-check APIs out into
+	malloc-check.h
+
+	* include/vstr-inline.h (vstr_wrap_memcpy): Do more "inline".
+	(vstr_wrap_memcmp): Do more "inline".
+	(vstr_wrap_memchr): Do more "inline".
+	(vstr_wrap_memset): Do more "inline".
+
 2005-02-16  James Antill  <james@and.org>
 
 	* src/vstr_sc_posix.c (vstr__sc_get_size): Fix loading of zero sized

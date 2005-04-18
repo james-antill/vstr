@@ -1,7 +1,5 @@
 /* quick and dirty copy of the
  * highlight (http://freshmeat.net/projects/highlight/) command */
-#define VSTR_COMPILE_INLINE 0
-
 #include "ex_utils.h"
 
 #include <sys/time.h>

@@ -37,15 +37,12 @@
     --server-name     - Contents of server header used in replies.
     --gzip-content-replacement
                       - Toggle use of gzip content replacement (default: on).
-    --require-content-type
-                      - Send a default content-type, if we don't know it (default: off).
-    --default-mime-type
-                      - Default mime type (application/octet-stream).
     --mime-types-main - Main mime types filename (default: /etc/mime.types).
     --mime-types-xtra - Additional mime types filename.
     --error-406       - Toggle sending 406 responses (default: on).
     --canonize-host   - Strip leading 'www.', strip trailing '.' (default: off).
     --error-host-400  - Give an 400 error for a bad host (default: on).
+    --check-host      - Whether we check host headers at all (default: on).
     --unspecified-hostname
                       - Used for req with no Host header (default is hostname).
     --max-header-sz   - Max size of http header (0 = no limit).

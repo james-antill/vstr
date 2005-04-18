@@ -29,7 +29,6 @@
 #define TRUE 1
 #define FALSE 0
 
-
 #define WAIT_SET_RECV_FLAG 1 /* work around ? */
 
 #define CL_PACKET_MAX 0xFFFF
@@ -44,7 +43,12 @@
 #include "app.h"
 #include "evnt.h"
 
-#include "vlg_assert.h"
+#define EX_UTILS_NO_FUNCS  1
+#include "ex_utils.h"
+
+#include "mk.h"
+
+MALLOC_CHECK_DECL();
 
 #include "opt.h"
 
@@ -225,14 +229,14 @@ static void cl_cb_func_free(struct Evnt *evnt)
 {
   struct con *con = (struct con *)evnt;
 
-  free(con);
+  F(con);
 
   --server_clients_count;
 }
 
 static struct con *cl_make(const char *server_fname)
 {
-  struct con *ret = malloc(sizeof(struct con));
+  struct con *ret = MK(sizeof(struct con));
 
   if (!ret)
     errno = ENOMEM, err(EXIT_FAILURE, __func__);
@@ -431,6 +435,9 @@ static void cl_timer_cli(int type, void *data)
   struct timeval tv;
   unsigned long diff = 0;
   
+  if (!data)
+    return;
+  
   if (type == TIMER_Q_TYPE_CALL_DEL)
     return;
 
@@ -459,7 +466,8 @@ static void cl_timer_con(int type, void *data)
 {
   int count = 0;
 
-  (void)data; /* currently unused */
+  if (!data)
+    return;
   
   if (type == TIMER_Q_TYPE_CALL_DEL)
     return;
@@ -624,6 +632,8 @@ int main(int argc, char *argv[])
   vlg_exit();
   
   vstr_exit();
+  
+  MALLOC_CHECK_EMPTY();
   
   exit (EXIT_SUCCESS);
 }

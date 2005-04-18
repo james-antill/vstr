@@ -35,7 +35,7 @@ sub httpd__munge_ret
     $output =~ s/^(Date:).*$/$1/gm;
     # Remove last-modified = start date for error messages
     $output =~
-      s!(HTTP/1[.]1 \s (?:301|40[03456]|41[0234567]|50[0135]) .*)$ (\n)
+      s!(HTTP/1[.]1 \s (?:30[1237]|40[03456]|41[0234567]|50[0135]) .*)$ (\n)
 	^(Date:)$ (\n)
 	^(Server:.*)$ (\n)
 	^(Last-Modified:) .*$
@@ -43,10 +43,8 @@ sub httpd__munge_ret
     # Remove last modified for trace ops
     $output =~
       s!^(Last-Modified:).*$ (\n)
-        ^(Accept-Ranges:.*)$ (\n)
-        ^(Vary:.*)$ (\n)
         ^(Content-Type: \s message/http.*)$
-	!$1$2$3$4$5$6$7!gmx;
+	!$1$2$3!gmx;
 
     return $output;
   }
@@ -406,13 +404,15 @@ my $nargs  = "--unspecified-hostname=default ";
    $nargs .= "--nagle=true ";
    $nargs .= "--host=127.0.0.2 ";
    $nargs .= "--idle-timeout=16 ";
-   $nargs .= "--require-content-type=true ";
-   $nargs .= "--default-mime-type=bar/baz ";
    $nargs .= "--dir-filename=welcome.html ";
    $nargs .= "--accept-filter-file=$ENV{SRCDIR}/tst/ex_httpd_null_tst_1 ";
    $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)' ";
    $nargs .= "--canonize-host=true ";
    $nargs .= "--error-host-400=false ";
+
+   $nargs .= "--configuration-data-jhttpd";
+   $nargs .= " '(policy <default> (MIME/types-default-type bar/baz))' ";
+
 daemon_init("ex_httpd", $root, $nargs);
 tst_proc_limit(30);
 $list_pid = http_cntl_list_beg();

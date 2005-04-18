@@ -3,8 +3,6 @@ Date:
 Server: jhttpd/0.9.5 (Vstr)
 Last-Modified:
 Connection: close
-Accept-Ranges: bytes
-Vary: Accept-Encoding
 Content-Type: text/html
 Content-Length: 342
 

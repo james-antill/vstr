@@ -24,6 +24,7 @@
       static char ret[DATE__CACHE_NUM][DATE__RET_SZ];            \
       static time_t saved_val[DATE__CACHE_NUM] = {0,};           \
       static unsigned int saved_count = DATE__CACHE_NUM - 1;     \
+      struct tm store_tm_val[1];                                 \
       struct tm *tm_val = NULL;                                  \
       unsigned int num = 0;                                      \
                                                                  \
@@ -38,7 +39,7 @@
       }                                                          \
       saved_count = (saved_count + 1) % DATE__CACHE_NUM;         \
                                                                  \
-      if (!(tm_val = gettime(&val)))                             \
+      if (!(tm_val = gettime(&val, store_tm_val)))               \
         err(EXIT_FAILURE, #gettime );                            \
                                                                  \
       saved_val[saved_count] = val;                              \
@@ -49,18 +50,18 @@
 
 const char *date_rfc1123(time_t val)
 {
-  SERV__STRFTIME(val, gmtime, "%a, %d %b %Y %T GMT");
+  SERV__STRFTIME(val, gmtime_r,    "%a, %d %b %Y %T GMT");
 }
 const char *date_rfc850(time_t val)
 {
-  SERV__STRFTIME(val, gmtime, "%A, %d-%b-%y %T GMT");
+  SERV__STRFTIME(val, gmtime_r,    "%A, %d-%b-%y %T GMT");
 }
 const char *date_asctime(time_t val)
 {
-  SERV__STRFTIME(val, gmtime, "%a %b %e %T %Y");
+  SERV__STRFTIME(val, gmtime_r,    "%a %b %e %T %Y");
 }
 const char *date_syslog(time_t val)
 {
-  SERV__STRFTIME(val, localtime, "%b %e %T");
+  SERV__STRFTIME(val, localtime_r, "%b %e %T");
 }
 

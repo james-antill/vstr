@@ -381,7 +381,7 @@ static void *vstr__cache_iovec_cb(const Vstr_base *base,
   
   if (type == VSTR_TYPE_CACHE_FREE)
   {
-    assert(VSTR__DEBUG_MALLOC_CHECK_MEM(data));
+    assert(MALLOC_CHECK_MEM(data));
     VSTR__F(data->v);
     VSTR__F(data->t);
     VSTR__F(data);

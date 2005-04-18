@@ -53,18 +53,27 @@ extern inline void *vstr_wrap_memcpy(void *passed_s1, const void *passed_s2,
   unsigned char *s1 = passed_s1;
   const unsigned char *s2 = passed_s2;
 
-  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
+  if ((n > 16) || VSTR__AT_COMPILE_CONST_P(n))
     memcpy(passed_s1, passed_s2, n);
   else switch (n)
   {
-    case 7:  s1[6] = s2[6];
-    case 6:  s1[5] = s2[5];
-    case 5:  s1[4] = s2[4];
-    case 4:  s1[3] = s2[3];
-    case 3:  s1[2] = s2[2];
-    case 2:  s1[1] = s2[1];
-    case 1:  s1[0] = s2[0];
-    case 0:
+    case 16:  s1[15] = s2[15];
+    case 15:  s1[14] = s2[14];
+    case 14:  s1[13] = s2[13];
+    case 13:  s1[12] = s2[12];
+    case 12:  s1[11] = s2[11];
+    case 11:  s1[10] = s2[10];
+    case 10:  s1[ 9] = s2[ 9];
+    case  9:  s1[ 8] = s2[ 8];
+    case  8:  s1[ 7] = s2[ 7];
+    case  7:  s1[ 6] = s2[ 6];
+    case  6:  s1[ 5] = s2[ 5];
+    case  5:  s1[ 4] = s2[ 4];
+    case  4:  s1[ 3] = s2[ 3];
+    case  3:  s1[ 2] = s2[ 2];
+    case  2:  s1[ 1] = s2[ 1];
+    case  1:  s1[ 0] = s2[ 0];
+    case  0:
       break;
   }
 
@@ -83,18 +92,27 @@ extern inline int vstr_wrap_memcmp(const void *passed_s1,
   int ret = 0;
   int tmp = 0;
 
-  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
+  if ((n > 16) || VSTR__AT_COMPILE_CONST_P(n))
     ret = memcmp(passed_s1, passed_s2, n);
   else switch (n)
   {
-    case 7:  tmp = s1[6] - s2[6]; if (tmp) ret = tmp;
-    case 6:  tmp = s1[5] - s2[5]; if (tmp) ret = tmp;
-    case 5:  tmp = s1[4] - s2[4]; if (tmp) ret = tmp;
-    case 4:  tmp = s1[3] - s2[3]; if (tmp) ret = tmp;
-    case 3:  tmp = s1[2] - s2[2]; if (tmp) ret = tmp;
-    case 2:  tmp = s1[1] - s2[1]; if (tmp) ret = tmp;
-    case 1:  tmp = s1[0] - s2[0]; if (tmp) ret = tmp;
-    case 0:
+    case 16:  tmp = s1[15] - s2[15]; if (tmp) ret = tmp;
+    case 15:  tmp = s1[14] - s2[14]; if (tmp) ret = tmp;
+    case 14:  tmp = s1[13] - s2[13]; if (tmp) ret = tmp;
+    case 13:  tmp = s1[12] - s2[12]; if (tmp) ret = tmp;
+    case 12:  tmp = s1[11] - s2[11]; if (tmp) ret = tmp;
+    case 11:  tmp = s1[10] - s2[10]; if (tmp) ret = tmp;
+    case 10:  tmp = s1[ 9] - s2[ 9]; if (tmp) ret = tmp;
+    case  9:  tmp = s1[ 8] - s2[ 8]; if (tmp) ret = tmp;
+    case  8:  tmp = s1[ 7] - s2[ 7]; if (tmp) ret = tmp;
+    case  7:  tmp = s1[ 6] - s2[ 6]; if (tmp) ret = tmp;
+    case  6:  tmp = s1[ 5] - s2[ 5]; if (tmp) ret = tmp;
+    case  5:  tmp = s1[ 4] - s2[ 4]; if (tmp) ret = tmp;
+    case  4:  tmp = s1[ 3] - s2[ 3]; if (tmp) ret = tmp;
+    case  3:  tmp = s1[ 2] - s2[ 2]; if (tmp) ret = tmp;
+    case  2:  tmp = s1[ 1] - s2[ 1]; if (tmp) ret = tmp;
+    case  1:  tmp = s1[ 0] - s2[ 0]; if (tmp) ret = tmp;
+    case  0:
       break;
   }
 
@@ -113,13 +131,23 @@ extern inline void *vstr_wrap_memchr(const void *passed_s1, int c, size_t n)
 
   switch (n)
   {
-    case 7:  tmp = s1[6] == c; if (tmp) ret = s1 + 6;
-    case 6:  tmp = s1[5] == c; if (tmp) ret = s1 + 5;
-    case 5:  tmp = s1[4] == c; if (tmp) ret = s1 + 4;
-    case 4:  tmp = s1[3] == c; if (tmp) ret = s1 + 3;
-    case 3:  tmp = s1[2] == c; if (tmp) ret = s1 + 2;
-    case 2:  tmp = s1[1] == c; if (tmp) ret = s1 + 1;
-    case 1:  tmp = s1[0] == c; if (tmp) ret = s1 + 0;
+    case 16:  tmp = s1[15] == c; if (tmp) ret = s1 + 15;
+    case 15:  tmp = s1[14] == c; if (tmp) ret = s1 + 14;
+    case 14:  tmp = s1[13] == c; if (tmp) ret = s1 + 13;
+    case 13:  tmp = s1[12] == c; if (tmp) ret = s1 + 12;
+    case 12:  tmp = s1[11] == c; if (tmp) ret = s1 + 11;
+    case 11:  tmp = s1[10] == c; if (tmp) ret = s1 + 10;
+    case 10:  tmp = s1[ 9] == c; if (tmp) ret = s1 +  9;
+    case  9:  tmp = s1[ 8] == c; if (tmp) ret = s1 +  8;
+    case  8:  tmp = s1[ 7] == c; if (tmp) ret = s1 +  7;
+    case  7:  tmp = s1[ 6] == c; if (tmp) ret = s1 +  6;
+    case  6:  tmp = s1[ 5] == c; if (tmp) ret = s1 +  5;
+    case  5:  tmp = s1[ 4] == c; if (tmp) ret = s1 +  4;
+    case  4:  tmp = s1[ 3] == c; if (tmp) ret = s1 +  3;
+    case  3:  tmp = s1[ 2] == c; if (tmp) ret = s1 +  2;
+    case  2:  tmp = s1[ 1] == c; if (tmp) ret = s1 +  1;
+    case  1:  tmp = s1[ 0] == c; if (tmp) ret = s1 +  0;
+    case  0:
       break;
     default: ret = memchr(s1, c, n);
       break;
@@ -136,18 +164,27 @@ extern inline void *vstr_wrap_memset(void *passed_s1, int c, size_t n)
 {
   unsigned char *s1 = passed_s1;
 
-  if ((n > 7) || VSTR__AT_COMPILE_CONST_P(n))
+  if ((n > 16) || VSTR__AT_COMPILE_CONST_P(n))
     memset(passed_s1, c, n);
-  switch (n)
+  else switch (n)
   {
-    case 7:  s1[6] = c;
-    case 6:  s1[5] = c;
-    case 5:  s1[4] = c;
-    case 4:  s1[3] = c;
-    case 3:  s1[2] = c;
-    case 2:  s1[1] = c;
-    case 1:  s1[0] = c;
-    case 0:
+    case 16:  s1[15] = c;
+    case 15:  s1[14] = c;
+    case 14:  s1[13] = c;
+    case 13:  s1[12] = c;
+    case 12:  s1[11] = c;
+    case 11:  s1[10] = c;
+    case 10:  s1[ 9] = c;
+    case  9:  s1[ 8] = c;
+    case  8:  s1[ 7] = c;
+    case  7:  s1[ 6] = c;
+    case  6:  s1[ 5] = c;
+    case  5:  s1[ 4] = c;
+    case  4:  s1[ 3] = c;
+    case  3:  s1[ 2] = c;
+    case  2:  s1[ 1] = c;
+    case  1:  s1[ 0] = c;
+    case  0:
       break;
   }
 
@@ -160,9 +197,9 @@ extern inline void *vstr_wrap_memset(void *passed_s1, int c, size_t n)
 #ifdef VSTR_AUTOCONF_USE_WRAP_MEMMOVE
 extern inline void *vstr_wrap_memmove(void *s1, const void *s2, size_t n)
 {
-  if (n < 8)
+  if (n < 16)
   {
-    unsigned char tmp[8];
+    unsigned char tmp[16];
     vstr_wrap_memcpy(tmp,  s2, n);
     vstr_wrap_memcpy(s1, tmp, n);
     return (s1);
@@ -784,11 +821,11 @@ extern inline int vstr_cmp_buf_eq(const struct Vstr_base *s1,
 extern inline int vstr_cmp_cstr(const struct Vstr_base *s1,
                                 size_t p1, size_t l1,
                                 const char *buf)
-{ return (vstr_cmp_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_cstr_eq(const struct Vstr_base *s1,
                                    size_t p1, size_t l1,
                                    const char *buf)
-{ return (vstr_cmp_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* cmp case */
 extern inline int vstr_cmp_case_eq(const struct Vstr_base *s1,
@@ -803,10 +840,10 @@ extern inline int vstr_cmp_case_buf_eq(const struct Vstr_base *s1,
 extern inline int vstr_cmp_case_cstr(const struct Vstr_base *s1,
                                      size_t p1, size_t l1,
                                      const char *buf)
-{ return (vstr_cmp_case_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_case_cstr_eq(const struct Vstr_base *s1,
                                         size_t p1, size_t l1, const char *buf)
-{ return (vstr_cmp_case_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* cmp vers */
 extern inline int vstr_cmp_vers_eq(const struct Vstr_base *s1,
@@ -820,103 +857,103 @@ extern inline int vstr_cmp_vers_buf_eq(const struct Vstr_base *s1,
 { return ((l1 == buf_len) && !vstr_cmp_vers_buf(s1, p1, l1, buf, buf_len)); }
 extern inline int vstr_cmp_vers_cstr(const struct Vstr_base *s1,
                                      size_t p1, size_t l1, const char *buf)
-{ return (vstr_cmp_vers_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_vers_cstr_eq(const struct Vstr_base *s1,
                                         size_t p1, size_t l1, const char *buf)
-{ return (vstr_cmp_vers_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* add */
 extern inline int vstr_add_cstr_buf(struct Vstr_base *s1, size_t pa1,
                                     const char *buf)
-{ return (vstr_add_buf(s1, pa1, buf, strlen(buf))); }
+{ return (vstr_add_buf(s1, pa1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_add_cstr_ptr(struct Vstr_base *s1, size_t pa1,
                                     const char *ptr)
-{ return (vstr_add_ptr(s1, pa1, ptr, strlen(ptr))); }
+{ return (vstr_add_ptr(s1, pa1, ptr, VSTR__AT_COMPILE_STRLEN(ptr))); }
 extern inline int vstr_add_cstr_ref(struct Vstr_base *s1, size_t pa1,
                                     struct Vstr_ref *ref, size_t off)
 { return (vstr_add_ref(s1, pa1, ref, off,
-                       strlen(((const char *)ref->ptr) + off))); }
+                       VSTR__AT_COMPILE_STRLEN(((const char *)ref->ptr) + off))); }
 
 /* dup */
 extern inline struct Vstr_base *vstr_dup_cstr_buf(struct Vstr_conf *conf,
                                                   const char *buf)
-{ return (vstr_dup_buf(conf, buf, strlen(buf))); }
+{ return (vstr_dup_buf(conf, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline struct Vstr_base *vstr_dup_cstr_ptr(struct Vstr_conf *conf,
                                                   const char *ptr)
-{ return (vstr_dup_ptr(conf, ptr, strlen(ptr))); }
+{ return (vstr_dup_ptr(conf, ptr, VSTR__AT_COMPILE_STRLEN(ptr))); }
 extern inline struct Vstr_base *vstr_dup_cstr_ref(struct Vstr_conf *conf,
                                                   struct Vstr_ref *ref,
                                                   size_t off)
 { return (vstr_dup_ref(conf, ref, off,
-                       strlen(((const char *)ref->ptr) + off))); }
+                       VSTR__AT_COMPILE_STRLEN(((const char *)ref->ptr) + off))); }
 
 /* sub */
 extern inline int vstr_sub_cstr_buf(struct Vstr_base *s1, size_t p1, size_t l1,
                                     const char *buf)
-{ return (vstr_sub_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_sub_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_sub_cstr_ptr(struct Vstr_base *s1, size_t p1, size_t l1,
                                     const char *ptr)
-{ return (vstr_sub_ptr(s1, p1, l1, ptr, strlen(ptr))); }
+{ return (vstr_sub_ptr(s1, p1, l1, ptr, VSTR__AT_COMPILE_STRLEN(ptr))); }
 extern inline int vstr_sub_cstr_ref(struct Vstr_base *s1, size_t p1, size_t l1,
                                     struct Vstr_ref *ref, size_t off)
 { return (vstr_sub_ref(s1, p1, l1, ref, off,
-                       strlen(((const char *)ref->ptr) + off))); }
+                       VSTR__AT_COMPILE_STRLEN(((const char *)ref->ptr) + off))); }
 
 /* srch */
 extern inline size_t vstr_srch_cstr_buf_fwd(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_srch_buf_fwd(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_srch_buf_fwd(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline size_t vstr_srch_cstr_buf_rev(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_srch_buf_rev(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_srch_buf_rev(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 extern inline size_t vstr_srch_cstr_chrs_fwd(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
-{ return (vstr_srch_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_srch_chrs_fwd(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 extern inline size_t vstr_srch_cstr_chrs_rev(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
-{ return (vstr_srch_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_srch_chrs_rev(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 
 extern inline size_t vstr_csrch_cstr_chrs_fwd(const struct Vstr_base *s1,
                                               size_t p1, size_t l1,
                                               const char *chrs)
-{ return (vstr_csrch_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_csrch_chrs_fwd(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 extern inline size_t vstr_csrch_cstr_chrs_rev(const struct Vstr_base *s1,
                                               size_t p1, size_t l1,
                                               const char *chrs)
-{ return (vstr_csrch_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_csrch_chrs_rev(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 
 extern inline size_t vstr_srch_case_cstr_buf_fwd(const struct Vstr_base *s1,
                                                  size_t p1, size_t l1,
                                                  const char *buf)
-{ return (vstr_srch_case_buf_fwd(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_srch_case_buf_fwd(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline size_t vstr_srch_case_cstr_buf_rev(const struct Vstr_base *s1,
                                                  size_t p1, size_t l1,
                                                  const char *buf)
-{ return (vstr_srch_case_buf_rev(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_srch_case_buf_rev(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* spn */
 extern inline size_t vstr_spn_cstr_chrs_fwd(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *chrs)
-{ return (vstr_spn_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_spn_chrs_fwd(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 extern inline size_t vstr_spn_cstr_chrs_rev(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *chrs)
-{ return (vstr_spn_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_spn_chrs_rev(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 
 extern inline size_t vstr_cspn_cstr_chrs_fwd(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
-{ return (vstr_cspn_chrs_fwd(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_cspn_chrs_fwd(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 extern inline size_t vstr_cspn_cstr_chrs_rev(const struct Vstr_base *s1,
                                              size_t p1, size_t l1,
                                              const char *chrs)
-{ return (vstr_cspn_chrs_rev(s1, p1, l1, chrs, strlen(chrs))); }
+{ return (vstr_cspn_chrs_rev(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs))); }
 
 /* split */
 extern inline size_t vstr_split_cstr_buf(const struct Vstr_base *s1,
@@ -924,13 +961,13 @@ extern inline size_t vstr_split_cstr_buf(const struct Vstr_base *s1,
                                          const char *buf,
                                          struct Vstr_sects *sect,
                                          unsigned int lim, unsigned int flags)
-{  return (vstr_split_buf(s1, p1, l1, buf, strlen(buf), sect, lim, flags)); }
+{  return (vstr_split_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf), sect, lim, flags)); }
 extern inline size_t vstr_split_cstr_chrs(const struct Vstr_base *s1,
                                           size_t p1, size_t l1,
                                           const char *chrs,
                                           struct Vstr_sects *sect,
                                           unsigned int lim, unsigned int flags)
-{  return (vstr_split_chrs(s1, p1, l1, chrs, strlen(chrs), sect, lim, flags)); }
+{  return (vstr_split_chrs(s1, p1, l1, chrs, VSTR__AT_COMPILE_STRLEN(chrs), sect, lim, flags)); }
 
 
 /* simple inlines that can't easily be macros... */
@@ -991,19 +1028,19 @@ extern inline int vstr_cmp_eod_buf_eq(const struct Vstr_base *s1,
 extern inline int vstr_cmp_bod_cstr(const struct Vstr_base *s1,
                                     size_t p1, size_t l1,
                                     const char *buf)
-{ return (vstr_cmp_bod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_bod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_eod_cstr(const struct Vstr_base *s1,
                                     size_t p1, size_t l1,
                                     const char *buf)
-{ return (vstr_cmp_eod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_eod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_bod_cstr_eq(const struct Vstr_base *s1,
                                        size_t p1, size_t l1,
                                        const char *buf)
-{ return (vstr_cmp_bod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_bod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_eod_cstr_eq(const struct Vstr_base *s1,
                                        size_t p1, size_t l1,
                                        const char *buf)
-{ return (vstr_cmp_eod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_eod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* cmp case */
 extern inline int vstr_cmp_case_bod(const struct Vstr_base *s1,
@@ -1065,19 +1102,19 @@ extern inline int vstr_cmp_case_eod_buf_eq(const struct Vstr_base *s1,
 extern inline int vstr_cmp_case_bod_cstr(const struct Vstr_base *s1,
                                          size_t p1, size_t l1,
                                          const char *buf)
-{ return (vstr_cmp_case_bod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_bod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_case_eod_cstr(const struct Vstr_base *s1,
                                          size_t p1, size_t l1,
                                          const char *buf)
-{ return (vstr_cmp_case_eod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_eod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_case_bod_cstr_eq(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_cmp_case_bod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_bod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_case_eod_cstr_eq(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_cmp_case_eod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_case_eod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* cmp vers */
 extern inline int vstr_cmp_vers_bod(const struct Vstr_base *s1,
@@ -1139,45 +1176,45 @@ extern inline int vstr_cmp_vers_eod_buf_eq(const struct Vstr_base *s1,
 extern inline int vstr_cmp_vers_bod_cstr(const struct Vstr_base *s1,
                                          size_t p1, size_t l1,
                                          const char *buf)
-{ return (vstr_cmp_vers_bod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_bod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_vers_eod_cstr(const struct Vstr_base *s1,
                                          size_t p1, size_t l1,
                                          const char *buf)
-{ return (vstr_cmp_vers_eod_buf(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_eod_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_vers_bod_cstr_eq(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_cmp_vers_bod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_bod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 extern inline int vstr_cmp_vers_eod_cstr_eq(const struct Vstr_base *s1,
                                             size_t p1, size_t l1,
                                             const char *buf)
-{ return (vstr_cmp_vers_eod_buf_eq(s1, p1, l1, buf, strlen(buf))); }
+{ return (vstr_cmp_vers_eod_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
 
 /* ref */
 extern inline struct Vstr_ref *vstr_ref_make_strdup(const char *val)
-{ return (vstr_ref_make_memdup(val, strlen(val) + 1)); }
+{ return (vstr_ref_make_memdup(val, VSTR__AT_COMPILE_STRLEN(val) + 1)); }
 
 /* sc */
 extern inline int vstr_sc_add_cstr_grpbasenum_buf(struct Vstr_base *s1,
                                                   size_t p1, unsigned int nb,
                                                   const char *val)
-{ return (vstr_sc_add_grpbasenum_buf(s1, p1, nb, val, strlen(val))); }
+{ return (vstr_sc_add_grpbasenum_buf(s1, p1, nb, val, VSTR__AT_COMPILE_STRLEN(val))); }
 extern inline int vstr_sc_add_cstr_grpbasenum_ptr(struct Vstr_base *s1,
                                                   size_t p1, unsigned int nb,
                                                   const char *val)
-{ return (vstr_sc_add_grpbasenum_ptr(s1, p1, nb, val, strlen(val))); }
+{ return (vstr_sc_add_grpbasenum_ptr(s1, p1, nb, val, VSTR__AT_COMPILE_STRLEN(val))); }
 extern inline int vstr_sc_add_cstr_grpbasenum_ref(struct Vstr_base *s1,
                                                   size_t p1, unsigned int nb,
                                                   struct Vstr_ref *ref,
                                                   size_t off)
 { return (vstr_sc_add_grpbasenum_ref(s1, p1, nb, ref, off,
-                                     strlen(((const char *)ref->ptr) + off))); }
+                                     VSTR__AT_COMPILE_STRLEN(((const char *)ref->ptr) + off))); }
 extern inline int vstr_sc_add_grpnum_buf(struct Vstr_base *s1, size_t p1,
                                          const void *val, size_t len)
 { return (vstr_sc_add_grpbasenum_buf(s1, p1, 0, val, len)); }
 extern inline int vstr_sc_add_cstr_grpnum_buf(struct Vstr_base *s1, size_t p1,
                                               const char *val)
-{ return (vstr_sc_add_grpnum_buf(s1, p1, val, strlen(val))); }
+{ return (vstr_sc_add_grpnum_buf(s1, p1, val, VSTR__AT_COMPILE_STRLEN(val))); }
 
 /* binary */
 extern inline int vstr_sc_add_b_uint16(struct Vstr_base *s1, size_t p1,

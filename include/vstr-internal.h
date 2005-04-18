@@ -35,6 +35,12 @@
 # define VSTR__ATTR_UNUSED(x) vstr__UNUSED_ ## x
 #endif
 
+#ifdef __GNUC__
+# define VSTR__ATTR_USED() __attribute__((used))
+#else
+# define VSTR__ATTR_USED() /* do nothing */
+#endif
+
 #if defined(HAVE_ATTRIB_DEPRECATED)
 # define VSTR__ATTR_D() __attribute__((deprecated))
 #else
@@ -88,12 +94,12 @@
 #define VSTR__ASCII_COMMA()   (0x2C)
 
 #define VSTR__MK(sz) \
-   vstr__debug_malloc(sz, __FILE__, __LINE__)
+   malloc_check_malloc(sz, __FILE__, __LINE__)
 #define VSTR__MV(ptr, tmp, sz) \
-   (((tmp) = vstr__debug_realloc(ptr, sz, __FILE__, __LINE__)) && \
+   (((tmp) = malloc_check_realloc(ptr, sz, __FILE__, __LINE__)) && \
     ((ptr) = (tmp)))
 #define VSTR__F(ptr) \
-   vstr__debug_free(ptr)
+   malloc_check_free(ptr)
 
 /* iteration is this node all of the rest of the iteration,
  * Ie. vstr_iter_fwd_nxt() will return FALSE ... called at the start of an
@@ -127,12 +133,42 @@
 
 #define VSTR__CACHE_INTERNAL_POS_MAX 2
 
-typedef struct Vstr__debug_malloc
-{
- void *ptr;
- const char *file;
- unsigned int line;
-} Vstr__debug_malloc;
+#ifndef USE_MALLOC_CHECK
+# ifdef NDEBUG
+#  define USE_MALLOC_CHECK 0
+# else
+#  define USE_MALLOC_CHECK 1
+# endif
+#endif
+
+#ifndef USE_FD_CLOSE_CHECK
+# ifdef NDEBUG
+#  define USE_FD_CLOSE_CHECK 0
+# else
+#  define USE_FD_CLOSE_CHECK 1
+# endif
+#endif
+
+#define MALLOC_CHECK_PRINT 0 /* needs to be zero'd for coverage testing */
+#define MALLOC_CHECK_STORE vstr__malloc_check_store
+#define MALLOC_CHECK__ATTR_H()    VSTR__ATTR_H()
+#define MALLOC_CHECK__ATTR_USED() VSTR__ATTR_USED()
+#include "malloc-check.h"
+#if !(USE_MALLOC_CHECK)
+# define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)
+# define VSTR__SECTS_SZ 8
+# define VSTR__STACK_BUF_SZ 64
+# define VSTR__FMT_USR_SZ 8
+# define VSTR__REF_GRP_MAKE_SZ 42 /* makes 512 bytes ia32: 4 + 4 + 12*x */
+# define VSTR__SC_VEC_SZ 32
+#else
+# define VSTR__CONF_REF_LINKED_SZ 2
+# define VSTR__SECTS_SZ 2
+# define VSTR__STACK_BUF_SZ 2
+# define VSTR__FMT_USR_SZ 3
+# define VSTR__REF_GRP_MAKE_SZ 2
+# define VSTR__SC_VEC_SZ 2
+#endif
 
 typedef struct Vstr__options
 {
@@ -142,12 +178,7 @@ typedef struct Vstr__options
  
  unsigned int  fd_count; /* fd debugging */
  unsigned long fd_close_fail_num;
- 
- unsigned long  mem_sz; /* malloc debugging */
- unsigned long  mem_num;
- unsigned long  mem_fail_num;
- Vstr__debug_malloc *mem_vals;
-} Vstr__options;
+ } Vstr__options;
 
 typedef struct Vstr__cache_data_iovec Vstr__cache_data_iovec;
 
@@ -340,66 +371,6 @@ extern int vstr__sc_fmt_add_posix(Vstr_conf *conf)
 
 extern void *vstr_wrap_memrchr(const void *, int, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__ATTR_I();
-
-#ifndef USE_MALLOC_CHECK
-# ifdef NDEBUG
-#  define USE_MALLOC_CHECK 0
-# else
-#  define USE_MALLOC_CHECK 1
-# endif
-#endif
-
-#ifndef USE_FD_CLOSE_CHECK
-# ifdef NDEBUG
-#  define USE_FD_CLOSE_CHECK 0
-# else
-#  define USE_FD_CLOSE_CHECK 1
-# endif
-#endif
-
-#if !(USE_MALLOC_CHECK)
-# define VSTR__DEBUG_MALLOC_CHECK_MEM(x) (1)
-# define VSTR__DEBUG_MALLOC_CHECK_EMPTY() /* nothing */
-# define VSTR__DEBUG_MALLOC_TST() (0)
-# define VSTR__DEBUG_MALLOC_DEC() (0)
-
-# define vstr__debug_malloc(x, F, L)     malloc(x)
-# define vstr__debug_calloc(x, y, F, L)  calloc(x, y)
-# define vstr__debug_realloc(x, y, F, L) realloc(x, y)
-# define vstr__debug_free(x)             free(x)
-# define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)
-# define VSTR__SECTS_SZ 8
-# define VSTR__STACK_BUF_SZ 64
-# define VSTR__FMT_USR_SZ 8
-# define VSTR__REF_GRP_MAKE_SZ 42 /* makes 512 bytes ia32: 4 + 4 + 12*x */
-# define VSTR__SC_VEC_SZ 32
-#else
-# define VSTR__DEBUG_MALLOC_CHECK_MEM(x) vstr__debug_malloc_check_mem(x)
-# define VSTR__DEBUG_MALLOC_CHECK_EMPTY() vstr__debug_malloc_check_empty()
-# define VSTR__DEBUG_MALLOC_TST() \
-  (!vstr__options.mem_fail_num)
-# define VSTR__DEBUG_MALLOC_DEC() \
-  (vstr__options.mem_fail_num && !--vstr__options.mem_fail_num)
-
-extern unsigned int vstr__debug_malloc_check_mem(const void *)
-    VSTR__ATTR_I();
-extern void vstr__debug_malloc_check_empty(void)
-    VSTR__ATTR_I();
-extern void *vstr__debug_malloc(size_t, const char *, unsigned int)
-    VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void *vstr__debug_calloc(size_t, size_t, const char *, unsigned int)
-    VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void *vstr__debug_realloc(void *, size_t, const char *, unsigned int)
-    VSTR__COMPILE_ATTR_MALLOC() VSTR__ATTR_I();
-extern void vstr__debug_free(void *)
-    VSTR__ATTR_I();
-# define VSTR__CONF_REF_LINKED_SZ 2
-# define VSTR__SECTS_SZ 2
-# define VSTR__STACK_BUF_SZ 2
-# define VSTR__FMT_USR_SZ 3
-# define VSTR__REF_GRP_MAKE_SZ 2
-# define VSTR__SC_VEC_SZ 2
-#endif
 
 #define VSTR__FLAG_REF_GRP_REF (1U<<6)
 extern Vstr_ref_grp_ptr *vstr__ref_grp_make(void (*func) (struct Vstr_ref *),

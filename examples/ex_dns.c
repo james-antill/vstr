@@ -48,7 +48,8 @@
 #include "dns.h"
 #include "app.h"
 
-#include "vlg_assert.h"
+#define EX_UTILS_NO_FUNCS  1
+#include "ex_utils.h"
 
 #define CL_DNS_INIT(x, y) do {                  \
       (x)->io_w_serv = (y);                     \
@@ -61,6 +62,10 @@
 #include "evnt.h"
 
 #include "opt.h"
+
+#include "mk.h"
+
+MALLOC_CHECK_DECL();
 
 struct con
 {
@@ -473,6 +478,9 @@ static void cl_timer_cli(int type, void *data)
   struct timeval tv;
   unsigned long diff = 0;
   
+  if (!data)
+    return;
+  
   if (type == TIMER_Q_TYPE_CALL_DEL)
     return;
 
@@ -501,7 +509,8 @@ static void cl_timer_con(int type, void *data)
 {
   int count = 0;
 
-  (void)data; /* currently unused */
+  if (!data)
+    return;
   
   if (type == TIMER_Q_TYPE_CALL_DEL)
     return;
@@ -664,6 +673,8 @@ int main(int argc, char *argv[])
   vlg_exit();
   
   vstr_exit();
+  
+  MALLOC_CHECK_EMPTY();
   
   exit (EXIT_SUCCESS);
 }

@@ -43,26 +43,8 @@ util-linux-2.11r-10
 
  * It's also similar to "xxd" in vim, and "od -tx1z -Ax".
  */
-#include <vstr.h>
-
-#include <err.h>
-
-#ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-#else
-# define ASSERT(x)
-# define assert(x)
-#endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
-
-#ifndef FALSE
-# define FALSE 0
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
+#define EX_UTILS_NO_FUNCS 1
+#include "ex_utils.h"
 
 #include "hexdump.h"
 

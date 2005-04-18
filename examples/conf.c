@@ -19,30 +19,89 @@
  */
 /* configuration file functions */
 
-#define CONF_COMPILE_INLINE 0
+#define EX_UTILS_NO_FUNCS 1
+#include "ex_utils.h"
+
 #include "conf.h"
 
-#include <err.h>
+#include <limits.h>
 
-#ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-#else
-# define ASSERT(x)
-# define assert(x)
-#endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
+#include "mk.h"
 
-#ifndef FALSE
-# define FALSE 0
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
+#define CLEN VSTR__AT_COMPILE_STRLEN
 
 #define VPREFIX(vstr, p, l, cstr)                                       \
-    (((l) >= strlen(cstr)) && vstr_cmp_bod_cstr_eq(vstr, p, l, cstr))
+    (((l) >= CLEN(cstr)) &&                                             \
+     vstr_cmp_buf_eq(vstr, p, CLEN(cstr), cstr, CLEN(cstr)))
+
+Conf_parse *conf_parse_make(Vstr_conf *conf)
+{
+  Conf_parse *ret   = MK(sizeof(Conf_parse));
+  Vstr_sects *sects = vstr_sects_make(4);
+  Vstr_base *s1     = vstr_make_base(conf);
+  Vstr_base *s2     = vstr_make_base(conf);
+  unsigned int *ptr = MK(sizeof(unsigned int) * 4);
+
+  if (!ret || !s1 || !sects || !ptr)
+  {
+    F(ret);
+    vstr_sects_free(sects);
+    vstr_free_base(s1);
+    vstr_free_base(s2);
+    F(ptr);
+    return (NULL);
+  }
+
+  ret->sects     = sects;
+  ret->data      = s1;
+  ret->tmp       = s2;
+  ret->types_sz  = 4;
+  ret->types_ptr = ptr;
+  ret->uvals_sz  = 0;
+  ret->uvals_num = 0;
+  ret->uvals_ptr = NULL;
+  ret->state     = CONF_PARSE_STATE_BEG;
+  ret->depth     = 0;
+  
+  return (ret);
+}
+
+void conf_parse_free(Conf_parse *conf)
+{
+  if (!conf)
+    return;
+  
+  F(conf->types_ptr);
+  vstr_sects_free(conf->sects);
+  vstr_free_base(conf->data);
+  vstr_free_base(conf->tmp);
+
+  while (conf->uvals_num)
+    vstr_ref_del(conf->uvals_ptr[--conf->uvals_num]);
+  F(conf->uvals_ptr);
+  
+  F(conf);  
+}
+
+static int conf__parse_type_add(Conf_parse *conf, unsigned int type)
+{
+  unsigned int *ptr = NULL;
+
+  ASSERT(conf->types_sz <= conf->sects->sz);
+  
+  if (conf->types_sz == conf->sects->sz)
+    goto fin_ok;
+
+  if (!MV(conf->types_ptr, ptr, sizeof(unsigned int) * conf->sects->sz))
+    return (FALSE);
+  conf->types_sz  = conf->sects->sz;
+  
+ fin_ok:
+  conf->types_ptr[conf->sects->num - 1] = type;
+  
+  return (TRUE);
+}
+
 
 static size_t conf__parse_ws(Conf_parse *conf, size_t pos, size_t len)
 {
@@ -79,6 +138,20 @@ static size_t conf__parse_comment(Conf_parse *conf, size_t pos, size_t len)
   return (0);
 }
 
+static int conf__parse_beg_list(Conf_parse *conf, size_t pos,
+                                unsigned int *list_nums)
+{
+  if (conf->depth >= CONF_PARSE_LIST_DEPTH_SZ)
+    return (FALSE);
+  
+  vstr_sects_add(conf->sects, pos, 0);
+  conf__parse_type_add(conf, CONF_TOKEN_TYPE_ERR);
+  list_nums[conf->depth++] = conf->sects->num;
+  
+  conf->state = CONF_PARSE_STATE_CHOOSE;
+  return (TRUE);
+}
+
 static int conf__parse_end_list(Conf_parse *conf, unsigned int *list_nums,
                                 int byte)
 {
@@ -91,26 +164,22 @@ static int conf__parse_end_list(Conf_parse *conf, unsigned int *list_nums,
 
   depth_beg_num = list_nums[--conf->depth];
   node = VSTR_SECTS_NUM(sects, depth_beg_num);
-  if ((byte == ']') && (vstr_export_chr(conf->data, node->pos) != '['))
-    return (FALSE);
-  if ((byte == ')') && (vstr_export_chr(conf->data, node->pos) != '('))
-    return (FALSE);
-
+  if (byte == ']')
+  {
+    conf->types_ptr[depth_beg_num - 1] = CONF_TOKEN_TYPE_SLIST;
+    if (vstr_export_chr(conf->data, node->pos) != '[')
+      return (FALSE);
+  }
+  
+  if (byte == ')')
+  {
+    conf->types_ptr[depth_beg_num - 1] = CONF_TOKEN_TYPE_CLIST;
+    if (vstr_export_chr(conf->data, node->pos) != '(')
+      return (FALSE);
+  }
+  
   ASSERT(!node->len);
   node->len = sects->num - depth_beg_num;
-  
-  conf->state = CONF_PARSE_STATE_CHOOSE;
-  return (TRUE);
-}
-
-static int conf__parse_beg_list(Conf_parse *conf, size_t pos,
-                                unsigned int *list_nums)
-{
-  if (conf->depth >= CONF_PARSE_LIST_DEPTH_SZ)
-    return (FALSE);
-  
-  vstr_sects_add(conf->sects, pos, 0);
-  list_nums[conf->depth++] = conf->sects->num;
   
   conf->state = CONF_PARSE_STATE_CHOOSE;
   return (TRUE);
@@ -122,6 +191,7 @@ static void conf__parse_beg_quote_d(Conf_parse *conf, size_t pos,
   ASSERT(conf->depth <= CONF_PARSE_LIST_DEPTH_SZ);
             
   vstr_sects_add(conf->sects, pos, 0);
+  conf__parse_type_add(conf, CONF_TOKEN_TYPE_QUOTE_D);
   list_nums[conf->depth++] = conf->sects->num;
   
   conf->state = CONF_PARSE_STATE_QUOTE_D_BEG;
@@ -133,25 +203,39 @@ static void conf__parse_beg_quote_s(Conf_parse *conf, size_t pos,
   ASSERT(conf->depth <= CONF_PARSE_LIST_DEPTH_SZ);
             
   vstr_sects_add(conf->sects, pos, 0);
+  conf__parse_type_add(conf, CONF_TOKEN_TYPE_QUOTE_S);
   list_nums[conf->depth++] = conf->sects->num;
   
   conf->state = CONF_PARSE_STATE_QUOTE_S_BEG;
 }
 
-static void conf__parse_end_quote_x(Conf_parse *conf, size_t pos,
-                                    unsigned int *list_nums)
+static void conf__parse_beg_quote_xxx(Conf_parse *conf, unsigned int *list_nums,
+                                      int three)
 {
   Vstr_sects *sects = conf->sects;
   unsigned int depth_beg_num = 0;
-  size_t beg_pos = 0;
+  size_t mv_pos = 1;
+  unsigned int state = 0;
   
   ASSERT(conf->depth);
-
-  depth_beg_num = list_nums[--conf->depth];
-  beg_pos = VSTR_SECTS_NUM(sects, depth_beg_num)->pos;
-  VSTR_SECTS_NUM(sects, depth_beg_num)->len = vstr_sc_posdiff(beg_pos, pos);
   
-  conf->state = CONF_PARSE_STATE_LIST_END_OR_WS;
+  depth_beg_num = list_nums[conf->depth - 1];
+
+  if (conf->state == CONF_PARSE_STATE_QUOTE_S_BEG)
+    state = CONF_PARSE_STATE_QUOTE_S_END;
+  if (conf->state == CONF_PARSE_STATE_QUOTE_D_BEG)
+    state = CONF_PARSE_STATE_QUOTE_D_END;
+
+  if (three)
+  {
+    mv_pos = 3;
+    ++state;
+    conf->types_ptr[depth_beg_num - 1] += 2;
+  }
+  
+  VSTR_SECTS_NUM(sects, depth_beg_num)->pos += mv_pos;
+  
+  conf->state = state;
 }
 
 static void conf__parse_end_quote_xxx(Conf_parse *conf, size_t pos,
@@ -165,28 +249,57 @@ static void conf__parse_end_quote_xxx(Conf_parse *conf, size_t pos,
 
   depth_beg_num = list_nums[--conf->depth];
   beg_pos = VSTR_SECTS_NUM(sects, depth_beg_num)->pos;
-  VSTR_SECTS_NUM(sects, depth_beg_num)->len = vstr_sc_posdiff(beg_pos, pos + 2);
+  VSTR_SECTS_NUM(sects, depth_beg_num)->pos = beg_pos;
+  VSTR_SECTS_NUM(sects, depth_beg_num)->len = pos - beg_pos;
   
   conf->state = CONF_PARSE_STATE_LIST_END_OR_WS;
 }
 
+static int conf__parse_esc_quote(Conf_parse *conf, unsigned int *list_nums,
+                                 size_t pos, size_t len, unsigned int type)
+{
+  Vstr_sects *sects = conf->sects;
+  unsigned int depth_beg_num = 0;
+
+  ASSERT(conf->depth);
+
+  if (len < 2)
+    return (FALSE);
+  
+  depth_beg_num = list_nums[conf->depth - 1];
+  if ((pos == VSTR_SECTS_NUM(sects, depth_beg_num)->pos) &&
+      vstr_cmp_cstr_eq(conf->data, pos, CLEN("\\\n"), "\\\n"))
+  {
+    VSTR_SECTS_NUM(sects, depth_beg_num)->pos += 2;
+    return (TRUE);
+  }
+  
+  if (conf->types_ptr[depth_beg_num - 1] == type)
+    ++conf->types_ptr[depth_beg_num - 1];
+
+  return (TRUE);
+}
+#define CONF__SC_PARSE_ESC_QUOTE(x) do {                                \
+      ASSERT(vstr_export_chr(data, pos) == '\\');                       \
+                                                                        \
+      if (!conf__parse_esc_quote(conf, list_nums, pos, len,             \
+                                 CONF_TOKEN_TYPE_QUOTE_ ## x))          \
+        return (CONF_PARSE_ERR);                                        \
+      plen = 2;                                                         \
+    } while (FALSE)
+
 int conf_parse_lex(Conf_parse *conf)
 {
-  Vstr_base *data = NULL;
   unsigned int list_nums[CONF_PARSE_LIST_DEPTH_SZ + 1];
+  Vstr_base *data = NULL;
   size_t pos = 1;
   size_t len = 0;
 
-  ASSERT(conf && conf->data && conf->sects);
-
+  ASSERT(conf && conf->data && conf->sects &&
+         conf->types_ptr && conf->types_sz);
+  
   data = conf->data;
   len  = data->len;
-  /*  if (FALSE && conf->parsed)
-  {
-    conf__setup_list_nums(conf, list_nums);
-    pos = conf->parsed + 1;
-    len = conf->data->len - conf->parsed;
-    } */
 
   if (conf->state != CONF_PARSE_STATE_BEG)
     return (CONF_PARSE_ERR);
@@ -275,6 +388,7 @@ int conf_parse_lex(Conf_parse *conf)
             plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, " \t\v\r\n\"'()[]");
             conf->state = CONF_PARSE_STATE_SYMBOL_END;
             vstr_sects_add(conf->sects, pos, plen);
+            conf__parse_type_add(conf, CONF_TOKEN_TYPE_SYMBOL);
             break;            
         }
       }
@@ -285,39 +399,33 @@ int conf_parse_lex(Conf_parse *conf)
         static const char dd[] = {'"', '"', 0};
         
         if (!VPREFIX(data, pos, len, dd))
-          conf->state = CONF_PARSE_STATE_QUOTE_D_END;
+          conf__parse_beg_quote_xxx(conf, list_nums, FALSE);
         else
         {
           plen = 2;
-          conf->state = CONF_PARSE_STATE_QUOTE_DDD_END;
+          conf__parse_beg_quote_xxx(conf, list_nums, TRUE);
         }
       }
       break;
       
       case CONF_PARSE_STATE_QUOTE_S_BEG:
         if (!VPREFIX(data, pos, len, "''"))
-          conf->state = CONF_PARSE_STATE_QUOTE_S_END;
+          conf__parse_beg_quote_xxx(conf, list_nums, FALSE);
         else
         {
           plen = 2;
-          conf->state = CONF_PARSE_STATE_QUOTE_SSS_END;
+          conf__parse_beg_quote_xxx(conf, list_nums, TRUE);
         }
-        break;
+      break;
         
       case CONF_PARSE_STATE_QUOTE_D_END:
         if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "\"\\")))
         {
           plen = 1;
           if (vstr_export_chr(data, pos) == '"')
-            conf__parse_end_quote_x(conf, pos, list_nums);
+            conf__parse_end_quote_xxx(conf, pos, list_nums);
           else /* \x */
-          {
-            ASSERT(vstr_export_chr(data, pos) == '\\');
-            
-            if (len < 2)
-              return (CONF_PARSE_ERR);
-            plen = 2;
-          }
+            CONF__SC_PARSE_ESC_QUOTE(D);
         }
         break;
         
@@ -331,12 +439,8 @@ int conf_parse_lex(Conf_parse *conf)
             conf__parse_end_quote_xxx(conf, pos, list_nums);
           else if (vstr_export_chr(data, pos) != '\\')
             plen = 1;
-          else
-          {
-            if (len < 2)
-              return (CONF_PARSE_ERR);
-            plen = 2;
-          }
+          else /* \x */
+            CONF__SC_PARSE_ESC_QUOTE(DDD);
         }
         break;
         
@@ -345,15 +449,9 @@ int conf_parse_lex(Conf_parse *conf)
         {
           plen = 1;
           if (vstr_export_chr(data, pos) == '\'')
-            conf__parse_end_quote_x(conf, pos, list_nums);
-          else /* \x */
-          {
-            ASSERT(vstr_export_chr(data, pos) == '\\');
-            
-            if (len < 2)
-              return (CONF_PARSE_ERR);
-            plen = 2;
-          }
+            conf__parse_end_quote_xxx(conf, pos, list_nums);
+          else
+            CONF__SC_PARSE_ESC_QUOTE(S);
         }
         break;
         
@@ -365,12 +463,8 @@ int conf_parse_lex(Conf_parse *conf)
             conf__parse_end_quote_xxx(conf, pos, list_nums);
           else if (vstr_export_chr(data, pos) != '\\')
             plen = 1;
-          else if (vstr_export_chr(data, pos) == '\\')
-          {
-            if (len < 2)
-              return (CONF_PARSE_ERR);
-            plen = 2;
-          }
+          else
+            CONF__SC_PARSE_ESC_QUOTE(SSS);
         }
         break;
         
@@ -427,251 +521,54 @@ int conf_parse_lex(Conf_parse *conf)
     len -= plen; pos += plen;
   }
 
-  if (conf->sects->malloc_bad)
+  if (conf->sects->malloc_bad || conf->depth)
     return (CONF_PARSE_ERR);
 
   conf->state = CONF_PARSE_STATE_END;
   return (CONF_PARSE_FIN);
 }
 
-static unsigned int conf__tok_get_type(Vstr_base *s1, size_t pos, size_t len)
-{
-  int byte = 0;
-
-  ASSERT(s1 && pos);
-  if (vstr_sc_poslast(pos, len) > s1->len)
-    return (CONF_TOKEN_TYPE_ERR);
-  
-  switch ((byte = vstr_export_chr(s1, pos)))
-  {
-    case ' ':  /* whitespace */
-    case '\t': /* whitespace */
-    case '\v': /* whitespace */
-    case '\r': /* whitespace */
-    case '\n': /* whitespace */
-    case ')':  /* parse is fucked */
-    case ']':  /* parse is fucked */
-      assert(FALSE);
-      return (CONF_TOKEN_TYPE_ERR);
-      
-    case '(': return (CONF_TOKEN_TYPE_CLIST);
-    case '[': return (CONF_TOKEN_TYPE_SLIST);
-
-    case '"':
-    {
-      static const char ddd[] = {'"', '"', '"', 0};
-      if (VPREFIX(s1, pos, len, ddd))
-        return (CONF_TOKEN_TYPE_QUOTE_DDD);
-      return (CONF_TOKEN_TYPE_QUOTE_D);
-    }
-    
-    case '\'':
-      if (VPREFIX(s1, pos, len, "'''"))
-        return (CONF_TOKEN_TYPE_QUOTE_SSS);
-      return (CONF_TOKEN_TYPE_QUOTE_S);
-
-    default:
-      return (CONF_TOKEN_TYPE_SYMBOL);
-  }
-}
-
-int conf_parse_token(const Conf_parse *conf, Conf_token *token)
-{
-  Vstr_sect_node *node = NULL;
- 
-  ASSERT(conf && conf->sects && token);
-  ASSERT(!conf->depth); /* finished lex */
-
-  if (token->num >= conf->sects->num)
-    return (FALSE);
-  ++token->num;
-  
-  while (token->depth_num &&
-         (token->depth_nums[token->depth_num - 1] < token->num))
-  {
-    ASSERT(token->depth_nums[token->depth_num - 1] == (token->num - 1));
-    --token->depth_num;
-  }
-  
-  node = VSTR_SECTS_NUM(conf->sects, token->num);
-  
-  token->node->pos = node->pos;
-  token->node->len = node->len;
-  token->type      = conf__tok_get_type(conf->data, node->pos, node->len);
-
-  if (0) { }
-  else if ((token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||
-           (token->type == CONF_TOKEN_TYPE_QUOTE_SSS))
-  {
-    ASSERT(token->node->len >= 6);
-    token->node->pos += 3;
-    token->node->len -= 6;
-  }
-  else if ((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||
-           (token->type == CONF_TOKEN_TYPE_QUOTE_S))
-  {
-    ASSERT(token->node->len >= 2);
-    token->node->pos += 1;
-    token->node->len -= 2;
-  }
-  else if ((token->type == CONF_TOKEN_TYPE_CLIST) ||
-           (token->type == CONF_TOKEN_TYPE_SLIST))
-    token->depth_nums[token->depth_num++] = token->num + token->node->len;
-
-  return (TRUE);
-}
-
-void conf_token_init(Conf_token *token)
+Conf_token *conf_token_make(void)
 {
   Conf_token dummy = CONF_TOKEN_INIT;
-  *token = dummy;
+  Conf_token *ret = MK(sizeof(Conf_token));
+
+  if (!ret)
+    return (NULL);
+  
+  *ret = dummy;
+
+  return (ret);
+}
+
+void conf_token_free(Conf_token *token)
+{
+  F(token);
 }
 
 static const char *conf__token_name_map[] = {
  "<** Error **>",
  "Circular bracket list",
  "Square bracket list",
- "Quoted string (3x double)",
  "Quoted string (double)",
- "Quoted string (3x single)",
+ "Quoted string (double, with Escaping)",
+ "Quoted string (3x double)",
+ "Quoted string (3x double, with Escaping)",
  "Quoted string (single)",
+ "Quoted string (single, with Escaping)",
+ "Quoted string (3x single)",
+ "Quoted string (3x single, with Escaping)",
  "Symbol"
 };
 
 const char *conf_token_name(const Conf_token *token)
 {
-  ASSERT(token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
+  ASSERT(token);
 
+  if (token->type > CONF_TOKEN_TYPE_SYMBOL)
+    return ("User type");
+  
   return (conf__token_name_map[token->type]);
-}
-
-const Vstr_sect_node *conf_token_value(const Conf_token *token)
-{
-  ASSERT(token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if ((token->type >= CONF_TOKEN_TYPE_QUOTE_DDD) &&
-      (token->type <= CONF_TOKEN_TYPE_SYMBOL))
-    return (token->node);
-  
-  return (NULL);
-}
-
-int conf_token_cmp_val_cstr_eq(const Conf_parse *conf, const Conf_token *token,
-                               const char *cstr)
-{
-  const Vstr_sect_node *val = conf_token_value(token);
-  
-  if (!val)
-    return (FALSE);
-  
-  return (vstr_cmp_cstr_eq(conf->data, val->pos, val->len, cstr));
-}
-
-int conf_token_cmp_sym_cstr_eq(const Conf_parse *conf, const Conf_token *token,
-                               const char *cstr)
-{
-  ASSERT(conf && conf->sects &&
-         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if (token->type == CONF_TOKEN_TYPE_SYMBOL)
-    return (conf_token_cmp_val_cstr_eq(conf, token, cstr));
-
-  return (FALSE);
-}
-
-int conf_token_cmp_str_cstr_eq(const Conf_parse *conf, const Conf_token *token,
-                               const char *cstr)
-{
-  ASSERT(conf && conf->sects &&
-         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if ((token->type >= CONF_TOKEN_TYPE_QUOTE_DDD) &&
-      (token->type <= CONF_TOKEN_TYPE_QUOTE_S))
-    return (conf_token_cmp_val_cstr_eq(conf, token, cstr));
-  
-  return (FALSE);
-}
-
-extern inline int conf_token_cmp_case_val_cstr_eq(const Conf_parse *conf,
-                                                  const Conf_token *token,
-                                                  const char *cstr)
-{
-  const Vstr_sect_node *val = conf_token_value(token);
-  
-  if (!val) return (FALSE);
-  
-  return (vstr_cmp_case_cstr_eq(conf->data, val->pos, val->len, cstr));
-}
-
-extern inline int conf_token_cmp_case_sym_cstr_eq(const Conf_parse *conf,
-                                                  const Conf_token *token,
-                                                  const char *cstr)
-{
-  ASSERT(conf && conf->sects &&
-         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if (token->type == CONF_TOKEN_TYPE_SYMBOL)
-    return (conf_token_cmp_case_val_cstr_eq(conf, token, cstr));
-  return (FALSE);
-}
-
-extern inline int conf_token_cmp_case_str_cstr_eq(const Conf_parse *conf,
-                                                  const Conf_token *token,
-                                                  const char *cstr)
-{
-  ASSERT(conf && conf->sects &&
-         token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if ((token->type >= CONF_TOKEN_TYPE_QUOTE_DDD) &&
-      (token->type <= CONF_TOKEN_TYPE_QUOTE_S))
-    return (conf_token_cmp_case_val_cstr_eq(conf, token, cstr));
-  
-  return (FALSE);
-}
-
-unsigned int conf_token_list_num(const Conf_token *token, unsigned int depth)
-{
-  ASSERT(token && (token->type <= CONF_TOKEN_TYPE_SYMBOL));
-  
-  if (!depth || (depth > token->depth_num))
-    return (0);
-
-  ASSERT(token->depth_nums[depth - 1] >= token->num);
-  
-  return (token->depth_nums[depth - 1] - token->num);
-}
-
-int conf_sc_token_parse_toggle(const Conf_parse *conf,
-                               Conf_token *token, int *val)
-{
-  unsigned int num = conf_token_list_num(token, token->depth_num);
-  int ern = CONF_SC_TYPE_RET_OK;
-  
-  ASSERT(val);
-
-  if (num > 1)
-    ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
-  
-  if (!num)
-  {
-    *val = !*val;
-    return (ern);
-  }
-
-  conf_parse_token(conf, token);
-  if (0) { }
-  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "on") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "true") ||
-           conf_token_cmp_val_cstr_eq(conf, token, "1"))
-    *val = 1;
-  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "off") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "false") ||
-           conf_token_cmp_val_cstr_eq(conf, token, "0"))
-    *val = 0;
-  else
-    ern = CONF_SC_TYPE_RET_ERR_NO_MATCH;
-
-  return (ern);
 }
 
 int conf_sc_token_parse_uint(const Conf_parse *conf, Conf_token *token,
@@ -691,7 +588,9 @@ int conf_sc_token_parse_uint(const Conf_parse *conf, Conf_token *token,
     ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
 
   conf_parse_token(conf, token);
-  pv   = conf_token_value(token);
+  if (!(pv = conf_token_value(token)))
+    return (CONF_SC_TYPE_RET_ERR_PARSE);
+
   *val = vstr_parse_uint(conf->data, pv->pos, pv->len, nflags, &len, NULL);
   if (len != pv->len)
     ern = CONF_SC_TYPE_RET_ERR_PARSE;
@@ -712,7 +611,8 @@ int conf_sc_token_app_vstr(const Conf_parse *conf, Conf_token *token,
   if (!num)
     return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
   conf_parse_token(conf, token);
-  pv = conf_token_value(token);
+  if (!(pv = conf_token_value(token)))
+    return (CONF_SC_TYPE_RET_ERR_PARSE);
   
   if (vstr_add_vstr(s1, s1->len, conf->data, pv->pos, pv->len,
                     VSTR_TYPE_SUB_BUF_REF))
@@ -733,11 +633,13 @@ int conf_sc_token_sub_vstr(const Conf_parse *conf, Conf_token *token,
   const Vstr_sect_node *pv = NULL;
   
   ASSERT(s1);
-
+  
   if (!num)
     return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
   conf_parse_token(conf, token);
-  pv = conf_token_value(token);
+  if (!(pv = conf_token_value(token)))
+    return (CONF_SC_TYPE_RET_ERR_PARSE);
+
   vstr_sub_vstr(s1, pos, len, conf->data, pv->pos, pv->len,
                 VSTR_TYPE_SUB_BUF_REF);
   
@@ -802,6 +704,61 @@ int conf_sc_conv_unesc(Vstr_base *s1, size_t pos, size_t len,
 }
 #undef SUB
 
+int conf_token_set_user_value(Conf_parse *conf, Conf_token *token,
+                              unsigned int type, Vstr_ref *ref)
+{
+  Vstr_ref *oref = NULL;
+  
+  ASSERT(conf && token);
+  ASSERT(type <= (UINT_MAX - CONF_TOKEN_TYPE_USER_BEG));
+  
+  /* must not be a CLIST or SLIST */
+  if ((token->type == CONF_TOKEN_TYPE_CLIST) ||
+      (token->type == CONF_TOKEN_TYPE_SLIST))
+    return (FALSE);
+
+  if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
+    oref = conf->uvals_ptr[token->u.uval_num];
+  else
+  {
+    if (conf->uvals_sz <= conf->uvals_num)
+    {
+      unsigned int num = (conf->uvals_sz << 1) + 1;
+      Vstr_ref **refs  = NULL;
+
+      if (num <= conf->uvals_sz)
+        return (FALSE);
+      
+      if (!conf->uvals_sz && !(conf->uvals_ptr = MK(sizeof(Vstr_ref *) * num)))
+        return (FALSE);
+      else if (!MV(conf->uvals_ptr, refs, sizeof(Vstr_ref *) * num))
+        return (FALSE);
+      
+      conf->uvals_sz  = num; 
+    }
+    VSTR_SECTS_NUM(conf->sects, token->num)->pos = conf->uvals_num;
+    token->u.uval_num                            = conf->uvals_num;
+    
+    ++conf->uvals_num;
+  }
+  
+  token->type = CONF_TOKEN_TYPE_USER_BEG + type;
+
+  conf->types_ptr[token->num - 1]    = token->type;
+  conf->uvals_ptr[token->u.uval_num] = NULL;
+  if (ref)
+    conf->uvals_ptr[token->u.uval_num] = vstr_ref_add(ref);
+  
+  vstr_ref_del(oref);
+  
+  return (TRUE);
+}
+
+void conf_parse_compress(Conf_parse *conf)
+{ /* FIXME: remove all Vstr data that isn't referenced, fixup sections */
+  (void)conf;
+}
+
 void conf_parse_backtrace(Vstr_base *out, const char *filename,
                           const Conf_parse *conf, const Conf_token *token)
 {
@@ -812,20 +769,25 @@ void conf_parse_backtrace(Vstr_base *out, const char *filename,
   
   if (conf->state != CONF_PARSE_STATE_END)
   {
-    vstr_add_fmt(out, out->len, "Syntax error in %s.\n", filename);
+    vstr_add_fmt(out, out->len, "Syntax error in %s,  ", filename);
+    vstr_add_fmt(out, out->len, "  State was: %d", conf->state);
     return;
   }
 
-  if (!(val = conf_token_value(token)))
-    vstr_add_fmt(out, out->len, "Failed parse on node %u [%s]\n",
+  /* walk backwards */
+  if (token->type > CONF_TOKEN_TYPE_SYMBOL)
+    vstr_add_fmt(out, out->len, "Failed parse on node %u (%s %d)",
+                 token->num, conf_token_name(token),
+                 token->type - CONF_TOKEN_TYPE_SYMBOL);
+  else if (!(val = conf_token_value(token)))
+    vstr_add_fmt(out, out->len, "Failed parse on node %u [%s]",
                  token->num, conf_token_name(token));
   else
   {
     Vstr_base *s1 = conf->data;
     
-    vstr_add_fmt(out, out->len, "Failed parse on node %u <%s>: ",
+    vstr_add_fmt(out, out->len, "Failed parse on node %u <%s> = ",
                  token->num, conf_token_name(token));
     vstr_add_vstr(out, out->len, s1, val->pos, val->len, VSTR_TYPE_ADD_BUF_REF);
-    vstr_add_cstr_buf(out, out->len, "\n");
   }
 }

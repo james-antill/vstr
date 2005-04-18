@@ -895,7 +895,7 @@ Constant: VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL
 
  Explanation:
 
-  This error code means that the ipv4 CIDR mask wasn't full (Ie.
+  This error code means that the ipv4 NETMASK mask wasn't full (Ie.
  127.0.0.1/255.0 is an ipv4 address with a non full ipv4 netmask).
 
 
@@ -958,8 +958,8 @@ Constant: VSTR_FLAG_PARSE_IPV4_NETMASK
  Note:
 
   If both this and the VSTR_FLAG_PARSE_IPV4_CIDR flag is given, then either
- masking interface will be parsed out as no valid CIDR value is a valid netmask
- prefix.
+ masking interface will be parsed out (it will try a CIDR mask first and if
+ that filas, fall back to a netmask prefix).
 
 
 Constant: VSTR_FLAG_PARSE_IPV4_NETMASK_FULL
@@ -967,7 +967,7 @@ Constant: VSTR_FLAG_PARSE_IPV4_NETMASK_FULL
  Explanation:
 
   This flag changes the parsing so that the function will return an error if a
- non full ipv4 CIDR mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non
+ non full ipv4 NETMASK mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non
  full ipv4 netmask). If this flag isn't given the missing numbers are assumed to
  be zero.
 

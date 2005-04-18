@@ -9,10 +9,29 @@
 
 #include "evnt.h"
 
+#define HTTPD_CONF_SERV_DEF_PORT 80
+
+/* if the data is less than this, queue instead of hitting write */
+#define HTTPD_CONF_MAX_WAIT_SEND 16
+
+struct Con;
+struct Httpd_req_data;
+
 #include "httpd_conf_main.h"
 #include "httpd_conf_req.h"
 #include "httpd_err_codes.h"
 
+struct Acpt_data
+{
+ struct Evnt *evnt;
+ struct sockaddr_storage sa[1];
+};
+
+struct Acpt_listener
+{
+ struct Evnt evnt[1];
+ Vstr_ref *ref;
+};
 
 struct Http_hdrs
 {
@@ -32,6 +51,7 @@ struct Http_hdrs
   Vstr_base *combiner_store;
   Vstr_base *comb;
   Vstr_sect_node hdr_accept[1];
+  Vstr_sect_node hdr_accept_charset[1];
   Vstr_sect_node hdr_accept_encoding[1];
   Vstr_sect_node hdr_accept_language[1];
   Vstr_sect_node hdr_connection[1];
@@ -39,8 +59,10 @@ struct Http_hdrs
  } multi[1];
 };
 
-struct Httpd_req_data
+typedef struct Httpd_req_data
 {
+ Httpd_policy_opts *policy;
+
  struct Http_hdrs http_hdrs[1];
  Vstr_base *fname;
  size_t len;
@@ -72,6 +94,8 @@ struct Httpd_req_data
  size_t           expires_len;
 
  time_t now;
+
+ size_t vhost_prefix_len;
  
  unsigned int ver_0_9 : 1;
  unsigned int ver_1_1 : 1;
@@ -83,8 +107,9 @@ struct Httpd_req_data
  
  unsigned int content_encoding_identity : 1;
 
- unsigned int direct_uri      : 1;
- unsigned int direct_filename : 1;
+ unsigned int direct_uri         : 1;
+ unsigned int direct_filename    : 1;
+ unsigned int skip_document_root : 1;
  
  unsigned int parse_accept : 1;
  unsigned int allow_accept_encoding : 1;
@@ -92,20 +117,35 @@ struct Httpd_req_data
 
  unsigned int user_return_error_code : 1;
  
+ unsigned int vary_star : 1;
+ unsigned int vary_ac   : 1;
+ unsigned int vary_ae   : 1;
+ unsigned int vary_al   : 1;
+ 
  unsigned int using_req : 1;
  unsigned int done_once : 1;
  
  unsigned int malloc_bad : 1;
+} Httpd_req_data;
+
+struct File_sect
+{
+  int fd;
+  VSTR_AUTOCONF_uintmax_t off;
+  VSTR_AUTOCONF_uintmax_t len;
 };
 
 struct Con
 {
  struct Evnt evnt[1];
 
- int f_fd;
- VSTR_AUTOCONF_uintmax_t f_off;
- VSTR_AUTOCONF_uintmax_t f_len;
+ Vstr_ref *acpt_sa_ref;
+ 
+ Httpd_policy_opts *policy;
 
+ struct File_sect f[1];
+
+ unsigned int vary_star : 1;
  unsigned int parsed_method_ver_1_0 : 1;
  unsigned int keep_alive : 3;
  
@@ -139,10 +179,52 @@ struct Con
       http__skip_lws(s1, &p, &l);                                       \
     } while (FALSE)
 
-extern int httpd_sc_add_default_hostname(struct Httpd_opts *opts,
-                                         Vstr_base *lfn, size_t pos);
-extern void httpd_req_absolute_uri(struct Httpd_opts *,
-                                   struct Con *, struct Httpd_req_data *,
-                                   Vstr_base *);
+#define HTTPD_APP_REF_VSTR(x, s2, p2, l2)                               \
+    vstr_add_vstr(x, (x)->len, s2, p2, l2, VSTR_TYPE_ADD_BUF_REF)
+
+#ifdef HTTPD_HAVE_GLOBAL_OPTS
+extern Httpd_opts httpd_opts[1]; /* hacky ... */
+#endif
+
+extern void httpd_init(Vlg *);
+extern void httpd_exit(void);
+
+extern Httpd_req_data *http_req_make(struct Con *);
+extern void http_req_free(Httpd_req_data *);
+extern void http_req_exit(void);
+
+extern void httpd_fin_fd_close(struct Con *);
+
+extern int httpd_valid_url_filename(Vstr_base *, size_t, size_t);
+extern int httpd_init_default_hostname(Httpd_policy_opts *);
+extern int httpd_sc_add_default_hostname(Httpd_policy_opts *,
+                                         Vstr_base *, size_t);
+
+extern int httpd_canon_path(Vstr_base *);
+extern int httpd_canon_dir_path(Vstr_base *);
+
+extern void httpd_req_absolute_uri(struct Con *, Httpd_req_data *,
+                                   Vstr_base *, size_t, size_t);
+
+extern int http_req_chk_dir(struct Con *, Httpd_req_data *);
+extern int http_req_content_type(Httpd_req_data *);
+
+extern void http_app_def_hdrs(struct Con *, Httpd_req_data *,
+                              unsigned int, const char *, time_t,
+                              const char *, int, VSTR_AUTOCONF_uintmax_t);
+
+
+extern int http_fmt_add_vstr_add_vstr(Vstr_conf *, const char *);
+extern int http_fmt_add_vstr_add_sect_vstr(Vstr_conf *, const char *);
+
+
+extern int http_req_op_get(struct Con *, Httpd_req_data *);
+extern int http_req_op_opts(struct Con *, Httpd_req_data *);
+extern int http_req_op_trace(struct Con *, Httpd_req_data *);
+
+extern int httpd_serv_send(struct Con *);
+extern int httpd_serv_recv(struct Con *);
+
+extern int httpd_con_init(struct Con *, struct Acpt_listener *);
 
 #endif

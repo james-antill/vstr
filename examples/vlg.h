@@ -8,6 +8,7 @@
 typedef struct Vlg
 {
  struct Vstr_base *out_vstr;
+ struct Vstr_base *sig_out_vstr;
  unsigned int out_dbg : 2;
  unsigned int daemon_mode : 1;
  unsigned int log_pid_console : 1;
@@ -26,6 +27,11 @@ extern void vlg_undbg(Vlg *);
 
 extern int vlg_pid_set(Vlg *, int);
 extern int vlg_prefix_set(Vlg *, int);
+
+extern void vlg_pid_file(Vlg *, const char *);
+
+extern int  vlg_sc_fmt_add_all(Vstr_conf *);
+extern void vlg_sc_bind_mount(const char *);
 
 extern void vlg_vabort(Vlg *, const char *fmt, va_list )
    VSTR__COMPILE_ATTR_FMT(2, 0);
@@ -57,10 +63,20 @@ extern void vlg_dbg2(Vlg *, const char *fmt, ... )
 extern void vlg_dbg3(Vlg *, const char *fmt, ... )
       VSTR__COMPILE_ATTR_FMT(2, 3);
 
-extern void vlg_pid_file(Vlg *, const char *);
-
-extern int  vlg_sc_fmt_add_all(Vstr_conf *);
-extern void vlg_sc_bind_mount(const char *);
+extern void vlg_sig_abort(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
+extern void vlg_sig_err(Vlg *, int, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(3, 4);
+extern void vlg_sig_warn(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
+extern void vlg_sig_info(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
+extern void vlg_sig_dbg1(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
+extern void vlg_sig_dbg2(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
+extern void vlg_sig_dbg3(Vlg *, const char *fmt, ... )
+      VSTR__COMPILE_ATTR_FMT(2, 3);
 
 #ifndef VLG_COMPILE_INLINE
 # ifdef VSTR_AUTOCONF_NDEBUG

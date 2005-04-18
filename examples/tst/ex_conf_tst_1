@@ -7,7 +7,7 @@ beg   ; simple symbol
 
 (abcd "foo" ; Not so simple list
  [ xyz """\
-zoom
+zoom \a foo
 """ blah]) # See if stuff works again, now...
 
 (bart baz)  # simple list 2
@@ -15,6 +15,10 @@ zoom
 
 () # Empty lists...
 [ ]
+
+"""\
+line on it's own ... unquoted
+"""
 
 <> # Some symbols
 {}

@@ -16,6 +16,9 @@ HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip; q = 0 . 1, identity; q = 1.000
 
 HEAD http://default/ HTTP/1.1
+Accept-Encoding: gzip; q = 0 . 02, identity; q = 0.1
+
+HEAD http://default/ HTTP/1.1
 Accept-Encoding: gzip; q = 0 . 0
 
 HEAD http://default/ HTTP/1.1

@@ -40,6 +40,9 @@
 
 #include <limits.h>
 
+#include <signal.h>
+
+
 #include "date.h"
 
 #define VLG_COMPILE_INLINE 0
@@ -58,14 +61,8 @@
 # define CONF_USE_MOUNT_BIND FALSE
 #endif
 
-#ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-#else
-# define ASSERT(x)
-# define assert(x)
-#endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
+#define EX_UTILS_NO_FUNCS 1
+#include "ex_utils.h"
 
 /* how much memory should we preallocate so it's "unlikely" we'll get mem errors
  * when writting a log entry */
@@ -87,6 +84,7 @@
 #endif
 
 static Vstr_conf *vlg__conf = NULL;
+static Vstr_conf *vlg__sig_conf = NULL;
 static int vlg__done_syslog_init = FALSE;
 
 
@@ -400,7 +398,9 @@ void vlg_init(void)
 {
   unsigned int buf_sz = 0;
   
-  if (!(vlg__conf = vstr_make_conf()))
+  if (!(vlg__conf     = vstr_make_conf()))
+    goto malloc_err_vstr_conf;
+  if (!(vlg__sig_conf = vstr_make_conf()))
     goto malloc_err_vstr_conf;
 
   if (!vstr_cntl_conf(vlg__conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
@@ -408,8 +408,14 @@ void vlg_init(void)
       !vlg_sc_fmt_add_all(vlg__conf) ||
       FALSE)
     goto malloc_err_vstr_fmt_all;
+  if (!vstr_cntl_conf(vlg__sig_conf, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$') ||
+      !vstr_sc_fmt_add_all(vlg__sig_conf) ||
+      !vlg_sc_fmt_add_all(vlg__sig_conf) ||
+      FALSE)
+    goto malloc_err_vstr_fmt_all;
 
-  vstr_cntl_conf(vlg__conf, VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &buf_sz);
+  vstr_cntl_conf(vlg__conf,     VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &buf_sz);
+  vstr_cntl_conf(vlg__sig_conf, VSTR_CNTL_CONF_GET_NUM_BUF_SZ, &buf_sz);
 
   /* don't bother with _NON nodes */
   if (!vstr_make_spare_nodes(vlg__conf, VSTR_TYPE_NODE_BUF,
@@ -419,12 +425,20 @@ void vlg_init(void)
       !vstr_make_spare_nodes(vlg__conf, VSTR_TYPE_NODE_REF,
                              (VLG_MEM_PREALLOC / buf_sz) + 1))
     goto malloc_err_vstr_spare;
+  if (!vstr_make_spare_nodes(vlg__sig_conf, VSTR_TYPE_NODE_BUF,
+                             (VLG_MEM_PREALLOC / buf_sz) + 1) ||
+      !vstr_make_spare_nodes(vlg__sig_conf, VSTR_TYPE_NODE_PTR,
+                             (VLG_MEM_PREALLOC / buf_sz) + 1) ||
+      !vstr_make_spare_nodes(vlg__sig_conf, VSTR_TYPE_NODE_REF,
+                             (VLG_MEM_PREALLOC / buf_sz) + 1))
+    goto malloc_err_vstr_spare;
 
   return;
   
  malloc_err_vstr_spare:
  malloc_err_vstr_fmt_all:
   vstr_free_conf(vlg__conf);
+  vstr_free_conf(vlg__sig_conf);
  malloc_err_vstr_conf:
   errno = ENOMEM; err(EXIT_FAILURE, "vlg_init");
 }
@@ -434,7 +448,8 @@ void vlg_exit(void)
   if (vlg__done_syslog_init)
     closelog();
   
-  vstr_free_conf(vlg__conf); vlg__conf = NULL;
+  vstr_free_conf(vlg__conf);     vlg__conf     = NULL;
+  vstr_free_conf(vlg__sig_conf); vlg__sig_conf = NULL;
 }
 
 Vlg *vlg_make(void)
@@ -445,6 +460,9 @@ Vlg *vlg_make(void)
     goto malloc_err_vlg;
 
   if (!(vlg->out_vstr = vstr_make_base(vlg__conf)))
+    goto malloc_err_vstr_base;
+  
+  if (!(vlg->sig_out_vstr = vstr_make_base(vlg__sig_conf)))
     goto malloc_err_vstr_base;
   
   vlg->out_dbg            = 0;
@@ -464,8 +482,8 @@ Vlg *vlg_make(void)
 /* don't actually free ... this shouldn't happen until exit time anyway */
 void vlg_free(Vlg *vlg)
 {
-  vstr_free_base(vlg->out_vstr);
-  vlg->out_vstr = NULL; /* should NULL deref if used post "free" */
+  vstr_free_base(vlg->out_vstr);     vlg->out_vstr     = NULL;
+  vstr_free_base(vlg->sig_out_vstr); vlg->sig_out_vstr = NULL;
 }
 
 void vlg_daemon(Vlg *vlg, const char *name)
@@ -487,7 +505,7 @@ void vlg_debug(Vlg *vlg)
 
 void vlg_undbg(Vlg *vlg)
 {
-  if (vlg->out_dbg)
+  if (!vlg->out_dbg)
     return;
 
   --vlg->out_dbg;
@@ -509,6 +527,27 @@ int vlg_prefix_set(Vlg *vlg, int prefix)
   vlg->log_prefix_console = prefix;
 
   return (old);
+}
+
+void vlg_pid_file(Vlg *vlg, const char *pid_file)
+{
+  Vstr_base *out = vlg->out_vstr;
+  
+  if (out->len)
+    vlg_err(vlg, EXIT_FAILURE, "Data in vlg for pid_file\n");
+  
+  if (!vstr_add_fmt(out, out->len, "%lu", (unsigned long)getpid()))
+  {
+    vstr_del(out, 1, out->len);
+    vlg_err(vlg, EXIT_FAILURE, "vlg_pid_file: %m\n");
+  }
+
+  if (!vstr_sc_write_file(out, 1, out->len,
+                          pid_file, O_WRONLY | O_CREAT | O_TRUNC, 0644, 0,NULL))
+  {
+    vstr_del(out, 1, out->len);
+    vlg_err(vlg, EXIT_FAILURE, "write_file(%s): %m\n", pid_file);
+  }
 }
 
 /* ================== actual logging functions ================== */
@@ -628,17 +667,142 @@ void vlg_dbg3(Vlg *vlg, const char *fmt, ... )
   va_end(ap);
 }
 
-void vlg_pid_file(Vlg *vlg, const char *pid_file)
-{
-  Vstr_base *out = vlg->out_vstr;
-  
-  if (out->len)
-    vlg_err(vlg, EXIT_FAILURE, "Data in vlg for pid_file\n");
-  
-  if (!vstr_add_fmt(out, out->len, "%lu", (unsigned long)getpid()))
-    vlg_err(vlg, EXIT_FAILURE, "vlg_pid_file: %m\n");
+/* ---------- signal ... ---------- */
 
-  if (!vstr_sc_write_file(out, 1, out->len,
-                          pid_file, O_WRONLY | O_CREAT | O_TRUNC, 0644, 0,NULL))
-    vlg_err(vlg, EXIT_FAILURE, "write_file(%s): %m\n", pid_file);
+static volatile sig_atomic_t vlg__in_signal = FALSE;
+
+/* due to multiple signals hitting while we are inside vlg_*() we have
+   signal safe varients, that:
+   
+   block all signals (apart from SEGV and ABRT)
+   do their thing
+   make sure they have flushed
+   restore signal mask
+   
+   ...note that this does mean if we've crashed inside vlg, we are screwed
+   and just abort().
+*/
+
+#define VLG__SIG_BLOCK_BEG() do {                                       \
+      sigset_t oset;                                                    \
+      sigset_t nset;                                                    \
+                                                                        \
+      if (sigfillset(&nset)                      == -1) abort();        \
+      if (sigdelset(&nset, SIGSEGV)              == -1) abort();        \
+      if (sigdelset(&nset, SIGABRT)              == -1) abort();        \
+      if (sigprocmask(SIG_SETMASK, &nset, &oset) == -1) abort();        \
+                                                                        \
+      if (vlg__in_signal) abort();                                      \
+      else {                                                            \
+        Vstr_base *tmp = vlg->out_vstr;                                 \
+                                                                        \
+        vlg__in_signal = TRUE;                                          \
+        vlg->out_vstr     = vlg->sig_out_vstr;                          \
+        vlg->sig_out_vstr = NULL;                                       \
+        if (vlg->out_vstr->len) abort()
+
+#define VLG__SIG_BLOCK_END()                                            \
+        if (vlg->out_vstr->len) abort();                                \
+        vlg->sig_out_vstr = vlg->out_vstr;                              \
+        vlg->out_vstr     = tmp;                                        \
+        vlg__in_signal = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      if (sigprocmask(SIG_SETMASK, &oset, NULL) == -1) abort();         \
+    } while (FALSE)
+
+void vlg_sig_abort(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vabort(vlg, fmt, ap);
+  va_end(ap);
+  
+  VLG__SIG_BLOCK_END();
+  
+  ASSERT_NOT_REACHED();
 }
+
+void vlg_sig_err(Vlg *vlg, int exit_code, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_verr(vlg, exit_code, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+  
+  ASSERT_NOT_REACHED();
+}
+
+void vlg_sig_warn(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vwarn(vlg, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+}
+
+void vlg_sig_info(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vinfo(vlg, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+}
+
+void vlg_sig_dbg1(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vdbg1(vlg, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+}
+
+void vlg_sig_dbg2(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vdbg2(vlg, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+}
+
+void vlg_sig_dbg3(Vlg *vlg, const char *fmt, ... )
+{
+  va_list ap;
+
+  VLG__SIG_BLOCK_BEG();
+  
+  va_start(ap, fmt);
+  vlg_vdbg3(vlg, fmt, ap);
+  va_end(ap);
+
+  VLG__SIG_BLOCK_END();
+}
+

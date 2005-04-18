@@ -2,16 +2,8 @@
 #include "bag.h"
 
 /* need to use vlg etc. */
-#include <assert.h>
-#define ASSERT assert
-
-#ifndef FALSE
-# define FALSE 0
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
+#define EX_UTILS_NO_FUNCS 1
+#include "ex_utils.h"
 
 #ifdef __GNUC__
 # define BAG__ATTR_UNUSED(x) vstr__UNUSED_ ## x __attribute__((unused))
@@ -182,3 +174,4 @@ void bag_cb_free_malloc(void *val)
 {
   free(val);
 }
+

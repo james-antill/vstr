@@ -64,8 +64,9 @@
 #define EX_UTILS_NO_USE_IO_FD 1
 #include "ex_utils.h"
 
-#define TRUE 1
-#define FALSE 0
+#include "mk.h"
+
+MALLOC_CHECK_DECL();
 
 #define CONF_SERV_DEF_PORT    7
 
@@ -74,7 +75,7 @@
 #define CONF_MEM_PREALLOC_MAX (128 * 1024)
 
 /* is the data is less than this, queue instead of hitting write */
-#define CL_MAX_WAIT_SEND 16
+#define SERV_CONF_MAX_WAIT_SEND 16
 
 #define CONF_READ_CALL_LIMIT 4
 
@@ -110,7 +111,7 @@ static int serv_recv(struct con *con)
   vstr_mov(con->evnt->io_w, con->evnt->io_w->len,
            con->evnt->io_r, 1, con->evnt->io_r->len);
   
-  return (evnt_send_add(con->evnt, FALSE, CL_MAX_WAIT_SEND));
+  return (evnt_send_add(con->evnt, FALSE, SERV_CONF_MAX_WAIT_SEND));
 
  malloc_bad:
   con->evnt->io_r->conf->malloc_bad = FALSE;
@@ -166,36 +167,43 @@ static void serv_cb_func_acpt_free(struct Evnt *evnt)
   free(evnt);
 }
 
-static struct Evnt *serv_cb_func_accept(int fd,
+static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
                                         struct sockaddr *sa, socklen_t len)
 {
   struct con *con = malloc(sizeof(struct con));
 
-  if (opts->max_connections && (evnt_num_all() >= opts->max_connections))
-    evnt_wait_cntl_del(acpt_evnt, POLLIN);
-
+  (void)from_evnt; /* FIXME: */
+  
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
-    goto make_acpt_fail;
+    goto sa_fail;
   
   if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
     goto make_acpt_fail;
   
   if (!evnt_sc_timeout_via_mtime(con->evnt, opts->idle_timeout * 1000))
-    goto timer_add_fail;
+    goto evnt_fail;
 
-  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
-  
   con->evnt->cbs->cb_func_recv = serv_cb_func_recv;
   con->evnt->cbs->cb_func_send = serv_cb_func_send;
   con->evnt->cbs->cb_func_free = serv_cb_func_free;
   
+  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
+  
+  if (opts->max_connections && (evnt_num_all() >= opts->max_connections))
+    evnt_wait_cntl_del(acpt_evnt, POLLIN);
+
   return (con->evnt);
 
- timer_add_fail:
+ evnt_fail:
   evnt_free(con->evnt);
+  return (NULL);
+  
  make_acpt_fail:
   free(con);
   VLG_WARNNOMEM_RET(NULL, (vlg, __func__));
+ sa_fail:
+  free(con);
+  VLG_WARNNOMEM_RET(NULL, (vlg, "%s: HTTPD sa == ipv4 fail\n", "accept"));
 }
 
 static void serv_make_bind(const char *acpt_addr, short acpt_port)
@@ -427,7 +435,8 @@ static void serv_cmd_line(int argc, char *argv[])
   }
 
   if (opts->num_procs > 1)
-    cntl_sc_multiproc(vlg, acpt_evnt, opts->num_procs, !!cntl_file);
+    cntl_sc_multiproc(vlg, acpt_evnt, opts->num_procs,
+                      !!cntl_file, opts->use_pdeathsig);
   }
   opt_serv_conf_free(opts);
   
@@ -487,35 +496,19 @@ int main(int argc, char *argv[])
   
   serv_cmd_line(argc, argv);
   
-  while (evnt_waiting() && !child_exited)
+  while (evnt_waiting())
   {
-    int ready = evnt_poll();
-    struct timeval tv;
-    
-    if ((ready == -1) && (errno != EINTR))
-      vlg_err(vlg, EXIT_FAILURE, "%s: %m\n", "poll");
-    if (ready == -1)
-      continue;
-
-    evnt_out_dbg3("1");
-    evnt_scan_fds(ready, CL_MAX_WAIT_SEND);
-    evnt_out_dbg3("2");
-    evnt_scan_send_fds();
-    evnt_out_dbg3("3");
-    
-    gettimeofday(&tv, NULL);
-    timer_q_run_norm(&tv);
-
-    evnt_out_dbg3("4");
-    evnt_scan_send_fds();
-    evnt_out_dbg3("5");
-
+    evnt_sc_main_loop(SERV_CONF_MAX_WAIT_SEND);
+    if (child_exited)
+    {
+      vlg_warn(vlg, "Child exited.\n");
+      evnt_close(acpt_evnt);
+      evnt_scan_q_close();
+      child_exited = FALSE;
+    }
     serv_cntl_resources();
   }
   evnt_out_dbg3("E");
-  
-  if (child_exited)
-    vlg_warn(vlg, "Child exited\n");
   
   evnt_timeout_exit();
   cntl_child_free();  
@@ -526,6 +519,8 @@ int main(int argc, char *argv[])
   vlg_exit();
 
   vstr_exit();
+
+  MALLOC_CHECK_EMPTY();
   
   exit (EXIT_SUCCESS);
 }

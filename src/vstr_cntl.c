@@ -30,13 +30,6 @@ Vstr__options vstr__options =
 
  0, /* fd count */
  0, /* fd close fail num */
- 
- /* BEG: mem */
- 0, /* sz */
- 0, /* num */
- 0, /* fail num */
- NULL /* values */
- /* END: mem */
 };
 
 int vstr_cntl_opt(int option, ...)
@@ -88,7 +81,7 @@ int vstr_cntl_opt(int option, ...)
       else if (USE_FD_CLOSE_CHECK && (valT == 0x0F0F))
       { vstr__options.fd_close_fail_num = valV; ret = TRUE; }
       else if (USE_MALLOC_CHECK   && (valT == 0xF0F0))
-      { vstr__options.mem_fail_num      = valV; ret = TRUE; }
+      { MALLOC_CHECK_FAIL_IN(valV); ret = TRUE; }
     }
 #endif
 

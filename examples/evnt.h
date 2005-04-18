@@ -5,16 +5,28 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <signal.h>
 
 #include <timer_q.h>
 
-#define EVNT_CONF_NAGLE FALSE
+#ifdef __linux__
+# include <sys/prctl.h>
+#endif
+
+#ifdef PR_SET_PDEATHSIG
+# define PROC_CNTL_PDEATHSIG(x1) prctl(PR_SET_PDEATHSIG, x1, 0, 0, 0)
+#else
+# define PROC_CNTL_PDEATHSIG(x1) (-1)
+#endif
+
+#define EVNT_CONF_NAGLE FALSE /* configurable */
 
 struct Evnt;
 
 struct Evnt_cbs
 {
- struct Evnt *(*cb_func_accept)    (int, struct sockaddr *, socklen_t);
+ struct Evnt *(*cb_func_accept)    (struct Evnt *,
+                                    int, struct sockaddr *, socklen_t);
  int          (*cb_func_connect)   (struct Evnt *);
  int          (*cb_func_recv)      (struct Evnt *);
  int          (*cb_func_send)      (struct Evnt *);
@@ -79,6 +91,10 @@ struct Evnt
 #define EVNT_SA_IN(x) ((struct sockaddr_in *)(x)->sa)
 #define EVNT_SA_UN(x) ((struct sockaddr_un *)(x)->sa)
 
+extern volatile sig_atomic_t evnt_child_exited;
+
+extern int evnt_opt_nagle;
+
 extern void evnt_logger(Vlg *);
 
 extern void evnt_fd__set_nonblock(int, int);
@@ -89,10 +105,12 @@ extern void evnt_wait_cntl_add(struct Evnt *, int);
 extern void evnt_wait_cntl_del(struct Evnt *, int);
 
 extern int evnt_cb_func_connect(struct Evnt *);
-extern struct Evnt *evnt_cb_func_accept(int, struct sockaddr *, socklen_t);
+extern struct Evnt *evnt_cb_func_accept(struct Evnt *,
+                                        int, struct sockaddr *, socklen_t);
 extern int evnt_cb_func_recv(struct Evnt *);
 extern int evnt_cb_func_send(struct Evnt *);
 extern void evnt_cb_func_free(struct Evnt *);
+extern void evnt_cb_func_F(struct Evnt *);
 extern int evnt_cb_func_shutdown_r(struct Evnt *);
 
 extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
@@ -121,6 +139,8 @@ extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);
 extern void evnt_scan_fds(unsigned int, size_t);
 extern void evnt_scan_send_fds(void);
+extern void evnt_scan_q_close(void);
+
 
 extern void evnt_stats_add(struct Evnt *, const struct Evnt *);
 
@@ -134,8 +154,15 @@ extern int  evnt_fd_set_filter(struct Evnt *, const char *);
 extern void evnt_timeout_init(void);
 extern void evnt_timeout_exit(void);
 
+extern pid_t evnt_make_child(void);
+extern int evnt_is_child(void);
+extern int evnt_child_block_beg(void);
+extern int evnt_child_block_end(void);
+
 extern int evnt_sc_timeout_via_mtime(struct Evnt *, unsigned long);
 extern void evnt_sc_main_loop(size_t);
+
+extern time_t evnt_sc_time(void);
 
 extern void evnt_vlg_stats_info(struct Evnt *, const char *);
 
@@ -152,8 +179,6 @@ extern struct Evnt *evnt_find_least_used(void);
 extern struct Evnt *evnt_queue(const char *);
 
 extern void evnt_out_dbg3(const char *);
-
-extern int evnt_opt_nagle;
 
 #ifndef EVNT_COMPILE_INLINE
 #define EVNT_COMPILE_INLINE 1

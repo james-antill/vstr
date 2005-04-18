@@ -13,6 +13,8 @@ fi
 
 
 CFLAGS="-O2 -march=i386 -mcpu=i686" \
-  $c --enable-wrap-memset --enable-wrap-memcpy --enable-linker-script \
+  $c --enable-wrap-memset --enable-wrap-memcpy --enable-wrap-memchr \
+     --enable-wrap-memcmp \
+     --enable-linker-script \
      --enable-examples-static --with-fmt-float=glibc $@ && \
   make clean && make check

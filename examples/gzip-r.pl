@@ -62,11 +62,12 @@ sub gzip_file
 
 	defined($dst) || die "Can't readlink $name: $!";
 
-	if ($dst !~ /$filter_exts_re/)
+	my $dst_gz = $dst . ".gz";
+	if (($dst !~ /$filter_exts_re/) && -f $dst_gz)
 	  {
 	    unlink($namegz);
 	    print STDOUT "Symlink: $name => $dst\n" if ($verbose_compress > 1);
-	    symlink($dst . ".gz", $namegz) || die "Can't symlink($namegz): $!";;
+	    symlink($dst_gz, $namegz) || die "Can't symlink($namegz): $!";
 	  }
 	return;
       }

@@ -34,7 +34,6 @@
 # define lseek64 VSTR_AUTOCONF_lseek64
 #endif
 
-
 /* **************************************************************** */
 /* defines: TRUE/FALSE and assert(), Note that GETOPT is used later */
 /* **************************************************************** */
@@ -88,16 +87,19 @@
 
 
 #ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at line %u", __LINE__); } while (FALSE)
-# define ASSERT_NOT_REACHED() assert(FALSE)
+# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+# define assert_ret(x, y) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+# define ASSERT_RET(x, y) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
 # define ASSERT_NO_SWITCH_DEF() break
 #else
 # define assert(x) do { } while (FALSE)
 # define ASSERT(x) do { } while (FALSE)
-# define ASSERT_NOT_REACHED() assert(FALSE)
+# define assert_ret(x, y) do { if (x) {} else return y; } while (FALSE)
+# define ASSERT_RET(x, y) do { if (x) {} else return y; } while (FALSE)
 # define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(!"default label")
 #endif
+#define ASSERT_NOT_REACHED() assert(FALSE)
 
 
 /* ********************************* */
@@ -123,7 +125,7 @@
 #define IO_NONE  3
 #define IO_FAIL  4
 
-#ifndef EX_UTILS_NO_USE_BLOCK
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_BLOCK)
 /* block waiting for IO read, write or both... */
 static void io_block(int io_r_fd, int io_w_fd)
 {
@@ -164,7 +166,7 @@ static void io_block(int io_r_fd, int io_w_fd)
 #endif
 
 /* Try and move some data from Vstr string to fd */
-#ifndef EX_UTILS_NO_USE_PUT
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_PUT)
 static int io_put(Vstr_base *io_w, int fd)
 {
   if (!io_w->len)
@@ -185,7 +187,7 @@ static int io_put(Vstr_base *io_w, int fd)
 }
 #endif
 
-#ifndef EX_UTILS_NO_USE_BLOCK
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_BLOCK)
 #ifndef EX_UTILS_NO_USE_PUTALL
 /* loop outputting data until empty, blocking when needed */
 static int io_put_all(Vstr_base *io_w, int fd)
@@ -206,7 +208,7 @@ static int io_put_all(Vstr_base *io_w, int fd)
 #endif
 #endif
 
-#ifndef EX_UTILS_NO_USE_INPUT
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_INPUT)
 #ifndef EX_UTILS_NO_USE_GET
 /* Try and move some data from fd to Vstr string */
 static int io_get(Vstr_base *io_r, int fd)
@@ -231,7 +233,7 @@ static int io_get(Vstr_base *io_r, int fd)
 }
 #endif
 
-#ifndef EX_UTILS_NO_USE_LIMIT
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_LIMIT)
 /* block read or writting, depending on limits */
 static void io_limit(int io_r_state, int io_r_fd,
                      int io_w_state, int io_w_fd, Vstr_base *s_w)
@@ -251,7 +253,7 @@ static void io_limit(int io_r_state, int io_r_fd,
 
 /* generic POSIX IO functions that _don't_ call Vstr functions */
 
-#ifndef EX_UTILS_NO_USE_IO_FD
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_IO_FD)
 static int io_fd_set_o_nonblock(int fd)
 {
   int flags = 0;
@@ -283,7 +285,7 @@ static int io_fd_set_o_nonblock(int fd)
 # define OS_INHERITS_NONBLOCK_FROM_OPEN 0
 #endif
 
-#ifndef EX_UTILS_NO_USE_OPEN
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_OPEN)
 # ifndef VSTR_AUTOCONF_HAVE_OPEN64
 #  define open64 open
 # endif
@@ -305,7 +307,7 @@ static int io__open(const char *filename, int xflags)
 
   return (fd);
 }
-#ifndef EX_UTILS_NO_USE_BLOCKING_OPEN
+#if !defined(EX_UTILS_NO_USE_BLOCK) && !defined(EX_UTILS_NO_USE_BLOCKING_OPEN)
 static int io_open(const char *filename)
 {
   return (io__open(filename, 0));
@@ -323,7 +325,7 @@ static int io_open_nonblock(const char *filename)
 /* generic helper functions */
 /* ************************ */
 
-#ifndef EX_UTILS_NO_USE_INIT
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_INIT)
 /* Example init function */
 static Vstr_base *ex_init(Vstr_base **s2)
 {
@@ -363,7 +365,7 @@ static Vstr_base *ex_init(Vstr_base **s2)
 }
 #endif
 
-#ifndef EX_UTILS_NO_USE_EXIT
+#if !defined(EX_UTILS_NO_FUNCS) && !defined(EX_UTILS_NO_USE_EXIT)
 /* Example exit function */
 static int ex_exit(Vstr_base *s1, Vstr_base *s2)
 {

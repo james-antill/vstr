@@ -97,7 +97,6 @@
      func (conf, pb ":%"  "d%"  nchk pe) &&                    \
      func (conf, pb ":%" "d%d%" nchk pe))
 
-
 #if VSTR_COMPILE_MACRO_FUNCTIONS
 /* these are also inline functions... */
 #define VSTR_SC_POSDIFF(bp, ep) (((ep) - (bp)) + 1)

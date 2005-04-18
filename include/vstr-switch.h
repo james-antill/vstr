@@ -26,6 +26,10 @@
 # define VSTR_COMPILE_ATTRIBUTES 1
 #endif
 
+#ifndef VSTR_COMPILE_BUILTINS
+# define VSTR_COMPILE_BUILTINS 1
+#endif
+
 #ifndef VSTR_COMPILE_INCLUDE
 # define VSTR_COMPILE_INCLUDE 1
 #endif
@@ -130,10 +134,13 @@
 # define VSTR__COMPILE_ATTR_WARN_UNUSED_RET() /* nothing */
 #endif
 
-#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && VSTR_COMPILE_BUILTINS
 # define VSTR__AT_COMPILE_CONST_P(x) __builtin_constant_p (x)
+# define VSTR__AT_COMPILE_STRLEN(x)                             \
+    (__builtin_constant_p (x) ? __builtin_strlen (x) : strlen(x))
 #else
 # define VSTR__AT_COMPILE_CONST_P(x) (0)
+# define VSTR__AT_COMPILE_STRLEN(x) strlen(x)
 #endif
 
 #ifdef VSTR_AUTOCONF_NDEBUG

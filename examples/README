@@ -59,8 +59,7 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	conf
-         Support ../ in relative urls (only begining though).
-         conf file mmaps.
+         Allow url-path in httpd_policy_path_lim_eq ?
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
 	  Support per file.
@@ -73,15 +72,18 @@ http://www.sans.org/top20/#u2
            FIREFOX
               Accept: image/png,*/*;q=0.5
               Accept-Language: en-us,en;q=0.5
+         Random extra headers
          Allow addition of ETag header
          Allow custom error-code pages, start with 404
+         Allow req_conf to change to a defined set of policies
+         Allow req_conf to have matches (maybe (match-allow [] ...) ?)
+         conf file mmaps?
 	man page
         limiting IO
 	  easyish to do globally, not possible other wise until conf. done
 	    not to easy to do multi proc. ... need to pass data/connections
 	max timeout for keep-alive
 	max requests for keep-alive?
-	Check config, Ie. --dir-filename="foo bar"
 	jhttpd -> vstr-httpd?
         mmap cache?
 	408 - request timeout?

@@ -1,34 +1,16 @@
 #include "opt_serv.h"
 
+#define EX_UTILS_NO_FUNCS 1
+#include "ex_utils.h"
+
 #include "conf.h"
-
-#include <err.h>
-
-#ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-#else
-# define ASSERT(x)
-# define assert(x)
-#endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
-
-#ifndef FALSE
-# define FALSE 0
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
 
 static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
                              const Conf_parse *conf, Conf_token *token)
 {
   if (token->type != CONF_TOKEN_TYPE_CLIST)
     return (FALSE);
-  if (!conf_token_list_num(token, token->depth_num))
-    return (FALSE);
-  conf_parse_token(conf, token);
+  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
 
   if (0){ }
   else if (OPT_SERV_SYM_EQ("chroot"))
@@ -40,6 +22,7 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
     OPT_SERV_X_TOGGLE(opts->become_daemon);
   else if (OPT_SERV_SYM_EQ("drop-privs"))
   {
+    unsigned int depth = token->depth_num;
     int val = opts->drop_privs;
     int ern = conf_sc_token_parse_toggle(conf, token, &val);
     unsigned int num = conf_token_list_num(token, token->depth_num);
@@ -48,44 +31,34 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
       return (FALSE);
     if (!val && num)
       return (FALSE);
-    if ((num != 3) && (num != 6))
-      return (FALSE);
 
     opts->drop_privs = val;
-    while (num)
+    while (conf_token_list_num(token, depth))
     {
-      conf_parse_token(conf, token);
-      if (token->type != CONF_TOKEN_TYPE_CLIST)
-        return (FALSE);
-      
-      conf_parse_token(conf, token);
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+
       if (0) { }
-      else if (OPT_SERV_SYM_EQ("uid")) OPT_SERV_X_UINT(opts->priv_uid);
-      else if (OPT_SERV_SYM_EQ("gid")) OPT_SERV_X_UINT(opts->priv_gid);
+      else if (OPT_SERV_SYM_EQ("uid"))       OPT_SERV_X_UINT(opts->priv_uid);
+      else if (OPT_SERV_SYM_EQ("usrname"))   OPT_SERV_X_VSTR(opts->vpriv_uid);
+      else if (OPT_SERV_SYM_EQ("username"))  OPT_SERV_X_VSTR(opts->vpriv_uid);
+      else if (OPT_SERV_SYM_EQ("gid"))       OPT_SERV_X_UINT(opts->priv_gid);
+      else if (OPT_SERV_SYM_EQ("grpname"))   OPT_SERV_X_VSTR(opts->vpriv_gid);
+      else if (OPT_SERV_SYM_EQ("groupname")) OPT_SERV_X_VSTR(opts->vpriv_gid);
       else
         return (FALSE);
-      
-      num -= 3;
     }
-    if (num)
-      return (FALSE);
   }
-  else if (OPT_SERV_SYM_EQ("idle-timeout"))
+  else if (OPT_SERV_SYM_EQ("idle-timeout")) /* FIXME: policy */
     OPT_SERV_X_UINT(opts->idle_timeout);
   else if (OPT_SERV_SYM_EQ("listen"))
   {
-    unsigned int num = conf_token_list_num(token, token->depth_num);
-
-    if ((num != 3) && (num != 6) && (num != 9) && (num != 12) && (num != 15))
-      return (FALSE);
-    
-    while (num)
+    unsigned int depth = token->depth_num;
+    while (conf_token_list_num(token, depth))
     {
-      conf_parse_token(conf, token);
-      if (token->type != CONF_TOKEN_TYPE_CLIST)
-        return (FALSE);
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
 
-      conf_parse_token(conf, token);
       if (0) { }
       else if (OPT_SERV_SYM_EQ("defer-accept"))
         OPT_SERV_X_UINT(opts->defer_accept);
@@ -100,18 +73,30 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
         OPT_SERV_X_VSTR(opts->acpt_filter_file);
       else
         return (FALSE);
-      
-      num -= 3;
     }
-
-    if (num)
-      return (FALSE);
   }
+  else if (OPT_SERV_SYM_EQ("parent-death-signal"))
+    OPT_SERV_X_TOGGLE(opts->use_pdeathsig);
   else if (OPT_SERV_SYM_EQ("pid-file"))
     OPT_SERV_X_VSTR(opts->pid_file);
   else if (OPT_SERV_SYM_EQ("processes") ||
            OPT_SERV_SYM_EQ("procs"))
     OPT_SERV_X_UINT(opts->num_procs);
+  else if (OPT_SERV_SYM_EQ("rlimit"))
+  {
+    unsigned int depth = token->depth_num;
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+
+      if (0) { }
+      else if (OPT_SERV_SYM_EQ("file-num"))
+        OPT_SERV_X_UINT(opts->rlim_file_num);
+      else
+        return (FALSE);
+    }
+  }
   else
     return (FALSE);
   
@@ -131,30 +116,33 @@ int opt_serv_conf(struct Opt_serv_opts *opts,
   while (conf_token_list_num(token, cur_depth))
   {
     conf_parse_token(conf, token);
+    if (conf_token_at_depth(token) != cur_depth)
+      return (FALSE);
     if (!opt_serv__conf_d1(opts, conf, token))
       return (FALSE);
   }
   
+  /* And they all live together ... dum dum */
+  if (conf->data->conf->malloc_bad)
+    return (FALSE);
+
   return (TRUE);
 }
 
 int opt_serv_conf_parse_cstr(Vstr_base *out,
                              Opt_serv_opts *opts, const char *data)
 {
-  Conf_parse conf[1]  = {CONF_PARSE_INIT};
+  Conf_parse *conf    = conf_parse_make(NULL);
   Conf_token token[1] = {CONF_TOKEN_INIT};
 
   ASSERT(opts && data);
   
-  if (!(conf->data = vstr_make_base(NULL)))
-    goto base_malloc_fail;
+  if (!conf)
+    goto conf_malloc_fail;
   
   if (!vstr_add_cstr_ptr(conf->data, conf->data->len, data))
     goto read_malloc_fail;
 
-  if (!(conf->sects = vstr_sects_make(2)))
-    goto sects_malloc_fail;
-  
   if (!conf_parse_lex(conf))
     goto conf_fail;
 
@@ -167,37 +155,31 @@ int opt_serv_conf_parse_cstr(Vstr_base *out,
       goto conf_fail;
   }
 
-  vstr_sects_free(conf->sects);
-  vstr_free_base(conf->data);
+  conf_parse_free(conf);
   return (TRUE);
   
  conf_fail:
   conf_parse_backtrace(out, data, conf, token);
- sects_malloc_fail:
-  vstr_sects_free(conf->sects);
  read_malloc_fail:
-  vstr_free_base(conf->data);
- base_malloc_fail:
+  conf_parse_free(conf);
+ conf_malloc_fail:
   return (FALSE);
 }
 
 int opt_serv_conf_parse_file(Vstr_base *out,
                              Opt_serv_opts *opts, const char *fname)
 {
-  Conf_parse conf[1]  = {CONF_PARSE_INIT};
+  Conf_parse *conf    = conf_parse_make(NULL);
   Conf_token token[1] = {CONF_TOKEN_INIT};
 
   ASSERT(opts && fname);
   
-  if (!(conf->data = vstr_make_base(NULL)))
-    goto base_malloc_fail;
+  if (!conf)
+    goto conf_malloc_fail;
   
   if (!vstr_sc_read_len_file(conf->data, 0, fname, 0, 0, NULL))
     goto read_malloc_fail;
 
-  if (!(conf->sects = vstr_sects_make(2)))
-    goto sects_malloc_fail;
-  
   if (!conf_parse_lex(conf))
     goto conf_fail;
 
@@ -216,17 +198,14 @@ int opt_serv_conf_parse_file(Vstr_base *out,
       goto conf_fail;
   }
 
-  vstr_sects_free(conf->sects);
-  vstr_free_base(conf->data);
+  conf_parse_free(conf);
   return (TRUE);
   
  conf_fail:
   conf_parse_backtrace(out, fname, conf, token);
- sects_malloc_fail:
-  vstr_sects_free(conf->sects);
  read_malloc_fail:
-  vstr_free_base(conf->data);
- base_malloc_fail:
+  conf_parse_free(conf);
+ conf_malloc_fail:
   return (FALSE);
 }
 

@@ -1,41 +1,26 @@
-[Square bracket list]
-  <Symbol>
-   1
-  <Symbol>
-   2
-<Symbol>
- beg
-[Circular bracket list]
-  <Symbol>
-   abcd
-  <Quoted string (double)>
-   foo
-  [Square bracket list]
-    <Symbol>
-     xyz
-    <Quoted string (3x double)>
-     \
-zoom
+1. [Square bracket list]
+  2. <Symbol> = 1
+  3. <Symbol> = 2
+4. <Symbol> = beg
+5. [Circular bracket list]
+  6. <Symbol> = abcd
+  7. <Quoted string (double)> = foo
+  8. [Square bracket list]
+    9. <Symbol> = xyz
+    10. <Quoted string (3x double, with Escaping)> = zoom \a foo
 
-    <Symbol>
-     blah
-[Circular bracket list]
-  <Symbol>
-   bart
-  <Symbol>
-   baz
-[Square bracket list]
-  <Symbol>
-   foo
-  <Quoted string (single)>
-   bar
-[Circular bracket list]
-[Square bracket list]
-<Symbol>
- <>
-<Symbol>
- {}
-<Symbol>
- #no-comment;here#
-<Symbol>
- -end-
+    11. <Symbol> = blah
+12. [Circular bracket list]
+  13. <Symbol> = bart
+  14. <Symbol> = baz
+15. [Square bracket list]
+  16. <Symbol> = foo
+  17. <Quoted string (single)> = bar
+18. [Circular bracket list]
+19. [Square bracket list]
+20. <Quoted string (3x double)> = line on it's own ... unquoted
+
+21. <Symbol> = <>
+22. <Symbol> = {}
+23. <Symbol> = #no-comment;here#
+24. <Symbol> = -end-

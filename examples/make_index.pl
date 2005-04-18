@@ -24,14 +24,16 @@ my $filter_args = $filter_def_args;
 
 my $sort_def_args = "--without-locale";
 my $sort_args = $sort_def_args;
-my $html_def_args = "";
+my $html_def_args = "--css-filename http://www.and.org/dir_list.css";
 my $html_args = $html_def_args;
+my $index_loc = undef;
 
 pod2usage(0) if !
 GetOptions ("filter-args=s@" => \$filter_args,
 	    "sort-args=s@" => \$sort_args,
 	    "html-args=s@" => \$html_args,
 	    "dir-name|dirname|d=s" => \$dir_name,
+	    "output|o=s" => \$index_loc,
 	    "prefix-exes|P=s" => \$prefix,
 	    "help|?"   => \$help,
 	    "man"      => \$man);
@@ -54,10 +56,17 @@ my $dir_loc   = shift @ARGV;
 
 pod2usage(0) if (! -d $dir_loc);
 
-my $index_loc = $dir_loc . "/index.html";
-
+if (!defined ($index_loc))
+  { $index_loc = $dir_loc . "/index.html"; }
 if (!defined ($dir_name))
-  { $dir_name = $dir_loc; }
+  {
+    $dir_name = $dir_loc;
+    $dir_name =~ m!/([^/]+)/*$!;
+    if ($1 ne '')
+      { $dir_name = $1; }
+    else
+      { $dir_name = "Unknown"; }
+  }
 
 my $cmds = <<EOL;
  ${prefix}dir_list --size --follow -- '$dir_loc' | \
