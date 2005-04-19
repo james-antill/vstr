@@ -27,7 +27,7 @@ GET http://X/foo.example.com HTTP/1.1
 GET http://X/foo.example.com/ HTTP/1.1
 Range:      bytes = 2-9
 
-GET http://X/foo.example.com/../ HTTP/1.1
+GET http://X/foo.example.com/.%2F/ HTTP/1.1
 Connection: Keep-Alive
 Range:      bytes = 2-9
 

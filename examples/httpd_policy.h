@@ -190,25 +190,29 @@ extern inline int httpd_policy_path_end_eq(const Vstr_base *s1,
 extern inline void httpd_policy_path_mod_name(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  *pos = vstr_srch_chr_rev(s1, *pos, *len, '/');
-  HTTPD_POLICY__ASSERT(*pos); ++*pos;
-      
-  *len = vstr_sc_posdiff(*pos, *len);
+  size_t srch = vstr_srch_chr_rev(s1, *pos, *len, '/');
+  size_t tmp  = 0;
+  HTTPD_POLICY__ASSERT(srch); ++srch;
+
+  tmp = (srch - *pos);
+  *len -= tmp;
+  *pos += tmp;
 }
 
 extern inline void httpd_policy_path_mod_extn(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  size_t orig_len = *len;
+  size_t tmp = *len;
   
   httpd_policy_path_mod_name(s1, pos, len);
 
+  tmp = vstr_sc_poslast(*pos, *len);
   if (!(*len = vstr_srch_chr_rev(s1, *pos, *len, '.')))
-    *pos = orig_len;
+    *pos = tmp + 1; /* at point just after basename */
   else
   {
-    *pos = *len;
-    *len = vstr_sc_posdiff(*pos, orig_len);
+    *pos = *len; /* include '.' */
+    *len = vstr_sc_posdiff(*pos, tmp);
   }
 }
 
@@ -220,7 +224,7 @@ extern inline void httpd_policy_path_mod_bnwe(const Vstr_base *s1,
   httpd_policy_path_mod_name(s1, pos, len);
 
   if ((tmp = vstr_srch_chr_rev(s1, *pos, *len, '.')))
-    *len = vstr_sc_posdiff(*pos, tmp) - 1;
+    *len = vstr_sc_posdiff(*pos, tmp) - 1; /* don't include '.' */
 }
 
 extern inline int httpd_policy_path_lim_eq(const Vstr_base *s1,

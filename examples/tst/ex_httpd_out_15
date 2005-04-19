@@ -1,27 +1,27 @@
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Accept-Ranges: bytes
 Content-Length: 0
 Allow: GET, HEAD, OPTIONS, TRACE
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Accept-Ranges: bytes
 Content-Length: 0
 Allow: GET, HEAD, OPTIONS, TRACE
 
 HTTP/1.1 200 OK
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Accept-Ranges: bytes
 Content-Length: 0
 Allow: GET, HEAD, OPTIONS, TRACE
 
 HTTP/1.1 403 Forbidden
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Last-Modified:
 Content-Type: text/html
 Content-Length: 327
@@ -40,7 +40,7 @@ Content-Length: 327
 </html>
 HTTP/1.1 400 Bad Request
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Last-Modified:
 Connection: close
 Content-Type: text/html

@@ -51,7 +51,7 @@ HTTP/1.1 after implementing a server is
      if-modified-since/if-unmodified-since
      single byte ranges, if-range
      accept-encoding/content-encoding for gzip (via. pre-generated files)
-      Also obeys identity
+      Also fully obeys identity
 
     Parses /etc/mime.types file
       plus extensions for disallowing certain file types.
@@ -66,10 +66,13 @@ HTTP/1.1 after implementing a server is
       Generate all four types of redirect's.
       Generate the usable types of error conditions.
       Change the file object used to serve the data.
-      Change other configuration parameters for this request, etc.
+      Change other configuration parameters for the request, etc.
+      All "configuration parameters" done through policies that can be changed
+       based on connection or request information.
+      Has a native ACL configuration (can also use Linux socket filters).
 
     includes init.d file, and allows "local controller" connections for soft
-    restarts etc.
+    restarts, status information etc.
 
     Converter to make log files that look like apache-httpd combined log files.
 
@@ -82,8 +85,6 @@ HTTP/1.1 after implementing a server is
                     for MP systems).
 
       Call any i18n/gettext libc functions (will be fixed).
-
-      Have a native ACL configuration (will be fixed, can use socket filters).
 
       Parse or honor the Accept-Language header.
       Parse or honor the Accept-Charset header.
@@ -105,7 +106,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Fri Apr  8 16:01:35 EDT 2005
+Last modified: Mon Apr 18 01:35:20 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

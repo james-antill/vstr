@@ -1970,7 +1970,6 @@ static void serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
 
   if (!pagesz)
     pagesz = sysconf(_SC_PAGESIZE);
-  
   if (pagesz == -1)
     req->policy->use_mmap = FALSE;
 
@@ -2695,13 +2694,13 @@ static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
     if (!httpd_serv_add_vhost(con, req))
       return (FALSE);
   
-  /* check posix path ... including hostname, for NIL and chdir() escapes */
+  /* check posix path ... including hostname, for NIL and path escapes */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
     HTTPD_ERR_RET(req, 403, FALSE);
       
   if (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/../") ||
       VSUFFIX(req->fname, 1, req->fname->len, "/.."))
-    HTTPD_ERR_RET(req, 403, FALSE);
+    HTTPD_ERR_RET(req, 400, FALSE);
 
   ASSERT(fname->len);
   assert(VPREFIX(fname, 1, fname->len, "/") ||

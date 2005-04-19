@@ -264,8 +264,6 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   {
     unsigned int code = 0;
 
-    if (!req->direct_uri)
-      return (FALSE);
     if (conf_sc_token_parse_uint(conf, token, &code))
       return (FALSE);
     req->user_return_error_code = TRUE;
@@ -317,22 +315,22 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   else if (OPT_SERV_SYM_EQ("Content-Location:"))
   {
     unsigned int lim = HTTPD_POLICY_PATH_LIM_NONE;
-    size_t orig_len = 0;
-    size_t pos = 1;
-    size_t len = req->fname->len;
+    size_t pos = 0;
+    size_t len = 0;
+    size_t fname_pos = 1;
+    size_t fname_len = req->fname->len;
     Vstr_ref *ref = NULL;
     int altered = FALSE;
     
-    len -= req->vhost_prefix_len;
-    pos += req->vhost_prefix_len;
+    fname_len -= req->vhost_prefix_len;
+    fname_pos += req->vhost_prefix_len;
     
     if (!req->xtra_content && !(req->xtra_content = vstr_make_base(NULL)))
       return (FALSE);
-    orig_len = req->xtra_content->len + 1;
-    HTTPD_APP_REF_VSTR(req->xtra_content, req->fname, pos, len);
+    pos = req->xtra_content->len + 1;
+    HTTPD_APP_REF_VSTR(req->xtra_content, req->fname, fname_pos, fname_len);
 
-    pos = orig_len;
-    len = vstr_sc_poslast(orig_len, req->xtra_content->len);
+    len = vstr_sc_posdiff(pos, req->xtra_content->len);
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, NULL, &lim, &ref))
       return (FALSE);
@@ -342,9 +340,9 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     if (!altered)
       return (TRUE);
     
-    len = vstr_sc_poslast(orig_len, req->xtra_content->len);
-
+    len = vstr_sc_posdiff(pos, req->xtra_content->len);
     httpd_req_absolute_uri(con, req, req->xtra_content, pos, len);
+    len = vstr_sc_posdiff(pos, req->xtra_content->len);
     
     req->content_location_vs1 = req->xtra_content;
     req->content_location_pos = pos;

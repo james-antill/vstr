@@ -60,6 +60,7 @@ http://www.sans.org/top20/#u2
 	 stat cache
 	conf
          Allow url-path in httpd_policy_path_lim_eq ?
+         expires-in - does cache-control and expires ?
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
 	  Support per file.

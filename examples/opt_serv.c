@@ -81,7 +81,43 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
     OPT_SERV_X_VSTR(opts->pid_file);
   else if (OPT_SERV_SYM_EQ("processes") ||
            OPT_SERV_SYM_EQ("procs"))
-    OPT_SERV_X_UINT(opts->num_procs);
+  {
+    unsigned int opt__val = 0;
+    unsigned int ret = conf_sc_token_parse_uint(conf, token, &opt__val);
+    
+    if (ret == CONF_SC_TYPE_RET_ERR_PARSE)
+    {
+      const Vstr_sect_node *pv = NULL;
+      long sc_val = -1;
+      
+      if (!(pv = conf_token_value(token)))
+        return (FALSE);
+      if (0) { }
+      else if (vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-number-processors-configured>") ||
+               vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-num-procs-configured>") ||
+               vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-num-procs-conf>"))
+        sc_val = sysconf(_SC_NPROCESSORS_CONF);
+      else if (vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-number-processors-online>") ||
+               vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-num-procs-online>") ||
+               vstr_cmp_cstr_eq(conf->data, pv->pos, pv->len,
+                                "<sysconf-num-procs-onln>"))
+        sc_val = sysconf(_SC_NPROCESSORS_ONLN);
+      else      
+        return (FALSE);
+      if (sc_val == -1)
+        sc_val = 1;
+      opt__val = sc_val;  
+    }
+    else if (ret)
+      return (FALSE);
+    
+    opts->num_procs = opt__val;
+  }
   else if (OPT_SERV_SYM_EQ("rlimit"))
   {
     unsigned int depth = token->depth_num;

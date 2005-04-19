@@ -1,6 +1,6 @@
 HTTP/1.1 417 Expectation Failed
 Date:
-Server: jhttpd/0.9.5 (Vstr)
+Server: jhttpd/0.9.99 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes

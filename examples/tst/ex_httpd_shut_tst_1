@@ -25,10 +25,10 @@ HEAD http://foo.example.COM HTTP/1.1
 GET http://foo.EXAMPLE.com/ HTTP/1.1
 Range:      bytes = 2-9
 
-GET http://foo.example.com/.. HTTP/1.1
+GET http://foo.example.com/%2F. HTTP/1.1
 Range:      bytes = 2-9
 
-GET http://foo.example.com/../ HTTP/1.1
+GET http://foo.example.com/%2f./ HTTP/1.1
 Connection: Keep-Alive
 Range:      bytes = 2-9
 

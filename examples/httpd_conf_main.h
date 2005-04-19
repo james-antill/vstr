@@ -9,7 +9,7 @@
 #include "mime_types.h"
 
 /* **** defaults for runtime conf **** */
-#define HTTPD_CONF_VERSION "0.9.5"
+#define HTTPD_CONF_VERSION "0.9.99"
 
 #define HTTPD_CONF_DEF_SERVER_NAME "jhttpd/" HTTPD_CONF_VERSION " (Vstr)"
 #define HTTPD_CONF_DEF_POLICY_NAME "<default>"
