@@ -123,6 +123,11 @@ extern inline void httpd_policy_change_req(Httpd_req_data *req,
 {
   req->parse_accept          = policy->use_err_406;
   req->allow_accept_encoding = policy->use_gzip_content_replacement;
+  if (req->vhost_prefix_len && !policy->use_vhosts)
+  { /* NOTE: doesn't do chk_host properly */
+    vstr_del(req->fname, 1, req->vhost_prefix_len);
+    req->vhost_prefix_len = 0;
+  }
   req->policy                = policy;
 }
 

@@ -83,17 +83,8 @@
       req-> x ## _len = 0;                      \
     } while (FALSE)
 
-#define HTTP__CONTENT_APP_HDR(o, x, y) do {                             \
-      if (req-> x ## _vs1)                                              \
-      {                                                                 \
-        ASSERT(!vstr_srch_cstr_chrs_fwd(req-> x ## _vs1,                \
-                                        req-> x ## _pos,                \
-                                        req-> x ## _len, HTTP_EOL));    \
-        http_app_header_vstr(o, y, req-> x ## _vs1,                     \
-                             req-> x ## _pos, req-> x ## _len,          \
-                             VSTR_TYPE_ADD_DEF);                        \
-      }                                                                 \
-    } while (FALSE)
+#define HTTP__CONTENT_PARAMS(req, x)                            \
+    (req)-> x ## _vs1, (req)-> x ## _pos, (req)-> x ## _len
 
 
 HTTPD_CONF_MAIN_DECL_OPTS(httpd_opts, HTTPD_CONF_SERV_DEF_PORT);
@@ -217,6 +208,8 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->vary_ac   = FALSE;
   req->vary_ae   = FALSE;
   req->vary_al   = FALSE;
+  req->vary_rf   = FALSE;
+  req->vary_ua   = FALSE;
 
   req->direct_uri         = FALSE;
   req->direct_filename    = FALSE;
@@ -401,65 +394,71 @@ int http_fmt_add_vstr_add_sect_vstr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
-static void http__app_header_hdr(Vstr_base *out, const char *hdr)
+static void http__app_hdr_hdr(Vstr_base *out, const char *hdr)
 {
   vstr_add_cstr_buf(out, out->len, hdr);
   vstr_add_cstr_buf(out, out->len, ": ");  
 }
-static void http__app_header_eol(Vstr_base *out)
+static void http__app_hdr_eol(Vstr_base *out)
 {
   vstr_add_cstr_buf(out, out->len, HTTP_EOL);
 }
 
-static void http_app_header_cstr(Vstr_base *out, const char *hdr,
-                                 const char *data)
+static void http_app_hdr_cstr(Vstr_base *out, const char *hdr, const char *data)
 {
-  http__app_header_hdr(out, hdr);
+  http__app_hdr_hdr(out, hdr);
   vstr_add_cstr_buf(out, out->len, data);
-  http__app_header_eol(out);
+  http__app_hdr_eol(out);
 }
 
-static void http_app_header_vstr(Vstr_base *out, const char *hdr,
-                                 const Vstr_base *s1, size_t vpos, size_t vlen,
-                                 unsigned int type)
+static void http_app_hdr_vstr(Vstr_base *out, const char *hdr,
+                              const Vstr_base *s1, size_t vpos, size_t vlen,
+                              unsigned int type)
 {
-  http__app_header_hdr(out, hdr);
+  http__app_hdr_hdr(out, hdr);
   vstr_add_vstr(out, out->len, s1, vpos, vlen, type);
-  http__app_header_eol(out);
+  http__app_hdr_eol(out);
 }
 
-static void http_app_header_conf_vstr(Vstr_base *out, const char *hdr,
-                                      const Vstr_base *s1)
+static void http_app_hdr_vstr_def(Vstr_base *out, const char *hdr,
+                                  const Vstr_base *s1, size_t vpos, size_t vlen)
 {
-  http__app_header_hdr(out, hdr);
-  vstr_add_vstr(out, out->len, s1, 1, s1->len, VSTR_TYPE_ADD_DEF);
-  http__app_header_eol(out);
+  http__app_hdr_hdr(out, hdr);
+  vstr_add_vstr(out, out->len, s1, vpos, vlen, VSTR_TYPE_ADD_DEF);
+  http__app_hdr_eol(out);
 }
 
-static void http_app_header_fmt(Vstr_base *out, const char *hdr,
-                                const char *fmt, ...)
+static void http_app_hdr_conf_vstr(Vstr_base *out, const char *hdr,
+                                   const Vstr_base *s1)
+{
+  http__app_hdr_hdr(out, hdr);
+  vstr_add_vstr(out, out->len, s1, 1, s1->len, VSTR_TYPE_ADD_DEF);
+  http__app_hdr_eol(out);
+}
+
+static void http_app_hdr_fmt(Vstr_base *out, const char *hdr,
+                             const char *fmt, ...)
    VSTR__COMPILE_ATTR_FMT(3, 4);
-static void http_app_header_fmt(Vstr_base *out, const char *hdr,
-                                const char *fmt, ...)
+static void http_app_hdr_fmt(Vstr_base *out, const char *hdr,
+                             const char *fmt, ...)
 {
   va_list ap;
 
-  http__app_header_hdr(out, hdr);
+  http__app_hdr_hdr(out, hdr);
   
   va_start(ap, fmt);
   vstr_add_vfmt(out, out->len, fmt, ap);
   va_end(ap);
 
-  http__app_header_eol(out);
+  http__app_hdr_eol(out);
 }
 
-static void http_app_header_uintmax(Vstr_base *out,
-                                    const char *hdr,
-                                    VSTR_AUTOCONF_uintmax_t data)
+static void http_app_hdr_uintmax(Vstr_base *out, const char *hdr,
+                                 VSTR_AUTOCONF_uintmax_t data)
 {
-  http__app_header_hdr(out, hdr);
+  http__app_hdr_hdr(out, hdr);
   vstr_add_fmt(out, out->len, "%ju", data);
-  http__app_header_eol(out);
+  http__app_hdr_eol(out);
 }
 
 void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
@@ -473,28 +472,28 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
 
   vstr_add_fmt(out, out->len, "%s %03u %s" HTTP_EOL,
                "HTTP/1.1", http_ret_code, http_ret_line);
-  http_app_header_cstr(out, "Date", date_rfc1123(req->now));
-  http_app_header_conf_vstr(out, "Server", req->policy->server_name);
+  http_app_hdr_cstr(out, "Date", date_rfc1123(req->now));
+  http_app_hdr_conf_vstr(out, "Server", req->policy->server_name);
   
   if (difftime(req->now, mtime) < 0) /* if mtime in future, chop it #14.29 */
     mtime = req->now;
 
   if (mtime)
-    http_app_header_cstr(out, "Last-Modified", date_rfc1123(mtime));
+    http_app_hdr_cstr(out, "Last-Modified", date_rfc1123(mtime));
 
   switch (con->keep_alive)
   {
     case HTTP_NON_KEEP_ALIVE:
-      http_app_header_cstr(out, "Connection", "close");
+      http_app_hdr_cstr(out, "Connection", "close");
       break;
       
     case HTTP_1_0_KEEP_ALIVE:
-      http_app_header_cstr(out, "Connection", "Keep-Alive");
+      http_app_hdr_cstr(out, "Connection", "Keep-Alive");
       /* FALLTHROUGH */
     case HTTP_1_1_KEEP_ALIVE: /* max=xxx ? */
       if (req->output_keep_alive_hdr)
-        http_app_header_fmt(out, "Keep-Alive",
-                            "%s=%u", "timeout", httpd_opts->s->idle_timeout);
+        http_app_hdr_fmt(out, "Keep-Alive",
+                         "%s=%u", "timeout", httpd_opts->s->idle_timeout);
       
       ASSERT_NO_SWITCH_DEF();
   }
@@ -512,47 +511,55 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     case 416: /* Bad range */
     case 417: /* Not accept - exceptation */
       if (use_range)
-        http_app_header_cstr(out, "Accept-Ranges", "bytes");
+        http_app_hdr_cstr(out, "Accept-Ranges", "bytes");
   }
   
   if (req->vary_star)
-    http_app_header_cstr(out, "Vary", "*");
-  else if (req->vary_ac || req->vary_ae || req->vary_al)
+    http_app_hdr_cstr(out, "Vary", "*");
+  else if (req->vary_ac || req->vary_ae || req->vary_al || req->vary_rf ||
+           req->vary_ua)
   {
-    const char *varies[3];
+    const char *varies[5];
     unsigned int num = 0;
     
     if (req->vary_ac) varies[num++] = "Accept-Charset";
     if (req->vary_ae) varies[num++] = "Accept-Encoding";
     if (req->vary_al) varies[num++] = "Accept-Language";
-      
-    if (num == 1)
-      http_app_header_cstr(out, "Vary", varies[0]);
-    if (num == 2)
-      http_app_header_fmt(out, "Vary", "%s,%s", varies[0], varies[1]);
-    if (num == 3)
-      http_app_header_fmt(out, "Vary", "%s,%s,%s",
-                          varies[0], varies[1], varies[2]);
+    if (req->vary_rf) varies[num++] = "Referer";
+    if (req->vary_ua) varies[num++] = "User-Agent";
+
+    ASSERT(num && (num <= 5));
+    
+    http__app_hdr_hdr(out, "Vary");
+    while (num > 1)
+    {
+      vstr_add_cstr_buf(out, out->len, varies[--num]);
+      vstr_add_cstr_buf(out, out->len, ",");
+    }
+    
+    vstr_add_cstr_buf(out, out->len, varies[0]);
+    http__app_hdr_eol(out);
   }
   
   if (custom_content_type) /* possible we don't send one */
-    http_app_header_cstr(out, "Content-Type", custom_content_type);
+    http_app_hdr_cstr(out, "Content-Type", custom_content_type);
   else if (req->content_type_vs1 && req->content_type_len)
-    HTTP__CONTENT_APP_HDR(out, content_type, "Content-Type");
+    http_app_hdr_vstr_def(out, "Content-Type",
+                          HTTP__CONTENT_PARAMS(req, content_type));
   
   if (req->content_encoding_gzip)
   {
     if (req->content_encoding_xgzip)
-      http_app_header_cstr(out, "Content-Encoding", "x-gzip");
+      http_app_hdr_cstr(out, "Content-Encoding", "x-gzip");
     else
-      http_app_header_cstr(out, "Content-Encoding", "gzip");
+      http_app_hdr_cstr(out, "Content-Encoding", "gzip");
   }
   
-  http_app_header_uintmax(out, "Content-Length", content_length);
+  http_app_hdr_uintmax(out, "Content-Length", content_length);
 }
 static void http_app_end_hdrs(Vstr_base *out)
 {
-  http__app_header_eol(out);
+  http__app_hdr_eol(out);
 }
 
 static void http_vlg_def(struct Con *con, struct Httpd_req_data *req)
@@ -655,25 +662,29 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
                       httpd_opts->beg_time, "text/html",
                       req->policy->use_range, req->error_len);
     if (req->error_code == 416)
-      http_app_header_fmt(out, "Content-Range", "%s */%ju", "bytes",
+      http_app_hdr_fmt(out, "Content-Range", "%s */%ju", "bytes",
                           (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
 
     if ((req->error_code == 405) || (req->error_code == 501))
-      http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
+      http_app_hdr_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
     if ((req->error_code == 301) || (req->error_code == 302) ||
         (req->error_code == 303) || (req->error_code == 307))
     { /* make sure we haven't screwed up and allowed response splitting */
       Vstr_base *tmp = req->fname;
       
       ASSERT(!vstr_srch_cstr_chrs_fwd(tmp, 1, tmp->len, HTTP_EOL));
-      http_app_header_vstr(out, "Location",
+      http_app_hdr_vstr(out, "Location",
                            tmp, 1, tmp->len, VSTR_TYPE_ADD_ALL_BUF);
     }
     
     if (req->user_return_error_code)
     {
-      HTTP__CONTENT_APP_HDR(out, cache_control, "Cache-Control");
-      HTTP__CONTENT_APP_HDR(out, expires,       "Expires");
+      if (req->cache_control_vs1)
+        http_app_hdr_vstr_def(out, "Cache-Control",
+                              HTTP__CONTENT_PARAMS(req, cache_control));
+      if (req->expires_vs1)
+        http_app_hdr_vstr_def(out, "Expires",
+                              HTTP__CONTENT_PARAMS(req, expires));
     }
     http_app_end_hdrs(out);
   }
@@ -2097,13 +2108,20 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
                     req->f_stat->st_mtime, NULL, req->policy->use_range,
                     con->f->len);
   if (h_r->pos)
-    http_app_header_fmt(out, "Content-Range",
+    http_app_hdr_fmt(out, "Content-Range",
                         "%s %ju-%ju/%ju", "bytes", range_beg, range_end,
                         (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
-  HTTP__CONTENT_APP_HDR(out, content_location, "Content-Location");
-  HTTP__CONTENT_APP_HDR(out, content_md5,      "Content-MD5");
-  HTTP__CONTENT_APP_HDR(out, cache_control,    "Cache-Control");
-  HTTP__CONTENT_APP_HDR(out, expires,          "Expires");
+  if (req->content_location_vs1)
+    http_app_hdr_vstr_def(out, "Content-Location",
+                          HTTP__CONTENT_PARAMS(req, content_location));
+  if (req->content_md5_vs1)
+    http_app_hdr_vstr_def(out, "Content-MD5",
+                          HTTP__CONTENT_PARAMS(req, content_md5));
+  if (req->cache_control_vs1)
+    http_app_hdr_vstr_def(out, "Cache-Control",
+                          HTTP__CONTENT_PARAMS(req, cache_control));
+  if (req->expires_vs1)
+    http_app_hdr_vstr_def(out, "Expires", HTTP__CONTENT_PARAMS(req, expires));
   /* TODO: ETag */
   
   http_app_end_hdrs(out);
@@ -2184,31 +2202,32 @@ static int http__skip_parameters(Vstr_base *data, size_t *pos, size_t *len)
   return (TRUE);
 }
 
-/* returns TRUE if we can use the content-type,
-* this does mean that if we fail to parse the "Accept:" line, we return TRUE */
-static int http_parse_accept(struct Httpd_req_data *req)
+/* returns quality of the passed content-type in the "Accept:" header,
+ * if it isn't there or we get a syntax error we return 1001 for not avilable */
+unsigned int http_parse_accept(Httpd_req_data *req,
+                               const Vstr_base *ct_vs1,
+                               size_t ct_pos, size_t ct_len)
 {
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
-  unsigned int val = 0;
+  unsigned int quality = 1001;
   int done_sub_type = FALSE;
-  const Vstr_base *ct_vs1 = req->content_type_vs1;
-  size_t ct_pos = req->content_type_pos;
-  size_t ct_len = req->content_type_len;
   size_t ct_sub_len = 0;
   
   pos = req->http_hdrs->multi->hdr_accept->pos;
   len = req->http_hdrs->multi->hdr_accept->len;
   
-  if (!req->parse_accept || !len)
-    return (TRUE);
+  if (!len) /* no accept == accept all */
+    return (1000);
 
-  if (!(ct_sub_len = vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '/')) ||
-      vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '*'))
-  { /* it looks weird, blank it */
-    req->content_type_vs1 = NULL;
-    return (TRUE);
+  ASSERT(ct_vs1);
+    
+  if (!(ct_sub_len = vstr_srch_chr_fwd(ct_vs1, ct_pos, ct_len, '/')))
+  { /* it's too weird, blank it */
+    if (ct_vs1 == req->content_type_vs1)
+      req->content_type_vs1 = NULL;
+    return (1);
   }
   ct_sub_len = vstr_sc_posdiff(ct_pos, ct_sub_len);
   
@@ -2221,22 +2240,24 @@ static int http_parse_accept(struct Httpd_req_data *req)
     else if (vstr_cmp_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
     { /* full match */
       len -= tmp; pos += tmp;
-      return (!http_parse_quality(data, &pos, &len, TRUE, &val) || val);
+      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+        return (1);
+      return (quality);
     }
     else if ((tmp == (ct_sub_len + 1)) &&
              vstr_cmp_eq(data, pos, ct_sub_len, ct_vs1, ct_pos, ct_sub_len) &&
              (vstr_export_chr(data, vstr_sc_poslast(pos, tmp)) == '*'))
     { /* sub match */
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, TRUE, &val))
-        return (TRUE);
+      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+        return (1);
       done_sub_type = TRUE;
     }
     else if (!done_sub_type && VEQ(data, pos, tmp, "*/*"))
     { /* "*;q=0,gzip" means TRUE ... and "*;q=1,gzip;q=0" means FALSE */
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, TRUE, &val))
-        return (TRUE);
+      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+        return (1);
     }
     else
     {
@@ -2245,7 +2266,7 @@ static int http_parse_accept(struct Httpd_req_data *req)
     }
 
     if (!http__skip_parameters(data, &pos, &len))
-      return (TRUE);
+      return (1);
     if (!len)
       break;
     
@@ -2254,7 +2275,11 @@ static int http_parse_accept(struct Httpd_req_data *req)
     HTTP_SKIP_LWS(data, pos, len);
   }
 
-  return (val);
+  ASSERT(quality <= 1001);
+  if (quality == 1001)
+    return (0);
+  
+  return (quality);
 }
 
 /* Lookup content type for filename, If this lookup "fails" it still returns
@@ -2397,9 +2422,10 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   if (!http_req_content_type(req))
     return (http_fin_err_req(con, req));
   
-  if (!http_parse_accept(req))
+  if (req->parse_accept &&
+      !http_parse_accept(req, HTTP__CONTENT_PARAMS(req, content_type)))
     HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
-
+  
   /* Add the document root now, this must be at least . so
    * "///foo" becomes ".///foo" ... this is done now
    * so nothing has to deal with document_root values */
@@ -2508,7 +2534,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
   /* apache doesn't test for 404's here ... which seems weird */
   
   http_app_def_hdrs(con, req, 200, "OK", 0, NULL, req->policy->use_range, 0);
-  http_app_header_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
+  http_app_hdr_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
   http_app_end_hdrs(out);
   if (out->conf->malloc_bad)
     goto malloc_err;

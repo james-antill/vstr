@@ -410,8 +410,19 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     OPT_SERV_X_TOGGLE(req->vary_ac);
   else if (OPT_SERV_SYM_EQ("Vary:_Allow-Language"))
     OPT_SERV_X_TOGGLE(req->vary_al);
+  else if (OPT_SERV_SYM_EQ("Vary:_Referer") ||
+           OPT_SERV_SYM_EQ("Vary:_Referrer"))
+    OPT_SERV_X_TOGGLE(req->vary_rf);
+  else if (OPT_SERV_SYM_EQ("Vary:_User-Agent"))
+    OPT_SERV_X_TOGGLE(req->vary_ua);
   else if (OPT_SERV_SYM_EQ("Accept:"))
+  {
+    /* foreach
+       unsigned int qual = http_parse_accept(req, s1, pos, len);
+       find highest
+       do the right thing */
     return (FALSE);
+  }
   else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
     return (FALSE);
   else if (OPT_SERV_SYM_EQ("Accept-Language:"))

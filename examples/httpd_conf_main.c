@@ -59,12 +59,34 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
   
   else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
   {
-    int ret = -1;
-
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    ret = httpd__policy_connection_tst_d1(con, conf, token, matches);
+    if (!httpd__policy_connection_tst_d1(con, conf, token, matches))
+      return (FALSE);
     *matches = !*matches;
-    return (ret);
+  }
+  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      int or_matches = TRUE;
+    
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+
+      if (!httpd__policy_connection_tst_d1(con, conf, token, &or_matches))
+        return (FALSE);
+
+      if (or_matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+
+    *matches = FALSE;
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (httpd_policy_name_eq(conf, token, con->policy, matches));
@@ -290,12 +312,34 @@ static int httpd__policy_request_tst_d1(struct Con *con,
 
   else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
   {
-    int ret = -1;
-
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    ret = httpd__policy_request_tst_d1(con, req, conf, token, matches);
+    if (!httpd__policy_request_tst_d1(con, req, conf, token, matches))
+      return (FALSE);
     *matches = !*matches;
-    return (ret);
+  }
+  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      int or_matches = TRUE;
+    
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+
+      if (!httpd__policy_request_tst_d1(con, req, conf, token, &or_matches))
+        return (FALSE);
+
+      if (or_matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+
+    *matches = FALSE;
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (httpd_policy_name_eq(conf, token, req->policy, matches));
@@ -322,6 +366,53 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     else
       *matches = conf_token_cmp_case_val_eq(conf, token,
                                             d_h, 1, d_h->len);
+  }
+  else if (OPT_SERV_SYM_EQ("user-agent-eq") || OPT_SERV_SYM_EQ("UA-eq"))
+  { /* doesn't do escaping because URLs are ASCII */
+    Vstr_sect_node *h_ua = req->http_hdrs->hdr_ua;
+
+    req->vary_ua = TRUE;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    *matches = conf_token_cmp_val_eq(conf, token, http_data, 1, h_ua->len);
+  }
+  else if (OPT_SERV_SYM_EQ("user-agent-search-eq") ||
+           OPT_SERV_SYM_EQ("user-agent-srch-eq") ||
+           OPT_SERV_SYM_EQ("UA-srch-eq"))
+  { /* doesn't do escaping because URLs are ASCII */
+    Vstr_sect_node *h_ua = req->http_hdrs->hdr_ua;
+
+    req->vary_ua = TRUE;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    *matches = !!conf_token_srch_val(conf, token, http_data, 1, h_ua->len);
+  }
+  else if (OPT_SERV_SYM_EQ("referrer-eq") || OPT_SERV_SYM_EQ("referer-eq"))
+  { /* doesn't do escaping because URLs are ASCII */
+    Vstr_sect_node *h_ref = req->http_hdrs->hdr_referer;
+
+    req->vary_rf = TRUE;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    *matches = conf_token_cmp_case_val_eq(conf, token,
+                                          http_data, 1, h_ref->len);
+  }
+  else if (OPT_SERV_SYM_EQ("referrer-beg") || OPT_SERV_SYM_EQ("referer-beg"))
+  { /* doesn't do escaping because URLs are ASCII */
+    Vstr_sect_node *h_ref = req->http_hdrs->hdr_referer;
+
+    req->vary_rf = TRUE;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    *matches = conf_token_cmp_case_val_beg_eq(conf, token,
+                                              http_data, 1, h_ref->len);
+  }
+  else if (OPT_SERV_SYM_EQ("referrer-search-eq") ||
+           OPT_SERV_SYM_EQ("referrer-srch-eq") ||
+           OPT_SERV_SYM_EQ("referer-search-eq") ||
+           OPT_SERV_SYM_EQ("referer-srch-eq"))
+  { /* doesn't do escaping because URLs are ASCII */
+    Vstr_sect_node *h_ref = req->http_hdrs->hdr_referer;
+
+    req->vary_rf = TRUE;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    *matches = !!conf_token_srch_val(conf, token, http_data, 1, h_ref->len);
   }
   else if (OPT_SERV_SYM_EQ("http-0.9-eq"))
     *matches =  req->ver_0_9;

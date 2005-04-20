@@ -121,6 +121,8 @@ typedef struct Httpd_req_data
  unsigned int vary_ac   : 1;
  unsigned int vary_ae   : 1;
  unsigned int vary_al   : 1;
+ unsigned int vary_rf   : 1;
+ unsigned int vary_ua   : 1;
  
  unsigned int using_req : 1;
  unsigned int done_once : 1;
@@ -208,6 +210,9 @@ extern void httpd_req_absolute_uri(struct Con *, Httpd_req_data *,
 
 extern int http_req_chk_dir(struct Con *, Httpd_req_data *);
 extern int http_req_content_type(Httpd_req_data *);
+
+extern unsigned int http_parse_accept(Httpd_req_data *,
+                                      const Vstr_base *, size_t, size_t);
 
 extern void http_app_def_hdrs(struct Con *, Httpd_req_data *,
                               unsigned int, const char *, time_t,
