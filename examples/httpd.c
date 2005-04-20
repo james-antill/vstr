@@ -2723,9 +2723,14 @@ static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
   /* check posix path ... including hostname, for NIL and path escapes */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
     HTTPD_ERR_RET(req, 403, FALSE);
-      
+
+  /* web servers don't have relative paths, so /./ and /../ aren't "special" */
   if (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/../") ||
       VSUFFIX(req->fname, 1, req->fname->len, "/.."))
+    HTTPD_ERR_RET(req, 400, FALSE);
+  if (req->policy->chk_dot_dir &&
+      (vstr_srch_cstr_buf_fwd(fname, 1, fname->len, "/./") ||
+       VSUFFIX(req->fname, 1, req->fname->len, "/.")))
     HTTPD_ERR_RET(req, 400, FALSE);
 
   ASSERT(fname->len);

@@ -672,6 +672,7 @@ static int httpd_conf_main_policy_copy(Httpd_policy_opts *dst,
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_req_configuration);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_split);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_nil);
+  HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_dot_dir);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(max_header_sz);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(max_req_conf_sz);
 
@@ -741,6 +742,10 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
     OPT_SERV_X_TOGGLE(opts->chk_hdr_split);
   else if (OPT_SERV_SYM_EQ("check-header-NIL"))
     OPT_SERV_X_TOGGLE(opts->chk_hdr_nil);
+  else if (OPT_SERV_SYM_EQ("check-dot-directory") ||
+           OPT_SERV_SYM_EQ("check-dot-dir") ||
+           OPT_SERV_SYM_EQ("check-.-dir"))
+    OPT_SERV_X_TOGGLE(opts->chk_dot_dir);
   else if (OPT_SERV_SYM_EQ("url-remove-fragment"))
     OPT_SERV_X_TOGGLE(opts->remove_url_frag);
   else if (OPT_SERV_SYM_EQ("url-remove-query"))
