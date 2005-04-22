@@ -47,7 +47,8 @@ HTTP/1.1 after implementing a server is
      Accept header for MIME types.
      0.9 HTTP compatability support
      keep-alive, on by default for 1.1 and 1.0
-     virtual hosts (via. prefix directories)
+     virtual hosts (via. prefix directories and explicit configuration
+                    statements)
      if-modified-since/if-unmodified-since
      single byte ranges, if-range
      accept-encoding/content-encoding for gzip (via. pre-generated files)
@@ -66,10 +67,12 @@ HTTP/1.1 after implementing a server is
       Generate all four types of redirect's.
       Generate the usable types of error conditions.
       Change the file object used to serve the data.
-      Change other configuration parameters for the request, etc.
-      All "configuration parameters" done through policies that can be changed
-       based on connection or request information.
       Has a native ACL configuration (can also use Linux socket filters).
+      All "configuration parameters" done through policies.
+       Change configuration policy based on ip address connections.
+       Change configuration policy based on many parameters of the request.
+        Automatically generate the "right" Vary header based on which fields
+        of the request were tested.
 
     includes init.d file, and allows "local controller" connections for soft
     restarts, status information etc.
@@ -106,7 +109,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Mon Apr 18 01:35:20 EDT 2005
+Last modified: Wed Apr 20 14:41:26 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

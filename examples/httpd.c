@@ -1949,9 +1949,9 @@ static void http__try_gzip_content(struct Con *con, struct Httpd_req_data *req)
   }
 }  
 
-static void serv_conf_file(struct Con *con, struct Httpd_req_data *req,
-                           VSTR_AUTOCONF_uintmax_t f_off,
-                           VSTR_AUTOCONF_uintmax_t f_len)
+static void httpd_serv_conf_file(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t f_off,
+                                 VSTR_AUTOCONF_uintmax_t f_len)
 {
   ASSERT(!req->head_op);
   ASSERT(!req->use_mmap);
@@ -1963,9 +1963,9 @@ static void serv_conf_file(struct Con *con, struct Httpd_req_data *req,
   con->f->len = f_len;
 }
 
-static void serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
-                           VSTR_AUTOCONF_uintmax_t off,
-                           VSTR_AUTOCONF_uintmax_t f_len)
+static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t off,
+                                 VSTR_AUTOCONF_uintmax_t f_len)
 {
   static long pagesz = 0;
   Vstr_base *data = con->evnt->io_r;
@@ -2015,18 +2015,18 @@ static void serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
   con->f->len = f_len;
 }
 
-static int serv_call_seek(struct Con *con, struct Httpd_req_data *req,
-                          VSTR_AUTOCONF_uintmax_t f_off,
-                          VSTR_AUTOCONF_uintmax_t f_len,
-                          unsigned int *http_ret_code,
-                          const char ** http_ret_line)
+static void httpd_serv_call_seek(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t f_off,
+                                 VSTR_AUTOCONF_uintmax_t f_len,
+                                 unsigned int *http_ret_code,
+                                 const char ** http_ret_line)
 {
   ASSERT(!req->head_op);
   
   if (req->use_mmap || con->use_sendfile)
-    return (FALSE);
+    return;
 
-  if (f_off && (lseek64(con->f->fd, f_off, SEEK_SET) == -1))
+  if (f_off && f_len && (lseek64(con->f->fd, f_off, SEEK_SET) == -1))
   { /* this should be impossible for normal files AFAIK */
     vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
              req->fname, 1, req->fname->len, f_off);
@@ -2034,12 +2034,28 @@ static int serv_call_seek(struct Con *con, struct Httpd_req_data *req,
     req->http_hdrs->multi->hdr_range->pos = 0;
     *http_ret_code = 200;
     *http_ret_line = "OK - Range Failed";
-    return (FALSE);
+    return;
   }
   
   con->f->len = f_len;
 
-  return (TRUE);
+  return;
+}
+
+static void httpd_serv_call_file_init(struct Con *con, Httpd_req_data *req,
+                                      VSTR_AUTOCONF_uintmax_t f_off,
+                                      VSTR_AUTOCONF_uintmax_t f_len,
+                                      unsigned int *http_ret_code,
+                                      const char ** http_ret_line)
+{
+  if (req->head_op)
+    con->f->len = f_len;
+  else
+  {
+    httpd_serv_conf_file(con, req, f_off, f_len);
+    httpd_serv_call_mmap(con, req, f_off, f_len);
+    httpd_serv_call_seek(con, req, f_off, f_len, http_ret_code, http_ret_line);
+  }
 }
 
 static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
@@ -2095,14 +2111,8 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   }
   ASSERT(con->f->len >= f_len);
 
-  if (req->head_op)
-    con->f->len = f_len;
-  else
-  {
-    serv_conf_file(con, req, range_beg, f_len);
-    serv_call_mmap(con, req, range_beg, f_len);
-    serv_call_seek(con, req, range_beg, f_len, http_ret_code, http_ret_line);
-  }
+  httpd_serv_call_file_init(con, req, range_beg, f_len,
+                            http_ret_code, http_ret_line);
 
   http_app_def_hdrs(con, req, *http_ret_code, *http_ret_line,
                     req->f_stat->st_mtime, NULL, req->policy->use_range,
@@ -2481,8 +2491,8 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
 
   if (req->ver_0_9)
   {
-    serv_conf_file(con, req, 0, con->f->len);
-    serv_call_mmap(con, req, 0, con->f->len);
+    httpd_serv_call_file_init(con, req, 0, con->f->len,
+                              &http_ret_code, &http_ret_line);
     http_ret_line = "OK - HTTP/0.9";
   }
   else if (!http_req_1_x(con, req, &http_ret_code, &http_ret_line))
