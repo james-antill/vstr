@@ -414,6 +414,7 @@ html/dir_list.css: ../examples/dir_list.css
 html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
 		$(srcdir)/gzip-r.pl html
+		$(srcdir)/gzip-r.pl --type=bzip2 html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --css-filename=f_c.css $< > $@

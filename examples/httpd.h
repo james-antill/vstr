@@ -116,6 +116,7 @@ typedef struct Httpd_req_data
 
  unsigned int content_encoding_gzip  : 1;
  unsigned int content_encoding_xgzip : 1; /* only valid if gzip is TRUE */
+ unsigned int content_encoding_bzip2 : 1;
  
  unsigned int content_encoding_identity : 1;
 
@@ -130,6 +131,7 @@ typedef struct Httpd_req_data
  unsigned int user_return_error_code : 1;
  
  unsigned int vary_star : 1;
+ unsigned int vary_a    : 1;
  unsigned int vary_ac   : 1;
  unsigned int vary_ae   : 1;
  unsigned int vary_al   : 1;

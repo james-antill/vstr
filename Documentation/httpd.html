@@ -19,7 +19,7 @@
 <p> You can see the source of the JHTTPD daemon
 <a href="examples/ex_httpd.c.html">here</a>, some writing in general about
 HTTP/1.1 after implementing a server is
-<a href="http://www.and.org/texts/server-http.html">here</a>.</p>
+<a href="http://www.and.org/texts/server-http">here</a>.</p>
 
 <pre>
     Simple. Secure. Unit tests (over 90% coverage).
@@ -37,6 +37,7 @@ HTTP/1.1 after implementing a server is
      LFS
      TCP_CORK
      DEFER_ACCEPT
+     posix_fadvise()
      chroot, privilage de-escalation (can also easily be started as non-root)
      does a bind mount for /dev/log when in a chroot.
      socket filters
@@ -44,7 +45,7 @@ HTTP/1.1 after implementing a server is
 
     Is HTTP/1.1 compliant, as far as I know.
     Supports optional HTTP/1.1 features:
-     Accept header for MIME types.
+     Accept header for Content-Type.
      0.9 HTTP compatability support
      keep-alive, on by default for 1.1 and 1.0
      virtual hosts (via. prefix directories and explicit configuration
@@ -60,7 +61,10 @@ HTTP/1.1 after implementing a server is
     Configuration file parser.
      Also has optional "per request" configuration files (using the same code, 
      and thus layout, as the main configuration files), allowing you to:
-      Generate explicit Content-Type's.
+      Generate explicit Content-Types.
+       Generate negotiated Content-Types for requests with multiple tupes.
+       Eg. http://www.and.org/vstr/examples/httpd.c
+         is available as text/plain and text/html
       Generate Content-MD5 data.
       Generate Content-Location data.
       Generate Expires and Cache-Control data.
@@ -109,7 +113,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Wed Apr 20 14:41:26 EDT 2005
+Last modified: Sun Apr 24 23:59:44 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

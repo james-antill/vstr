@@ -11,7 +11,7 @@ my $prefix = "j";
 if (-f "./ex_dir_list")
   { $prefix = "./ex_"; }
 
-my $dir_name  = undef;
+my $dir_name = undef;
 
 use Getopt::Long;
 use Pod::Usage;
@@ -19,7 +19,7 @@ use Pod::Usage;
 my $man = 0;
 my $help = 0;
 
-my $filter_def_args = "-A .. --deny-name-beg . -D index.html -D dir_list.css --deny-name-end .gz --deny-name-end .tmp --deny-name-end '~' --deny-name-end '#'";
+my $filter_def_args = "-A .. --deny-name-beg . -D index.html -D dir_list.css --acpt-name-end .tar.gz --deny-name-end .gz --acpt-name-end .tar.bz2 --deny-name-end .bz2 --deny-name-end .tmp --deny-name-end '~' --deny-name-end '#'";
 my $filter_args = $filter_def_args;
 
 my $sort_def_args = "--without-locale";

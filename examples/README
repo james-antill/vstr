@@ -64,20 +64,13 @@ http://www.sans.org/top20/#u2
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
 	  Support per file.
-	 Support accept/accept-language/accept-encoding switch files [w3/chips]
-          Vary: accept,accept-language,accept-encoding
-	  Allow fall back, or to go 406 for content-type
-           GALEON
-              Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,image/jpeg,image/gif;q=0.2,*/*;q=0.1
-              Accept-Language: en
-           FIREFOX
-              Accept: image/png,*/*;q=0.5
-              Accept-Language: en-us,en;q=0.5
+	 Support accept-language/accept-charset switch files [w3/chips]
          Random extra headers
          Allow addition of ETag header
          Allow custom error-code pages, start with 404
          Allow req_conf to change to a defined set of policies
          Allow req_conf to have matches (maybe (match-allow [] ...) ?)
+         Allow policy limiting of what "commands" req_conf can do.
          conf file mmaps?
 	man page
         limiting IO

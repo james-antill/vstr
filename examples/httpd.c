@@ -39,6 +39,8 @@
 # define posix_fadvise64(x1, x2, x3, x4) (errno = ENOSYS, -1)
 #endif
 
+#define HTTP_CONF_SAFE_PRINT_REQ TRUE
+
 #ifdef VSTR_AUTOCONF_NDEBUG
 # define HTTP_CONF_MMAP_LIMIT_MIN (16 * 1024) /* a couple of pages */
 #else
@@ -67,6 +69,14 @@
 /* for simplicity */
 #define VEQ(vstr, p, l, cstr)  vstr_cmp_cstr_eq(vstr, p, l, cstr)
 #define VIEQ(vstr, p, l, cstr) vstr_cmp_case_cstr_eq(vstr, p, l, cstr)
+
+#ifndef SWAP_TYPE
+#define SWAP_TYPE(x, y, type) do {              \
+      type internal_local_tmp = (x);            \
+      (x) = (y);                                \
+      (y) = internal_local_tmp;                 \
+    } while (FALSE)
+#endif
 
 #define HTTP__HDR_SET(req, h, p, l) do {               \
       (req)-> http_hdrs -> hdr_ ## h ->pos = (p);          \
@@ -142,8 +152,8 @@ static void http__clear_xtra(struct Httpd_req_data *req)
   HTTP__CONTENT_INIT_HDR(expires);
   HTTP__CONTENT_INIT_HDR(p3p);
   HTTP__CONTENT_INIT_HDR(ext_vary_a);
-  HTTP__CONTENT_INIT_HDR(ext_vary_al);
   HTTP__CONTENT_INIT_HDR(ext_vary_ac);
+  HTTP__CONTENT_INIT_HDR(ext_vary_al);
 }
 
 Httpd_req_data *http_req_make(struct Con *con)
@@ -210,6 +220,7 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->sects->malloc_bad = FALSE;
 
   req->content_encoding_gzip     = FALSE;
+  req->content_encoding_bzip2    = FALSE;
   req->content_encoding_identity = TRUE;
 
   req->output_keep_alive_hdr = FALSE;
@@ -217,6 +228,7 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->user_return_error_code = FALSE;
 
   req->vary_star = con ? con->vary_star : TRUE;
+  req->vary_a    = FALSE;
   req->vary_ac   = FALSE;
   req->vary_ae   = FALSE;
   req->vary_al   = FALSE;
@@ -521,17 +533,18 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
   
   if (req->vary_star)
     http_app_hdr_cstr(out, "Vary", "*");
-  else if (req->vary_ac || req->vary_ae || req->vary_al || req->vary_rf ||
-           req->vary_ua)
+  else if (req->vary_a || req->vary_ac || req->vary_ae || req->vary_al ||
+           req->vary_rf || req->vary_ua)
   {
-    const char *varies[5];
+    const char *varies[6];
     unsigned int num = 0;
     
-    if (req->vary_ac) varies[num++] = "Accept-Charset";
-    if (req->vary_ae) varies[num++] = "Accept-Encoding";
-    if (req->vary_al) varies[num++] = "Accept-Language";
-    if (req->vary_rf) varies[num++] = "Referer";
     if (req->vary_ua) varies[num++] = "User-Agent";
+    if (req->vary_rf) varies[num++] = "Referer";
+    if (req->vary_al) varies[num++] = "Accept-Language";
+    if (req->vary_ae) varies[num++] = "Accept-Encoding";
+    if (req->vary_ac) varies[num++] = "Accept-Charset";
+    if (req->vary_a)  varies[num++] = "Accept";
 
     ASSERT(num && (num <= 5));
     
@@ -552,7 +565,9 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     http_app_hdr_vstr_def(out, "Content-Type",
                           HTTP__CONTENT_PARAMS(req, content_type));
   
-  if (req->content_encoding_gzip)
+  if (req->content_encoding_bzip2)
+      http_app_hdr_cstr(out, "Content-Encoding", "bzip2");
+  else if (req->content_encoding_gzip)
   {
     if (req->content_encoding_xgzip)
       http_app_hdr_cstr(out, "Content-Encoding", "x-gzip");
@@ -639,7 +654,8 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
 
-  req->content_encoding_gzip = FALSE;
+  req->content_encoding_gzip  = FALSE;
+  req->content_encoding_bzip2 = FALSE;
   
   if ((req->error_code == 400) || (req->error_code == 405) ||
       (req->error_code == 413) ||
@@ -1830,12 +1846,13 @@ static int http_parse_quality(Vstr_base *data,
 }
 #undef HTTP__PARSE_CHK_RET_OK
 
-static int http_parse_accept_encoding_gzip(struct Httpd_req_data *req)
+static int http_parse_accept_encoding(struct Httpd_req_data *req)
 {
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
   unsigned int gzip_val     = 1001;
+  unsigned int bzip2_val    = 1001;
   unsigned int identity_val = 1001;
   unsigned int star_val     = 1001;
   
@@ -1870,6 +1887,12 @@ static int http_parse_accept_encoding_gzip(struct Httpd_req_data *req)
       if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
         return (FALSE);
     }
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "bzip2"))
+    {
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &bzip2_val))
+        return (FALSE);
+    }
     else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "x-gzip"))
     {
       len -= tmp; pos += tmp;
@@ -1900,37 +1923,46 @@ static int http_parse_accept_encoding_gzip(struct Httpd_req_data *req)
   }
 
   if (!req->allow_accept_encoding)
-    gzip_val = 0;
+  {
+    gzip_val  = 0;
+    bzip2_val = 0;
+  }
   
   if (gzip_val     == 1001) gzip_val     = star_val;
+  if (bzip2_val    == 1001) bzip2_val    = star_val;
   if (identity_val == 1001) identity_val = star_val;
+
+  if (gzip_val     == 1001) gzip_val     = 0;
+  if (bzip2_val    == 1001) bzip2_val    = 0;
+  if (identity_val == 1001) identity_val = 1;
 
   if (!identity_val)
     req->content_encoding_identity = FALSE;
   
-  if (gzip_val == 1001)
+  if ((identity_val > gzip_val) && (identity_val > bzip2_val))
     return (FALSE);
-
-  if (identity_val != 1001)
-    if (identity_val > gzip_val)
-      return (FALSE);
   
-  return (!!gzip_val);
+  req->content_encoding_gzip  = !!gzip_val;
+  req->content_encoding_bzip2 = !!bzip2_val;
+  
+  return (req->content_encoding_gzip || req->content_encoding_bzip2);
 }
 
 /* try to use gzip content-encoding on entity */
-static void http__try_gzip_content(struct Con *con, struct Httpd_req_data *req)
+static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
+                                     const char *zip_ext)
 {
   const char *fname_cstr = NULL;
   int fd = -1;
-      
-  vstr_add_cstr_ptr(req->fname, req->fname->len, ".gz");
+  int ret = FALSE;
+  
+  vstr_add_cstr_ptr(req->fname, req->fname->len, zip_ext);
 
   fname_cstr = vstr_export_cstr_ptr(req->fname, 1, req->fname->len);
   if (!fname_cstr)
-    vlg_warn(vlg, "Failed to export cstr for gzip\n");
+    vlg_warn(vlg, "Failed to export cstr for '%s'\n", zip_ext);
   else if ((fd = io_open_nonblock(fname_cstr)) == -1)
-    vstr_sc_reduce(req->fname, 1, req->fname->len, CLEN(".gz"));
+    vstr_sc_reduce(req->fname, 1, req->fname->len, strlen(zip_ext));
   else
   {
     struct stat64 f_stat[1];
@@ -1941,20 +1973,21 @@ static void http__try_gzip_content(struct Con *con, struct Httpd_req_data *req)
              (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
              (req->f_stat->st_mtime >  f_stat->st_mtime) ||
              (req->f_stat->st_size  <= f_stat->st_size))
-    { /* ignore the gzip else */ }
+    { /* ignore the zip else */ }
     else
     {
-      int tmp = fd; /* swap, close the old (later) and use the new */
-      fd = con->f->fd;
-      con->f->fd = tmp;
+      /* swap, close the old fd (later) and use the new */
+      SWAP_TYPE(con->f->fd, fd, int);
       
       ASSERT(con->f->len == (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
       /* _only_ copy the new size over, mtime etc. is from the original file */
       con->f->len = req->f_stat->st_size = f_stat->st_size;
-      req->content_encoding_gzip = TRUE;
+      ret = TRUE;
     }
     close(fd);
   }
+
+  return (ret);
 }  
 
 static void httpd_serv_conf_file(struct Con *con, struct Httpd_req_data *req,
@@ -2083,8 +2116,16 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
           
   /* Might normally add "!req->head_op && ..." but
    * http://www.w3.org/TR/chips/#gl6 says that's bad */
-  if (http_parse_accept_encoding_gzip(req))
-    http__try_gzip_content(con, req);
+  if (http_parse_accept_encoding(req))
+  {
+    if ( req->content_encoding_bzip2 &&
+        !http__try_encoded_content(con, req, ".bz2"))
+      req->content_encoding_bzip2 = FALSE;
+    if (!req->content_encoding_bzip2 && req->content_encoding_gzip &&
+        !http__try_encoded_content(con, req, ".gz"))
+      req->content_encoding_gzip = FALSE;
+  }
+  
   if (req->policy->use_err_406 &&
       !req->content_encoding_identity && !req->content_encoding_gzip)
     HTTPD_ERR_RET(req, 406, FALSE);
@@ -2412,6 +2453,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   const char *fname_cstr = NULL;
   unsigned int http_ret_code = 200;
   const char * http_ret_line = "OK";
+  int vary_a = FALSE;
   
   if (fname->conf->malloc_bad)
     goto malloc_err;
@@ -2442,10 +2484,15 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
     
   if (!http_req_content_type(req))
     return (http_fin_err_req(con, req));
-  
-  if (req->parse_accept &&
-      !http_parse_accept(req, HTTP__CONTENT_PARAMS(req, content_type)))
-    HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
+
+  vary_a = req->vary_a;
+  if (req->parse_accept)
+  {
+    if (FALSE) /* does a 406 count, I don't think so ?? */
+      vary_a = TRUE;
+    if (!http_parse_accept(req, HTTP__CONTENT_PARAMS(req, content_type)))
+      HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
+  }
   
   /* Add the document root now, this must be at least . so
    * "///foo" becomes ".///foo" ... this is done now
@@ -2498,8 +2545,10 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   }
   if (!S_ISREG(req->f_stat->st_mode))
     HTTPD_ERR_RET(req, 403, http_fin_err_close_req(con, req));
+  
   con->f->len = req->f_stat->st_size;
-
+  req->vary_a = vary_a;
+  
   if (req->ver_0_9)
   {
     httpd_serv_call_file_init(con, req, 0, con->f->len,
@@ -2878,8 +2927,12 @@ static int http_parse_req(struct Con *con)
     }
     evnt_got_pkt(con->evnt);
 
-    vlg_dbg3(vlg, "REQ:\n$<vstr.hexdump:%p%zu%zu>",
-             data, (size_t)1, data->len);
+    if (HTTP_CONF_SAFE_PRINT_REQ)
+      vlg_dbg3(vlg, "REQ:\n$<vstr.hexdump:%p%zu%zu>",
+               data, (size_t)1, data->len);
+    else
+      vlg_dbg3(vlg, "REQ:\n$<vstr:%p%zu%zu>",
+               data, (size_t)1, data->len);
     
     assert(((req->sects->num >= 3) && !req->ver_0_9) || (req->sects->num == 2));
     

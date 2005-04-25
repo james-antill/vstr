@@ -32,10 +32,12 @@ my $help = 0;
 my $force_compress = 0;
 my $chown_compress = 0;
 my $verbose_compress = 0;
+my $type_compress = "gzip";
 
 pod2usage(0) if !
 GetOptions ("force!"   => \$force_compress,
 	    "chown!"   => \$chown_compress,
+	    "type|t=s" => \$type_compress,
 	    "verbose+" => \$verbose_compress,
 	    "help|?"   => \$help,
 	    "man"      => \$man);
@@ -43,8 +45,19 @@ pod2usage(-exitstatus => 0, -verbose => 1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
 
+my $ext_compress = ".gz";
+my @cmd_compress_args = ("gzip", "--to-stdout", "--no-name", "--best");
+
+if ($type_compress eq "bzip2")
+  {
+    $ext_compress = ".bz2";
+    @cmd_compress_args = ("bzip2", "--stdout", "--best");
+  }
+elsif ($type_compress ne "gzip")
+  { pod2usage(-exitstatus => 1); }
+
 sub filter_no_gzip
-  { # Don't compress gzip files...
+  { # Don't compress compressed files...
     grep(!/$filter_exts_re/,  @_)
   }
 
@@ -54,7 +67,7 @@ our $fname;
 sub gzip_file
   {
     my $name   = $_;
-    my $namegz = $_ . ".gz";
+    my $namegz = $_ . $ext_compress;
 
     if (-l $name && -f $name)
       { # deal with symlinks...
@@ -62,7 +75,7 @@ sub gzip_file
 
 	defined($dst) || die "Can't readlink $name: $!";
 
-	my $dst_gz = $dst . ".gz";
+	my $dst_gz = $dst . $ext_compress;
 	if (($dst !~ /$filter_exts_re/) && -f $dst_gz)
 	  {
 	    unlink($namegz);
@@ -96,8 +109,8 @@ sub gzip_file
 
     print STDOUT "Compress: $name\n" if ($verbose_compress > 0);
 
-    open(IN, "-|", "gzip", "--to-stdout", "--no-name", "--best", "--", $name) ||
-      die("Can't gzip: $!");
+    open(IN, "-|", @cmd_compress_args, "--", $name) || 
+      die("Can't $type_compress: $!");
     binmode IN;
 
     my $bs = 1024 * 8; # Do IO in 8k blocks
@@ -143,7 +156,7 @@ __END__
 
 =head1 NAME
 
-gzip-r.pl - Recursive "intelligent" gzip
+gzip-r.pl - Recursive "intelligent" gzip/bzip2
 
 =head1 SYNOPSIS
 
@@ -155,6 +168,7 @@ gzip-r.pl [options] [dirs|files ...]
   --force           force recompression
   --verbose         print filenames
   --chown           chown gzip files
+  --type -t         type of compression files
 
 =head1 OPTIONS
 
@@ -175,6 +189,10 @@ Recompresses .gz files even when they are newer than their source.
 =item B<--chown>
 
 Make the gzip output files have the same owner as the input files.
+
+=item B<--type>
+
+Make the compression type either gzip or bzip2.
 
 =item B<--verbose>
 

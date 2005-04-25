@@ -394,7 +394,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                            "<now>"))
         httpd__conf_req_reset_expires(req, req->now);
   }
-  else if (OPT_SERV_SYM_EQ("P3P:"))
+  else if (OPT_SERV_SYM_EQ("P3P:")) /* http://www.w3.org/TR/P3P/ */
   {
     HTTPD_CONF_REQ__X_CONTENT_VSTR(p3p);
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(p3p);
@@ -479,6 +479,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     {
       unsigned int last = token->num;
 
+      req->vary_a = TRUE;
       *token = save;
       conf_parse_num_token(conf, token, qual_num);
       HTTPD_CONF_REQ__X_CONTENT_VSTR(content_type);
@@ -489,7 +490,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   }
   else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
     return (FALSE);
-  else if (OPT_SERV_SYM_EQ("Accept-Language:"))
+  else if (OPT_SERV_SYM_EQ("negotiate-content-language"))
     return (FALSE);
   else
     return (FALSE);
