@@ -33,6 +33,14 @@ typedef struct Malloc_check_store
 #endif
 #endif
 
+#ifndef  MALLOC_CHECK__ATTR_MALLOC
+#ifdef __GNUC__
+# define MALLOC_CHECK__ATTR_MALLOC() __attribute__ ((__malloc__))
+#else
+# define MALLOC_CHECK__ATTR_MALLOC() /* do nothing */
+#endif
+#endif
+
 #ifndef MALLOC_CHECK_SUPPER_SCRUB /* never really call realloc() */
 #define MALLOC_CHECK_SUPPER_SCRUB 0
 #endif
@@ -104,14 +112,14 @@ static unsigned int malloc_check_mem(const void *)
 static unsigned int malloc_check_sz_mem(const void *, size_t)
    MALLOC_CHECK__ATTR_USED();
 static void *malloc_check_malloc(size_t, const char *, unsigned int)
-   MALLOC_CHECK__ATTR_USED();
+   MALLOC_CHECK__ATTR_MALLOC() MALLOC_CHECK__ATTR_USED();
 static void *malloc_check_calloc(size_t, size_t, const char *, unsigned int)
-   MALLOC_CHECK__ATTR_USED();
+   MALLOC_CHECK__ATTR_MALLOC() MALLOC_CHECK__ATTR_USED();
 static void malloc_check_free(void *)
    MALLOC_CHECK__ATTR_USED();
 static void *malloc_check_realloc(void *, size_t,
                                   const char *, unsigned int)
-   MALLOC_CHECK__ATTR_USED();
+   MALLOC_CHECK__ATTR_MALLOC() MALLOC_CHECK__ATTR_USED();
 static void malloc_check_empty(void)
    MALLOC_CHECK__ATTR_USED();
 

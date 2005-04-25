@@ -128,10 +128,7 @@ static int httpd__build_path(struct Con *con, struct Httpd_req_data *req,
     return (FALSE);
 
  fin_overwrite:
-  if ((lim == HTTPD_POLICY_PATH_LIM_NONE) ||
-      (lim == HTTPD_POLICY_PATH_LIM_PATH_FULL) ||
-      (lim == HTTPD_POLICY_PATH_LIM_PATH_BEG) ||
-      (lim == HTTPD_POLICY_PATH_LIM_PATH_EQ))
+  if (lim == HTTPD_POLICY_PATH_LIM_NONE)
     req->vhost_prefix_len = 0; /* replaced everything */
 
   return (TRUE);
@@ -177,13 +174,21 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
           case HTTPD_POLICY_REQ_NAME_END:
           case HTTPD_POLICY_REQ_NAME_EQ:
             
-          case HTTPD_POLICY_REQ_BNWE_BEG:
-          case HTTPD_POLICY_REQ_BNWE_END:
-          case HTTPD_POLICY_REQ_BNWE_EQ:
+          case HTTPD_POLICY_REQ_BWEN_BEG:
+          case HTTPD_POLICY_REQ_BWEN_END:
+          case HTTPD_POLICY_REQ_BWEN_EQ:
+            
+          case HTTPD_POLICY_REQ_BWES_BEG:
+          case HTTPD_POLICY_REQ_BWES_END:
+          case HTTPD_POLICY_REQ_BWES_EQ:
             
           case HTTPD_POLICY_REQ_EXTN_BEG:
           case HTTPD_POLICY_REQ_EXTN_END:
           case HTTPD_POLICY_REQ_EXTN_EQ:
+            
+          case HTTPD_POLICY_REQ_EXTS_BEG:
+          case HTTPD_POLICY_REQ_EXTS_END:
+          case HTTPD_POLICY_REQ_EXTS_EQ:
             *lim = httpd_policy_path_req2lim(type);
             break;
 
@@ -203,8 +208,12 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
         *lim = HTTPD_POLICY_PATH_LIM_NAME_FULL;
       else if (OPT_SERV_SYM_EQ("<extension>"))
         *lim = HTTPD_POLICY_PATH_LIM_EXTN_FULL;
+      else if (OPT_SERV_SYM_EQ("<extensions>"))
+        *lim = HTTPD_POLICY_PATH_LIM_EXTS_FULL;
       else if (OPT_SERV_SYM_EQ("<basename-without-extension>"))
-        *lim = HTTPD_POLICY_PATH_LIM_BNWE_FULL;
+        *lim = HTTPD_POLICY_PATH_LIM_BWEN_FULL;
+      else if (OPT_SERV_SYM_EQ("<basename-without-extensions>"))
+        *lim = HTTPD_POLICY_PATH_LIM_BWES_FULL;
       else
       {
         unsigned int type = HTTPD_POLICY_REQ_PATH_BEG;
@@ -228,12 +237,24 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
           type = HTTPD_POLICY_REQ_EXTN_END;
         else if (OPT_SERV_SYM_EQ("<extension>-eq"))
           type = HTTPD_POLICY_REQ_EXTN_EQ;
+        else if (OPT_SERV_SYM_EQ("<extensions>-beg"))
+          type = HTTPD_POLICY_REQ_EXTS_BEG;
+        else if (OPT_SERV_SYM_EQ("<extensions>-end"))
+          type = HTTPD_POLICY_REQ_EXTS_END;
+        else if (OPT_SERV_SYM_EQ("<extensions>-eq"))
+          type = HTTPD_POLICY_REQ_EXTS_EQ;
         else if (OPT_SERV_SYM_EQ("<basename-without-extension>-beg"))
-          type = HTTPD_POLICY_REQ_BNWE_BEG;
+          type = HTTPD_POLICY_REQ_BWEN_BEG;
         else if (OPT_SERV_SYM_EQ("<basename-without-extension>-end"))
-          type = HTTPD_POLICY_REQ_BNWE_END;
+          type = HTTPD_POLICY_REQ_BWEN_END;
         else if (OPT_SERV_SYM_EQ("<basename-without-extension>-eq"))
-          type = HTTPD_POLICY_REQ_BNWE_EQ;
+          type = HTTPD_POLICY_REQ_BWEN_EQ;
+        else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-beg"))
+          type = HTTPD_POLICY_REQ_BWES_BEG;
+        else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-end"))
+          type = HTTPD_POLICY_REQ_BWES_END;
+        else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-eq"))
+          type = HTTPD_POLICY_REQ_BWES_EQ;
         else
           return (FALSE);
         
@@ -373,6 +394,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                            "<now>"))
         httpd__conf_req_reset_expires(req, req->now);
   }
+  else if (OPT_SERV_SYM_EQ("P3P:"))
+  {
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(p3p);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(p3p);
+  }
   /*  else if (OPT_SERV_SYM_EQ("Etag:"))
       X_CONTENT_VSTR(etag); -- needs server support */
   else if (OPT_SERV_SYM_EQ("filename"))
@@ -415,13 +441,51 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     OPT_SERV_X_TOGGLE(req->vary_rf);
   else if (OPT_SERV_SYM_EQ("Vary:_User-Agent"))
     OPT_SERV_X_TOGGLE(req->vary_ua);
-  else if (OPT_SERV_SYM_EQ("Accept:"))
+  else if (OPT_SERV_SYM_EQ("negotiate-content-type"))
   {
-    /* foreach
-       unsigned int qual = http_parse_accept(req, s1, pos, len);
-       find highest
-       do the right thing */
-    return (FALSE);
+    unsigned int depth = token->depth_num;
+    unsigned int max_qual = 0;
+    unsigned int qual_num = 0;
+    Conf_token save;
+
+    save = *token;
+    while (conf_token_list_num(token, depth))
+    {
+      unsigned int qual = 0;
+      const Vstr_sect_node *val = NULL;
+
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+
+      if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_S) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_SSS) ||
+            (token->type == CONF_TOKEN_TYPE_SYMBOL)))
+        return (FALSE);
+      
+      val = conf_token_value(token);
+      qual = http_parse_accept(req, conf->data, val->pos, val->len);
+      if (qual > max_qual)
+      {
+        max_qual = qual;
+        qual_num = token->num - 1;
+      }
+      
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);
+    }
+
+    if (qual_num)
+    {
+      unsigned int last = token->num;
+
+      *token = save;
+      conf_parse_num_token(conf, token, qual_num);
+      HTTPD_CONF_REQ__X_CONTENT_VSTR(content_type);
+      HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_type);
+      HTTPD_CONF_REQ__X_CONTENT_VSTR(ext_vary_a);
+      conf_parse_num_token(conf, token, last);
+    }
   }
   else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
     return (FALSE);
@@ -505,7 +569,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
   
   close(fd);
     
-  if (!conf_parse_lex(conf))
+  if (!conf_parse_lex(conf, 1, conf->data->len))
     goto conf_fail;
 
   while (conf_parse_token(conf, token))

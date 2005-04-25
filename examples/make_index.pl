@@ -68,6 +68,10 @@ if (!defined ($dir_name))
       { $dir_name = "Unknown"; }
   }
 
+$dir_loc   =~ s/'/'"'"'/g;
+$dir_name  =~ s/'/'"'"'/g;
+$index_loc =~ s/'/'"'"'/g;
+
 my $cmds = <<EOL;
  ${prefix}dir_list --size --follow -- '$dir_loc' | \
  ${prefix}dir_filter $filter_args | \

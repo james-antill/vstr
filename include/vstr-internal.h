@@ -151,8 +151,9 @@
 
 #define MALLOC_CHECK_PRINT 0 /* needs to be zero'd for coverage testing */
 #define MALLOC_CHECK_STORE vstr__malloc_check_store
-#define MALLOC_CHECK__ATTR_H()    VSTR__ATTR_H()
-#define MALLOC_CHECK__ATTR_USED() VSTR__ATTR_USED()
+#define MALLOC_CHECK__ATTR_H()      VSTR__ATTR_H()
+#define MALLOC_CHECK__ATTR_USED()   VSTR__ATTR_USED()
+#define MALLOC_CHECK__ATTR_MALLOC() VSTR__COMPILE_ATTR_MALLOC()
 #include "malloc-check.h"
 #if !(USE_MALLOC_CHECK)
 # define VSTR__CONF_REF_LINKED_SZ (UINT_MAX / 2)

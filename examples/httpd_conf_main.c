@@ -269,13 +269,21 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       case HTTPD_POLICY_REQ_NAME_END:
       case HTTPD_POLICY_REQ_NAME_EQ:
         
-      case HTTPD_POLICY_REQ_BNWE_BEG:
-      case HTTPD_POLICY_REQ_BNWE_END:
-      case HTTPD_POLICY_REQ_BNWE_EQ:
+      case HTTPD_POLICY_REQ_BWEN_BEG:
+      case HTTPD_POLICY_REQ_BWEN_END:
+      case HTTPD_POLICY_REQ_BWEN_EQ:
+        
+      case HTTPD_POLICY_REQ_BWES_BEG:
+      case HTTPD_POLICY_REQ_BWES_END:
+      case HTTPD_POLICY_REQ_BWES_EQ:
         
       case HTTPD_POLICY_REQ_EXTN_BEG:
       case HTTPD_POLICY_REQ_EXTN_END:
       case HTTPD_POLICY_REQ_EXTN_EQ:
+        
+      case HTTPD_POLICY_REQ_EXTS_BEG:
+      case HTTPD_POLICY_REQ_EXTS_END:
+      case HTTPD_POLICY_REQ_EXTS_EQ:
       {
         size_t pos = 1;
         size_t len = req->fname->len;
@@ -455,12 +463,24 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       type = HTTPD_POLICY_REQ_EXTN_END;
     else if (OPT_SERV_SYM_EQ("extension-eq"))
       type = HTTPD_POLICY_REQ_EXTN_EQ;
+    else if (OPT_SERV_SYM_EQ("extensions-beg"))
+      type = HTTPD_POLICY_REQ_EXTS_BEG;
+    else if (OPT_SERV_SYM_EQ("extensions-end"))
+      type = HTTPD_POLICY_REQ_EXTS_END;
+    else if (OPT_SERV_SYM_EQ("extensions-eq"))
+      type = HTTPD_POLICY_REQ_EXTS_EQ;
     else if (OPT_SERV_SYM_EQ("basename-without-extension-beg"))
-      type = HTTPD_POLICY_REQ_BNWE_BEG;
+      type = HTTPD_POLICY_REQ_BWEN_BEG;
     else if (OPT_SERV_SYM_EQ("basename-without-extension-end"))
-      type = HTTPD_POLICY_REQ_BNWE_END;
+      type = HTTPD_POLICY_REQ_BWEN_END;
     else if (OPT_SERV_SYM_EQ("basename-without-extension-eq"))
-      type = HTTPD_POLICY_REQ_BNWE_EQ;
+      type = HTTPD_POLICY_REQ_BWEN_EQ;
+    else if (OPT_SERV_SYM_EQ("basename-without-extensions-beg"))
+      type = HTTPD_POLICY_REQ_BWES_BEG;
+    else if (OPT_SERV_SYM_EQ("basename-without-extensions-end"))
+      type = HTTPD_POLICY_REQ_BWES_END;
+    else if (OPT_SERV_SYM_EQ("basename-without-extensions-eq"))
+      type = HTTPD_POLICY_REQ_BWES_EQ;
     else
       return (FALSE);
     
@@ -939,56 +959,18 @@ int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
   return (TRUE);
 }
 
-/* FIXME: we really just wnat to fix conf.c to allow appending data to
- * a conf parser */
-#define HTTPD_CONF__DECL_APP()                   \
-    unsigned int *types_ptr = NULL;              \
-    unsigned int  types_sz  = 0;                 \
-    unsigned int  types_num = 0;                 \
-    Vstr_ref    **uvals_ptr  = NULL;             \
-    unsigned int  uvals_sz   = 0;                \
-    unsigned int  uvals_num  = 0
-
-/* save the previous parsing we've done... */
-#define HTTPD_CONF__BEG_APP() do {                      \
-      if (conf->uvals_num)                              \
-      {                                                 \
-        unsigned int *ptr = MK(sizeof(unsigned int) * 4);       \
-        if (!ptr)                                               \
-          goto read_malloc_fail;                                \
-                                                                \
-        types_ptr = conf->types_ptr; conf->types_ptr = ptr;     \
-        types_sz  = conf->types_sz;  conf->types_sz  = 4;       \
-        types_num = conf->sects->num;                           \
-        uvals_ptr = conf->uvals_ptr; conf->uvals_ptr = NULL;    \
-        uvals_sz  = conf->uvals_sz;  conf->uvals_sz  = 0;       \
-        uvals_num = conf->uvals_num; conf->uvals_num = 0;       \
-      }                                                         \
-                                                                \
-      /* reinit */                                              \
-      conf->state      = CONF_PARSE_STATE_BEG;                  \
-      conf->depth      = 0;                                     \
-      conf->sects->num = 0;                                     \
+#define HTTPD_CONF__BEG_APP() do {                                      \
+      ASSERT(!opts->conf_num || (conf->state == CONF_PARSE_STATE_END)); \
+      /* reinit */                                                      \
+      conf->state = CONF_PARSE_STATE_BEG;                               \
     } while (FALSE)
 
 /* restore the previous parsing we've done and skip parsing it again */
 #define HTTPD_CONF__END_APP() do {                                      \
       if (opts->conf_num)                                               \
       {                                                                 \
-        ASSERT(types_sz  <= conf->types_sz);                            \
-        ASSERT(types_num <= conf->sects->num);                          \
-        memcpy(conf->types_ptr, types_ptr, types_num * sizeof(unsigned int)); \
-        F(types_ptr);                                                   \
-                                                                        \
-        ASSERT(!conf->uvals_ptr);                                       \
-        ASSERT(!conf->uvals_sz);                                        \
-        ASSERT(!conf->uvals_num);                                       \
-        conf->uvals_ptr = uvals_ptr;                                    \
-        conf->uvals_sz  = uvals_sz;                                     \
-        conf->uvals_num = uvals_num;                                    \
-                                                                        \
-        types_num = opts->conf_num;                                     \
-        while (types_num--)                                             \
+        unsigned int tmp__conf_num = opts->conf_num;                    \
+        while (tmp__conf_num--)                                         \
         {                                                               \
           if (!conf_parse_token(conf, token))                           \
             goto conf_fail;                                             \
@@ -1008,13 +990,15 @@ int httpd_conf_main_parse_cstr(Vstr_base *out,
 {
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
-  HTTPD_CONF__DECL_APP();
+  size_t pos = 1;
+  size_t len = 0;
 
   ASSERT(opts && data);
 
   if (!conf && !(conf = conf_parse_make(NULL)))
     goto conf_malloc_fail;
-  
+
+  pos = conf->data->len + 1;
   if (!vstr_add_cstr_ptr(conf->data, conf->data->len,
                          "(org.and.jhttpd-conf-main-1.0 "))
     goto read_malloc_fail;
@@ -1023,10 +1007,11 @@ int httpd_conf_main_parse_cstr(Vstr_base *out,
   if (!vstr_add_cstr_ptr(conf->data, conf->data->len,
                          ")"))
     goto read_malloc_fail;
+  len = vstr_sc_posdiff(pos, conf->data->len);
 
   HTTPD_CONF__BEG_APP();
-
-  if (!conf_parse_lex(conf)) /* we re-lex everything on append, it's crap */
+  
+  if (!conf_parse_lex(conf, pos, len))
     goto conf_fail;
 
   HTTPD_CONF__END_APP();
@@ -1065,19 +1050,22 @@ int httpd_conf_main_parse_file(Vstr_base *out,
 {
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
-  HTTPD_CONF__DECL_APP();
+  size_t pos = 1;
+  size_t len = 0;
   
   ASSERT(opts && fname);
   
   if (!conf && !(conf = conf_parse_make(NULL)))
     goto conf_malloc_fail;
-  
+
+  pos = conf->data->len + 1;
   if (!vstr_sc_read_len_file(conf->data, conf->data->len, fname, 0, 0, NULL))
     goto read_malloc_fail;
+  len = vstr_sc_posdiff(pos, conf->data->len);
 
   HTTPD_CONF__BEG_APP();
   
-  if (!conf_parse_lex(conf)) /* we re-lex everything on append, it's crap */
+  if (!conf_parse_lex(conf, pos, len))
     goto conf_fail;
 
   HTTPD_CONF__END_APP();

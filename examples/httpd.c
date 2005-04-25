@@ -130,6 +130,22 @@ static void http__clear_hdrs(struct Httpd_req_data *req)
   HTTP__HDR_MULTI_SET(req, range,           0, 0);
 }
 
+static void http__clear_xtra(struct Httpd_req_data *req)
+{
+  if (req->xtra_content)
+    vstr_del(req->xtra_content, 1, req->xtra_content->len);
+
+  HTTP__CONTENT_INIT_HDR(content_type);
+  HTTP__CONTENT_INIT_HDR(content_location);
+  HTTP__CONTENT_INIT_HDR(content_md5);
+  HTTP__CONTENT_INIT_HDR(cache_control);
+  HTTP__CONTENT_INIT_HDR(expires);
+  HTTP__CONTENT_INIT_HDR(p3p);
+  HTTP__CONTENT_INIT_HDR(ext_vary_a);
+  HTTP__CONTENT_INIT_HDR(ext_vary_al);
+  HTTP__CONTENT_INIT_HDR(ext_vary_ac);
+}
+
 Httpd_req_data *http_req_make(struct Con *con)
 {
   static Httpd_req_data real_req[1];
@@ -156,6 +172,8 @@ Httpd_req_data *http_req_make(struct Con *con)
   httpd_policy_change_req(req, con ? con->policy : httpd_opts->def_policy);
   
   http__clear_hdrs(req);
+  
+  http__clear_xtra(req);
   
   req->http_hdrs->multi->comb = con ? con->evnt->io_r : NULL;
 
@@ -187,12 +205,6 @@ Httpd_req_data *http_req_make(struct Con *con)
   if (req->xtra_content)
     vstr_del(req->xtra_content, 1, req->xtra_content->len);
   
-  HTTP__CONTENT_INIT_HDR(content_type);
-  HTTP__CONTENT_INIT_HDR(content_location);
-  HTTP__CONTENT_INIT_HDR(content_md5);
-  HTTP__CONTENT_INIT_HDR(cache_control);
-  HTTP__CONTENT_INIT_HDR(expires);
-
   req->vhost_prefix_len = 0;
   
   req->sects->malloc_bad = FALSE;
@@ -241,14 +253,7 @@ void http_req_free(Httpd_req_data *req)
   if (req->f_mmap)
     vstr_del(req->f_mmap, 1, req->f_mmap->len);
 
-  if (req->xtra_content)
-    vstr_del(req->xtra_content, 1, req->xtra_content->len);
-
-  HTTP__CONTENT_INIT_HDR(content_type);
-  HTTP__CONTENT_INIT_HDR(content_location);
-  HTTP__CONTENT_INIT_HDR(content_md5);
-  HTTP__CONTENT_INIT_HDR(cache_control);
-  HTTP__CONTENT_INIT_HDR(expires);
+  http__clear_xtra(req);
   
   req->http_hdrs->multi->comb = NULL;
 
@@ -685,6 +690,9 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
       if (req->expires_vs1)
         http_app_hdr_vstr_def(out, "Expires",
                               HTTP__CONTENT_PARAMS(req, expires));
+      if (req->p3p_vs1)
+        http_app_hdr_vstr_def(out, "P3P",
+                              HTTP__CONTENT_PARAMS(req, p3p));
     }
     http_app_end_hdrs(out);
   }
@@ -2132,6 +2140,9 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
                           HTTP__CONTENT_PARAMS(req, cache_control));
   if (req->expires_vs1)
     http_app_hdr_vstr_def(out, "Expires", HTTP__CONTENT_PARAMS(req, expires));
+  if (req->p3p_vs1)
+    http_app_hdr_vstr_def(out, "P3P",
+                          HTTP__CONTENT_PARAMS(req, p3p));
   /* TODO: ETag */
   
   http_app_end_hdrs(out);

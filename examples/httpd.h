@@ -92,6 +92,18 @@ typedef struct Httpd_req_data
  const Vstr_base *expires_vs1;
  size_t           expires_pos;
  size_t           expires_len;
+ const Vstr_base *p3p_vs1;
+ size_t           p3p_pos;
+ size_t           p3p_len;
+ const Vstr_base *ext_vary_a_vs1;
+ size_t           ext_vary_a_pos;
+ size_t           ext_vary_a_len;
+ const Vstr_base *ext_vary_ac_vs1;
+ size_t           ext_vary_ac_pos;
+ size_t           ext_vary_ac_len;
+ const Vstr_base *ext_vary_al_vs1;
+ size_t           ext_vary_al_pos;
+ size_t           ext_vary_al_len;
 
  time_t now;
 

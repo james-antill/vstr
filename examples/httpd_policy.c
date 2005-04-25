@@ -201,6 +201,17 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
       HTTPD_APP_REF_VSTR(conf->tmp,
                          con->evnt->io_r, req->path_pos, req->path_len);
     }
+    else if (OPT_SERV_SYM_EQ("<content-type-extension>") ||
+             OPT_SERV_SYM_EQ("<content-type-path>"))
+    {
+      const Vstr_base *s1 = req->ext_vary_a_vs1;
+      size_t pos          = req->ext_vary_a_pos;
+      size_t len          = req->ext_vary_a_len;
+      
+      *used_req = TRUE;
+      if (s1 && len)
+        HTTPD_APP_REF_VSTR(conf->tmp, s1, pos, len);
+    }
     else
     { /* unknown symbol or string */
       size_t pos = conf->tmp->len + 1;

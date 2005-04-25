@@ -107,7 +107,7 @@ extern Conf_parse *conf_parse_make(Vstr_conf *)
    VSTR__COMPILE_ATTR_MALLOC();
 extern void        conf_parse_free(Conf_parse *);
 
-extern int conf_parse_lex(Conf_parse *);
+extern int conf_parse_lex(Conf_parse *, size_t, size_t);
 
 extern Conf_token *conf_token_make(void)
    VSTR__COMPILE_ATTR_MALLOC();

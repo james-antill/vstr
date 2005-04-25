@@ -23,10 +23,18 @@
 #define HTTPD_POLICY_PATH_LIM_EXTN_BEG  (0xc  | HTTPD_POLICY__PATH_LIM_BEG)
 #define HTTPD_POLICY_PATH_LIM_EXTN_END  (0xc  | HTTPD_POLICY__PATH_LIM_END)
 #define HTTPD_POLICY_PATH_LIM_EXTN_EQ   (0xc  | HTTPD_POLICY__PATH_LIM_EQ)
-#define HTTPD_POLICY_PATH_LIM_BNWE_FULL (0x14 | HTTPD_POLICY__PATH_LIM_FULL)
-#define HTTPD_POLICY_PATH_LIM_BNWE_BEG  (0x14 | HTTPD_POLICY__PATH_LIM_BEG)
-#define HTTPD_POLICY_PATH_LIM_BNWE_END  (0x14 | HTTPD_POLICY__PATH_LIM_END)
-#define HTTPD_POLICY_PATH_LIM_BNWE_EQ   (0x14 | HTTPD_POLICY__PATH_LIM_EQ)
+#define HTTPD_POLICY_PATH_LIM_EXTS_FULL (0x14 | HTTPD_POLICY__PATH_LIM_FULL)
+#define HTTPD_POLICY_PATH_LIM_EXTS_BEG  (0x14 | HTTPD_POLICY__PATH_LIM_BEG)
+#define HTTPD_POLICY_PATH_LIM_EXTS_END  (0x14 | HTTPD_POLICY__PATH_LIM_END)
+#define HTTPD_POLICY_PATH_LIM_EXTS_EQ   (0x14 | HTTPD_POLICY__PATH_LIM_EQ)
+#define HTTPD_POLICY_PATH_LIM_BWEN_FULL (0x18 | HTTPD_POLICY__PATH_LIM_FULL)
+#define HTTPD_POLICY_PATH_LIM_BWEN_BEG  (0x18 | HTTPD_POLICY__PATH_LIM_BEG)
+#define HTTPD_POLICY_PATH_LIM_BWEN_END  (0x18 | HTTPD_POLICY__PATH_LIM_END)
+#define HTTPD_POLICY_PATH_LIM_BWEN_EQ   (0x18 | HTTPD_POLICY__PATH_LIM_EQ)
+#define HTTPD_POLICY_PATH_LIM_BWES_FULL (0x1c | HTTPD_POLICY__PATH_LIM_FULL)
+#define HTTPD_POLICY_PATH_LIM_BWES_BEG  (0x1c | HTTPD_POLICY__PATH_LIM_BEG)
+#define HTTPD_POLICY_PATH_LIM_BWES_END  (0x1c | HTTPD_POLICY__PATH_LIM_END)
+#define HTTPD_POLICY_PATH_LIM_BWES_EQ   (0x1c | HTTPD_POLICY__PATH_LIM_EQ)
 
 /* choosing (1024) as a offset ... kinda hackyish */
 #define HTTPD_POLICY_REQ_PATH_BEG (1024 +  0)
@@ -35,12 +43,18 @@
 #define HTTPD_POLICY_REQ_NAME_BEG (1024 +  3)
 #define HTTPD_POLICY_REQ_NAME_END (1024 +  4)
 #define HTTPD_POLICY_REQ_NAME_EQ  (1024 +  5)
-#define HTTPD_POLICY_REQ_BNWE_BEG (1024 +  6)
-#define HTTPD_POLICY_REQ_BNWE_END (1024 +  7)
-#define HTTPD_POLICY_REQ_BNWE_EQ  (1024 +  8)
-#define HTTPD_POLICY_REQ_EXTN_BEG (1024 +  9)
-#define HTTPD_POLICY_REQ_EXTN_END (1024 + 10)
-#define HTTPD_POLICY_REQ_EXTN_EQ  (1024 + 11)
+#define HTTPD_POLICY_REQ_BWEN_BEG (1024 +  6)
+#define HTTPD_POLICY_REQ_BWEN_END (1024 +  7)
+#define HTTPD_POLICY_REQ_BWEN_EQ  (1024 +  8)
+#define HTTPD_POLICY_REQ_BWES_BEG (1024 +  9)
+#define HTTPD_POLICY_REQ_BWES_END (1024 + 10)
+#define HTTPD_POLICY_REQ_BWES_EQ  (1024 + 11)
+#define HTTPD_POLICY_REQ_EXTN_BEG (1024 + 12)
+#define HTTPD_POLICY_REQ_EXTN_END (1024 + 13)
+#define HTTPD_POLICY_REQ_EXTN_EQ  (1024 + 14)
+#define HTTPD_POLICY_REQ_EXTS_BEG (1024 + 15)
+#define HTTPD_POLICY_REQ_EXTS_END (1024 + 16)
+#define HTTPD_POLICY_REQ_EXTS_EQ  (1024 + 17)
 
 typedef struct Httpd_policy_path
 {
@@ -221,7 +235,24 @@ extern inline void httpd_policy_path_mod_extn(const Vstr_base *s1,
   }
 }
 
-extern inline void httpd_policy_path_mod_bnwe(const Vstr_base *s1,
+extern inline void httpd_policy_path_mod_exts(const Vstr_base *s1,
+                                              size_t *pos, size_t *len)
+{
+  size_t tmp = *len;
+  
+  httpd_policy_path_mod_name(s1, pos, len);
+
+  tmp = vstr_sc_poslast(*pos, *len);
+  if (!(*len = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
+    *pos = tmp + 1; /* at point just after basename */
+  else
+  {
+    *pos = *len; /* include '.' */
+    *len = vstr_sc_posdiff(*pos, tmp);
+  }
+}
+
+extern inline void httpd_policy_path_mod_bwen(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
   size_t tmp = 0;
@@ -229,6 +260,17 @@ extern inline void httpd_policy_path_mod_bnwe(const Vstr_base *s1,
   httpd_policy_path_mod_name(s1, pos, len);
 
   if ((tmp = vstr_srch_chr_rev(s1, *pos, *len, '.')))
+    *len = vstr_sc_posdiff(*pos, tmp) - 1; /* don't include '.' */
+}
+
+extern inline void httpd_policy_path_mod_bwes(const Vstr_base *s1,
+                                              size_t *pos, size_t *len)
+{
+  size_t tmp = 0;
+
+  httpd_policy_path_mod_name(s1, pos, len);
+
+  if ((tmp = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
     *len = vstr_sc_posdiff(*pos, tmp) - 1; /* don't include '.' */
 }
 
@@ -268,11 +310,25 @@ extern inline int httpd_policy_path_lim_eq(const Vstr_base *s1,
       httpd_policy_path_mod_extn(s1, pos, len);
       break;
 
-    case HTTPD_POLICY_PATH_LIM_BNWE_FULL:
-    case HTTPD_POLICY_PATH_LIM_BNWE_BEG:
-    case HTTPD_POLICY_PATH_LIM_BNWE_END:
-    case HTTPD_POLICY_PATH_LIM_BNWE_EQ:
-      httpd_policy_path_mod_bnwe(s1, pos, len);
+    case HTTPD_POLICY_PATH_LIM_EXTS_FULL:
+    case HTTPD_POLICY_PATH_LIM_EXTS_BEG:
+    case HTTPD_POLICY_PATH_LIM_EXTS_END:
+    case HTTPD_POLICY_PATH_LIM_EXTS_EQ:
+      httpd_policy_path_mod_exts(s1, pos, len);
+      break;
+
+    case HTTPD_POLICY_PATH_LIM_BWEN_FULL:
+    case HTTPD_POLICY_PATH_LIM_BWEN_BEG:
+    case HTTPD_POLICY_PATH_LIM_BWEN_END:
+    case HTTPD_POLICY_PATH_LIM_BWEN_EQ:
+      httpd_policy_path_mod_bwen(s1, pos, len);
+      break;
+      
+    case HTTPD_POLICY_PATH_LIM_BWES_FULL:
+    case HTTPD_POLICY_PATH_LIM_BWES_BEG:
+    case HTTPD_POLICY_PATH_LIM_BWES_END:
+    case HTTPD_POLICY_PATH_LIM_BWES_EQ:
+      httpd_policy_path_mod_bwes(s1, pos, len);
       break;
   }
 
@@ -322,13 +378,21 @@ extern inline int httpd_policy_path_req2lim(unsigned int type)
     case HTTPD_POLICY_REQ_NAME_END: lim = HTTPD_POLICY_PATH_LIM_NAME_END; break;
     case HTTPD_POLICY_REQ_NAME_EQ:  lim = HTTPD_POLICY_PATH_LIM_NAME_EQ;  break;
       
-    case HTTPD_POLICY_REQ_BNWE_BEG: lim = HTTPD_POLICY_PATH_LIM_BNWE_BEG; break;
-    case HTTPD_POLICY_REQ_BNWE_END: lim = HTTPD_POLICY_PATH_LIM_BNWE_END; break;
-    case HTTPD_POLICY_REQ_BNWE_EQ:  lim = HTTPD_POLICY_PATH_LIM_BNWE_EQ;  break;
+    case HTTPD_POLICY_REQ_BWEN_BEG: lim = HTTPD_POLICY_PATH_LIM_BWEN_BEG; break;
+    case HTTPD_POLICY_REQ_BWEN_END: lim = HTTPD_POLICY_PATH_LIM_BWEN_END; break;
+    case HTTPD_POLICY_REQ_BWEN_EQ:  lim = HTTPD_POLICY_PATH_LIM_BWEN_EQ;  break;
+      
+    case HTTPD_POLICY_REQ_BWES_BEG: lim = HTTPD_POLICY_PATH_LIM_BWES_BEG; break;
+    case HTTPD_POLICY_REQ_BWES_END: lim = HTTPD_POLICY_PATH_LIM_BWES_END; break;
+    case HTTPD_POLICY_REQ_BWES_EQ:  lim = HTTPD_POLICY_PATH_LIM_BWES_EQ;  break;
       
     case HTTPD_POLICY_REQ_EXTN_BEG: lim = HTTPD_POLICY_PATH_LIM_EXTN_BEG; break;
     case HTTPD_POLICY_REQ_EXTN_END: lim = HTTPD_POLICY_PATH_LIM_EXTN_END; break;
     case HTTPD_POLICY_REQ_EXTN_EQ:  lim = HTTPD_POLICY_PATH_LIM_EXTN_EQ;  break;
+      
+    case HTTPD_POLICY_REQ_EXTS_BEG: lim = HTTPD_POLICY_PATH_LIM_EXTS_BEG; break;
+    case HTTPD_POLICY_REQ_EXTS_END: lim = HTTPD_POLICY_PATH_LIM_EXTS_END; break;
+    case HTTPD_POLICY_REQ_EXTS_EQ:  lim = HTTPD_POLICY_PATH_LIM_EXTS_EQ;  break;
       
     default:
       HTTPD_POLICY__ASSERT(HTTPD_POLICY__FALSE);

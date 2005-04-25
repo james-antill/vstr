@@ -288,18 +288,15 @@ static int conf__parse_esc_quote(Conf_parse *conf, unsigned int *list_nums,
       plen = 2;                                                         \
     } while (FALSE)
 
-int conf_parse_lex(Conf_parse *conf)
+int conf_parse_lex(Conf_parse *conf, size_t pos, size_t len)
 {
   unsigned int list_nums[CONF_PARSE_LIST_DEPTH_SZ + 1];
   Vstr_base *data = NULL;
-  size_t pos = 1;
-  size_t len = 0;
 
   ASSERT(conf && conf->data && conf->sects &&
          conf->types_ptr && conf->types_sz);
   
   data = conf->data;
-  len  = data->len;
 
   if (conf->state != CONF_PARSE_STATE_BEG)
     return (CONF_PARSE_ERR);

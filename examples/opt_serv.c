@@ -179,7 +179,7 @@ int opt_serv_conf_parse_cstr(Vstr_base *out,
   if (!vstr_add_cstr_ptr(conf->data, conf->data->len, data))
     goto read_malloc_fail;
 
-  if (!conf_parse_lex(conf))
+  if (!conf_parse_lex(conf, 1, conf->data->len))
     goto conf_fail;
 
   while (conf_parse_token(conf, token))
@@ -216,7 +216,7 @@ int opt_serv_conf_parse_file(Vstr_base *out,
   if (!vstr_sc_read_len_file(conf->data, 0, fname, 0, 0, NULL))
     goto read_malloc_fail;
 
-  if (!conf_parse_lex(conf))
+  if (!conf_parse_lex(conf, 1, conf->data->len))
     goto conf_fail;
 
   while (conf_parse_token(conf, token))
