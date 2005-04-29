@@ -216,7 +216,6 @@ __printf_fp (FILE *fp,
 	hi = 0;
       else if (scalesize == 0)
 	{
-          ASSERT(fracsize <= bignum_size);
 	  hi = frac[fracsize - 1];
 	  frac[fracsize - 1] = __mpn_mul_1 (frac, frac, fracsize - 1, 10);
 	}
@@ -231,7 +230,6 @@ __printf_fp (FILE *fp,
 	      hi = tmp[0];
 
 	      fracsize = scalesize;
-              ASSERT(fracsize <= bignum_size);
 	      while (fracsize != 0 && frac[fracsize - 1] == 0)
 		--fracsize;
 	      if (fracsize == 0)
@@ -248,7 +246,6 @@ __printf_fp (FILE *fp,
 	  if (_cy != 0)
 	    frac[fracsize++] = _cy;
 }
-          ASSERT(fracsize <= bignum_size);
 	}
 
       return L'0' + hi;
@@ -475,7 +472,6 @@ __printf_fp (FILE *fp,
 			     fp_input, fracsize,
 			     (exponent + to_shift) % BITS_PER_MP_LIMB);
 	  fracsize += (exponent + to_shift) / BITS_PER_MP_LIMB;
-          ASSERT(fracsize <= bignum_size);
 	  if (cy)
 	    frac[fracsize++] = cy;
 	}
@@ -554,7 +550,7 @@ __printf_fp (FILE *fp,
 	  for (i = 0; scale[i] == 0 && frac[i] == 0; i++)
 	    ;
 
-          ASSERT((i >= 0) && ((mp_size_t)i <= bignum_size));
+          ASSERT(i >= 0);
           
 	  /* Determine number of bits the scaling factor is misplaced.	*/
 	  count_leading_zeros (cnt_h, scale[scalesize - 1]);
@@ -669,7 +665,6 @@ __printf_fp (FILE *fp,
 	      if (cy == 0)
 		--tmpsize;
 
-              ASSERT(tmpsize <= bignum_size);
 	      count_leading_zeros (cnt_h, tmp[tmpsize - 1]);
 	      incr = (tmpsize - fracsize) * BITS_PER_MP_LIMB
 		     + BITS_PER_MP_LIMB - 1 - cnt_h;
@@ -756,7 +751,6 @@ __printf_fp (FILE *fp,
 					       BITS_PER_MP_LIMB - 1 - cnt_h);
 			  fracsize = tmpsize - (i - 1);
 			}
-                      ASSERT(fracsize <= bignum_size);
 		    }
 		  used_limbs = fracsize - 1;
 		}
@@ -785,7 +779,6 @@ __printf_fp (FILE *fp,
 	    (void) __mpn_rshift (frac, tmp, tmpsize, MIN (4, exponent));
 	  fracsize = tmpsize;
 	  exp10 |= 1;
-          ASSERT(fracsize <= bignum_size);
 	  assert (frac[fracsize - 1] < 10);
 	}
       exponent = exp10;
@@ -801,7 +794,6 @@ __printf_fp (FILE *fp,
 
       /* Now shift the input value to its right place.	*/
       cy = __mpn_lshift (frac, fp_input, fracsize, (exponent + to_shift));
-      ASSERT(fracsize <= bignum_size);
       frac[fracsize++] = cy;
       exponent = 0;
     }
@@ -953,7 +945,6 @@ __printf_fp (FILE *fp,
       {
 	wchar_t *wtp = wcp;
 
-        ASSERT(fracsize <= bignum_size);
 	if (digit == L'5'
 	    && ((*(wcp - 1) != decimalwc && (*(wcp - 1) & 1) == 0)
 		|| ((*(wcp - 1) == decimalwc && (*(wcp - 2) & 1) == 0))))
