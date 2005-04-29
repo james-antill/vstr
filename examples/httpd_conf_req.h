@@ -7,7 +7,7 @@ struct Con;
 struct Httpd_req_data;
 
 extern int httpd_conf_req_d0(struct Con *, struct Httpd_req_data *,
-                             Conf_parse *, Conf_token *);
+                             time_t, Conf_parse *, Conf_token *);
 extern int httpd_conf_req_parse_file(Conf_parse *,
 				     struct Con *, struct Httpd_req_data *);
 

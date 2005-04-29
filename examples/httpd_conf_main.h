@@ -37,6 +37,8 @@
 #define HTTPD_CONF_USE_CHK_HDR_SPLIT TRUE
 #define HTTPD_CONF_USE_CHK_HDR_NIL TRUE
 #define HTTPD_CONF_USE_CHK_DOT_DIR TRUE
+#define HTTPD_CONF_USE_CHK_ENCODED_SLASH TRUE
+#define HTTPD_CONF_USE_CHK_ENCODED_DOT TRUE
 #define HTTPD_CONF_REQ_CONF_MAXSZ (16 * 1024)
 
 /* this is configurable, but is much higher than EX_MAX_R_DATA_INCORE due to
@@ -87,7 +89,10 @@ typedef struct Httpd_policy_opts
  unsigned int chk_hdr_split : 1; /* 16th bitfield */
  unsigned int chk_hdr_nil : 1;
  
- unsigned int chk_dot_dir : 1; /* 18th bitfield */
+ unsigned int chk_dot_dir : 1;
+ 
+ unsigned int chk_encoded_slash : 1;
+ unsigned int chk_encoded_dot   : 1; /* 20th bitfield */
  
  unsigned int max_header_sz;
 
@@ -139,6 +144,8 @@ typedef struct Httpd_opts
     HTTPD_CONF_USE_CHK_HDR_SPLIT,                                \
     HTTPD_CONF_USE_CHK_HDR_NIL,                                  \
     HTTPD_CONF_USE_CHK_DOT_DIR,                                  \
+    HTTPD_CONF_USE_CHK_ENCODED_SLASH,                            \
+    HTTPD_CONF_USE_CHK_ENCODED_DOT,                              \
     HTTPD_CONF_INPUT_MAXSZ,                                      \
     HTTPD_CONF_REQ_CONF_MAXSZ}
     

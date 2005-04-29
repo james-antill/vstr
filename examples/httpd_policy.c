@@ -97,38 +97,75 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     
     else if (OPT_SERV_SYM_EQ("<basename>"))
     {
-      size_t pos = vstr_srch_chr_rev(req->fname, 1, req->fname->len, '/');
-      size_t len = 0;
-      ASSERT(pos); ++pos;
+      size_t pos = 1;
+      size_t len = req->fname->len;
       
       *used_req = TRUE;
-      
-      len = vstr_sc_posdiff(pos, req->fname->len);
+      httpd_policy_path_mod_name(req->fname, &pos, &len);
       HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-basename>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
+      
+      *used_req = TRUE;
+      httpd_policy_path_mod_name(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
     }
     else if (OPT_SERV_SYM_EQ("<basename-without-extension>"))
     {
-      size_t pos = vstr_srch_chr_rev(req->fname, 1, req->fname->len, '/');
+      size_t pos = 1;
       size_t len = req->fname->len;
-      size_t tmp = 0;
-      ASSERT(pos); ++pos;
-      
+
       *used_req = TRUE;
-      len = vstr_sc_posdiff(pos, len);
-      if ((tmp = vstr_srch_chr_rev(req->fname, pos, len, '.')))
-        len = vstr_sc_posdiff(pos, tmp) - 1;
-      
+      httpd_policy_path_mod_bwen(req->fname, &pos, &len);
       HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-basename-without-extension>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
+
+      *used_req = TRUE;
+      httpd_policy_path_mod_bwen(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<basename-without-extensions>"))
+    {
+      size_t pos = 1;
+      size_t len = req->fname->len;
+
+      *used_req = TRUE;
+      httpd_policy_path_mod_bwes(req->fname, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-basename-without-extensions>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
+
+      *used_req = TRUE;
+      httpd_policy_path_mod_bwes(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
     }
     else if (OPT_SERV_SYM_EQ("<dirname>"))
     {
-      size_t pos = vstr_srch_chr_rev(req->fname, 1, req->fname->len, '/');
-      size_t len = 0;
-      ASSERT(pos);
+      size_t pos = 1;
+      size_t len = req->fname->len;
       
       *used_req = TRUE;
-      len = vstr_sc_posdiff(1, pos);
+      httpd_policy_path_mod_dirn(req->fname, &pos, &len);
       HTTPD_APP_REF_VSTR(conf->tmp, req->fname, 1, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-dirname>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
+      
+      *used_req = TRUE;
+      httpd_policy_path_mod_dirn(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
     }
     else if (OPT_SERV_SYM_EQ("<document-root>") ||
              OPT_SERV_SYM_EQ("<doc-root>"))
@@ -148,21 +185,39 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     }
     else if (OPT_SERV_SYM_EQ("<extension>"))
     {
-      size_t pos = vstr_srch_chr_rev(req->fname, 1, req->fname->len, '/');
+      size_t pos = 1;
       size_t len = req->fname->len;
-      ASSERT(pos); ++pos;
+
+      *used_req = TRUE;
+      httpd_policy_path_mod_extn(req->fname, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-extension>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
       
       *used_req = TRUE;
-      len = vstr_sc_posdiff(pos, len);
-      if (!(len = vstr_srch_chr_rev(req->fname, pos, len, '.')))
-        pos = req->fname->len;
-      else
-      {
-        pos = len;
-        len = vstr_sc_posdiff(pos, req->fname->len);
-      }
-      
+      httpd_policy_path_mod_extn(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<extensions>"))
+    {
+      size_t pos = 1;
+      size_t len = req->fname->len;
+
+      *used_req = TRUE;
+      httpd_policy_path_mod_exts(req->fname, &pos, &len);
       HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<url-extensions>"))
+    {
+      size_t pos = req->path_pos;
+      size_t len = req->path_len;
+      
+      *used_req = TRUE;
+      httpd_policy_path_mod_exts(con->evnt->io_r, &pos, &len);
+      HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
     }
     else if (OPT_SERV_SYM_EQ("<hostname>"))
     {

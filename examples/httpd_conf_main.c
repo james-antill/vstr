@@ -548,7 +548,8 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
     httpd_policy_change_req(req, policy);
   }
   else if (OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
-    return (httpd_conf_req_d0(con, req, conf, token));
+    return (httpd_conf_req_d0(con, req, /* server beg time is "close engouh" */
+                              con->policy->beg->beg_time, conf, token));
   
   else
     return (FALSE);

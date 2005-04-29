@@ -93,10 +93,31 @@ extern int httpd_policy_path_end_eq(const Vstr_base *,
                                     const Vstr_base *, size_t *, size_t *);
 
 extern void httpd_policy_path_mod_name(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_path_mod_dirn(const Vstr_base *, size_t *, size_t *);
 extern void httpd_policy_path_mod_extn(const Vstr_base *, size_t *, size_t *);
-extern void httpd_policy_path_mod_bnwe(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_path_mod_exts(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_path_mod_bwen(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_path_mod_bwes(const Vstr_base *, size_t *, size_t *);
+
 extern int  httpd_policy_path_lim_eq(const Vstr_base *, size_t *, size_t *,
                                      unsigned int, size_t, Vstr_ref *);
+
+extern int httpd_policy_uri_eq(const Vstr_base *,
+                               const Vstr_base *, size_t *, size_t *);
+extern int httpd_policy_uri_beg_eq(const Vstr_base *,
+                                   const Vstr_base *, size_t *, size_t *);
+extern int httpd_policy_uri_end_eq(const Vstr_base *,
+                                   const Vstr_base *, size_t *, size_t *);
+
+extern void httpd_policy_uri_mod_name(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_uri_mod_dirn(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_uri_mod_extn(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_uri_mod_exts(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_uri_mod_bwen(const Vstr_base *, size_t *, size_t *);
+extern void httpd_policy_uri_mod_bwes(const Vstr_base *, size_t *, size_t *);
+
+extern int  httpd_policy_uri_lim_eq(const Vstr_base *, size_t *, size_t *,
+                                    unsigned int, int, Vstr_ref *);
 
 extern int httpd_policy_path_req2lim(unsigned int);
 
@@ -141,6 +162,11 @@ extern inline void httpd_policy_change_req(Httpd_req_data *req,
   { /* NOTE: doesn't do chk_host properly */
     vstr_del(req->fname, 1, req->vhost_prefix_len);
     req->vhost_prefix_len = 0;
+  }
+  if (!req->chked_encoded_path)
+  {
+    req->chk_encoded_slash   = policy->chk_encoded_slash;
+    req->chk_encoded_dot     = policy->chk_encoded_dot;
   }
   req->policy                = policy;
 }
@@ -210,68 +236,79 @@ extern inline void httpd_policy_path_mod_name(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
   size_t srch = vstr_srch_chr_rev(s1, *pos, *len, '/');
-  size_t tmp  = 0;
-  HTTPD_POLICY__ASSERT(srch); ++srch;
+  HTTPD_POLICY__ASSERT(srch);
 
-  tmp = (srch - *pos);
-  *len -= tmp;
-  *pos += tmp;
+  *len -= vstr_sc_posdiff(*pos, srch);
+  *pos += vstr_sc_posdiff(*pos, srch);
+}
+
+extern inline void httpd_policy_path_mod_dirn(const Vstr_base *s1,
+                                              size_t *pos, size_t *len)
+{
+  size_t srch = vstr_srch_chr_rev(s1, *pos, *len, '/');
+  HTTPD_POLICY__ASSERT(srch);
+
+  *len = vstr_sc_posdiff(*pos, srch);
 }
 
 extern inline void httpd_policy_path_mod_extn(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  size_t tmp = *len;
+  size_t srch = 0;
   
   httpd_policy_path_mod_name(s1, pos, len);
 
-  tmp = vstr_sc_poslast(*pos, *len);
-  if (!(*len = vstr_srch_chr_rev(s1, *pos, *len, '.')))
-    *pos = tmp + 1; /* at point just after basename */
+  if ((srch = vstr_srch_chr_rev(s1, *pos, *len, '.')))
+  { /* include '.' */
+    *len -= srch - *pos;
+    *pos = srch;
+  }
   else
-  {
-    *pos = *len; /* include '.' */
-    *len = vstr_sc_posdiff(*pos, tmp);
+  { /* at point just after basename */
+    *pos = vstr_sc_poslast(*pos, *len);
+    *len = 0;
   }
 }
 
 extern inline void httpd_policy_path_mod_exts(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  size_t tmp = *len;
+  size_t srch = 0;
   
   httpd_policy_path_mod_name(s1, pos, len);
 
-  tmp = vstr_sc_poslast(*pos, *len);
-  if (!(*len = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
-    *pos = tmp + 1; /* at point just after basename */
+  if ((srch = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
+  { /* include '.' */
+    *len -= srch - *pos;
+    *pos = srch;
+  }
   else
-  {
-    *pos = *len; /* include '.' */
-    *len = vstr_sc_posdiff(*pos, tmp);
+  { /* at point just after basename */
+    *pos = vstr_sc_poslast(*pos, *len);
+    *len = 0;
   }
 }
 
 extern inline void httpd_policy_path_mod_bwen(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  size_t tmp = 0;
+  size_t srch = 0;
 
   httpd_policy_path_mod_name(s1, pos, len);
 
-  if ((tmp = vstr_srch_chr_rev(s1, *pos, *len, '.')))
-    *len = vstr_sc_posdiff(*pos, tmp) - 1; /* don't include '.' */
+  if ((srch = vstr_srch_chr_rev(s1, *pos, *len, '.')))
+    *len = vstr_sc_posdiff(*pos, srch) - 1; /* don't include '.' */
 }
 
 extern inline void httpd_policy_path_mod_bwes(const Vstr_base *s1,
                                               size_t *pos, size_t *len)
 {
-  size_t tmp = 0;
+  size_t srch = 0;
 
   httpd_policy_path_mod_name(s1, pos, len);
 
-  if ((tmp = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
-    *len = vstr_sc_posdiff(*pos, tmp) - 1; /* don't include '.' */
+  if ((srch = vstr_srch_chr_fwd(s1, *pos, *len, '.')))
+    *len = vstr_sc_posdiff(*pos, srch) - 1; /* don't include '.' */
 }
 
 extern inline int httpd_policy_path_lim_eq(const Vstr_base *s1,
@@ -281,19 +318,21 @@ extern inline int httpd_policy_path_lim_eq(const Vstr_base *s1,
                                            Vstr_ref *ref)
 {
   const Httpd_policy_path *srch = NULL;
+
+  if (lim == HTTPD_POLICY_PATH_LIM_NONE)
+    return (HTTPD_POLICY__TRUE);
   
+  *len -= vhost_prefix_len;
+  *pos += vhost_prefix_len;
+      
   switch (lim)
   {
     default: HTTPD_POLICY__ASSERT(HTTPD_POLICY__FALSE);
-    case HTTPD_POLICY_PATH_LIM_NONE:
-      return (HTTPD_POLICY__TRUE);
 
     case HTTPD_POLICY_PATH_LIM_PATH_FULL:
     case HTTPD_POLICY_PATH_LIM_PATH_BEG:
     case HTTPD_POLICY_PATH_LIM_PATH_END:
     case HTTPD_POLICY_PATH_LIM_PATH_EQ:
-      *len -= vhost_prefix_len;
-      *pos += vhost_prefix_len;
       break;
     
     case HTTPD_POLICY_PATH_LIM_NAME_FULL:
@@ -352,6 +391,327 @@ extern inline int httpd_policy_path_lim_eq(const Vstr_base *s1,
   else if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_EQ)
   {
     if (!httpd_policy_path_eq(srch->s1, s1, pos, len))
+      goto path_no_match;
+  }
+  else
+    HTTPD_POLICY__ASSERT(HTTPD_POLICY__FALSE);
+    
+  vstr_ref_del(ref); ref = NULL;
+  return (HTTPD_POLICY__TRUE);
+ path_no_match:
+  vstr_ref_del(ref); ref = NULL;
+  return (HTTPD_POLICY__FALSE);
+}
+
+static inline int httpd_policy__uri_eq(const Vstr_base *s1,
+                                       const Vstr_base *s2,
+                                       size_t p2, size_t l2, size_t *ret_len)
+{
+  size_t p1 = 1;
+  size_t l1 = s1->len;
+  
+  while (l1 && (l2 >= l1))
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(s2, p2, l1, "%");
+    unsigned int val1 = 0;
+    unsigned int val2 = 0;
+    unsigned int num_flags = VSTR_FLAG02(PARSE_NUM_NO, BEG_ZERO, BEG_PM);
+    
+    if (tmp)
+    {
+      if (!vstr_cmp_eq(s1, p1, tmp, s2, p2, tmp))
+        return (HTTPD_POLICY__FALSE);
+      l1 -= tmp; p1 += tmp;
+      l2 -= tmp; p2 += tmp;
+      continue;
+    }
+
+    if (l2 < 3)
+      return (HTTPD_POLICY__FALSE);
+    HTTPD_POLICY__ASSERT(vstr_export_chr(s2, p2) == '%');
+
+    val1 = (unsigned char)vstr_export_chr(s1, p1);
+    val2 = vstr_parse_ushort(s2, p2 + 1, 2, 16 | num_flags, &tmp, NULL);
+
+    if ((tmp != 2) || (val1 != val2))
+      return (HTTPD_POLICY__FALSE);
+    
+    l1 -= 1; p1 += 1;
+    l2 -= 3; p2 += 3;
+  }
+
+  *ret_len = l2;
+  return (!l1);
+}
+
+extern inline int httpd_policy_uri_eq(const Vstr_base *s1,
+                                      const Vstr_base *s2,
+                                      size_t *p2, size_t *l2)
+{
+  size_t tmp = 0;
+  return (httpd_policy__uri_eq(s1, s2, *p2, *l2, &tmp) && !tmp);
+}
+
+/* if the s1 is equal to the begining of s2 */
+extern inline int httpd_policy_uri_beg_eq(const Vstr_base *s1,
+                                          const Vstr_base *s2,
+                                          size_t *p2, size_t *l2)
+{
+  size_t tmp = 0;
+
+  if (!httpd_policy__uri_eq(s1, s2, *p2, *l2, &tmp))
+    return (HTTPD_POLICY__FALSE);
+  
+  if (tmp) *l2 -= tmp;
+  
+  return (HTTPD_POLICY__TRUE);
+}
+
+/* if the s1 is equal to the end of s2 */
+extern inline int httpd_policy_uri_end_eq(const Vstr_base *s1,
+                                          const Vstr_base *s2,
+                                          size_t *p2, size_t *l2)
+{
+  if (!vstr_srch_chr_fwd(s2, *p2, *l2, '%'))
+  {
+    if (*l2 > s1->len)
+    {
+      *p2 += (*l2 - s1->len);
+      *l2 = s1->len;
+    }
+    return (vstr_cmp_eq(s1, 1, s1->len, s2, *p2, *l2));
+  }
+
+  if (*l2 > (s1->len * 3))
+  {
+    *p2 += (*l2 - (s1->len * 3));
+    *l2 = (s1->len * 3);
+  }
+
+  while (*l2 >= s1->len)
+  {
+    size_t tmp = 0;
+    if (httpd_policy__uri_eq(s1, s2, *p2, *l2, &tmp) && !tmp)
+      return (HTTPD_POLICY__TRUE);
+    *l2 -= 1; *p2 += 1;
+  }
+  
+  return (HTTPD_POLICY__FALSE);
+}
+
+extern inline void httpd_policy_uri_mod_name(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = vstr_srch_chr_rev(s1, *pos, *len, '/');
+  size_t srch2 = vstr_srch_case_cstr_buf_rev(s1, *pos, *len, "%2f");
+  HTTPD_POLICY__ASSERT(srch1);
+
+  if (srch1 < srch2)
+    srch1 = srch2 + 2;
+  
+  *len -= vstr_sc_posdiff(*pos, srch1);
+  *pos += vstr_sc_posdiff(*pos, srch1);
+}
+
+extern inline void httpd_policy_uri_mod_dirn(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = vstr_srch_chr_rev(s1, *pos, *len, '/');
+  size_t srch2 = vstr_srch_case_cstr_buf_rev(s1, *pos, *len, "%2f");
+  HTTPD_POLICY__ASSERT(srch1);
+
+  if (srch1 < srch2)
+    srch1 = srch2 + 2;
+  
+  *len = vstr_sc_posdiff(*pos, srch1);
+}
+
+extern inline void httpd_policy_uri_mod_extn(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = 0;
+  size_t srch2 = 0;
+  
+  httpd_policy_uri_mod_name(s1, pos, len);
+
+  srch1 = vstr_srch_chr_rev(s1, *pos, *len, '.');
+  srch2 = vstr_srch_case_cstr_buf_rev(s1, *pos, *len, "%2e");
+  
+  if (srch1 < srch2)
+    srch1 = srch2;
+
+  if (srch1)
+  { /* include '.' or "%2e" */
+    *len -= srch1 - *pos;
+    *pos = srch1;
+  }
+  else
+  { /* at point just after basename */
+    *pos = vstr_sc_poslast(*pos, *len);
+    *len = 0;
+  }
+}
+
+extern inline void httpd_policy_uri_mod_exts(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = 0;
+  size_t srch2 = 0;
+  
+  httpd_policy_uri_mod_name(s1, pos, len);
+
+  srch1 = vstr_srch_chr_fwd(s1, *pos, *len, '.');
+  srch2 = vstr_srch_case_cstr_buf_fwd(s1, *pos, *len, "%2e");
+  
+  if (srch1 > srch2)
+    srch1 = srch2;
+
+  if (srch1)
+  { /* include '.' or "%2e" */
+    *len -= srch1 - *pos;
+    *pos = srch1;
+  }
+  else
+  { /* at point just after basename */
+    *pos = vstr_sc_poslast(*pos, *len);
+    *len = 0;
+  }
+}
+
+extern inline void httpd_policy_uri_mod_bwen(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = 0;
+  size_t srch2 = 0;
+  unsigned int num = 1;
+
+  httpd_policy_uri_mod_name(s1, pos, len);
+
+  srch1 = vstr_srch_chr_rev(s1, *pos, *len, '.');
+  srch2 = vstr_srch_case_cstr_buf_rev(s1, *pos, *len, "%2e");
+  
+  if (srch1 < srch2)
+  {
+    srch1 = srch2;
+    num   = 3;
+  }
+  
+  if (srch1)
+    *len = vstr_sc_posdiff(*pos, srch1) - num; /* don't include '.' */
+}
+
+extern inline void httpd_policy_uri_mod_bwes(const Vstr_base *s1,
+                                             size_t *pos, size_t *len)
+{
+  size_t srch1 = 0;
+  size_t srch2 = 0;
+  unsigned int num = 1;
+
+  httpd_policy_uri_mod_name(s1, pos, len);
+
+  srch1 = vstr_srch_chr_fwd(s1, *pos, *len, '.');
+  srch2 = vstr_srch_case_cstr_buf_fwd(s1, *pos, *len, "%2e");
+  
+  if (srch1 > srch2)
+  {
+    srch1 = srch2;
+    num   = 3;
+  }
+  
+  if (srch1)
+    *len = vstr_sc_posdiff(*pos, srch1) - num; /* don't include '.' */
+}
+
+extern inline int httpd_policy_uri_lim_eq(const Vstr_base *s1,
+                                          size_t *pos, size_t *len,
+                                          unsigned int lim, int slash_dot_safe,
+                                          Vstr_ref *ref)
+{
+  const Httpd_policy_path *srch = NULL;
+  
+  switch (lim)
+  {
+    default: HTTPD_POLICY__ASSERT(HTTPD_POLICY__FALSE);
+    case HTTPD_POLICY_PATH_LIM_NONE:
+      return (HTTPD_POLICY__TRUE);
+
+    case HTTPD_POLICY_PATH_LIM_PATH_FULL:
+    case HTTPD_POLICY_PATH_LIM_PATH_BEG:
+    case HTTPD_POLICY_PATH_LIM_PATH_END:
+    case HTTPD_POLICY_PATH_LIM_PATH_EQ:
+      break;
+    
+    case HTTPD_POLICY_PATH_LIM_NAME_FULL:
+    case HTTPD_POLICY_PATH_LIM_NAME_BEG:
+    case HTTPD_POLICY_PATH_LIM_NAME_END:
+    case HTTPD_POLICY_PATH_LIM_NAME_EQ:
+      if (slash_dot_safe)
+        httpd_policy_path_mod_name(s1, pos, len);
+      else
+        httpd_policy_uri_mod_name(s1, pos, len);
+      break;
+    
+    case HTTPD_POLICY_PATH_LIM_EXTN_FULL:
+    case HTTPD_POLICY_PATH_LIM_EXTN_BEG:
+    case HTTPD_POLICY_PATH_LIM_EXTN_END:
+    case HTTPD_POLICY_PATH_LIM_EXTN_EQ:
+      if (slash_dot_safe)
+        httpd_policy_path_mod_extn(s1, pos, len);
+      else
+        httpd_policy_uri_mod_extn(s1, pos, len);
+      break;
+
+    case HTTPD_POLICY_PATH_LIM_EXTS_FULL:
+    case HTTPD_POLICY_PATH_LIM_EXTS_BEG:
+    case HTTPD_POLICY_PATH_LIM_EXTS_END:
+    case HTTPD_POLICY_PATH_LIM_EXTS_EQ:
+      if (slash_dot_safe)
+        httpd_policy_path_mod_exts(s1, pos, len);
+      else
+        httpd_policy_uri_mod_exts(s1, pos, len);
+      break;
+
+    case HTTPD_POLICY_PATH_LIM_BWEN_FULL:
+    case HTTPD_POLICY_PATH_LIM_BWEN_BEG:
+    case HTTPD_POLICY_PATH_LIM_BWEN_END:
+    case HTTPD_POLICY_PATH_LIM_BWEN_EQ:
+      if (slash_dot_safe)
+        httpd_policy_path_mod_bwen(s1, pos, len);
+      else
+        httpd_policy_uri_mod_bwen(s1, pos, len);
+      break;
+      
+    case HTTPD_POLICY_PATH_LIM_BWES_FULL:
+    case HTTPD_POLICY_PATH_LIM_BWES_BEG:
+    case HTTPD_POLICY_PATH_LIM_BWES_END:
+    case HTTPD_POLICY_PATH_LIM_BWES_EQ:
+      if (slash_dot_safe)
+        httpd_policy_path_mod_bwes(s1, pos, len);
+      else
+        httpd_policy_uri_mod_bwes(s1, pos, len);
+      break;
+  }
+
+  if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_FULL)
+    return (HTTPD_POLICY__TRUE);
+  
+  HTTPD_POLICY__ASSERT(ref);
+  srch = ref->ptr;
+  
+  if (0) { }
+  else if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_BEG)
+  {
+    if (!httpd_policy_uri_beg_eq(srch->s1, s1, pos, len))
+      goto path_no_match;
+  }
+  else if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_END)
+  {
+    if (!httpd_policy_uri_end_eq(srch->s1, s1, pos, len))
+      goto path_no_match;
+  }
+  else if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_EQ)
+  {
+    if (!httpd_policy_uri_eq(srch->s1, s1, pos, len))
       goto path_no_match;
   }
   else

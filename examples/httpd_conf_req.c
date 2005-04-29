@@ -52,6 +52,16 @@
 #define HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(x)                            \
     HTTPD_CONF_REQ__X_HDR_CHK(req-> x ## _vs1, req-> x ## _pos, req-> x ## _len)
 
+#define HTTP__CONTENT_PARAMS(req, x)                            \
+    (req)-> x ## _vs1, (req)-> x ## _pos, (req)-> x ## _len
+
+
+#define HTTPD_CONF_REQ__TYPE_BUILD_PATH_SKIP   0
+#define HTTPD_CONF_REQ__TYPE_BUILD_PATH_ASSIGN 1
+#define HTTPD_CONF_REQ__TYPE_BUILD_PATH_APPEND 2
+
+
+
 
 
 static void httpd__conf_req_reset_expires(struct Httpd_req_data *req,
@@ -62,33 +72,52 @@ static void httpd__conf_req_reset_expires(struct Httpd_req_data *req,
     req->expires_len = vstr_sc_posdiff(req->expires_pos,req->xtra_content->len);
 }
 
-static int httpd__build_path(struct Con *con, struct Httpd_req_data *req,
+static int httpd__build_path(struct Con *con, Httpd_req_data *req,
                              const Conf_parse *conf, Conf_token *token,
                              Vstr_base *s1, size_t pos, size_t len,
                              unsigned int lim, int full, Vstr_ref *ref,
-                             int *altered)
+                             int uri_fname, int *type)
 {
-  size_t vhost_prefix_len = req->vhost_prefix_len;
-    
-  if (full && vhost_prefix_len)
-  { /* don't want the vhost data */
-    if (s1 == req->fname)
-    {
-      ASSERT((pos == 1) && (len == req->fname->len));
-      len -= vhost_prefix_len;
-    }
-    vstr_del(req->fname, 1, vhost_prefix_len);
-    req->vhost_prefix_len = vhost_prefix_len = 0;
-  }
-  req->skip_document_root = full;
+  int dummy_type;
 
-  *altered = FALSE;
-  if (!httpd_policy_path_lim_eq(s1, &pos, &len, lim, vhost_prefix_len, ref))
+  if (!type) type = &dummy_type;
+  *type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_SKIP;
+  
+  if (uri_fname)
   {
-    conf_parse_end_token(conf, token, conf_token_at_depth(token));
-    return (TRUE);
+    int slash_dot_safe = FALSE;
+
+    if (req->chk_encoded_slash && req->chk_encoded_dot)
+      slash_dot_safe = TRUE;
+    if (!httpd_policy_uri_lim_eq(s1, &pos, &len, lim, slash_dot_safe, ref))
+    {
+      conf_parse_end_token(conf, token, conf_token_at_depth(token));
+      return (TRUE);
+    }
   }
-  *altered = TRUE;
+  else
+  {
+    size_t vhost_len = req->vhost_prefix_len;
+  
+    if (!httpd_policy_path_lim_eq(s1, &pos, &len, lim, vhost_len, ref))
+    {
+      conf_parse_end_token(conf, token, conf_token_at_depth(token));
+      return (TRUE);
+    }
+    
+    if (full && vhost_len)
+    { /* don't want to keep the vhost data */
+      if (lim != HTTPD_POLICY_PATH_LIM_NONE)
+        pos -= vhost_len;
+      else
+        len -= vhost_len;
+      
+      ASSERT(req->fname == s1);
+      vstr_del(req->fname, 1, vhost_len);
+      req->vhost_prefix_len = 0;
+    }
+  }    
+  *type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_ASSIGN;
   
   if (token->type != CONF_TOKEN_TYPE_CLIST)
   {
@@ -118,6 +147,8 @@ static int httpd__build_path(struct Con *con, struct Httpd_req_data *req,
   }
   else if (OPT_SERV_SYM_EQ("append") || OPT_SERV_SYM_EQ("+="))
   {
+    *type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_APPEND;
+  
     if (!httpd_policy_build_path(con, req, conf, token, NULL, NULL))
       return (FALSE);
 
@@ -152,8 +183,11 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
 
     if (0) { }
-    else if (OPT_SERV_SYM_EQ("skip-document-root"))
+    else if (full && (OPT_SERV_SYM_EQ("skip-virtual-hosts") ||
+                      OPT_SERV_SYM_EQ("skip-vhosts")))
       OPT_SERV_X_TOGGLE(*full);
+    else if (full && OPT_SERV_SYM_EQ("skip-document-root"))
+      OPT_SERV_X_TOGGLE(req->skip_document_root);
     else if (OPT_SERV_SYM_EQ("limit"))
     {
       CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
@@ -271,7 +305,32 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
   return (TRUE);
 }
 
+static int httpd__content_location_valid(Httpd_req_data *req,
+                                         size_t *ret_pos, size_t *ret_len)
+{
+  size_t pos = 0;
+  size_t len = 0;
+  
+  ASSERT(req->content_location_vs1);
+  
+  pos = req->content_location_pos;
+  len = req->content_location_len;
+  if (vstr_sc_poslast(pos, len) != req->xtra_content->len)
+  {
+    size_t tmp = req->xtra_content->len + 1;
+    if (!HTTPD_APP_REF_VSTR(req->xtra_content, req->xtra_content, pos, len))
+      return (FALSE);
+    pos = tmp;
+    ASSERT(len == vstr_sc_posdiff(pos, req->xtra_content->len));
+  }
+  *ret_pos = pos;
+  *ret_len = len;
+  
+  return (TRUE);
+}
+
 static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
+                              time_t file_timestamp,
                               Conf_parse *conf, Conf_token *token)
 {
   if (token->type != CONF_TOKEN_TYPE_CLIST)
@@ -293,9 +352,12 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       case 301: if (!req->error_code && req->direct_uri) HTTPD_ERR_301(req);
       case 302: if (!req->error_code && req->direct_uri) HTTPD_ERR_302(req);
       case 303: if (!req->error_code && req->direct_uri) HTTPD_ERR_303(req);
-      case 307: if (!req->error_code && req->direct_uri) HTTPD_ERR_307(req); 
-                if (!req->error_code) req->user_return_error_code = FALSE;
-                return (FALSE);
+      case 307: if (!req->error_code && req->direct_uri) HTTPD_ERR_307(req);
+        if (req->error_code)
+          httpd_req_absolute_uri(con, req, req->fname, 1, req->fname->len);
+        else
+          req->user_return_error_code = FALSE;
+        return (FALSE);
         
       case 400: HTTPD_ERR_RET(req, 400, FALSE);
       case 403: HTTPD_ERR_RET(req, 403, FALSE);
@@ -310,22 +372,36 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   {
     unsigned int lim = HTTPD_POLICY_PATH_LIM_NONE;
     Vstr_ref *ref = NULL;
-    int altered = FALSE;
+    size_t orig_len = 0;
+    int bp_type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_SKIP;
+    
+    if (req->direct_filename)
+      return (FALSE);
     
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, NULL, &lim, &ref))
       return (FALSE);
+    if (!req->direct_uri)
+    {
+      if (lim == HTTPD_POLICY_PATH_LIM_NONE)
+        orig_len = req->fname->len; /* don't do more than we need */
+      else if (!vstr_sub_vstr(req->fname, 1, req->fname->len,
+                              con->evnt->io_r, req->path_pos, req->path_len, 0))
+        return (FALSE);
+    }
     if (!httpd__build_path(con, req, conf, token,
                            req->fname, 1, req->fname->len,
-                           lim, TRUE, ref, &altered))
+                           lim, FALSE, ref, TRUE, &bp_type))
       return (FALSE);
-    if (!altered)
-      return (TRUE);
+    if (!req->direct_uri && (lim == HTTPD_POLICY_PATH_LIM_NONE) &&
+        (bp_type != HTTPD_CONF_REQ__TYPE_BUILD_PATH_ASSIGN))
+    { /* we needed to do the above sub */
+      if (!vstr_sub_vstr(req->fname, 1, orig_len,
+                         con->evnt->io_r, req->path_pos, req->path_len, 0))
+        return (FALSE);
+    }
     
-    req->direct_uri      = TRUE;
-    req->direct_filename = FALSE;
-
-    httpd_req_absolute_uri(con, req, req->fname, 1, req->fname->len);
+    req->direct_uri = TRUE;
     HTTPD_CONF_REQ__X_HDR_CHK(req->fname, 1, req->fname->len);
   }
   else if (OPT_SERV_SYM_EQ("Cache-Control:"))
@@ -338,31 +414,36 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     unsigned int lim = HTTPD_POLICY_PATH_LIM_NONE;
     size_t pos = 0;
     size_t len = 0;
-    size_t fname_pos = 1;
-    size_t fname_len = req->fname->len;
     Vstr_ref *ref = NULL;
-    int altered = FALSE;
-    
-    fname_len -= req->vhost_prefix_len;
-    fname_pos += req->vhost_prefix_len;
-    
+
+    if (req->direct_uri || req->direct_filename)
+      return (FALSE);
+
     if (!req->xtra_content && !(req->xtra_content = vstr_make_base(NULL)))
       return (FALSE);
-    pos = req->xtra_content->len + 1;
-    HTTPD_APP_REF_VSTR(req->xtra_content, req->fname, fname_pos, fname_len);
-
-    len = vstr_sc_posdiff(pos, req->xtra_content->len);
+  
+    if (req->content_location_vs1)
+    {
+      if (!httpd__content_location_valid(req, &pos, &len))
+        return (FALSE);
+    }
+    else
+    {
+      pos = req->xtra_content->len + 1;
+      if (!HTTPD_APP_REF_VSTR(req->xtra_content,
+                              con->evnt->io_r, req->path_pos, req->path_len))
+        return (FALSE);
+      ASSERT(pos <= req->xtra_content->len);
+      len = vstr_sc_posdiff(pos, req->xtra_content->len);
+    }
+    
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, NULL, &lim, &ref))
       return (FALSE);
     if (!httpd__build_path(con, req, conf, token, req->xtra_content, pos, len,
-                           lim, FALSE, ref, &altered))
+                           lim, FALSE, ref, TRUE, NULL))
       return (FALSE);
-    if (!altered)
-      return (TRUE);
     
-    len = vstr_sc_posdiff(pos, req->xtra_content->len);
-    httpd_req_absolute_uri(con, req, req->xtra_content, pos, len);
     len = vstr_sc_posdiff(pos, req->xtra_content->len);
     
     req->content_location_vs1 = req->xtra_content;
@@ -370,10 +451,24 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     req->content_location_len = len;
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_location);
   }
-  else if (OPT_SERV_SYM_EQ("Content-MD5:"))
-  { 
+  else if (OPT_SERV_SYM_EQ("Content-MD5:") ||
+           OPT_SERV_SYM_EQ("identity/Content-MD5:"))
+  {
+    req->content_md5_time = file_timestamp;
     HTTPD_CONF_REQ__X_CONTENT_VSTR(content_md5);
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_md5);
+  }
+  else if (OPT_SERV_SYM_EQ("gzip/Content-MD5:"))
+  { 
+    req->gzip_content_md5_time = file_timestamp;
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(gzip_content_md5);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(gzip_content_md5);
+  }
+  else if (OPT_SERV_SYM_EQ("bzip2/Content-MD5:"))
+  { 
+    req->bzip2_content_md5_time = file_timestamp;
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(bzip2_content_md5);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(bzip2_content_md5);
   }
   else if (OPT_SERV_SYM_EQ("Content-Type:"))
   {  /* FIXME: needs to work with Accept: */
@@ -386,13 +481,21 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(expires);
 
     /* note that rfc2616 says only go upto a year into the future */
-    if (vstr_cmp_cstr_eq(req->expires_vs1, req->expires_pos, req->expires_len,
-                         "<never>"))
+    req->expires_time = req->now;
+    if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<now>"))
+      httpd__conf_req_reset_expires(req, req->now);
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<minute>"))
+      httpd__conf_req_reset_expires(req, req->now + (60 *  1));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<hour>"))
+      httpd__conf_req_reset_expires(req, req->now + (60 * 60));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<day>"))
+      httpd__conf_req_reset_expires(req, req->now + (60 * 60 * 24));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<week>"))
+      httpd__conf_req_reset_expires(req, req->now + (60 * 60 * 24 * 7));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, expires), "<never>"))
       httpd__conf_req_reset_expires(req, req->now + (60 * 60 * 24 * 365));
     else
-      if (vstr_cmp_cstr_eq(req->expires_vs1, req->expires_pos, req->expires_len,
-                           "<now>"))
-        httpd__conf_req_reset_expires(req, req->now);
+      req->expires_time = file_timestamp;
   }
   else if (OPT_SERV_SYM_EQ("P3P:")) /* http://www.w3.org/TR/P3P/ */
   {
@@ -406,24 +509,16 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     int full = req->skip_document_root;
     unsigned int lim = HTTPD_POLICY_PATH_LIM_NAME_FULL;
     Vstr_ref *ref = NULL;
-    int altered = FALSE;
     
+    if (req->direct_uri)
+      return (FALSE);
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, &full, &lim, &ref))
       return (FALSE);
-    if ((lim != HTTPD_POLICY_PATH_LIM_NONE) && req->direct_uri)
-    {
-      vstr_ref_del(ref);
-      return (FALSE);
-    }
     if (!httpd__build_path(con, req, conf, token,
                            req->fname, 1, req->fname->len,
-                           lim, full, ref, &altered))
+                           lim, full, ref, FALSE, NULL))
       return (FALSE);
-    if (!altered)
-      return (TRUE);
-    
-    req->direct_uri      = FALSE;
     req->direct_filename = TRUE;
   }
   else if (OPT_SERV_SYM_EQ("parse-accept"))
@@ -432,9 +527,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     OPT_SERV_X_TOGGLE(req->allow_accept_encoding);
   else if (OPT_SERV_SYM_EQ("Vary:_*"))
     OPT_SERV_X_TOGGLE(req->vary_star);
-  else if (OPT_SERV_SYM_EQ("Vary:_Allow-Charset"))
+  else if (OPT_SERV_SYM_EQ("Vary:_Accept"))
+    OPT_SERV_X_TOGGLE(req->vary_a);
+  else if (OPT_SERV_SYM_EQ("Vary:_Accept-Charset"))
     OPT_SERV_X_TOGGLE(req->vary_ac);
-  else if (OPT_SERV_SYM_EQ("Vary:_Allow-Language"))
+  else if (OPT_SERV_SYM_EQ("Vary:_Accept-Language"))
     OPT_SERV_X_TOGGLE(req->vary_al);
   else if (OPT_SERV_SYM_EQ("Vary:_Referer") ||
            OPT_SERV_SYM_EQ("Vary:_Referrer"))
@@ -475,11 +572,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);
     }
 
+    req->vary_a = TRUE;
     if (qual_num)
     {
       unsigned int last = token->num;
 
-      req->vary_a = TRUE;
       *token = save;
       conf_parse_num_token(conf, token, qual_num);
       HTTPD_CONF_REQ__X_CONTENT_VSTR(content_type);
@@ -499,6 +596,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
 }
 
 int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
+                      time_t timestamp,
                       Conf_parse *conf, Conf_token *token)
 {
   unsigned int cur_depth = token->depth_num;
@@ -509,10 +607,22 @@ int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
   while (conf_token_list_num(token, cur_depth))
   {
     conf_parse_token(conf, token);
-    if (!httpd__conf_req_d1(con, req, conf, token))
+    if (!httpd__conf_req_d1(con, req, timestamp, conf, token))
       return (FALSE);
   }
-  
+
+  if (req->content_location_vs1)
+  { /* absolute URI content-location header */
+    size_t pos = 0;
+    size_t len = 0;
+
+    if (!httpd__content_location_valid(req, &pos, &len))
+      return (FALSE);
+    
+    httpd_req_absolute_uri(con, req, req->xtra_content, pos, len);
+    req->content_location_len = vstr_sc_posdiff(pos, req->xtra_content->len);
+  }
+
   return (TRUE);
 }
 
@@ -584,7 +694,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
     if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
       goto conf_fail;
   
-    if (!httpd_conf_req_d0(con, req, conf, token))
+    if (!httpd_conf_req_d0(con, req, cf_stat->st_mtime, conf, token))
       goto conf_fail;
   }
 

@@ -87,10 +87,10 @@
 
 
 #ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define assert_ret(x, y) do { if (x) {} else errx(EXIT_FAILURE, "assert(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
-# define ASSERT_RET(x, y) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(" #x "), FAILED at %s:%u", __FILE__, __LINE__); } while (FALSE)
+# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
+# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
+# define assert_ret(x, y) do { if (x) {} else errx(EXIT_FAILURE, "assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
+# define ASSERT_RET(x, y) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
 # define ASSERT_NO_SWITCH_DEF() break
 #else
 # define assert(x) do { } while (FALSE)

@@ -148,6 +148,8 @@ static void http__clear_xtra(struct Httpd_req_data *req)
   HTTP__CONTENT_INIT_HDR(content_type);
   HTTP__CONTENT_INIT_HDR(content_location);
   HTTP__CONTENT_INIT_HDR(content_md5);
+  HTTP__CONTENT_INIT_HDR(gzip_content_md5);
+  HTTP__CONTENT_INIT_HDR(bzip2_content_md5);
   HTTP__CONTENT_INIT_HDR(cache_control);
   HTTP__CONTENT_INIT_HDR(expires);
   HTTP__CONTENT_INIT_HDR(p3p);
@@ -179,8 +181,6 @@ Httpd_req_data *http_req_make(struct Con *con)
     req->xtra_content = NULL;
   }
 
-  httpd_policy_change_req(req, con ? con->policy : httpd_opts->def_policy);
-  
   http__clear_hdrs(req);
   
   http__clear_xtra(req);
@@ -227,7 +227,7 @@ Httpd_req_data *http_req_make(struct Con *con)
 
   req->user_return_error_code = FALSE;
 
-  req->vary_star = con ? con->vary_star : TRUE;
+  req->vary_star = con ? con->vary_star : FALSE;
   req->vary_a    = FALSE;
   req->vary_ac   = FALSE;
   req->vary_ae   = FALSE;
@@ -244,11 +244,15 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->use_mmap   = FALSE;
   req->head_op    = FALSE;
 
+  req->chked_encoded_path = FALSE;
+  
   req->done_once  = TRUE;
   req->using_req  = TRUE;
 
   req->malloc_bad = FALSE;
 
+  httpd_policy_change_req(req, con ? con->policy : httpd_opts->def_policy);
+  
   return (req);
 }
 
@@ -703,7 +707,7 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
       if (req->cache_control_vs1)
         http_app_hdr_vstr_def(out, "Cache-Control",
                               HTTP__CONTENT_PARAMS(req, cache_control));
-      if (req->expires_vs1)
+      if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
         http_app_hdr_vstr_def(out, "Expires",
                               HTTP__CONTENT_PARAMS(req, expires));
       if (req->p3p_vs1)
@@ -889,10 +893,10 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
    * but foo/bar/index.html is a directory (fun), so redirect to:
    *               http://foo/bar/index.html/
    */
-  if (VSUFFIX(lfn, 1, lfn->len, "/"))
+  if (lfn->len && (vstr_export_chr(lfn, lfn->len) == '/'))
   {
     Vstr_base *tmp = req->policy->dir_filename;
-    vstr_add_vstr(lfn, lfn->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_DEF);
+    vstr_add_vstr(lfn, lfn->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
   }
   
   vstr_add_cstr_buf(lfn, lfn->len, "/");
@@ -2173,13 +2177,29 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   if (req->content_location_vs1)
     http_app_hdr_vstr_def(out, "Content-Location",
                           HTTP__CONTENT_PARAMS(req, content_location));
-  if (req->content_md5_vs1)
+  if (req->content_encoding_bzip2)
+  {
+    if (req->bzip2_content_md5_vs1 &&
+        (req->bzip2_content_md5_time > req->f_stat->st_mtime))
+      http_app_hdr_vstr_def(out, "Content-MD5",
+                            HTTP__CONTENT_PARAMS(req, bzip2_content_md5));
+  }
+  else if (req->content_encoding_gzip)
+  {
+    if (req->gzip_content_md5_vs1 &&
+        (req->gzip_content_md5_time > req->f_stat->st_mtime))
+      http_app_hdr_vstr_def(out, "Content-MD5",
+                            HTTP__CONTENT_PARAMS(req, gzip_content_md5));
+  }
+  else if (req->content_md5_vs1 &&
+           (req->content_md5_time > req->f_stat->st_mtime))
     http_app_hdr_vstr_def(out, "Content-MD5",
                           HTTP__CONTENT_PARAMS(req, content_md5));
+  
   if (req->cache_control_vs1)
     http_app_hdr_vstr_def(out, "Cache-Control",
                           HTTP__CONTENT_PARAMS(req, cache_control));
-  if (req->expires_vs1)
+  if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
     http_app_hdr_vstr_def(out, "Expires", HTTP__CONTENT_PARAMS(req, expires));
   if (req->p3p_vs1)
     http_app_hdr_vstr_def(out, "P3P",
@@ -2476,6 +2496,12 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
     return (FALSE);
   if (req->error_code)
     return (http_fin_err_req(con, req));
+
+  if (vstr_export_chr(fname, fname->len) == '/')
+  {
+    Vstr_base *tmp = req->policy->dir_filename;
+    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
+  }
   
   if (!http__conf_req(con, req))
     return (FALSE);
@@ -2765,7 +2791,11 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
   return (TRUE);
 }
 
-static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
+/* Decode url-path,
+   check url-path for a bunch of problems,
+   if vhosts is on add vhost prefix,
+   Note we don't do dir_filename additions yet */
+static int http_req_make_path(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   Vstr_base *fname = req->fname;
@@ -2775,17 +2805,23 @@ static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
   assert(VPREFIX(data, req->path_pos, req->path_len, "/") ||
          VEQ(data, req->path_pos, req->path_len, "*"));
 
-  /* don't allow encoded slashes */
-  if (vstr_srch_case_cstr_buf_fwd(data, req->path_pos, req->path_len, "%2f"))
+  if (req->chk_encoded_slash &&
+      vstr_srch_case_cstr_buf_fwd(data, req->path_pos, req->path_len, "%2f"))
     HTTPD_ERR_RET(req, 403, FALSE);
-  
+  if (req->chk_encoded_dot &&
+      vstr_srch_case_cstr_buf_fwd(data, req->path_pos, req->path_len, "%2e"))
+    HTTPD_ERR_RET(req, 403, FALSE);
+  req->chked_encoded_path = TRUE;
+
   vstr_add_vstr(fname, 0,
                 data, req->path_pos, req->path_len, VSTR_TYPE_ADD_BUF_PTR);
   vstr_conv_decode_uri(fname, 1, fname->len);
 
   if (fname->conf->malloc_bad) /* dealt with as errmem_req() later */
     return (TRUE);
-  
+
+  /* NOTE: need to split function here so we can more efficently alter the
+   * path. */
   if (req->policy->use_vhosts)
     if (!httpd_serv_add_vhost(con, req))
       return (FALSE);
@@ -2810,12 +2846,6 @@ static int http_req_make_path(struct Con *con, struct Httpd_req_data *req)
 
   if (fname->conf->malloc_bad)
     return (TRUE);
-  
-  if (vstr_export_chr(fname, fname->len) == '/')
-  {
-    Vstr_base *tmp = req->policy->dir_filename;
-    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_DEF);
-  }
   
   return (TRUE);
 }

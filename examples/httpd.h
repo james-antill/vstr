@@ -83,15 +83,25 @@ typedef struct Httpd_req_data
  const Vstr_base *content_location_vs1;
  size_t           content_location_pos;
  size_t           content_location_len;
- const Vstr_base *content_md5_vs1; /* Note this is valid for gzip/range */
+ const Vstr_base *content_md5_vs1; /* Note this is valid for range */
  size_t           content_md5_pos;
  size_t           content_md5_len;
+ time_t           content_md5_time;
+ const Vstr_base *gzip_content_md5_vs1;
+ size_t           gzip_content_md5_pos;
+ size_t           gzip_content_md5_len;
+ time_t           gzip_content_md5_time;
+ const Vstr_base *bzip2_content_md5_vs1;
+ size_t           bzip2_content_md5_pos;
+ size_t           bzip2_content_md5_len;
+ time_t           bzip2_content_md5_time;
  const Vstr_base *cache_control_vs1;
  size_t           cache_control_pos;
  size_t           cache_control_len;
  const Vstr_base *expires_vs1;
  size_t           expires_pos;
  size_t           expires_len;
+ time_t           expires_time;
  const Vstr_base *p3p_vs1;
  size_t           p3p_pos;
  size_t           p3p_len;
@@ -137,6 +147,10 @@ typedef struct Httpd_req_data
  unsigned int vary_al   : 1;
  unsigned int vary_rf   : 1;
  unsigned int vary_ua   : 1;
+ 
+ unsigned int chked_encoded_path : 1;
+ unsigned int chk_encoded_slash  : 1;
+ unsigned int chk_encoded_dot    : 1;
  
  unsigned int using_req : 1;
  unsigned int done_once : 1;

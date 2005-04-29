@@ -1,5 +1,5 @@
 /* Floating point output for `printf'.
-   Copyright (C) 1995-1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999,2000,2001,2002,2003 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
@@ -22,11 +22,7 @@
 #if 0 /* vstr */
 #define HAVE_ALLOCA 1
 
-#ifdef USE_IN_LIBIO
-#  include <libioP.h>
-#else
-#  include <stdio.h>
-#endif
+#include <libioP.h>
 #include <alloca.h>
 #include <ctype.h>
 #include <float.h>
@@ -44,6 +40,14 @@
 #include <stdlib.h>
 #include <wchar.h>
 
+#ifdef COMPILE_WPRINTF
+# define CHAR_T        wchar_t
+#else
+# define CHAR_T        char
+#endif
+
+#include "_i18n_number.h"
+
 #ifndef NDEBUG
 # define NDEBUG			/* Undefine this for debugging assertions.  */
 #endif
@@ -51,21 +55,15 @@
 
 /* This defines make it possible to use the same code for GNU C library and
    the GNU I/O library.	 */
-#ifdef USE_IN_LIBIO
-# define PUT(f, s, n) _IO_sputn (f, s, n)
-# define PAD(f, c, n) (wide ? _IO_wpadn (f, c, n) : INTUSE(_IO_padn) (f, c, n))
+#define PUT(f, s, n) _IO_sputn (f, s, n)
+#define PAD(f, c, n) (wide ? _IO_wpadn (f, c, n) : INTUSE(_IO_padn) (f, c, n))
 /* We use this file GNU C library and GNU I/O library.	So make
    names equal.	 */
-# undef putc
-# define putc(c, f) (wide \
-		      ? (int)_IO_putwc_unlocked (c, f) : _IO_putc_unlocked (c, f))
-# define size_t     _IO_size_t
-# define FILE	     _IO_FILE
-#else	/* ! USE_IN_LIBIO */
-# define PUT(f, s, n) fwrite (s, 1, n, f)
-# define PAD(f, c, n) __printf_pad (f, c, n)
-ssize_t __printf_pad __P ((FILE *, char pad, int n)); /* In vfprintf.c.  */
-#endif	/* USE_IN_LIBIO */
+#undef putc
+#define putc(c, f) (wide \
+                   ? (int)_IO_putwc_unlocked (c, f) : _IO_putc_unlocked (c, f))
+#define size_t     _IO_size_t
+#define FILE	     _IO_FILE
 
 /* Macros for doing the actual output.  */
 
@@ -246,7 +244,7 @@ __printf_fp (FILE *fp,
 	    }
 
 {
-          mp_limb_t _cy = __mpn_mul_1 (frac, frac, fracsize, 10);
+	mp_limb_t _cy = __mpn_mul_1 (frac, frac, fracsize, 10);
 	  if (_cy != 0)
 	    frac[fracsize++] = _cy;
 }
@@ -443,13 +441,13 @@ __printf_fp (FILE *fp,
      efficient to use variables of the fixed maximum size but because this
      would be really big it could lead to memory problems.  */
   {
-              bignum_size = ((ABS (exponent) + BITS_PER_MP_LIMB - 1)
-			     / BITS_PER_MP_LIMB + 4) * sizeof (mp_limb_t);
+    mp_size_t bignum_size = ((ABS (exponent) + BITS_PER_MP_LIMB - 1)
+                            / BITS_PER_MP_LIMB
+                            + (LDBL_MANT_DIG / BITS_PER_MP_LIMB > 2 ? 8 : 4))
+                           * sizeof (mp_limb_t);
     frac = (mp_limb_t *) alloca (bignum_size);
     tmp = (mp_limb_t *) alloca (bignum_size);
     scale = (mp_limb_t *) alloca (bignum_size);
-    bignum_size /= sizeof(mp_limb_t);
-    ASSERT(fracsize <= bignum_size);
   }
 
   /* We now have to distinguish between numbers with positive and negative
