@@ -223,7 +223,8 @@ ls1_APP = ./ex_dir_list --size --follow --
 ls2_APP = | ./ex_dir_filter \
  -A .. --deny-name-beg . \
  -D index.html -D dir_list.css \
- --deny-name-end .gz --deny-name-end ~ --deny-name-end \\\# | \
+ --deny-name-end .gz --deny-name-end .bz2 \
+ --deny-name-end ~ --deny-name-end \\\# | \
  ./ex_dir_sort --without-locale | \
  ./ex_dir_list2html --name
 
@@ -413,8 +414,7 @@ html/dir_list.css: ../examples/dir_list.css
 
 html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
-		$(srcdir)/gzip-r.pl html
-		$(srcdir)/gzip-r.pl --type=bzip2 html
+		$(srcdir)/gzip-r.pl --type=all html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --css-filename=f_c.css $< > $@

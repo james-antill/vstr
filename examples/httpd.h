@@ -45,6 +45,7 @@ struct Http_hdrs
  Vstr_sect_node hdr_if_none_match[1];
  Vstr_sect_node hdr_if_range[1];
  Vstr_sect_node hdr_if_unmodified_since[1];
+ Vstr_sect_node hdr_authorization[1];
 
  /* can have multiple headers... */
  struct Http_hdrs__multi {

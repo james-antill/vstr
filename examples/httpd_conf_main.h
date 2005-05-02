@@ -9,7 +9,9 @@
 #include "mime_types.h"
 
 /* **** defaults for runtime conf **** */
-#define HTTPD_CONF_VERSION "0.9.99"
+#define HTTPD_CONF_VERSION "0.9.100"
+
+/* note that the strings are assigned in httpd_main_conf.c */
 
 #define HTTPD_CONF_DEF_SERVER_NAME "jhttpd/" HTTPD_CONF_VERSION " (Vstr)"
 #define HTTPD_CONF_DEF_POLICY_NAME "<default>"
@@ -23,9 +25,9 @@
 #define HTTPD_CONF_USE_PUBLIC_ONLY FALSE
 #define HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT TRUE
 #define HTTPD_CONF_DEF_DIR_FILENAME "index.html"
-#define HTTPD_CONF_DEF_MIME_TYPE "" /* "application/octet-stream" */
+#define HTTPD_CONF_MIME_TYPE_DEF_CT "" /* "application/octet-stream" */
 #define HTTPD_CONF_MIME_TYPE_MAIN "/etc/mime.types"
-#define HTTPD_CONF_MIME_TYPE_XTRA NULL
+#define HTTPD_CONF_MIME_TYPE_XTRA ""
 #define HTTPD_CONF_USE_ERR_406 TRUE
 #define HTTPD_CONF_USE_CANONIZE_HOST FALSE
 #define HTTPD_CONF_USE_HOST_ERR_400 TRUE
@@ -33,7 +35,7 @@
 #define HTTPD_CONF_USE_REMOVE_FRAG TRUE
 #define HTTPD_CONF_USE_REMOVE_QUERY FALSE
 #define HTTPD_CONF_USE_POSIX_FADVISE FALSE /* NOTE that this SEGV's on FC1 */
-#define HTTPD_CONF_USE_REQ_CONFIGURATION TRUE
+#define HTTPD_CONF_USE_REQ_CONF TRUE
 #define HTTPD_CONF_USE_CHK_HDR_SPLIT TRUE
 #define HTTPD_CONF_USE_CHK_HDR_NIL TRUE
 #define HTTPD_CONF_USE_CHK_DOT_DIR TRUE
@@ -60,11 +62,13 @@ typedef struct Httpd_policy_opts
  Vstr_base   *server_name;
  Vstr_base   *dir_filename;
  Mime_types   mime_types[1];
- Vstr_base   *mime_types_default_type;
- Vstr_base   *mime_types_main; /* FIXME: free after init */
+ Vstr_base   *mime_types_def_ct;
+ Vstr_base   *mime_types_main;
  Vstr_base   *mime_types_xtra;
  Vstr_base   *default_hostname;
- Vstr_base   *req_configuration_dir;
+ Vstr_base   *req_conf_dir;
+ Vstr_base   *auth_realm;
+ Vstr_base   *auth_token;
  
  unsigned int use_mmap : 1;
  unsigned int use_sendfile : 1;
@@ -85,7 +89,7 @@ typedef struct Httpd_policy_opts
 
  unsigned int use_posix_fadvise : 1;
  
- unsigned int use_req_configuration : 1;
+ unsigned int use_req_conf : 1;
  unsigned int chk_hdr_split : 1; /* 16th bitfield */
  unsigned int chk_hdr_nil : 1;
  
@@ -127,6 +131,8 @@ typedef struct Httpd_opts
     NULL,                                                        \
     NULL,                                                        \
     NULL,                                                        \
+    NULL,                                                        \
+    NULL,                                                        \
     HTTPD_CONF_USE_MMAP, HTTPD_CONF_USE_SENDFILE,                \
     HTTPD_CONF_USE_KEEPA, HTTPD_CONF_USE_KEEPA_1_0,              \
     HTTPD_CONF_USE_VHOSTS,                                       \
@@ -140,7 +146,7 @@ typedef struct Httpd_opts
     HTTPD_CONF_USE_REMOVE_FRAG,                                  \
     HTTPD_CONF_USE_REMOVE_QUERY,                                 \
     HTTPD_CONF_USE_POSIX_FADVISE,                                \
-    HTTPD_CONF_USE_REQ_CONFIGURATION,                            \
+    HTTPD_CONF_USE_REQ_CONF,                                     \
     HTTPD_CONF_USE_CHK_HDR_SPLIT,                                \
     HTTPD_CONF_USE_CHK_HDR_NIL,                                  \
     HTTPD_CONF_USE_CHK_DOT_DIR,                                  \

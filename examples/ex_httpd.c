@@ -471,7 +471,7 @@ static void serv_make_bind(const char *acpt_addr, unsigned short acpt_port)
     vstr_cmp_eq(x -> mime_types_ ## z, 1, x -> mime_types_ ## z ->len,  \
                 y -> mime_types_ ## z, 1, y -> mime_types_ ## z ->len)
 static Httpd_policy_opts *serv__mime_types_eq(Httpd_policy_opts *node)
-{
+{ /* compares both mime filenames ... */
   Httpd_policy_opts *scan = httpd_opts->def_policy;
 
   ASSERT(node);
@@ -496,8 +496,8 @@ static void serv_mime_types(const char *program_name)
     Httpd_policy_opts *prev = NULL;
     
     if (!mime_types_init(scan->mime_types,
-                         scan->mime_types_default_type, 1,
-                         scan->mime_types_default_type->len))
+                         scan->mime_types_def_ct, 1,
+                         scan->mime_types_def_ct->len))
       errno = ENOMEM, err(EXIT_FAILURE, "init");
 
     if ((prev = serv__mime_types_eq(scan)))
@@ -521,6 +521,15 @@ static void serv_mime_types(const char *program_name)
     
     scan = scan->next;
   }
+
+  /* we don't need the filenames after we've loaded... */
+  scan = httpd_opts->def_policy;
+  while (scan)
+  {
+    vstr_free_base(scan->mime_types_main); scan->mime_types_main = NULL;
+    vstr_free_base(scan->mime_types_xtra); scan->mime_types_xtra = NULL;
+    scan = scan->next;
+  }
 }
 
 static void serv_canon_policies(void)
@@ -537,7 +546,7 @@ static void serv_canon_policies(void)
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr:%p%zu%zu>): %m\n",
                     s1, (size_t)1, s1->len));
   
-    s1 = scan->req_configuration_dir;
+    s1 = scan->req_conf_dir;
     if (!httpd_canon_dir_path(s1))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr:%p%zu%zu>): %m\n",
                     s1, (size_t)1, s1->len));

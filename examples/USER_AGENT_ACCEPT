@@ -59,4 +59,11 @@ Accept-Language: en;q=1.0
 Accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, */*
 
 
+           straw
+           -----
+HTTP/1.0
+User-Agent: Straw/0.22.1
+Accept-Encoding: gzip
+
+
 dillo, snarf == HTTP/1.0

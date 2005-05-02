@@ -457,7 +457,8 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@ls2_APP = | ./ex_dir_filter \
 @HAVE_POSIX_HOST_TRUE@ -A .. --deny-name-beg . \
 @HAVE_POSIX_HOST_TRUE@ -D index.html -D dir_list.css \
-@HAVE_POSIX_HOST_TRUE@ --deny-name-end .gz --deny-name-end ~ --deny-name-end \\\# | \
+@HAVE_POSIX_HOST_TRUE@ --deny-name-end .gz --deny-name-end .bz2 \
+@HAVE_POSIX_HOST_TRUE@ --deny-name-end ~ --deny-name-end \\\# | \
 @HAVE_POSIX_HOST_TRUE@ ./ex_dir_sort --without-locale | \
 @HAVE_POSIX_HOST_TRUE@ ./ex_dir_list2html --name
 
@@ -10821,8 +10822,7 @@ html/dir_list.css: ../examples/dir_list.css
 
 html/index.html: html/dir_list.css $(ls_DEP) $(example_code_html)
 		$(ls1_APP) html $(ls2_APP) 'Vstr example code' > $@
-		$(srcdir)/gzip-r.pl html
-		$(srcdir)/gzip-r.pl --type=bzip2 html
+		$(srcdir)/gzip-r.pl --type=all html
 
 html/%.html: % html/f_c.css $(hi_DEP)
 		$(hi_APP) --css-filename=f_c.css $< > $@

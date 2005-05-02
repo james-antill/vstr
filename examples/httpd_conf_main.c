@@ -631,26 +631,53 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
   return (FALSE);
 }
 
+/* NOTE: doesn't unlink */
+static void httpd_conf_main_policy_free(Httpd_policy_opts *opts)
+{
+  if (!opts)
+    return;
+
+  vstr_free_base(opts->policy_name);       opts->policy_name             = NULL;
+  vstr_free_base(opts->document_root);     opts->document_root           = NULL;
+  vstr_free_base(opts->server_name);       opts->server_name             = NULL;
+  vstr_free_base(opts->dir_filename);      opts->dir_filename            = NULL;
+  vstr_free_base(opts->mime_types_def_ct); opts->mime_types_def_ct       = NULL;
+  vstr_free_base(opts->mime_types_main);   opts->mime_types_main         = NULL;
+  vstr_free_base(opts->mime_types_xtra);   opts->mime_types_xtra         = NULL;
+  vstr_free_base(opts->default_hostname);  opts->default_hostname        = NULL;
+  vstr_free_base(opts->req_conf_dir);      opts->req_conf_dir            = NULL;
+  vstr_free_base(opts->auth_realm);        opts->auth_realm              = NULL;
+  vstr_free_base(opts->auth_token);        opts->auth_token              = NULL;
+
+  vstr_ref_del(opts->ref);
+}
+
 static int httpd_conf_main_policy_init(Httpd_opts *httpd_opts,
                                        Httpd_policy_opts *opts, Vstr_ref *ref)
 {
   if (!ref)
     return (FALSE);
-  
-  opts->beg  = httpd_opts;
-  
-  if (!(opts->policy_name             = vstr_make_base(NULL)) ||
-      !(opts->document_root           = vstr_make_base(NULL)) ||
-      !(opts->server_name             = vstr_make_base(NULL)) ||
-      !(opts->dir_filename            = vstr_make_base(NULL)) ||
-      !(opts->mime_types_default_type = vstr_make_base(NULL)) ||
-      !(opts->mime_types_main         = vstr_make_base(NULL)) ||
-      !(opts->mime_types_xtra         = vstr_make_base(NULL)) ||
-      !(opts->default_hostname        = vstr_make_base(NULL)) ||
-      !(opts->req_configuration_dir   = vstr_make_base(NULL)) ||
-      FALSE)
-    return (FALSE);
 
+  opts->ref = NULL;
+  opts->beg = httpd_opts;
+  
+  if (!(opts->policy_name       = vstr_make_base(NULL)) ||
+      !(opts->document_root     = vstr_make_base(NULL)) ||
+      !(opts->server_name       = vstr_make_base(NULL)) ||
+      !(opts->dir_filename      = vstr_make_base(NULL)) ||
+      !(opts->mime_types_def_ct = vstr_make_base(NULL)) ||
+      !(opts->mime_types_main   = vstr_make_base(NULL)) ||
+      !(opts->mime_types_xtra   = vstr_make_base(NULL)) ||
+      !(opts->default_hostname  = vstr_make_base(NULL)) ||
+      !(opts->req_conf_dir      = vstr_make_base(NULL)) ||
+      !(opts->auth_realm        = vstr_make_base(NULL)) ||
+      !(opts->auth_token        = vstr_make_base(NULL)) ||
+      FALSE)
+  {
+    httpd_conf_main_policy_free(opts);
+    return (FALSE);
+  }
+  
   opts->ref = vstr_ref_add(ref);
   
   return (TRUE);
@@ -668,11 +695,11 @@ static int httpd_conf_main_policy_copy(Httpd_policy_opts *dst,
   HTTPD_CONF_MAIN_POLICY_CP_VSTR(server_name);
   HTTPD_CONF_MAIN_POLICY_CP_VSTR(dir_filename);
 
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_default_type);
+  HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_def_ct);
   HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_main);
   HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_xtra);
   HTTPD_CONF_MAIN_POLICY_CP_VSTR(default_hostname);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(req_configuration_dir);
+  HTTPD_CONF_MAIN_POLICY_CP_VSTR(req_conf_dir);
 
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_mmap);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_sendfile);
@@ -690,7 +717,7 @@ static int httpd_conf_main_policy_copy(Httpd_policy_opts *dst,
   HTTPD_CONF_MAIN_POLICY_CP_VAL(remove_url_frag);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(remove_url_query);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_posix_fadvise);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_req_configuration);
+  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_req_conf);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_split);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_nil);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_dot_dir);
@@ -716,7 +743,7 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   else if (OPT_SERV_SYM_EQ("unspecified-hostname"))
     OPT_SERV_X_VSTR(opts->default_hostname);
   else if (OPT_SERV_SYM_EQ("MIME/types-default-type"))
-    OPT_SERV_X_VSTR(opts->mime_types_default_type);
+    OPT_SERV_X_VSTR(opts->mime_types_def_ct);
   else if (OPT_SERV_SYM_EQ("MIME/types-filename-main"))
     OPT_SERV_X_VSTR(opts->mime_types_main);
   else if (OPT_SERV_SYM_EQ("MIME/types-filename-extra") ||
@@ -724,9 +751,27 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
     OPT_SERV_X_VSTR(opts->mime_types_xtra);
   else if (OPT_SERV_SYM_EQ("request-configuration-directory") ||
            OPT_SERV_SYM_EQ("req-conf-dir"))
-    OPT_SERV_X_VSTR(opts->req_configuration_dir);
+    OPT_SERV_X_VSTR(opts->req_conf_dir);
   else if (OPT_SERV_SYM_EQ("server-name"))
     OPT_SERV_X_VSTR(opts->server_name);
+  else if (OPT_SERV_SYM_EQ("authorization") || OPT_SERV_SYM_EQ("auth"))
+  { /* token is output of: echo -n foo:bar | openssl enc -base64 */
+    /* see it with: echo token | openssl enc -d -base64 && echo */
+    unsigned int depth = token->depth_num;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    if (!OPT_SERV_SYM_EQ("basic-encoded")) return (FALSE);
+
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+      
+      if (0) { }
+      else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
+      else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
+      else return (FALSE);
+    }
+  }
 
   else if (OPT_SERV_SYM_EQ("mmap"))
     OPT_SERV_X_TOGGLE(opts->use_mmap);
@@ -758,7 +803,7 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   else if (OPT_SERV_SYM_EQ("posix-fadvise"))
     OPT_SERV_X_TOGGLE(opts->use_posix_fadvise);
   else if (OPT_SERV_SYM_EQ("allow-request-configuration"))
-    OPT_SERV_X_TOGGLE(opts->use_req_configuration);
+    OPT_SERV_X_TOGGLE(opts->use_req_conf);
   else if (OPT_SERV_SYM_EQ("check-header-splitting"))
     OPT_SERV_X_TOGGLE(opts->chk_hdr_split);
   else if (OPT_SERV_SYM_EQ("check-header-NIL"))
@@ -1123,32 +1168,11 @@ Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts)
   return (opts);
 }
 
-/* NOTE: doesn't unlink */
-static void httpd_conf_main_policy_free(Httpd_policy_opts *opts)
-{
-  if (!opts)
-    return;
-
-  vstr_free_base(opts->policy_name);      opts->policy_name             = NULL;
-  vstr_free_base(opts->document_root);    opts->document_root           = NULL;
-  vstr_free_base(opts->server_name);      opts->server_name             = NULL;
-  vstr_free_base(opts->dir_filename);     opts->dir_filename            = NULL;
-  vstr_free_base(opts->mime_types_default_type);
-                                          opts->mime_types_default_type = NULL;
-  vstr_free_base(opts->mime_types_main);  opts->mime_types_main         = NULL;
-  vstr_free_base(opts->mime_types_xtra);  opts->mime_types_xtra         = NULL;
-  vstr_free_base(opts->default_hostname); opts->default_hostname        = NULL;
-  vstr_free_base(opts->req_configuration_dir);
-                                          opts->req_configuration_dir   = NULL;
-
-  vstr_ref_del(opts->ref);
-}
-
 int httpd_conf_main_init(Httpd_opts *httpd_opts)
 {
   Httpd_policy_opts *opts = httpd_opts->def_policy;
   static Vstr_ref ref[1];
-
+  
   ref->func = vstr_ref_cb_free_nothing;
   ref->ptr  = NULL;
   ref->ref  = 1;
@@ -1157,11 +1181,12 @@ int httpd_conf_main_init(Httpd_opts *httpd_opts)
     return (FALSE);
   httpd_opts->def_policy->next = NULL;
   
-  vstr_add_cstr_ptr(opts->policy_name,     0, HTTPD_CONF_DEF_POLICY_NAME);
-  vstr_add_cstr_ptr(opts->server_name,     0, HTTPD_CONF_DEF_SERVER_NAME);
-  vstr_add_cstr_ptr(opts->dir_filename,    0, HTTPD_CONF_DEF_DIR_FILENAME);
-  vstr_add_cstr_ptr(opts->mime_types_default_type, 0, HTTPD_CONF_DEF_MIME_TYPE);
-  vstr_add_cstr_ptr(opts->mime_types_main, 0, HTTPD_CONF_MIME_TYPE_MAIN);
+  vstr_add_cstr_ptr(opts->policy_name,       0, HTTPD_CONF_DEF_POLICY_NAME);
+  vstr_add_cstr_ptr(opts->server_name,       0, HTTPD_CONF_DEF_SERVER_NAME);
+  vstr_add_cstr_ptr(opts->dir_filename,      0, HTTPD_CONF_DEF_DIR_FILENAME);
+  vstr_add_cstr_ptr(opts->mime_types_def_ct, 0, HTTPD_CONF_MIME_TYPE_DEF_CT);
+  vstr_add_cstr_ptr(opts->mime_types_main,   0, HTTPD_CONF_MIME_TYPE_MAIN);
+  vstr_add_cstr_ptr(opts->mime_types_xtra,   0, HTTPD_CONF_MIME_TYPE_XTRA);
 
   if (opts->policy_name->conf->malloc_bad)
     return (FALSE);

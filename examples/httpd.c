@@ -39,12 +39,12 @@
 # define posix_fadvise64(x1, x2, x3, x4) (errno = ENOSYS, -1)
 #endif
 
-#define HTTP_CONF_SAFE_PRINT_REQ TRUE
-
 #ifdef VSTR_AUTOCONF_NDEBUG
 # define HTTP_CONF_MMAP_LIMIT_MIN (16 * 1024) /* a couple of pages */
+# define HTTP_CONF_SAFE_PRINT_REQ TRUE
 #else
 # define HTTP_CONF_MMAP_LIMIT_MIN 8 /* debug... */
+# define HTTP_CONF_SAFE_PRINT_REQ FALSE
 #endif
 #define HTTP_CONF_MMAP_LIMIT_MAX (50 * 1024 * 1024)
 
@@ -130,6 +130,7 @@ static void http__clear_hdrs(struct Httpd_req_data *req)
   HTTP__HDR_SET(req, if_none_match,       0, 0);
   HTTP__HDR_SET(req, if_range,            0, 0);
   HTTP__HDR_SET(req, if_unmodified_since, 0, 0);
+  HTTP__HDR_SET(req, authorization,       0, 0);
 
   vstr_del(tmp, 1, tmp->len);
   HTTP__HDR_MULTI_SET(req, accept,          0, 0);
@@ -690,6 +691,12 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
       http_app_hdr_fmt(out, "Content-Range", "%s */%ju", "bytes",
                           (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
 
+    if (req->error_code == 401)
+      http_app_hdr_fmt(out, "WWW-Authenticate",
+                       "Basic realm=\"$<vstr:%p%zu%zu>\"",
+                       req->policy->auth_realm, (size_t)1,
+                       req->policy->auth_realm->len);
+    
     if ((req->error_code == 405) || (req->error_code == 501))
       http_app_hdr_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
     if ((req->error_code == 301) || (req->error_code == 302) ||
@@ -825,7 +832,7 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
       while (VPREFIX(lfn, pos, len, "../"))
       {
         ++prev_num;
-        vstr_del(lfn, pos, strlen("../")); len -= strlen("../");
+        vstr_del(lfn, pos, CLEN("../")); len -= CLEN("../");
       }
       if (prev_num)
         alen = lfn->len;
@@ -1375,6 +1382,7 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
     else if (HDR__EQ("If-None-Match"))       HDR__SET(if_none_match);
     else if (HDR__EQ("If-Range"))            HDR__SET(if_range);
     else if (HDR__EQ("If-Unmodified-Since")) HDR__SET(if_unmodified_since);
+    else if (HDR__EQ("Authorization"))       HDR__SET(authorization);
 
     /* allow continuations over multiple headers... *sigh* */
     else if (HDR__EQ("Accept"))              HDR__MULTI_SET(accept);
@@ -1506,6 +1514,7 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
     HDR__CON_1_0_FIXUP("If-None-Match",       if_none_match);
     HDR__CON_1_0_FIXUP("If-Range",            if_range);
     HDR__CON_1_0_FIXUP("If-Unmodified-Since", if_unmodified_since);
+    HDR__CON_1_0_FIXUP("Authorization",       authorization);
     
     HDR__CON_1_0_MULTI_FIXUP("Accept",          accept);
     HDR__CON_1_0_MULTI_FIXUP("Accept-Charset",  accept_charset);
@@ -1954,7 +1963,7 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
 
 /* try to use gzip content-encoding on entity */
 static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
-                                     const char *zip_ext)
+                                     const char *zip_ext, size_t zip_len)
 {
   const char *fname_cstr = NULL;
   int fd = -1;
@@ -1966,7 +1975,7 @@ static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
   if (!fname_cstr)
     vlg_warn(vlg, "Failed to export cstr for '%s'\n", zip_ext);
   else if ((fd = io_open_nonblock(fname_cstr)) == -1)
-    vstr_sc_reduce(req->fname, 1, req->fname->len, strlen(zip_ext));
+    vstr_sc_reduce(req->fname, 1, req->fname->len, zip_len);
   else
   {
     struct stat64 f_stat[1];
@@ -2123,10 +2132,10 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   if (http_parse_accept_encoding(req))
   {
     if ( req->content_encoding_bzip2 &&
-        !http__try_encoded_content(con, req, ".bz2"))
+         !http__try_encoded_content(con, req, ".bz2", CLEN(".bz2")))
       req->content_encoding_bzip2 = FALSE;
     if (!req->content_encoding_bzip2 && req->content_encoding_gzip &&
-        !http__try_encoded_content(con, req, ".gz"))
+        !http__try_encoded_content(con, req, ".gz", CLEN(".gz")))
       req->content_encoding_gzip = FALSE;
   }
   
@@ -2435,6 +2444,31 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     return (FALSE);
   }
 
+  if (req->policy->auth_token->len)
+  { /* they need auth */
+    Vstr_base *data = con->evnt->io_r;
+    size_t pos = req->http_hdrs->hdr_authorization->pos;
+    size_t len = req->http_hdrs->hdr_authorization->len;
+    Vstr_base *auth_token = req->policy->auth_token;
+    int auth_ok = TRUE;
+    
+    if (!VIPREFIX(data, pos, len, "Basic"))
+      auth_ok = FALSE;
+    else
+    {
+      len -= CLEN("Basic"); pos += CLEN("Basic");
+      HTTP_SKIP_LWS(data, pos, len);
+      if (!vstr_cmp_eq(data, pos, len, auth_token, 1, auth_token->len))
+        auth_ok = FALSE;
+    }
+    
+    if (!auth_ok)
+    {
+      req->user_return_error_code = FALSE;
+      HTTPD_ERR(req, 401);
+    }
+  }
+  
   return (TRUE);
 }
 
@@ -3181,15 +3215,16 @@ int httpd_serv_recv(struct Con *con)
   
   if (!(ret = evnt_recv(con->evnt, &ern)))
   {
-    vlg_dbg3(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->evnt->sa, ern);
-    
     if (ern != VSTR_TYPE_SC_READ_FD_ERR_EOF)
+    {
+      vlg_dbg3(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->evnt->sa, ern);
       goto con_cleanup;
+    }
     if (!evnt_shutdown_r(con->evnt, TRUE))
       goto con_cleanup;
   }
 
-  if (con->f->len) /* need to stop input, until we can get rid of it */
+  if (con->f->len) /* may need to stop input, until we can deal with next req */
   {
     ASSERT(con->keep_alive || con->parsed_method_ver_1_0);
     

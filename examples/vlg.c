@@ -546,7 +546,7 @@ void vlg_pid_file(Vlg *vlg, const char *pid_file)
                           pid_file, O_WRONLY | O_CREAT | O_TRUNC, 0644, 0,NULL))
   {
     vstr_del(out, 1, out->len);
-    vlg_err(vlg, EXIT_FAILURE, "write_file(%s): %m\n", pid_file);
+    vlg_err(vlg, EXIT_FAILURE, "vlg_pid_file(%s): %m\n", pid_file);
   }
 }
 

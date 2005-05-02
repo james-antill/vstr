@@ -9,7 +9,7 @@
 
 #define CONF_MSG_RET_END "\
   <hr>\r\n\
-  Generated using the <a href=\"http://www.and.org/vstr/httpd.html\">Vstr httpd example Web Server</a>.\r\n\
+  Generated using the <a href=\"http://www.and.org/vstr/httpd\">Vstr httpd example Web Server</a>.\r\n\
   </body>\r\n\
 </html>\r\n\
 "
@@ -90,6 +90,10 @@
 #define CONF_LINE_RET_400 "Bad Request"
 #define CONF_MSG_RET_400 \
     CONF_MSG__MAKE("400", "Bad Request", "The request could not be understood")
+
+#define CONF_LINE_RET_401 "Unauthorized"
+#define CONF_MSG_RET_401 \
+    CONF_MSG__MAKE("401", "Unauthorized", "The request requires user authentication")
 
 #define CONF_LINE_RET_403 "Forbidden"
 #define CONF_MSG_RET_403 \

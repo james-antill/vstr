@@ -233,7 +233,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     else if (OPT_SERV_SYM_EQ("<request-configuration-directory>") ||
              OPT_SERV_SYM_EQ("<req-conf-dir>"))
     {
-      Vstr_base *s1 = req->policy->req_configuration_dir;
+      Vstr_base *s1 = req->policy->req_conf_dir;
       *used_policy = TRUE;
       HTTPD_APP_REF_VSTR(conf->tmp, s1, 1, s1->len);
     }
@@ -241,7 +241,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
              OPT_SERV_SYM_EQ("<req-conf-dir/..>"))
     {
       if (!httpd_policy__build_parent_path(conf->tmp,
-                                           req->policy->req_configuration_dir))
+                                           req->policy->req_conf_dir))
         return (FALSE);
       *used_policy = TRUE;
     }

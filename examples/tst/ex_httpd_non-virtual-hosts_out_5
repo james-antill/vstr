@@ -1,8 +1,8 @@
 HTTP/1.1 400 Bad Request
 Date:
-Server: jhttpd/0.9.99 (Vstr)
+Server: jhttpd/0.9.100 (Vstr)
 Last-Modified:
 Connection: close
 Content-Type: text/html
-Content-Length: 342
+Content-Length: 337
 

@@ -585,7 +585,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       conf_parse_num_token(conf, token, last);
     }
   }
-  else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
+  else if (OPT_SERV_SYM_EQ("negotiate-charset"))
     return (FALSE);
   else if (OPT_SERV_SYM_EQ("negotiate-content-language"))
     return (FALSE);
@@ -630,7 +630,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
                               struct Con *con, Httpd_req_data *req)
 {
   Conf_token token[1] = {CONF_TOKEN_INIT};
-  Vstr_base *dir   = req->policy->req_configuration_dir;
+  Vstr_base *dir   = req->policy->req_conf_dir;
   Vstr_base *fname = req->fname;
   Vstr_base *s1 = NULL;
   const char *fname_cstr = NULL;
@@ -640,7 +640,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
   ASSERT(conf && con && req && dir && fname && fname->len);
   
   if (!dir->len ||
-      !req->policy->use_req_configuration || req->skip_document_root)
+      !req->policy->use_req_conf || req->skip_document_root)
     return (TRUE);
   
   s1 = conf->data;
