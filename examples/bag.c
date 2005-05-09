@@ -1,3 +1,4 @@
+#define _GNU_SOURCE 1
 
 #include "bag.h"
 
@@ -13,6 +14,9 @@
 # define BAG__ATTR_UNUSED(x) vstr__UNUSED_ ## x
 #endif
 
+#ifndef __GLIBC__ /* hack */
+# define strverscmp(x, y) strcmp(x, y)
+#endif
 
 void bag_del_all(Bag *bag)
 {
@@ -91,20 +95,36 @@ void bag_sort(Bag *bag, int (*cmp)(const void *, const void *))
   qsort(bag->data, bag->num, sizeof(Bag_obj), cmp);
 }
 
-int bag_cb_sort_key_strcoll(const void *passed_one, const void *passed_two)
-{
-  const Bag_obj *const one = passed_one;
-  const Bag_obj *const two = passed_two;
-
-  return (strcoll(one->key, two->key));
-}
-
-int bag_cb_sort_key_strcmp(const void *passed_one, const void *passed_two)
+int bag_cb_sort_key_cmp(const void *passed_one, const void *passed_two)
 {
   const Bag_obj *const one = passed_one;
   const Bag_obj *const two = passed_two;
 
   return (strcmp(one->key, two->key));
+}
+
+int bag_cb_sort_key_case(const void *passed_one, const void *passed_two)
+{
+  const Bag_obj *const one = passed_one;
+  const Bag_obj *const two = passed_two;
+
+  return (strcasecmp(one->key, two->key));
+}
+
+int bag_cb_sort_key_vers(const void *passed_one, const void *passed_two)
+{
+  const Bag_obj *const one = passed_one;
+  const Bag_obj *const two = passed_two;
+
+  return (strverscmp(one->key, two->key));
+}
+
+int bag_cb_sort_key_coll(const void *passed_one, const void *passed_two)
+{
+  const Bag_obj *const one = passed_one;
+  const Bag_obj *const two = passed_two;
+
+  return (strcoll(one->key, two->key));
 }
 
 const Bag_obj *bag_iter_nxt(Bag_iter *iter)

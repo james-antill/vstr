@@ -61,6 +61,8 @@
 # define CONF_USE_MOUNT_BIND FALSE
 #endif
 
+#define CONF_USE_INTERNAL_SYSLOG TRUE
+
 #define EX_UTILS_NO_FUNCS 1
 #include "ex_utils.h"
 
@@ -88,6 +90,63 @@ static Vstr_conf *vlg__sig_conf = NULL;
 static int vlg__done_syslog_init = FALSE;
 
 
+static int vlg__syslog_con(Vlg *vlg, int alt)
+{
+  int type = alt ? SOCK_STREAM : SOCK_DGRAM;
+  int fd = -1;
+  const char *fname = _PATH_LOG;
+  size_t len = strlen(fname) + 1;
+  struct sockaddr_un tmp_sun;
+  struct sockaddr *sa = (struct sockaddr *)&tmp_sun;
+  socklen_t alloc_len = 0;
+
+  if (!CONF_USE_INTERNAL_SYSLOG)
+    goto conf_fail;
+  if (vlg->syslog_fd != -1)
+    return (TRUE);
+  
+  tmp_sun.sun_path[0] = 0;
+  alloc_len = SUN_LEN(&tmp_sun) + len;
+  tmp_sun.sun_family = AF_LOCAL;
+  memcpy(tmp_sun.sun_path, fname, len);
+
+  if (vlg->syslog_stream)
+    type = alt ? SOCK_DGRAM : SOCK_STREAM;
+
+  if ((fd = socket(PF_LOCAL, type, 0)) == -1)
+    goto sock_fail;
+
+  if (fcntl(fd, F_SETFD, TRUE) == -1)
+    goto fcntl_fail;
+  
+  if (connect(fd, sa, alloc_len) == -1)
+    goto connect_fail;
+
+  vlg->syslog_fd = fd;
+  
+  return (TRUE);
+  
+ connect_fail:
+  if (!alt)
+    return (vlg__syslog_con(vlg, TRUE));
+  
+ fcntl_fail:
+  close(fd);
+ sock_fail:
+ conf_fail:
+  if (!vlg__done_syslog_init)
+    openlog(vlg->prog_name, LOG_PID | LOG_NDELAY, LOG_DAEMON);
+  vlg__done_syslog_init = TRUE;
+  return (FALSE);
+}
+
+static void vlg__syslog_close(Vlg *vlg)
+{
+  if (vlg->syslog_fd != -1)
+    close(vlg->syslog_fd);
+  vlg->syslog_fd = -1;
+}
+
 static void vlg__flush(Vlg *vlg, int type, int out_err)
 {
   Vstr_base *dlg = vlg->out_vstr;
@@ -96,14 +155,44 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
 
   if (vlg->daemon_mode)
   {
-    const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len - 1);
+    if (!vlg__syslog_con(vlg, 0))
+    { /* ignoring borken syslog()'s that overflow here use a real OS */
+      const char *tmp = vstr_export_cstr_ptr(dlg, 1, dlg->len - 1);
+      
+      if (!tmp)
+        errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
+      
+      syslog(type, "%s", tmp);
+    }
+    else
+    {
+      pid_t pid = getpid();
+      int fd = vlg->syslog_fd;
+      size_t beg_len = 0;
+      
+      vstr_add_fmt(dlg, 0, "<%u>%s %s[%lu]: ", type | LOG_DAEMON,
+                   date_syslog(time(NULL)), vlg->prog_name, (unsigned long)pid);
+      
+      if (vlg->syslog_stream)
+        vstr_sub_buf(dlg, dlg->len, 1, "", 1);
+      else
+        vstr_sc_reduce(dlg, 1, dlg->len, 1); /* remove "\n" */
+      
+      if (dlg->conf->malloc_bad)
+        errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
 
-    if (!tmp)
-      errno = ENOMEM, err(EXIT_FAILURE, "vlog__flush");
-
-    /* ignoring borken syslog()'s that overflow ... eventually implement
-     * syslog protocol, until then use a real OS */
-    syslog(type, "%s", tmp);
+      beg_len = dlg->len;
+      while (dlg->len)
+        if (!vstr_sc_write_fd(dlg, 1, dlg->len, fd, NULL) && (errno != EAGAIN))
+        {
+          vlg__syslog_close(vlg);
+          if (beg_len != dlg->len) /* we have sent _some_ data, and it died */
+            break;
+          if (!vlg__syslog_con(vlg, 0))
+            err(EXIT_FAILURE, "vlg__syslog_con");
+        }
+    }
+    
     vstr_del(dlg, 1, dlg->len);
   }
   else
@@ -122,7 +211,7 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
       if ((type == LOG_DEBUG) && !vstr_add_cstr_ptr(dlg, 0, "DEBUG: "))
         errno = ENOMEM, err(EXIT_FAILURE, "vlog_vdbg");
       
-      if (!vlg->log_pid_console)
+      if (!vlg->log_pid)
       {
         if (!vstr_add_cstr_ptr(dlg, 0, "]: "))
           errno = ENOMEM, err(EXIT_FAILURE, "prefix");
@@ -465,9 +554,13 @@ Vlg *vlg_make(void)
   if (!(vlg->sig_out_vstr = vstr_make_base(vlg__sig_conf)))
     goto malloc_err_vstr_base;
   
+  vlg->prog_name          = NULL;
+  vlg->syslog_fd          = -1;
+  
+  vlg->syslog_stream      = FALSE;
+  vlg->log_pid            = FALSE;
   vlg->out_dbg            = 0;
   vlg->daemon_mode        = FALSE;
-  vlg->log_pid_console    = FALSE;
   vlg->log_prefix_console = TRUE;
   
   return (vlg);
@@ -488,11 +581,13 @@ void vlg_free(Vlg *vlg)
 
 void vlg_daemon(Vlg *vlg, const char *name)
 {
-  if (!vlg__done_syslog_init)
-    openlog(name, LOG_PID | LOG_NDELAY, LOG_DAEMON);
-  vlg__done_syslog_init = TRUE;
+  ASSERT(name);
 
+  vlg->prog_name   = name;
+  vlg->log_pid     = TRUE;
   vlg->daemon_mode = TRUE;
+  
+  vlg__syslog_con(vlg, 0);
 }
 
 void vlg_debug(Vlg *vlg)
@@ -513,9 +608,9 @@ void vlg_undbg(Vlg *vlg)
 
 int vlg_pid_set(Vlg *vlg, int pid)
 {
-  int old = vlg->log_pid_console;
+  int old = vlg->log_pid;
 
-  vlg->log_pid_console = pid;
+  vlg->log_pid = !!pid;
 
   return (old);
 }

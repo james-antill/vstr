@@ -633,6 +633,7 @@ extern inline int httpd_policy_uri_lim_eq(const Vstr_base *s1,
   {
     default: HTTPD_POLICY__ASSERT(HTTPD_POLICY__FALSE);
     case HTTPD_POLICY_PATH_LIM_NONE:
+      HTTPD_POLICY__ASSERT(!ref);
       return (HTTPD_POLICY__TRUE);
 
     case HTTPD_POLICY_PATH_LIM_PATH_FULL:
@@ -693,7 +694,10 @@ extern inline int httpd_policy_uri_lim_eq(const Vstr_base *s1,
   }
 
   if ((lim & HTTPD_POLICY__PATH_LIM_MASK) == HTTPD_POLICY__PATH_LIM_FULL)
+  {
+    HTTPD_POLICY__ASSERT(!ref);
     return (HTTPD_POLICY__TRUE);
+  }
   
   HTTPD_POLICY__ASSERT(ref);
   srch = ref->ptr;

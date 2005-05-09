@@ -225,7 +225,7 @@ ls2_APP = | ./ex_dir_filter \
  -D index.html -D dir_list.css \
  --deny-name-end .gz --deny-name-end .bz2 \
  --deny-name-end ~ --deny-name-end \\\# | \
- ./ex_dir_sort --without-locale | \
+ ./ex_dir_sort --sort=cmp | \
  ./ex_dir_list2html --name
 
 

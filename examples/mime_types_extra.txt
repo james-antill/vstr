@@ -1,7 +1,7 @@
-application/x-bittorrent  torrent
 
-# In theory you can do this to specify the charset, from the server
-# text/html;charset=UTF-8   html
+# These should be std. in /etc/mime.types but fuckwittage prevents
+application/x-bittorrent torrent
+image/x-icon ico
 
 #  These are needed because, unlike apache-httpd, jhttpd doesn't default to
 # text/plain MIME type

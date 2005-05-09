@@ -517,19 +517,6 @@ static void evnt__uninit(struct Evnt *evnt)
   evnt__free2(evnt->sa, evnt->tm_o);
 }
 
-static int evnt__make_true(struct Evnt **que, struct Evnt *evnt, int flags)
-{
-  evnt_add(que, evnt);
-  
-  ++evnt__num;
-
-  ASSERT(evnt__valid(evnt));
-
-  evnt_wait_cntl_add(evnt, flags);
-
-  return (TRUE);
-}
-
 static int evnt_fd__set_nodelay(int fd, int val)
 {
   return (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &val, sizeof(val)) != -1);
@@ -547,12 +534,25 @@ static void evnt__fd_close_noerrno(int fd)
   errno = saved_errno;
 }
 
+static int evnt__make_end(struct Evnt **que, struct Evnt *evnt, int flags)
+{
+  evnt_add(que, evnt);
+  
+  ++evnt__num;
+
+  ASSERT(evnt__valid(evnt));
+
+  evnt_wait_cntl_add(evnt, flags);
+
+  return (TRUE);
+}
+
 int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
 {
   int fd = -1;
   socklen_t alloc_len = sizeof(struct sockaddr_in);
   
-  if ((fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+  if ((fd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
     goto sock_fail;
   
   if (!evnt_init(evnt, fd, alloc_len))
@@ -573,14 +573,14 @@ int evnt_make_con_ipv4(struct Evnt *evnt, const char *ipv4_string, short port)
     if (errno == EINPROGRESS)
     { /* The connection needs more time....*/
       evnt->flag_q_connect = TRUE;
-      return (evnt__make_true(&q_connect, evnt, POLLOUT));
+      return (evnt__make_end(&q_connect, evnt, POLLOUT));
     }
 
     goto connect_fail;
   }
   
   evnt->flag_q_none = TRUE;
-  return (evnt__make_true(&q_none, evnt, 0));
+  return (evnt__make_end(&q_none, evnt, 0));
   
  connect_fail:
   evnt__uninit(evnt);
@@ -607,9 +607,6 @@ int evnt_make_con_local(struct Evnt *evnt, const char *fname)
     goto init_fail;
   evnt->flag_q_pkt_move = TRUE;
   
-  if (!evnt->flag_io_nagle)
-    evnt_fd__set_nodelay(fd, TRUE);
-  
   EVNT_SA_UN(evnt)->sun_family = AF_LOCAL;
   memcpy(EVNT_SA_UN(evnt)->sun_path, fname, len);
   
@@ -618,14 +615,14 @@ int evnt_make_con_local(struct Evnt *evnt, const char *fname)
     if (errno == EINPROGRESS)
     { /* The connection needs more time....*/
       evnt->flag_q_connect = TRUE;
-      return (evnt__make_true(&q_connect, evnt, POLLOUT));
+      return (evnt__make_end(&q_connect, evnt, POLLOUT));
     }
     
     goto connect_fail;
   }
 
   evnt->flag_q_none = TRUE;
-  return (evnt__make_true(&q_none, evnt, 0));
+  return (evnt__make_end(&q_none, evnt, 0));
   
  connect_fail:
   evnt__uninit(evnt);
@@ -645,7 +642,18 @@ int evnt_make_acpt(struct Evnt *evnt, int fd,struct sockaddr *sa, socklen_t len)
     evnt_fd__set_nodelay(fd, TRUE);
 
   evnt->flag_q_recv = TRUE;
-  return (evnt__make_true(&q_recv, evnt, POLLIN));
+  return (evnt__make_end(&q_recv, evnt, POLLIN));
+}
+
+static int evnt__make_bind_end(struct Evnt *evnt)
+{
+  vstr_free_base(evnt->io_r); evnt->io_r = NULL;
+  vstr_free_base(evnt->io_w); evnt->io_w = NULL;
+  
+  evnt->flag_q_accept = TRUE;
+  evnt__make_end(&q_accept, evnt, POLLIN);
+  SOCKET_POLL_INDICATOR(evnt->ind)->revents = 0;
+  return (TRUE);
 }
 
 int evnt_make_bind_ipv4(struct Evnt *evnt,
@@ -656,7 +664,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   int saved_errno = 0;
   socklen_t alloc_len = sizeof(struct sockaddr_in);
   
-  if ((fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+  if ((fd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
     goto sock_fail;
   
   if (!evnt_init(evnt, fd, alloc_len))
@@ -685,11 +693,7 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
   if (listen(fd, listen_len) == -1)
     goto listen_fail;
 
-  vstr_free_base(evnt->io_r); evnt->io_r = NULL;
-  vstr_free_base(evnt->io_w); evnt->io_w = NULL;
-  
-  evnt->flag_q_accept = TRUE;
-  return (evnt__make_true(&q_accept, evnt, POLLIN));
+  return (evnt__make_bind_end(evnt));
   
  bind_fail:
   saved_errno = errno;
@@ -736,11 +740,7 @@ int evnt_make_bind_local(struct Evnt *evnt, const char *fname,
   if (listen(fd, listen_len) == -1)
     goto listen_fail;
 
-  vstr_free_base(evnt->io_r); evnt->io_r = NULL;
-  vstr_free_base(evnt->io_w); evnt->io_w = NULL;
-  
-  evnt->flag_q_accept = TRUE;
-  return (evnt__make_true(&q_accept, evnt, POLLIN));
+  return (evnt__make_bind_end(evnt));
   
  bind_fail:
   saved_errno = errno;
@@ -766,11 +766,11 @@ int evnt_make_custom(struct Evnt *evnt, int fd, socklen_t sa_len, int flags)
   if (flags & POLLIN)
   {
     evnt->flag_q_recv = TRUE;
-    return (evnt__make_true(&q_recv, evnt, POLLIN));
+    return (evnt__make_end(&q_recv, evnt, POLLIN));
   }
   
   evnt->flag_q_none = TRUE;
-  return (evnt__make_true(&q_none, evnt, 0));
+  return (evnt__make_end(&q_none, evnt, 0));
 }
 
 void evnt_close(struct Evnt *evnt)
@@ -1260,7 +1260,8 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
         ++ready; /* give a read event to this new event */
         assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
         assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
-
+        assert(tmp == q_recv);
+        
         if (++acpt_num >= evnt__accept_limit)
           break;
       }
@@ -1913,6 +1914,7 @@ static int evnt__poll_accept(void)
       
   assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
   assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
+  assert(tmp == q_recv);
 
   return (1);
   

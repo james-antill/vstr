@@ -38,8 +38,10 @@ extern Bag *bag_add_cstr(Bag *, const char *, char *);
 extern void bag_del_all(Bag *);
 
 extern void bag_sort(Bag *, int (*)(const void *, const void *));
-extern int bag_cb_sort_key_strcoll(const void *, const void *);
-extern int bag_cb_sort_key_strcmp(const void *, const void *);
+extern int bag_cb_sort_key_coll(const void *, const void *);
+extern int bag_cb_sort_key_case(const void *, const void *);
+extern int bag_cb_sort_key_vers(const void *, const void *);
+extern int bag_cb_sort_key_cmp(const void *, const void *);
 
 extern const Bag_obj *bag_iter_beg(Bag *, Bag_iter *);
 extern const Bag_obj *bag_iter_nxt(Bag_iter *);

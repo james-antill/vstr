@@ -418,7 +418,8 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
   return (con->evnt);
   
  evnt_fail:
-  evnt_free(con->evnt);
+  if (!con->evnt->flag_q_closed)
+    evnt_free(con->evnt);
   return (NULL);
   
  make_acpt_fail:

@@ -75,7 +75,6 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
       int or_matches = TRUE;
     
       CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-
       if (!httpd__policy_connection_tst_d1(con, conf, token, &or_matches))
         return (FALSE);
 
@@ -87,6 +86,25 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     }
 
     *matches = FALSE;
+  }
+  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!httpd__policy_connection_tst_d1(con, conf, token, matches))
+        return (FALSE);
+
+      if (!matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (httpd_policy_name_eq(conf, token, con->policy, matches));
@@ -336,7 +354,6 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       int or_matches = TRUE;
     
       CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-
       if (!httpd__policy_request_tst_d1(con, req, conf, token, &or_matches))
         return (FALSE);
 
@@ -348,6 +365,25 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     }
 
     *matches = FALSE;
+  }
+  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!httpd__policy_request_tst_d1(con, req, conf, token, matches))
+        return (FALSE);
+
+      if (!matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (httpd_policy_name_eq(conf, token, req->policy, matches));
@@ -485,8 +521,11 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       return (FALSE);
     
     if (!httpd_policy_path_make(con, req, conf, token, type, &ref))
+    {
+      vstr_ref_del(ref);
       return (FALSE);
-
+    }
+    
     lim = httpd_policy_path_req2lim(type);
     *matches = httpd_policy_path_lim_eq(req->fname, &pos, &len, lim,
                                         req->vhost_prefix_len, ref);
@@ -660,18 +699,31 @@ static int httpd_conf_main_policy_init(Httpd_opts *httpd_opts,
 
   opts->ref = NULL;
   opts->beg = httpd_opts;
+
+  /* do all, then check ... so we don't have to unwind */
+  opts->policy_name       = vstr_make_base(NULL);
+  opts->document_root     = vstr_make_base(NULL);
+  opts->server_name       = vstr_make_base(NULL);
+  opts->dir_filename      = vstr_make_base(NULL);
+  opts->mime_types_def_ct = vstr_make_base(NULL);
+  opts->mime_types_main   = vstr_make_base(NULL);
+  opts->mime_types_xtra   = vstr_make_base(NULL);
+  opts->default_hostname  = vstr_make_base(NULL);
+  opts->req_conf_dir      = vstr_make_base(NULL);
+  opts->auth_realm        = vstr_make_base(NULL);
+  opts->auth_token        = vstr_make_base(NULL);
   
-  if (!(opts->policy_name       = vstr_make_base(NULL)) ||
-      !(opts->document_root     = vstr_make_base(NULL)) ||
-      !(opts->server_name       = vstr_make_base(NULL)) ||
-      !(opts->dir_filename      = vstr_make_base(NULL)) ||
-      !(opts->mime_types_def_ct = vstr_make_base(NULL)) ||
-      !(opts->mime_types_main   = vstr_make_base(NULL)) ||
-      !(opts->mime_types_xtra   = vstr_make_base(NULL)) ||
-      !(opts->default_hostname  = vstr_make_base(NULL)) ||
-      !(opts->req_conf_dir      = vstr_make_base(NULL)) ||
-      !(opts->auth_realm        = vstr_make_base(NULL)) ||
-      !(opts->auth_token        = vstr_make_base(NULL)) ||
+  if (!opts->policy_name       ||
+      !opts->document_root     ||
+      !opts->server_name       ||
+      !opts->dir_filename      ||
+      !opts->mime_types_def_ct ||
+      !opts->mime_types_main   ||
+      !opts->mime_types_xtra   ||
+      !opts->default_hostname  ||
+      !opts->req_conf_dir      ||
+      !opts->auth_realm        ||
+      !opts->auth_token        ||
       FALSE)
   {
     httpd_conf_main_policy_free(opts);
@@ -1153,19 +1205,20 @@ Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts)
   vstr_ref_del(ref);
 
   if (!ret)
-    return (NULL);
+    goto init_failure;
 
   opts = ref->ptr;
   if (!httpd_conf_main_policy_copy(opts, httpd_opts->def_policy))
-  {
-    vstr_ref_del(ref);
-    return (NULL);
-  }
+    goto copy_failure;
   
   opts->next = httpd_opts->def_policy->next;
   httpd_opts->def_policy->next = opts;
   
   return (opts);
+ copy_failure:
+  httpd_conf_main_policy_free(opts);
+ init_failure:
+  return (NULL);
 }
 
 int httpd_conf_main_init(Httpd_opts *httpd_opts)

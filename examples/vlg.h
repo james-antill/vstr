@@ -9,9 +9,13 @@ typedef struct Vlg
 {
  struct Vstr_base *out_vstr;
  struct Vstr_base *sig_out_vstr;
+ const char *prog_name;
+ int syslog_fd;
+ 
+ unsigned int syslog_stream : 1;
+ unsigned int log_pid : 1;
  unsigned int out_dbg : 2;
  unsigned int daemon_mode : 1;
- unsigned int log_pid_console : 1;
  unsigned int log_prefix_console : 1;
 } Vlg;
 

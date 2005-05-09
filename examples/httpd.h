@@ -40,9 +40,7 @@ struct Http_hdrs
 
  Vstr_sect_node hdr_expect[1];
  Vstr_sect_node hdr_host[1];
- Vstr_sect_node hdr_if_match[1];
  Vstr_sect_node hdr_if_modified_since[1];
- Vstr_sect_node hdr_if_none_match[1];
  Vstr_sect_node hdr_if_range[1];
  Vstr_sect_node hdr_if_unmodified_since[1];
  Vstr_sect_node hdr_authorization[1];
@@ -56,9 +54,16 @@ struct Http_hdrs
   Vstr_sect_node hdr_accept_encoding[1];
   Vstr_sect_node hdr_accept_language[1];
   Vstr_sect_node hdr_connection[1];
+  Vstr_sect_node hdr_if_match[1];
+  Vstr_sect_node hdr_if_none_match[1];
   Vstr_sect_node hdr_range[1];
  } multi[1];
 };
+
+#define HTTPD__DECL_XTRA_HDR(x)                 \
+    const Vstr_base * x ## _vs1;                \
+    size_t            x ## _pos;                \
+    size_t            x ## _len
 
 typedef struct Httpd_req_data
 {
@@ -78,43 +83,28 @@ typedef struct Httpd_req_data
  size_t orig_io_w_len;
  Vstr_base *f_mmap;
  Vstr_base *xtra_content;
- const Vstr_base *content_type_vs1;
- size_t           content_type_pos;
- size_t           content_type_len;
- const Vstr_base *content_location_vs1;
- size_t           content_location_pos;
- size_t           content_location_len;
- const Vstr_base *content_md5_vs1; /* Note this is valid for range */
- size_t           content_md5_pos;
- size_t           content_md5_len;
- time_t           content_md5_time;
- const Vstr_base *gzip_content_md5_vs1;
- size_t           gzip_content_md5_pos;
- size_t           gzip_content_md5_len;
- time_t           gzip_content_md5_time;
- const Vstr_base *bzip2_content_md5_vs1;
- size_t           bzip2_content_md5_pos;
- size_t           bzip2_content_md5_len;
- time_t           bzip2_content_md5_time;
- const Vstr_base *cache_control_vs1;
- size_t           cache_control_pos;
- size_t           cache_control_len;
- const Vstr_base *expires_vs1;
- size_t           expires_pos;
- size_t           expires_len;
- time_t           expires_time;
- const Vstr_base *p3p_vs1;
- size_t           p3p_pos;
- size_t           p3p_len;
- const Vstr_base *ext_vary_a_vs1;
- size_t           ext_vary_a_pos;
- size_t           ext_vary_a_len;
- const Vstr_base *ext_vary_ac_vs1;
- size_t           ext_vary_ac_pos;
- size_t           ext_vary_ac_len;
- const Vstr_base *ext_vary_al_vs1;
- size_t           ext_vary_al_pos;
- size_t           ext_vary_al_len;
+ HTTPD__DECL_XTRA_HDR(content_type);
+ HTTPD__DECL_XTRA_HDR(content_location);
+ HTTPD__DECL_XTRA_HDR(content_md5); /* Note this is valid for range */
+ time_t               content_md5_time;
+ HTTPD__DECL_XTRA_HDR(gzip_content_md5);
+ time_t               gzip_content_md5_time;
+ HTTPD__DECL_XTRA_HDR(bzip2_content_md5);
+ time_t               bzip2_content_md5_time;
+ HTTPD__DECL_XTRA_HDR(cache_control);
+ HTTPD__DECL_XTRA_HDR(etag);
+ time_t               etag_time;
+ HTTPD__DECL_XTRA_HDR(gzip_etag);
+ time_t               gzip_etag_time;
+ HTTPD__DECL_XTRA_HDR(bzip2_etag);
+ time_t               bzip2_etag_time;
+ HTTPD__DECL_XTRA_HDR(expires);
+ time_t               expires_time;
+ HTTPD__DECL_XTRA_HDR(link);
+ HTTPD__DECL_XTRA_HDR(p3p);
+ HTTPD__DECL_XTRA_HDR(ext_vary_a);
+ HTTPD__DECL_XTRA_HDR(ext_vary_ac);
+ HTTPD__DECL_XTRA_HDR(ext_vary_al);
 
  time_t now;
 

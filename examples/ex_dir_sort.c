@@ -1,4 +1,3 @@
-
 /* needs to be big, as all enteries have to be in core */
 #define EX_MAX_R_DATA_INCORE (16 * 1024 * 1024)
 
@@ -17,7 +16,7 @@
 
 static Bag *names = NULL;
 
-static int (*sort_cmp)(const void *, const void *) = bag_cb_sort_key_strcoll;
+static int (*sort_cmp)(const void *, const void *) = bag_cb_sort_key_coll;
 
 
 static int ex_dir_sort_process(Vstr_base *s1, Vstr_base *s2,
@@ -169,7 +168,7 @@ static void usage(const char *program_name, int ret)
           "Usage: %s [-hV] [FILES]\n"
           "   or: %s OPTION\n"
          " --help -h         - Print this message.\n"
-         " --without-locale  - Use POSIX sorting.\n"
+         " --sort            - Use cmp, case, version or collating sorting.\n"
          " --version -V      - Print the version string.\n",
           program_name, program_name);
   
@@ -185,7 +184,7 @@ static void ex_dir_sort_cmd_line(int *passed_argc, char **passed_argv[])
   struct option long_options[] =
   { /* allow sorting by size etc. */
    {"help", no_argument, NULL, 'h'},
-   {"without-locale", no_argument, NULL, 1},
+   {"sort", required_argument, NULL, 1},
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
@@ -213,7 +212,13 @@ Uses Vstr string library.\n\
         exit (EXIT_SUCCESS);
 
       case 1:
-        sort_cmp = bag_cb_sort_key_strcmp;
+        if (0) {}
+        else if (!strcmp(optarg, "cmp"))       sort_cmp = bag_cb_sort_key_cmp;
+        else if (!strcmp(optarg, "case"))      sort_cmp = bag_cb_sort_key_case;
+        else if (!strcmp(optarg, "version"))   sort_cmp = bag_cb_sort_key_vers;
+        else if (!strcmp(optarg, "collating")) sort_cmp = bag_cb_sort_key_coll;
+        else
+          usage(program_name, TRUE);
         break;
           
       default:

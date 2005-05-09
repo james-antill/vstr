@@ -56,10 +56,10 @@ http://www.sans.org/top20/#u2
          C-z fg
 	mime_types speed, by having explicit filename/ext matches
 	public/symlinks path checking
+         allowdev
 	 fd cache
 	 stat cache
 	conf
-         expires-in - does cache-control and expires ?
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
 	  Support per file.

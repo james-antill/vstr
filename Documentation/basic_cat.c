@@ -31,6 +31,7 @@ static void full_write(int fd, const char *buf, size_t len)
     
     if ((ret == -1) && (errno != EINTR))
       err(EXIT_FAILURE, "write");
+    if (ret == -1) continue;
 
     buf += (size_t)ret;
     len -= (size_t)ret;

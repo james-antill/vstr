@@ -459,7 +459,7 @@ examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(
 @HAVE_POSIX_HOST_TRUE@ -D index.html -D dir_list.css \
 @HAVE_POSIX_HOST_TRUE@ --deny-name-end .gz --deny-name-end .bz2 \
 @HAVE_POSIX_HOST_TRUE@ --deny-name-end ~ --deny-name-end \\\# | \
-@HAVE_POSIX_HOST_TRUE@ ./ex_dir_sort --without-locale | \
+@HAVE_POSIX_HOST_TRUE@ ./ex_dir_sort --sort=cmp | \
 @HAVE_POSIX_HOST_TRUE@ ./ex_dir_list2html --name
 
 

@@ -87,13 +87,13 @@
       (req)-> http_hdrs -> multi -> hdr_ ## h ->len = (l); \
     } while (FALSE)
 
-#define HTTP__CONTENT_INIT_HDR(x) do {          \
+#define HTTP__XTRA_HDR_INIT(x) do {             \
       req-> x ## _vs1 = NULL;                   \
       req-> x ## _pos = 0;                      \
       req-> x ## _len = 0;                      \
     } while (FALSE)
 
-#define HTTP__CONTENT_PARAMS(req, x)                            \
+#define HTTP__XTRA_HDR_PARAMS(req, x)                            \
     (req)-> x ## _vs1, (req)-> x ## _pos, (req)-> x ## _len
 
 
@@ -125,9 +125,7 @@ static void http__clear_hdrs(struct Httpd_req_data *req)
 
   HTTP__HDR_SET(req, expect,              0, 0);
   HTTP__HDR_SET(req, host,                0, 0);
-  HTTP__HDR_SET(req, if_match,            0, 0);
   HTTP__HDR_SET(req, if_modified_since,   0, 0);
-  HTTP__HDR_SET(req, if_none_match,       0, 0);
   HTTP__HDR_SET(req, if_range,            0, 0);
   HTTP__HDR_SET(req, if_unmodified_since, 0, 0);
   HTTP__HDR_SET(req, authorization,       0, 0);
@@ -138,6 +136,8 @@ static void http__clear_hdrs(struct Httpd_req_data *req)
   HTTP__HDR_MULTI_SET(req, accept_encoding, 0, 0);
   HTTP__HDR_MULTI_SET(req, accept_language, 0, 0);
   HTTP__HDR_MULTI_SET(req, connection,      0, 0);
+  HTTP__HDR_MULTI_SET(req, if_match,        0, 0);
+  HTTP__HDR_MULTI_SET(req, if_none_match,   0, 0);
   HTTP__HDR_MULTI_SET(req, range,           0, 0);
 }
 
@@ -146,17 +146,18 @@ static void http__clear_xtra(struct Httpd_req_data *req)
   if (req->xtra_content)
     vstr_del(req->xtra_content, 1, req->xtra_content->len);
 
-  HTTP__CONTENT_INIT_HDR(content_type);
-  HTTP__CONTENT_INIT_HDR(content_location);
-  HTTP__CONTENT_INIT_HDR(content_md5);
-  HTTP__CONTENT_INIT_HDR(gzip_content_md5);
-  HTTP__CONTENT_INIT_HDR(bzip2_content_md5);
-  HTTP__CONTENT_INIT_HDR(cache_control);
-  HTTP__CONTENT_INIT_HDR(expires);
-  HTTP__CONTENT_INIT_HDR(p3p);
-  HTTP__CONTENT_INIT_HDR(ext_vary_a);
-  HTTP__CONTENT_INIT_HDR(ext_vary_ac);
-  HTTP__CONTENT_INIT_HDR(ext_vary_al);
+  HTTP__XTRA_HDR_INIT(content_type);
+  HTTP__XTRA_HDR_INIT(content_location);
+  HTTP__XTRA_HDR_INIT(content_md5);
+  HTTP__XTRA_HDR_INIT(gzip_content_md5);
+  HTTP__XTRA_HDR_INIT(bzip2_content_md5);
+  HTTP__XTRA_HDR_INIT(cache_control);
+  HTTP__XTRA_HDR_INIT(expires);
+  HTTP__XTRA_HDR_INIT(link);
+  HTTP__XTRA_HDR_INIT(p3p);
+  HTTP__XTRA_HDR_INIT(ext_vary_a);
+  HTTP__XTRA_HDR_INIT(ext_vary_ac);
+  HTTP__XTRA_HDR_INIT(ext_vary_al);
 }
 
 Httpd_req_data *http_req_make(struct Con *con)
@@ -300,7 +301,7 @@ void http_req_exit(void)
 
 /* HTTP crack -- Implied linear whitespace between tokens, note that it
  * is *LWS == *([CRLF] 1*(SP | HT)) */
-static void http__skip_lws(Vstr_base *s1, size_t *pos, size_t *len)
+static void http__skip_lws(const Vstr_base *s1, size_t *pos, size_t *len)
 {
   size_t lws__len = 0;
   
@@ -355,7 +356,7 @@ static int http_app_vstr_escape(Vstr_base *base, size_t pos,
       
       if (0) {}
       else if (scan == '"')  vstr_add_cstr_buf(base, PCUR, "\\\"");
-      else if (scan == '\\') vstr_add_cstr_buf(base, PCUR, "\\");
+      else if (scan == '\\') vstr_add_cstr_buf(base, PCUR, "\\\\");
       else if (scan == '\t') vstr_add_cstr_buf(base, PCUR, "\\t");
       else if (scan == '\v') vstr_add_cstr_buf(base, PCUR, "\\v");
       else if (scan == '\r') vstr_add_cstr_buf(base, PCUR, "\\r");
@@ -426,6 +427,9 @@ static void http__app_hdr_eol(Vstr_base *out)
   vstr_add_cstr_buf(out, out->len, HTTP_EOL);
 }
 
+/* use single node */
+#define HTTP_APP_HDR_CONST_CSTR(o, h, c)                        \
+    vstr_add_cstr_ptr(out, (out)->len, h ": " c HTTP_EOL)
 static void http_app_hdr_cstr(Vstr_base *out, const char *hdr, const char *data)
 {
   http__app_hdr_hdr(out, hdr);
@@ -496,9 +500,11 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
                "HTTP/1.1", http_ret_code, http_ret_line);
   http_app_hdr_cstr(out, "Date", date_rfc1123(req->now));
   http_app_hdr_conf_vstr(out, "Server", req->policy->server_name);
-  
-  if (difftime(req->now, mtime) < 0) /* if mtime in future, chop it #14.29 */
-    mtime = req->now;
+
+  /* if mtime in future, chop it #14.29 
+   * for cache validation we don't send out last-modified == now either */
+  if (difftime(req->now, mtime) <= 0)
+    mtime = req->now - 1;
 
   if (mtime)
     http_app_hdr_cstr(out, "Last-Modified", date_rfc1123(mtime));
@@ -506,11 +512,11 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
   switch (con->keep_alive)
   {
     case HTTP_NON_KEEP_ALIVE:
-      http_app_hdr_cstr(out, "Connection", "close");
+      HTTP_APP_HDR_CONST_CSTR(out, "Connection", "close");
       break;
       
     case HTTP_1_0_KEEP_ALIVE:
-      http_app_hdr_cstr(out, "Connection", "Keep-Alive");
+      HTTP_APP_HDR_CONST_CSTR(out, "Connection", "Keep-Alive");
       /* FALLTHROUGH */
     case HTTP_1_1_KEEP_ALIVE: /* max=xxx ? */
       if (req->output_keep_alive_hdr)
@@ -533,11 +539,11 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     case 416: /* Bad range */
     case 417: /* Not accept - exceptation */
       if (use_range)
-        http_app_hdr_cstr(out, "Accept-Ranges", "bytes");
+        HTTP_APP_HDR_CONST_CSTR(out, "Accept-Ranges", "bytes");
   }
   
   if (req->vary_star)
-    http_app_hdr_cstr(out, "Vary", "*");
+    HTTP_APP_HDR_CONST_CSTR(out, "Vary", "*");
   else if (req->vary_a || req->vary_ac || req->vary_ae || req->vary_al ||
            req->vary_rf || req->vary_ua)
   {
@@ -568,22 +574,22 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     http_app_hdr_cstr(out, "Content-Type", custom_content_type);
   else if (req->content_type_vs1 && req->content_type_len)
     http_app_hdr_vstr_def(out, "Content-Type",
-                          HTTP__CONTENT_PARAMS(req, content_type));
+                          HTTP__XTRA_HDR_PARAMS(req, content_type));
   
   if (req->content_encoding_bzip2)
-      http_app_hdr_cstr(out, "Content-Encoding", "bzip2");
+      HTTP_APP_HDR_CONST_CSTR(out, "Content-Encoding", "bzip2");
   else if (req->content_encoding_gzip)
   {
     if (req->content_encoding_xgzip)
-      http_app_hdr_cstr(out, "Content-Encoding", "x-gzip");
+      HTTP_APP_HDR_CONST_CSTR(out, "Content-Encoding", "x-gzip");
     else
-      http_app_hdr_cstr(out, "Content-Encoding", "gzip");
+      HTTP_APP_HDR_CONST_CSTR(out, "Content-Encoding", "gzip");
   }
   
   http_app_hdr_uintmax(out, "Content-Length", content_length);
 }
 static void http_app_end_hdrs(Vstr_base *out)
-{
+{ /* apache contains a workaround for buggy Netscape 2.x, 3.x and 4.0beta */
   http__app_hdr_eol(out);
 }
 
@@ -698,7 +704,7 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
                        req->policy->auth_realm->len);
     
     if ((req->error_code == 405) || (req->error_code == 501))
-      http_app_hdr_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
+      HTTP_APP_HDR_CONST_CSTR(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
     if ((req->error_code == 301) || (req->error_code == 302) ||
         (req->error_code == 303) || (req->error_code == 307))
     { /* make sure we haven't screwed up and allowed response splitting */
@@ -713,13 +719,13 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
     {
       if (req->cache_control_vs1)
         http_app_hdr_vstr_def(out, "Cache-Control",
-                              HTTP__CONTENT_PARAMS(req, cache_control));
+                              HTTP__XTRA_HDR_PARAMS(req, cache_control));
       if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
         http_app_hdr_vstr_def(out, "Expires",
-                              HTTP__CONTENT_PARAMS(req, expires));
+                              HTTP__XTRA_HDR_PARAMS(req, expires));
       if (req->p3p_vs1)
         http_app_hdr_vstr_def(out, "P3P",
-                              HTTP__CONTENT_PARAMS(req, p3p));
+                              HTTP__XTRA_HDR_PARAMS(req, p3p));
     }
     http_app_end_hdrs(out);
   }
@@ -1119,6 +1125,138 @@ static time_t http_parse_date(Vstr_base *s1, size_t pos, size_t len, time_t now)
 }
 #endif
 
+/* return the length of a quoted string (must be >= 2), or 0 on syntax error */
+static size_t http__len_quoted_string(const Vstr_base *data,
+                                      size_t pos, size_t len)
+{
+  size_t orig_pos = pos;
+  
+  if (!VPREFIX(data, pos, len, "\""))
+    return (0);
+  
+  len -= 1; pos += 1;
+
+  while (TRUE)
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, "\"\\");
+    
+    len -= tmp; pos += tmp;
+    if (!len)
+      return (0);
+    
+    if (vstr_export_chr(data, pos) == '"')
+      return (vstr_sc_posdiff(orig_pos, pos));
+    
+    ASSERT(vstr_export_chr(data, pos) == '\\');
+    if (len < 3) /* must be at least <\X"> */
+      return (0);
+    len -= 2; pos += 2;
+  }
+
+  assert_ret(FALSE, 0);
+}
+
+/* skip a quoted string, or fail on syntax error */
+static int http__skip_quoted_string(const Vstr_base *data,
+                                    size_t *pos, size_t *len)
+{
+  size_t qlen = http__len_quoted_string(data, *pos, *len);
+
+  assert(VPREFIX(data, *pos, *len, "\""));
+  
+  if (!qlen)
+    return (FALSE);
+  
+  *len -= qlen; *pos += qlen;
+
+  HTTP_SKIP_LWS(data, *pos, *len);
+  return (TRUE);
+}
+
+/* match non-week entity tags in both strings, return true if any match
+ * only allow non-weak entity tags if allow_weak = FALSE */
+static int httpd_match_etags(const Vstr_base *hdr, size_t hpos, size_t hlen,
+                             const Vstr_base *vs1, size_t epos, size_t elen,
+                             int allow_weak)
+{
+  int need_comma = FALSE;
+  
+  while (hlen)
+  {
+    int weak = FALSE;
+    size_t htlen = 0;
+
+    if (vstr_export_chr(hdr, hpos) == ',')
+    {
+      hlen -= 1; hpos += 1;
+      HTTP_SKIP_LWS(hdr, hpos, hlen);
+      need_comma = FALSE;
+      continue;
+    }
+    else if (need_comma)
+      return (FALSE);
+    
+    if (VPREFIX(hdr, hpos, hlen, "W/"))
+    {
+      weak = TRUE;
+      hlen -= CLEN("W/"); hpos += CLEN("W/");
+    }
+    if (!(htlen = http__len_quoted_string(hdr, hpos, hlen)))
+      return (FALSE);
+
+    if (allow_weak || !weak)
+    {
+      size_t orig_epos = epos;
+      size_t orig_elen = elen;
+      
+      while (elen)
+      {
+        size_t etlen = 0;
+
+        if (vstr_export_chr(vs1, epos) == ',')
+        {
+          elen -= 1; epos += 1;
+          HTTP_SKIP_LWS(vs1, epos, elen);
+          need_comma = FALSE;
+          continue;
+        }
+        else if (need_comma)
+          return (FALSE);
+        
+        if (!VPREFIX(vs1, epos, elen, "W/"))
+          weak = FALSE;
+        else
+        {
+          weak = TRUE;
+          elen -= CLEN("W/"); epos += CLEN("W/");
+        }
+        if (!(etlen = http__len_quoted_string(vs1, epos, elen)))
+          return (FALSE);
+        
+        if ((allow_weak || !weak) &&
+            vstr_cmp_eq(hdr, hpos, htlen, vs1, epos, etlen))
+          return (TRUE);
+        
+        elen -= etlen; epos += etlen;
+        HTTP_SKIP_LWS(vs1, epos, elen);
+        need_comma = TRUE;
+      }
+
+      epos = orig_epos;
+      elen = orig_elen;
+    }
+
+    hlen -= htlen; hpos += htlen;
+    HTTP_SKIP_LWS(hdr, hpos, hlen);
+    need_comma = TRUE;
+  }
+
+  return (FALSE);
+}
+
+#define HTTPD__HD_EQ(x)                                 \
+    VEQ(hdrs, h_ ## x ->pos,  h_ ## x ->len,  date)
+
 /* gets here if the GET/HEAD response is ok, we test for caching etc. using the
  * if-* headers */
 /* FALSE = 412 Precondition Failed */
@@ -1126,23 +1264,21 @@ static int http_response_ok(struct Con *con, struct Httpd_req_data *req,
                             unsigned int *http_ret_code,
                             const char ** http_ret_line)
 {
-  Vstr_base *hdrs = con->evnt->io_r;
+  const Vstr_base *hdrs = con->evnt->io_r;
   time_t mtime = req->f_stat->st_mtime;
-  Vstr_sect_node *h_im   = req->http_hdrs->hdr_if_match;
   Vstr_sect_node *h_ims  = req->http_hdrs->hdr_if_modified_since;
-  Vstr_sect_node *h_inm  = req->http_hdrs->hdr_if_none_match;
   Vstr_sect_node *h_ir   = req->http_hdrs->hdr_if_range;
   Vstr_sect_node *h_iums = req->http_hdrs->hdr_if_unmodified_since;
   Vstr_sect_node *h_r    = req->http_hdrs->multi->hdr_range;
+  Vstr_base *comb = req->http_hdrs->multi->comb;
+  Vstr_sect_node *h_im   = req->http_hdrs->multi->hdr_if_match;
+  Vstr_sect_node *h_inm  = req->http_hdrs->multi->hdr_if_none_match;
   int h_ir_tst      = FALSE;
   int h_iums_tst    = FALSE;
   int req_if_range  = FALSE;
   int cached_output = FALSE;
   const char *date = NULL;
   
-  if (difftime(req->now, mtime) < 0) /* if mtime in future, chop it #14.29 */
-    mtime = req->now;
-
   if (req->ver_1_1 && h_iums->pos)
     h_iums_tst = TRUE;
 
@@ -1159,41 +1295,83 @@ static int http_response_ok(struct Con *con, struct Httpd_req_data *req,
    advised to use the exact date string received in a previous Last-
    Modified header field whenever possible.
   */
-  date = date_rfc1123(mtime);
-  if (h_ims->pos && VEQ(hdrs, h_ims->pos,  h_ims->len,  date))
-    cached_output = TRUE;
-  if (h_iums_tst && VEQ(hdrs, h_iums->pos, h_iums->len, date))
-    return (FALSE);
-  if (h_ir_tst   && VEQ(hdrs, h_ir->pos,   h_ir->len,   date))
-    req_if_range = TRUE;
+  if (difftime(req->now, mtime) > 0)
+  { /* if mtime in future, or now ... don't allow checking */
+    date = date_rfc1123(mtime);
+    if (h_ims->pos && !cached_output && HTTPD__HD_EQ(ims))
+      cached_output = TRUE;
+    if (h_iums_tst &&                   HTTPD__HD_EQ(iums))
+      return (FALSE);
+    if (h_ir_tst   && !req_if_range  && HTTPD__HD_EQ(ir))
+      req_if_range = TRUE;
   
-  date = date_rfc850(mtime);
-  if (h_ims->pos && VEQ(hdrs, h_ims->pos,  h_ims->len,  date))
-    cached_output = TRUE;
-  if (h_iums_tst && VEQ(hdrs, h_iums->pos, h_iums->len, date))
-    return (FALSE);
-  if (h_ir_tst   && VEQ(hdrs, h_ir->pos,   h_ir->len,   date))
-    req_if_range = TRUE;
+    date = date_rfc850(mtime);
+    if (h_ims->pos && !cached_output && HTTPD__HD_EQ(ims))
+      cached_output = TRUE;
+    if (h_iums_tst &&                   HTTPD__HD_EQ(iums))
+      return (FALSE);
+    if (h_ir_tst   && !req_if_range  && HTTPD__HD_EQ(ir))
+      req_if_range = TRUE;
   
-  date = date_asctime(mtime);
-  if (h_ims->pos && VEQ(hdrs, h_ims->pos,  h_ims->len,  date))
-    cached_output = TRUE;
-  if (h_iums_tst && VEQ(hdrs, h_iums->pos, h_iums->len, date))
-    return (FALSE);
-  if (h_ir_tst   && VEQ(hdrs, h_ir->pos,   h_ir->len,   date))
-    req_if_range = TRUE;
+    date = date_asctime(mtime);
+    if (h_ims->pos && !cached_output && HTTPD__HD_EQ(ims))
+      cached_output = TRUE;
+    if (h_iums_tst &&                   HTTPD__HD_EQ(iums))
+      return (FALSE);
+    if (h_ir_tst   && !req_if_range  && HTTPD__HD_EQ(ir))
+      req_if_range = TRUE;
+  }
 
-  if (h_ir_tst && !req_if_range)
-    h_r->pos = 0;
-  
   if (req->ver_1_1)
   {
-    if (h_inm->pos &&  VEQ(hdrs, h_inm->pos, h_inm->len, "*"))
-      cached_output = TRUE;
+    const Vstr_base *vs1 = NULL;
+    size_t pos = 0;
+    size_t len = 0;
 
-    if (h_im->pos  && !VEQ(hdrs, h_inm->pos, h_inm->len, "*"))
+    if (req->content_encoding_bzip2) /* point to any entity tags we have */
+    {
+      if (req->bzip2_etag_vs1 && (req->etag_time > mtime))
+      {
+        vs1 = req->bzip2_etag_vs1;
+        pos = req->bzip2_etag_pos;
+        len = req->bzip2_etag_len;
+      }
+    }
+    else if (req->content_encoding_gzip)
+    {
+      if (req->gzip_etag_vs1 && (req->etag_time > mtime))
+      {
+        vs1 = req->gzip_etag_vs1;
+        pos = req->gzip_etag_pos;
+        len = req->gzip_etag_len;
+      }
+    }
+    else if (req->etag_vs1 && (req->etag_time > mtime))
+    {
+      vs1 = req->etag_vs1;
+      pos = req->etag_pos;
+      len = req->etag_len;
+    }
+
+    if (h_ir_tst   && !req_if_range &&
+        httpd_match_etags(hdrs, h_ir->pos, h_ir->len, vs1, pos, len, FALSE))
+      req_if_range = TRUE;
+  
+    if (h_ir_tst && !req_if_range)
+      h_r->pos = 0;
+  
+    if (h_inm->pos && (VEQ(hdrs, h_inm->pos, h_inm->len, "*") ||
+                       httpd_match_etags(comb, h_inm->pos, h_inm->len,
+                                         vs1, pos, len, !h_r->pos)))
+      cached_output = TRUE;
+    
+    if (h_im->pos  && !(VEQ(hdrs, h_im->pos, h_im->len, "*") ||
+                        httpd_match_etags(comb, h_im->pos, h_im->len,
+                                          vs1, pos, len, !h_r->pos)))
       return (FALSE);
   }
+  else if (h_ir_tst && !req_if_range)
+    h_r->pos = 0;
   
   if (cached_output)
   {
@@ -1251,6 +1429,8 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
          (hdr == hdrs->multi->hdr_accept_encoding) ||
          (hdr == hdrs->multi->hdr_accept_language) ||
          (hdr == hdrs->multi->hdr_connection) ||
+         (hdr == hdrs->multi->hdr_if_match) ||
+         (hdr == hdrs->multi->hdr_if_none_match) ||
          (hdr == hdrs->multi->hdr_range));
 
   ASSERT((comb == data) || (comb == hdrs->multi->combiner_store));
@@ -1271,6 +1451,8 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
         !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_accept_encoding) ||
         !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_accept_language) ||
         !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_connection) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_if_match) ||
+        !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_if_none_match) ||
         !http__multi_hdr_cp(comb, data, hdrs->multi->hdr_range) ||
         FALSE)
       return (FALSE);
@@ -1299,6 +1481,8 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_encoding, pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_accept_language, pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_connection,      pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_if_match,        pos, len);
+  http__multi_hdr_fixup(hdr, hdrs->multi->hdr_if_none_match,   pos, len);
   http__multi_hdr_fixup(hdr, hdrs->multi->hdr_range,           pos, len);
     
   return (TRUE);
@@ -1377,9 +1561,7 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
 
     else if (HDR__EQ("Expect"))              HDR__SET(expect);
     else if (HDR__EQ("Host"))                HDR__SET(host);
-    else if (HDR__EQ("If-Match"))            HDR__SET(if_match);
     else if (HDR__EQ("If-Modified-Since"))   HDR__SET(if_modified_since);
-    else if (HDR__EQ("If-None-Match"))       HDR__SET(if_none_match);
     else if (HDR__EQ("If-Range"))            HDR__SET(if_range);
     else if (HDR__EQ("If-Unmodified-Since")) HDR__SET(if_unmodified_since);
     else if (HDR__EQ("Authorization"))       HDR__SET(authorization);
@@ -1390,6 +1572,8 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
     else if (HDR__EQ("Accept-Encoding"))     HDR__MULTI_SET(accept_encoding);
     else if (HDR__EQ("Accept-Language"))     HDR__MULTI_SET(accept_language);
     else if (HDR__EQ("Connection"))          HDR__MULTI_SET(connection);
+    else if (HDR__EQ("If-Match"))            HDR__MULTI_SET(if_match);
+    else if (HDR__EQ("If-None-Match"))       HDR__MULTI_SET(if_none_match);
     else if (HDR__EQ("Range"))               HDR__MULTI_SET(range);
 
     /* in theory 0 bytes is ok ... who cares */
@@ -1509,9 +1693,7 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
     HDR__CON_1_0_FIXUP("Referer",             referer);
     HDR__CON_1_0_FIXUP("Expect",              expect);
     HDR__CON_1_0_FIXUP("Host",                host);
-    HDR__CON_1_0_FIXUP("If-Match",            if_match);
     HDR__CON_1_0_FIXUP("If-Modified-Since",   if_modified_since);
-    HDR__CON_1_0_FIXUP("If-None-Match",       if_none_match);
     HDR__CON_1_0_FIXUP("If-Range",            if_range);
     HDR__CON_1_0_FIXUP("If-Unmodified-Since", if_unmodified_since);
     HDR__CON_1_0_FIXUP("Authorization",       authorization);
@@ -1520,6 +1702,8 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
     HDR__CON_1_0_MULTI_FIXUP("Accept-Charset",  accept_charset);
     HDR__CON_1_0_MULTI_FIXUP("Accept-Encoding", accept_encoding);
     HDR__CON_1_0_MULTI_FIXUP("Accept-Language", accept_language);
+    HDR__CON_1_0_MULTI_FIXUP("If-Match",        if_match);
+    HDR__CON_1_0_MULTI_FIXUP("If-None-Match",   if_none_match);
     HDR__CON_1_0_MULTI_FIXUP("Range",           range);
 
     /* skip to end, or after next ',' */
@@ -2121,6 +2305,7 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   VSTR_AUTOCONF_uintmax_t range_end = 0;
   VSTR_AUTOCONF_uintmax_t f_len     = 0;
   Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
+  time_t mtime = -1;
   
   if (req->ver_1_1 && req->http_hdrs->hdr_expect->len)
     /* I'm pretty sure we can ignore 100-continue, as no request will
@@ -2176,76 +2361,59 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   httpd_serv_call_file_init(con, req, range_beg, f_len,
                             http_ret_code, http_ret_line);
 
+  mtime = req->f_stat->st_mtime;
   http_app_def_hdrs(con, req, *http_ret_code, *http_ret_line,
-                    req->f_stat->st_mtime, NULL, req->policy->use_range,
-                    con->f->len);
+                    mtime, NULL, req->policy->use_range, con->f->len);
   if (h_r->pos)
     http_app_hdr_fmt(out, "Content-Range",
                         "%s %ju-%ju/%ju", "bytes", range_beg, range_end,
                         (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
   if (req->content_location_vs1)
     http_app_hdr_vstr_def(out, "Content-Location",
-                          HTTP__CONTENT_PARAMS(req, content_location));
+                          HTTP__XTRA_HDR_PARAMS(req, content_location));
   if (req->content_encoding_bzip2)
   {
-    if (req->bzip2_content_md5_vs1 &&
-        (req->bzip2_content_md5_time > req->f_stat->st_mtime))
+    if (req->bzip2_content_md5_vs1 && (req->content_md5_time > mtime))
       http_app_hdr_vstr_def(out, "Content-MD5",
-                            HTTP__CONTENT_PARAMS(req, bzip2_content_md5));
+                            HTTP__XTRA_HDR_PARAMS(req, bzip2_content_md5));
   }
   else if (req->content_encoding_gzip)
   {
-    if (req->gzip_content_md5_vs1 &&
-        (req->gzip_content_md5_time > req->f_stat->st_mtime))
+    if (req->gzip_content_md5_vs1 && (req->content_md5_time > mtime))
       http_app_hdr_vstr_def(out, "Content-MD5",
-                            HTTP__CONTENT_PARAMS(req, gzip_content_md5));
+                            HTTP__XTRA_HDR_PARAMS(req, gzip_content_md5));
   }
-  else if (req->content_md5_vs1 &&
-           (req->content_md5_time > req->f_stat->st_mtime))
+  else if (req->content_md5_vs1 && (req->content_md5_time > mtime))
     http_app_hdr_vstr_def(out, "Content-MD5",
-                          HTTP__CONTENT_PARAMS(req, content_md5));
+                          HTTP__XTRA_HDR_PARAMS(req, content_md5));
   
   if (req->cache_control_vs1)
     http_app_hdr_vstr_def(out, "Cache-Control",
-                          HTTP__CONTENT_PARAMS(req, cache_control));
-  if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
-    http_app_hdr_vstr_def(out, "Expires", HTTP__CONTENT_PARAMS(req, expires));
+                          HTTP__XTRA_HDR_PARAMS(req, cache_control));
+  if (req->content_encoding_bzip2)
+  {
+    if (req->bzip2_etag_vs1 && (req->etag_time > mtime))
+      http_app_hdr_vstr_def(out, "ETag",
+                            HTTP__XTRA_HDR_PARAMS(req, bzip2_etag));
+  }
+  else if (req->content_encoding_gzip)
+  {
+    if (req->gzip_etag_vs1 && (req->etag_time > mtime))
+      http_app_hdr_vstr_def(out, "ETag",
+                            HTTP__XTRA_HDR_PARAMS(req, gzip_etag));
+  }
+  else if (req->etag_vs1 && (req->etag_time > mtime))
+    http_app_hdr_vstr_def(out, "ETag", HTTP__XTRA_HDR_PARAMS(req, etag));
+  
+  if (req->expires_vs1 && (req->expires_time > mtime))
+    http_app_hdr_vstr_def(out, "Expires", HTTP__XTRA_HDR_PARAMS(req, expires));
+  if (req->link_vs1)
+    http_app_hdr_vstr_def(out, "Link", HTTP__XTRA_HDR_PARAMS(req, link));
   if (req->p3p_vs1)
-    http_app_hdr_vstr_def(out, "P3P",
-                          HTTP__CONTENT_PARAMS(req, p3p));
-  /* TODO: ETag */
+    http_app_hdr_vstr_def(out, "P3P",  HTTP__XTRA_HDR_PARAMS(req, p3p));
   
   http_app_end_hdrs(out);
   
-  return (TRUE);
-}
-
-/* skip a quoted string, or fail on syntax error */
-static int http__skip_quoted_string(Vstr_base *data, size_t *pos, size_t *len)
-{
-  size_t tmp = 0;
-
-  assert(VPREFIX(data, *pos, *len, "\""));
-  *len -= 1; *pos += 1;
-
-  while (TRUE)
-  {
-    tmp = vstr_cspn_cstr_chrs_fwd(data, *pos, *len, "\"\\");
-    *len -= tmp; *pos += tmp;
-    if (!*len)
-      return (FALSE);
-    
-    if (vstr_export_chr(data, *pos) == '"')
-      goto found;
-    assert(VPREFIX(data, *pos, *len, "\\"));
-    if (*len <= 2) /* must be at least <\X"> */
-      return (FALSE);
-    *len -= 2; *pos += 2;
-  }
-
- found:
-  *len -= 1; *pos += 1;
-  HTTP_SKIP_LWS(data, *pos, *len);
   return (TRUE);
 }
 
@@ -2550,7 +2718,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   {
     if (FALSE) /* does a 406 count, I don't think so ?? */
       vary_a = TRUE;
-    if (!http_parse_accept(req, HTTP__CONTENT_PARAMS(req, content_type)))
+    if (!http_parse_accept(req, HTTP__XTRA_HDR_PARAMS(req, content_type)))
       HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
   }
   
@@ -2664,7 +2832,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
   /* apache doesn't test for 404's here ... which seems weird */
   
   http_app_def_hdrs(con, req, 200, "OK", 0, NULL, req->policy->use_range, 0);
-  http_app_hdr_cstr(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
+  HTTP_APP_HDR_CONST_CSTR(out, "Allow", "GET, HEAD, OPTIONS, TRACE");
   http_app_end_hdrs(out);
   if (out->conf->malloc_bad)
     goto malloc_err;
@@ -3273,6 +3441,7 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
     Vstr_base *s1 = con->policy->policy_name;
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: HTTPD policy $<vstr:%p%zu%zu>\n",
              con->evnt->sa, s1, (size_t)1, s1->len);
+    goto con_fail;
   }
   
   return (TRUE);

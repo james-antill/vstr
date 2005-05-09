@@ -126,9 +126,10 @@ sub zip__file
 	  }
       }
 
-    ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
-
-    defined ($out) || die("Can't create tempfile: $!");
+    eval {
+      ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
+    };
+    return $st_name[7] if ($@);
     binmode $out;
 
     print STDOUT "Compress: $name\n" if ($verbose_compress > 0);

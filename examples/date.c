@@ -50,18 +50,18 @@
 
 const char *date_rfc1123(time_t val)
 {
-  SERV__STRFTIME(val, gmtime_r,    "%a, %d %b %Y %T GMT");
+  SERV__STRFTIME(val, gmtime_r,    "%a, %d %h %Y %T GMT");
 }
 const char *date_rfc850(time_t val)
 {
-  SERV__STRFTIME(val, gmtime_r,    "%A, %d-%b-%y %T GMT");
+  SERV__STRFTIME(val, gmtime_r,    "%A, %d-%h-%y %T GMT");
 }
 const char *date_asctime(time_t val)
 {
-  SERV__STRFTIME(val, gmtime_r,    "%a %b %e %T %Y");
+  SERV__STRFTIME(val, gmtime_r,    "%a %h %e %T %Y");
 }
 const char *date_syslog(time_t val)
 {
-  SERV__STRFTIME(val, localtime_r, "%b %e %T");
+  SERV__STRFTIME(val, localtime_r, "%h %e %T");
 }
 

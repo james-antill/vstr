@@ -19,7 +19,18 @@
 typedef struct Opt_serv_policy_opts
 {
  unsigned int idle_timeout;
+ unsigned int max_connections;
 } Opt_serv_policy_opts;
+/* **** POLICY **** */
+
+typedef struct Opt_serv_addr_opts
+{
+ unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (10th-22nd bitfields) */
+ Vstr_base *acpt_filter_file;
+ Vstr_base *ipv4_address;
+ short tcp_port;
+ unsigned int q_listen_len;
+} Opt_serv_addr_opts;
 
 typedef struct Opt_serv_opts
 {

@@ -22,7 +22,7 @@ my $help = 0;
 my $filter_def_args = "-A .. --deny-name-beg . -D index.html -D dir_list.css --acpt-name-end .tar.gz --deny-name-end .gz --acpt-name-end .tar.bz2 --deny-name-end .bz2 --deny-name-end .tmp --deny-name-end '~' --deny-name-end '#'";
 my $filter_args = $filter_def_args;
 
-my $sort_def_args = "--without-locale";
+my $sort_def_args = "--sort=version";
 my $sort_args = $sort_def_args;
 my $html_def_args = "--css-filename http://www.and.org/dir_list.css";
 my $html_args = $html_def_args;

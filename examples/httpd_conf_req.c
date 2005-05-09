@@ -67,9 +67,31 @@
 static void httpd__conf_req_reset_expires(struct Httpd_req_data *req,
                                           time_t now)
 {
-  if (vstr_sub_cstr_buf(req->xtra_content, req->expires_pos, req->expires_len,
-                        date_rfc1123(now)))
-    req->expires_len = vstr_sc_posdiff(req->expires_pos,req->xtra_content->len);
+  Vstr_base *s1 = req->xtra_content;
+  size_t pos = req->expires_pos;
+  size_t len = req->expires_len;
+  
+  ASSERT(vstr_sc_poslast(pos, len) == s1->len);
+  
+  if (vstr_sub_cstr_buf(s1, pos, len, date_rfc1123(now)))
+    req->expires_len = vstr_sc_posdiff(pos, s1->len);
+}
+
+static void httpd__conf_req_reset_cache_control(struct Httpd_req_data *req,
+                                                unsigned int val)
+{
+  Vstr_base *s1 = req->xtra_content;
+  size_t pos = req->cache_control_pos;
+  size_t len = req->cache_control_len;
+  
+  ASSERT(pos && len);
+  ASSERT(vstr_sc_poslast(pos, len) == s1->len);
+  
+  if (vstr_add_fmt(s1, pos - 1, "max-age=%u", val))
+  {
+    vstr_sc_reduce(s1, 1, s1->len, len);
+    req->cache_control_len = vstr_sc_posdiff(pos, s1->len);
+  }
 }
 
 static int httpd__build_path(struct Con *con, Httpd_req_data *req,
@@ -293,7 +315,8 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
           return (FALSE);
         
         if (!httpd_policy_path_make(con, req, conf, token, type, ret_ref))
-          return (FALSE);
+           return (FALSE);
+        
         *lim = httpd_policy_path_req2lim(type);
       }
     }
@@ -380,14 +403,20 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, NULL, &lim, &ref))
+    {
+      vstr_ref_del(ref);
       return (FALSE);
+    }
     if (!req->direct_uri)
     {
       if (lim == HTTPD_POLICY_PATH_LIM_NONE)
         orig_len = req->fname->len; /* don't do more than we need */
       else if (!vstr_sub_vstr(req->fname, 1, req->fname->len,
                               con->evnt->io_r, req->path_pos, req->path_len, 0))
+      {
+        vstr_ref_del(ref);
         return (FALSE);
+      }
     }
     if (!httpd__build_path(con, req, conf, token,
                            req->fname, 1, req->fname->len,
@@ -407,6 +436,24 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   else if (OPT_SERV_SYM_EQ("Cache-Control:"))
   { 
     HTTPD_CONF_REQ__X_CONTENT_VSTR(cache_control);
+    if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                         "<expires-now>"))
+      httpd__conf_req_reset_cache_control(req, 0);
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                              "<expire-minute>"))
+      httpd__conf_req_reset_cache_control(req, (60 *  1));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                              "<expire-hour>"))
+      httpd__conf_req_reset_cache_control(req, (60 * 60));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                              "<expire-day>"))
+      httpd__conf_req_reset_cache_control(req, (60 * 60 * 24));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                              "<expire-week>"))
+      httpd__conf_req_reset_cache_control(req, (60 * 60 * 24 * 7));
+    else if (vstr_cmp_cstr_eq(HTTP__CONTENT_PARAMS(req, cache_control),
+                              "<expires-never>"))
+      httpd__conf_req_reset_cache_control(req, (60 * 60 * 24 * 365));
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(cache_control);
   }
   else if (OPT_SERV_SYM_EQ("Content-Location:"))
@@ -439,7 +486,10 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, NULL, &lim, &ref))
+    {
+      vstr_ref_del(ref);
       return (FALSE);
+    }
     if (!httpd__build_path(con, req, conf, token, req->xtra_content, pos, len,
                            lim, FALSE, ref, TRUE, NULL))
       return (FALSE);
@@ -460,20 +510,39 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   }
   else if (OPT_SERV_SYM_EQ("gzip/Content-MD5:"))
   { 
-    req->gzip_content_md5_time = file_timestamp;
+    req->content_md5_time = file_timestamp;
     HTTPD_CONF_REQ__X_CONTENT_VSTR(gzip_content_md5);
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(gzip_content_md5);
   }
   else if (OPT_SERV_SYM_EQ("bzip2/Content-MD5:"))
   { 
-    req->bzip2_content_md5_time = file_timestamp;
+    req->content_md5_time = file_timestamp;
     HTTPD_CONF_REQ__X_CONTENT_VSTR(bzip2_content_md5);
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(bzip2_content_md5);
   }
   else if (OPT_SERV_SYM_EQ("Content-Type:"))
-  {  /* FIXME: needs to work with Accept: */
+  {
     HTTPD_CONF_REQ__X_CONTENT_VSTR(content_type);
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_type);
+  }
+  else if (OPT_SERV_SYM_EQ("ETag:") ||
+           OPT_SERV_SYM_EQ("identity/ETag:"))
+  {
+    req->etag_time = file_timestamp;
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(etag);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(etag);
+  }
+  else if (OPT_SERV_SYM_EQ("gzip/ETag:"))
+  {
+    req->etag_time = file_timestamp;
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(gzip_etag);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(gzip_etag);
+  }
+  else if (OPT_SERV_SYM_EQ("bzip2/ETag:"))
+  {
+    req->etag_time = file_timestamp;
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(bzip2_etag);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(bzip2_etag);
   }
   else if (OPT_SERV_SYM_EQ("Expires:"))
   {
@@ -497,6 +566,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     else
       req->expires_time = file_timestamp;
   }
+  else if (OPT_SERV_SYM_EQ("Link:")) /* rfc2068 -- old, but still honored */
+  {
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(link);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(link);
+  }
   else if (OPT_SERV_SYM_EQ("P3P:")) /* http://www.w3.org/TR/P3P/ */
   {
     HTTPD_CONF_REQ__X_CONTENT_VSTR(p3p);
@@ -514,7 +588,10 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       return (FALSE);
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!httpd__meta_build_path(con, req, conf, token, &full, &lim, &ref))
+    {
+      vstr_ref_del(ref);
       return (FALSE);
+    }
     if (!httpd__build_path(con, req, conf, token,
                            req->fname, 1, req->fname->len,
                            lim, full, ref, FALSE, NULL))
