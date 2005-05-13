@@ -299,6 +299,12 @@ static void serv_init(void)
                        "<http-esc.vstr", "p%zu%zu", ">") ||
       !VSTR_SC_FMT_ADD(vlg->out_vstr->conf, http_fmt_add_vstr_add_sect_vstr,
                        "<http-esc.vstr.sect", "p%p%u", ">"))
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
+  if (!VSTR_SC_FMT_ADD(vlg->sig_out_vstr->conf, http_fmt_add_vstr_add_vstr,
+                       "<http-esc.vstr", "p%zu%zu", ">") ||
+      !VSTR_SC_FMT_ADD(vlg->sig_out_vstr->conf, http_fmt_add_vstr_add_sect_vstr,
+                       "<http-esc.vstr.sect", "p%p%u", ">"))
+    errno = ENOMEM, err(EXIT_FAILURE, "init");
 
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
@@ -544,13 +550,13 @@ static void serv_canon_policies(void)
 
     s1 = scan->document_root;
     if (!httpd_canon_dir_path(s1))
-      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr:%p%zu%zu>): %m\n",
-                    s1, (size_t)1, s1->len));
+      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
+                    s1));
   
     s1 = scan->req_conf_dir;
     if (!httpd_canon_dir_path(s1))
-      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr:%p%zu%zu>): %m\n",
-                    s1, (size_t)1, s1->len));
+      VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
+                    s1));
 
     s1 = scan->default_hostname;
     if (!httpd_valid_url_filename(s1, 1, s1->len))
@@ -624,6 +630,9 @@ static void serv_cmd_line(int argc, char *argv[])
   
   program_name = opt_program_name(argv[0], "jhttpd");
 
+  if (geteuid()) /* If not root, 80 won't work */
+    httpd_opts->s->tcp_port = 8008;
+    
   if (!opt_serv_conf_init(httpd_opts->s) ||
       !httpd_conf_main_init(httpd_opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");

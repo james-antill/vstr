@@ -60,15 +60,19 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	conf
+         POLICY for daemon options
+         limit location/content-location somehow ?
+         limit number of etags in conf/headers
+         knowledgable UA IE parsing?
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
 	  Support per file.
 	 Support accept-language/accept-charset switch files [w3/chips]
          Random extra headers
-         Allow addition of ETag header
          Allow custom error-code pages, start with 404
          Allow req_conf to change to a defined set of policies
          Allow req_conf to have matches (maybe (match-allow [] ...) ?)
+          Match needed for different ETags for content neg.
          Allow policy limiting of what "commands" req_conf can do.
          conf file mmaps?
 	man page

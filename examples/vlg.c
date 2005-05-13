@@ -284,6 +284,36 @@ static int vlg__fmt_add_vstr_add_vstr(Vstr_conf *conf, const char *name)
                        VSTR_TYPE_FMT_END));
 }
 
+/* because you have to do (size_t)1 for varargs it's annoying when you want
+   the entire Vstr ... helper */
+static int vlg__fmt__add_vstr_add_all_vstr(Vstr_base *base, size_t pos,
+                                           Vstr_fmt_spec *spec)
+{
+  Vstr_base *sf          = VSTR_FMT_CB_ARG_PTR(spec, 0);
+  size_t sf_pos          = 1;
+  size_t sf_len          = sf->len;
+  unsigned int sf_flags  = VSTR_TYPE_ADD_BUF_PTR;
+  
+  if (!vstr_sc_fmt_cb_beg(base, &pos, spec, &sf_len,
+                          VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR))
+    return (FALSE);
+  
+  if (!vstr_add_vstr(base, pos, sf, sf_pos, sf_len, sf_flags))
+    return (FALSE);
+  
+  if (!vstr_sc_fmt_cb_end(base, pos, spec, sf_len))
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+static int vlg__fmt_add_vstr_add_all_vstr(Vstr_conf *conf, const char *name)
+{
+  return (vstr_fmt_add(conf, name, vlg__fmt__add_vstr_add_all_vstr,
+                       VSTR_TYPE_FMT_PTR_VOID,
+                       VSTR_TYPE_FMT_END));
+}
+
 /* also a helper for printing sects --
  * should probably have some in Vstr itself */
 static int vlg__fmt__add_vstr_add_sect_vstr(Vstr_base *base, size_t pos,
@@ -439,6 +469,8 @@ int vlg_sc_fmt_add_all(Vstr_conf *conf)
 {
   return (VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_vstr,
                           "<vstr", "p%zu%zu", ">") &&
+          VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_all_vstr,
+                          "<vstr.all", "p", ">") &&
           VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_hexdump_vstr,
                           "<vstr.hexdump", "p%zu%zu", ">") &&
           VSTR_SC_FMT_ADD(conf, vlg__fmt_add_vstr_add_sect_vstr,

@@ -106,6 +106,8 @@ typedef struct Httpd_req_data
  HTTPD__DECL_XTRA_HDR(ext_vary_ac);
  HTTPD__DECL_XTRA_HDR(ext_vary_al);
 
+ time_t encoded_mtime;
+ 
  time_t now;
 
  size_t vhost_prefix_len;
