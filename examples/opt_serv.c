@@ -245,21 +245,6 @@ int opt_serv_conf_parse_file(Vstr_base *out,
   return (FALSE);
 }
 
-int opt_serv_conf_init(struct Opt_serv_opts *opts)
-{
-  if (!(opts->pid_file         = vstr_make_base(NULL)) ||
-      !(opts->cntl_file        = vstr_make_base(NULL)) ||
-      !(opts->chroot_dir       = vstr_make_base(NULL)) ||
-      !(opts->acpt_filter_file = vstr_make_base(NULL)) ||
-      !(opts->vpriv_uid        = vstr_make_base(NULL)) ||
-      !(opts->vpriv_gid        = vstr_make_base(NULL)) ||
-      !(opts->ipv4_address     = vstr_make_base(NULL)) ||
-      FALSE)
-    return (FALSE);
-
-  return (TRUE);
-}
-
 void opt_serv_conf_free(struct Opt_serv_opts *opts)
 {
   if (!opts)
@@ -274,3 +259,30 @@ void opt_serv_conf_free(struct Opt_serv_opts *opts)
   vstr_free_base(opts->ipv4_address);     opts->ipv4_address     = NULL;
 }
 
+int opt_serv_conf_init(struct Opt_serv_opts *opts)
+{
+  ASSERT(opts);
+  
+  opts->pid_file         = vstr_make_base(NULL);
+  opts->cntl_file        = vstr_make_base(NULL);
+  opts->chroot_dir       = vstr_make_base(NULL);
+  opts->acpt_filter_file = vstr_make_base(NULL);
+  opts->vpriv_uid        = vstr_make_base(NULL);
+  opts->vpriv_gid        = vstr_make_base(NULL);
+  opts->ipv4_address     = vstr_make_base(NULL);
+    
+  if (!opts->pid_file         ||
+      !opts->cntl_file        ||
+      !opts->chroot_dir       ||
+      !opts->acpt_filter_file ||
+      !opts->vpriv_uid        ||
+      !opts->vpriv_gid        ||
+      !opts->ipv4_address     ||
+      FALSE)
+  {
+    opt_serv_conf_free(opts);
+    return (FALSE);
+  }
+  
+  return (TRUE);
+}

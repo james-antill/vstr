@@ -315,8 +315,15 @@ EOL
     munge_mtime($num, $fname);
   }
 
+my $big = "";
+
+# Needs to be big or the .bz2 file won't stay around due to the 95% rule
+$big .= ("\n" . ("x" x 10) . ("xy" x 10) . ("y" x 10)) x 500;
+$big .= "\n";
+
 make_html(1, "root",    "$root/index.html");
 make_html(2, "default", "$root/default/index.html");
+make_html(2, "def$big", "$root/default/index-big.html");
 make_html(3, "norm",    "$root/foo.example.com/index.html");
 make_html(4, "port",    "$root/foo.example.com:1234/index.html");
 make_html(5, "corner",  "$root/foo.example.com/corner/index.html/index.html");
@@ -331,11 +338,15 @@ make_html(0, "privs",   "$root/default/noallprivs.html");
 open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
 munge_mtime(44, "$root/foo.example.com/empty");
 
-system("$ENV{SRCDIR}/gzip-r.pl $root");
+system("$ENV{SRCDIR}/gzip-r.pl --type=all $root");
 munge_mtime(0, "$root/index.html.gz");
+munge_mtime(0, "$root/index.html.bz2");
 munge_mtime(0, "$root/default/index.html.gz");
+munge_mtime(0, "$root/default/index.html.bz2");
 munge_mtime(0, "$root/foo.example.com/index.html.gz");
+munge_mtime(0, "$root/foo.example.com/index.html.bz2");
 munge_mtime(0, "$root/foo.example.com:1234/index.html.gz");
+munge_mtime(0, "$root/foo.example.com:1234/index.html.bz2");
 
 chmod(0000, "$root/default/noprivs.html");
 chmod(0600, "$root/default/noallprivs.html");

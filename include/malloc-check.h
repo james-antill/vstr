@@ -251,8 +251,8 @@ static void *malloc_check_realloc(void *ptr, size_t sz,
       return (NULL);
 
     if (sz >= MALLOC_CHECK_STORE.mem_vals[scan].sz)
-      memcpy(ret, ptr, MALLOC_CHECK_STORE.mem_vals[scan].sz);
-    else if (sz)
+      sz = MALLOC_CHECK_STORE.mem_vals[scan].sz;
+    if (sz)
       memcpy(ret, ptr, sz);
     
     malloc_check_free(ptr);
@@ -266,13 +266,11 @@ static void *malloc_check_realloc(void *ptr, size_t sz,
   ret = realloc(ptr, sz);
   ASSERT_RET(ret, NULL);
 
-  if (ptr != ret) /* not ISO C compliant */
-  { /* note we can't scrub ... :( */
-    MALLOC_CHECK_STORE.mem_vals[scan].ptr  = ret;
-    MALLOC_CHECK_STORE.mem_vals[scan].sz   = sz;
-    MALLOC_CHECK_STORE.mem_vals[scan].file = file;
-    MALLOC_CHECK_STORE.mem_vals[scan].line = line;
-  }
+  /* note we can't scrub ... :( */
+  MALLOC_CHECK_STORE.mem_vals[scan].ptr  = ret;
+  MALLOC_CHECK_STORE.mem_vals[scan].sz   = sz;
+  MALLOC_CHECK_STORE.mem_vals[scan].file = file;
+  MALLOC_CHECK_STORE.mem_vals[scan].line = line;
 
   return (ret);
 }

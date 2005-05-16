@@ -56,6 +56,12 @@ function linkup()
 
   cd ..
   done
+
+  for dir in include; do
+  cd $dir
+  lndir ../$s/../$dir
+  cd ..
+  done
 }
 
 function cov()

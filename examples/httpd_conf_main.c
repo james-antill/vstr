@@ -662,7 +662,7 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
 
  conf_fail:
   vstr_del(conf->tmp, 1, conf->tmp->len);
-  if (!req->error_code)
+  if (!req->user_return_error_code)
   {
     conf_parse_backtrace(conf->tmp, "<policy-request>", conf, token);
     HTTPD_ERR(req, 500);
@@ -694,6 +694,9 @@ static void httpd_conf_main_policy_free(Httpd_policy_opts *opts)
 static int httpd_conf_main_policy_init(Httpd_opts *httpd_opts,
                                        Httpd_policy_opts *opts, Vstr_ref *ref)
 {
+  ASSERT(opts);
+  ASSERT(httpd_opts);
+  
   if (!ref)
     return (FALSE);
 

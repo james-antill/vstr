@@ -1762,8 +1762,8 @@ static int http__parse_1_x(struct Con *con, struct Httpd_req_data *req)
 }
 
 /* because we only parse for a combined CRLF, and some proxies/clients parse for
- * either ... make sure we don't have enbedded ones to remove possability
- * of request splitting */
+ * either ... make sure we don't have embedded singles which could cause
+ * response splitting */
 static int http__chk_single_crlf(Vstr_base *data, size_t pos, size_t len)
 {
   if (vstr_srch_chr_fwd(data, pos, len, '\r') ||
@@ -2160,9 +2160,19 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
   
   if ((identity_val > gzip_val) && (identity_val > bzip2_val))
     return (FALSE);
-  
-  req->content_encoding_gzip  = !!gzip_val;
-  req->content_encoding_bzip2 = !!bzip2_val;
+
+  if (gzip_val <= bzip2_val)
+  { /* currently bzip2 is "preferred" so this works well always */
+    req->content_encoding_gzip  = !!gzip_val;
+    req->content_encoding_bzip2 = !!bzip2_val;
+  }
+  else
+  { /* this doesn't "work well" if both are ok, and
+     * only a *.bz2 file on disk. Maybe carry the quality values? */
+    ASSERT(gzip_val);
+    req->content_encoding_gzip  = TRUE;
+    req->content_encoding_bzip2 = FALSE;
+  }
   
   return (req->content_encoding_gzip || req->content_encoding_bzip2);
 }
@@ -2623,9 +2633,9 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
                             httpd_opts->conf, httpd_opts->match_request))
   {
     Vstr_base *s1 = httpd_opts->conf->tmp;
-    if (s1->len)
-      vlg_info(vlg, "CONF-ERR from[$<sa:%p>]: backtrace: $<vstr.all:%p>\n",
-               con->evnt->sa, s1);
+    if (!req->user_return_error_code)
+      vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]:"
+               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1);
     return (TRUE);
   }
   
@@ -2638,6 +2648,14 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     return (FALSE);
   }
 
+  if (req->direct_uri)
+  {
+    Vstr_base *s1 = req->policy->policy_name;
+    vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+             " Has URI.\n", con->evnt->sa, s1);
+    HTTPD_ERR_RET(req, 500, TRUE);
+  }
+  
   if (req->policy->auth_token->len)
   { /* they need auth */
     Vstr_base *data = con->evnt->io_r;
@@ -2677,9 +2695,10 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
   {
     Vstr_base *s1 = req->policy->policy_name;
     Vstr_base *s2 = conf->tmp;
-    
-    vlg_info(vlg, "CONF-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-             " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
+
+    if (!req->user_return_error_code)
+      vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
     conf_parse_free(conf);
     return (TRUE);
   }
@@ -2688,8 +2707,8 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
   if (req->direct_uri)
   {
     Vstr_base *s1 = req->policy->policy_name;
-    vlg_info(vlg, "CONF-ERR from[$<sa:%p>]: policy $<vstr.all:%p> Has URI.\n",
-             con->evnt->sa, s1);
+    vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+             " Has URI.\n", con->evnt->sa, s1);
     HTTPD_ERR_RET(req, 500, TRUE);
   }
   
@@ -3457,8 +3476,8 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
   {
     Vstr_base *s1 = con->policy->policy_name;
     Vstr_base *s2 = httpd_opts->conf->tmp;
-    
-    vlg_info(vlg, "CONF-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+
+    vlg_info(vlg, "CONF-MAIN-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
              " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
     goto con_fail;
   }

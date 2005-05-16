@@ -369,13 +369,17 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
 
     if (conf_sc_token_parse_uint(conf, token, &code))
       return (FALSE);
+    
     req->user_return_error_code = TRUE;
+    ASSERT(!req->error_code);
+    req->error_code = 0;
     switch (code)
     {
       case 301: if (!req->error_code && req->direct_uri) HTTPD_ERR_301(req);
       case 302: if (!req->error_code && req->direct_uri) HTTPD_ERR_302(req);
       case 303: if (!req->error_code && req->direct_uri) HTTPD_ERR_303(req);
       case 307: if (!req->error_code && req->direct_uri) HTTPD_ERR_307(req);
+      default:
         if (req->error_code)
           httpd_req_absolute_uri(con, req, req->fname, 1, req->fname->len);
         else
@@ -387,7 +391,6 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       case 404: HTTPD_ERR_RET(req, 404, FALSE);
       case 410: HTTPD_ERR_RET(req, 410, FALSE);
       case 503: HTTPD_ERR_RET(req, 503, FALSE);
-      default:  req->user_return_error_code = FALSE;
       case 500: HTTPD_ERR_RET(req, 500, FALSE);
     }
   }
@@ -784,10 +787,10 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
   
  conf_fail:
   vstr_del(conf->tmp, 1, conf->tmp->len);
-  if (!req->error_code)
+  if (!req->user_return_error_code)
     conf_parse_backtrace(conf->tmp, "<conf-request>", conf, token);
  read_malloc_fail:
-  if (!req->error_code)
+  if (!req->user_return_error_code)
     HTTPD_ERR(req, 500);
   return (FALSE);
 }
