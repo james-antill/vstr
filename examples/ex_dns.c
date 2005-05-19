@@ -102,7 +102,7 @@ static void ui_out(Dns_base *d1, Vstr_base *pkt)
     return;
   
   dns_sc_ui_out(d1, pkt);
-  SOCKET_POLL_INDICATOR(io_ind_w)->events |=  POLLOUT;
+  /* SOCKET_POLL_INDICATOR(io_ind_w)->events |=  POLLOUT; */
 }
 
 static void cl_parse(struct con *con, size_t msg_len)
@@ -165,7 +165,6 @@ static void cl_app_recq1_pkt(struct con *con,
 {
   dns_app_recq_pkt(con->d1, 1, name, dns_class, dns_type);
   
-  SOCKET_POLL_INDICATOR(con->ev->ind)->events |= POLLIN;
   evnt_put_pkt(con->ev);
   
   if (!con->ev->flag_q_connect)
@@ -565,7 +564,7 @@ static void cl_beg(void)
     evnt_fd__set_nonblock(io_r_fd,  TRUE);
     if (!(io_ind_r = socket_poll_add(io_r_fd)))
       errno = ENOMEM, err(EXIT_FAILURE, __func__);
-    SOCKET_POLL_INDICATOR(io_ind_r)->events |= POLLIN;
+    SOCKET_POLL_INDICATOR(io_ind_r)->events |= POLLIN; /* FIXME: */
   }
   
   evnt_fd__set_nonblock(io_w_fd, TRUE);

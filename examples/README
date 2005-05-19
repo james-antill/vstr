@@ -29,6 +29,10 @@ happily work on win32 etc.
 	allow groups, make Evnt smaller (moveout cb's/conf to group data)
 
 
+  cntl
+	Remove race when multiple commands are done from multiple connections.
+
+
   ex_sock_filter
 
 	All asm calls should have names

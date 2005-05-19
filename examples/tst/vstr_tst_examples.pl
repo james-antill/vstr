@@ -7,6 +7,7 @@ use File::Compare;
 use POSIX;
 
 use IO::Socket;
+use IO::Handle;
 
 my $tst_DBG    = $ENV{VSTR_TST_DBG};
    $tst_DBG    = 0 if (!defined ($tst_DBG));
@@ -21,6 +22,9 @@ my $child_no_cleanup = 0;
 my $xit_success = 0;
 my $xit_failure = 1;
 my $xit_fail_ok = 77;
+
+STDOUT->autoflush(1);
+STDERR->autoflush(1);
 
 sub failure
   {
@@ -50,7 +54,7 @@ sub tst_fork()
     return $pid;
   }
 
-my $tst__proc_limit = 1_000_000;
+my $tst__proc_limit = 150;
 
 sub tst_proc_limit
   {
@@ -59,6 +63,8 @@ sub tst_proc_limit
 my @TST__PROCS = ();
 sub tst_proc_wait()
   {
+    print "DBG($$): BEG wait() = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
+
     my $pid = shift @TST__PROCS;
 
     if (waitpid($pid, 0) <= 0)
@@ -67,6 +73,7 @@ sub tst_proc_wait()
     # 13 seems to be some weird perl error code.
     if (($code != $xit_success) && ($code != 13))
       { failure("waitpid($pid) == $code"); }
+    print "DBG($$): END wait($pid) = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
   }
 
 sub tst_proc_fork()
@@ -76,12 +83,17 @@ sub tst_proc_fork()
 	tst_proc_wait();
       }
 
+    print "DBG($$): BEG fork() = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
     my $pid = tst_fork();
 
     if (!defined ($pid))
       { failure("fork: $!"); }
 
-    push @TST__PROCS, $pid;
+    if ($pid)
+      {
+	push @TST__PROCS, $pid;
+	print "DBG($$): END fork($pid) = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
+      }
     return $pid;
   }
 
@@ -97,7 +109,7 @@ sub sub_tst
 
     print "TST: ${prefix}\n";
 
-    print "DBG: files=@files\n" if ($tst_DBG);
+    print "DBG($$): files=@files\n" if ($tst_DBG);
     @files = undef;
 
     if (!$sz)
@@ -120,7 +132,7 @@ sub sub_tst
 	my $fsz = -s "$dir/${prefix}_out_$num";
 
 	unlink("${prefix}_tmp_${num}_$$");
-	print "DBG: $dir/${prefix}_tst_$num ${prefix}_tmp_${num}\n" if ($tst_DBG);
+	print "DBG($$): $dir/${prefix}_tst_$num ${prefix}_tmp_${num}\n" if ($tst_DBG);
 	$func->("$dir/${prefix}_tst_$num", "${prefix}_tmp_${num}_$$",
 		$xtra, $fsz);
 
@@ -196,7 +208,7 @@ sub run_simple_tst
   }
 
 {
-my $ldaemon_pid  = undef;
+my $ldaemon_pid = undef;
 my $daemon_pid  = undef;
 my $daemon_addr = undef;
 my $daemon_port = undef;
@@ -310,11 +322,10 @@ sub daemon_connect_tcp
 					 PeerPort => daemon_port(),
 					 Proto    => "tcp",
 					 Type     => SOCK_STREAM,
-					 Timeout  => 2) ||
+					 Timeout  => (2 * $tst_num_mp)) ||
 					   failure("connect: $!");
     nonblock($sock);
-#    setsockopt($sock, SOL_SOCKET, TCP_NODELAY, 1) ||
-#      failure("TCP_NODELAY: $!");
+    print "DBG($$): created sock " . $sock->fileno . "\n" if ($tst_DBG > 2);
     return $sock;
   }
 
@@ -344,12 +355,12 @@ sub daemon_put_io_w
 
 sub daemon_io
   {
-    my $sock = shift;
     my $data = shift;
     my $done_shutdown = shift;
     my $slow_write = shift;
     my $allow_write_truncate = shift;
     my $len = length($data);
+    my $sock = daemon_connect_tcp();
     my $off = 0;
     my $output = '';
 
@@ -411,6 +422,8 @@ sub daemon_io
 	$output .= $buff;
       }
 
+    $sock->close();
+
     return $output;
 }
 
@@ -423,11 +436,15 @@ sub daemon_exit
     unlink("${cmd}_cntl");
     $daemon_addr = undef;
     $daemon_port = undef;
-    if (waitpid($ldaemon_pid, 0) <= 0)
-      { warn "waitpid(ldaemon[$ldaemon_pid]): $!\n"; }
-    my $code = $?;
-    if ($code != $xit_success)
-      { warn "waitpid(ldaemon[$ldaemon_pid]) == $code\n"; }
+    if (defined ($ldaemon_pid))
+      {
+	if (waitpid($ldaemon_pid, 0) <= 0)
+	  { warn "waitpid(ldaemon[$ldaemon_pid]): $!\n"; }
+
+	my $code = $?;
+	if ($code != $xit_success)
+	  { warn "waitpid(ldaemon[$ldaemon_pid]) == $code\n"; }
+      }
   }
 sub daemon_cleanup
   {

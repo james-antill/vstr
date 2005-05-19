@@ -87,19 +87,19 @@
 
 
 #ifndef VSTR_AUTOCONF_NDEBUG
-# define assert(x) do { if (x) {} else errx(EXIT_FAILURE, "assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
-# define ASSERT(x) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
-# define assert_ret(x, y) do { if (x) {} else errx(EXIT_FAILURE, "assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
-# define ASSERT_RET(x, y) do { if (x) {} else errx(EXIT_FAILURE, "ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); } while (FALSE)
-# define ASSERT_NO_SWITCH_DEF() break
+# define assert(x) do { if (x) {} else { warnx("assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); abort(); } } while (FALSE)
+# define ASSERT(x) do { if (x) {} else { warnx("ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); abort(); } } while (FALSE)
+# define assert_ret(x, y) do { if (x) {} else { warnx("assert(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); abort(); } } while (FALSE)
+# define ASSERT_RET(x, y) do { if (x) {} else { warnx("ASSERT(%s), FAILED at %s:%u", #x , __FILE__, __LINE__); abort(); } } while (FALSE)
+# define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(!"default label")
 #else
 # define assert(x) do { } while (FALSE)
 # define ASSERT(x) do { } while (FALSE)
 # define assert_ret(x, y) do { if (x) {} else return y; } while (FALSE)
 # define ASSERT_RET(x, y) do { if (x) {} else return y; } while (FALSE)
-# define ASSERT_NO_SWITCH_DEF() break; default: ASSERT(!"default label")
+# define ASSERT_NO_SWITCH_DEF() break
 #endif
-#define ASSERT_NOT_REACHED() assert(FALSE)
+#define ASSERT_NOT_REACHED() ASSERT(!"not reached")
 
 
 /* ********************************* */

@@ -9,17 +9,25 @@
 #include "mime_types.h"
 
 /* **** defaults for runtime conf **** */
+#define HTTPD_CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
+#define HTTPD_CONF_MEM_PREALLOC_MAX (128 * 1024)
+
 #define HTTPD_CONF_VERSION "0.9.100"
 
 /* note that the strings are assigned in httpd_main_conf.c */
 
-#define HTTPD_CONF_DEF_SERVER_NAME "jhttpd/" HTTPD_CONF_VERSION " (Vstr)"
+#define HTTPD_CONF_PROG_NAME "jhttpd"
+#define HTTPD_CONF_SERVER_COMMENT "(Vstr)"
+#define HTTPD_CONF_DEF_SERVER_NAME \
+    HTTPD_CONF_PROG_NAME "/"       \
+    HTTPD_CONF_VERSION " " HTTPD_CONF_SERVER_COMMENT
 #define HTTPD_CONF_DEF_POLICY_NAME "<default>"
 #define HTTPD_CONF_USE_MMAP FALSE
 #define HTTPD_CONF_USE_SENDFILE TRUE
 #define HTTPD_CONF_USE_KEEPA TRUE
 #define HTTPD_CONF_USE_KEEPA_1_0 TRUE
-#define HTTPD_CONF_USE_VHOSTS FALSE
+#define HTTPD_CONF_USE_VHOSTS_NAME FALSE
+#define HTTPD_CONF_USE_VHOSTS_ADDR FALSE
 #define HTTPD_CONF_USE_RANGE TRUE
 #define HTTPD_CONF_USE_RANGE_1_0 TRUE
 #define HTTPD_CONF_USE_PUBLIC_ONLY FALSE
@@ -74,7 +82,8 @@ typedef struct Httpd_policy_opts
  unsigned int use_sendfile : 1;
  unsigned int use_keep_alive : 1;
  unsigned int use_keep_alive_1_0 : 1;
- unsigned int use_vhosts : 1;
+ unsigned int use_vhosts_name : 1;
+ unsigned int use_vhosts_addr : 1;
  unsigned int use_range : 1;
  unsigned int use_range_1_0 : 1;
  unsigned int use_public_only : 1; /* 8th bitfield */
@@ -107,13 +116,23 @@ typedef struct Httpd_policy_opts
 typedef struct Httpd_opts
 {
  Opt_serv_opts s[1];
+
  time_t beg_time;
+
+ unsigned int max_spare_bases;
+ 
+ unsigned int max_spare_buf_nodes;
+ unsigned int max_spare_ptr_nodes;
+ unsigned int max_spare_ref_nodes;
+ 
  Conf_parse *conf;
  unsigned int conf_num;
+
  Conf_token match_connection[1];
  Conf_token tmp_match_connection[1];
  Conf_token match_request[1];
  Conf_token tmp_match_request[1];
+
  Httpd_policy_opts def_policy[1];
 } Httpd_opts;
 #define HTTPD_CONF_MAIN_POLICY_INIT_OPTS {                       \
@@ -135,7 +154,8 @@ typedef struct Httpd_opts
     NULL,                                                        \
     HTTPD_CONF_USE_MMAP, HTTPD_CONF_USE_SENDFILE,                \
     HTTPD_CONF_USE_KEEPA, HTTPD_CONF_USE_KEEPA_1_0,              \
-    HTTPD_CONF_USE_VHOSTS,                                       \
+    HTTPD_CONF_USE_VHOSTS_NAME,                                  \
+    HTTPD_CONF_USE_VHOSTS_ADDR,                                  \
     HTTPD_CONF_USE_RANGE, HTTPD_CONF_USE_RANGE_1_0,              \
     HTTPD_CONF_USE_PUBLIC_ONLY,                                  \
     HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT,                     \
@@ -155,25 +175,32 @@ typedef struct Httpd_opts
     HTTPD_CONF_INPUT_MAXSZ,                                      \
     HTTPD_CONF_REQ_CONF_MAXSZ}
     
-#define HTTPD_CONF_MAIN_DECL_OPTS(N, x)         \
-    Httpd_opts N[1] = {                         \
-     {                                          \
-      {{OPT_SERV_CONF_INIT_OPTS(x)}},           \
-      (time_t)-1,                               \
-      NULL,                                     \
-      0,                                        \
-      {CONF_TOKEN_INIT},                        \
-      {CONF_TOKEN_INIT},                        \
-      {CONF_TOKEN_INIT},                        \
-      {CONF_TOKEN_INIT},                        \
-      {HTTPD_CONF_MAIN_POLICY_INIT_OPTS}        \
-     }                                          \
+#define HTTPD_CONF_MAIN_DECL_OPTS(N, x)                         \
+    Httpd_opts N[1] = {                                         \
+     {                                                          \
+      {{OPT_SERV_CONF_INIT_OPTS(x)}},                           \
+      (time_t)-1,                                               \
+      4,                                                        \
+      (HTTPD_CONF_MEM_PREALLOC_MAX / HTTPD_CONF_BUF_SZ),        \
+      (HTTPD_CONF_MEM_PREALLOC_MAX / HTTPD_CONF_BUF_SZ),        \
+      (HTTPD_CONF_MEM_PREALLOC_MAX / HTTPD_CONF_BUF_SZ),        \
+      NULL,                                                     \
+      0,                                                        \
+      {CONF_TOKEN_INIT},                                        \
+      {CONF_TOKEN_INIT},                                        \
+      {CONF_TOKEN_INIT},                                        \
+      {CONF_TOKEN_INIT},                                        \
+      {HTTPD_CONF_MAIN_POLICY_INIT_OPTS}                        \
+     }                                                          \
     }
 
 extern int  httpd_conf_main_init(Httpd_opts *);
 extern void httpd_conf_main_free(Httpd_opts *);
 
-extern Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *);
+extern Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *,
+                                                      const Conf_parse *,
+                                                      const Conf_token *,
+                                                      const Vstr_sect_node *);
 
 extern int httpd_policy_connection(struct Con *,
                                    Conf_parse *, const Conf_token *);

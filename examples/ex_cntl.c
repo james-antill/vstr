@@ -167,7 +167,6 @@ static int cl_recv(struct Evnt *evnt)
         evnt_close(con);                                                \
         return;                                                         \
       }                                                                 \
-      SOCKET_POLL_INDICATOR(con->ind)->events |= POLLIN;                \
       evnt_put_pkt(con);                                                \
     } while (FALSE)
 

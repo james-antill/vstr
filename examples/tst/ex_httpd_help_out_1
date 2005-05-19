@@ -28,7 +28,7 @@
     --keep-alive      - Toggle use of Keep-Alive handling (default: on).
     --keep-alive-1.0  - Toggle use of Keep-Alive handling for HTTP/1.0 (default: on).
     --virtual-hosts
-    --vhosts          - Toggle use of Host header (default: off).
+    --vhosts          - Toggle use of directory virtual hostnames (default: off).
     --range           - Toggle use of partial responces (default: on).
     --range-1.0       - Toggle use of partial responces for HTTP/1.0 (default: on).
     --public-only     - Toggle use of public only privilages (default: off).

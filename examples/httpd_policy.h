@@ -158,7 +158,8 @@ extern inline void httpd_policy_change_req(Httpd_req_data *req,
 {
   req->parse_accept          = policy->use_err_406;
   req->allow_accept_encoding = policy->use_gzip_content_replacement;
-  if (req->vhost_prefix_len && !policy->use_vhosts)
+  if (req->vhost_prefix_len &&
+      !(policy->use_vhosts_name || policy->use_vhosts_addr))
   { /* NOTE: doesn't do chk_host properly */
     vstr_del(req->fname, 1, req->vhost_prefix_len);
     req->vhost_prefix_len = 0;
@@ -175,16 +176,37 @@ extern inline Httpd_policy_opts *httpd_policy_find(Httpd_policy_opts *opts,
                                                    const Conf_parse *conf,
                                                    Conf_token *token)
 {
+  const Vstr_sect_node *val = conf_token_value(token);
+
+  if (!val)
+    return (NULL);
+  
   opts = opts->beg->def_policy;
 
-  while (opts)
+  if (vstr_cmp_cstr_eq(conf->data, val->pos, val->len, "<default>"))
+    return (opts);
+  
+  while ((opts = opts->next))
   {
     Vstr_base *tmp = opts->policy_name;
+    int cmp = 0;
     
-    if (conf_token_cmp_val_eq(conf, token, tmp, 1, tmp->len))
+    HTTPD_POLICY__ASSERT(!opts->next ||
+                         (tmp->len < opts->next->policy_name->len) ||
+                         ((tmp->len == opts->next->policy_name->len) &&
+                          vstr_cmp(tmp, 1, tmp->len,
+                                   opts->next->policy_name, 1,
+                                   opts->next->policy_name->len) < 0));
+    
+    if (val->len > tmp->len)
+      continue;
+    if (val->len < tmp->len)
+      break;
+    cmp = vstr_cmp(conf->data, val->pos, val->len, tmp, 1, tmp->len);
+    if (!cmp)
       return (opts);
-
-    opts = opts->next;
+    if (cmp < 0)
+      break;
   }
   
   return (NULL);

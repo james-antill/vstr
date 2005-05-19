@@ -68,10 +68,6 @@ MALLOC_CHECK_DECL();
 #include "httpd.h"
 #include "httpd_policy.h"
 
-#define CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
-#define CONF_MEM_PREALLOC_MIN (16  * 1024)
-#define CONF_MEM_PREALLOC_MAX (128 * 1024)
-
 #define CLEN VSTR__AT_COMPILE_STRLEN
 
 /* is the cstr a prefix of the vstr */
@@ -132,7 +128,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
     --keep-alive      - Toggle use of Keep-Alive handling%s.\n\
     --keep-alive-1.0  - Toggle use of Keep-Alive handling for HTTP/1.0%s.\n\
     --virtual-hosts\n\
-    --vhosts          - Toggle use of Host header%s.\n\
+    --vhosts          - Toggle use of directory virtual hostnames%s.\n\
     --range           - Toggle use of partial responces%s.\n\
     --range-1.0       - Toggle use of partial responces for HTTP/1.0%s.\n\
     --public-only     - Toggle use of public only privilages%s.\n\
@@ -158,7 +154,7 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(HTTPD_CONF_USE_SENDFILE),
                opt_def_toggle(HTTPD_CONF_USE_KEEPA),
                opt_def_toggle(HTTPD_CONF_USE_KEEPA_1_0),
-               opt_def_toggle(HTTPD_CONF_USE_VHOSTS),
+               opt_def_toggle(HTTPD_CONF_USE_VHOSTS_NAME),
                opt_def_toggle(HTTPD_CONF_USE_RANGE),
                opt_def_toggle(HTTPD_CONF_USE_RANGE_1_0),
                opt_def_toggle(HTTPD_CONF_USE_PUBLIC_ONLY),
@@ -279,7 +275,7 @@ static void serv_init(void)
                       VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, CONF_BUF_SZ))
+  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, HTTPD_CONF_BUF_SZ))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   /* no passing of conf to evnt */
@@ -321,14 +317,15 @@ static void serv_init(void)
 static void serv_cntl_resources(void)
 { /* cap the amount of "wasted" resources we're using */
   
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE, 0, 20);
+  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE,
+                 0, httpd_opts->max_spare_bases);
 
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                 0, (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
+                 0, httpd_opts->max_spare_buf_nodes);
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR,
-                 0, (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
+                 0, httpd_opts->max_spare_ptr_nodes);
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
-                 0, (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
+                 0, httpd_opts->max_spare_ref_nodes);
 }
 
 static int serv_cb_func_send(struct Evnt *evnt)
@@ -628,7 +625,7 @@ static void serv_cmd_line(int argc, char *argv[])
 
   evnt_opt_nagle = TRUE;
   
-  program_name = opt_program_name(argv[0], "jhttpd");
+  program_name = opt_program_name(argv[0], HTTPD_CONF_PROG_NAME);
 
   if (geteuid()) /* If not root, 80 won't work */
     httpd_opts->s->tcp_port = 8008;
@@ -676,7 +673,7 @@ static void serv_cmd_line(int argc, char *argv[])
         
       case 129: OPT_TOGGLE_ARG(popts->use_keep_alive);               break;
       case 130: OPT_TOGGLE_ARG(popts->use_keep_alive_1_0);           break;
-      case 131: OPT_TOGGLE_ARG(popts->use_vhosts);                   break;
+      case 131: OPT_TOGGLE_ARG(popts->use_vhosts_name);              break;
       case 132: OPT_TOGGLE_ARG(popts->use_range);                    break;
       case 133: OPT_TOGGLE_ARG(popts->use_range_1_0);                break;
       case 134: OPT_TOGGLE_ARG(popts->use_public_only);              break;
@@ -815,10 +812,6 @@ static void serv_cmd_line(int argc, char *argv[])
                       !!cntl_file, opts->use_pdeathsig);
   }
 
-  if (!vstr_make_spare_nodes(NULL, VSTR_TYPE_NODE_BUF,
-                             (CONF_MEM_PREALLOC_MIN / CONF_BUF_SZ)))
-    errno = ENOMEM, err(EXIT_FAILURE, "init");
-  
   httpd_opts->beg_time = time(NULL);
   
   vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", httpd_acpt_evnt->sa,

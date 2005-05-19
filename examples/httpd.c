@@ -772,7 +772,7 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
     }
   }
   
-  vlg_dbg2(vlg, "ERROR REPLY:\n$<vstr.all:%p>\n", out);
+  vlg_dbg3(vlg, "ERROR REPLY:\n$<vstr.all:%p>\n", out);
 
   if (out->conf->malloc_bad)
     return (http_con_cleanup(con, req));
@@ -2837,7 +2837,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   if (out->conf->malloc_bad)
     goto malloc_close_err;
   
-  vlg_dbg2(vlg, "REPLY:\n$<vstr.all:%p>\n", out);
+  vlg_dbg3(vlg, "REPLY:\n$<vstr.all:%p>\n", out);
   
   if (req->use_mmap && !vstr_mov(con->evnt->io_w, con->evnt->io_w->len,
                                  req->f_mmap, 1, req->f_mmap->len))
@@ -2872,7 +2872,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
     goto malloc_err;
   
   assert(VPREFIX(fname, 1, fname->len, "/") ||
-         !req->policy->use_vhosts ||
+         !(req->policy->use_vhosts_name || req->policy->use_vhosts_addr) ||
          !req->policy->use_chk_host_err ||
 	 !req->policy->use_host_err_400 ||
          VEQ(con->evnt->io_r, req->path_pos, req->path_len, "*"));
@@ -2955,8 +2955,8 @@ int httpd_init_default_hostname(Httpd_policy_opts *popts)
   return (!lfn->conf->malloc_bad);
 }
 
-static int serv_chk_vhost(Httpd_policy_opts *popts,
-			  Vstr_base *lfn, size_t pos, size_t len)
+static int httpd__chk_vhost(Httpd_policy_opts *popts,
+                            Vstr_base *lfn, size_t pos, size_t len)
 {
   const char *vhost = NULL;
   struct stat64 v_stat[1];
@@ -3001,41 +3001,54 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
   size_t h_h_len = h_h->len;
   size_t orig_len = 0;
   
-  if (h_h_len && req->policy->use_canonize_host)
-  {
-    size_t dots = 0;
-    
-    if (VIPREFIX(data, h_h_pos, h_h_len, "www."))
-    { h_h_len -= CLEN("www."); h_h_pos += CLEN("www."); }
-    
-    dots = vstr_spn_cstr_chrs_rev(data, h_h_pos, h_h_len, ".");
-    h_h_len -= dots;
-  }
+  if (!(req->policy->use_vhosts_name || req->policy->use_vhosts_addr))
+    return (TRUE);
 
-  orig_len = fname->len;
-  if (!h_h_len)
-    httpd_sc_add_default_hostname(req->policy, fname, 0);
-  else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
-                         h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
+  if (req->policy->use_vhosts_name)
   {
-    vstr_conv_lowercase(fname, 1, h_h_len);
-    
-    if (!serv_chk_vhost(req->policy, fname, 1, h_h_len))
+    if (h_h_len && req->policy->use_canonize_host)
     {
-      if (req->policy->use_host_err_400)
-        HTTPD_ERR_RET(req, 400, FALSE); /* rfc2616 5.2 */
-      else
-      { /* what everything else does ... *sigh* */
-        if (fname->conf->malloc_bad)
-          return (TRUE);
+      size_t dots = 0;
       
-        vstr_del(fname, 1, h_h_len);
-        httpd_sc_add_default_hostname(req->policy, fname, 0);
-      }  
+      if (VIPREFIX(data, h_h_pos, h_h_len, "www."))
+      { h_h_len -= CLEN("www."); h_h_pos += CLEN("www."); }
+      
+      dots = vstr_spn_cstr_chrs_rev(data, h_h_pos, h_h_len, ".");
+      h_h_len -= dots;
     }
+    
+    orig_len = fname->len;
+    if (!h_h_len)
+      httpd_sc_add_default_hostname(req->policy, fname, 0);
+    else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
+                           h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
+    {
+      vstr_conv_lowercase(fname, 1, h_h_len);
+      
+      if (!httpd__chk_vhost(req->policy, fname, 1, h_h_len))
+      {
+        if (req->policy->use_host_err_400)
+          HTTPD_ERR_RET(req, 400, FALSE); /* rfc2616 5.2 */
+        else
+        { /* what everything else does ... *sigh* */
+          if (fname->conf->malloc_bad)
+            return (TRUE);
+          
+          vstr_del(fname, 1, h_h_len);
+          httpd_sc_add_default_hostname(req->policy, fname, 0);
+        }  
+      }
+    }
+    vstr_add_cstr_ptr(fname, 0, "/");
   }
 
-  vstr_add_cstr_ptr(fname, 0, "/");
+  if (req->policy->use_vhosts_addr)
+  {
+    struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
+    
+    vstr_add_fmt(fname, 0, "/$<sa:%p>", (struct sockaddr *)acpt_data->sa);
+  }
+
   req->vhost_prefix_len = (fname->len - orig_len);
 
   return (TRUE);
@@ -3072,9 +3085,8 @@ static int http_req_make_path(struct Con *con, Httpd_req_data *req)
 
   /* NOTE: need to split function here so we can more efficently alter the
    * path. */
-  if (req->policy->use_vhosts)
-    if (!httpd_serv_add_vhost(con, req))
-      return (FALSE);
+  if (!httpd_serv_add_vhost(con, req))
+    return (FALSE);
   
   /* check posix path ... including hostname, for NIL and path escapes */
   if (vstr_srch_chr_fwd(fname, 1, fname->len, 0))
@@ -3109,7 +3121,7 @@ static int http_parse_wait_io_r(struct Con *con)
   return (TRUE);
 }
 
-static int serv__http_parse_no_req(struct Con *con, struct Httpd_req_data *req)
+static int httpd_serv__parse_no_req(struct Con *con, struct Httpd_req_data *req)
 {
   if (req->policy->max_header_sz &&
       (con->evnt->io_r->len > req->policy->max_header_sz))
@@ -3149,7 +3161,7 @@ static int http__parse_req_all(struct Con *con, struct Httpd_req_data *req,
   return (TRUE);
 
  no_req:
-  *ern = serv__http_parse_no_req(con, req);
+  *ern = httpd_serv__parse_no_req(con, req);
   return (FALSE);
 }
 
@@ -3264,7 +3276,7 @@ static int http_parse_req(struct Con *con)
 
       /* Speed hack: Don't even call make_path if it's "OPTIONS * ..."
        * and we don't need to check the Host header */
-      if (req->policy->use_vhosts &&
+      if ((req->policy->use_vhosts_name || req->policy->use_vhosts_addr) &&
           req->policy->use_chk_host_err && req->policy->use_host_err_400 &&
           !VEQ(data, req->path_pos, req->path_len, "*") &&
           !http_req_make_path(con, req))
@@ -3290,7 +3302,7 @@ static int http_parse_req(struct Con *con)
 
 static int httpd_serv_q_send(struct Con *con)
 {
-  vlg_dbg3(vlg, "Q $<sa:%p>\n", con->evnt->sa);
+  vlg_dbg2(vlg, "Q $<sa:%p>\n", con->evnt->sa);
   if (!evnt_send_add(con->evnt, TRUE, HTTPD_CONF_MAX_WAIT_SEND))
   {
     if (errno != EPIPE)
@@ -3316,7 +3328,7 @@ static int httpd_serv_fin_send(struct Con *con)
 
 /* try sending a bunch of times, bail out if we've done a few ... keep going
  * if we have too much data */
-#define SERV__SEND(x) do {                    \
+#define HTTPD_SERV__SEND(x) do {              \
     if (!--num)                               \
       return (httpd_serv_q_send(con));        \
                                               \
@@ -3343,12 +3355,12 @@ int httpd_serv_send(struct Con *con)
   ASSERT((con->f->fd == -1) == !con->f->len);
   
   if (out->len)
-    SERV__SEND("beg");
+    HTTPD_SERV__SEND("beg");
 
   if (!con->f->len)
   {
     while (out->len)
-      SERV__SEND("end");
+      HTTPD_SERV__SEND("end");
     return (httpd_serv_fin_send(con));
   }
 
@@ -3405,7 +3417,7 @@ int httpd_serv_send(struct Con *con)
       goto file_eof;
     }
 
-    SERV__SEND("io_get");
+    HTTPD_SERV__SEND("io_get");
 
     len = out->len;
   }
@@ -3433,7 +3445,7 @@ int httpd_serv_recv(struct Con *con)
   {
     if (ern != VSTR_TYPE_SC_READ_FD_ERR_EOF)
     {
-      vlg_dbg3(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->evnt->sa, ern);
+      vlg_dbg2(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->evnt->sa, ern);
       goto con_cleanup;
     }
     if (!evnt_shutdown_r(con->evnt, TRUE))

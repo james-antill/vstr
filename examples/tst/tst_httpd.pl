@@ -56,12 +56,11 @@ sub httpd_file_tst
     my $xtra = shift || {};
     my $sz   = shift;
 
-    my $sock = daemon_connect_tcp();
     my $data = daemon_get_io_r($io_r);
 
     $data =~ s/\n/\r\n/g;
 
-    my $output = daemon_io($sock, $data,
+    my $output = daemon_io($data,
 			   $xtra->{shutdown_w}, $xtra->{slow_write}, 1);
 
     $output = httpd__munge_ret($output);
@@ -75,7 +74,6 @@ sub httpd_gen_tst
     my $xtra = shift || {};
     my $sz   = shift;
 
-    my $sock = daemon_connect_tcp();
     my $data = daemon_get_io_r($io_r);
 
     if (length($data) != 0)
@@ -86,7 +84,7 @@ sub httpd_gen_tst
 
     $data = $xtra->{gen_input}->();
 
-    my $output = daemon_io($sock, $data,
+    my $output = daemon_io($data,
 			   $xtra->{shutdown_w}, $xtra->{slow_write}, 1);
 
     $output = $xtra->{gen_output}->($output);
@@ -257,17 +255,32 @@ sub all_none_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
+my $clean_on_exit = 1;
 if (@ARGV)
   {
+    $clean_on_exit = 0;
     daemon_status(shift);
-    if (@ARGV && (($ARGV[0] eq "virtual-hosts") || ($ARGV[0] eq "vhosts")))
-      { all_vhost_tsts(); }
-    elsif (@ARGV && ($ARGV[0] eq "public"))
-      { all_public_only_tsts(); }
-    elsif (@ARGV && ($ARGV[0] eq "none"))
-      { all_none_tsts(); }
-    else
-      {	all_nonvhost_tsts(); }
+
+    while (@ARGV)
+      {
+	my $arg = shift;
+
+	if ($arg eq "trunc")
+	  { $truncate_segv = !$truncate_segv; }
+	elsif ($arg eq "cleanup")
+	  { $clean_on_exit = !$clean_on_exit; }
+	elsif (($arg eq "virtual-hosts") || ($arg eq "vhosts"))
+	  { all_vhost_tsts(); }
+	elsif ($arg eq "public")
+	  { all_public_only_tsts(); }
+	elsif ($arg eq "none")
+	  { all_none_tsts(); }
+	elsif (($arg eq "non-virtual-hosts") || ($arg eq "non-vhosts"))
+	  { all_nonvhost_tsts(); }
+
+	print "-" x 78 . "\n";
+      }
+
     success();
   }
 
@@ -437,6 +450,7 @@ success();
 
 END {
   my $save_exit_code = $?;
-  daemon_cleanup("ex_httpd");
+  if ($clean_on_exit)
+    { daemon_cleanup("ex_httpd"); }
   $? = $save_exit_code;
 }

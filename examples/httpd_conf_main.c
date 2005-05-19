@@ -739,7 +739,8 @@ static int httpd_conf_main_policy_init(Httpd_opts *httpd_opts,
 }
 
 #define HTTPD_CONF_MAIN_POLICY_CP_VSTR(x)                               \
-    vstr_sub_vstr(dst-> x , 1, dst-> x ->len, src-> x , 1, src-> x ->len, 0)
+    vstr_sub_vstr(dst-> x , 1, dst-> x ->len, src-> x , 1, src-> x ->len, \
+                  VSTR_TYPE_SUB_BUF_REF)
 #define HTTPD_CONF_MAIN_POLICY_CP_VAL(x)        \
     dst-> x = src-> x
 
@@ -760,7 +761,8 @@ static int httpd_conf_main_policy_copy(Httpd_policy_opts *dst,
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_sendfile);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_keep_alive);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_keep_alive_1_0);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_vhosts);
+  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_vhosts_name);
+  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_vhosts_addr);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_range);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_range_1_0);
   HTTPD_CONF_MAIN_POLICY_CP_VAL(use_public_only);
@@ -837,8 +839,13 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   else if (OPT_SERV_SYM_EQ("keep-alive-1.0"))
     OPT_SERV_X_TOGGLE(opts->use_keep_alive_1_0);
   else if (OPT_SERV_SYM_EQ("virtual-hosts") ||
-           OPT_SERV_SYM_EQ("vhosts"))
-    OPT_SERV_X_TOGGLE(opts->use_vhosts);
+           OPT_SERV_SYM_EQ("vhosts") ||
+           OPT_SERV_SYM_EQ("virtual-hosts-name") ||
+           OPT_SERV_SYM_EQ("vhosts-name"))
+    OPT_SERV_X_TOGGLE(opts->use_vhosts_name);
+  else if (OPT_SERV_SYM_EQ("virtual-hosts-addr") ||
+           OPT_SERV_SYM_EQ("vhosts-addr"))
+    OPT_SERV_X_TOGGLE(opts->use_vhosts_addr);
   else if (OPT_SERV_SYM_EQ("range"))
     OPT_SERV_X_TOGGLE(opts->use_range);
   else if (OPT_SERV_SYM_EQ("range-1.0"))
@@ -905,20 +912,9 @@ static int httpd__conf_main_policy(Httpd_opts *httpd_opts,
   {
     Httpd_policy_opts *nxt_opts = NULL;
     
-    if (!(nxt_opts = httpd_policy_find(opts, conf, token)))
-    {
-      Vstr_base *s1 = NULL;
-      
-      if (!(nxt_opts = httpd_conf_main_policy_make(opts->beg)))
-        return (FALSE);
-
-      ASSERT(pv);
-      s1 = nxt_opts->policy_name;
-      if (!vstr_sub_vstr(s1, 1, s1->len, conf->data, pv->pos, pv->len,
-                         VSTR_TYPE_SUB_BUF_REF))
-        return (FALSE);
-      OPT_SERV_X__ESC_VSTR(s1, 1, pv->len);
-    }
+    if (!(nxt_opts = httpd_policy_find(opts, conf, token)) &&
+        !(nxt_opts = httpd_conf_main_policy_make(opts->beg, conf, token, pv)))
+      return (FALSE);
     
     opts = nxt_opts;
   }
@@ -1030,6 +1026,15 @@ static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
     
     conf_parse_end_token(conf, token, token->depth_num);
   }
+  
+  else if (OPT_SERV_SYM_EQ("max-spare-vstr-bases"))
+    OPT_SERV_X_UINT(httpd_opts->max_spare_bases);
+  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-buf"))
+    OPT_SERV_X_UINT(httpd_opts->max_spare_buf_nodes);
+  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-ptr"))
+    OPT_SERV_X_UINT(httpd_opts->max_spare_ptr_nodes);
+  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-ref"))
+    OPT_SERV_X_UINT(httpd_opts->max_spare_ref_nodes);
   
   else
     return (FALSE);
@@ -1199,12 +1204,19 @@ int httpd_conf_main_parse_file(Vstr_base *out,
   return (FALSE);
 }
 
-Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts)
+Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts,
+                                               const Conf_parse *conf,
+                                               const Conf_token *token,
+                                               const Vstr_sect_node *pv)
 {
   Vstr_ref *ref = vstr_ref_make_malloc(sizeof(Httpd_policy_opts));
   int ret = httpd_conf_main_policy_init(httpd_opts, ref->ptr, ref);
   Httpd_policy_opts *opts = NULL;
+  Httpd_policy_opts **ins = NULL;
+  Vstr_base *name = NULL;
 
+  ASSERT(conf && token && pv);
+  
   vstr_ref_del(ref);
 
   if (!ret)
@@ -1213,11 +1225,51 @@ Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts)
   opts = ref->ptr;
   if (!httpd_conf_main_policy_copy(opts, httpd_opts->def_policy))
     goto copy_failure;
+
+  ASSERT(pv);
+
+  name = opts->policy_name;
+  if (!vstr_sub_vstr(name, 1, name->len, conf->data, pv->pos, pv->len,
+                     VSTR_TYPE_SUB_BUF_REF))
+    goto name_failure;
+  if ((token->type == CONF_TOKEN_TYPE_QUOTE_ESC_D) ||
+      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_DDD) ||
+      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_S) ||
+      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_SSS) ||
+      FALSE)
+    if (!conf_sc_conv_unesc(name, 1, pv->len, NULL))
+      goto name_failure;
   
-  opts->next = httpd_opts->def_policy->next;
-  httpd_opts->def_policy->next = opts;
+  opts->next = httpd_opts->def_policy;
+  ins = &opts->next; /* hacky, fix when def_policy is a real pointer */
+  ASSERT(*ins);
+  
+  while ((ins = &(*ins)->next) && *ins)
+  {
+    Vstr_base *s1 = opts->policy_name;
+    Vstr_base *s2 = (*ins)->policy_name;
+
+    ASSERT(!(*ins)->next ||
+           ((*ins)->policy_name->len < (*ins)->next->policy_name->len) ||
+           (((*ins)->policy_name->len == (*ins)->next->policy_name->len) &&
+            vstr_cmp((*ins)->policy_name, 1, (*ins)->policy_name->len,
+                     (*ins)->next->policy_name, 1,
+                     (*ins)->next->policy_name->len) < 0));
+    
+    if (s1->len > s2->len)
+      continue;
+    if (s1->len < s2->len)
+      break;
+    if (vstr_cmp(s1, 1, s1->len, s2, 1, s2->len) <= 0)
+      break;
+  }
+  ASSERT(ins != &opts->next);
+  opts->next = *ins;
+  *ins = opts;
   
   return (opts);
+  
+ name_failure:
  copy_failure:
   httpd_conf_main_policy_free(opts);
  init_failure:

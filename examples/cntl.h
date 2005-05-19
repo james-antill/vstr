@@ -5,7 +5,6 @@
 
 extern void cntl_make_file(Vlg *, struct Evnt *, const char *);
 extern void cntl_free_acpt(struct Evnt *);
-extern void cntl_pipe_acpt_fds(Vlg *, struct Evnt *, int, int);
 
 extern void cntl_child_make(unsigned int);
 extern void cntl_child_free(void);
