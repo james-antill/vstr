@@ -360,10 +360,11 @@ ex_cntl_CFLAGS = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
-                    opt.c opt_serv.c vlg.c conf_inline.c
+                    opt.c opt_policy.c opt_serv.c vlg.c \
+                    conf_inline.c opt_policy_inline.c
 
 DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
-                    opt.h opt_serv.h vlg.h
+                    opt.h opt_policy.h opt_serv.h vlg.h
 
 
 ex_httpd_SOURCES = mime_types.c httpd_conf_main.c httpd_conf_req.c \
@@ -475,6 +476,7 @@ example_code_html = \
   html/bag.h.html \
   html/conf.c.html \
   html/conf.h.html \
+  html/conf_inline.c.html \
   html/cntl.c.html \
   html/cntl.h.html \
   html/date.c.html \
@@ -536,10 +538,16 @@ example_code_html = \
   html/httpd_conf_main.h.html \
   html/httpd_conf_req.c.html \
   html/httpd_conf_req.h.html \
+  html/httpd_policy.c.html \
+  html/httpd_policy.h.html \
+  html/httpd_policy_inline.c.html \
   html/mk.h.html \
   html/opt.h.html \
   html/opt_serv.c.html \
   html/opt_serv.h.html \
+  html/opt_policy.c.html \
+  html/opt_policy.h.html \
+  html/opt_policy_inline.c.html \
   html/vlg.c.html \
   html/vlg.h.html
 
@@ -9404,8 +9412,10 @@ ex_dns_LDFLAGS =
 am__objects_3 = ex_echod-bag.$(OBJEXT) ex_echod-conf.$(OBJEXT) \
 	ex_echod-cntl.$(OBJEXT) ex_echod-date.$(OBJEXT) \
 	ex_echod-evnt.$(OBJEXT) ex_echod-hexdump.$(OBJEXT) \
-	ex_echod-opt.$(OBJEXT) ex_echod-opt_serv.$(OBJEXT) \
-	ex_echod-vlg.$(OBJEXT) ex_echod-conf_inline.$(OBJEXT)
+	ex_echod-opt.$(OBJEXT) ex_echod-opt_policy.$(OBJEXT) \
+	ex_echod-opt_serv.$(OBJEXT) ex_echod-vlg.$(OBJEXT) \
+	ex_echod-conf_inline.$(OBJEXT) \
+	ex_echod-opt_policy_inline.$(OBJEXT)
 am_ex_echod_OBJECTS = $(am__objects_3) ex_echod-ex_echod.$(OBJEXT)
 ex_echod_OBJECTS = $(am_ex_echod_OBJECTS)
 ex_echod_LDFLAGS =
@@ -9444,8 +9454,10 @@ ex_highlight_LDFLAGS =
 am__objects_4 = ex_httpd-bag.$(OBJEXT) ex_httpd-conf.$(OBJEXT) \
 	ex_httpd-cntl.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
 	ex_httpd-evnt.$(OBJEXT) ex_httpd-hexdump.$(OBJEXT) \
-	ex_httpd-opt.$(OBJEXT) ex_httpd-opt_serv.$(OBJEXT) \
-	ex_httpd-vlg.$(OBJEXT) ex_httpd-conf_inline.$(OBJEXT)
+	ex_httpd-opt.$(OBJEXT) ex_httpd-opt_policy.$(OBJEXT) \
+	ex_httpd-opt_serv.$(OBJEXT) ex_httpd-vlg.$(OBJEXT) \
+	ex_httpd-conf_inline.$(OBJEXT) \
+	ex_httpd-opt_policy_inline.$(OBJEXT)
 am_ex_httpd_OBJECTS = ex_httpd-mime_types.$(OBJEXT) \
 	ex_httpd-httpd_conf_main.$(OBJEXT) \
 	ex_httpd-httpd_conf_req.$(OBJEXT) \
@@ -10041,6 +10053,15 @@ ex_echod-opt.obj: opt.c
 ex_echod-opt.lo: opt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
+ex_echod-opt_policy.o: opt_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy.o `test -f 'opt_policy.c' || echo '$(srcdir)/'`opt_policy.c
+
+ex_echod-opt_policy.obj: opt_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy.obj `if test -f 'opt_policy.c'; then $(CYGPATH_W) 'opt_policy.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy.c'; fi`
+
+ex_echod-opt_policy.lo: opt_policy.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy.lo `test -f 'opt_policy.c' || echo '$(srcdir)/'`opt_policy.c
+
 ex_echod-opt_serv.o: opt_serv.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_serv.o `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
 
@@ -10067,6 +10088,15 @@ ex_echod-conf_inline.obj: conf_inline.c
 
 ex_echod-conf_inline.lo: conf_inline.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-conf_inline.lo `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
+ex_echod-opt_policy_inline.o: opt_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy_inline.o `test -f 'opt_policy_inline.c' || echo '$(srcdir)/'`opt_policy_inline.c
+
+ex_echod-opt_policy_inline.obj: opt_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy_inline.obj `if test -f 'opt_policy_inline.c'; then $(CYGPATH_W) 'opt_policy_inline.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy_inline.c'; fi`
+
+ex_echod-opt_policy_inline.lo: opt_policy_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-opt_policy_inline.lo `test -f 'opt_policy_inline.c' || echo '$(srcdir)/'`opt_policy_inline.c
 
 ex_echod-ex_echod.o: ex_echod.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_echod_CFLAGS) $(CFLAGS) -c -o ex_echod-ex_echod.o `test -f 'ex_echod.c' || echo '$(srcdir)/'`ex_echod.c
@@ -10284,6 +10314,15 @@ ex_httpd-opt.obj: opt.c
 ex_httpd-opt.lo: opt.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.lo `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
 
+ex_httpd-opt_policy.o: opt_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy.o `test -f 'opt_policy.c' || echo '$(srcdir)/'`opt_policy.c
+
+ex_httpd-opt_policy.obj: opt_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy.obj `if test -f 'opt_policy.c'; then $(CYGPATH_W) 'opt_policy.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy.c'; fi`
+
+ex_httpd-opt_policy.lo: opt_policy.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy.lo `test -f 'opt_policy.c' || echo '$(srcdir)/'`opt_policy.c
+
 ex_httpd-opt_serv.o: opt_serv.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.o `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
 
@@ -10310,6 +10349,15 @@ ex_httpd-conf_inline.obj: conf_inline.c
 
 ex_httpd-conf_inline.lo: conf_inline.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.lo `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
+
+ex_httpd-opt_policy_inline.o: opt_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy_inline.o `test -f 'opt_policy_inline.c' || echo '$(srcdir)/'`opt_policy_inline.c
+
+ex_httpd-opt_policy_inline.obj: opt_policy_inline.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy_inline.obj `if test -f 'opt_policy_inline.c'; then $(CYGPATH_W) 'opt_policy_inline.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy_inline.c'; fi`
+
+ex_httpd-opt_policy_inline.lo: opt_policy_inline.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy_inline.lo `test -f 'opt_policy_inline.c' || echo '$(srcdir)/'`opt_policy_inline.c
 
 ex_httpd-httpd.o: httpd.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.o `test -f 'httpd.c' || echo '$(srcdir)/'`httpd.c

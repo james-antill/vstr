@@ -5,6 +5,8 @@
 #define EX_UTILS_NO_FUNCS 1
 #include "ex_utils.h"
 
+#include "mk.h"
+
 static void httpd__policy_path_ref_free(Vstr_ref *ref)
 {
   Httpd_policy_path *path = NULL;
@@ -228,7 +230,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
       if (h_h->len)
         HTTPD_APP_REF_VSTR(conf->tmp, http_data, h_h->pos, h_h->len);
       else
-        httpd_sc_add_default_hostname(req->policy, conf->tmp, conf->tmp->len);
+        httpd_sc_add_default_hostname(con, req, conf->tmp, conf->tmp->len);
     }
     else if (OPT_SERV_SYM_EQ("<request-configuration-directory>") ||
              OPT_SERV_SYM_EQ("<req-conf-dir>"))
@@ -279,7 +281,8 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     }
   }
 
-  if (!con->policy->beg->def_policy->next)
+  /* we "didn't use the policy" if we only have one policy */
+  if (!con->policy->s->beg->def_policy->next)
     *used_policy = FALSE;
   /* FIXME: if we are in here inside a group with a test for policy-eq
    * then we can act like we didn't use the policy.
@@ -334,89 +337,210 @@ int httpd_policy_path_make(struct Con *con, Httpd_req_data *req,
   return (ret);
 }
 
-int httpd_policy_ipv4_make(struct Con *con, Httpd_req_data *req,
-                           Conf_parse *conf, Conf_token *token,
-                           unsigned int type, struct sockaddr *sa, int *matches)
+void httpd_policy_exit(Httpd_policy_opts *opts)
 {
-  Conf_token save = *token;
+  ASSERT(opts);
+  
+  vstr_free_base(opts->document_root);     opts->document_root      = NULL;
+  vstr_free_base(opts->server_name);       opts->server_name        = NULL;
+  vstr_free_base(opts->dir_filename);      opts->dir_filename       = NULL;
+  vstr_free_base(opts->mime_types_def_ct); opts->mime_types_def_ct  = NULL;
+  vstr_free_base(opts->mime_types_main);   opts->mime_types_main    = NULL;
+  vstr_free_base(opts->mime_types_xtra);   opts->mime_types_xtra    = NULL;
+  vstr_free_base(opts->default_hostname);  opts->default_hostname   = NULL;
+  vstr_free_base(opts->req_conf_dir);      opts->req_conf_dir       = NULL;
+  vstr_free_base(opts->auth_realm);        opts->auth_realm         = NULL;
+  vstr_free_base(opts->auth_token);        opts->auth_token         = NULL;
+
+  opt_policy_exit(opts->s);
+}
+
+int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
+{ 
+  if (!opt_policy_init(beg->s, opts->s))
+    return (FALSE);
+  
+  /* do all, then check ... so we don't have to unwind */
+  opts->document_root     = vstr_make_base(NULL);
+  opts->server_name       = vstr_make_base(NULL);
+  opts->dir_filename      = vstr_make_base(NULL);
+  opts->mime_types_def_ct = vstr_make_base(NULL);
+  opts->mime_types_main   = vstr_make_base(NULL);
+  opts->mime_types_xtra   = vstr_make_base(NULL);
+  opts->default_hostname  = vstr_make_base(NULL);
+  opts->req_conf_dir      = vstr_make_base(NULL);
+  opts->auth_realm        = vstr_make_base(NULL);
+  opts->auth_token        = vstr_make_base(NULL);
+  
+  if (!opts->document_root     ||
+      !opts->server_name       ||
+      !opts->dir_filename      ||
+      !opts->mime_types_def_ct ||
+      !opts->mime_types_main   ||
+      !opts->mime_types_xtra   ||
+      !opts->default_hostname  ||
+      !opts->req_conf_dir      ||
+      !opts->auth_realm        ||
+      !opts->auth_token        ||
+      FALSE)
+  {
+    httpd_policy_exit(opts);
+    return (FALSE);
+  }
+
+  opts->mime_types->ref = NULL;
+  opts->mime_types->def_type_vs1 = NULL;
+  opts->mime_types->def_type_pos = 0;
+  opts->mime_types->def_type_len = 0;
+  
+  opts->use_mmap           = HTTPD_CONF_USE_MMAP;
+  opts->use_sendfile       = HTTPD_CONF_USE_SENDFILE;
+  opts->use_keep_alive     = HTTPD_CONF_USE_KEEPA;
+  opts->use_keep_alive_1_0 = HTTPD_CONF_USE_KEEPA_1_0;
+  opts->use_vhosts_name    = HTTPD_CONF_USE_VHOSTS_NAME;
+  opts->use_range          = HTTPD_CONF_USE_RANGE;
+  opts->use_range_1_0      = HTTPD_CONF_USE_RANGE_1_0;
+  opts->use_public_only    = HTTPD_CONF_USE_PUBLIC_ONLY; /* 8th bitfield */
+  opts->use_gzip_content_replacement = HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT;
+
+  opts->use_err_406        = HTTPD_CONF_USE_ERR_406;
+  opts->use_canonize_host  = HTTPD_CONF_USE_CANONIZE_HOST;
+  opts->use_host_err_400   = HTTPD_CONF_USE_HOST_ERR_400;
+  opts->use_chk_host_err   = HTTPD_CONF_USE_CHK_HOST_ERR;
+  opts->remove_url_frag    = HTTPD_CONF_USE_REMOVE_FRAG;
+  opts->remove_url_query   = HTTPD_CONF_USE_REMOVE_QUERY;
+  
+  opts->use_posix_fadvise  = HTTPD_CONF_USE_POSIX_FADVISE;
+  opts->use_tcp_cork       = HTTPD_CONF_USE_TCP_CORK;
+  
+  opts->use_req_conf       = HTTPD_CONF_USE_REQ_CONF;
+  opts->chk_hdr_split      = HTTPD_CONF_USE_CHK_HDR_SPLIT; /* 16th bitfield */
+  opts->chk_hdr_nil        = HTTPD_CONF_USE_CHK_HDR_NIL;
+  
+  opts->chk_dot_dir        = HTTPD_CONF_USE_CHK_DOT_DIR;
+  
+  opts->chk_encoded_slash  = HTTPD_CONF_USE_CHK_ENCODED_SLASH;
+  opts->chk_encoded_dot    = HTTPD_CONF_USE_CHK_ENCODED_DOT;
+  
+  opts->add_def_port       = HTTPD_CONF_ADD_DEF_PORT; /* 21st bitfield */
+  
+  opts->max_header_sz      = HTTPD_CONF_INPUT_MAXSZ;
+
+  opts->max_requests       = HTTPD_CONF_MAX_REQUESTS;
+
+  opts->max_A_nodes        = HTTPD_CONF_MAX_A_NODES;
+  opts->max_AC_nodes       = HTTPD_CONF_MAX_AC_NODES;
+  opts->max_AE_nodes       = HTTPD_CONF_MAX_AE_NODES;
+  opts->max_AL_nodes       = HTTPD_CONF_MAX_AL_NODES;
+
+  opts->max_connection_nodes = HTTPD_CONF_MAX_CONNECTION_NODES;
+  opts->max_etag_nodes     = HTTPD_CONF_MAX_ETAG_NODES;
+
+  opts->max_req_conf_sz    = HTTPD_CONF_REQ_CONF_MAXSZ;
+  
+  return (TRUE);
+}
+
+static void httpd_policy_free(Vstr_ref *ref)
+{
+  Httpd_policy_opts *opts = NULL;
+  
+  if (!ref)
+    return;
+
+  if ((opts = ref->ptr))
+    httpd_policy_exit(opts);
+  F(opts);
+  free(ref);
+}
+
+Opt_serv_policy_opts *httpd_policy_make(Opt_serv_opts *beg)
+{
+  Opt_serv_policy_opts *opts = MK(sizeof(Httpd_policy_opts));
   Vstr_ref *ref = NULL;
-  Httpd_policy_ipv4 *data = NULL;
-  int ret = FALSE;
   
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-  
-  if (!(ref = vstr_ref_make_malloc(sizeof(Httpd_policy_ipv4))))
-    return (FALSE);
-  data = ref->ptr;
-  
-  ret = vstr_parse_ipv4(conf->data, token->u.node->pos, token->u.node->len,
-                        data->ipv4, &data->cidr,
-                        VSTR_FLAG05(PARSE_IPV4, CIDR, CIDR_FULL,
-                                    NETMASK, NETMASK_FULL, ONLY), NULL, NULL);
+  if (!opts)
+    goto mk_opts_fail;
 
-  if (ret)
-  {
-    *matches = httpd_policy_ipv4_cidr_eq(con, req, data, sa);
-    
-    ret = conf_token_set_user_value(conf, &save, type, ref);
-  }
+  if (!(ref = vstr_ref_make_ptr(opts, httpd_policy_free)))
+    goto mk_ref_fail;
+  opts->ref = ref;
+
+  if (!httpd_policy_init((Httpd_opts *)beg, (Httpd_policy_opts *)opts))
+    goto policy_init_fail;
   
+  return (opts);
+
+ policy_init_fail:
+  ref->ptr = NULL;
   vstr_ref_del(ref);
-
-  if (!ret)
-    return (FALSE);
-  
-  return (TRUE);
+ mk_ref_fail:
+  F(opts);
+ mk_opts_fail:
+  return (NULL);
 }
 
-int httpd_policy_ipv4_cidr_eq(struct Con *con, Httpd_req_data *req,
-                              Httpd_policy_ipv4 *data, struct sockaddr *sa)
+#define HTTPD_POLICY_CP_VSTR(x)                               \
+    vstr_sub_vstr(dst-> x , 1, dst-> x ->len, src-> x , 1, src-> x ->len, \
+                  VSTR_TYPE_SUB_BUF_REF)
+#define HTTPD_POLICY_CP_VAL(x)        \
+    dst-> x = src-> x
+
+int httpd_policy_copy(Opt_serv_policy_opts *sdst,
+                      const Opt_serv_policy_opts *ssrc)
 {
-  struct sockaddr_in *sa_in = NULL;
-  uint32_t tst_addr_ipv4;
-  unsigned char tst_ipv4[4];
-  unsigned int scan = 0;
-  unsigned int cidr = data->cidr;
-  
-  ASSERT(cidr <= 32);
+  Httpd_policy_opts *dst = (Httpd_policy_opts *)sdst;
+  Httpd_policy_opts *src = (Httpd_policy_opts *)ssrc;
 
-  if (sa == EVNT_SA(con->evnt))
-  {
-    if (req)
-      req->vary_star = TRUE;
-    else
-      con->vary_star = TRUE;
-  }
-  
-  if (!sa || (sa->sa_family != AF_INET))
+  if (!opt_policy_copy(sdst, ssrc))
     return (FALSE);
-  sa_in = EVNT_SA_IN(con->evnt);
-    
-  tst_addr_ipv4 = ntohl(sa_in->sin_addr.s_addr);
-    
-  tst_ipv4[3] = (tst_addr_ipv4 >>  0) & 0xFF;
-  tst_ipv4[2] = (tst_addr_ipv4 >>  8) & 0xFF;
-  tst_ipv4[1] = (tst_addr_ipv4 >> 16) & 0xFF;
-  tst_ipv4[0] = (tst_addr_ipv4 >> 24) & 0xFF;
-
-  scan = 0;
-  while (cidr >= 8)
-  {
-    if (tst_ipv4[scan] != data->ipv4[scan])
-      return (FALSE);
-    
-    ++scan;
-    cidr -= 8;
-  }
-  ASSERT(!cidr || (scan < 4));
   
-  if (cidr)
-  {
-    cidr = (1 << cidr) - 1; /* x/7 == (1 << 7) - 1 == 0b0111_1111 */
-    if ((tst_ipv4[scan] & cidr) != (data->ipv4[scan] & cidr))
-      return (FALSE);
-  }
+  HTTPD_POLICY_CP_VSTR(document_root);
+  HTTPD_POLICY_CP_VSTR(server_name);
+  HTTPD_POLICY_CP_VSTR(dir_filename);
 
-  return (TRUE);
+  HTTPD_POLICY_CP_VSTR(mime_types_def_ct);
+  HTTPD_POLICY_CP_VSTR(mime_types_main);
+  HTTPD_POLICY_CP_VSTR(mime_types_xtra);
+  HTTPD_POLICY_CP_VSTR(default_hostname);
+  HTTPD_POLICY_CP_VSTR(req_conf_dir);
+
+  HTTPD_POLICY_CP_VAL(use_mmap);
+  HTTPD_POLICY_CP_VAL(use_sendfile);
+  HTTPD_POLICY_CP_VAL(use_keep_alive);
+  HTTPD_POLICY_CP_VAL(use_keep_alive_1_0);
+  HTTPD_POLICY_CP_VAL(use_vhosts_name);
+  HTTPD_POLICY_CP_VAL(use_range);
+  HTTPD_POLICY_CP_VAL(use_range_1_0);
+  HTTPD_POLICY_CP_VAL(use_public_only);
+  HTTPD_POLICY_CP_VAL(use_gzip_content_replacement);
+  HTTPD_POLICY_CP_VAL(use_err_406);
+  HTTPD_POLICY_CP_VAL(use_canonize_host);
+  HTTPD_POLICY_CP_VAL(use_host_err_400);
+  HTTPD_POLICY_CP_VAL(use_chk_host_err);
+  HTTPD_POLICY_CP_VAL(remove_url_frag);
+  HTTPD_POLICY_CP_VAL(remove_url_query);
+  HTTPD_POLICY_CP_VAL(use_posix_fadvise);
+  HTTPD_POLICY_CP_VAL(use_tcp_cork);
+  HTTPD_POLICY_CP_VAL(use_req_conf);
+  HTTPD_POLICY_CP_VAL(chk_hdr_split);
+  HTTPD_POLICY_CP_VAL(chk_hdr_nil);
+  HTTPD_POLICY_CP_VAL(chk_dot_dir);
+  HTTPD_POLICY_CP_VAL(chk_encoded_slash);
+  HTTPD_POLICY_CP_VAL(chk_encoded_dot);
+  HTTPD_POLICY_CP_VAL(add_def_port);
+  HTTPD_POLICY_CP_VAL(max_header_sz);
+  HTTPD_POLICY_CP_VAL(max_requests);
+
+  HTTPD_POLICY_CP_VAL(max_A_nodes);
+  HTTPD_POLICY_CP_VAL(max_AC_nodes);
+  HTTPD_POLICY_CP_VAL(max_AE_nodes);
+  HTTPD_POLICY_CP_VAL(max_AL_nodes);
+  
+  HTTPD_POLICY_CP_VAL(max_connection_nodes);
+  HTTPD_POLICY_CP_VAL(max_etag_nodes);
+
+  HTTPD_POLICY_CP_VAL(max_req_conf_sz);
+
+  return (!dst->document_root->conf->malloc_bad);
 }
-

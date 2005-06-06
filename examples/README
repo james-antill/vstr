@@ -33,6 +33,10 @@ happily work on win32 etc.
 	Remove race when multiple commands are done from multiple connections.
 
 
+  vlg
+	syslog restart ... tst.
+
+
   ex_sock_filter
 
 	All asm calls should have names
@@ -41,6 +45,7 @@ happily work on win32 etc.
   ex_dir_list_sort
 
 	Sort by verscmp
+
 
 
   ex_dir_list2html
@@ -52,9 +57,20 @@ happily work on win32 etc.
 	Keep netstr list for mime: application/dir-list ?
 
 
+  opt_serv
+
+	conf
+	 max timeout for keep-alive
+        limiting IO
+	  easyish to do per proc.
+	    not to easy to do multi proc. ... need to pass data/connections
+	    Already fucked with limit connections
+
   ex_httpd
 
 http://www.sans.org/top20/#u2
+
+	conf. timeout's for cntl connections
 
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
          C-z fg
@@ -64,7 +80,6 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	conf
-         POLICY for daemon options
          limit location/content-location somehow ?
          limit number of etags in conf/headers
          knowledgable UA IE parsing?
@@ -78,13 +93,7 @@ http://www.sans.org/top20/#u2
          Allow req_conf to have matches (maybe (match-allow [] ...) ?)
           Match needed for different ETags for content neg.
          Allow policy limiting of what "commands" req_conf can do.
-         conf file mmaps?
 	man page
-        limiting IO
-	  easyish to do globally, not possible other wise until conf. done
-	    not to easy to do multi proc. ... need to pass data/connections
-	max timeout for keep-alive
-	max requests for keep-alive?
 	jhttpd -> vstr-httpd?
         mmap cache?
 	ipv6

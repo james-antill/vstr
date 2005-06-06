@@ -60,8 +60,10 @@
                                                                 \
     } while (FALSE)
 #else
-# define EVNT__RESOLVE_NAME(evnt, x)                     \
-    EVNT_SA_IN(evnt)->sin_addr.s_addr = inet_addr(x)
+# define EVNT__RESOLVE_NAME(evnt, x) do {               \
+      if ((EVNT_SA_IN(evnt)->sin_addr.s_addr = inet_addr(x)) == -1)     \
+        EVNT_SA_IN(evnt)->sin_addr.s_addr = htonl(INADDR_ANY);          \
+    } while (FALSE)
 #endif
 
 #if !defined(SO_DETACH_FILTER) || !defined(SO_ATTACH_FILTER)
@@ -90,7 +92,13 @@ struct sock_fprog
 
 #include "vlg.h"
 
-#define EX_UTILS_NO_FUNCS  1
+#define EX_UTILS_NO_USE_INIT  1
+#define EX_UTILS_NO_USE_EXIT  1
+#define EX_UTILS_NO_USE_LIMIT 1
+#define EX_UTILS_NO_USE_BLOCK 1
+#define EX_UTILS_NO_USE_PUT   1
+#define EX_UTILS_NO_USE_OPEN  1
+#define EX_UTILS_NO_USE_IO_FD 1
 #include "ex_utils.h"
 
 #include "evnt.h"
@@ -364,11 +372,11 @@ int evnt_cb_func_connect(struct Evnt *EVNT__ATTR_UNUSED(evnt))
   return (TRUE);
 }
 
-struct Evnt *evnt_cb_func_accept(struct Evnt *EVNT__ATTR_UNUSED(evnt), int fd,
+struct Evnt *evnt_cb_func_accept(struct Evnt *EVNT__ATTR_UNUSED(evnt),
+                                 int EVNT__ATTR_UNUSED(fd),
                                  struct sockaddr *EVNT__ATTR_UNUSED(sa),
                                  socklen_t EVNT__ATTR_UNUSED(len))
 {
-  close(fd);
   return (NULL);
 }
 
@@ -411,7 +419,7 @@ void evnt_cb_func_F(struct Evnt *evnt)
 
 int evnt_cb_func_shutdown_r(struct Evnt *evnt)
 {
-  vlg_dbg2(vlg, "SHUTDOWN from[$<sa:%p>]\n", evnt->sa);
+  vlg_dbg2(vlg, "SHUTDOWN CB from[$<sa:%p>]\n", evnt->sa);
   
   if (!evnt_shutdown_r(evnt, FALSE))
     return (FALSE);
@@ -439,6 +447,8 @@ static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
   evnt->flag_io_cork     = FALSE;
 
   evnt->flag_io_filter   = FALSE;
+  
+  evnt->flag_fully_acpt  = FALSE;
   
   evnt->io_r_shutdown    = FALSE;
   evnt->io_w_shutdown    = FALSE;
@@ -501,6 +511,11 @@ static int evnt_init(struct Evnt *evnt, int fd, socklen_t sa_len)
 static void evnt__free1(struct Evnt *evnt)
 {
   evnt_send_del(evnt);
+
+  if (evnt->io_r && evnt->io_r->len)
+    vlg_dbg2(vlg, "evnt__free1(%p) io_r len = %zu\n", evnt, evnt->io_r->len);
+  if (evnt->io_w && evnt->io_w->len)
+    vlg_dbg2(vlg, "evnt__free1(%p) io_w len = %zu\n", evnt, evnt->io_w->len);
   
   vstr_free_base(evnt->io_w); evnt->io_w = NULL;
   vstr_free_base(evnt->io_r); evnt->io_r = NULL;
@@ -709,13 +724,13 @@ int evnt_make_bind_ipv4(struct Evnt *evnt,
     goto init_fail;
 
   EVNT_SA_IN(evnt)->sin_family = AF_INET;
-  if (acpt_addr && *acpt_addr)
+
+  EVNT_SA_IN(evnt)->sin_addr.s_addr = htonl(INADDR_ANY);
+  if (acpt_addr && *acpt_addr) /* silent error becomes <any> */
     EVNT__RESOLVE_NAME(evnt, acpt_addr);
-  else
-  {
-    EVNT_SA_IN(evnt)->sin_addr.s_addr = htonl(INADDR_ANY);
+  if (EVNT_SA_IN(evnt)->sin_addr.s_addr == htonl(INADDR_ANY))
     acpt_addr = "any";
-  }
+  
   EVNT_SA_IN(evnt)->sin_port = htons(server_port);
 
   if (!evnt_fd__set_reuse(fd, TRUE))
@@ -872,11 +887,14 @@ static int evnt__call_send(struct Evnt *evnt, unsigned int *ern)
 {
   size_t tmp = evnt->io_w->len;
   int fd = evnt_fd(evnt);
-  
+
   if (!vstr_sc_write_fd(evnt->io_w, 1, tmp, fd, ern) && (errno != EAGAIN))
     return (FALSE);
 
-  evnt->acct.bytes_w += (tmp - evnt->io_w->len);
+  tmp -= evnt->io_w->len;
+  vlg_dbg3(vlg, "write(%p) = %zu\n", evnt, tmp);
+  
+  evnt->acct.bytes_w += tmp;
   
   return (TRUE);
 }
@@ -919,7 +937,7 @@ int evnt_send_add(struct Evnt *evnt, int force_q, size_t max_sz)
 }
 
 /* if a connection is on the send now q, then remove them ... this is only
- * done when the client gets killed, so it doesn't matter it's slow */
+ * done when the client gets killed, so it doesn't matter if it's slow */
 void evnt_send_del(struct Evnt *evnt)
 {
   struct Evnt **scan = &q_send_now;
@@ -946,16 +964,13 @@ int evnt_shutdown_r(struct Evnt *evnt, int got_eof)
   
   evnt_wait_cntl_del(evnt, POLLIN);
   
-  if (!got_eof)
-  {
-    vlg_dbg2(vlg, "shutdown(SHUT_RD) from[$<sa:%p>]\n", evnt->sa);
+  vlg_dbg2(vlg, "shutdown(SHUT_RD, %d) from[$<sa:%p>]\n", got_eof, evnt->sa);
 
-    if (shutdown(evnt_fd(evnt), SHUT_RD) == -1)
-    {
-      if (errno != ENOTCONN)
-        vlg_warn(vlg, "shutdown(SHUT_RD): %m\n");
-      return (FALSE);
-    }
+  if (!got_eof && (shutdown(evnt_fd(evnt), SHUT_RD) == -1))
+  {
+    if (errno != ENOTCONN)
+      vlg_warn(vlg, "shutdown(SHUT_RD): %m\n");
+    return (FALSE);
   }
   
   evnt->io_r_shutdown = TRUE;
@@ -1005,7 +1020,7 @@ int evnt_shutdown_w(struct Evnt *evnt)
 
   vlg_dbg2(vlg, "shutdown(SHUT_WR) from[$<sa:%p>]\n", evnt->sa);
 
-  evnt_fd_set_cork(evnt, FALSE); /* eats data in 2.4.22-1.2199.4.legacy.npt */
+  /* evnt_fd_set_cork(evnt, FALSE); eats data in 2.4.22-1.2199.4.legacy.npt */
   
   if (evnt->io_r_shutdown || evnt->io_w_shutdown)
     return (FALSE);
@@ -1044,6 +1059,8 @@ int evnt_recv(struct Evnt *evnt, unsigned int *ern)
   
   vstr_sc_read_iov_fd(data, data->len, evnt_fd(evnt), num_min, num_max, ern);
   evnt->prev_bytes_r = (evnt->io_r->len - tmp);
+  
+  vlg_dbg3(vlg, "read(%p) = %ju\n", evnt, evnt->prev_bytes_r);
   evnt->acct.bytes_r += evnt->prev_bytes_r;
   
   switch (*ern)
@@ -1147,6 +1164,39 @@ int evnt_sendfile(struct Evnt *evnt, int ffd, VSTR_AUTOCONF_uintmax_t *f_off,
   return (TRUE);
 }
 
+int evnt_sc_read_send(struct Evnt *evnt, int fd, VSTR_AUTOCONF_uintmax_t *len)
+{
+  Vstr_base *out = evnt->io_w;
+  size_t orig_len = out->len;
+  size_t tmp = 0;
+  int ret = IO_OK;
+
+  ASSERT(len && *len);
+
+  if ((ret = io_get(out, fd)) == IO_FAIL)
+    return (EVNT_IO_READ_ERR);
+
+  if (ret == IO_EOF)
+    return (EVNT_IO_READ_EOF);
+    
+  tmp = out->len - orig_len;
+
+  if (tmp >= *len)
+  { /* we might not be transfering to EOF, so reduce if needed */
+    vstr_sc_reduce(out, 1, out->len, tmp - *len);
+    ASSERT((out->len - orig_len) == *len);
+    *len = 0;
+    return (EVNT_IO_READ_FIN);
+  }
+
+  *len -= tmp;
+  
+  if (!evnt_send(evnt))
+    return (EVNT_IO_SEND_ERR);
+  
+  return (EVNT_IO_OK);
+}
+
 static int evnt__get_timeout(void)
 {
   const struct timeval *tv = NULL;
@@ -1201,6 +1251,19 @@ static void evnt__close_now(struct Evnt *evnt)
   
   close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
   evnt_free(evnt);
+}
+
+/* if something goes wrong drop all accept'ing events */
+void evnt_acpt_close_all(void)
+{
+  struct Evnt *evnt = q_accept; /* struct Evnt *evnt = evnt_queue("accept"); */
+  
+  while (evnt)
+  {
+    evnt_close(evnt);
+
+    evnt = evnt->next;
+  }
 }
 
 void evnt_scan_fds(unsigned int ready, size_t max_sz)
@@ -1297,10 +1360,13 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       
       done = TRUE;
 
-      vlg_dbg2(vlg, "accept(%p)\n", scan);
-
       /* ignore all accept() errors -- bad_poll_flags fixes here */
-      while ((fd = accept(evnt_fd(scan), (struct sockaddr *) &sa, &len)) != -1)
+      /* FIXME: apache seems to assume certain errors are really bad and we
+       * should just kill the listen socket and wait to die. But for instance.
+       * we can't just kill the socket on EMFILE, as we might have hit our
+       * resource limit */
+      while ((SOCKET_POLL_INDICATOR(scan->ind)->revents & POLLIN) &&
+             (fd = accept(evnt_fd(scan), (struct sockaddr *) &sa, &len)) != -1)
       {
         if (!(tmp = scan->cbs->cb_func_accept(scan, fd,
                                               (struct sockaddr *) &sa, len)))
@@ -1309,7 +1375,11 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
           goto next_accept;
         }
       
-        ++ready; /* give a read event to this new event */
+        if (!tmp->flag_q_closed)
+        {
+          ++ready; /* give a read event to this new event */
+          tmp->flag_fully_acpt = TRUE;
+        }
         assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
         assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
         assert(tmp == q_recv);
@@ -1317,10 +1387,6 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
         if (++acpt_num >= evnt__accept_limit)
           break;
       }
-      /* FIXME: apache seems to assume certain errors are really bad and we
-       * should just kill the listen socket and wait to die. But for instance.
-       * we can't just kill the socket on EMFILE, as we might have hit our
-       * resource limit */
       
       goto next_accept;
     }
@@ -1425,7 +1491,7 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
     if (scan->flag_q_closed)
       goto next_none;
 
-    if (SOCKET_POLL_INDICATOR(scan->ind)->revents & (bad_poll_flags | POLLIN))
+    if (SOCKET_POLL_INDICATOR(scan->ind)->revents)
     { /* POLLIN == EOF ? */
       /* FIXME: failure cb */
       done = TRUE;
@@ -1454,27 +1520,27 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
 
 void evnt_scan_send_fds(void)
 {
-  struct Evnt *scan = q_send_now;
+  struct Evnt **scan = NULL;
 
   evnt_scan_q_close();
-  
-  while (scan)
+
+  scan = &q_send_now;
+  while (*scan)
   {
-    ASSERT(scan->flag_q_send_now);
-    scan->flag_q_send_now = FALSE;
-    scan = scan->s_next;
-  }
-  
-  scan = q_send_now;
-  q_send_now = NULL;
-  while (scan)
-  {
-    struct Evnt *scan_s_next = scan->s_next;
-    
-    if (!scan->cbs->cb_func_send(scan))
-      evnt__close_now(scan);
-      
-    scan = scan_s_next;
+    struct Evnt *tmp = *scan;
+
+    tmp->flag_q_send_now = FALSE;
+    *scan = tmp->s_next;
+    if (!tmp->cbs->cb_func_send(tmp))
+    {
+      evnt__close_now(tmp);
+      continue;
+    }
+    if (tmp == *scan) /* added back to q */
+    {
+      ASSERT(tmp->flag_q_send_now == TRUE);
+      scan = &tmp->s_next;
+    }
   }
 
   evnt_scan_q_close();
@@ -1872,6 +1938,65 @@ time_t evnt_sc_time(void)
   return (ret);
 }
 
+void evnt_sc_serv_cb_func_acpt_free(struct Evnt *evnt)
+{
+  struct Acpt_listener *acpt_listener = (struct Acpt_listener *)evnt;
+  struct Acpt_data *acpt_data = acpt_listener->ref->ptr;
+
+  evnt_vlg_stats_info(acpt_listener->evnt, "ACCEPT FREE");
+
+  acpt_data->evnt = NULL;
+
+  vstr_ref_del(acpt_listener->ref);
+  
+  F(acpt_listener);
+}
+
+struct Evnt *evnt_sc_serv_make_bind(const char *acpt_addr,
+                                    unsigned short acpt_port,
+                                    unsigned int q_listen_len,
+                                    unsigned int max_connections,
+                                    unsigned int defer_accept,
+                                    const char *acpt_filter_file)
+{
+  struct sockaddr_in *sinv4 = NULL;
+  struct Acpt_listener *acpt_listener = NULL;
+  struct Acpt_data *acpt_data = NULL;
+  Vstr_ref *ref = NULL;
+  
+  if (!(acpt_listener = MK(sizeof(struct Acpt_listener))))
+    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "make_bind(%s, %hu): %m\n",
+                  acpt_addr, acpt_port));
+  acpt_listener->max_connections = max_connections;
+
+  if (!(ref = vstr_ref_make_malloc(sizeof(struct Acpt_data))))
+    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "make_bind(%s, %hu): %m\n",
+                  acpt_addr, acpt_port));
+  acpt_listener->ref = ref;
+  
+  if (!evnt_make_bind_ipv4(acpt_listener->evnt, acpt_addr, acpt_port,
+                           q_listen_len))
+    vlg_err(vlg, 2, "%s: %m\n", __func__);
+  
+  sinv4 = EVNT_SA_IN(acpt_listener->evnt);
+  ASSERT(!acpt_port || (acpt_port == ntohs(sinv4->sin_port)));
+  
+  acpt_data = ref->ptr;
+  memcpy(acpt_data->sa, sinv4, sizeof(struct sockaddr_in));
+  acpt_data->evnt = acpt_listener->evnt;
+
+  if (defer_accept)
+    evnt_fd_set_defer_accept(acpt_listener->evnt, defer_accept);
+  
+  if (acpt_filter_file &&
+      !evnt_fd_set_filter(acpt_listener->evnt, acpt_filter_file))
+    vlg_err(vlg, 3, "set_filter(%s): %m\n", acpt_filter_file);
+
+  acpt_listener->evnt->cbs->cb_func_free = evnt_sc_serv_cb_func_acpt_free;
+  
+  return (acpt_listener->evnt);
+}
+
 void evnt_vlg_stats_info(struct Evnt *evnt, const char *prefix)
 {
   vlg_info(vlg, "%s from[$<sa:%p>] req_got[%'u:%u] req_put[%'u:%u]"
@@ -1957,8 +2082,6 @@ static int evnt__poll_accept(void)
   socklen_t len = sizeof(struct sockaddr_in);
   struct Evnt *tmp = NULL;
 
-  vlg_dbg2(vlg, "accept(%p)\n", scan);
-
   /* need to make sure we die if the parent does */
   evnt_fd__set_nonblock(evnt_fd(scan), FALSE);
   if (!evnt_child_block_beg())
@@ -1974,7 +2097,9 @@ static int evnt__poll_accept(void)
   if (!(tmp = scan->cbs->cb_func_accept(scan,
                                         fd, (struct sockaddr *) &sa, len)))
     goto cb_accept_fail;
-      
+
+  if (!tmp->flag_q_closed)
+    tmp->flag_fully_acpt = TRUE;
   assert(SOCKET_POLL_INDICATOR(tmp->ind)->events  == POLLIN);
   assert(SOCKET_POLL_INDICATOR(tmp->ind)->revents == POLLIN);
   assert(tmp == q_recv);

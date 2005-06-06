@@ -107,7 +107,7 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     }
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
-    return (httpd_policy_name_eq(conf, token, con->policy, matches));
+    return (opt_policy_name_eq(conf, token, con->policy->s, matches));
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
     return (httpd_policy_ipv4_make(con, NULL, conf, token,
                                    HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ,
@@ -163,20 +163,20 @@ static int httpd__policy_connection_d1(struct Con *con,
   
   else if (OPT_SERV_SYM_EQ("policy"))
   {
-    Httpd_policy_opts *policy = NULL;
+    Opt_serv_policy_opts *policy = NULL;
     Vstr_ref *ref = NULL;
     Conf_token save;
 
     save = *token;
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!(policy = httpd_policy_find(con->policy, conf, token)))
+    if (!(policy = opt_policy_find(con->policy->s->beg, conf, token)))
       return (FALSE);
 
     ref = policy->ref;
     if (!conf_token_set_user_value(conf, &save, HTTPD_POLICY_CON_POLICY, ref))
       return (FALSE);
     
-    httpd_policy_change_con(con, policy);
+    httpd_policy_change_con(con, (Httpd_policy_opts *)policy);
   }
   else if (OPT_SERV_SYM_EQ("Vary:_*"))
     OPT_SERV_X_TOGGLE(con->vary_star);
@@ -386,7 +386,7 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     }
   }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
-    return (httpd_policy_name_eq(conf, token, req->policy, matches));
+    return (opt_policy_name_eq(conf, token, req->policy->s, matches));
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
     return (httpd_policy_ipv4_make(con, req, conf, token,
                                    HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ,
@@ -571,25 +571,27 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
   
   else if (OPT_SERV_SYM_EQ("policy"))
   {
-    Httpd_policy_opts *policy = NULL;
+    const Opt_serv_policy_opts *policy = NULL;
     Vstr_ref *ref = NULL;
     Conf_token save;
 
     save = *token;
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!(policy = httpd_policy_find(req->policy, conf, token)))
+    if (!(policy = opt_policy_find(req->policy->s->beg, conf, token)))
       return (FALSE);
 
     ref = policy->ref;
     if (!conf_token_set_user_value(conf, &save, HTTPD_POLICY_REQ_POLICY, ref))
       return (FALSE);
     
-    httpd_policy_change_req(req, policy);
+    httpd_policy_change_req(req, (const Httpd_policy_opts *)policy);
   }
   else if (OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
+  {
+    Httpd_opts *opts = (Httpd_opts *)con->policy->s->beg;
     return (httpd_conf_req_d0(con, req, /* server beg time is "close engouh" */
-                              con->policy->beg->beg_time, conf, token));
-  
+                              opts->beg_time, conf, token));
+  }
   else
     return (FALSE);
   
@@ -670,120 +672,6 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
   return (FALSE);
 }
 
-/* NOTE: doesn't unlink */
-static void httpd_conf_main_policy_free(Httpd_policy_opts *opts)
-{
-  if (!opts)
-    return;
-
-  vstr_free_base(opts->policy_name);       opts->policy_name             = NULL;
-  vstr_free_base(opts->document_root);     opts->document_root           = NULL;
-  vstr_free_base(opts->server_name);       opts->server_name             = NULL;
-  vstr_free_base(opts->dir_filename);      opts->dir_filename            = NULL;
-  vstr_free_base(opts->mime_types_def_ct); opts->mime_types_def_ct       = NULL;
-  vstr_free_base(opts->mime_types_main);   opts->mime_types_main         = NULL;
-  vstr_free_base(opts->mime_types_xtra);   opts->mime_types_xtra         = NULL;
-  vstr_free_base(opts->default_hostname);  opts->default_hostname        = NULL;
-  vstr_free_base(opts->req_conf_dir);      opts->req_conf_dir            = NULL;
-  vstr_free_base(opts->auth_realm);        opts->auth_realm              = NULL;
-  vstr_free_base(opts->auth_token);        opts->auth_token              = NULL;
-
-  vstr_ref_del(opts->ref);
-}
-
-static int httpd_conf_main_policy_init(Httpd_opts *httpd_opts,
-                                       Httpd_policy_opts *opts, Vstr_ref *ref)
-{
-  ASSERT(opts);
-  ASSERT(httpd_opts);
-  
-  if (!ref)
-    return (FALSE);
-
-  opts->ref = NULL;
-  opts->beg = httpd_opts;
-
-  /* do all, then check ... so we don't have to unwind */
-  opts->policy_name       = vstr_make_base(NULL);
-  opts->document_root     = vstr_make_base(NULL);
-  opts->server_name       = vstr_make_base(NULL);
-  opts->dir_filename      = vstr_make_base(NULL);
-  opts->mime_types_def_ct = vstr_make_base(NULL);
-  opts->mime_types_main   = vstr_make_base(NULL);
-  opts->mime_types_xtra   = vstr_make_base(NULL);
-  opts->default_hostname  = vstr_make_base(NULL);
-  opts->req_conf_dir      = vstr_make_base(NULL);
-  opts->auth_realm        = vstr_make_base(NULL);
-  opts->auth_token        = vstr_make_base(NULL);
-  
-  if (!opts->policy_name       ||
-      !opts->document_root     ||
-      !opts->server_name       ||
-      !opts->dir_filename      ||
-      !opts->mime_types_def_ct ||
-      !opts->mime_types_main   ||
-      !opts->mime_types_xtra   ||
-      !opts->default_hostname  ||
-      !opts->req_conf_dir      ||
-      !opts->auth_realm        ||
-      !opts->auth_token        ||
-      FALSE)
-  {
-    httpd_conf_main_policy_free(opts);
-    return (FALSE);
-  }
-  
-  opts->ref = vstr_ref_add(ref);
-  
-  return (TRUE);
-}
-
-#define HTTPD_CONF_MAIN_POLICY_CP_VSTR(x)                               \
-    vstr_sub_vstr(dst-> x , 1, dst-> x ->len, src-> x , 1, src-> x ->len, \
-                  VSTR_TYPE_SUB_BUF_REF)
-#define HTTPD_CONF_MAIN_POLICY_CP_VAL(x)        \
-    dst-> x = src-> x
-
-static int httpd_conf_main_policy_copy(Httpd_policy_opts *dst,
-                                       Httpd_policy_opts *src)
-{
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(document_root);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(server_name);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(dir_filename);
-
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_def_ct);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_main);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(mime_types_xtra);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(default_hostname);
-  HTTPD_CONF_MAIN_POLICY_CP_VSTR(req_conf_dir);
-
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_mmap);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_sendfile);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_keep_alive);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_keep_alive_1_0);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_vhosts_name);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_vhosts_addr);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_range);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_range_1_0);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_public_only);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_gzip_content_replacement);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_err_406);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_canonize_host);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_host_err_400);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_chk_host_err);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(remove_url_frag);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(remove_url_query);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_posix_fadvise);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(use_req_conf);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_split);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_hdr_nil);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(chk_dot_dir);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(max_header_sz);
-  HTTPD_CONF_MAIN_POLICY_CP_VAL(max_req_conf_sz);
-
-  return (!dst->document_root->conf->malloc_bad);
-}
-
 static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
                                       const Conf_parse *conf, Conf_token *token)
 {
@@ -843,9 +731,6 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
            OPT_SERV_SYM_EQ("virtual-hosts-name") ||
            OPT_SERV_SYM_EQ("vhosts-name"))
     OPT_SERV_X_TOGGLE(opts->use_vhosts_name);
-  else if (OPT_SERV_SYM_EQ("virtual-hosts-addr") ||
-           OPT_SERV_SYM_EQ("vhosts-addr"))
-    OPT_SERV_X_TOGGLE(opts->use_vhosts_addr);
   else if (OPT_SERV_SYM_EQ("range"))
     OPT_SERV_X_TOGGLE(opts->use_range);
   else if (OPT_SERV_SYM_EQ("range-1.0"))
@@ -864,6 +749,8 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
     OPT_SERV_X_TOGGLE(opts->use_chk_host_err);
   else if (OPT_SERV_SYM_EQ("posix-fadvise"))
     OPT_SERV_X_TOGGLE(opts->use_posix_fadvise);
+  else if (OPT_SERV_SYM_EQ("tcp-cork"))
+    OPT_SERV_X_TOGGLE(opts->use_tcp_cork);
   else if (OPT_SERV_SYM_EQ("allow-request-configuration"))
     OPT_SERV_X_TOGGLE(opts->use_req_conf);
   else if (OPT_SERV_SYM_EQ("check-header-splitting"))
@@ -874,19 +761,56 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
            OPT_SERV_SYM_EQ("check-dot-dir") ||
            OPT_SERV_SYM_EQ("check-.-dir"))
     OPT_SERV_X_TOGGLE(opts->chk_dot_dir);
+  else if (OPT_SERV_SYM_EQ("check-encoded-slash") ||
+           OPT_SERV_SYM_EQ("check-encoded-/"))
+    OPT_SERV_X_TOGGLE(opts->chk_encoded_slash);
+  else if (OPT_SERV_SYM_EQ("check-encoded-dot") ||
+           OPT_SERV_SYM_EQ("check-encoded-."))
+    OPT_SERV_X_TOGGLE(opts->chk_encoded_dot);
+  else if (OPT_SERV_SYM_EQ("unspecified-hostname-append-port"))
+    OPT_SERV_X_TOGGLE(opts->add_def_port);
   else if (OPT_SERV_SYM_EQ("url-remove-fragment"))
     OPT_SERV_X_TOGGLE(opts->remove_url_frag);
   else if (OPT_SERV_SYM_EQ("url-remove-query"))
     OPT_SERV_X_TOGGLE(opts->remove_url_query);
 
-  else if (OPT_SERV_SYM_EQ("max-header-size") ||
-           OPT_SERV_SYM_EQ("max-header-sz"))
-    OPT_SERV_X_UINT(opts->max_header_sz);
-  else if (OPT_SERV_SYM_EQ("max-request-configuration-size") ||
-           OPT_SERV_SYM_EQ("max-request-configuration-sz") ||
-           OPT_SERV_SYM_EQ("max-req-conf-size") ||
-           OPT_SERV_SYM_EQ("max-req-conf-sz"))
-    OPT_SERV_X_UINT(opts->max_req_conf_sz);
+  else if (OPT_SERV_SYM_EQ("limit"))
+  {
+    CONF_SC_MAKE_CLIST_BEG(limit);
+    
+    else if (OPT_SERV_SYM_EQ("header-size") ||
+             OPT_SERV_SYM_EQ("header-sz"))
+      OPT_SERV_X_UINT(opts->max_header_sz);
+    else if (OPT_SERV_SYM_EQ("request-configuration-size") ||
+             OPT_SERV_SYM_EQ("request-configuration-sz") ||
+             OPT_SERV_SYM_EQ("req-conf-size") ||
+             OPT_SERV_SYM_EQ("req-conf-sz"))
+      OPT_SERV_X_UINT(opts->max_req_conf_sz);
+    else if (OPT_SERV_SYM_EQ("requests"))
+      OPT_SERV_X_UINT(opts->max_requests);
+    else if (OPT_SERV_SYM_EQ("nodes"))
+    {
+      CONF_SC_MAKE_CLIST_BEG(nodes);
+        
+      else if (OPT_SERV_SYM_EQ("Accept:"))
+        OPT_SERV_X_UINT(opts->max_A_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
+        OPT_SERV_X_UINT(opts->max_AC_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Encoding:"))
+        OPT_SERV_X_UINT(opts->max_AE_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Language:"))
+        OPT_SERV_X_UINT(opts->max_AL_nodes);
+      
+      else if (OPT_SERV_SYM_EQ("Connection:"))
+        OPT_SERV_X_UINT(opts->max_etag_nodes);
+      else if (OPT_SERV_SYM_EQ("ETag:"))
+        OPT_SERV_X_UINT(opts->max_etag_nodes);      
+      
+      CONF_SC_MAKE_CLIST_END();
+    }
+    
+    CONF_SC_MAKE_CLIST_END();
+  }
   
   else
     return (FALSE);
@@ -894,67 +818,24 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   return (TRUE);
 }
 
-static int httpd__conf_main_policy(Httpd_opts *httpd_opts,
+static int httpd__conf_main_policy(Httpd_opts *opts,
                                    const Conf_parse *conf, Conf_token *token)
 {
-  Httpd_policy_opts *opts = httpd_opts->def_policy;
-  unsigned int cur_depth = token->depth_num;
-  Conf_token save;
-  const Vstr_sect_node *pv = NULL;
+  Opt_serv_policy_opts *popts = NULL;
+  unsigned int cur_depth = opt_policy_sc_conf_parse(opts->s, conf, token,
+                                                    &popts);
 
-  /* name first */
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-  
-  if (!(pv = conf_token_value(token)))
+  if (!cur_depth)
     return (FALSE);
-      
-  if (!conf_token_cmp_val_cstr_eq(conf, token, HTTPD_CONF_DEF_POLICY_NAME))
-  {
-    Httpd_policy_opts *nxt_opts = NULL;
-    
-    if (!(nxt_opts = httpd_policy_find(opts, conf, token)) &&
-        !(nxt_opts = httpd_conf_main_policy_make(opts->beg, conf, token, pv)))
-      return (FALSE);
-    
-    opts = nxt_opts;
-  }
-
-  save = *token;
-  if (!conf_parse_token(conf, token) || (token->depth_num < cur_depth))
-    return (TRUE);
-  if (token->type != CONF_TOKEN_TYPE_SLIST)
-    *token = save; /* restore ... */
-  else
-  { /* allow set of attributes */
-    unsigned int depth = token->depth_num;
-
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("inherit"))
-      {
-        Httpd_policy_opts *frm_opts = NULL;
-        CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-        if (!(frm_opts = httpd_policy_find(opts, conf, token)))
-          return (FALSE);
-        if (!httpd_conf_main_policy_copy(opts, frm_opts))
-          return (FALSE);
-      }
-    
-      else
-        return (FALSE);
-    }
-  }
   
   while (conf_token_list_num(token, cur_depth))
   {
+    Httpd_policy_opts *hopts = (Httpd_policy_opts *)popts;
+    
     conf_parse_token(conf, token);
     if (conf_token_at_depth(token) != cur_depth)
       return (FALSE);
-    if (!httpd__conf_main_policy_d1(opts, conf, token))
+    if (!httpd__conf_main_policy_d1(hopts, conf, token))
       return (FALSE);
   }
   
@@ -1026,15 +907,6 @@ static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
     
     conf_parse_end_token(conf, token, token->depth_num);
   }
-  
-  else if (OPT_SERV_SYM_EQ("max-spare-vstr-bases"))
-    OPT_SERV_X_UINT(httpd_opts->max_spare_bases);
-  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-buf"))
-    OPT_SERV_X_UINT(httpd_opts->max_spare_buf_nodes);
-  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-ptr"))
-    OPT_SERV_X_UINT(httpd_opts->max_spare_ptr_nodes);
-  else if (OPT_SERV_SYM_EQ("max-spare-vstr-nodes-ref"))
-    OPT_SERV_X_UINT(httpd_opts->max_spare_ref_nodes);
   
   else
     return (FALSE);
@@ -1204,117 +1076,47 @@ int httpd_conf_main_parse_file(Vstr_base *out,
   return (FALSE);
 }
 
-Httpd_policy_opts *httpd_conf_main_policy_make(Httpd_opts *httpd_opts,
-                                               const Conf_parse *conf,
-                                               const Conf_token *token,
-                                               const Vstr_sect_node *pv)
+void httpd_conf_main_free(Httpd_opts *opts)
 {
-  Vstr_ref *ref = vstr_ref_make_malloc(sizeof(Httpd_policy_opts));
-  int ret = httpd_conf_main_policy_init(httpd_opts, ref->ptr, ref);
-  Httpd_policy_opts *opts = NULL;
-  Httpd_policy_opts **ins = NULL;
-  Vstr_base *name = NULL;
+  Opt_serv_policy_opts *scan = opts->s->def_policy;
 
-  ASSERT(conf && token && pv);
-  
-  vstr_ref_del(ref);
-
-  if (!ret)
-    goto init_failure;
-
-  opts = ref->ptr;
-  if (!httpd_conf_main_policy_copy(opts, httpd_opts->def_policy))
-    goto copy_failure;
-
-  ASSERT(pv);
-
-  name = opts->policy_name;
-  if (!vstr_sub_vstr(name, 1, name->len, conf->data, pv->pos, pv->len,
-                     VSTR_TYPE_SUB_BUF_REF))
-    goto name_failure;
-  if ((token->type == CONF_TOKEN_TYPE_QUOTE_ESC_D) ||
-      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_DDD) ||
-      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_S) ||
-      (token->type == CONF_TOKEN_TYPE_QUOTE_ESC_SSS) ||
-      FALSE)
-    if (!conf_sc_conv_unesc(name, 1, pv->len, NULL))
-      goto name_failure;
-  
-  opts->next = httpd_opts->def_policy;
-  ins = &opts->next; /* hacky, fix when def_policy is a real pointer */
-  ASSERT(*ins);
-  
-  while ((ins = &(*ins)->next) && *ins)
+  while (scan)
   {
-    Vstr_base *s1 = opts->policy_name;
-    Vstr_base *s2 = (*ins)->policy_name;
-
-    ASSERT(!(*ins)->next ||
-           ((*ins)->policy_name->len < (*ins)->next->policy_name->len) ||
-           (((*ins)->policy_name->len == (*ins)->next->policy_name->len) &&
-            vstr_cmp((*ins)->policy_name, 1, (*ins)->policy_name->len,
-                     (*ins)->next->policy_name, 1,
-                     (*ins)->next->policy_name->len) < 0));
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    Opt_serv_policy_opts *scan_next = scan->next;
     
-    if (s1->len > s2->len)
-      continue;
-    if (s1->len < s2->len)
-      break;
-    if (vstr_cmp(s1, 1, s1->len, s2, 1, s2->len) <= 0)
-      break;
+    mime_types_exit(tmp->mime_types);
+    
+    scan = scan_next;
   }
-  ASSERT(ins != &opts->next);
-  opts->next = *ins;
-  *ins = opts;
   
-  return (opts);
-  
- name_failure:
- copy_failure:
-  httpd_conf_main_policy_free(opts);
- init_failure:
-  return (NULL);
+  opt_policy_sc_all_ref_del(opts->s);
+  conf_parse_free(opts->conf); opts->conf = NULL;
+  opt_serv_conf_free(opts->s);
 }
 
 int httpd_conf_main_init(Httpd_opts *httpd_opts)
 {
-  Httpd_policy_opts *opts = httpd_opts->def_policy;
-  static Vstr_ref ref[1];
+  Httpd_policy_opts *opts = NULL;
+
+  if (!opt_serv_conf_init(httpd_opts->s))
+    goto opts_init_fail;
   
-  ref->func = vstr_ref_cb_free_nothing;
-  ref->ptr  = NULL;
-  ref->ref  = 1;
+  opts = (Httpd_policy_opts *)httpd_opts->s->def_policy;
   
-  if (!httpd_conf_main_policy_init(httpd_opts, opts, ref))
-    return (FALSE);
-  httpd_opts->def_policy->next = NULL;
-  
-  vstr_add_cstr_ptr(opts->policy_name,       0, HTTPD_CONF_DEF_POLICY_NAME);
   vstr_add_cstr_ptr(opts->server_name,       0, HTTPD_CONF_DEF_SERVER_NAME);
   vstr_add_cstr_ptr(opts->dir_filename,      0, HTTPD_CONF_DEF_DIR_FILENAME);
   vstr_add_cstr_ptr(opts->mime_types_def_ct, 0, HTTPD_CONF_MIME_TYPE_DEF_CT);
   vstr_add_cstr_ptr(opts->mime_types_main,   0, HTTPD_CONF_MIME_TYPE_MAIN);
   vstr_add_cstr_ptr(opts->mime_types_xtra,   0, HTTPD_CONF_MIME_TYPE_XTRA);
 
-  if (opts->policy_name->conf->malloc_bad)
-    return (FALSE);
-
-  return (TRUE);
-}
-
-void httpd_conf_main_free(Httpd_opts *opts)
-{
-  Httpd_policy_opts *scan = opts->def_policy;
-
-  while (scan)
-  {
-    Httpd_policy_opts *scan_next = scan->next;
-    
-    mime_types_exit(scan->mime_types);
-    httpd_conf_main_policy_free(scan);
-    
-    scan = scan_next;  
-  }
+  if (opts->s->policy_name->conf->malloc_bad)
+    goto httpd_init_fail;
   
-  conf_parse_free(opts->conf); opts->conf = NULL;
+  return (TRUE);
+
+ httpd_init_fail:
+  httpd_conf_main_free(httpd_opts);
+ opts_init_fail:
+  return (FALSE);
 }

@@ -212,12 +212,13 @@ my $ldaemon_pid = undef;
 my $daemon_pid  = undef;
 my $daemon_addr = undef;
 my $daemon_port = undef;
+my $daemon_cntl = undef;
 sub daemon_status
   {
-    my $cntl = shift;
+    $daemon_cntl = shift;
 
-    open(INFO, "./ex_cntl -e status ${cntl} |") ||
-      failure("Can't open control ${cntl}.");
+    open(INFO, "./ex_cntl -e status ${daemon_cntl} |") ||
+      failure("Can't open control ${daemon_cntl}.");
 
     while (<INFO>)
       {
@@ -234,7 +235,7 @@ sub daemon_status
 	last;
       }
 
-    close(INFO) || failure("Problem with cntl ${cntl}.");
+    close(INFO) || failure("Problem with cntl ${daemon_cntl}.");
   }
 
 sub daemon_init
@@ -249,9 +250,12 @@ sub daemon_init
 
     my $dbg = "";
     my $no_out = ">/dev/null  2> /dev/null";
-    if ($tst_DBG > 1)
+    if ($tst_DBG)
       {
 	$no_out = '';
+	$dbg    = '-d';
+	if ($tst_DBG > 1)
+	  { $dbg    = '-d -d'; }
 	if ($tst_DBG > 2)
 	  { $dbg    = '-d -d -d'; }
       }
@@ -322,7 +326,7 @@ sub daemon_connect_tcp
 					 PeerPort => daemon_port(),
 					 Proto    => "tcp",
 					 Type     => SOCK_STREAM,
-					 Timeout  => (2 * $tst_num_mp)) ||
+					 Timeout  => (8 * $tst_num_mp)) ||
 					   failure("connect: $!");
     nonblock($sock);
     print "DBG($$): created sock " . $sock->fileno . "\n" if ($tst_DBG > 2);
@@ -429,13 +433,12 @@ sub daemon_io
 
 sub daemon_exit
   {
-    my $cmd    = shift;
-
-    if (system("./ex_cntl -e close ${cmd}_cntl > /dev/null"))
+    if (system("./ex_cntl -e close $daemon_cntl > /dev/null"))
       { warn "cntl close: $!\n"; }
-    unlink("${cmd}_cntl");
+    unlink($daemon_cntl);
     $daemon_addr = undef;
     $daemon_port = undef;
+    $daemon_cntl = undef;
     if (defined ($ldaemon_pid))
       {
 	if (waitpid($ldaemon_pid, 0) <= 0)
@@ -448,11 +451,9 @@ sub daemon_exit
   }
 sub daemon_cleanup
   {
-    my $cmd    = shift;
-
-    if (-e "${cmd}_cntl")
+    if (defined($daemon_cntl) && -e $daemon_cntl)
       {
-	daemon_exit($cmd)
+	daemon_exit()
       }
   }
 }

@@ -255,43 +255,6 @@ sub all_none_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
-my $clean_on_exit = 1;
-if (@ARGV)
-  {
-    $clean_on_exit = 0;
-    daemon_status(shift);
-
-    while (@ARGV)
-      {
-	my $arg = shift;
-
-	if ($arg eq "trunc")
-	  { $truncate_segv = !$truncate_segv; }
-	elsif ($arg eq "cleanup")
-	  { $clean_on_exit = !$clean_on_exit; }
-	elsif (($arg eq "virtual-hosts") || ($arg eq "vhosts"))
-	  { all_vhost_tsts(); }
-	elsif ($arg eq "public")
-	  { all_public_only_tsts(); }
-	elsif ($arg eq "none")
-	  { all_none_tsts(); }
-	elsif (($arg eq "non-virtual-hosts") || ($arg eq "non-vhosts"))
-	  { all_nonvhost_tsts(); }
-
-	print "-" x 78 . "\n";
-      }
-
-    success();
-  }
-
-rmtree($root);
-mkpath([$root . "/default",
-	$root . "/default.example.com",
-	$root . "/blah",
-	$root . "/foo.example.com/nxt",
-	$root . "/foo.example.com/corner/index.html",
-	$root . "/foo.example.com:1234"]);
-
 sub munge_mtime
   {
     my $num   = shift;
@@ -328,54 +291,100 @@ EOL
     munge_mtime($num, $fname);
   }
 
-my $big = "";
+sub setup
+  {
+    my $big = "";
 
-# Needs to be big or the .bz2 file won't stay around due to the 95% rule
-$big .= ("\n" . ("x" x 10) . ("xy" x 10) . ("y" x 10)) x 500;
-$big .= "\n";
+    # Needs to be big or the .bz2 file won't stay around due to the 95% rule
+    $big .= ("\n" . ("x" x 10) . ("xy" x 10) . ("y" x 10)) x 500;
+    $big .= "\n";
 
-make_html(1, "root",    "$root/index.html");
-make_html(2, "default", "$root/default/index.html");
-make_html(2, "def$big", "$root/default/index-big.html");
-make_html(3, "norm",    "$root/foo.example.com/index.html");
-make_html(4, "port",    "$root/foo.example.com:1234/index.html");
-make_html(5, "corner",  "$root/foo.example.com/corner/index.html/index.html");
-make_html(6, "bt",      "$root/foo.example.com:1234/bt.torrent");
-make_html(7, "plain",   "$root/default/README");
-make_html(8, "backup",  "$root/default/index.html~");
-make_html(9, "welcome", "$root/default/welcome.html");
-make_html(9, "welcome", "$root/default/welcome.txt");
-make_html(0, "",        "$root/default/noprivs.html");
-make_html(0, "privs",   "$root/default/noallprivs.html");
+    rmtree($root);
+    mkpath([$root . "/default",
+	    $root . "/default.example.com",
+	    $root . "/blah",
+	    $root . "/foo.example.com/nxt",
+	    $root . "/foo.example.com/corner/index.html",
+	    $root . "/foo.example.com:1234"]);
 
-open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
-munge_mtime(44, "$root/foo.example.com/empty");
+    make_html(1, "root",    "$root/index.html");
+    make_html(2, "default", "$root/default/index.html");
+    make_html(2, "def$big", "$root/default/index-big.html");
+    make_html(3, "norm",    "$root/foo.example.com/index.html");
+    make_html(4, "port",    "$root/foo.example.com:1234/index.html");
+    make_html(5, "corner",
+	      "$root/foo.example.com/corner/index.html/index.html");
+    make_html(6, "bt",      "$root/foo.example.com:1234/bt.torrent");
+    make_html(7, "plain",   "$root/default/README");
+    make_html(8, "backup",  "$root/default/index.html~");
+    make_html(9, "welcome", "$root/default/welcome.html");
+    make_html(9, "welcome", "$root/default/welcome.txt");
+    make_html(0, "",        "$root/default/noprivs.html");
+    make_html(0, "privs",   "$root/default/noallprivs.html");
 
-system("$ENV{SRCDIR}/gzip-r.pl --type=all $root");
-munge_mtime(0, "$root/index.html.gz");
-munge_mtime(0, "$root/index.html.bz2");
-munge_mtime(0, "$root/default/index.html.gz");
-munge_mtime(0, "$root/default/index.html.bz2");
-munge_mtime(0, "$root/foo.example.com/index.html.gz");
-munge_mtime(0, "$root/foo.example.com/index.html.bz2");
-munge_mtime(0, "$root/foo.example.com:1234/index.html.gz");
-munge_mtime(0, "$root/foo.example.com:1234/index.html.bz2");
+    open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
+    munge_mtime(44, "$root/foo.example.com/empty");
 
-chmod(0000, "$root/default/noprivs.html");
-chmod(0600, "$root/default/noallprivs.html");
+    system("$ENV{SRCDIR}/gzip-r.pl --type=all $root");
+    munge_mtime(0, "$root/index.html.gz");
+    munge_mtime(0, "$root/index.html.bz2");
+    munge_mtime(0, "$root/default/index.html.gz");
+    munge_mtime(0, "$root/default/index.html.bz2");
+    munge_mtime(0, "$root/foo.example.com/index.html.gz");
+    munge_mtime(0, "$root/foo.example.com/index.html.bz2");
+    munge_mtime(0, "$root/foo.example.com:1234/index.html.gz");
+    munge_mtime(0, "$root/foo.example.com:1234/index.html.bz2");
 
-system("mkfifo $root/default/fifo");
+    chmod(0000, "$root/default/noprivs.html");
+    chmod(0600, "$root/default/noallprivs.html");
 
-my ($a, $b, $c, $d,
-    $e, $f, $g, $h,
-    $atime, $mtime) = stat("$ENV{SRCDIR}/tst/ex_cat_tst_4");
-copy("$ENV{SRCDIR}/tst/ex_cat_tst_4", "$root/default/bin");
-utime $atime, $mtime, "$root/default/bin";
+    system("mkfifo $root/default/fifo");
+
+    my ($a, $b, $c, $d,
+	$e, $f, $g, $h,
+	$atime, $mtime) = stat("$ENV{SRCDIR}/tst/ex_cat_tst_4");
+    copy("$ENV{SRCDIR}/tst/ex_cat_tst_4", "$root/default/bin");
+    utime $atime, $mtime, "$root/default/bin";
+  }
+
+my $clean_on_exit = 1;
+if (@ARGV)
+  {
+    $clean_on_exit = 0;
+    daemon_status(shift);
+
+    while (@ARGV)
+      {
+	my $arg = shift;
+
+	if ($arg eq "setup")
+	  { setup(); }
+	elsif ($arg eq "trunc")
+	  { $truncate_segv = !$truncate_segv; }
+	elsif ($arg eq "cleanup")
+	  { $clean_on_exit = !$clean_on_exit; }
+	elsif (($arg eq "virtual-hosts") || ($arg eq "vhosts"))
+	  { all_vhost_tsts(); }
+	elsif ($arg eq "public")
+	  { all_public_only_tsts(); }
+	elsif ($arg eq "none")
+	  { all_none_tsts(); }
+	elsif (($arg eq "non-virtual-hosts") || ($arg eq "non-vhosts"))
+	  { all_nonvhost_tsts(); }
+
+	print "-" x 78 . "\n";
+      }
+
+    success();
+  }
+
+setup();
 
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-my $args = "--unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+my $conf_arg = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off))'";
+my $args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 
 my $list_pid = undef;
 
@@ -384,7 +393,7 @@ system("cat > $root/default/fifo &");
 $list_pid = http_cntl_list_beg();
 all_vhost_tsts();
 http_cntl_list_cleanup($list_pid);
-daemon_exit("ex_httpd");
+daemon_exit();
 
 $truncate_segv = 1;
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=true  --sendfile=false --procs=2");
@@ -392,7 +401,7 @@ system("cat > $root/default/fifo &");
 $list_pid = http_cntl_list_beg();
 all_vhost_tsts();
 http_cntl_list_cleanup($list_pid);
-daemon_exit("ex_httpd");
+daemon_exit();
 $truncate_segv = 0;
 
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true --mmap=false --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
@@ -400,21 +409,21 @@ system("cat > $root/default/fifo &");
 $list_pid = http_cntl_list_beg();
 all_vhost_tsts();
 http_cntl_list_cleanup($list_pid);
-daemon_exit("ex_httpd");
+daemon_exit();
 
-my $largs = "--mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+my $largs = $conf_arg . " --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 daemon_init("ex_httpd", $root, $largs . "-d -d -d --virtual-hosts=true  --public-only=true");
 all_public_only_tsts("no gen tsts");
-daemon_exit("ex_httpd");
+daemon_exit();
 
 daemon_init("ex_httpd", $root, $args . "--virtual-hosts=false --pid-file=$root/abcd");
 my $abcd = daemon_get_io_r("$root/abcd");
 chomp $abcd;
 if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }
 all_nonvhost_tsts();
-daemon_exit("ex_httpd");
+daemon_exit();
 
-my $nargs  = "--unspecified-hostname=default ";
+my $nargs  = $conf_arg . " --unspecified-hostname=default ";
    $nargs .= "--mime-types-main=$ENV{SRCDIR}/mime_types_extra.txt ";
    $nargs .= "--mime-types-xtra=$ENV{SRCDIR}/tst/ex_httpd_bad_mime ";
    $nargs .= "--virtual-hosts=true ";
@@ -442,7 +451,7 @@ tst_proc_limit(30);
 $list_pid = http_cntl_list_beg();
 all_none_tsts();
 http_cntl_list_cleanup($list_pid);
-daemon_exit("ex_httpd");
+daemon_exit();
 
 rmtree($root);
 
@@ -451,6 +460,6 @@ success();
 END {
   my $save_exit_code = $?;
   if ($clean_on_exit)
-    { daemon_cleanup("ex_httpd"); }
+    { daemon_cleanup(); }
   $? = $save_exit_code;
 }

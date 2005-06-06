@@ -3,6 +3,10 @@
 
 #include "opt.h"
 #include "conf.h"
+#include "evnt.h"
+
+#define OPT_SERV_CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
+#define OPT_SERV_CONF_MEM_PREALLOC_MAX (128 * 1024)
 
 #define OPT_SERV_CONF_USE_DAEMON FALSE
 #define OPT_SERV_CONF_USE_DROP_PRIVS FALSE
@@ -18,68 +22,104 @@
 
 typedef struct Opt_serv_policy_opts
 {
+ Vstr_ref *ref;
+ struct Opt_serv_policy_opts *next;
+ struct Opt_serv_opts *beg;
+
+ Vstr_base *policy_name;
+
  unsigned int idle_timeout;
  unsigned int max_connections;
 } Opt_serv_policy_opts;
-/* **** POLICY **** */
 
 typedef struct Opt_serv_addr_opts
 {
- unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (10th-22nd bitfields) */
+ struct Opt_serv_addr_opts *next;
  Vstr_base *acpt_filter_file;
  Vstr_base *ipv4_address;
- short tcp_port;
+ unsigned short tcp_port;
+ unsigned int defer_accept;
  unsigned int q_listen_len;
+ unsigned int max_connections;
 } Opt_serv_addr_opts;
 
 typedef struct Opt_serv_opts
 {
+ Opt_serv_policy_opts *def_policy;
+
+ Opt_serv_policy_opts *(*make_policy)(struct Opt_serv_opts *);
+ int                   (*copy_policy)(struct Opt_serv_policy_opts *,
+                                      const struct Opt_serv_policy_opts *);
+ 
  unsigned int become_daemon : 1;
  unsigned int drop_privs : 1;
  unsigned int use_pdeathsig : 1;
- unsigned int defer_accept : 12; /* 0 => 4095 (1hr8m) (10th-22nd bitfields) */
+ unsigned int no_conf_listen : 1;
+
  Vstr_base *pid_file;
  Vstr_base *cntl_file;
  Vstr_base *chroot_dir;
- Vstr_base *acpt_filter_file;
 
  Vstr_base *vpriv_uid;
  uid_t priv_uid;
  Vstr_base *vpriv_gid;
  gid_t priv_gid;
  unsigned int num_procs;
- unsigned int idle_timeout;
- Vstr_base *ipv4_address;
- short tcp_port;
- unsigned int q_listen_len;
- unsigned int max_connections;
+
  unsigned int rlim_file_num;
+
+ unsigned int max_spare_bases;
+ 
+ unsigned int max_spare_buf_nodes;
+ unsigned int max_spare_ptr_nodes;
+ unsigned int max_spare_ref_nodes;
+ 
+ Opt_serv_addr_opts *addr_beg;
 } Opt_serv_opts;
+    
 /* uid/gid default to NFS nobody */
-#define OPT_SERV_CONF_INIT_OPTS(x)                                      \
+#define OPT_SERV_CONF_INIT_OPTS()                                       \
+    NULL,                                                               \
+    opt_policy_make,                                                    \
+    opt_policy_copy,                                                    \
     OPT_SERV_CONF_USE_DAEMON,                                           \
     OPT_SERV_CONF_USE_DROP_PRIVS,                                       \
     OPT_SERV_CONF_USE_PDEATHSIG,                                        \
-    OPT_SERV_CONF_DEF_TCP_DEFER_ACCEPT,                                 \
-    NULL, NULL, NULL, NULL,                                             \
+    FALSE,                                                              \
+    NULL, NULL, NULL,                                                   \
     NULL, OPT_SERV_CONF_DEF_PRIV_UID,                                   \
     NULL, OPT_SERV_CONF_DEF_PRIV_GID,                                   \
     OPT_SERV_CONF_DEF_NUM_PROCS,                                        \
-    OPT_SERV_CONF_DEF_IDLE_TIMEOUT,                                     \
-    NULL, x,                                                            \
-    OPT_SERV_CONF_DEF_Q_LISTEN_LEN,                                     \
-    OPT_SERV_CONF_DEF_MAX_CONNECTIONS, \
-    OPT_SERV_CONF_DEF_RLIM_FILE_NUM
+    OPT_SERV_CONF_DEF_RLIM_FILE_NUM,                                    \
+    4,                                                                  \
+    (OPT_SERV_CONF_MEM_PREALLOC_MAX / OPT_SERV_CONF_BUF_SZ),            \
+    (OPT_SERV_CONF_MEM_PREALLOC_MAX / OPT_SERV_CONF_BUF_SZ),            \
+    (OPT_SERV_CONF_MEM_PREALLOC_MAX / OPT_SERV_CONF_BUF_SZ),            \
+    NULL
 
-#define OPT_SERV_CONF_DECL_OPTS(N, x)                           \
-    Opt_serv_opts N[1] = {{OPT_SERV_CONF_INIT_OPTS(x)}}
+#define OPT_SERV_CONF_DECL_OPTS(N)                      \
+    Opt_serv_opts N[1] = {{OPT_SERV_CONF_INIT_OPTS()}}
 
-extern int  opt_serv_conf_init(Opt_serv_opts *);
 extern void opt_serv_conf_free(Opt_serv_opts *);
+extern int  opt_serv_conf_init(Opt_serv_opts *);
+
+extern Opt_serv_addr_opts *opt_serv_make_addr(Opt_serv_opts *);
 
 extern int opt_serv_conf(Opt_serv_opts *, const Conf_parse *, Conf_token *);
 extern int opt_serv_conf_parse_cstr(Vstr_base *, Opt_serv_opts *, const char *);
 extern int opt_serv_conf_parse_file(Vstr_base *, Opt_serv_opts *, const char *);
+
+extern void opt_serv_logger(Vlg *);
+
+extern void opt_serv_sc_drop_privs(Opt_serv_opts *);
+extern void opt_serv_sc_rlim_file_num(unsigned int);
+extern int  opt_serv_sc_acpt_end(const Opt_serv_policy_opts *,
+                                 struct Evnt *, struct Evnt *);
+extern void opt_serv_sc_free_beg(struct Evnt *, struct Vstr_ref *);
+extern void opt_serv_sc_signals(void);
+extern void opt_serv_sc_check_children(void);
+extern void opt_serv_sc_cntl_resources(const Opt_serv_opts *);
+
 
 #define OPT_SERV_DECL_GETOPTS()                         \
    {"help", no_argument, NULL, 'h'},                    \
@@ -104,10 +144,15 @@ extern int opt_serv_conf_parse_file(Vstr_base *, Opt_serv_opts *, const char *);
    {"version", no_argument, NULL, 'V'}
 
 #define OPT_SERV_GETOPTS(opts)                                          \
-    case 't': opts->idle_timeout    = atoi(optarg);                 break; \
-    case 'H': OPT_VSTR_ARG(opts->ipv4_address);                     break; \
-    case 'M': OPT_NUM_NR_ARG(opts->max_connections, "max connections"); break; \
-    case 'P': OPT_NUM_ARG(opts->tcp_port, "tcp port", 0, 65535, ""); break; \
+    case 't': opts->def_policy->idle_timeout = atoi(optarg);        break; \
+    case 'H': OPT_VSTR_ARG(opts->addr_beg->ipv4_address);           break; \
+    case 'M': OPT_NUM_NR_ARG(opts->addr_beg->max_connections,           \
+                             "max connections");                        \
+    opts->def_policy->max_connections = opts->addr_beg->max_connections; \
+    break;                                                              \
+    case 'P': OPT_NUM_ARG(opts->addr_beg->tcp_port, "tcp port",         \
+                          0, 65535, "");                                \
+    opts->no_conf_listen = FALSE; break;                                \
     case 'd': vlg_debug(vlg);                                       break; \
                                                                         \
     case 'n': OPT_TOGGLE_ARG(evnt_opt_nagle);                       break; \
@@ -119,10 +164,11 @@ extern int opt_serv_conf_parse_file(Vstr_base *, Opt_serv_opts *, const char *);
     case 5: OPT_VSTR_ARG(opts->vpriv_gid);                          break; \
     case 6: OPT_VSTR_ARG(opts->pid_file);                           break; \
     case 7: OPT_VSTR_ARG(opts->cntl_file);                          break; \
-    case 8: OPT_VSTR_ARG(opts->acpt_filter_file);                   break; \
+    case 8: OPT_VSTR_ARG(opts->addr_beg->acpt_filter_file);         break; \
     case 9: OPT_NUM_ARG(opts->num_procs, "number of processes",         \
                         1, 255, "");                                break; \
-    case 10: OPT_NUM_ARG(opts->defer_accept, "seconds to defer connections", \
+    case 10: OPT_NUM_ARG(opts->addr_beg->defer_accept,                  \
+                         "seconds to defer connections",                \
                          0, 4906, " (1 hour 8 minutes)");           break
 
 

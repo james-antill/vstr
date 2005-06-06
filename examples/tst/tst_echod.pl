@@ -38,16 +38,16 @@ run_tst("ex_echod", "ex_echod_version", "--version");
 
 daemon_init("ex_echod");
 all_tsts();
-daemon_exit("ex_echod");
+daemon_exit();
 
 daemon_init("ex_echod", undef, '-H 127.0.0.4');
 all_tsts();
-daemon_exit("ex_echod");
+daemon_exit();
 
 success();
 
 END {
   my $save_exit_code = $?;
-  daemon_cleanup("ex_echod");
+  daemon_cleanup();
   $? = $save_exit_code;
 }

@@ -29,7 +29,6 @@ struct Cntl_waiter_obj
 };
 
 static Vlg *vlg = NULL;
-static struct Evnt *acpt_evnt = NULL;
 static struct Evnt *acpt_cntl_evnt = NULL;
 static struct Evnt *acpt_pipe_evnt = NULL;
 
@@ -37,6 +36,7 @@ static Bag *childs  = NULL;
 static Bag *waiters = NULL;
 
 static unsigned int potential_waiters = 0;
+
 
 static void cntl__fin(Vstr_base *out)
 {
@@ -183,30 +183,35 @@ static void cntl__ns_out_fmt(Vstr_base *out, const char *fmt, ...)
 
 static void cntl__close(Vstr_base *out)
 {
-  size_t ns1 = 0;
+  struct Evnt *evnt = evnt_queue("accept");
 
-  if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
+  if (!evnt)
     return;
-
-  cntl__ns_out_cstr_ptr(out, "CLOSE");
-  cntl__ns_out_fmt(out, "from[$<sa:%p>]", acpt_evnt->sa);
-  cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
-                   (unsigned long)acpt_evnt->ctime.tv_sec,
-                   (unsigned long)acpt_evnt->ctime.tv_usec);
-  cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+  
+  while (evnt)
+  {
+    size_t ns1 = 0;
     
-  vstr_add_netstr_end(out, ns1, out->len);
+    if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
+      return;
 
-  vlg_dbg2(vlg, "evnt_close acpt %p\n", acpt_evnt);
-  evnt_close(acpt_evnt);
+    cntl__ns_out_cstr_ptr(out, "CLOSE");
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", evnt->sa);
+    cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
+                     (unsigned long)evnt->ctime.tv_sec,
+                     (unsigned long)evnt->ctime.tv_usec);
+    cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+    
+    vstr_add_netstr_end(out, ns1, out->len);
+
+    vlg_dbg2(vlg, "evnt_close acpt %p\n", evnt);
+    evnt_close(evnt);
+
+    evnt = evnt->next;
+  }
 
   if (evnt_is_child())
     evnt_shutdown_r(acpt_cntl_evnt, FALSE);
-  else
-  {
-    vlg_dbg2(vlg, "evnt_close acpt cntl %p\n", acpt_cntl_evnt);
-    evnt_close(acpt_cntl_evnt);
-  }
 }
 
 static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
@@ -243,24 +248,27 @@ static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
 
 static void cntl__status(Vstr_base *out)
 {
-  size_t ns1 = 0;
-
-  if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
-    return;
-
-  cntl__ns_out_cstr_ptr(out, "STATUS");
-  if (acpt_evnt)
-  {
-    struct Evnt *ev = acpt_evnt;
-    cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
-    cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
-                     (unsigned long)ev->ctime.tv_sec,
-                     (unsigned long)ev->ctime.tv_usec);
-  }
+  struct Evnt *evnt = evnt_queue("accept");
   
-  cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+  while (evnt)
+  {
+    size_t ns1 = 0;
+    
+    if (!(ns1 = vstr_add_netstr_beg(out, out->len)))
+      return;
 
-  vstr_add_netstr_end(out, ns1, out->len);
+    cntl__ns_out_cstr_ptr(out, "STATUS");
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", evnt->sa);
+    cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
+                     (unsigned long)evnt->ctime.tv_sec,
+                     (unsigned long)evnt->ctime.tv_usec);
+  
+    cntl__ns_out_fmt(out, "pid[%lu]", (unsigned long)getpid());
+  
+    vstr_add_netstr_end(out, ns1, out->len);
+    
+    evnt = evnt->next;
+  }
 }
 
 static void cntl__dbg(Vstr_base *out)
@@ -338,8 +346,7 @@ static int cntl__cb_func_recv(struct Evnt *evnt)
     if (0){ }
     else if (vstr_cmp_cstr_eq(evnt->io_r, pos, len, "CLOSE"))
     {
-      if (acpt_evnt)
-        cntl__close(evnt->io_w);
+      cntl__close(evnt->io_w);
       
       if (!cntl_waiter_add(evnt, 1, ns1, &stop))
         goto malloc_bad;
@@ -411,8 +418,7 @@ static void cntl__cb_func_acpt_free(struct Evnt *evnt)
 
   F(evnt);
 
-  if (acpt_evnt)
-    evnt_close(acpt_evnt);
+  evnt_acpt_close_all();
   
   if (childs && !potential_waiters)
     bag_del_all(childs);
@@ -448,8 +454,7 @@ static struct Evnt *cntl__cb_func_accept(struct Evnt *from_evnt, int fd,
   return (NULL);
 }
 
-void cntl_make_file(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
-                    const char *fname)
+void cntl_make_file(Vlg *passed_vlg, const char *fname)
 {
   struct Evnt *evnt = NULL;
 
@@ -458,10 +463,7 @@ void cntl_make_file(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
   vlg = passed_vlg;
   
   ASSERT(fname);
-  ASSERT(!acpt_evnt && passed_acpt_evnt);
   ASSERT(!acpt_cntl_evnt);
-  
-  acpt_evnt = passed_acpt_evnt;
     
   if (!(evnt = MK(sizeof(struct Evnt))))
     VLG_ERRNOMEM((vlg, EXIT_FAILURE, "cntl file: %m\n"));
@@ -475,13 +477,6 @@ void cntl_make_file(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
   acpt_cntl_evnt = evnt;
 }
 
-void cntl_free_acpt(struct Evnt *evnt)
-{ /* can be NULL if we didn't use a cntl-file */
-  ASSERT(!acpt_evnt || (acpt_evnt == evnt));
-
-  acpt_evnt = NULL;
-}
-
 static void cntl__cb_func_cntl_acpt_free(struct Evnt *evnt)
 {
   evnt_vlg_stats_info(evnt, "CHILD CNTL FREE");
@@ -492,8 +487,7 @@ static void cntl__cb_func_cntl_acpt_free(struct Evnt *evnt)
 
   F(evnt);
   
-  if (acpt_evnt)
-    evnt_close(acpt_evnt);
+  evnt_acpt_close_all();
 }
 
 static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
@@ -506,13 +500,11 @@ static void cntl__cb_func_pipe_acpt_free(struct Evnt *evnt)
 
   F(evnt);
 
-  if (acpt_evnt)
-    evnt_close(acpt_evnt);
+  evnt_acpt_close_all();
 }
 
 /* used to get death sig or pass through cntl data */
-static void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
-                               int fd, int allow_pdeathsig)
+static void cntl_pipe_acpt_fds(Vlg *passed_vlg, int fd, int allow_pdeathsig)
 {
   ASSERT(fd != -1);
 
@@ -521,7 +513,6 @@ static void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
     int old_fd = SOCKET_POLL_INDICATOR(acpt_cntl_evnt->ind)->fd;
     
     ASSERT(vlg       == passed_vlg);
-    ASSERT(acpt_evnt == passed_acpt_evnt);
 
     if (!evnt_poll_swap_accept_read(acpt_cntl_evnt, fd))
       vlg_abort(vlg, "%s: %m\n", "swap_acpt");
@@ -540,10 +531,6 @@ static void cntl_pipe_acpt_fds(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
       vlg = passed_vlg;
     ASSERT(vlg       == passed_vlg);
 
-    if (!acpt_evnt)
-      acpt_evnt = passed_acpt_evnt;
-    ASSERT(acpt_evnt == passed_acpt_evnt);
-    
     if (allow_pdeathsig && (PROC_CNTL_PDEATHSIG(SIGCHLD) != -1))
     {
       close(fd);
@@ -697,7 +684,7 @@ void cntl_child_pid(pid_t pid, int fd)
  *
  *  The children also kill themselves if the parent fd has an error.
  */
-void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
+void cntl_sc_multiproc(Vlg *passed_vlg, 
                        unsigned int num, int use_cntl, int allow_pdeathsig)
 {
   int pfds[2] = {-1, -1};
@@ -734,7 +721,7 @@ void cntl_sc_multiproc(Vlg *passed_vlg, struct Evnt *passed_acpt_evnt,
     { /* child */
       close(pfds[1]);
       cntl_child_free();
-      cntl_pipe_acpt_fds(vlg, passed_acpt_evnt, pfds[0], allow_pdeathsig);
+      cntl_pipe_acpt_fds(vlg, pfds[0], allow_pdeathsig);
       
       evnt_scan_q_close();
       return;

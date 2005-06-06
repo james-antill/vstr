@@ -14,24 +14,15 @@
 /* if the data is less than this, queue instead of hitting write */
 #define HTTPD_CONF_MAX_WAIT_SEND 16
 
+#define HTTPD_CONF_RECV_CALL_LIMIT 3 /* read+send+sendfile */
+#define HTTPD_CONF_SEND_CALL_LIMIT 1 /* already blocking in send */
+
 struct Con;
 struct Httpd_req_data;
 
 #include "httpd_conf_main.h"
 #include "httpd_conf_req.h"
 #include "httpd_err_codes.h"
-
-struct Acpt_data
-{
- struct Evnt *evnt;
- struct sockaddr_storage sa[1];
-};
-
-struct Acpt_listener
-{
- struct Evnt evnt[1];
- Vstr_ref *ref;
-};
 
 struct Http_hdrs
 {
@@ -67,7 +58,7 @@ struct Http_hdrs
 
 typedef struct Httpd_req_data
 {
- Httpd_policy_opts *policy;
+ const Httpd_policy_opts *policy;
 
  struct Http_hdrs http_hdrs[1];
  Vstr_base *fname;
@@ -164,10 +155,12 @@ struct Con
 
  Vstr_ref *acpt_sa_ref;
  
- Httpd_policy_opts *policy;
+ const Httpd_policy_opts *policy;
 
  struct File_sect f[1];
 
+ unsigned int io_limit_num : 8;
+ 
  unsigned int vary_star : 1;
  unsigned int parsed_method_ver_1_0 : 1;
  unsigned int keep_alive : 3;
@@ -219,8 +212,8 @@ extern void http_req_exit(void);
 extern void httpd_fin_fd_close(struct Con *);
 
 extern int httpd_valid_url_filename(Vstr_base *, size_t, size_t);
-extern int httpd_init_default_hostname(Httpd_policy_opts *);
-extern int httpd_sc_add_default_hostname(Httpd_policy_opts *,
+extern int httpd_init_default_hostname(Opt_serv_policy_opts *);
+extern int httpd_sc_add_default_hostname(struct Con *, Httpd_req_data *,
                                          Vstr_base *, size_t);
 
 extern int httpd_canon_path(Vstr_base *);

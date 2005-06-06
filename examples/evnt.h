@@ -19,7 +19,19 @@
 # define PROC_CNTL_PDEATHSIG(x1) (-1)
 #endif
 
+#ifndef EVNT_COMPILE_INLINE
+#define EVNT_COMPILE_INLINE 1
+#endif
+
+#ifndef EVNT_CONF_NAGLE
 #define EVNT_CONF_NAGLE FALSE /* configurable */
+#endif
+
+#define EVNT_IO_OK 0
+#define EVNT_IO_READ_EOF 1
+#define EVNT_IO_READ_FIN 2
+#define EVNT_IO_READ_ERR 3
+#define EVNT_IO_SEND_ERR 4
 
 struct Evnt;
 
@@ -83,6 +95,8 @@ struct Evnt
 
  unsigned int flag_io_filter   : 1;
 
+ unsigned int flag_fully_acpt  : 1;
+
  unsigned int io_r_shutdown    : 1;
  unsigned int io_w_shutdown    : 1;
 };
@@ -90,6 +104,20 @@ struct Evnt
 #define EVNT_SA(x)    (                      (x)->sa)
 #define EVNT_SA_IN(x) ((struct sockaddr_in *)(x)->sa)
 #define EVNT_SA_UN(x) ((struct sockaddr_un *)(x)->sa)
+
+/* FIXME: bad namespace */
+typedef struct Acpt_data
+{
+ struct Evnt *evnt;
+ struct sockaddr_storage sa[1];
+} Acpt_data;
+
+typedef struct Acpt_listener
+{
+ struct Evnt evnt[1];
+ unsigned int max_connections;
+ Vstr_ref *ref;
+} Acpt_listener;
 
 extern volatile sig_atomic_t evnt_child_exited;
 
@@ -135,11 +163,13 @@ extern int evnt_send(struct Evnt *);
 extern int evnt_sendfile(struct Evnt *, int,
                          VSTR_AUTOCONF_uintmax_t *, VSTR_AUTOCONF_uintmax_t *,
                          unsigned int *);
+extern int evnt_sc_read_send(struct Evnt *, int, VSTR_AUTOCONF_uintmax_t *);
 extern int  evnt_send_add(struct Evnt *, int, size_t);
 extern void evnt_send_del(struct Evnt *);
 extern void evnt_scan_fds(unsigned int, size_t);
 extern void evnt_scan_send_fds(void);
 extern void evnt_scan_q_close(void);
+extern void evnt_acpt_close_all(void);
 
 
 extern void evnt_stats_add(struct Evnt *, const struct Evnt *);
@@ -164,6 +194,11 @@ extern void evnt_sc_main_loop(size_t);
 
 extern time_t evnt_sc_time(void);
 
+extern void evnt_sc_serv_cb_func_acpt_free(struct Evnt *);
+extern struct Evnt *evnt_sc_serv_make_bind(const char *, unsigned short,
+                                           unsigned int, unsigned int,
+                                           unsigned int, const char *);
+
 extern void evnt_vlg_stats_info(struct Evnt *, const char *);
 
 extern int evnt_epoll_init(void);
@@ -179,13 +214,5 @@ extern struct Evnt *evnt_find_least_used(void);
 extern struct Evnt *evnt_queue(const char *);
 
 extern void evnt_out_dbg3(const char *);
-
-#ifndef EVNT_COMPILE_INLINE
-#define EVNT_COMPILE_INLINE 1
-#endif
-
-#if defined(VSTR_AUTOCONF_HAVE_INLINE) && EVNT_COMPILE_INLINE
-#endif
-
 
 #endif

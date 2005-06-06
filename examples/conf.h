@@ -73,6 +73,22 @@
       CONF_SC_PARSE_SLIST_DEPTH_TOKEN_RET(c, t, conf_sc__token_depth, ret); \
     } while (0)
 
+#define CONF_SC_MAKE_CLIST_BEG(x)                                       \
+    unsigned int conf_sc__depth_ ## x = token->depth_num;               \
+    while (conf_token_list_num(token, conf_sc__depth_ ## x))            \
+    {                                                                   \
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, conf_sc__depth_ ## x, \
+                                          FALSE);                       \
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);                  \
+                                                                        \
+      if (0)
+#define CONF_SC_MAKE_CLIST_END()                \
+    else                                        \
+      return (FALSE);                           \
+    }                                           \
+    do { } while (FALSE)
+
+
 typedef struct Conf_parse
 {
  Vstr_sects *sects;

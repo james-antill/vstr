@@ -1,9 +1,7 @@
 #ifndef HTTPD_POLICY_H
 #define HTTPD_POLICY_H
 
-#include "conf.h"
-
-#include <netinet/in.h>
+#include "opt_policy.h"
 
 #define HTTPD_POLICY__PATH_LIM_FULL 0
 #define HTTPD_POLICY__PATH_LIM_BEG  1
@@ -62,21 +60,9 @@ typedef struct Httpd_policy_path
  void (*ref_func)(Vstr_ref *);
 } Httpd_policy_path;
 
-typedef struct Httpd_policy_ipv4
-{
-  unsigned char ipv4[4];
-  unsigned int cidr; 
-} Httpd_policy_ipv4;
-
-extern void httpd_policy_change_con(struct Con *, Httpd_policy_opts *);
-extern void httpd_policy_change_req(Httpd_req_data *, Httpd_policy_opts *);
-
-extern Httpd_policy_opts *httpd_policy_find(Httpd_policy_opts *,
-                                            const Conf_parse *,
-                                            Conf_token *);
-
-extern int httpd_policy_name_eq(const Conf_parse *, Conf_token *,
-                                Httpd_policy_opts *, int *);
+extern void httpd_policy_change_con(struct Con *, const Httpd_policy_opts *);
+extern void httpd_policy_change_req(Httpd_req_data *,
+                                    const Httpd_policy_opts *);
    
 extern int httpd_policy_build_path(struct Con *, Httpd_req_data *,
                                    const Conf_parse *, Conf_token *,
@@ -125,7 +111,13 @@ extern int httpd_policy_ipv4_make(struct Con *, Httpd_req_data *,
                                   Conf_parse *, Conf_token *,
                                   unsigned int, struct sockaddr *, int *);
 extern int httpd_policy_ipv4_cidr_eq(struct Con *, Httpd_req_data *,
-                                     Httpd_policy_ipv4 *, struct sockaddr *);
+                                     Opt_policy_ipv4 *, struct sockaddr *);
+
+extern void httpd_policy_exit(Httpd_policy_opts *);
+extern int httpd_policy_init(Httpd_opts *, Httpd_policy_opts *);
+extern Opt_serv_policy_opts *httpd_policy_make(Opt_serv_opts *);
+extern int httpd_policy_copy(Opt_serv_policy_opts *,
+                             const Opt_serv_policy_opts *);
 
 #if !defined(HTTPD_POLICY_COMPILE_INLINE)
 # ifdef VSTR_AUTOCONF_NDEBUG
@@ -147,19 +139,18 @@ extern int httpd_policy_ipv4_cidr_eq(struct Con *, Httpd_req_data *,
 #define HTTPD_POLICY__FALSE 0
 
 extern inline void httpd_policy_change_con(struct Con *con,
-                                           Httpd_policy_opts *policy)
+                                           const Httpd_policy_opts *policy)
 {
   con->use_sendfile          = policy->use_sendfile;
   con->policy                = policy;
 }
 
 extern inline void httpd_policy_change_req(Httpd_req_data *req,
-                                           Httpd_policy_opts *policy)
+                                           const Httpd_policy_opts *policy)
 {
   req->parse_accept          = policy->use_err_406;
   req->allow_accept_encoding = policy->use_gzip_content_replacement;
-  if (req->vhost_prefix_len &&
-      !(policy->use_vhosts_name || policy->use_vhosts_addr))
+  if (req->vhost_prefix_len && !policy->use_vhosts_name)
   { /* NOTE: doesn't do chk_host properly */
     vstr_del(req->fname, 1, req->vhost_prefix_len);
     req->vhost_prefix_len = 0;
@@ -170,58 +161,6 @@ extern inline void httpd_policy_change_req(Httpd_req_data *req,
     req->chk_encoded_dot     = policy->chk_encoded_dot;
   }
   req->policy                = policy;
-}
-
-extern inline Httpd_policy_opts *httpd_policy_find(Httpd_policy_opts *opts,
-                                                   const Conf_parse *conf,
-                                                   Conf_token *token)
-{
-  const Vstr_sect_node *val = conf_token_value(token);
-
-  if (!val)
-    return (NULL);
-  
-  opts = opts->beg->def_policy;
-
-  if (vstr_cmp_cstr_eq(conf->data, val->pos, val->len, "<default>"))
-    return (opts);
-  
-  while ((opts = opts->next))
-  {
-    Vstr_base *tmp = opts->policy_name;
-    int cmp = 0;
-    
-    HTTPD_POLICY__ASSERT(!opts->next ||
-                         (tmp->len < opts->next->policy_name->len) ||
-                         ((tmp->len == opts->next->policy_name->len) &&
-                          vstr_cmp(tmp, 1, tmp->len,
-                                   opts->next->policy_name, 1,
-                                   opts->next->policy_name->len) < 0));
-    
-    if (val->len > tmp->len)
-      continue;
-    if (val->len < tmp->len)
-      break;
-    cmp = vstr_cmp(conf->data, val->pos, val->len, tmp, 1, tmp->len);
-    if (!cmp)
-      return (opts);
-    if (cmp < 0)
-      break;
-  }
-  
-  return (NULL);
-}
-
-extern inline int httpd_policy_name_eq(const Conf_parse *conf,Conf_token *token,
-                                       Httpd_policy_opts *policy, int *matches)
-{
-  Vstr_base *tmp = policy->policy_name;
-    
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, HTTPD_POLICY__FALSE);
-
-  *matches = conf_token_cmp_val_eq(conf, token, tmp, 1, tmp->len);
-  
-  return (HTTPD_POLICY__TRUE);
 }
 
 extern inline int httpd_policy_path_eq(const Vstr_base *s1,
@@ -786,6 +725,42 @@ extern inline int httpd_policy_path_req2lim(unsigned int type)
 
   return (lim);
 }
+
+extern inline int httpd_policy_ipv4_make(struct Con *con, Httpd_req_data *req,
+                                         Conf_parse *conf, Conf_token *token,
+                                         unsigned int type,
+                                         struct sockaddr *sa, int *matches)
+{
+  HTTPD_POLICY__ASSERT(con);
+  
+  if (sa == EVNT_SA(con->evnt))
+  {
+    if (req)
+      req->vary_star = HTTPD_POLICY__TRUE;
+    else
+      con->vary_star = HTTPD_POLICY__TRUE;
+  }
+
+  return (opt_policy_ipv4_make(conf, token, type, sa, matches));
+}
+
+extern inline int httpd_policy_ipv4_cidr_eq(struct Con *con,Httpd_req_data *req,
+                                            Opt_policy_ipv4 *ipv4,
+                                            struct sockaddr *sa)
+{
+  HTTPD_POLICY__ASSERT(con);
+  
+  if (sa == EVNT_SA(con->evnt))
+  {
+    if (req)
+      req->vary_star = HTTPD_POLICY__TRUE;
+    else
+      con->vary_star = HTTPD_POLICY__TRUE;
+  }
+
+  return (opt_policy_ipv4_cidr_eq(ipv4, sa));
+}
+
 
 #endif
 

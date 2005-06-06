@@ -38,14 +38,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
-#include <signal.h>
 #include <grp.h>
-#include <sys/resource.h>
-
-/* need better way to test for this */
-#ifndef __GLIBC__
-# define strsignal(x) ""
-#endif
 
 #define EX_UTILS_NO_USE_INIT  1
 #define EX_UTILS_NO_USE_EXIT  1
@@ -86,8 +79,6 @@ MALLOC_CHECK_DECL();
 
 /* for simplicity */
 #define VEQ(vstr, p, l, cstr) vstr_cmp_cstr_eq(vstr, p, l, cstr)
-
-static struct Evnt *httpd_acpt_evnt = NULL;
 
 static Vlg *vlg = NULL;
 
@@ -170,100 +161,6 @@ static void usage(const char *program_name, int ret, const char *prefix)
   exit (ret);
 }
 
-#define SERV__SIG_OR_ERR(x)                     \
-    if (sigaction(x, &sa, NULL) == -1)          \
-      err(EXIT_FAILURE, "signal(" #x ")")
-
-static void serv__sig_crash(int s_ig_num)
-{
-  vlg_sig_abort(vlg, "SIG[%d]: %s\n", s_ig_num, strsignal(s_ig_num));
-}
-
-static void serv__sig_raise_cont(int s_ig_num)
-{
-  struct sigaction sa;
-  
-  if (sigemptyset(&sa.sa_mask) == -1)
-    err(EXIT_FAILURE, "signal init");
-
-  sa.sa_flags   = SA_RESTART;
-  sa.sa_handler = SIG_DFL;
-  SERV__SIG_OR_ERR(s_ig_num);
-
-  vlg_sig_info(vlg, "SIG[%d]: %s\n", s_ig_num, strsignal(s_ig_num));
-  raise(s_ig_num);
-}
-
-static void serv__sig_cont(int s_ig_num)
-{
-  if (0) /* s_ig_num == SIGCONT) */
-  {
-    struct sigaction sa;
-  
-    if (sigemptyset(&sa.sa_mask) == -1)
-      err(EXIT_FAILURE, "signal init");
-
-    sa.sa_flags   = SA_RESTART;
-    sa.sa_handler = serv__sig_raise_cont;
-    SERV__SIG_OR_ERR(SIGTSTP);
-  }
-  
-  vlg_sig_info(vlg, "SIG[%d]: %s\n", s_ig_num, strsignal(s_ig_num));
-}
-
-static void serv__sig_child(int s_ig_num)
-{
-  ASSERT(s_ig_num == SIGCHLD);
-  evnt_child_exited = TRUE;
-}
-
-static void serv_signals(void)
-{
-  struct sigaction sa;
-  
-  if (sigemptyset(&sa.sa_mask) == -1)
-    err(EXIT_FAILURE, "signal init %s", "sigemptyset");
-  
-  /* don't use SA_RESTART ... */
-  sa.sa_flags   = 0;
-  /* ignore it... we don't have a use for it */
-  sa.sa_handler = SIG_IGN;
-  
-  SERV__SIG_OR_ERR(SIGPIPE);
-
-  sa.sa_handler = serv__sig_crash;
-  
-  SERV__SIG_OR_ERR(SIGSEGV);
-  SERV__SIG_OR_ERR(SIGBUS);
-  SERV__SIG_OR_ERR(SIGILL);
-  SERV__SIG_OR_ERR(SIGFPE);
-  SERV__SIG_OR_ERR(SIGXFSZ);
-
-  sa.sa_flags   = SA_RESTART; /* FIXME: probably needs to move to evnt_sc_* */
-  sa.sa_handler = serv__sig_child;
-  SERV__SIG_OR_ERR(SIGCHLD);
-  
-  sa.sa_flags   = SA_RESTART;
-  sa.sa_handler = serv__sig_cont; /* print, and do nothing */
-  
-  SERV__SIG_OR_ERR(SIGUSR1);
-  SERV__SIG_OR_ERR(SIGUSR2);
-  SERV__SIG_OR_ERR(SIGHUP);
-  SERV__SIG_OR_ERR(SIGCONT);
-  
-  sa.sa_handler = serv__sig_raise_cont; /* queue print, and re-raise */
-  
-  SERV__SIG_OR_ERR(SIGTSTP);
-  SERV__SIG_OR_ERR(SIGTERM);
-  
-  /*
-  sa.sa_handler = ex_http__sig_shutdown;
-  if (sigaction(SIGTERM, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  */
-}
-#undef SERV__SIG_OR_ERR
-
 static void serv_init(void)
 {
   if (!vstr_init()) /* init the library */
@@ -275,7 +172,8 @@ static void serv_init(void)
                       VSTR_TYPE_CNTL_CONF_GRPALLOC_CSTR))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-  if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_BUF_SZ, HTTPD_CONF_BUF_SZ))
+  if (!vstr_cntl_conf(NULL,
+                      VSTR_CNTL_CONF_SET_NUM_BUF_SZ, OPT_SERV_CONF_BUF_SZ))
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   /* no passing of conf to evnt */
@@ -309,74 +207,40 @@ static void serv_init(void)
   evnt_epoll_init();
   evnt_timeout_init();
 
+  opt_serv_logger(vlg);
+
   httpd_init(vlg);
   
-  serv_signals();
-}
-
-static void serv_cntl_resources(void)
-{ /* cap the amount of "wasted" resources we're using */
-  
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE,
-                 0, httpd_opts->max_spare_bases);
-
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                 0, httpd_opts->max_spare_buf_nodes);
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR,
-                 0, httpd_opts->max_spare_ptr_nodes);
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
-                 0, httpd_opts->max_spare_ref_nodes);
+  opt_serv_sc_signals();
 }
 
 static int serv_cb_func_send(struct Evnt *evnt)
 {
-  return (httpd_serv_send((struct Con *)evnt));
+  struct Con *con = (struct Con *)evnt;
+  
+  assert(HTTPD_CONF_SEND_CALL_LIMIT >= 1);
+  con->io_limit_num = HTTPD_CONF_SEND_CALL_LIMIT;
+  return (httpd_serv_send(con));
 }
 
 static int serv_cb_func_recv(struct Evnt *evnt)
 {
-  return (httpd_serv_recv((struct Con *)evnt));
+  struct Con *con = (struct Con *)evnt;
+  
+  assert(HTTPD_CONF_RECV_CALL_LIMIT >= 1);
+  con->io_limit_num = HTTPD_CONF_RECV_CALL_LIMIT;
+  return (httpd_serv_recv(con));
 }
 
 static void serv_cb_func_free(struct Evnt *evnt)
 {
   struct Con *con = (struct Con *)evnt;
-  Opt_serv_opts *opts = httpd_opts->s;
-  struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
   
-  if (acpt_data->evnt &&
-      opts->max_connections && (evnt_num_all() < opts->max_connections))
-    evnt_wait_cntl_add(acpt_data->evnt, POLLIN);
-
   httpd_fin_fd_close(con);
 
-  evnt_vlg_stats_info(evnt, "FREE");
-
-  acpt_data = con->acpt_sa_ref->ptr;
-  if (acpt_data->evnt)
-    evnt_stats_add(acpt_data->evnt, con->evnt);
-
-  vstr_ref_del(con->acpt_sa_ref);
+  opt_serv_sc_free_beg(evnt, con->acpt_sa_ref);
   
   F(con);
-}
-
-static void serv_cb_func_acpt_free(struct Evnt *evnt)
-{
-  struct Acpt_listener *acpt_listener = (struct Acpt_listener *)evnt;
-  struct Acpt_data *acpt_data = acpt_listener->ref->ptr;
-
-  evnt_vlg_stats_info(acpt_listener->evnt, "ACCEPT FREE");
-
-  ASSERT(httpd_acpt_evnt == acpt_listener->evnt);
-
-  httpd_acpt_evnt = NULL;
-  acpt_data->evnt = NULL;
-  cntl_free_acpt(acpt_listener->evnt);
-
-  vstr_ref_del(acpt_listener->ref);
-  
-  F(acpt_listener);
 }
 
 static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
@@ -384,46 +248,38 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
 {
   struct Acpt_listener *acpt_listener = (struct Acpt_listener *)from_evnt;
   struct Con *con = MK(sizeof(struct Con));
-  Opt_serv_opts *opts = httpd_opts->s;
 
-  ASSERT(httpd_acpt_evnt == from_evnt);
-  
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
     goto sa_fail;
   
   if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
     goto make_acpt_fail;
 
-  /* FIXME: allow policy changes for idle timeout */
-  if (!evnt_sc_timeout_via_mtime(con->evnt, httpd_opts->s->idle_timeout * 1000))
+  con->evnt->cbs->cb_func_recv       = serv_cb_func_recv;
+  con->evnt->cbs->cb_func_send       = serv_cb_func_send;
+  con->evnt->cbs->cb_func_free       = serv_cb_func_free;
+
+  if (!httpd_con_init(con, acpt_listener))
+    goto evnt_fail;
+
+  if (!evnt_sc_timeout_via_mtime(con->evnt,
+                                 con->policy->s->idle_timeout * 1000))
   {
     errno = ENOMEM;
     vlg_info(vlg, "ERRCON from[$<sa:%p>]: %m\n", con->evnt->sa);
     goto evnt_fail;
   }
 
-  if (!httpd_con_init(con, acpt_listener))
+  if (!opt_serv_sc_acpt_end(con->policy->s, from_evnt, con->evnt))
     goto evnt_fail;
 
-  if (con->evnt->flag_q_closed)
-    return (con->evnt);
-  
-  /* if it's free'd before this point, use generic free cb */
-  con->evnt->cbs->cb_func_recv       = serv_cb_func_recv;
-  con->evnt->cbs->cb_func_send       = serv_cb_func_send;
-  con->evnt->cbs->cb_func_free       = serv_cb_func_free;
+  ASSERT(!con->evnt->flag_q_closed);
 
-  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
-  
-  if (opts->max_connections && (evnt_num_all() >= opts->max_connections))
-    evnt_wait_cntl_del(from_evnt, POLLIN);
-  
   return (con->evnt);
   
  evnt_fail:
-  if (!con->evnt->flag_q_closed)
-    evnt_free(con->evnt);
-  return (NULL);
+  evnt_close(con->evnt);
+  return (con->evnt);
   
  make_acpt_fail:
   F(con);
@@ -434,41 +290,31 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
   VLG_WARNNOMEM_RET(NULL, (vlg, "%s: HTTPD sa == ipv4 fail\n", "accept"));
 }
 
-static void serv_make_bind(const char *acpt_addr, unsigned short acpt_port)
+static void serv_make_bind(const char *program_name)
 {
-  struct sockaddr_in *sinv4 = NULL;
-  struct Acpt_listener *acpt_listener = NULL;
-  struct Acpt_data *acpt_data = NULL;
-  Vstr_ref *ref = NULL;
+  Opt_serv_addr_opts *addr = httpd_opts->s->addr_beg;
   
-  if (!(acpt_listener = MK(sizeof(struct Acpt_listener))))
-    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "make_bind(%s, %hu): %m\n",
-                  acpt_addr, acpt_port));
-  httpd_acpt_evnt = acpt_listener->evnt;
+  while (addr)
+  {
+    const char *ipv4_address = NULL;
+    const char *acpt_filter_file = NULL;
+    struct Evnt *evnt = NULL;
+    
+    OPT_SC_EXPORT_CSTR(ipv4_address,     addr->ipv4_address,     FALSE,
+                       "ipv4 address");
+    OPT_SC_EXPORT_CSTR(acpt_filter_file, addr->acpt_filter_file, FALSE,
+                       "accept filter file");
+    
+    evnt = evnt_sc_serv_make_bind(ipv4_address, addr->tcp_port,
+                                  addr->q_listen_len,
+                                  addr->max_connections,
+                                  addr->defer_accept,
+                                  acpt_filter_file);
+    
+    evnt->cbs->cb_func_accept = serv_cb_func_accept;
 
-  if (!(ref = vstr_ref_make_malloc(sizeof(struct Acpt_data))))
-    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "make_bind(%s, %hu): %m\n",
-                  acpt_addr, acpt_port));
-  acpt_listener->ref = ref;
-  
-  if (!evnt_make_bind_ipv4(acpt_listener->evnt, acpt_addr, acpt_port,
-                           httpd_opts->s->q_listen_len))
-    vlg_err(vlg, 2, "make_bind(%s, %hu): %m\n", acpt_addr, acpt_port);
-  
-  acpt_listener->evnt->cbs->cb_func_accept = serv_cb_func_accept;
-  acpt_listener->evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
-
-  if (httpd_opts->s->defer_accept)
-    evnt_fd_set_defer_accept(acpt_listener->evnt, httpd_opts->s->defer_accept);
-
-  sinv4 = EVNT_SA_IN(acpt_listener->evnt);
-  ASSERT(!httpd_opts->s->tcp_port ||
-	 (httpd_opts->s->tcp_port == ntohs(sinv4->sin_port)));
-  httpd_opts->s->tcp_port = ntohs(sinv4->sin_port);
-  
-  acpt_data = ref->ptr;
-  memcpy(acpt_data->sa, sinv4, sizeof(struct sockaddr_in));
-  acpt_data->evnt = acpt_listener->evnt;
+    addr = addr->next;
+  }
 }
 
 #define VCMP_MT_EQ_ALL(x, y, z)               \
@@ -476,14 +322,17 @@ static void serv_make_bind(const char *acpt_addr, unsigned short acpt_port)
                 y -> mime_types_ ## z, 1, y -> mime_types_ ## z ->len)
 static Httpd_policy_opts *serv__mime_types_eq(Httpd_policy_opts *node)
 { /* compares both mime filenames ... */
-  Httpd_policy_opts *scan = httpd_opts->def_policy;
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
 
   ASSERT(node);
   
-  while (scan != node)
+  while (scan != node->s)
   {
-    if (VCMP_MT_EQ_ALL(scan, node, main) && VCMP_MT_EQ_ALL(scan, node, xtra))
-      return (scan);
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    
+    if (VCMP_MT_EQ_ALL(tmp, node, main) && VCMP_MT_EQ_ALL(tmp, node, xtra))
+      return (tmp);
+    
     scan = scan->next;
   }
   
@@ -493,33 +342,34 @@ static Httpd_policy_opts *serv__mime_types_eq(Httpd_policy_opts *node)
 
 static void serv_mime_types(const char *program_name)
 {
-  Httpd_policy_opts *scan = httpd_opts->def_policy;
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
     
   while (scan)
   {
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
     Httpd_policy_opts *prev = NULL;
     
-    if (!mime_types_init(scan->mime_types,
-                         scan->mime_types_def_ct, 1,
-                         scan->mime_types_def_ct->len))
+    if (!mime_types_init(tmp->mime_types,
+                         tmp->mime_types_def_ct, 1,
+                         tmp->mime_types_def_ct->len))
       errno = ENOMEM, err(EXIT_FAILURE, "init");
 
-    if ((prev = serv__mime_types_eq(scan)))
-      mime_types_combine_filedata(scan->mime_types, prev->mime_types);
+    if ((prev = serv__mime_types_eq(tmp)))
+      mime_types_combine_filedata(tmp->mime_types, prev->mime_types);
     else
     {
       const char *mime_types_main = NULL;
       const char *mime_types_xtra = NULL;
   
-      OPT_SC_EXPORT_CSTR(mime_types_main, scan->mime_types_main, FALSE,
+      OPT_SC_EXPORT_CSTR(mime_types_main, tmp->mime_types_main, FALSE,
                          "MIME types main file");
-      OPT_SC_EXPORT_CSTR(mime_types_xtra, scan->mime_types_xtra, FALSE,
+      OPT_SC_EXPORT_CSTR(mime_types_xtra, tmp->mime_types_xtra, FALSE,
                          "MIME types extra file");
 
-      if (!mime_types_load_simple(scan->mime_types, mime_types_main))
+      if (!mime_types_load_simple(tmp->mime_types, mime_types_main))
         err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
   
-      if (!mime_types_load_simple(scan->mime_types, mime_types_xtra))
+      if (!mime_types_load_simple(tmp->mime_types, mime_types_xtra))
         err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
     }
     
@@ -527,46 +377,51 @@ static void serv_mime_types(const char *program_name)
   }
 
   /* we don't need the filenames after we've loaded... */
-  scan = httpd_opts->def_policy;
+  scan = httpd_opts->s->def_policy;
   while (scan)
   {
-    vstr_free_base(scan->mime_types_main); scan->mime_types_main = NULL;
-    vstr_free_base(scan->mime_types_xtra); scan->mime_types_xtra = NULL;
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    
+    vstr_free_base(tmp->mime_types_main); tmp->mime_types_main = NULL;
+    vstr_free_base(tmp->mime_types_xtra); tmp->mime_types_xtra = NULL;
+    
     scan = scan->next;
   }
 }
 
 static void serv_canon_policies(void)
 {
-  Httpd_policy_opts *scan = httpd_opts->def_policy;
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
   
   while (scan)
   { /* check variables for things which will screw us too much */
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
     Vstr_base *s1 = NULL;
     Vstr_base *s2 = NULL;
 
-    s1 = scan->document_root;
+    s1 = tmp->document_root;
     if (!httpd_canon_dir_path(s1))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
                     s1));
   
-    s1 = scan->req_conf_dir;
+    s1 = tmp->req_conf_dir;
     if (!httpd_canon_dir_path(s1))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
                     s1));
 
-    s1 = scan->default_hostname;
+    s1 = tmp->default_hostname;
     if (!httpd_valid_url_filename(s1, 1, s1->len))
       vstr_del(s1, 1, s1->len);
-    s2 = httpd_opts->def_policy->default_hostname;
+    s2 = ((Httpd_policy_opts *) httpd_opts->s->def_policy)->default_hostname;
     if (!s1->len && !vstr_add_vstr(s1, s1->len,
                                    s2, 1, s2->len, VSTR_TYPE_ADD_BUF_REF))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "hostname(): %m\n"));
     
-    s1 = scan->dir_filename;
+    s1 = tmp->dir_filename;
     if (!httpd_valid_url_filename(s1, 1, s1->len) &&
         !vstr_sub_cstr_ptr(s1, 1, s1->len, HTTPD_CONF_DEF_DIR_FILENAME))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "dir_filename(): %m\n"));
+    
     scan = scan->next;
   }
 }
@@ -618,7 +473,7 @@ static void serv_cmd_line(int argc, char *argv[])
   const char *chroot_dir = NULL;
   const char *document_root = NULL;
   Vstr_base *out = vstr_make_base(NULL);
-  Httpd_policy_opts *popts = httpd_opts->def_policy;
+  Httpd_policy_opts *popts = NULL;
 
   if (!out)
     errno = ENOMEM, err(EXIT_FAILURE, "command line");
@@ -627,13 +482,13 @@ static void serv_cmd_line(int argc, char *argv[])
   
   program_name = opt_program_name(argv[0], HTTPD_CONF_PROG_NAME);
 
-  if (geteuid()) /* If not root, 80 won't work */
-    httpd_opts->s->tcp_port = 8008;
-    
-  if (!opt_serv_conf_init(httpd_opts->s) ||
-      !httpd_conf_main_init(httpd_opts))
+  httpd_opts->s->make_policy = httpd_policy_make;
+  httpd_opts->s->copy_policy = httpd_policy_copy;
+
+  if (!httpd_conf_main_init(httpd_opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");
-  
+
+  popts = (Httpd_policy_opts *)httpd_opts->s->def_policy;
   while ((optchar = getopt_long(argc, argv, "C:dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
   {
@@ -712,6 +567,14 @@ static void serv_cmd_line(int argc, char *argv[])
   if (!popts->document_root->len)
     usage(program_name, EXIT_FAILURE, " Not specified a document root.\n");
 
+  if (httpd_opts->s->no_conf_listen)
+  {
+    if (!geteuid()) /* If root */
+      httpd_opts->s->addr_beg->tcp_port = HTTPD_CONF_SERV_DEF_PORT;
+    else /* somewhat common unprived port */
+      httpd_opts->s->addr_beg->tcp_port = 8008;
+  }
+  
   if (httpd_opts->s->become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)
@@ -720,56 +583,28 @@ static void serv_cmd_line(int argc, char *argv[])
   }
 
   if (httpd_opts->s->rlim_file_num)
-  {
-    struct rlimit rlim[1];
-    if (getrlimit(RLIMIT_NOFILE, rlim) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "getrlimit: %m\n");
-
-    if ((httpd_opts->s->rlim_file_num > rlim->rlim_max) && !getuid())
-      rlim->rlim_max = httpd_opts->s->rlim_file_num; /* if we are privilaged */
-    if (httpd_opts->s->rlim_file_num < rlim->rlim_max)
-      rlim->rlim_max = httpd_opts->s->rlim_file_num;
-    rlim->rlim_cur = rlim->rlim_max;
-	
-    if (setrlimit(RLIMIT_NOFILE, rlim) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setrlimit: %m\n");
-  }
-
-  /* do for all policies */
+    opt_serv_sc_rlim_file_num(httpd_opts->s->rlim_file_num);
   
   {
-    const char *ipv4_address = NULL;
     const char *pid_file = NULL;
     const char *cntl_file = NULL;
-    const char *acpt_filter_file = NULL;
     Opt_serv_opts *opts = httpd_opts->s;
     
-    OPT_SC_EXPORT_CSTR(ipv4_address,     opts->ipv4_address,     FALSE,
-                       "ipv4 address");
-    OPT_SC_EXPORT_CSTR(pid_file,         opts->pid_file,         FALSE,
-                       "pid file");
-    OPT_SC_EXPORT_CSTR(cntl_file,        opts->cntl_file,        FALSE,
-                       "control file");
-    OPT_SC_EXPORT_CSTR(acpt_filter_file, opts->acpt_filter_file, FALSE,
-                       "accept filter file");
-    OPT_SC_EXPORT_CSTR(chroot_dir,       opts->chroot_dir,       FALSE,
-                       "chroot directory");
+    OPT_SC_EXPORT_CSTR(pid_file,   opts->pid_file,   FALSE, "pid file");
+    OPT_SC_EXPORT_CSTR(cntl_file,  opts->cntl_file,  FALSE, "control file");
+    OPT_SC_EXPORT_CSTR(chroot_dir, opts->chroot_dir, FALSE, "chroot directory");
     
-    serv_make_bind(ipv4_address, opts->tcp_port);
+    serv_make_bind(program_name);
 
-    if (!httpd_init_default_hostname(httpd_opts->def_policy))
+    if (!httpd_init_default_hostname(httpd_opts->s->def_policy))
       errno = ENOMEM, err(EXIT_FAILURE, "default_hostname");
   
     if (pid_file)
       vlg_pid_file(vlg, pid_file);
 
     if (cntl_file)
-      cntl_make_file(vlg, httpd_acpt_evnt, cntl_file);
+      cntl_make_file(vlg, cntl_file);
 
-    if (acpt_filter_file)
-      if (!evnt_fd_set_filter(httpd_acpt_evnt, acpt_filter_file))
-        errx(EXIT_FAILURE, "set_filter");
-  
     serv_canon_policies();
   
     OPT_SC_EXPORT_CSTR(document_root, popts->document_root, TRUE,
@@ -777,47 +612,46 @@ static void serv_cmd_line(int argc, char *argv[])
     
     serv_mime_types(program_name);
   
-  if (opts->drop_privs)
-  { /* FIXME: called from all daemons */
-    OPT_SC_RESOLVE_UID(opts);
-    OPT_SC_RESOLVE_GID(opts);
-  }
+    if (chroot_dir)
+    { /* preload locale info. so syslog can log in localtime */
+      time_t now = time(NULL);
+      (void)localtime(&now);
+      
+      vlg_sc_bind_mount(chroot_dir);  
+    }
   
-  if (chroot_dir)
-  { /* preload locale info. so syslog can log in localtime */
-    time_t now = time(NULL);
-    (void)localtime(&now);
+    /* after daemon so syslog works */
+    if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
+      vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
+    
+    if (opts->drop_privs)
+    {
+      OPT_SC_RESOLVE_UID(opts);
+      OPT_SC_RESOLVE_GID(opts);
+      opt_serv_sc_drop_privs(opts);
+    }
 
-    vlg_sc_bind_mount(chroot_dir);  
-  }
-  
-  /* after daemon so syslog works */
-  if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
-    vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
-    
-  if (opts->drop_privs)
-  { /* FIXME: called from all daemons */
-    if (setgroups(1, &opts->priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)opts->priv_gid);
-    
-    if (setgid(opts->priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)opts->priv_gid);
-    
-    if (setuid(opts->priv_uid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)opts->priv_uid);
-  }
-
-  if (opts->num_procs > 1)
-    cntl_sc_multiproc(vlg, httpd_acpt_evnt, opts->num_procs,
-                      !!cntl_file, opts->use_pdeathsig);
+    if (opts->num_procs > 1)
+      cntl_sc_multiproc(vlg, opts->num_procs, !!cntl_file, opts->use_pdeathsig);
   }
 
   httpd_opts->beg_time = time(NULL);
   
-  vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", httpd_acpt_evnt->sa,
-           chroot_dir ? chroot_dir : "",
-           chroot_dir ?        "/" : "",
-           document_root);
+  /*  if (make_dumpable && (prctl(PR_SET_DUMPABLE, 1, 0, 0, 0) == -1))
+   *    vlg_warn(vlg, "prctl(SET_DUMPABLE, TRUE): %m\n"); */
+
+  {
+    struct Evnt *evnt = evnt_queue("accept");
+    
+    while (evnt)
+    {
+      vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", evnt->sa,
+               chroot_dir ? chroot_dir : "",
+               chroot_dir ?        "/" : "",
+               document_root);
+      evnt = evnt->next;
+    }
+  }
   
   opt_serv_conf_free(httpd_opts->s);
   return;
@@ -838,13 +672,8 @@ int main(int argc, char *argv[])
   while (evnt_waiting())
   {
     evnt_sc_main_loop(HTTPD_CONF_MAX_WAIT_SEND);
-    if (evnt_child_exited)
-    {
-      vlg_warn(vlg, "Child exited.\n");
-      evnt_close(httpd_acpt_evnt); evnt_scan_q_close();
-      evnt_child_exited = FALSE;
-    }
-    serv_cntl_resources();
+    opt_serv_sc_check_children();
+    opt_serv_sc_cntl_resources(httpd_opts->s);
   }
   evnt_out_dbg3("E");
   

@@ -131,9 +131,10 @@ ex_cntl_CFLAGS   = $(GEN_CFLAGS) $(SOCKET_POLL_CFLAGS) $(TIMER_Q_CFLAGS)
 ex_cntl_LDADD    = $(GEN_LDLIBS) $(SOCKET_POLL_LDLIBS) $(TIMER_Q_LDLIBS)
 
 DAEMON_FILES_SRCS = bag.c conf.c cntl.c date.c evnt.c hexdump.c \
-                    opt.c opt_serv.c vlg.c conf_inline.c
+                    opt.c opt_policy.c opt_serv.c vlg.c \
+                    conf_inline.c opt_policy_inline.c
 DAEMON_FILES_HDRS = bag.h conf.h cntl.h date.h evnt.h hexdump.h \
-                    opt.h opt_serv.h vlg.h
+                    opt.h opt_policy.h opt_serv.h vlg.h
 
 ex_httpd_SOURCES      = mime_types.c httpd_conf_main.c httpd_conf_req.c \
 			httpd_policy.c httpd_policy_inline.c \
@@ -299,6 +300,7 @@ example_code_html = \
   html/bag.h.html \
   html/conf.c.html \
   html/conf.h.html \
+  html/conf_inline.c.html \
   html/cntl.c.html \
   html/cntl.h.html \
   html/date.c.html \
@@ -360,10 +362,16 @@ example_code_html = \
   html/httpd_conf_main.h.html \
   html/httpd_conf_req.c.html \
   html/httpd_conf_req.h.html \
+  html/httpd_policy.c.html \
+  html/httpd_policy.h.html \
+  html/httpd_policy_inline.c.html \
   html/mk.h.html \
   html/opt.h.html \
   html/opt_serv.c.html \
   html/opt_serv.h.html \
+  html/opt_policy.c.html \
+  html/opt_policy.h.html \
+  html/opt_policy_inline.c.html \
   html/vlg.c.html \
   html/vlg.h.html
 #  html/ex_tdns.c.html 

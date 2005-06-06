@@ -17,7 +17,7 @@
     <h1>HTTPD using Vstr</h1>
 
 <p> You can see the source of the JHTTPD daemon
-<a href="examples/ex_httpd.c.html">here</a>, some writing in general about
+<a href="examples/ex_httpd.c">here</a>, some writing in general about
 HTTP/1.1 after implementing a server is
 <a href="http://www.and.org/texts/server-http">here</a>.</p>
 
@@ -27,8 +27,8 @@ HTTP/1.1 after implementing a server is
 % LC_ALL=C egrep '[^_.>a-zA-Z0-9](mem|rawmem|bcopy|bzero|bcmp|str(n?cpy|n?cat|n?cmp|coll|xfrm|n?dup|r?chr|c?spn|str|pbrk|tok|n?case|sep|verscmp|fry|_)|stpn?cpy|r?index[^.]|basename|dirname|a?sn?printf|byte_)' examples/ex_httpd.c
 %
 
-    Design is a statemachine triggering off IO events, somewhat like thttpd.
-     Simple tests with ab show it to be about twice as fast as thttpd-2.20c.
+    Design is a statemachine triggering off IO events, somewhat like thttpd and boa (among others).
+     Simple tests with ab show it to be about twice as fast as thttpd-2.20c (note that thttpd doesn't support keep-alive, which gives jhttpd a significant advantage -- mainly due to usage of Vstr).
 
     Uses the following system utilities:
      poll or epoll, multiplexing
@@ -36,7 +36,7 @@ HTTP/1.1 after implementing a server is
      sendfile or mmap, for file contents
      LFS
      TCP_CORK
-     DEFER_ACCEPT
+     TCP_DEFER_ACCEPT
      posix_fadvise()
      chroot, privilage de-escalation (can also easily be started as non-root)
      does a bind mount for /dev/log when in a chroot.
@@ -113,7 +113,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Sun Apr 24 23:59:44 EDT 2005
+Last modified: Tue May 31 18:20:44 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

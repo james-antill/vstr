@@ -26,6 +26,7 @@
 #define EX_UTILS_NO_USE_EXIT  1
 #define EX_UTILS_NO_USE_LIMIT 1
 #define EX_UTILS_NO_USE_BLOCK 1
+#define EX_UTILS_NO_USE_GET   1
 #define EX_UTILS_NO_USE_PUT   1
 #define EX_UTILS_USE_NONBLOCKING_OPEN 1
 #define EX_UTILS_RET_FAIL     1
@@ -47,8 +48,6 @@
 # define HTTP_CONF_SAFE_PRINT_REQ FALSE
 #endif
 #define HTTP_CONF_MMAP_LIMIT_MAX (50 * 1024 * 1024)
-
-#define HTTP_CONF_FS_READ_CALL_LIMIT 4
 
 #define CLEN VSTR__AT_COMPILE_STRLEN
 
@@ -97,7 +96,7 @@
     (req)-> x ## _vs1, (req)-> x ## _pos, (req)-> x ## _len
 
 
-HTTPD_CONF_MAIN_DECL_OPTS(httpd_opts, HTTPD_CONF_SERV_DEF_PORT);
+HTTPD_CONF_MAIN_DECL_OPTS(httpd_opts);
 
 static Vlg *vlg = NULL;
 
@@ -167,7 +166,8 @@ Httpd_req_data *http_req_make(struct Con *con)
 {
   static Httpd_req_data real_req[1];
   Httpd_req_data *req = real_req;
-
+  const Httpd_policy_opts *policy = NULL;
+  
   ASSERT(!req->using_req);
 
   if (!req->done_once)
@@ -256,7 +256,11 @@ Httpd_req_data *http_req_make(struct Con *con)
 
   req->malloc_bad = FALSE;
 
-  httpd_policy_change_req(req, con ? con->policy : httpd_opts->def_policy);
+  if (con)
+    policy = con->policy;
+  else
+    policy = (Httpd_policy_opts *)httpd_opts->s->def_policy;  
+  httpd_policy_change_req(req, policy);
   
   return (req);
 }
@@ -532,7 +536,7 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     case HTTP_1_1_KEEP_ALIVE: /* max=xxx ? */
       if (req->output_keep_alive_hdr)
         http_app_hdr_fmt(out, "Keep-Alive",
-                         "%s=%u", "timeout", httpd_opts->s->idle_timeout);
+                         "%s=%u", "timeout", req->policy->s->idle_timeout);
       
       ASSERT_NO_SWITCH_DEF();
   }
@@ -657,11 +661,13 @@ static int http_fin_req(struct Con *con, Httpd_req_data *req)
   
   vstr_del(con->evnt->io_r, 1, req->len);
   
+  evnt_put_pkt(con->evnt);
+
+  if (req->policy->use_tcp_cork)
+    evnt_fd_set_cork(con->evnt, TRUE);
+
   http_req_free(req);
 
-  evnt_put_pkt(con->evnt);
-  
-  evnt_fd_set_cork(con->evnt, TRUE);
   return (httpd_serv_send(con));
 }
 
@@ -800,12 +806,24 @@ static int http_fin_err_close_req(struct Con *con, struct Httpd_req_data *req)
   return (http_fin_err_req(con, req));
 }
 
-int httpd_sc_add_default_hostname(Httpd_policy_opts *opts,
+int httpd_sc_add_default_hostname(struct Con *con,
+                                  Httpd_req_data *req,
                                   Vstr_base *lfn, size_t pos)
 {
-  Vstr_base *d_h = opts->default_hostname;
+  const Httpd_policy_opts *opts = req->policy;
+  const Vstr_base *d_h = opts->default_hostname;
+  Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
+  struct sockaddr_in *sinv4 = (struct sockaddr_in *)acpt_data->sa;
+  int ret = FALSE;
   
-  return (vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF));
+  ret = vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF);
+
+  ASSERT(sinv4->sin_family == AF_INET);
+  
+  if (ret && req->policy->add_def_port && (ntohs(sinv4->sin_port) != 80))
+    ret = vstr_add_fmt(lfn, pos + d_h->len, ":%hu", ntohs(sinv4->sin_port));
+
+  return (ret);
 }
 
 /* turn //foo//bar// into /foo/bar/ */
@@ -836,7 +854,6 @@ int httpd_canon_dir_path(Vstr_base *s1)
 void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
                             Vstr_base *lfn, size_t pos, size_t len)
 {
-  struct Httpd_policy_opts *opts = req->policy;
   Vstr_base *data = con->evnt->io_r;
   Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
   size_t apos = pos - 1;
@@ -871,7 +888,7 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
     apos += lfn->len - alen;
     alen = lfn->len;
     if (!h_h->len)
-      httpd_sc_add_default_hostname(opts, lfn, apos);
+      httpd_sc_add_default_hostname(con, req, lfn, apos);
     else
       vstr_add_vstr(lfn, apos,
                     data, h_h->pos, h_h->len, VSTR_TYPE_ADD_ALL_BUF);
@@ -1191,7 +1208,8 @@ static int http__skip_quoted_string(const Vstr_base *data,
 
 /* match non-week entity tags in both strings, return true if any match
  * only allow non-weak entity tags if allow_weak = FALSE */
-static int httpd_match_etags(const Vstr_base *hdr, size_t hpos, size_t hlen,
+static int httpd_match_etags(struct Httpd_req_data *req,
+                             const Vstr_base *hdr, size_t hpos, size_t hlen,
                              const Vstr_base *vs1, size_t epos, size_t elen,
                              int allow_weak)
 {
@@ -1229,6 +1247,7 @@ static int httpd_match_etags(const Vstr_base *hdr, size_t hpos, size_t hlen,
     {
       size_t orig_epos = epos;
       size_t orig_elen = elen;
+      unsigned int num = 0;
       
       while (elen)
       {
@@ -1243,6 +1262,8 @@ static int httpd_match_etags(const Vstr_base *hdr, size_t hpos, size_t hlen,
         }
         else if (need_comma)
           return (FALSE);
+
+        ++num;
         
         if (!VPREFIX(vs1, epos, elen, "W/"))
           weak = FALSE;
@@ -1261,6 +1282,9 @@ static int httpd_match_etags(const Vstr_base *hdr, size_t hpos, size_t hlen,
         elen -= etlen; epos += etlen;
         HTTP_SKIP_LWS(vs1, epos, elen);
         need_comma = TRUE;
+        
+        if (req->policy->max_etag_nodes && (num >= req->policy->max_etag_nodes))
+          return (FALSE);
       }
 
       epos = orig_epos;
@@ -1375,7 +1399,8 @@ static int http_response_ok(struct Con *con, struct Httpd_req_data *req,
     }
 
     if (h_ir_tst   && !req_if_range &&
-        httpd_match_etags(hdrs, h_ir->pos, h_ir->len, vs1, pos, len, FALSE))
+        httpd_match_etags(req,
+                          hdrs, h_ir->pos, h_ir->len, vs1, pos, len, FALSE))
       req_if_range = TRUE;
   
     if (h_ir_tst && !req_if_range)
@@ -1383,12 +1408,12 @@ static int http_response_ok(struct Con *con, struct Httpd_req_data *req,
 
     /* #13.3.3 says don't trust weak for "complex" queries, ie. byteranges */
     if (h_inm->pos && (VEQ(hdrs, h_inm->pos, h_inm->len, "*") ||
-                       httpd_match_etags(comb, h_inm->pos, h_inm->len,
+                       httpd_match_etags(req, comb, h_inm->pos, h_inm->len,
                                          vs1, pos, len, !h_r->pos)))
       cached_output = TRUE;
     
     if (h_im->pos  && !(VEQ(hdrs, h_im->pos, h_im->len, "*") ||
-                        httpd_match_etags(comb, h_im->pos, h_im->len,
+                        httpd_match_etags(req, comb, h_im->pos, h_im->len,
                                           vs1, pos, len, !h_r->pos)))
       return (FALSE);
   }
@@ -1685,7 +1710,8 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
-
+  unsigned int num = 0;
+  
   pos = req->http_hdrs->multi->hdr_connection->pos;
   len = req->http_hdrs->multi->hdr_connection->len;
 
@@ -1700,6 +1726,7 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
     size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
                                          HTTP_EOL HTTP_LWS ",");
 
+    ++num;
     if (req->ver_1_1)
     { /* this is all we have to do for HTTP/1.1 ... proxies understnad it */
       if (VIEQ(data, pos, tmp, "close"))
@@ -1737,6 +1764,10 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
     assert(VPREFIX(data, pos, len, ","));
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
+
+    if (req->policy->max_connection_nodes &&
+        (num >= req->policy->max_connection_nodes))
+      return;
   }
 }
 #undef HDR__CON_1_0_FIXUP
@@ -1753,11 +1784,19 @@ static int http__parse_1_x(struct Con *con, struct Httpd_req_data *req)
   if (!http__parse_hdrs(con, req))
     return (FALSE);
 
-  if (!req->policy->use_keep_alive)
+  if (req->policy->max_requests &&
+      (req->policy->max_requests <= con->evnt->acct.req_got) && req->ver_1_1)
+    return (TRUE);
+
+  if (!req->policy->use_keep_alive && req->ver_1_1)
     return (TRUE);
 
   http__parse_connection(con, req);
   
+  if (req->policy->max_requests &&
+      (req->policy->max_requests <= con->evnt->acct.req_got))
+    con->keep_alive = HTTP_NON_KEEP_ALIVE;
+
   return (TRUE);
 }
 
@@ -2070,6 +2109,7 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
+  unsigned int num = 0;
   unsigned int gzip_val     = 1001;
   unsigned int bzip2_val    = 1001;
   unsigned int identity_val = 1001;
@@ -2091,6 +2131,8 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
   {
     size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
                                          HTTP_EOL HTTP_LWS ";,");
+
+    ++num;
     
     if (0) { }
     else if (VEQ(data, pos, tmp, "identity"))
@@ -2139,6 +2181,9 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
     assert(VPREFIX(data, pos, len, ","));
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
+
+    if (req->policy->max_AE_nodes && (num >= req->policy->max_AE_nodes))
+      return (FALSE);
   }
 
   if (!req->allow_accept_encoding)
@@ -2234,6 +2279,30 @@ static void httpd_serv_conf_file(struct Con *con, struct Httpd_req_data *req,
   con->f->len = f_len;
 }
 
+static void httpd__disable_mmap(void)
+{
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
+  
+  while (scan)
+  {
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    tmp->use_mmap = FALSE;
+    scan = scan->next;
+  }
+}
+
+static void httpd__disable_sendfile(void)
+{
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
+  
+  while (scan)
+  {
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    tmp->use_sendfile = FALSE;
+    scan = scan->next;
+  }
+}
+
 static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
                                  VSTR_AUTOCONF_uintmax_t off,
                                  VSTR_AUTOCONF_uintmax_t f_len)
@@ -2253,7 +2322,7 @@ static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
   if (!pagesz)
     pagesz = sysconf(_SC_PAGESIZE);
   if (pagesz == -1)
-    req->policy->use_mmap = FALSE;
+    httpd__disable_mmap();
 
   if (!req->policy->use_mmap ||
       (f_len < HTTP_CONF_MMAP_LIMIT_MIN) || (f_len > HTTP_CONF_MMAP_LIMIT_MAX))
@@ -2271,12 +2340,17 @@ static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
   ASSERT(!req->f_mmap->len);
   
   if (!vstr_sc_mmap_fd(req->f_mmap, 0, con->f->fd, mmoff, mmlen, NULL))
+  {
+    if (errno == ENOSYS) /* also logs it */
+      httpd__disable_mmap();
+
     VLG_WARN_RET_VOID((vlg, /* fall back to read */
                        "mmap($<http-esc.vstr:%p%zu%zu>,"
-                            "(%ju,%ju)->(%ju,%ju)): %m\n",
+                       "(%ju,%ju)->(%ju,%ju)): %m\n",
                        req->fname, (size_t)1, req->fname->len,
                        off, f_len, mmoff, mmlen));
-
+  }
+  
   req->use_mmap = TRUE;  
   vstr_del(req->f_mmap, 1, off - mmoff);
     
@@ -2505,6 +2579,7 @@ unsigned int http_parse_accept(Httpd_req_data *req,
   Vstr_base *data = req->http_hdrs->multi->comb;
   size_t pos = 0;
   size_t len = 0;
+  unsigned int num = 0;
   unsigned int quality = 1001;
   int done_sub_type = FALSE;
   size_t ct_sub_len = 0;
@@ -2529,6 +2604,8 @@ unsigned int http_parse_accept(Httpd_req_data *req,
   {
     size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
                                          HTTP_EOL HTTP_LWS ";,");
+
+    ++num;
     
     if (0) { }
     else if (vstr_cmp_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
@@ -2567,6 +2644,9 @@ unsigned int http_parse_accept(Httpd_req_data *req,
     assert(VPREFIX(data, pos, len, ","));
     len -= 1; pos += 1;
     HTTP_SKIP_LWS(data, pos, len);
+    
+    if (req->policy->max_A_nodes && (num >= req->policy->max_A_nodes))
+      return (FALSE);
   }
 
   ASSERT(quality <= 1001);
@@ -2641,7 +2721,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
   
   if (con->evnt->flag_q_closed)
   {
-    Vstr_base *s1 = req->policy->policy_name;
+    Vstr_base *s1 = req->policy->s->policy_name;
     
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
              con->evnt->sa, s1);
@@ -2650,7 +2730,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
 
   if (req->direct_uri)
   {
-    Vstr_base *s1 = req->policy->policy_name;
+    Vstr_base *s1 = req->policy->s->policy_name;
     vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
              " Has URI.\n", con->evnt->sa, s1);
     HTTPD_ERR_RET(req, 500, TRUE);
@@ -2693,7 +2773,7 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
   
   if (!httpd_conf_req_parse_file(conf, con, req))
   {
-    Vstr_base *s1 = req->policy->policy_name;
+    Vstr_base *s1 = req->policy->s->policy_name;
     Vstr_base *s2 = conf->tmp;
 
     if (!req->user_return_error_code)
@@ -2706,7 +2786,7 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
   
   if (req->direct_uri)
   {
-    Vstr_base *s1 = req->policy->policy_name;
+    Vstr_base *s1 = req->policy->s->policy_name;
     vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
              " Has URI.\n", con->evnt->sa, s1);
     HTTPD_ERR_RET(req, 500, TRUE);
@@ -2872,7 +2952,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
     goto malloc_err;
   
   assert(VPREFIX(fname, 1, fname->len, "/") ||
-         !(req->policy->use_vhosts_name || req->policy->use_vhosts_addr) ||
+         !req->policy->use_vhosts_name ||
          !req->policy->use_chk_host_err ||
 	 !req->policy->use_host_err_400 ||
          VEQ(con->evnt->io_r, req->path_pos, req->path_len, "*"));
@@ -2929,8 +3009,9 @@ int httpd_valid_url_filename(Vstr_base *s1, size_t pos, size_t len)
   return (vstr_spn_cstr_chrs_fwd(s1, pos, len, cstr) == s1->len);
 }
 
-int httpd_init_default_hostname(Httpd_policy_opts *popts)
+int httpd_init_default_hostname(Opt_serv_policy_opts *sopts)
 {
+  Httpd_policy_opts *popts = (Httpd_policy_opts *)sopts;
   Vstr_base *lfn = popts->default_hostname;
   
   if (!httpd_valid_url_filename(lfn, 1, lfn->len))
@@ -2945,9 +3026,6 @@ int httpd_init_default_hostname(Httpd_policy_opts *popts)
     
     buf[255] = 0;
     vstr_add_cstr_buf(lfn, 0, buf);
-
-    if (httpd_opts->s->tcp_port != 80)
-      vstr_add_fmt(lfn, lfn->len, ":%hd", httpd_opts->s->tcp_port);
   }
 
   vstr_conv_lowercase(lfn, 1, lfn->len);
@@ -2955,12 +3033,12 @@ int httpd_init_default_hostname(Httpd_policy_opts *popts)
   return (!lfn->conf->malloc_bad);
 }
 
-static int httpd__chk_vhost(Httpd_policy_opts *popts,
+static int httpd__chk_vhost(const Httpd_policy_opts *popts,
                             Vstr_base *lfn, size_t pos, size_t len)
 {
   const char *vhost = NULL;
   struct stat64 v_stat[1];
-  Vstr_base *def_hname = popts->default_hostname;
+  const Vstr_base *def_hname = popts->default_hostname;
   int ret = -1;
   
   ASSERT(pos);
@@ -3001,7 +3079,7 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
   size_t h_h_len = h_h->len;
   size_t orig_len = 0;
   
-  if (!(req->policy->use_vhosts_name || req->policy->use_vhosts_addr))
+  if (!req->policy->use_vhosts_name)
     return (TRUE);
 
   if (req->policy->use_vhosts_name)
@@ -3019,7 +3097,7 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
     
     orig_len = fname->len;
     if (!h_h_len)
-      httpd_sc_add_default_hostname(req->policy, fname, 0);
+      httpd_sc_add_default_hostname(con, req, fname, 0);
     else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
                            h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
     {
@@ -3035,18 +3113,11 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
             return (TRUE);
           
           vstr_del(fname, 1, h_h_len);
-          httpd_sc_add_default_hostname(req->policy, fname, 0);
+          httpd_sc_add_default_hostname(con, req, fname, 0);
         }  
       }
     }
     vstr_add_cstr_ptr(fname, 0, "/");
-  }
-
-  if (req->policy->use_vhosts_addr)
-  {
-    struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
-    
-    vstr_add_fmt(fname, 0, "/$<sa:%p>", (struct sockaddr *)acpt_data->sa);
   }
 
   req->vhost_prefix_len = (fname->len - orig_len);
@@ -3115,7 +3186,7 @@ static int http_req_make_path(struct Con *con, Httpd_req_data *req)
 static int http_parse_wait_io_r(struct Con *con)
 {
   if (con->evnt->io_r_shutdown)
-    return (FALSE);
+    return (!!con->evnt->io_w->len);
 
   evnt_fd_set_cork(con->evnt, FALSE);
   return (TRUE);
@@ -3169,10 +3240,13 @@ static int http_parse_req(struct Con *con)
 {
   Vstr_base *data = con->evnt->io_r;
   struct Httpd_req_data *req = NULL;
-  int ern_req_all = 0;
+  int ern_req_all = FALSE;
 
   ASSERT(!con->f->len);
 
+  if (!data->len)
+    return (http_parse_wait_io_r(con));
+  
   if (!(req = http_req_make(con)))
     return (FALSE);
 
@@ -3276,7 +3350,7 @@ static int http_parse_req(struct Con *con)
 
       /* Speed hack: Don't even call make_path if it's "OPTIONS * ..."
        * and we don't need to check the Host header */
-      if ((req->policy->use_vhosts_name || req->policy->use_vhosts_addr) &&
+      if (req->policy->use_vhosts_name &&
           req->policy->use_chk_host_err && req->policy->use_host_err_400 &&
           !VEQ(data, req->path_pos, req->path_len, "*") &&
           !http_req_make_path(con, req))
@@ -3300,15 +3374,19 @@ static int http_parse_req(struct Con *con)
   ASSERT_NOT_REACHED();
 }
 
+#define HTTPD__SERV_SEND_ERR(x) do {                                    \
+   if (errno != EPIPE)                                                  \
+     vlg_warn(vlg, "send(%s): %m\n", x);                                \
+   else                                                                 \
+     vlg_dbg2(vlg, "send(%s): SIGPIPE $<sa:%p>\n", x, con->evnt->sa);   \
+   return (FALSE);                                                      \
+ } while (FALSE)
+
 static int httpd_serv_q_send(struct Con *con)
 {
-  vlg_dbg2(vlg, "Q $<sa:%p>\n", con->evnt->sa);
+  vlg_dbg2(vlg, "http Q send $<sa:%p>\n", con->evnt->sa);
   if (!evnt_send_add(con->evnt, TRUE, HTTPD_CONF_MAX_WAIT_SEND))
-  {
-    if (errno != EPIPE)
-      vlg_warn(vlg, "send q: %m\n");
-    return (FALSE);
-  }
+    HTTPD__SERV_SEND_ERR("Q");
       
   /* queued */
   return (TRUE);
@@ -3323,44 +3401,34 @@ static int httpd_serv_fin_send(struct Con *con)
     return (http_parse_req(con));
   }
 
+  vlg_dbg2(vlg, "shutdown_w = %p\n", con->evnt);
   return (evnt_shutdown_w(con->evnt));
 }
-
-/* try sending a bunch of times, bail out if we've done a few ... keep going
- * if we have too much data */
-#define HTTPD_SERV__SEND(x) do {              \
-    if (!--num)                               \
-      return (httpd_serv_q_send(con));        \
-                                              \
-    if (!evnt_send(con->evnt))                \
-    {                                         \
-      if (errno != EPIPE)                     \
-        vlg_warn(vlg, "send(%s): %m\n", x);   \
-      return (FALSE);                         \
-    }                                         \
- } while (out->len >= EX_MAX_W_DATA_INCORE)
 
 int httpd_serv_send(struct Con *con)
 {
   Vstr_base *out = con->evnt->io_w;
-  size_t len = 0;
-  int ret = IO_OK;
-  unsigned int num = HTTP_CONF_FS_READ_CALL_LIMIT;
   
   ASSERT(!out->conf->malloc_bad);
     
   if ((con->f->fd == -1) && con->f->len)
-    return (FALSE);
-
+  { /* output what we have and close */
+    con->f->len = 0;
+    con->keep_alive = HTTP_NON_KEEP_ALIVE;
+  }
+  
   ASSERT((con->f->fd == -1) == !con->f->len);
   
-  if (out->len)
-    HTTPD_SERV__SEND("beg");
-
   if (!con->f->len)
   {
     while (out->len)
-      HTTPD_SERV__SEND("end");
+    {
+      if (!con->io_limit_num--) return (httpd_serv_q_send(con));
+      
+      if (!evnt_send(con->evnt))
+        HTTPD__SERV_SEND_ERR("end");
+    }
+    
     return (httpd_serv_fin_send(con));
   }
 
@@ -3372,18 +3440,20 @@ int httpd_serv_send(struct Con *con)
     {
       struct File_sect *f = con->f;
 
-      if (!--num)
-        return (httpd_serv_q_send(con));
+      if (!con->io_limit_num--) return (httpd_serv_q_send(con));
       
       if (!evnt_sendfile(con->evnt, f->fd, &f->off, &f->len, &ern))
       {
         if (ern == VSTR_TYPE_SC_READ_FD_ERR_EOF)
-          goto file_eof;
+          goto file_end;
         
         if (errno == ENOSYS) /* also logs it */
-          con->policy->use_sendfile = FALSE;
-        if ((errno == EPIPE) || (errno == ECONNRESET))
+          httpd__disable_sendfile();
+        if (errno == EPIPE)
+        {
+          vlg_dbg2(vlg, "sendfile: SIGPIPE $<sa:%p>\n", con->evnt->sa);
           return (FALSE);
+        }
         else
           vlg_warn(vlg, "sendfile: %m\n");
 
@@ -3395,43 +3465,52 @@ int httpd_serv_send(struct Con *con)
       }
     }
     
-    goto file_eof;
+    goto file_end;
   }
-  
-  ASSERT(con->f->len);
-  len = out->len;
-  while ((ret = io_get(out, con->f->fd)) != IO_FAIL)
-  {
-    size_t tmp = out->len - len;
 
-    if (ret == IO_EOF)
-      goto file_eof;
+  if (!con->io_limit_num--) return (httpd_serv_q_send(con));
     
-    if (tmp < con->f->len)
-      con->f->len -= tmp;
-    else
-    { /* we might not be transfering to EOF, so reduce if needed */
-      vstr_sc_reduce(out, 1, out->len, tmp - con->f->len);
-      ASSERT((out->len - len) == con->f->len);
-      con->f->len = 0;
-      goto file_eof;
-    }
-
-    HTTPD_SERV__SEND("io_get");
-
-    len = out->len;
+  if (out->len >= EX_MAX_W_DATA_INCORE)
+  {
+    if (!evnt_send(con->evnt))
+      HTTPD__SERV_SEND_ERR("max");
+    return (httpd_serv_q_send(con));    
   }
 
-  vlg_warn(vlg, "read: %m\n");
-  out->conf->malloc_bad = FALSE;
+  ASSERT(con->f->len);
+  while (con->f->len)
+  {
+    switch (evnt_sc_read_send(con->evnt, con->f->fd, &con->f->len))
+    {
+      case EVNT_IO_OK:
+        ASSERT_NO_SWITCH_DEF();
+        
+      case EVNT_IO_READ_ERR:
+        vlg_warn(vlg, "read: %m\n");
+        out->conf->malloc_bad = FALSE;
+        
+      case EVNT_IO_READ_EOF:
+      case EVNT_IO_READ_FIN:
+        goto file_end;
+        
+      case EVNT_IO_SEND_ERR:
+        HTTPD__SERV_SEND_ERR("io_get");
+    }
+    
+    if (!con->io_limit_num--) return (httpd_serv_q_send(con));
+    if (out->len >= EX_MAX_W_DATA_INCORE)
+      return (httpd_serv_q_send(con));
+  }
+  ASSERT_NOT_REACHED();
 
- file_eof:
+ file_end:
   ASSERT(con->f->fd != -1);
   close(con->f->fd);
   con->f->fd = -1;
 
   return (httpd_serv_send(con)); /* restart with a read, or finish */
 }
+#undef HTTPD_SERV__SEND
 
 int httpd_serv_recv(struct Con *con)
 {
@@ -3440,6 +3519,9 @@ int httpd_serv_recv(struct Con *con)
   Vstr_base *data = con->evnt->io_r;
 
   ASSERT(!con->evnt->io_r_shutdown);
+  
+  if (!con->io_limit_num--)
+    return (TRUE);
   
   if (!(ret = evnt_recv(con->evnt, &ern)))
   {
@@ -3481,12 +3563,12 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
   con->acpt_sa_ref           = vstr_ref_add(acpt_listener->ref);
   con->parsed_method_ver_1_0 = FALSE;
   
-  httpd_policy_change_con(con, httpd_opts->def_policy);
+  httpd_policy_change_con(con, (Httpd_policy_opts *)httpd_opts->s->def_policy);
 
   if (!httpd_policy_connection(con,
                                httpd_opts->conf, httpd_opts->match_connection))
   {
-    Vstr_base *s1 = con->policy->policy_name;
+    Vstr_base *s1 = con->policy->s->policy_name;
     Vstr_base *s2 = httpd_opts->conf->tmp;
 
     vlg_info(vlg, "CONF-MAIN-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
@@ -3496,7 +3578,7 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
 
   if (con->evnt->flag_q_closed)
   {
-    Vstr_base *s1 = con->policy->policy_name;
+    Vstr_base *s1 = con->policy->s->policy_name;
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
              con->evnt->sa, s1);
     goto con_fail;

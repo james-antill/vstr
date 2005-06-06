@@ -19,7 +19,6 @@ typedef struct Mime_types
  size_t           def_type_pos;
  size_t           def_type_len;
 } Mime_types;
-#define MIME_TYPES_INIT {NULL, NULL, 0, 0}
 
 extern int mime_types_init(Mime_types *, const Vstr_base *, size_t, size_t);
 extern void mime_types_exit(Mime_types *);

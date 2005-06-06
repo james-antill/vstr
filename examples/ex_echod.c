@@ -48,7 +48,7 @@
 #include <socket_poll.h>
 #include <timer_q.h>
 
-#include "opt_serv.h"
+#include "opt_policy.h"
 
 #include "cntl.h"
 #include "date.h"
@@ -81,18 +81,18 @@ MALLOC_CHECK_DECL();
 
 #define CONF_DATA_CONNECTION_MAX (256 * 1024)
 
-struct con
+struct Con
 {
  struct Evnt evnt[1];
+ Vstr_ref *acpt_sa_ref;
+ Opt_serv_policy_opts *policy;
 };
 
-static struct Evnt *acpt_evnt = NULL;
-
-static OPT_SERV_CONF_DECL_OPTS(opts, CONF_SERV_DEF_PORT);
+static OPT_SERV_CONF_DECL_OPTS(opts);
 
 static Vlg *vlg = NULL;
 
-static int serv_recv(struct con *con)
+static int serv_recv(struct Con *con)
 {
   unsigned int num = CONF_READ_CALL_LIMIT;
   int done = FALSE;
@@ -121,10 +121,10 @@ static int serv_recv(struct con *con)
 
 static int serv_cb_func_recv(struct Evnt *evnt)
 {
-  return (serv_recv((struct con *)evnt));
+  return (serv_recv((struct Con *)evnt));
 }
 
-static int serv_send(struct con *con)
+static int serv_send(struct Con *con)
 {
   if (!evnt_cb_func_send(con->evnt))
     return (FALSE);
@@ -139,86 +139,59 @@ static int serv_send(struct con *con)
 
 static int serv_cb_func_send(struct Evnt *evnt)
 {
-  return (serv_send((struct con *)evnt));
+  return (serv_send((struct Con *)evnt));
 }
 
 static void serv_cb_func_free(struct Evnt *evnt)
 {
-  struct con *con = (struct con *)evnt;
+  struct Con *con = (struct Con *)evnt;
 
-  if (acpt_evnt && opts->max_connections &&
-      (evnt_num_all() < opts->max_connections))
-    evnt_wait_cntl_add(acpt_evnt, POLLIN);
-
-  evnt_vlg_stats_info(evnt, "FREE");
-
-  free(con);
-}
-
-static void serv_cb_func_acpt_free(struct Evnt *evnt)
-{
-  evnt_vlg_stats_info(evnt, "ACCEPT FREE");
-
-  ASSERT(acpt_evnt == evnt);
-
-  acpt_evnt = NULL;
-  cntl_free_acpt(evnt);
+  opt_serv_sc_free_beg(evnt, con->acpt_sa_ref);
   
-  free(evnt);
+  F(con);
 }
 
 static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
                                         struct sockaddr *sa, socklen_t len)
 {
-  struct con *con = malloc(sizeof(struct con));
-
-  (void)from_evnt; /* FIXME: */
+  Acpt_listener *acpt_listener = (Acpt_listener *)from_evnt;
+  struct Con *con = MK(sizeof(struct Con));
   
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
     goto sa_fail;
   
   if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
     goto make_acpt_fail;
-  
-  if (!evnt_sc_timeout_via_mtime(con->evnt, opts->idle_timeout * 1000))
-    goto evnt_fail;
+
+  con->acpt_sa_ref = vstr_ref_add(acpt_listener->ref);
+  con->policy = opts->def_policy;
 
   con->evnt->cbs->cb_func_recv = serv_cb_func_recv;
   con->evnt->cbs->cb_func_send = serv_cb_func_send;
   con->evnt->cbs->cb_func_free = serv_cb_func_free;
   
-  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", con->evnt->sa);
-  
-  if (opts->max_connections && (evnt_num_all() >= opts->max_connections))
-    evnt_wait_cntl_del(acpt_evnt, POLLIN);
+  if (!evnt_sc_timeout_via_mtime(con->evnt,
+                                 opts->def_policy->idle_timeout * 1000))
+    goto evnt_fail;
+
+  if (!opt_serv_sc_acpt_end(con->policy, from_evnt, con->evnt))
+    goto evnt_fail;
+
+  ASSERT(!con->evnt->flag_q_closed);
 
   return (con->evnt);
 
  evnt_fail:
-  evnt_free(con->evnt);
-  return (NULL);
+  evnt_close(con->evnt);
+  return (con->evnt);
   
  make_acpt_fail:
-  free(con);
+  F(con);
   VLG_WARNNOMEM_RET(NULL, (vlg, __func__));
- sa_fail:
-  free(con);
-  VLG_WARNNOMEM_RET(NULL, (vlg, "%s: HTTPD sa == ipv4 fail\n", "accept"));
-}
-
-static void serv_make_bind(const char *acpt_addr, short acpt_port)
-{
-  if (!(acpt_evnt = malloc(sizeof(struct Evnt))))
-    VLG_ERRNOMEM((vlg, EXIT_FAILURE, "%s: %m\n", __func__));
-
-  if (!evnt_make_bind_ipv4(acpt_evnt, acpt_addr, acpt_port, opts->q_listen_len))
-    vlg_err(vlg, 2, "%s: %m\n", __func__);
   
-  acpt_evnt->cbs->cb_func_accept = serv_cb_func_accept;
-  acpt_evnt->cbs->cb_func_free   = serv_cb_func_acpt_free;
-
-  if (opts->defer_accept)
-    evnt_fd_set_defer_accept(acpt_evnt, opts->defer_accept);
+ sa_fail:
+  F(con);
+  VLG_WARNNOMEM_RET(NULL, (vlg, "%s: HTTPD sa == ipv4 fail\n", "accept"));
 }
 
 static void usage(const char *program_name, int ret, const char *prefix)
@@ -262,58 +235,32 @@ static void usage(const char *program_name, int ret, const char *prefix)
   exit (ret);
 }
 
-static void serv__sig_crash(int s_ig_num)
+static void serv_make_bind(const char *program_name)
 {
-  vlg_abort(vlg, "SIG: %d\n", s_ig_num);
+  Opt_serv_addr_opts *addr = opts->addr_beg;
+  
+  while (addr)
+  {
+    const char *ipv4_address = NULL;
+    const char *acpt_filter_file = NULL;
+    struct Evnt *evnt = NULL;
+    
+    OPT_SC_EXPORT_CSTR(ipv4_address,     addr->ipv4_address,     FALSE,
+                       "ipv4 address");
+    OPT_SC_EXPORT_CSTR(acpt_filter_file, addr->acpt_filter_file, FALSE,
+                       "accept filter file");
+    
+    evnt = evnt_sc_serv_make_bind(ipv4_address, addr->tcp_port,
+                                  addr->q_listen_len,
+                                  addr->max_connections,
+                                  addr->defer_accept,
+                                  acpt_filter_file);
+    
+    evnt->cbs->cb_func_accept = serv_cb_func_accept;
+
+    addr = addr->next;
+  }
 }
-
-static volatile sig_atomic_t child_exited = FALSE;
-static void serv__sig_child(int s_ig_num)
-{
-  ASSERT(s_ig_num == SIGCHLD);
-  child_exited = TRUE;
-}
-
-static void serv_signals(void)
-{
-  struct sigaction sa;
-  
-  if (sigemptyset(&sa.sa_mask) == -1)
-    err(EXIT_FAILURE, "signal init");
-  
-  /* don't use SA_RESTART ... */
-  sa.sa_flags   = 0;
-  /* ignore it... we don't have a use for it */
-  sa.sa_handler = SIG_IGN;
-  
-  if (sigaction(SIGPIPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-
-  sa.sa_handler = serv__sig_crash;
-  
-  if (sigaction(SIGSEGV, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGBUS, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGILL, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGFPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  if (sigaction(SIGXFSZ, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-
-  sa.sa_flags   = SA_RESTART;
-  sa.sa_handler = serv__sig_child;
-  if (sigaction(SIGCHLD, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  
-  /*
-  sa.sa_handler = ex_http__sig_shutdown;
-  if (sigaction(SIGTERM, &sa, NULL) == -1)
-    err(EXIT_FAILURE, "signal init");
-  */
-}
-
 
 static void serv_cmd_line(int argc, char *argv[])
 {
@@ -322,15 +269,27 @@ static void serv_cmd_line(int argc, char *argv[])
   struct option long_options[] =
   {
    OPT_SERV_DECL_GETOPTS(),
+   
+   {"configuration-file", required_argument, NULL, 'C'},
+   {"config-file",        required_argument, NULL, 'C'},
+   {"configuration-data-daemon", required_argument, NULL, 143},
+   {"config-data-daemon",        required_argument, NULL, 143},
+   
    {NULL, 0, NULL, 0}
   };
+  Vstr_base *out = vstr_make_base(NULL);      
+  
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "command line");
+
+  evnt_opt_nagle = TRUE;
   
   program_name = opt_program_name(argv[0], "jechod");
 
   if (!opt_serv_conf_init(opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");
   
-  while ((optchar = getopt_long(argc, argv, "dhH:M:nP:t:V",
+  while ((optchar = getopt_long(argc, argv, "C:dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
   {
     switch (optchar)
@@ -339,30 +298,31 @@ static void serv_cmd_line(int argc, char *argv[])
       case 'h': usage(program_name, EXIT_SUCCESS, "");
         
       case 'V':
-      {
-        Vstr_base *out = vstr_make_base(NULL);
-        
         if (!out)
           errno = ENOMEM, err(EXIT_FAILURE, "version");
 
-        vstr_add_fmt(out, 0, " %s version %s.\n", program_name, "0.9.1");
+        vstr_add_fmt(out, 0, " %s version %s.\n", program_name, "0.9.9");
 
         if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
           err(EXIT_FAILURE, "write");
 
         exit (EXIT_SUCCESS);
-      }
 
       OPT_SERV_GETOPTS(opts);
 
       case 'C':
-        //        if (!opt_serv_conf_parse(opts, optarg))
-        //          errx(EXIT_FAILURE, "Failed to parse configuration file: %s", optarg);
+        if (!opt_serv_conf_parse_file(out, opts, optarg))
+          goto out_err_conf_msg;
+        break;
+      case 143: /* FIXME: ... need to integrate */
+        if (!opt_serv_conf_parse_cstr(out, opts, optarg))
+          goto out_err_conf_msg;
         break;
       
       ASSERT_NO_SWITCH_DEF();
     }
   }
+  vstr_free_base(out); out = NULL;
 
   argc -= optind;
   argv += optind;
@@ -370,80 +330,78 @@ static void serv_cmd_line(int argc, char *argv[])
   if (argc != 0)
     usage(program_name, EXIT_FAILURE, " Too many arguments.\n");
 
+  if (opts->no_conf_listen)
+    if (!geteuid()) /* If root */
+      opts->addr_beg->tcp_port = CONF_SERV_DEF_PORT;
+  
   if (opts->become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)
       err(EXIT_FAILURE, "daemon");
     vlg_daemon(vlg, program_name);
   }
+
+  if (opts->rlim_file_num)
+    opt_serv_sc_rlim_file_num(opts->rlim_file_num);
   
   {
-    const char *ipv4_address = NULL;
     const char *pid_file = NULL;
     const char *cntl_file = NULL;
-    const char *acpt_filter_file = NULL;
     const char *chroot_dir = NULL;
     
-    OPT_SC_EXPORT_CSTR(ipv4_address,     opts->ipv4_address,     FALSE,
-                       "ipv4 address");
-    OPT_SC_EXPORT_CSTR(pid_file,         opts->pid_file,         FALSE,
-                       "pid file");
-    OPT_SC_EXPORT_CSTR(cntl_file,        opts->cntl_file,        FALSE,
-                       "control file");
-    OPT_SC_EXPORT_CSTR(acpt_filter_file, opts->acpt_filter_file, FALSE,
-                       "accept filter file");
-    OPT_SC_EXPORT_CSTR(chroot_dir,       opts->chroot_dir,       FALSE,
-                       "chroot directory");
+    OPT_SC_EXPORT_CSTR(pid_file,   opts->pid_file,   FALSE, "pid file");
+    OPT_SC_EXPORT_CSTR(cntl_file,  opts->cntl_file,  FALSE, "control file");
+    OPT_SC_EXPORT_CSTR(chroot_dir, opts->chroot_dir, FALSE, "chroot directory");
 
-  serv_make_bind(ipv4_address, opts->tcp_port);
+    serv_make_bind(program_name);
   
-  if (pid_file)
-    vlg_pid_file(vlg, pid_file);
+    if (pid_file)
+      vlg_pid_file(vlg, pid_file);
   
-  if (cntl_file)
-    cntl_make_file(vlg, acpt_evnt, cntl_file);
+    if (cntl_file)
+      cntl_make_file(vlg, cntl_file);
   
-  if (acpt_filter_file)
-    if (!evnt_fd_set_filter(acpt_evnt, acpt_filter_file))
-      errx(EXIT_FAILURE, "set_filter");
+    if (chroot_dir) /* so syslog can log in localtime */
+    {
+      time_t now = time(NULL);
+      (void)localtime(&now);
+      
+      vlg_sc_bind_mount(chroot_dir);
+    }
   
-  if (chroot_dir) /* so syslog can log in localtime */
+    /* after daemon so syslog works */
+    if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
+      vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
+  
+    if (opts->drop_privs)
+    {
+      OPT_SC_RESOLVE_UID(opts);
+      OPT_SC_RESOLVE_GID(opts);
+      opt_serv_sc_drop_privs(opts);
+    }
+
+    if (opts->num_procs > 1)
+      cntl_sc_multiproc(vlg, opts->num_procs, !!cntl_file, opts->use_pdeathsig);
+  }
+  
   {
-    time_t now = time(NULL);
-    (void)localtime(&now);
-
-    vlg_sc_bind_mount(chroot_dir);
+    struct Evnt *evnt = evnt_queue("accept");
+    
+    while (evnt)
+    {
+      vlg_info(vlg, "READY [$<sa:%p>]\n", evnt->sa);
+      evnt = evnt->next;
+    }
   }
   
-  /* after daemon so syslog works */
-  if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))
-    vlg_err(vlg, EXIT_FAILURE, "chroot(%s): %m\n", chroot_dir);
-  
-  if (opts->drop_privs)
-  {
-    OPT_SC_RESOLVE_UID(opts);
-    OPT_SC_RESOLVE_GID(opts);
-    
-    if (setgroups(1, &opts->priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgroups(%ld): %m\n", (long)opts->priv_gid);
-    
-    if (setgid(opts->priv_gid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setgid(%ld): %m\n", (long)opts->priv_gid);
-    
-    if (setuid(opts->priv_uid) == -1)
-      vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)opts->priv_uid);
-  }
-
-  if (opts->num_procs > 1)
-    cntl_sc_multiproc(vlg, acpt_evnt, opts->num_procs,
-                      !!cntl_file, opts->use_pdeathsig);
-  }
   opt_serv_conf_free(opts);
-  
-  /*  if (make_dumpable && (prctl(PR_SET_DUMPABLE, 1, 0, 0, 0) == -1))
-   *    vlg_warn(vlg, "prctl(SET_DUMPABLE, TRUE): %m\n"); */
+  return;
 
-  vlg_info(vlg, "READY [$<sa:%p>]\n", acpt_evnt->sa);
+ out_err_conf_msg:
+  vstr_add_cstr_ptr(out, out->len, "\n");
+  if (io_put_all(out, STDERR_FILENO) == IO_FAIL)
+    err(EXIT_FAILURE, "write");
+  exit (EXIT_FAILURE);  
 }
 
 static void serv_init(void)
@@ -475,19 +433,12 @@ static void serv_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
   evnt_logger(vlg);
-
   evnt_epoll_init();
   evnt_timeout_init();
   
-  serv_signals();
-}
+  opt_serv_logger(vlg);
 
-static void serv_cntl_resources(void)
-{
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BASE, 0, 20);
-  
-  vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_BUF,
-                 0, (CONF_MEM_PREALLOC_MAX / CONF_BUF_SZ));
+  opt_serv_sc_signals();
 }
 
 int main(int argc, char *argv[])
@@ -499,14 +450,8 @@ int main(int argc, char *argv[])
   while (evnt_waiting())
   {
     evnt_sc_main_loop(SERV_CONF_MAX_WAIT_SEND);
-    if (child_exited)
-    {
-      vlg_warn(vlg, "Child exited.\n");
-      evnt_close(acpt_evnt);
-      evnt_scan_q_close();
-      child_exited = FALSE;
-    }
-    serv_cntl_resources();
+    opt_serv_sc_check_children();
+    opt_serv_sc_cntl_resources(opts);
   }
   evnt_out_dbg3("E");
   
@@ -518,6 +463,9 @@ int main(int argc, char *argv[])
 
   vlg_exit();
 
+  opt_policy_sc_all_ref_del(opts);
+  opt_serv_conf_free(opts);
+  
   vstr_exit();
 
   MALLOC_CHECK_EMPTY();
