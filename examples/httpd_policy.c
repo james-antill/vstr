@@ -247,6 +247,20 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
         return (FALSE);
       *used_policy = TRUE;
     }
+    else if (OPT_SERV_SYM_EQ("<request-error-directory>") ||
+             OPT_SERV_SYM_EQ("<req-err-dir>"))
+    {
+      Vstr_base *s1 = req->policy->req_err_dir;
+      *used_policy = TRUE;
+      HTTPD_APP_REF_VSTR(conf->tmp, s1, 1, s1->len);
+    }
+    else if (OPT_SERV_SYM_EQ("<request-error-directory/..>") ||
+             OPT_SERV_SYM_EQ("<req-err-dir/..>"))
+    {
+      if (!httpd_policy__build_parent_path(conf->tmp, req->policy->req_err_dir))
+        return (FALSE);
+      *used_policy = TRUE;
+    }
     else if (OPT_SERV_SYM_EQ("<file-path>") || OPT_SERV_SYM_EQ("<path>"))
     {
       *used_req = TRUE;
@@ -264,6 +278,17 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
       const Vstr_base *s1 = req->ext_vary_a_vs1;
       size_t pos          = req->ext_vary_a_pos;
       size_t len          = req->ext_vary_a_len;
+      
+      *used_req = TRUE;
+      if (s1 && len)
+        HTTPD_APP_REF_VSTR(conf->tmp, s1, pos, len);
+    }
+    else if (OPT_SERV_SYM_EQ("<content-language-extension>") ||
+             OPT_SERV_SYM_EQ("<content-language-path>"))
+    {
+      const Vstr_base *s1 = req->ext_vary_al_vs1;
+      size_t pos          = req->ext_vary_al_pos;
+      size_t len          = req->ext_vary_al_len;
       
       *used_req = TRUE;
       if (s1 && len)
@@ -349,6 +374,7 @@ void httpd_policy_exit(Httpd_policy_opts *opts)
   vstr_free_base(opts->mime_types_xtra);   opts->mime_types_xtra    = NULL;
   vstr_free_base(opts->default_hostname);  opts->default_hostname   = NULL;
   vstr_free_base(opts->req_conf_dir);      opts->req_conf_dir       = NULL;
+  vstr_free_base(opts->req_err_dir);       opts->req_err_dir        = NULL;
   vstr_free_base(opts->auth_realm);        opts->auth_realm         = NULL;
   vstr_free_base(opts->auth_token);        opts->auth_token         = NULL;
 
@@ -359,6 +385,8 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
 { 
   if (!opt_policy_init(beg->s, opts->s))
     return (FALSE);
+
+  ASSERT(opts->s->beg == beg->s);
   
   /* do all, then check ... so we don't have to unwind */
   opts->document_root     = vstr_make_base(NULL);
@@ -369,6 +397,7 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->mime_types_xtra   = vstr_make_base(NULL);
   opts->default_hostname  = vstr_make_base(NULL);
   opts->req_conf_dir      = vstr_make_base(NULL);
+  opts->req_err_dir       = vstr_make_base(NULL);
   opts->auth_realm        = vstr_make_base(NULL);
   opts->auth_token        = vstr_make_base(NULL);
   
@@ -380,6 +409,7 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
       !opts->mime_types_xtra   ||
       !opts->default_hostname  ||
       !opts->req_conf_dir      ||
+      !opts->req_err_dir       ||
       !opts->auth_realm        ||
       !opts->auth_token        ||
       FALSE)
@@ -401,12 +431,14 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->use_range          = HTTPD_CONF_USE_RANGE;
   opts->use_range_1_0      = HTTPD_CONF_USE_RANGE_1_0;
   opts->use_public_only    = HTTPD_CONF_USE_PUBLIC_ONLY; /* 8th bitfield */
-  opts->use_gzip_content_replacement = HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT;
+  opts->use_enc_content_replacement = HTTPD_CONF_USE_ENC_CONTENT_REPLACEMENT;
 
   opts->use_err_406        = HTTPD_CONF_USE_ERR_406;
   opts->use_canonize_host  = HTTPD_CONF_USE_CANONIZE_HOST;
   opts->use_host_err_400   = HTTPD_CONF_USE_HOST_ERR_400;
-  opts->use_chk_host_err   = HTTPD_CONF_USE_CHK_HOST_ERR;
+  opts->use_host_err_chk   = HTTPD_CONF_USE_HOST_ERR_CHK;
+  opts->use_x2_hdr_chk     = HTTPD_CONF_USE_x2_HDR_CHK;
+  opts->use_trace_op       = HTTPD_CONF_USE_TRACE_OP;
   opts->remove_url_frag    = HTTPD_CONF_USE_REMOVE_FRAG;
   opts->remove_url_query   = HTTPD_CONF_USE_REMOVE_QUERY;
   
@@ -414,15 +446,17 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->use_tcp_cork       = HTTPD_CONF_USE_TCP_CORK;
   
   opts->use_req_conf       = HTTPD_CONF_USE_REQ_CONF;
-  opts->chk_hdr_split      = HTTPD_CONF_USE_CHK_HDR_SPLIT; /* 16th bitfield */
-  opts->chk_hdr_nil        = HTTPD_CONF_USE_CHK_HDR_NIL;
+  opts->allow_hdr_split    = HTTPD_CONF_USE_ALLOW_HDR_SPLIT; /* 16th bitfield */
+  opts->allow_hdr_nil      = HTTPD_CONF_USE_ALLOW_HDR_NIL;
   
   opts->chk_dot_dir        = HTTPD_CONF_USE_CHK_DOT_DIR;
   
   opts->chk_encoded_slash  = HTTPD_CONF_USE_CHK_ENCODED_SLASH;
   opts->chk_encoded_dot    = HTTPD_CONF_USE_CHK_ENCODED_DOT;
   
-  opts->add_def_port       = HTTPD_CONF_ADD_DEF_PORT; /* 21st bitfield */
+  opts->add_def_port       = HTTPD_CONF_ADD_DEF_PORT;
+
+  opts->use_non_spc_hdrs   = HTTPD_CONF_USE_NON_SPC_HDRS; /* 22nd bitfield */
   
   opts->max_header_sz      = HTTPD_CONF_INPUT_MAXSZ;
 
@@ -504,6 +538,7 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   HTTPD_POLICY_CP_VSTR(mime_types_xtra);
   HTTPD_POLICY_CP_VSTR(default_hostname);
   HTTPD_POLICY_CP_VSTR(req_conf_dir);
+  HTTPD_POLICY_CP_VSTR(req_err_dir);
 
   HTTPD_POLICY_CP_VAL(use_mmap);
   HTTPD_POLICY_CP_VAL(use_sendfile);
@@ -513,22 +548,27 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   HTTPD_POLICY_CP_VAL(use_range);
   HTTPD_POLICY_CP_VAL(use_range_1_0);
   HTTPD_POLICY_CP_VAL(use_public_only);
-  HTTPD_POLICY_CP_VAL(use_gzip_content_replacement);
+  HTTPD_POLICY_CP_VAL(use_enc_content_replacement);
   HTTPD_POLICY_CP_VAL(use_err_406);
   HTTPD_POLICY_CP_VAL(use_canonize_host);
   HTTPD_POLICY_CP_VAL(use_host_err_400);
-  HTTPD_POLICY_CP_VAL(use_chk_host_err);
+  HTTPD_POLICY_CP_VAL(use_host_err_chk);
+  HTTPD_POLICY_CP_VAL(use_x2_hdr_chk);
+  HTTPD_POLICY_CP_VAL(use_trace_op);
   HTTPD_POLICY_CP_VAL(remove_url_frag);
   HTTPD_POLICY_CP_VAL(remove_url_query);
   HTTPD_POLICY_CP_VAL(use_posix_fadvise);
   HTTPD_POLICY_CP_VAL(use_tcp_cork);
   HTTPD_POLICY_CP_VAL(use_req_conf);
-  HTTPD_POLICY_CP_VAL(chk_hdr_split);
-  HTTPD_POLICY_CP_VAL(chk_hdr_nil);
+  HTTPD_POLICY_CP_VAL(allow_hdr_split);
+  HTTPD_POLICY_CP_VAL(allow_hdr_nil);
   HTTPD_POLICY_CP_VAL(chk_dot_dir);
   HTTPD_POLICY_CP_VAL(chk_encoded_slash);
   HTTPD_POLICY_CP_VAL(chk_encoded_dot);
   HTTPD_POLICY_CP_VAL(add_def_port);
+
+  HTTPD_POLICY_CP_VAL(use_non_spc_hdrs);
+
   HTTPD_POLICY_CP_VAL(max_header_sz);
   HTTPD_POLICY_CP_VAL(max_requests);
 

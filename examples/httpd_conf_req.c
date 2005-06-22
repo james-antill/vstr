@@ -41,10 +41,10 @@
 
 
 #define HTTPD_CONF_REQ__X_HDR_CHK(x, y, z) do {                 \
-      if (req->policy->chk_hdr_split &&                       \
+      if (!req->policy->allow_hdr_split &&                      \
           vstr_srch_cstr_chrs_fwd(x, y, z, HTTP_EOL))           \
         return (FALSE);                                         \
-      if (req->policy->chk_hdr_nil &&                           \
+      if (!req->policy->allow_hdr_nil &&                        \
           vstr_srch_chr_fwd(x, y, z, 0))                        \
         return (FALSE);                                         \
     } while (FALSE)
@@ -390,8 +390,8 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       case 403: HTTPD_ERR_RET(req, 403, FALSE);
       case 404: HTTPD_ERR_RET(req, 404, FALSE);
       case 410: HTTPD_ERR_RET(req, 410, FALSE);
-      case 503: HTTPD_ERR_RET(req, 503, FALSE);
       case 500: HTTPD_ERR_RET(req, 500, FALSE);
+      case 503: HTTPD_ERR_RET(req, 503, FALSE);
     }
   }
   else if (OPT_SERV_SYM_EQ("Location:"))
@@ -458,6 +458,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               "<expires-never>"))
       httpd__conf_req_reset_cache_control(req, (60 * 60 * 24 * 365));
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(cache_control);
+  }
+  else if (OPT_SERV_SYM_EQ("Content-Language:"))
+  {
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(content_language);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_language);
   }
   else if (OPT_SERV_SYM_EQ("Content-Location:"))
   {
@@ -603,6 +608,8 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   }
   else if (OPT_SERV_SYM_EQ("parse-accept"))
     OPT_SERV_X_TOGGLE(req->parse_accept);
+  else if (OPT_SERV_SYM_EQ("parse-accept-language"))
+    OPT_SERV_X_TOGGLE(req->parse_accept_language);
   else if (OPT_SERV_SYM_EQ("allow-accept-encoding"))
     OPT_SERV_X_TOGGLE(req->allow_accept_encoding);
   else if (OPT_SERV_SYM_EQ("Vary:_*"))
@@ -657,6 +664,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     {
       unsigned int last = token->num;
 
+      req->parse_accept = FALSE;
       *token = save;
       conf_parse_num_token(conf, token, qual_num);
       HTTPD_CONF_REQ__X_CONTENT_VSTR(content_type);
@@ -668,7 +676,53 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   else if (OPT_SERV_SYM_EQ("negotiate-charset"))
     return (FALSE);
   else if (OPT_SERV_SYM_EQ("negotiate-content-language"))
-    return (FALSE);
+  {
+    unsigned int depth = token->depth_num;
+    unsigned int max_qual = 0;
+    unsigned int qual_num = 0;
+    Conf_token save;
+
+    save = *token;
+    while (conf_token_list_num(token, depth))
+    {
+      unsigned int qual = 0;
+      const Vstr_sect_node *val = NULL;
+
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+
+      if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_S) ||
+            (token->type == CONF_TOKEN_TYPE_QUOTE_SSS) ||
+            (token->type == CONF_TOKEN_TYPE_SYMBOL)))
+        return (FALSE);
+      
+      val = conf_token_value(token);
+      qual = http_parse_accept_language(req, conf->data, val->pos, val->len);
+      if (qual > max_qual)
+      {
+        max_qual = qual;
+        qual_num = token->num - 1;
+      }
+      
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);
+    }
+
+    req->vary_al = TRUE;
+    if (qual_num)
+    {
+      unsigned int last = token->num;
+
+      req->parse_accept_language = FALSE;
+      *token = save;
+      conf_parse_num_token(conf, token, qual_num);
+      HTTPD_CONF_REQ__X_CONTENT_VSTR(content_language);
+      HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_language);
+      HTTPD_CONF_REQ__X_CONTENT_VSTR(ext_vary_al);
+      conf_parse_num_token(conf, token, last);
+    }
+  }
   else
     return (FALSE);
   
@@ -725,8 +779,9 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
   
   s1 = conf->data;
   HTTPD_APP_REF_VSTR(s1, dir, 1, dir->len);
-  ASSERT((fname->len >= 1) && vstr_cmp_cstr_eq(fname, 1, 1, "/"));
-  HTTPD_APP_REF_VSTR(s1, fname, 1, fname->len);
+  ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
+  ASSERT((fname->len >= 1) && vstr_cmp_cstr_eq(fname,        1, 1, "/"));
+  HTTPD_APP_REF_VSTR(s1, fname, 2, fname->len - 1);
 
   if (s1->conf->malloc_bad ||
       !(fname_cstr = vstr_export_cstr_ptr(s1, 1, s1->len)))
@@ -791,6 +846,6 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
     conf_parse_backtrace(conf->tmp, "<conf-request>", conf, token);
  read_malloc_fail:
   if (!req->user_return_error_code)
-    HTTPD_ERR(req, 500);
+    HTTPD_ERR(req, 503);
   return (FALSE);
 }

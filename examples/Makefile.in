@@ -39,8 +39,9 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
-@MALLINFO_AVAIL_TRUE@am__append_1 = ex_perf_nodesize ex_perf_add
-@HAVE_POSIX_HOST_TRUE@am__append_2 = \
+@USE_EX_STATIC_LIBS_TRUE@am__append_1 = -DCONF_FULL_STATIC=1
+@MALLINFO_AVAIL_TRUE@am__append_2 = ex_perf_nodesize ex_perf_add
+@HAVE_POSIX_HOST_TRUE@am__append_3 = \
 @HAVE_POSIX_HOST_TRUE@  ex_cat \
 @HAVE_POSIX_HOST_TRUE@  ex_hello_world ex_hello_world_s ex_hello_world_m ex_hello_world_x \
 @HAVE_POSIX_HOST_TRUE@  ex_hexdump ex_dir_list2html ex_dir_filter ex_dir_list ex_dir_sort ex_nl \
@@ -48,14 +49,14 @@ host_triplet = @host@
 @HAVE_POSIX_HOST_TRUE@  ex_yes ex_mon_cp ex_lookup_ip ex_csv $(hi_DEP) \
 @HAVE_POSIX_HOST_TRUE@  ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter ex_conf
 
-@HAVE_POSIX_HOST_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_3 = ex_slowcat
-@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_4 = ex_cntl ex_dns ex_echod ex_httpd
-@BZ2_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@ZLIB_AVAIL_TRUE@am__append_5 = ex_zcat
-@GMP_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@am__append_6 = \
+@HAVE_POSIX_HOST_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_4 = ex_slowcat
+@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_5 = ex_cntl ex_dns ex_echod ex_httpd
+@BZ2_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@ZLIB_AVAIL_TRUE@am__append_6 = ex_zcat
+@GMP_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@am__append_7 = \
 @GMP_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@  ex_gmp_factorials ex_gmp_nums ex_gmp_num_roman ex_gmp_num_words
 
-@HAVE_POSIX_HOST_TRUE@@MALLINFO_AVAIL_TRUE@@OPENSSL_AVAIL_TRUE@am__append_7 = ex_perf_sgopenssl
-@GLIB20_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@MALLINFO_AVAIL_TRUE@am__append_8 = ex_perf_nodesize_foreach
+@HAVE_POSIX_HOST_TRUE@@MALLINFO_AVAIL_TRUE@@OPENSSL_AVAIL_TRUE@am__append_8 = ex_perf_sgopenssl
+@GLIB20_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@MALLINFO_AVAIL_TRUE@am__append_9 = ex_perf_nodesize_foreach
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -173,6 +174,8 @@ TIMER_Q_LDLIBS = @TIMER_Q_LDLIBS@
 TRUE_PATH = @TRUE_PATH@
 USE_ASSERT_LOOP_FALSE = @USE_ASSERT_LOOP_FALSE@
 USE_ASSERT_LOOP_TRUE = @USE_ASSERT_LOOP_TRUE@
+USE_EX_STATIC_LIBS_FALSE = @USE_EX_STATIC_LIBS_FALSE@
+USE_EX_STATIC_LIBS_TRUE = @USE_EX_STATIC_LIBS_TRUE@
 USE_WRAP_MEMCHR_FALSE = @USE_WRAP_MEMCHR_FALSE@
 USE_WRAP_MEMCHR_TRUE = @USE_WRAP_MEMCHR_TRUE@
 USE_WRAP_MEMCMP_FALSE = @USE_WRAP_MEMCMP_FALSE@
@@ -239,8 +242,9 @@ EX_B_DIR = $(top_builddir)/examples
 EX_INST_DIR = $(libdir)/vstr-$(VERSION)/examples
 
 # GEN__CFLAGS for stupid openssl builds, moron packaging
-GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
+GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@ $(am__append_1)
 GEN_CFLAGS = -I- $(GEN__CFLAGS)
+
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 
 ex_cat_DEPENDENCIES = ex_utils.h
@@ -438,7 +442,7 @@ ex_tdns_LDFLAGS = -pthread
 
 # END: Not a Vstr app.
 examplesdir = $(EX_INST_DIR)
-examples_PROGRAMS = ex_netstr $(am__append_1) $(am__append_2) $(am__append_3) $(am__append_4) $(am__append_5) $(am__append_6) $(am__append_7) $(am__append_8)
+examples_PROGRAMS = ex_netstr $(am__append_2) $(am__append_3) $(am__append_4) $(am__append_5) $(am__append_6) $(am__append_7) $(am__append_8) $(am__append_9)
 
 # !HAVE_POSIX_HOST
 

@@ -19,7 +19,7 @@ typedef struct Malloc_check_store
 
 #ifndef  MALLOC_CHECK__ATTR_USED
 #ifdef __GNUC__
-# define MALLOC_CHECK__ATTR_USED() __attribute__((used))
+# define MALLOC_CHECK__ATTR_USED() __attribute__((__used__))
 #else
 # define MALLOC_CHECK__ATTR_USED() /* do nothing */
 #endif
@@ -27,7 +27,7 @@ typedef struct Malloc_check_store
 
 #ifndef  MALLOC_CHECK__ATTR_H
 #ifdef __GNUC__
-# define MALLOC_CHECK__ATTR_H() __attribute__((visibility("hidden")))
+# define MALLOC_CHECK__ATTR_H() __attribute__((__visibility__("hidden")))
 #else
 # define MALLOC_CHECK__ATTR_H() /* do nothing */
 #endif

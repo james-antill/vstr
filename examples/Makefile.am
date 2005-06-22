@@ -10,6 +10,10 @@ EX_INST_DIR=$(libdir)/vstr-$(VERSION)/examples
 # GEN__CFLAGS for stupid openssl builds, moron packaging
 GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
 GEN_CFLAGS = -I- $(GEN__CFLAGS)
+if USE_EX_STATIC_LIBS
+GEN__CFLAGS += -DCONF_FULL_STATIC=1
+endif
+
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
 CFLAGS =
 

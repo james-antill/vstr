@@ -26,7 +26,7 @@
 #define HTTPD_CONF_USE_RANGE TRUE
 #define HTTPD_CONF_USE_RANGE_1_0 TRUE
 #define HTTPD_CONF_USE_PUBLIC_ONLY FALSE
-#define HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT TRUE
+#define HTTPD_CONF_USE_ENC_CONTENT_REPLACEMENT TRUE
 #define HTTPD_CONF_DEF_DIR_FILENAME "index.html"
 #define HTTPD_CONF_MIME_TYPE_DEF_CT "" /* "application/octet-stream" */
 #define HTTPD_CONF_MIME_TYPE_MAIN "/etc/mime.types"
@@ -34,17 +34,20 @@
 #define HTTPD_CONF_USE_ERR_406 TRUE
 #define HTTPD_CONF_USE_CANONIZE_HOST FALSE
 #define HTTPD_CONF_USE_HOST_ERR_400 TRUE
-#define HTTPD_CONF_USE_CHK_HOST_ERR TRUE
+#define HTTPD_CONF_USE_HOST_ERR_CHK TRUE
+#define HTTPD_CONF_USE_x2_HDR_CHK TRUE
+#define HTTPD_CONF_USE_TRACE_OP TRUE
 #define HTTPD_CONF_USE_REMOVE_FRAG TRUE
 #define HTTPD_CONF_USE_REMOVE_QUERY FALSE
 #define HTTPD_CONF_USE_POSIX_FADVISE FALSE /* NOTE that this SEGV's on FC1 */
 #define HTTPD_CONF_USE_TCP_CORK TRUE
 #define HTTPD_CONF_USE_REQ_CONF TRUE
-#define HTTPD_CONF_USE_CHK_HDR_SPLIT TRUE
-#define HTTPD_CONF_USE_CHK_HDR_NIL TRUE
+#define HTTPD_CONF_USE_ALLOW_HDR_SPLIT TRUE
+#define HTTPD_CONF_USE_ALLOW_HDR_NIL TRUE
 #define HTTPD_CONF_USE_CHK_DOT_DIR TRUE
 #define HTTPD_CONF_USE_CHK_ENCODED_SLASH TRUE
 #define HTTPD_CONF_USE_CHK_ENCODED_DOT TRUE
+#define HTTPD_CONF_USE_NON_SPC_HDRS TRUE
 #define HTTPD_CONF_ADD_DEF_PORT TRUE
 #define HTTPD_CONF_MAX_REQUESTS           0
 #define HTTPD_CONF_MAX_A_NODES          128 /* lynx uses 53 */
@@ -76,6 +79,7 @@ typedef struct Httpd_policy_opts
  Vstr_base   *mime_types_xtra;
  Vstr_base   *default_hostname;
  Vstr_base   *req_conf_dir;
+ Vstr_base   *req_err_dir;
  Vstr_base   *auth_realm;
  Vstr_base   *auth_token;
  
@@ -87,12 +91,14 @@ typedef struct Httpd_policy_opts
  unsigned int use_range : 1;
  unsigned int use_range_1_0 : 1;
  unsigned int use_public_only : 1; /* 8th bitfield */
- unsigned int use_gzip_content_replacement : 1;
+ unsigned int use_enc_content_replacement : 1;
 
  unsigned int use_err_406 : 1;
  unsigned int use_canonize_host : 1;
  unsigned int use_host_err_400 : 1;
- unsigned int use_chk_host_err : 1;
+ unsigned int use_host_err_chk : 1;
+ unsigned int use_x2_hdr_chk : 1;
+ unsigned int use_trace_op : 1;
  unsigned int remove_url_frag : 1;
  unsigned int remove_url_query : 1;
 
@@ -100,15 +106,17 @@ typedef struct Httpd_policy_opts
  unsigned int use_tcp_cork : 1;
  
  unsigned int use_req_conf : 1;
- unsigned int chk_hdr_split : 1; /* 16th bitfield */
- unsigned int chk_hdr_nil : 1;
+ unsigned int allow_hdr_split : 1; /* 16th bitfield */
+ unsigned int allow_hdr_nil : 1;
  
  unsigned int chk_dot_dir : 1;
  
  unsigned int chk_encoded_slash : 1;
  unsigned int chk_encoded_dot   : 1;
 
- unsigned int add_def_port : 1; /* 21st bitfield */
+ unsigned int add_def_port : 1;
+
+ unsigned int use_non_spc_hdrs : 1; /* 22nd bitfield */
  
  unsigned int max_header_sz;
 

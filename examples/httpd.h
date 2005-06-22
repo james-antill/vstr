@@ -65,16 +65,17 @@ typedef struct Httpd_req_data
  size_t len;
  size_t path_pos;
  size_t path_len;
- unsigned int error_code;
- const char * error_line;
- const char * error_msg;
- size_t       error_len;
+ unsigned int             error_code;
+ const char              *error_line;
+ const char              *error_msg;
+ VSTR_AUTOCONF_uintmax_t  error_len; /* due to custom files */
  Vstr_sects *sects;
  struct stat64 f_stat[1];
  size_t orig_io_w_len;
  Vstr_base *f_mmap;
  Vstr_base *xtra_content;
  HTTPD__DECL_XTRA_HDR(content_type);
+ HTTPD__DECL_XTRA_HDR(content_language);
  HTTPD__DECL_XTRA_HDR(content_location);
  HTTPD__DECL_XTRA_HDR(content_md5); /* Note this is valid for range */
  time_t               content_md5_time;
@@ -118,7 +119,8 @@ typedef struct Httpd_req_data
  unsigned int direct_filename    : 1;
  unsigned int skip_document_root : 1;
  
- unsigned int parse_accept : 1;
+ unsigned int parse_accept          : 1;
+ unsigned int parse_accept_language : 1;
  unsigned int allow_accept_encoding : 1;
  unsigned int output_keep_alive_hdr : 1;
 
@@ -218,6 +220,7 @@ extern int httpd_sc_add_default_hostname(struct Con *, Httpd_req_data *,
 
 extern int httpd_canon_path(Vstr_base *);
 extern int httpd_canon_dir_path(Vstr_base *);
+extern int httpd_canon_abs_dir_path(Vstr_base *);
 
 extern void httpd_req_absolute_uri(struct Con *, Httpd_req_data *,
                                    Vstr_base *, size_t, size_t);
@@ -227,6 +230,9 @@ extern int http_req_content_type(Httpd_req_data *);
 
 extern unsigned int http_parse_accept(Httpd_req_data *,
                                       const Vstr_base *, size_t, size_t);
+extern unsigned int http_parse_accept_language(Httpd_req_data *,
+                                               const Vstr_base *,
+                                               size_t, size_t);
 
 extern void http_app_def_hdrs(struct Con *, Httpd_req_data *,
                               unsigned int, const char *, time_t,

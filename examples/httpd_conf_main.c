@@ -667,9 +667,114 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
   if (!req->user_return_error_code)
   {
     conf_parse_backtrace(conf->tmp, "<policy-request>", conf, token);
-    HTTPD_ERR(req, 500);
+    HTTPD_ERR(req, 503);
   }
   return (FALSE);
+}
+
+static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
+                                           const Conf_parse *conf,
+                                           Conf_token *token)
+{
+  CONF_SC_MAKE_CLIST_BEG(http);
+  
+  else if (OPT_SERV_SYM_EQ("authorization") || OPT_SERV_SYM_EQ("auth"))
+  { /* token is output of: echo -n foo:bar | openssl enc -base64 */
+    /* see it with: echo token | openssl enc -d -base64 && echo */
+    unsigned int depth = token->depth_num;
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    if (!OPT_SERV_SYM_EQ("basic-encoded")) return (FALSE);
+
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+      
+      if (0) { }
+      else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
+      else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
+      else return (FALSE);
+    }
+  }
+  else if (OPT_SERV_SYM_EQ("canonize-host"))
+    OPT_SERV_X_TOGGLE(opts->use_canonize_host);
+  else if (OPT_SERV_SYM_EQ("check-dot-directory") ||
+           OPT_SERV_SYM_EQ("chk-dot-dir") ||
+           OPT_SERV_SYM_EQ("chk-.-dir"))
+    OPT_SERV_X_TOGGLE(opts->chk_dot_dir);
+  else if (OPT_SERV_SYM_EQ("check-double-headr") ||
+           OPT_SERV_SYM_EQ("chk-dbl-hdr") ||
+           OPT_SERV_SYM_EQ("check-*2-hdr") ||
+           OPT_SERV_SYM_EQ("check-*2-header"))
+    OPT_SERV_X_TOGGLE(opts->use_x2_hdr_chk);
+  else if (OPT_SERV_SYM_EQ("check-encoded-slash") ||
+           OPT_SERV_SYM_EQ("chk-enc-/"))
+    OPT_SERV_X_TOGGLE(opts->chk_encoded_slash);
+  else if (OPT_SERV_SYM_EQ("check-encoded-dot") ||
+           OPT_SERV_SYM_EQ("chk-enc-."))
+    OPT_SERV_X_TOGGLE(opts->chk_encoded_dot);
+  else if (OPT_SERV_SYM_EQ("check-host") ||
+           OPT_SERV_SYM_EQ("chk-host"))
+    OPT_SERV_X_TOGGLE(opts->use_host_err_chk);
+  else if (OPT_SERV_SYM_EQ("error-406"))
+    OPT_SERV_X_TOGGLE(opts->use_err_406);
+  else if (OPT_SERV_SYM_EQ("error-host-400"))
+    OPT_SERV_X_TOGGLE(opts->use_host_err_400);
+  else if (OPT_SERV_SYM_EQ("encoded-content-replacement"))
+    OPT_SERV_X_TOGGLE(opts->use_enc_content_replacement);
+  else if (OPT_SERV_SYM_EQ("header-names-strict"))
+    OPT_SERV_X_TOGGLE(opts->use_non_spc_hdrs);
+  else if (OPT_SERV_SYM_EQ("keep-alive"))
+    OPT_SERV_X_TOGGLE(opts->use_keep_alive);
+  else if (OPT_SERV_SYM_EQ("keep-alive-1.0"))
+    OPT_SERV_X_TOGGLE(opts->use_keep_alive_1_0);
+  else if (OPT_SERV_SYM_EQ("range"))
+    OPT_SERV_X_TOGGLE(opts->use_range);
+  else if (OPT_SERV_SYM_EQ("range-1.0"))
+    OPT_SERV_X_TOGGLE(opts->use_range_1_0);
+  else if (OPT_SERV_SYM_EQ("trace-op") || OPT_SERV_SYM_EQ("trace-operation"))
+    OPT_SERV_X_TOGGLE(opts->use_trace_op);
+  else if (OPT_SERV_SYM_EQ("url-remove-fragment"))
+    OPT_SERV_X_TOGGLE(opts->remove_url_frag);
+  else if (OPT_SERV_SYM_EQ("url-remove-query"))
+    OPT_SERV_X_TOGGLE(opts->remove_url_query);
+  
+  else if (OPT_SERV_SYM_EQ("limit"))
+  {
+    CONF_SC_MAKE_CLIST_BEG(limit);
+    
+    else if (OPT_SERV_SYM_EQ("header-size") ||
+             OPT_SERV_SYM_EQ("header-sz"))
+      OPT_SERV_X_UINT(opts->max_header_sz);
+    else if (OPT_SERV_SYM_EQ("requests"))
+      OPT_SERV_X_UINT(opts->max_requests);
+    else if (OPT_SERV_SYM_EQ("nodes"))
+    {
+      CONF_SC_MAKE_CLIST_BEG(nodes);
+        
+      else if (OPT_SERV_SYM_EQ("Accept:"))
+        OPT_SERV_X_UINT(opts->max_A_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
+        OPT_SERV_X_UINT(opts->max_AC_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Encoding:"))
+        OPT_SERV_X_UINT(opts->max_AE_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Language:"))
+        OPT_SERV_X_UINT(opts->max_AL_nodes);
+      
+      else if (OPT_SERV_SYM_EQ("Connection:"))
+        OPT_SERV_X_UINT(opts->max_etag_nodes);
+      else if (OPT_SERV_SYM_EQ("ETag:"))
+        OPT_SERV_X_UINT(opts->max_etag_nodes);      
+      
+      CONF_SC_MAKE_CLIST_END();
+    }
+    
+    CONF_SC_MAKE_CLIST_END();
+  }
+  
+  CONF_SC_MAKE_CLIST_END();
+  
+  return (TRUE);
 }
 
 static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
@@ -697,120 +802,51 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   else if (OPT_SERV_SYM_EQ("request-configuration-directory") ||
            OPT_SERV_SYM_EQ("req-conf-dir"))
     OPT_SERV_X_VSTR(opts->req_conf_dir);
+  else if (OPT_SERV_SYM_EQ("request-error-directory") ||
+           OPT_SERV_SYM_EQ("req-err-dir"))
+    OPT_SERV_X_VSTR(opts->req_err_dir);
   else if (OPT_SERV_SYM_EQ("server-name"))
     OPT_SERV_X_VSTR(opts->server_name);
-  else if (OPT_SERV_SYM_EQ("authorization") || OPT_SERV_SYM_EQ("auth"))
-  { /* token is output of: echo -n foo:bar | openssl enc -base64 */
-    /* see it with: echo token | openssl enc -d -base64 && echo */
-    unsigned int depth = token->depth_num;
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!OPT_SERV_SYM_EQ("basic-encoded")) return (FALSE);
-
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-      
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
-      else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
-      else return (FALSE);
-    }
-  }
 
   else if (OPT_SERV_SYM_EQ("mmap"))
     OPT_SERV_X_TOGGLE(opts->use_mmap);
   else if (OPT_SERV_SYM_EQ("sendfile"))
     OPT_SERV_X_TOGGLE(opts->use_sendfile);
-  else if (OPT_SERV_SYM_EQ("keep-alive"))
-    OPT_SERV_X_TOGGLE(opts->use_keep_alive);
-  else if (OPT_SERV_SYM_EQ("keep-alive-1.0"))
-    OPT_SERV_X_TOGGLE(opts->use_keep_alive_1_0);
   else if (OPT_SERV_SYM_EQ("virtual-hosts") ||
            OPT_SERV_SYM_EQ("vhosts") ||
            OPT_SERV_SYM_EQ("virtual-hosts-name") ||
            OPT_SERV_SYM_EQ("vhosts-name"))
     OPT_SERV_X_TOGGLE(opts->use_vhosts_name);
-  else if (OPT_SERV_SYM_EQ("range"))
-    OPT_SERV_X_TOGGLE(opts->use_range);
-  else if (OPT_SERV_SYM_EQ("range-1.0"))
-    OPT_SERV_X_TOGGLE(opts->use_range_1_0);
   else if (OPT_SERV_SYM_EQ("public-only"))
     OPT_SERV_X_TOGGLE(opts->use_public_only);
-  else if (OPT_SERV_SYM_EQ("gzip-content-type-replacement"))
-    OPT_SERV_X_TOGGLE(opts->use_gzip_content_replacement);
-  else if (OPT_SERV_SYM_EQ("error-406"))
-    OPT_SERV_X_TOGGLE(opts->use_err_406);
-  else if (OPT_SERV_SYM_EQ("canonize-host"))
-    OPT_SERV_X_TOGGLE(opts->use_canonize_host);
-  else if (OPT_SERV_SYM_EQ("error-host-400"))
-    OPT_SERV_X_TOGGLE(opts->use_host_err_400);
-  else if (OPT_SERV_SYM_EQ("check-host"))
-    OPT_SERV_X_TOGGLE(opts->use_chk_host_err);
   else if (OPT_SERV_SYM_EQ("posix-fadvise"))
     OPT_SERV_X_TOGGLE(opts->use_posix_fadvise);
   else if (OPT_SERV_SYM_EQ("tcp-cork"))
     OPT_SERV_X_TOGGLE(opts->use_tcp_cork);
   else if (OPT_SERV_SYM_EQ("allow-request-configuration"))
     OPT_SERV_X_TOGGLE(opts->use_req_conf);
-  else if (OPT_SERV_SYM_EQ("check-header-splitting"))
-    OPT_SERV_X_TOGGLE(opts->chk_hdr_split);
-  else if (OPT_SERV_SYM_EQ("check-header-NIL"))
-    OPT_SERV_X_TOGGLE(opts->chk_hdr_nil);
-  else if (OPT_SERV_SYM_EQ("check-dot-directory") ||
-           OPT_SERV_SYM_EQ("check-dot-dir") ||
-           OPT_SERV_SYM_EQ("check-.-dir"))
-    OPT_SERV_X_TOGGLE(opts->chk_dot_dir);
-  else if (OPT_SERV_SYM_EQ("check-encoded-slash") ||
-           OPT_SERV_SYM_EQ("check-encoded-/"))
-    OPT_SERV_X_TOGGLE(opts->chk_encoded_slash);
-  else if (OPT_SERV_SYM_EQ("check-encoded-dot") ||
-           OPT_SERV_SYM_EQ("check-encoded-."))
-    OPT_SERV_X_TOGGLE(opts->chk_encoded_dot);
+  else if (OPT_SERV_SYM_EQ("allow-header-splitting"))
+    OPT_SERV_X_TOGGLE(opts->allow_hdr_split);
+  else if (OPT_SERV_SYM_EQ("allow-header-NIL"))
+    OPT_SERV_X_TOGGLE(opts->allow_hdr_nil);
   else if (OPT_SERV_SYM_EQ("unspecified-hostname-append-port"))
     OPT_SERV_X_TOGGLE(opts->add_def_port);
-  else if (OPT_SERV_SYM_EQ("url-remove-fragment"))
-    OPT_SERV_X_TOGGLE(opts->remove_url_frag);
-  else if (OPT_SERV_SYM_EQ("url-remove-query"))
-    OPT_SERV_X_TOGGLE(opts->remove_url_query);
 
   else if (OPT_SERV_SYM_EQ("limit"))
   {
     CONF_SC_MAKE_CLIST_BEG(limit);
     
-    else if (OPT_SERV_SYM_EQ("header-size") ||
-             OPT_SERV_SYM_EQ("header-sz"))
-      OPT_SERV_X_UINT(opts->max_header_sz);
     else if (OPT_SERV_SYM_EQ("request-configuration-size") ||
              OPT_SERV_SYM_EQ("request-configuration-sz") ||
              OPT_SERV_SYM_EQ("req-conf-size") ||
              OPT_SERV_SYM_EQ("req-conf-sz"))
       OPT_SERV_X_UINT(opts->max_req_conf_sz);
-    else if (OPT_SERV_SYM_EQ("requests"))
-      OPT_SERV_X_UINT(opts->max_requests);
-    else if (OPT_SERV_SYM_EQ("nodes"))
-    {
-      CONF_SC_MAKE_CLIST_BEG(nodes);
-        
-      else if (OPT_SERV_SYM_EQ("Accept:"))
-        OPT_SERV_X_UINT(opts->max_A_nodes);
-      else if (OPT_SERV_SYM_EQ("Accept-Charset:"))
-        OPT_SERV_X_UINT(opts->max_AC_nodes);
-      else if (OPT_SERV_SYM_EQ("Accept-Encoding:"))
-        OPT_SERV_X_UINT(opts->max_AE_nodes);
-      else if (OPT_SERV_SYM_EQ("Accept-Language:"))
-        OPT_SERV_X_UINT(opts->max_AL_nodes);
-      
-      else if (OPT_SERV_SYM_EQ("Connection:"))
-        OPT_SERV_X_UINT(opts->max_etag_nodes);
-      else if (OPT_SERV_SYM_EQ("ETag:"))
-        OPT_SERV_X_UINT(opts->max_etag_nodes);      
-      
-      CONF_SC_MAKE_CLIST_END();
-    }
     
     CONF_SC_MAKE_CLIST_END();
   }
+
+  else if (OPT_SERV_SYM_EQ("HTTP") || OPT_SERV_SYM_EQ("http"))
+    return (httpd__conf_main_policy_http_d1(opts, conf, token));
   
   else
     return (FALSE);

@@ -289,6 +289,9 @@ static void serv_cmd_line(int argc, char *argv[])
   if (!opt_serv_conf_init(opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");
   
+  if (!geteuid()) /* If root - if not random */
+    opts->addr_beg->tcp_port = CONF_SERV_DEF_PORT;
+  
   while ((optchar = getopt_long(argc, argv, "C:dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
   {
@@ -330,10 +333,6 @@ static void serv_cmd_line(int argc, char *argv[])
   if (argc != 0)
     usage(program_name, EXIT_FAILURE, " Too many arguments.\n");
 
-  if (opts->no_conf_listen)
-    if (!geteuid()) /* If root */
-      opts->addr_beg->tcp_port = CONF_SERV_DEF_PORT;
-  
   if (opts->become_daemon)
   {
     if (daemon(FALSE, FALSE) == -1)

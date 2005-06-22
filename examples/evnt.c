@@ -835,12 +835,11 @@ void evnt_close(struct Evnt *evnt)
 
   if (evnt->flag_q_closed)
     return;
-  
-  /* close the fd, so it goes away "instantly" */
-  close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
-  SOCKET_POLL_INDICATOR(evnt->ind)->fd = -1;
 
-  /* now queue for deletion ... as the bt might still be using the ptr */
+  /* can't close at this point or we'll race with:
+   * socket_poll_add()/socket_poll_del() when using _DIRECT mapping */
+  
+  /* queue for deletion ... as the bt might still be using the ptr */
   evnt->flag_q_closed = TRUE;
   evnt->c_next = q_closed;
   q_closed = evnt;
@@ -1249,7 +1248,6 @@ static void evnt__close_now(struct Evnt *evnt)
   if (evnt->flag_q_closed)
     return;
   
-  close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
   evnt_free(evnt);
 }
 
@@ -1558,8 +1556,6 @@ static void evnt__close_1(struct Evnt **root)
     struct sockaddr *sa = scan->sa;
     Timer_q_node *tm_o  = scan->tm_o;
 
-    if (SOCKET_POLL_INDICATOR(scan->ind)->fd != -1)
-      close(SOCKET_POLL_INDICATOR(scan->ind)->fd);
     vstr_free_base(scan->io_w); scan->io_w = NULL;
     vstr_free_base(scan->io_r); scan->io_r = NULL;
   
@@ -2156,6 +2152,8 @@ unsigned int evnt_poll_add(struct Evnt *EVNT__ATTR_UNUSED(evnt), int fd)
 
 void evnt_poll_del(struct Evnt *evnt)
 {
+  if (SOCKET_POLL_INDICATOR(evnt->ind)->fd != -1)
+    close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
   socket_poll_del(evnt->ind);
 }
 
@@ -2297,6 +2295,8 @@ unsigned int evnt_poll_add(struct Evnt *evnt, int fd)
 
 void evnt_poll_del(struct Evnt *evnt)
 {
+  if (SOCKET_POLL_INDICATOR(evnt->ind)->fd != -1)
+    close(SOCKET_POLL_INDICATOR(evnt->ind)->fd);
   socket_poll_del(evnt->ind);
 
   /* done via. the close() */

@@ -383,33 +383,32 @@ setup();
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-my $conf_arg = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off))'";
+my $conf_args_nonstrict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off) (HTTP (header-names-strict false)))'";
+my $conf_args_strict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off))'";
+my $conf_arg = $conf_args_nonstrict;
 my $args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 
-my $list_pid = undef;
+sub httpd_vhost_tst
+  {
+    daemon_init("ex_httpd", $root, shift);
+    system("cat > $root/default/fifo &");
+    my $list_pid = http_cntl_list_beg();
+    all_vhost_tsts();
+    http_cntl_list_cleanup($list_pid);
+    daemon_exit();
+  }
 
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=false --sendfile=false");
-system("cat > $root/default/fifo &");
-$list_pid = http_cntl_list_beg();
-all_vhost_tsts();
-http_cntl_list_cleanup($list_pid);
-daemon_exit();
-
+httpd_vhost_tst($args . "--virtual-hosts=true  --mmap=false --sendfile=false");
 $truncate_segv = 1;
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true  --mmap=true  --sendfile=false --procs=2");
-system("cat > $root/default/fifo &");
-$list_pid = http_cntl_list_beg();
-all_vhost_tsts();
-http_cntl_list_cleanup($list_pid);
-daemon_exit();
+httpd_vhost_tst($args . "--virtual-hosts=true  --mmap=true  --sendfile=false" .
+		" --procs=2");
 $truncate_segv = 0;
 
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=true --mmap=false --sendfile=true --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
-system("cat > $root/default/fifo &");
-$list_pid = http_cntl_list_beg();
-all_vhost_tsts();
-http_cntl_list_cleanup($list_pid);
-daemon_exit();
+httpd_vhost_tst($args . "--virtual-hosts=true --mmap=false --sendfile=true" .
+		" --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
+
+$conf_arg = $conf_args_strict;
+$args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 
 my $largs = $conf_arg . " --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 daemon_init("ex_httpd", $root, $largs . "-d -d -d --virtual-hosts=true  --public-only=true");
@@ -448,7 +447,7 @@ my $nargs  = $conf_arg . " --unspecified-hostname=default ";
 
 daemon_init("ex_httpd", $root, $nargs);
 tst_proc_limit(30);
-$list_pid = http_cntl_list_beg();
+my $list_pid = http_cntl_list_beg();
 all_none_tsts();
 http_cntl_list_cleanup($list_pid);
 daemon_exit();

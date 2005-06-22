@@ -149,11 +149,11 @@ static void usage(const char *program_name, int ret, const char *prefix)
                opt_def_toggle(HTTPD_CONF_USE_RANGE),
                opt_def_toggle(HTTPD_CONF_USE_RANGE_1_0),
                opt_def_toggle(HTTPD_CONF_USE_PUBLIC_ONLY),
-               opt_def_toggle(HTTPD_CONF_USE_GZIP_CONTENT_REPLACEMENT),
+               opt_def_toggle(HTTPD_CONF_USE_ENC_CONTENT_REPLACEMENT),
                opt_def_toggle(HTTPD_CONF_USE_ERR_406),
                opt_def_toggle(HTTPD_CONF_USE_CANONIZE_HOST),
                opt_def_toggle(HTTPD_CONF_USE_HOST_ERR_400),
-               opt_def_toggle(HTTPD_CONF_USE_CHK_HOST_ERR));
+               opt_def_toggle(HTTPD_CONF_USE_HOST_ERR_CHK));
 
   if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
     err(EXIT_FAILURE, "write");
@@ -201,7 +201,7 @@ static void serv_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
-    errno = ENOMEM, err(EXIT_FAILURE, "init");
+      errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   evnt_logger(vlg);
   evnt_epoll_init();
@@ -397,8 +397,9 @@ static void serv_canon_policies(void)
   { /* check variables for things which will screw us too much */
     Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
     Vstr_base *s1 = NULL;
-    Vstr_base *s2 = NULL;
 
+    ASSERT(scan->beg == httpd_opts->s);
+    
     s1 = tmp->document_root;
     if (!httpd_canon_dir_path(s1))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
@@ -409,12 +410,12 @@ static void serv_canon_policies(void)
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "canon_dir_path($<vstr.all:%p>): %m\n",
                     s1));
 
-    s1 = tmp->default_hostname;
-    if (!httpd_valid_url_filename(s1, 1, s1->len))
-      vstr_del(s1, 1, s1->len);
-    s2 = ((Httpd_policy_opts *) httpd_opts->s->def_policy)->default_hostname;
-    if (!s1->len && !vstr_add_vstr(s1, s1->len,
-                                   s2, 1, s2->len, VSTR_TYPE_ADD_BUF_REF))
+    s1 = tmp->req_err_dir;
+    if (!httpd_canon_abs_dir_path(s1))
+      VLG_ERRNOMEM((vlg, EXIT_FAILURE,
+                    "canon_abs_dir_path($<vstr.all:%p>): %m\n", s1));
+
+    if (!httpd_init_default_hostname(scan))
       VLG_ERRNOMEM((vlg, EXIT_FAILURE, "hostname(): %m\n"));
     
     s1 = tmp->dir_filename;
@@ -488,6 +489,11 @@ static void serv_cmd_line(int argc, char *argv[])
   if (!httpd_conf_main_init(httpd_opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");
 
+  if (!geteuid()) /* If root */
+    httpd_opts->s->addr_beg->tcp_port = HTTPD_CONF_SERV_DEF_PORT;
+  else /* somewhat common unprived port */
+    httpd_opts->s->addr_beg->tcp_port = 8008;
+    
   popts = (Httpd_policy_opts *)httpd_opts->s->def_policy;
   while ((optchar = getopt_long(argc, argv, "C:dhH:M:nP:t:V",
                                 long_options, NULL)) != -1)
@@ -534,7 +540,7 @@ static void serv_cmd_line(int argc, char *argv[])
       case 134: OPT_TOGGLE_ARG(popts->use_public_only);              break;
       case 135: OPT_VSTR_ARG(popts->dir_filename);                   break;
       case 136: OPT_VSTR_ARG(popts->server_name);                    break;
-      case 137: OPT_TOGGLE_ARG(popts->use_gzip_content_replacement); break;
+      case 137: OPT_TOGGLE_ARG(popts->use_enc_content_replacement);  break;
       case 139: OPT_TOGGLE_ARG(popts->use_err_406);                  break;
         /* case 140: */
       case 141: OPT_VSTR_ARG(popts->mime_types_main);                break;
@@ -544,7 +550,7 @@ static void serv_cmd_line(int argc, char *argv[])
       case 145: OPT_VSTR_ARG(popts->default_hostname);               break;
       case 146: OPT_TOGGLE_ARG(popts->use_canonize_host);            break;
       case 147: OPT_TOGGLE_ARG(popts->use_host_err_400);             break;
-      case 148: OPT_TOGGLE_ARG(popts->use_chk_host_err);
+      case 148: OPT_TOGGLE_ARG(popts->use_host_err_chk);
         
       
       ASSERT_NO_SWITCH_DEF();
@@ -566,14 +572,6 @@ static void serv_cmd_line(int argc, char *argv[])
 
   if (!popts->document_root->len)
     usage(program_name, EXIT_FAILURE, " Not specified a document root.\n");
-
-  if (httpd_opts->s->no_conf_listen)
-  {
-    if (!geteuid()) /* If root */
-      httpd_opts->s->addr_beg->tcp_port = HTTPD_CONF_SERV_DEF_PORT;
-    else /* somewhat common unprived port */
-      httpd_opts->s->addr_beg->tcp_port = 8008;
-  }
   
   if (httpd_opts->s->become_daemon)
   {

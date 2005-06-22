@@ -146,6 +146,7 @@ static void http__clear_xtra(struct Httpd_req_data *req)
     vstr_del(req->xtra_content, 1, req->xtra_content->len);
 
   HTTP__XTRA_HDR_INIT(content_type);
+  HTTP__XTRA_HDR_INIT(content_language);
   HTTP__XTRA_HDR_INIT(content_location);
   HTTP__XTRA_HDR_INIT(content_md5);
   HTTP__XTRA_HDR_INIT(gzip_content_md5);
@@ -587,11 +588,11 @@ void http_app_def_hdrs(struct Con *con, struct Httpd_req_data *req,
     http__app_hdr_eol(out);
   }
   
-  if (custom_content_type) /* possible we don't send one */
-    http_app_hdr_cstr(out, "Content-Type", custom_content_type);
-  else if (req->content_type_vs1 && req->content_type_len)
+  if (req->content_type_vs1 && req->content_type_len)
     http_app_hdr_vstr_def(out, "Content-Type",
                           HTTP__XTRA_HDR_PARAMS(req, content_type));
+  else if (custom_content_type) /* possible we don't send one */
+    http_app_hdr_cstr(out, "Content-Type", custom_content_type);
   
   if (req->content_encoding_bzip2)
       HTTP_APP_HDR_CONST_CSTR(out, "Content-Encoding", "bzip2");
@@ -671,7 +672,17 @@ static int http_fin_req(struct Con *con, Httpd_req_data *req)
   return (httpd_serv_send(con));
 }
 
-static int http_con_cleanup(struct Con *con, struct Httpd_req_data *req)
+static int http_fin_fd_req(struct Con *con, Httpd_req_data *req)
+{
+  if (req->head_op || req->use_mmap || !con->f->len)
+    httpd_fin_fd_close(con);
+  else if (req->policy->use_posix_fadvise)
+    posix_fadvise64(con->f->fd, con->f->off, con->f->len,POSIX_FADV_SEQUENTIAL);
+  
+  return (http_fin_req(con, req));
+}
+
+static int http_con_cleanup(struct Con *con, Httpd_req_data *req)
 {
   con->evnt->io_r->conf->malloc_bad = FALSE;
   con->evnt->io_w->conf->malloc_bad = FALSE;
@@ -682,10 +693,533 @@ static int http_con_cleanup(struct Con *con, struct Httpd_req_data *req)
   return (FALSE);
 }
 
+static int http_con_close_cleanup(struct Con *con, Httpd_req_data *req)
+{
+  httpd_fin_fd_close(con);
+  return (http_con_cleanup(con, req));
+}
+
+/* try to use gzip content-encoding on entity */
+static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
+                                     const struct stat64 *req_f_stat,
+                                     Vstr_base *fname,
+                                     const char *zip_ext, size_t zip_len)
+{
+  const char *fname_cstr = NULL;
+  int fd = -1;
+  int ret = FALSE;
+  
+  vstr_add_cstr_ptr(fname, fname->len, zip_ext);
+  fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
+  
+  if (fname->conf->malloc_bad)
+    vlg_warn(vlg, "Failed to export cstr for '%s'\n", zip_ext);
+  else if ((fd = io_open_nonblock(fname_cstr)) == -1)
+    vstr_sc_reduce(fname, 1, fname->len, zip_len);
+  else
+  {
+    struct stat64 f_stat[1];
+    
+    if (fstat64(fd, f_stat) == -1)
+      vlg_warn(vlg, "fstat: %m\n");
+    else if ((req->policy->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
+             (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
+             (req_f_stat->st_mtime >  f_stat->st_mtime) ||
+             (req_f_stat->st_size  <= f_stat->st_size))
+    { /* ignore the encoded version */ }
+    else
+    {
+      /* swap, close the old fd (later) and use the new */
+      SWAP_TYPE(con->f->fd, fd, int);
+      
+      ASSERT(con->f->len == (VSTR_AUTOCONF_uintmax_t)req_f_stat->st_size);
+      /* _only_ copy the new size over, mtime etc. is from the original file */
+      con->f->len = req->f_stat->st_size = f_stat->st_size;
+      req->encoded_mtime = f_stat->st_mtime;
+      ret = TRUE;
+    }
+    close(fd);
+  }
+
+  return (ret);
+}  
+
+#define HTTP__PARSE_CHK_RET_OK() do {                   \
+      HTTP_SKIP_LWS(data, pos, len);                    \
+                                                        \
+      if (!len ||                                       \
+          VPREFIX(data, pos, len, ",") ||               \
+          (allow_more && VPREFIX(data, pos, len, ";"))) \
+      {                                                 \
+        *passed_pos = pos;                              \
+        *passed_len = len;                              \
+                                                        \
+        return (TRUE);                                  \
+      }                                                 \
+    } while (FALSE)
+
+/* What is the quality parameter, value between 0 and 1000 inclusive.
+ * returns TRUE on success, FALSE on failure. */
+static int http_parse_quality(Vstr_base *data,
+                              size_t *passed_pos, size_t *passed_len,
+                              int allow_more, unsigned int *val)
+{
+  size_t pos = *passed_pos;
+  size_t len = *passed_len;
+  
+  ASSERT(val);
+  
+  *val = 1000;
+  
+  HTTP_SKIP_LWS(data, pos, len);
+
+  *passed_pos = pos;
+  *passed_len = len;
+  
+  if (!len || VPREFIX(data, pos, len, ","))
+    return (TRUE);
+  else if (VPREFIX(data, pos, len, ";"))
+  {
+    int lead_zero = FALSE;
+    unsigned int num_len = 0;
+    unsigned int parse_flags = VSTR_FLAG02(PARSE_NUM, NO_BEG_PM, NO_NEGATIVE);
+    
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+    
+    if (!VPREFIX(data, pos, len, "q"))
+      return (!!allow_more);
+    
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+    
+    if (!VPREFIX(data, pos, len, "="))
+      return (!!allow_more);
+    
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+
+    /* if it's 0[.00?0?] TRUE, 0[.\d\d?\d?] or 1[.00?0?] is FALSE */
+    if (!(lead_zero = VPREFIX(data, pos, len, "0")) &&
+        !VPREFIX(data, pos, len, "1"))
+      return (FALSE);
+    *val = (!lead_zero) * 1000;
+    
+    len -= 1; pos += 1;
+    
+    HTTP__PARSE_CHK_RET_OK();
+
+    if (!VPREFIX(data, pos, len, "."))
+      return (FALSE);
+    
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+
+    *val += vstr_parse_uint(data, pos, len, 10 | parse_flags, &num_len, NULL);
+    if (!num_len || (num_len > 3) || (*val > 1000))
+      return (FALSE);
+    if (num_len < 3) *val *= 10;
+    if (num_len < 2) *val *= 10;
+    ASSERT(*val <= 1000);
+    
+    len -= num_len; pos += num_len;
+    
+    HTTP__PARSE_CHK_RET_OK();
+  }
+  
+  return (FALSE);
+}
+#undef HTTP__PARSE_CHK_RET_OK
+
+static int http_parse_accept_encoding(struct Httpd_req_data *req)
+{
+  Vstr_base *data = req->http_hdrs->multi->comb;
+  size_t pos = 0;
+  size_t len = 0;
+  unsigned int num = 0;
+  unsigned int gzip_val     = 1001;
+  unsigned int bzip2_val    = 1001;
+  unsigned int identity_val = 1001;
+  unsigned int star_val     = 1001;
+  
+  pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
+  len = req->http_hdrs->multi->hdr_accept_encoding->len;
+
+  if (!req->policy->use_err_406 && !req->allow_accept_encoding)
+    return (FALSE);
+  req->vary_ae = TRUE;
+  
+  if (!len)
+    return (FALSE);
+  
+  req->content_encoding_xgzip = FALSE;
+  
+  while (len)
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
+                                         HTTP_EOL HTTP_LWS ";,");
+
+    ++num;
+    
+    if (0) { }
+    else if (VEQ(data, pos, tmp, "identity"))
+    {
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &identity_val))
+        return (FALSE);
+    }
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "gzip"))
+    {
+      len -= tmp; pos += tmp;
+      req->content_encoding_xgzip = FALSE;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
+        return (FALSE);
+    }
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "bzip2"))
+    {
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &bzip2_val))
+        return (FALSE);
+    }
+    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "x-gzip"))
+    {
+      len -= tmp; pos += tmp;
+      req->content_encoding_xgzip = TRUE;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
+        return (FALSE);
+      gzip_val = 1000; /* ignore quality on x-gzip - just parse for errors */
+    }
+    else if (VEQ(data, pos, tmp, "*"))
+    { /* "*;q=0,gzip" means TRUE ... and "*;q=1.0,gzip;q=0" means FALSE */
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &star_val))
+        return (FALSE);
+    }
+    else
+    {
+      len -= tmp; pos += tmp;
+    }
+    
+    /* skip to end, or after next ',' */
+    tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, ",");    
+    len -= tmp; pos += tmp;
+    if (!len)
+      break;
+    assert(VPREFIX(data, pos, len, ","));
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+
+    if (req->policy->max_AE_nodes && (num >= req->policy->max_AE_nodes))
+      return (FALSE);
+  }
+
+  if (!req->allow_accept_encoding)
+  {
+    gzip_val  = 0;
+    bzip2_val = 0;
+  }
+  
+  if (gzip_val     == 1001) gzip_val     = star_val;
+  if (bzip2_val    == 1001) bzip2_val    = star_val;
+  if (identity_val == 1001) identity_val = star_val;
+
+  if (gzip_val     == 1001) gzip_val     = 0;
+  if (bzip2_val    == 1001) bzip2_val    = 0;
+  if (identity_val == 1001) identity_val = 1;
+
+  if (!identity_val)
+    req->content_encoding_identity = FALSE;
+  
+  if ((identity_val > gzip_val) && (identity_val > bzip2_val))
+    return (FALSE);
+
+  if (gzip_val <= bzip2_val)
+  { /* currently bzip2 is "preferred" so this works well always */
+    req->content_encoding_gzip  = !!gzip_val;
+    req->content_encoding_bzip2 = !!bzip2_val;
+  }
+  else
+  { /* this doesn't "work well" if both are ok, and
+     * only a *.bz2 file on disk. Maybe carry the quality values? */
+    ASSERT(gzip_val);
+    req->content_encoding_gzip  = TRUE;
+    req->content_encoding_bzip2 = FALSE;
+  }
+  
+  return (req->content_encoding_gzip || req->content_encoding_bzip2);
+}
+
+static void httpd__try_fd_encoding(struct Con *con, Httpd_req_data *req,
+                                   const struct stat64 *fs, Vstr_base *fname)
+{ /* Might normally add "!req->head_op && ..." but
+   * http://www.w3.org/TR/chips/#gl6 says that's bad */
+  if (http_parse_accept_encoding(req))
+  {
+    if ( req->content_encoding_bzip2 &&
+         !http__try_encoded_content(con, req, fs, fname, ".bz2", CLEN(".bz2")))
+      req->content_encoding_bzip2 = FALSE;
+    if (!req->content_encoding_bzip2 && req->content_encoding_gzip &&
+        !http__try_encoded_content(con, req, fs, fname, ".gz", CLEN(".gz")))
+      req->content_encoding_gzip = FALSE;
+  }
+}
+
+static void httpd__disable_sendfile(void)
+{
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
+  
+  while (scan)
+  {
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    tmp->use_sendfile = FALSE;
+    scan = scan->next;
+  }
+}
+
+static void httpd_serv_conf_file(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t f_off,
+                                 VSTR_AUTOCONF_uintmax_t f_len)
+{
+  ASSERT(!req->head_op);
+  ASSERT(!req->use_mmap);
+  
+  if (!con->use_sendfile)
+    return;
+  
+  con->f->off = f_off;
+  con->f->len = f_len;
+}
+
+static void httpd__disable_mmap(void)
+{
+  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
+  
+  while (scan)
+  {
+    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
+    tmp->use_mmap = FALSE;
+    scan = scan->next;
+  }
+}
+
+static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t off,
+                                 VSTR_AUTOCONF_uintmax_t f_len)
+{
+  static long pagesz = 0;
+  Vstr_base *data = con->evnt->io_r;
+  VSTR_AUTOCONF_uintmax_t mmoff = off;
+  VSTR_AUTOCONF_uintmax_t mmlen = f_len;
+  
+  ASSERT(!req->f_mmap || !req->f_mmap->len);
+  ASSERT(!req->use_mmap);
+  ASSERT(!req->head_op);
+
+  if (con->use_sendfile)
+    return;
+
+  if (!pagesz)
+    pagesz = sysconf(_SC_PAGESIZE);
+  if (pagesz == -1)
+    httpd__disable_mmap();
+
+  if (!req->policy->use_mmap ||
+      (f_len < HTTP_CONF_MMAP_LIMIT_MIN) || (f_len > HTTP_CONF_MMAP_LIMIT_MAX))
+    return;
+  
+  /* mmap offset needs to be aligned - so tweak offset before and after */
+  mmoff /= pagesz;
+  mmoff *= pagesz;
+  ASSERT(mmoff <= off);
+  mmlen += off - mmoff;
+
+  if (!req->f_mmap && !(req->f_mmap = vstr_make_base(data->conf)))
+    VLG_WARN_RET_VOID((vlg, /* fall back to read */
+                       "failed to allocate mmap Vstr.\n"));
+  ASSERT(!req->f_mmap->len);
+  
+  if (!vstr_sc_mmap_fd(req->f_mmap, 0, con->f->fd, mmoff, mmlen, NULL))
+  {
+    if (errno == ENOSYS) /* also logs it */
+      httpd__disable_mmap();
+
+    VLG_WARN_RET_VOID((vlg, /* fall back to read */
+                       "mmap($<http-esc.vstr:%p%zu%zu>,"
+                       "(%ju,%ju)->(%ju,%ju)): %m\n",
+                       req->fname, (size_t)1, req->fname->len,
+                       off, f_len, mmoff, mmlen));
+  }
+  
+  req->use_mmap = TRUE;  
+  vstr_del(req->f_mmap, 1, off - mmoff);
+    
+  ASSERT(req->f_mmap->len == f_len);
+  
+  /* possible range request successful, alter response length */
+  con->f->len = f_len;
+}
+
+static void httpd_serv_call_seek(struct Con *con, struct Httpd_req_data *req,
+                                 VSTR_AUTOCONF_uintmax_t f_off,
+                                 VSTR_AUTOCONF_uintmax_t f_len,
+                                 unsigned int *http_ret_code,
+                                 const char ** http_ret_line)
+{
+  ASSERT(!req->head_op);
+  
+  if (req->use_mmap || con->use_sendfile)
+    return;
+
+  if (f_off && f_len && (lseek64(con->f->fd, f_off, SEEK_SET) == -1))
+  { /* this should be impossible for normal files AFAIK */
+    vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
+             req->fname, (size_t)1, req->fname->len, f_off);
+    /* opts->use_range - turn off? */
+    req->http_hdrs->multi->hdr_range->pos = 0;
+    *http_ret_code = 200;
+    *http_ret_line = "OK - Range Failed";
+    return;
+  }
+  
+  con->f->len = f_len;
+}
+
+static int http__conf_req(struct Con *con, Httpd_req_data *req)
+{
+  Conf_parse *conf = NULL;
+  
+  if (!(conf = conf_parse_make(NULL)))
+    return (FALSE);
+  
+  if (!httpd_conf_req_parse_file(conf, con, req))
+  {
+    Vstr_base *s1 = req->policy->s->policy_name;
+    Vstr_base *s2 = conf->tmp;
+
+    if (!req->user_return_error_code)
+      vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
+    conf_parse_free(conf);
+    return (TRUE);
+  }
+  conf_parse_free(conf);
+  
+  if (req->direct_uri)
+  {
+    Vstr_base *s1 = req->policy->s->policy_name;
+    vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
+             " Has URI.\n", con->evnt->sa, s1);
+    HTTPD_ERR_RET(req, 503, TRUE);
+  }
+  
+  return (TRUE);
+}
+
+static void http_app_hdrs_url(struct Con *con, Httpd_req_data *req)
+{
+  Vstr_base *out = con->evnt->io_w;
+  
+  if (req->cache_control_vs1)
+    http_app_hdr_vstr_def(out, "Cache-Control",
+                          HTTP__XTRA_HDR_PARAMS(req, cache_control));
+  if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
+    http_app_hdr_vstr_def(out, "Expires",
+                          HTTP__XTRA_HDR_PARAMS(req, expires));
+  if (req->p3p_vs1)
+    http_app_hdr_vstr_def(out, "P3P",
+                          HTTP__XTRA_HDR_PARAMS(req, p3p));
+}
+
+static void http_app_hdrs_file(struct Con *con, Httpd_req_data *req)
+{
+  Vstr_base *out = con->evnt->io_w;
+  time_t mtime     = req->f_stat->st_mtime;
+  time_t enc_mtime = req->encoded_mtime;
+  
+  if (req->content_language_vs1)
+    http_app_hdr_vstr_def(out, "Content-Language",
+                          HTTP__XTRA_HDR_PARAMS(req, content_language));
+  if (req->content_encoding_bzip2)
+  {
+    if (req->bzip2_content_md5_vs1 && (req->content_md5_time > enc_mtime))
+      http_app_hdr_vstr_def(out, "Content-MD5",
+                            HTTP__XTRA_HDR_PARAMS(req, bzip2_content_md5));
+  }
+  else if (req->content_encoding_gzip)
+  {
+    if (req->gzip_content_md5_vs1 && (req->content_md5_time > enc_mtime))
+      http_app_hdr_vstr_def(out, "Content-MD5",
+                            HTTP__XTRA_HDR_PARAMS(req, gzip_content_md5));
+  }
+  else if (req->content_md5_vs1 && (req->content_md5_time > mtime))
+    http_app_hdr_vstr_def(out, "Content-MD5",
+                          HTTP__XTRA_HDR_PARAMS(req, content_md5));
+  
+  if (req->content_encoding_bzip2)
+  {
+    if (req->bzip2_etag_vs1 && (req->etag_time > enc_mtime))
+      http_app_hdr_vstr_def(out, "ETag",
+                            HTTP__XTRA_HDR_PARAMS(req, bzip2_etag));
+  }
+  else if (req->content_encoding_gzip)
+  {
+    if (req->gzip_etag_vs1 && (req->etag_time > enc_mtime))
+      http_app_hdr_vstr_def(out, "ETag",
+                            HTTP__XTRA_HDR_PARAMS(req, gzip_etag));
+  }
+  else if (req->etag_vs1 && (req->etag_time > mtime))
+    http_app_hdr_vstr_def(out, "ETag", HTTP__XTRA_HDR_PARAMS(req, etag));
+  
+  if (req->link_vs1)
+    http_app_hdr_vstr_def(out, "Link", HTTP__XTRA_HDR_PARAMS(req, link));
+}
+
+static void http_prepend_doc_root(Vstr_base *fname, Httpd_req_data *req)
+{
+  Vstr_base *dir = req->policy->document_root;
+  
+  ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
+  ASSERT((fname->len >= 1) && vstr_cmp_cstr_eq(fname,        1, 1, "/"));
+  vstr_add_vstr(fname, 0, dir, 1, dir->len - 1, VSTR_TYPE_ADD_BUF_REF);
+}
+
+static void http_app_err_file(struct Con *con, Httpd_req_data *req,
+                              Vstr_base *fname, size_t *vhost_prefix_len)
+{
+  Vstr_base *dir = NULL;
+
+  ASSERT(con && req);
+  ASSERT(vhost_prefix_len && !*vhost_prefix_len);
+
+  dir = req->policy->req_err_dir;
+  ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,          1, 1, "/"));
+  ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
+  vstr_add_vstr(fname, fname->len, dir, 1, dir->len, VSTR_TYPE_ADD_BUF_REF);
+  
+  vstr_add_fmt(fname, fname->len, "%u", req->error_code);
+  
+  if (req->policy->use_vhosts_name)
+  {
+    Vstr_base *data = con->evnt->io_r;
+    Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
+    size_t orig_len = fname->len;
+    
+    if (!h_h->len)
+      httpd_sc_add_default_hostname(con, req, fname, 0);
+    else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
+                           h_h->pos, h_h->len, VSTR_TYPE_ADD_DEF))
+      vstr_conv_lowercase(fname, 1, h_h->len);
+    vstr_add_cstr_ptr(fname, 0, "/");
+
+    *vhost_prefix_len = (fname->len - orig_len);
+  }
+}
+
 static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
-
+  int use_cust_err_msg = FALSE;
+  
   req->content_encoding_gzip  = FALSE;
   req->content_encoding_bzip2 = FALSE;
   
@@ -708,7 +1242,123 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
     ASSERT(req->error_code == 500);
     vstr_del(con->evnt->io_r, 1, con->evnt->io_r->len);
   }
-  
+  else if (((req->error_code == 400) ||
+            (req->error_code == 403) ||
+            (req->error_code == 404) ||
+            (req->error_code == 410) ||
+            (req->error_code == 500) ||
+            (req->error_code == 503)) && req->policy->req_err_dir->len)
+  { /* custom err message */
+    Vstr_base *fname = vstr_make_base(req->fname->conf);
+    size_t vhost_prefix_len = 0;
+    const char *fname_cstr = NULL;
+    struct stat64 f_stat[1];
+
+    if (!fname)
+      goto fail_custom_err;
+
+    if (!req->user_return_error_code)
+    {
+      req->cache_control_vs1 = NULL;
+      req->expires_vs1       = NULL;
+      req->p3p_vs1           = NULL;
+    }
+
+    if (req->user_return_error_code && req->direct_filename)
+    {
+      vstr_add_vstr(fname, fname->len, req->fname, 1,
+                    req->fname->len, VSTR_TYPE_ADD_BUF_REF);
+      if (!req->skip_document_root)
+        http_prepend_doc_root(fname, req);
+    }
+    else if (!req->policy->req_conf_dir)
+    {
+      http_app_err_file(con, req, fname, &vhost_prefix_len);
+      http_prepend_doc_root(fname, req);
+    }
+    else
+    {
+      int conf_ret = FALSE;
+      unsigned int code = req->error_code;
+      unsigned int ncode = 0;
+      
+      http_app_err_file(con, req, fname, &vhost_prefix_len);
+
+      req->content_type_vs1 = NULL;
+      req->error_code = 0;
+      req->skip_document_root = FALSE;
+      
+      SWAP_TYPE(fname, req->fname, Vstr_base *);
+      SWAP_TYPE(vhost_prefix_len, req->vhost_prefix_len, size_t);
+      conf_ret = http__conf_req(con, req);
+      SWAP_TYPE(fname, req->fname, Vstr_base *);
+      SWAP_TYPE(vhost_prefix_len, req->vhost_prefix_len, size_t);
+
+      ncode = req->error_code;
+      switch (code)
+      {
+        case 400: HTTPD_ERR(req, 400); break;
+        case 403: HTTPD_ERR(req, 403); break;
+        case 404: HTTPD_ERR(req, 404); break;
+        case 410: HTTPD_ERR(req, 410); break;
+        case 500: HTTPD_ERR(req, 500); break;
+        case 503: HTTPD_ERR(req, 503);
+          ASSERT_NO_SWITCH_DEF();
+      }
+      if (!conf_ret)
+        goto fail_custom_err;
+      if (ncode)
+        goto fail_custom_err; /* don't allow remapping errors -- loops */
+      
+      if (!req->skip_document_root)
+        http_prepend_doc_root(fname, req);
+    }
+    fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
+    
+    if (fname->conf->malloc_bad)
+      goto fail_custom_err;
+    ASSERT(con->f->fd == -1);
+    if ((con->f->fd = io_open_nonblock(fname_cstr)) == -1)
+      goto fail_custom_err;
+
+    if (fstat64(con->f->fd, f_stat) == -1)
+    {
+      httpd_fin_fd_close(con);
+      goto fail_custom_err;
+    }
+    if (req->policy->use_public_only && !(f_stat->st_mode & S_IROTH))
+    {
+      httpd_fin_fd_close(con);
+      goto fail_custom_err;
+    }
+    if (!S_ISREG(f_stat->st_mode))
+    {
+      httpd_fin_fd_close(con);
+      goto fail_custom_err;
+    }
+    con->f->len = f_stat->st_size;
+    
+    if (!req->ver_0_9)
+      httpd__try_fd_encoding(con, req, f_stat, fname);
+    
+    req->use_mmap = FALSE;
+    if (!req->head_op)
+    {
+      httpd_serv_conf_file(con, req, 0, con->f->len);
+      httpd_serv_call_mmap(con, req, 0, con->f->len);
+    }
+
+    req->error_len   = con->f->len;
+    use_cust_err_msg = TRUE;
+    
+   fail_custom_err:
+    fname->conf->malloc_bad = FALSE;
+    vstr_free_base(fname);
+  }
+
+  if (!use_cust_err_msg)
+    req->content_type_vs1 = NULL;
+
   if (!req->ver_0_9)
   { /* use_range is dealt with inside */
     http_app_def_hdrs(con, req, req->error_code, req->error_line,
@@ -737,18 +1387,11 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
                            tmp, 1, tmp->len, VSTR_TYPE_ADD_ALL_BUF);
     }
     
-    if (req->user_return_error_code)
-    {
-      if (req->cache_control_vs1)
-        http_app_hdr_vstr_def(out, "Cache-Control",
-                              HTTP__XTRA_HDR_PARAMS(req, cache_control));
-      if (req->expires_vs1 && (req->expires_time > req->f_stat->st_mtime))
-        http_app_hdr_vstr_def(out, "Expires",
-                              HTTP__XTRA_HDR_PARAMS(req, expires));
-      if (req->p3p_vs1)
-        http_app_hdr_vstr_def(out, "P3P",
-                              HTTP__XTRA_HDR_PARAMS(req, p3p));
-    }
+    if (req->user_return_error_code || use_cust_err_msg)
+      http_app_hdrs_url(con, req);
+    if (use_cust_err_msg)
+      http_app_hdrs_file(con, req);
+    
     http_app_end_hdrs(out);
   }
 
@@ -774,7 +1417,23 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
                              CONF_MSG__FMT_307_BEG,
                              loc, (size_t)1, loc->len, VSTR_TYPE_ADD_ALL_BUF,
                              CONF_MSG__FMT_30x_END); break;
-      default: vstr_add_ptr(out, out->len, req->error_msg, req->error_len);
+      default:
+        if (use_cust_err_msg)
+        {
+          if (req->use_mmap && !vstr_mov(con->evnt->io_w, con->evnt->io_w->len,
+                                         req->f_mmap, 1, req->f_mmap->len))
+            return (http_con_close_cleanup(con, req));
+
+          vlg_dbg3(vlg, "ERROR CUSTOM-404 REPLY:\n$<vstr.all:%p>\n", out);
+          
+          if (out->conf->malloc_bad)
+            return (http_con_close_cleanup(con, req));
+  
+          return (http_fin_fd_req(con, req));
+        }
+
+        /* default internal error message */
+        vstr_add_ptr(out, out->len, req->error_msg, req->error_len);
     }
   }
   
@@ -800,7 +1459,7 @@ static int http_fin_errmem_req(struct Con *con, struct Httpd_req_data *req)
   HTTPD_ERR_RET(req, 500, http_fin_err_req(con, req));
 }
 
-static int http_fin_err_close_req(struct Con *con, struct Httpd_req_data *req)
+static int http_fin_err_close_req(struct Con *con, Httpd_req_data *req)
 {
   httpd_fin_fd_close(con);
   return (http_fin_err_req(con, req));
@@ -825,6 +1484,15 @@ int httpd_sc_add_default_hostname(struct Con *con,
 
   return (ret);
 }
+
+static void httpd_sc_add_default_filename(Httpd_req_data *req, Vstr_base *fname)
+{
+  if (vstr_export_chr(fname, fname->len) == '/')
+  {
+    Vstr_base *tmp = req->policy->dir_filename;
+    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
+  }
+}                                  
 
 /* turn //foo//bar// into /foo/bar/ */
 int httpd_canon_path(Vstr_base *s1)
@@ -851,6 +1519,17 @@ int httpd_canon_dir_path(Vstr_base *s1)
   return (TRUE);
 }
 
+int httpd_canon_abs_dir_path(Vstr_base *s1)
+{
+  if (!httpd_canon_dir_path(s1))
+    return (FALSE);
+
+  if (s1->len && (vstr_export_chr(s1, 1) != '/'))
+    return (vstr_add_cstr_ptr(s1, 0, "/"));
+  
+  return (TRUE);
+}
+  
 void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
                             Vstr_base *lfn, size_t pos, size_t len)
 {
@@ -1536,20 +2215,32 @@ static int http__app_multi_hdr(Vstr_base *data, struct Http_hdrs *hdrs,
 }
 
 /* viprefix, with local knowledge */
-static int http__hdr_eq(Vstr_base *data, size_t pos, size_t len,
-                        const char *hdr, size_t *hdr_val_pos)
+static int http__hdr_eq(struct Con *con, size_t pos, size_t len,
+                        const char *hdr, size_t hdr_len, size_t *hdr_val_pos)
 {
-  if (!VIPREFIX(data, pos, len, hdr))
-    return (FALSE);
-  len -= CLEN(hdr); pos += CLEN(hdr);
+  Vstr_base *data = con->evnt->io_r;
 
-  HTTP_SKIP_LWS(data, pos, len);
-  if (!len)
-    return (FALSE);
+  ASSERT(CLEN(hdr) == hdr_len);
+  ASSERT(hdr[hdr_len - 1] == ':');
   
-  if (vstr_export_chr(data, pos) != ':')
+  if (!con->policy->use_non_spc_hdrs)
+    --hdr_len;
+  
+  if ((len < hdr_len) ||
+      !vstr_cmp_case_buf_eq(data, pos, hdr_len, hdr, hdr_len))
     return (FALSE);
-  --len; ++pos;
+  len -= hdr_len; pos += hdr_len;
+
+  if (!con->policy->use_non_spc_hdrs)
+  {
+    HTTP_SKIP_LWS(data, pos, len);
+    if (!len)
+      return (FALSE);
+  
+    if (vstr_export_chr(data, pos) != ':')
+      return (FALSE);
+    --len; ++pos;
+  }
   
   *hdr_val_pos = pos;
   
@@ -1575,8 +2266,13 @@ static void http__hdr_fixup(Vstr_base *data, size_t *pos, size_t *len,
   }  
 }
 
-#define HDR__EQ(x) http__hdr_eq(data, pos, len, x, &hdr_val_pos)
+/* for single headers, multiple ones aren't allowed ...
+ * we can do last one wins, or just error (erroring is more secure, see
+ * HTTP Request smuggling) */
+#define HDR__EQ(x) http__hdr_eq(con, pos, len, x ":", CLEN(x ":"), &hdr_val_pos)
 #define HDR__SET(h) do {                                                \
+      if (req->policy->use_x2_hdr_chk && http_hdrs-> hdr_ ## h ->pos)   \
+        HTTPD_ERR_RET(req, 400, FALSE);                                 \
       http__hdr_fixup(data, &pos, &len, hdr_val_pos);                   \
       http_hdrs-> hdr_ ## h ->pos = pos;                                \
       http_hdrs-> hdr_ ## h ->len = len;                                \
@@ -1585,7 +2281,10 @@ static void http__hdr_fixup(Vstr_base *data, size_t *pos, size_t *len,
       http__hdr_fixup(data, &pos, &len, hdr_val_pos);                   \
       if (!http__app_multi_hdr(data, http_hdrs,                         \
                                http_hdrs->multi-> hdr_ ## h, pos, len)) \
+      {                                                                 \
+        req->malloc_bad = TRUE;                                         \
         HTTPD_ERR_RET(req, 500, FALSE);                                 \
+      }                                                                 \
     } while (FALSE)
 
 static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
@@ -1593,6 +2292,8 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
   Vstr_base *data = con->evnt->io_r;
   struct Http_hdrs *http_hdrs = req->http_hdrs;
   unsigned int num = 3; /* skip "method URI version" */
+  int got_content_length = FALSE;
+  int got_transfer_encoding = FALSE;
   
   while (++num <= req->sects->num)
   {
@@ -1601,7 +2302,6 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
     size_t hdr_val_pos = 0;
 
     if (0) { /* nothing */ }
-    /* single headers, isn't allowed ... we do last one wins */
     /* nothing headers ... use for logging only */
     else if (HDR__EQ("User-Agent"))          HDR__SET(ua);
     else if (HDR__EQ("Referer"))             HDR__SET(referer);
@@ -1623,11 +2323,35 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
     else if (HDR__EQ("If-None-Match"))       HDR__MULTI_SET(if_none_match);
     else if (HDR__EQ("Range"))               HDR__MULTI_SET(range);
 
-    /* in theory 0 bytes is ok ... who cares */
-    else if (HDR__EQ("Content-Length"))      HTTPD_ERR_RET(req, 413, FALSE);
+    /* allow a 0 (zero) length content-length, some clients do send these */
+    else if (HDR__EQ("Content-Length"))
+    {
+      unsigned int num_flags = 10 | (VSTR_FLAG_PARSE_NUM_NO_BEG_PM |
+                                     VSTR_FLAG_PARSE_NUM_OVERFLOW);
+      size_t num_len = 0;
+      
+      if (req->policy->use_x2_hdr_chk && got_content_length)
+        HTTPD_ERR_RET(req, 400, FALSE);
+      got_content_length = TRUE;
+      http__hdr_fixup(data, &pos, &len, hdr_val_pos);
 
-    /* in theory identity is ok ... who cares */
-    else if (HDR__EQ("Transfer-Encoding"))   HTTPD_ERR_RET(req, 413, FALSE);
+      if (vstr_parse_uint(data, pos, len, num_flags, &num_len, NULL))
+        HTTPD_ERR_RET(req, 413, FALSE);
+      if (num_len != len)
+        HTTPD_ERR_RET(req, 400, FALSE);
+    }
+    
+    /* in theory ,,identity;foo=bar;baz="zoom",, is ok ... who cares */
+    else if (HDR__EQ("Transfer-Encoding"))
+    {
+      if (req->policy->use_x2_hdr_chk && got_transfer_encoding)
+        HTTPD_ERR_RET(req, 400, FALSE);
+      got_transfer_encoding = TRUE;
+      http__hdr_fixup(data, &pos, &len, hdr_val_pos);
+
+      if (!VEQ(data, pos, len, "identity"))
+        HTTPD_ERR_RET(req, 413, FALSE);
+    }
   }
 
   return (TRUE);
@@ -2017,376 +2741,6 @@ static int http_parse_range(struct Httpd_req_data *req,
   return (200);
 }
 
-#define HTTP__PARSE_CHK_RET_OK() do {                   \
-      HTTP_SKIP_LWS(data, pos, len);                    \
-                                                        \
-      if (!len ||                                       \
-          VPREFIX(data, pos, len, ",") ||               \
-          (allow_more && VPREFIX(data, pos, len, ";"))) \
-      {                                                 \
-        *passed_pos = pos;                              \
-        *passed_len = len;                              \
-                                                        \
-        return (TRUE);                                  \
-      }                                                 \
-    } while (FALSE)
-
-/* What is the quality parameter, value between 0 and 1000 inclusive.
- * returns TRUE on success, FALSE on failure. */
-static int http_parse_quality(Vstr_base *data,
-                              size_t *passed_pos, size_t *passed_len,
-                              int allow_more, unsigned int *val)
-{
-  size_t pos = *passed_pos;
-  size_t len = *passed_len;
-  
-  ASSERT(val);
-  
-  *val = 1000;
-  
-  HTTP_SKIP_LWS(data, pos, len);
-
-  *passed_pos = pos;
-  *passed_len = len;
-  
-  if (!len || VPREFIX(data, pos, len, ","))
-    return (TRUE);
-  else if (VPREFIX(data, pos, len, ";"))
-  {
-    int lead_zero = FALSE;
-    unsigned int num_len = 0;
-    unsigned int parse_flags = VSTR_FLAG02(PARSE_NUM, NO_BEG_PM, NO_NEGATIVE);
-    
-    len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-    
-    if (!VPREFIX(data, pos, len, "q"))
-      return (!!allow_more);
-    
-    len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-    
-    if (!VPREFIX(data, pos, len, "="))
-      return (!!allow_more);
-    
-    len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-
-    /* if it's 0[.00?0?] TRUE, 0[.\d\d?\d?] or 1[.00?0?] is FALSE */
-    if (!(lead_zero = VPREFIX(data, pos, len, "0")) &&
-        !VPREFIX(data, pos, len, "1"))
-      return (FALSE);
-    *val = (!lead_zero) * 1000;
-    
-    len -= 1; pos += 1;
-    
-    HTTP__PARSE_CHK_RET_OK();
-
-    if (!VPREFIX(data, pos, len, "."))
-      return (FALSE);
-    
-    len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-
-    *val += vstr_parse_uint(data, pos, len, 10 | parse_flags, &num_len, NULL);
-    if (!num_len || (num_len > 3) || (*val > 1000))
-      return (FALSE);
-    if (num_len < 3) *val *= 10;
-    if (num_len < 2) *val *= 10;
-    ASSERT(*val <= 1000);
-    
-    len -= num_len; pos += num_len;
-    
-    HTTP__PARSE_CHK_RET_OK();
-  }
-  
-  return (FALSE);
-}
-#undef HTTP__PARSE_CHK_RET_OK
-
-static int http_parse_accept_encoding(struct Httpd_req_data *req)
-{
-  Vstr_base *data = req->http_hdrs->multi->comb;
-  size_t pos = 0;
-  size_t len = 0;
-  unsigned int num = 0;
-  unsigned int gzip_val     = 1001;
-  unsigned int bzip2_val    = 1001;
-  unsigned int identity_val = 1001;
-  unsigned int star_val     = 1001;
-  
-  pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
-  len = req->http_hdrs->multi->hdr_accept_encoding->len;
-
-  if (!req->policy->use_err_406 && !req->allow_accept_encoding)
-    return (FALSE);
-  req->vary_ae = TRUE;
-  
-  if (!len)
-    return (FALSE);
-  
-  req->content_encoding_xgzip = FALSE;
-  
-  while (len)
-  {
-    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
-                                         HTTP_EOL HTTP_LWS ";,");
-
-    ++num;
-    
-    if (0) { }
-    else if (VEQ(data, pos, tmp, "identity"))
-    {
-      len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &identity_val))
-        return (FALSE);
-    }
-    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "gzip"))
-    {
-      len -= tmp; pos += tmp;
-      req->content_encoding_xgzip = FALSE;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
-        return (FALSE);
-    }
-    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "bzip2"))
-    {
-      len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &bzip2_val))
-        return (FALSE);
-    }
-    else if (req->allow_accept_encoding && VEQ(data, pos, tmp, "x-gzip"))
-    {
-      len -= tmp; pos += tmp;
-      req->content_encoding_xgzip = TRUE;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &gzip_val))
-        return (FALSE);
-      gzip_val = 1000; /* ignore quality on x-gzip - just parse for errors */
-    }
-    else if (VEQ(data, pos, tmp, "*"))
-    { /* "*;q=0,gzip" means TRUE ... and "*;q=1.0,gzip;q=0" means FALSE */
-      len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, FALSE, &star_val))
-        return (FALSE);
-    }
-    else
-    {
-      len -= tmp; pos += tmp;
-    }
-    
-    /* skip to end, or after next ',' */
-    tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, ",");    
-    len -= tmp; pos += tmp;
-    if (!len)
-      break;
-    assert(VPREFIX(data, pos, len, ","));
-    len -= 1; pos += 1;
-    HTTP_SKIP_LWS(data, pos, len);
-
-    if (req->policy->max_AE_nodes && (num >= req->policy->max_AE_nodes))
-      return (FALSE);
-  }
-
-  if (!req->allow_accept_encoding)
-  {
-    gzip_val  = 0;
-    bzip2_val = 0;
-  }
-  
-  if (gzip_val     == 1001) gzip_val     = star_val;
-  if (bzip2_val    == 1001) bzip2_val    = star_val;
-  if (identity_val == 1001) identity_val = star_val;
-
-  if (gzip_val     == 1001) gzip_val     = 0;
-  if (bzip2_val    == 1001) bzip2_val    = 0;
-  if (identity_val == 1001) identity_val = 1;
-
-  if (!identity_val)
-    req->content_encoding_identity = FALSE;
-  
-  if ((identity_val > gzip_val) && (identity_val > bzip2_val))
-    return (FALSE);
-
-  if (gzip_val <= bzip2_val)
-  { /* currently bzip2 is "preferred" so this works well always */
-    req->content_encoding_gzip  = !!gzip_val;
-    req->content_encoding_bzip2 = !!bzip2_val;
-  }
-  else
-  { /* this doesn't "work well" if both are ok, and
-     * only a *.bz2 file on disk. Maybe carry the quality values? */
-    ASSERT(gzip_val);
-    req->content_encoding_gzip  = TRUE;
-    req->content_encoding_bzip2 = FALSE;
-  }
-  
-  return (req->content_encoding_gzip || req->content_encoding_bzip2);
-}
-
-/* try to use gzip content-encoding on entity */
-static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
-                                     const char *zip_ext, size_t zip_len)
-{
-  const char *fname_cstr = NULL;
-  int fd = -1;
-  int ret = FALSE;
-  
-  vstr_add_cstr_ptr(req->fname, req->fname->len, zip_ext);
-
-  fname_cstr = vstr_export_cstr_ptr(req->fname, 1, req->fname->len);
-  if (!fname_cstr)
-    vlg_warn(vlg, "Failed to export cstr for '%s'\n", zip_ext);
-  else if ((fd = io_open_nonblock(fname_cstr)) == -1)
-    vstr_sc_reduce(req->fname, 1, req->fname->len, zip_len);
-  else
-  {
-    struct stat64 f_stat[1];
-    
-    if (fstat64(fd, f_stat) == -1)
-      vlg_warn(vlg, "fstat: %m\n");
-    else if ((req->policy->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
-             (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
-             (req->f_stat->st_mtime >  f_stat->st_mtime) ||
-             (req->f_stat->st_size  <= f_stat->st_size))
-    { /* ignore the encoded version */ }
-    else
-    {
-      /* swap, close the old fd (later) and use the new */
-      SWAP_TYPE(con->f->fd, fd, int);
-      
-      ASSERT(con->f->len == (VSTR_AUTOCONF_uintmax_t)req->f_stat->st_size);
-      /* _only_ copy the new size over, mtime etc. is from the original file */
-      con->f->len = req->f_stat->st_size = f_stat->st_size;
-      req->encoded_mtime = f_stat->st_mtime;
-      ret = TRUE;
-    }
-    close(fd);
-  }
-
-  return (ret);
-}  
-
-static void httpd_serv_conf_file(struct Con *con, struct Httpd_req_data *req,
-                                 VSTR_AUTOCONF_uintmax_t f_off,
-                                 VSTR_AUTOCONF_uintmax_t f_len)
-{
-  ASSERT(!req->head_op);
-  ASSERT(!req->use_mmap);
-  
-  if (!con->use_sendfile)
-    return;
-  
-  con->f->off = f_off;
-  con->f->len = f_len;
-}
-
-static void httpd__disable_mmap(void)
-{
-  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
-  
-  while (scan)
-  {
-    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
-    tmp->use_mmap = FALSE;
-    scan = scan->next;
-  }
-}
-
-static void httpd__disable_sendfile(void)
-{
-  Opt_serv_policy_opts *scan = httpd_opts->s->def_policy;
-  
-  while (scan)
-  {
-    Httpd_policy_opts *tmp = (Httpd_policy_opts *)scan;
-    tmp->use_sendfile = FALSE;
-    scan = scan->next;
-  }
-}
-
-static void httpd_serv_call_mmap(struct Con *con, struct Httpd_req_data *req,
-                                 VSTR_AUTOCONF_uintmax_t off,
-                                 VSTR_AUTOCONF_uintmax_t f_len)
-{
-  static long pagesz = 0;
-  Vstr_base *data = con->evnt->io_r;
-  VSTR_AUTOCONF_uintmax_t mmoff = off;
-  VSTR_AUTOCONF_uintmax_t mmlen = f_len;
-  
-  ASSERT(!req->f_mmap || !req->f_mmap->len);
-  ASSERT(!req->use_mmap);
-  ASSERT(!req->head_op);
-
-  if (con->use_sendfile)
-    return;
-
-  if (!pagesz)
-    pagesz = sysconf(_SC_PAGESIZE);
-  if (pagesz == -1)
-    httpd__disable_mmap();
-
-  if (!req->policy->use_mmap ||
-      (f_len < HTTP_CONF_MMAP_LIMIT_MIN) || (f_len > HTTP_CONF_MMAP_LIMIT_MAX))
-    return;
-  
-  /* mmap offset needs to be aligned - so tweak offset before and after */
-  mmoff /= pagesz;
-  mmoff *= pagesz;
-  ASSERT(mmoff <= off);
-  mmlen += off - mmoff;
-
-  if (!req->f_mmap && !(req->f_mmap = vstr_make_base(data->conf)))
-    VLG_WARN_RET_VOID((vlg, /* fall back to read */
-                       "failed to allocate mmap Vstr.\n"));
-  ASSERT(!req->f_mmap->len);
-  
-  if (!vstr_sc_mmap_fd(req->f_mmap, 0, con->f->fd, mmoff, mmlen, NULL))
-  {
-    if (errno == ENOSYS) /* also logs it */
-      httpd__disable_mmap();
-
-    VLG_WARN_RET_VOID((vlg, /* fall back to read */
-                       "mmap($<http-esc.vstr:%p%zu%zu>,"
-                       "(%ju,%ju)->(%ju,%ju)): %m\n",
-                       req->fname, (size_t)1, req->fname->len,
-                       off, f_len, mmoff, mmlen));
-  }
-  
-  req->use_mmap = TRUE;  
-  vstr_del(req->f_mmap, 1, off - mmoff);
-    
-  ASSERT(req->f_mmap->len == f_len);
-  
-  /* possible range request successful, alter response length */
-  con->f->len = f_len;
-}
-
-static void httpd_serv_call_seek(struct Con *con, struct Httpd_req_data *req,
-                                 VSTR_AUTOCONF_uintmax_t f_off,
-                                 VSTR_AUTOCONF_uintmax_t f_len,
-                                 unsigned int *http_ret_code,
-                                 const char ** http_ret_line)
-{
-  ASSERT(!req->head_op);
-  
-  if (req->use_mmap || con->use_sendfile)
-    return;
-
-  if (f_off && f_len && (lseek64(con->f->fd, f_off, SEEK_SET) == -1))
-  { /* this should be impossible for normal files AFAIK */
-    vlg_warn(vlg, "lseek($<http-esc.vstr:%p%zu%zu>,off=%ju): %m\n",
-             req->fname, (size_t)1, req->fname->len, f_off);
-    /* opts->use_range - turn off? */
-    req->http_hdrs->multi->hdr_range->pos = 0;
-    *http_ret_code = 200;
-    *http_ret_line = "OK - Range Failed";
-    return;
-  }
-  
-  con->f->len = f_len;
-
-  return;
-}
-
 static void httpd_serv_call_file_init(struct Con *con, Httpd_req_data *req,
                                       VSTR_AUTOCONF_uintmax_t f_off,
                                       VSTR_AUTOCONF_uintmax_t f_len,
@@ -2403,7 +2757,7 @@ static void httpd_serv_call_file_init(struct Con *con, Httpd_req_data *req,
   }
 }
 
-static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
+static int http_req_1_x(struct Con *con, Httpd_req_data *req,
                         unsigned int *http_ret_code,
                         const char **http_ret_line)
 {
@@ -2413,27 +2767,17 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   VSTR_AUTOCONF_uintmax_t f_len     = 0;
   Vstr_sect_node *h_r = req->http_hdrs->multi->hdr_range;
   time_t mtime     = -1;
-  time_t enc_mtime = -1;
   
   if (req->ver_1_1 && req->http_hdrs->hdr_expect->len)
     /* I'm pretty sure we can ignore 100-continue, as no request will
      * have a body */
     HTTPD_ERR_RET(req, 417, FALSE);
           
-  /* Might normally add "!req->head_op && ..." but
-   * http://www.w3.org/TR/chips/#gl6 says that's bad */
-  if (http_parse_accept_encoding(req))
-  {
-    if ( req->content_encoding_bzip2 &&
-         !http__try_encoded_content(con, req, ".bz2", CLEN(".bz2")))
-      req->content_encoding_bzip2 = FALSE;
-    if (!req->content_encoding_bzip2 && req->content_encoding_gzip &&
-        !http__try_encoded_content(con, req, ".gz", CLEN(".gz")))
-      req->content_encoding_gzip = FALSE;
-  }
+  httpd__try_fd_encoding(con, req, req->f_stat, req->fname);
   
   if (req->policy->use_err_406 &&
-      !req->content_encoding_identity && !req->content_encoding_gzip)
+      !req->content_encoding_identity &&
+      !req->content_encoding_bzip2 && !req->content_encoding_gzip)
     HTTPD_ERR_RET(req, 406, FALSE);
   
   if (h_r->pos)
@@ -2469,8 +2813,7 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   httpd_serv_call_file_init(con, req, range_beg, f_len,
                             http_ret_code, http_ret_line);
 
-  mtime     = req->f_stat->st_mtime;
-  enc_mtime = req->encoded_mtime;
+  mtime = req->f_stat->st_mtime;
   http_app_def_hdrs(con, req, *http_ret_code, *http_ret_line,
                     mtime, NULL, req->policy->use_range, con->f->len);
   if (h_r->pos)
@@ -2480,46 +2823,8 @@ static int http_req_1_x(struct Con *con, struct Httpd_req_data *req,
   if (req->content_location_vs1)
     http_app_hdr_vstr_def(out, "Content-Location",
                           HTTP__XTRA_HDR_PARAMS(req, content_location));
-  if (req->content_encoding_bzip2)
-  {
-    if (req->bzip2_content_md5_vs1 && (req->content_md5_time > enc_mtime))
-      http_app_hdr_vstr_def(out, "Content-MD5",
-                            HTTP__XTRA_HDR_PARAMS(req, bzip2_content_md5));
-  }
-  else if (req->content_encoding_gzip)
-  {
-    if (req->gzip_content_md5_vs1 && (req->content_md5_time > enc_mtime))
-      http_app_hdr_vstr_def(out, "Content-MD5",
-                            HTTP__XTRA_HDR_PARAMS(req, gzip_content_md5));
-  }
-  else if (req->content_md5_vs1 && (req->content_md5_time > mtime))
-    http_app_hdr_vstr_def(out, "Content-MD5",
-                          HTTP__XTRA_HDR_PARAMS(req, content_md5));
-  
-  if (req->cache_control_vs1)
-    http_app_hdr_vstr_def(out, "Cache-Control",
-                          HTTP__XTRA_HDR_PARAMS(req, cache_control));
-  if (req->content_encoding_bzip2)
-  {
-    if (req->bzip2_etag_vs1 && (req->etag_time > enc_mtime))
-      http_app_hdr_vstr_def(out, "ETag",
-                            HTTP__XTRA_HDR_PARAMS(req, bzip2_etag));
-  }
-  else if (req->content_encoding_gzip)
-  {
-    if (req->gzip_etag_vs1 && (req->etag_time > enc_mtime))
-      http_app_hdr_vstr_def(out, "ETag",
-                            HTTP__XTRA_HDR_PARAMS(req, gzip_etag));
-  }
-  else if (req->etag_vs1 && (req->etag_time > mtime))
-    http_app_hdr_vstr_def(out, "ETag", HTTP__XTRA_HDR_PARAMS(req, etag));
-  
-  if (req->expires_vs1 && (req->expires_time > mtime))
-    http_app_hdr_vstr_def(out, "Expires", HTTP__XTRA_HDR_PARAMS(req, expires));
-  if (req->link_vs1)
-    http_app_hdr_vstr_def(out, "Link", HTTP__XTRA_HDR_PARAMS(req, link));
-  if (req->p3p_vs1)
-    http_app_hdr_vstr_def(out, "P3P",  HTTP__XTRA_HDR_PARAMS(req, p3p));
+  http_app_hdrs_url(con, req);
+  http_app_hdrs_file(con, req);  
   
   http_app_end_hdrs(out);
   
@@ -2625,7 +2930,7 @@ unsigned int http_parse_accept(Httpd_req_data *req,
       done_sub_type = TRUE;
     }
     else if (!done_sub_type && VEQ(data, pos, tmp, "*/*"))
-    { /* "*;q=0,gzip" means TRUE ... and "*;q=1,gzip;q=0" means FALSE */
+    {
       len -= tmp; pos += tmp;
       if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
         return (1);
@@ -2646,6 +2951,95 @@ unsigned int http_parse_accept(Httpd_req_data *req,
     HTTP_SKIP_LWS(data, pos, len);
     
     if (req->policy->max_A_nodes && (num >= req->policy->max_A_nodes))
+      return (FALSE);
+  }
+
+  ASSERT(quality <= 1001);
+  if (quality == 1001)
+    return (0);
+  
+  return (quality);
+}
+
+static int http__cmp_lang_eq(const Vstr_base *s1, size_t p1, size_t l1,
+                             const Vstr_base *s2, size_t p2, size_t l2)
+{
+  if (l1 == l2)
+    return (FALSE);
+  
+  if (l1 > l2)
+    return ((vstr_export_chr(s1, p1 + l2) == '-') &&
+            vstr_cmp_eq(s1, p1, l2, s2, p2, l2));
+
+  return ((vstr_export_chr(s2, p2 + l1) == '-') &&
+          vstr_cmp_eq(s1, p1, l1, s2, p2, l1));
+}
+
+unsigned int http_parse_accept_language(Httpd_req_data *req,
+                                        const Vstr_base *ct_vs1,
+                                        size_t ct_pos, size_t ct_len)
+{
+  Vstr_base *data = req->http_hdrs->multi->comb;
+  size_t pos = 0;
+  size_t len = 0;
+  unsigned int num = 0;
+  unsigned int quality = 1001;
+  size_t done_sub_type = 0;
+  
+  pos = req->http_hdrs->multi->hdr_accept_language->pos;
+  len = req->http_hdrs->multi->hdr_accept_language->len;
+  
+  if (!len) /* no accept-language == accept all */
+    return (1000);
+
+  ASSERT(ct_vs1);
+  while (len)
+  {
+    size_t tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len,
+                                         HTTP_EOL HTTP_LWS ";,");
+
+    ++num;
+    
+    if (0) { }
+    else if (vstr_cmp_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
+    { /* full match */
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+        return (1);
+      return (quality);
+    }
+    else if ((!done_sub_type || (done_sub_type >= tmp)) &&
+             http__cmp_lang_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
+    { /* sub match - can be x-y-A;q=0, x-y-B, x-y */
+      unsigned int sub_type_qual = 0;
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, TRUE, &sub_type_qual))
+        return (1);
+      ASSERT(sub_type_qual <= 1000);
+      if (!done_sub_type || (done_sub_type > tmp) || (sub_type_qual > quality))
+        quality = sub_type_qual;
+      done_sub_type = tmp;
+    }
+    else if (!done_sub_type && VEQ(data, pos, tmp, "*"))
+    {
+      len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+        return (1);
+    }
+    else
+    {
+      len -= tmp; pos += tmp;
+      HTTP_SKIP_LWS(data, pos, len);
+    }
+    
+    if (!len)
+      break;
+    
+    assert(VPREFIX(data, pos, len, ","));
+    len -= 1; pos += 1;
+    HTTP_SKIP_LWS(data, pos, len);
+    
+    if (req->policy->max_AL_nodes && (num >= req->policy->max_AL_nodes))
       return (FALSE);
   }
 
@@ -2685,6 +3079,7 @@ int http_req_content_type(Httpd_req_data *req)
     len -= 2;
     ++pos;
     req->user_return_error_code = TRUE;
+    req->direct_filename = FALSE;
     switch (vstr_parse_uint(vs1, pos, len, 0, &num_len, NULL))
     {
       case 400: if (num_len == len) HTTPD_ERR_RET(req, 400, FALSE);
@@ -2733,7 +3128,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     Vstr_base *s1 = req->policy->s->policy_name;
     vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
              " Has URI.\n", con->evnt->sa, s1);
-    HTTPD_ERR_RET(req, 500, TRUE);
+    HTTPD_ERR_RET(req, 503, TRUE);
   }
   
   if (req->policy->auth_token->len)
@@ -2764,37 +3159,6 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
   return (TRUE);
 }
 
-static int http__conf_req(struct Con *con, Httpd_req_data *req)
-{
-  Conf_parse *conf = NULL;
-  
-  if (!(conf = conf_parse_make(NULL)))
-    return (FALSE);
-  
-  if (!httpd_conf_req_parse_file(conf, con, req))
-  {
-    Vstr_base *s1 = req->policy->s->policy_name;
-    Vstr_base *s2 = conf->tmp;
-
-    if (!req->user_return_error_code)
-      vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
-    conf_parse_free(conf);
-    return (TRUE);
-  }
-  conf_parse_free(conf);
-  
-  if (req->direct_uri)
-  {
-    Vstr_base *s1 = req->policy->s->policy_name;
-    vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-             " Has URI.\n", con->evnt->sa, s1);
-    HTTPD_ERR_RET(req, 500, TRUE);
-  }
-  
-  return (TRUE);
-}
-
 int http_req_op_get(struct Con *con, Httpd_req_data *req)
 { /* GET or HEAD ops */
   Vstr_base *data = con->evnt->io_r;
@@ -2803,7 +3167,6 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   const char *fname_cstr = NULL;
   unsigned int http_ret_code = 200;
   const char * http_ret_line = "OK";
-  int vary_a = FALSE;
   
   if (fname->conf->malloc_bad)
     goto malloc_err;
@@ -2827,11 +3190,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   if (req->error_code)
     return (http_fin_err_req(con, req));
 
-  if (vstr_export_chr(fname, fname->len) == '/')
-  {
-    Vstr_base *tmp = req->policy->dir_filename;
-    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
-  }
+  httpd_sc_add_default_filename(req, fname);
   
   if (!http__conf_req(con, req))
     return (FALSE);
@@ -2841,12 +3200,19 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   if (!http_req_content_type(req))
     return (http_fin_err_req(con, req));
 
-  vary_a = req->vary_a;
+  /* don't change vary_a/vary_al just because of 406 */
   if (req->parse_accept)
   {
-    if (FALSE) /* does a 406 count, I don't think so ?? */
-      vary_a = TRUE;
     if (!http_parse_accept(req, HTTP__XTRA_HDR_PARAMS(req, content_type)))
+      HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
+  }
+  if (!req->content_language_vs1 || !req->content_language_len)
+    req->parse_accept_language = FALSE;
+  if (req->parse_accept_language)
+  {
+    if (!http_parse_accept_language(req,
+                                    HTTP__XTRA_HDR_PARAMS(req,
+                                                          content_language)))
       HTTPD_ERR_RET(req, 406, http_fin_err_req(con, req));
   }
   
@@ -2854,10 +3220,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
    * "///foo" becomes ".///foo" ... this is done now
    * so nothing has to deal with document_root values */
   if (!req->skip_document_root)
-  {
-    Vstr_base *tmp = req->policy->document_root;
-    vstr_add_vstr(fname, 0, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_PTR);
-  }
+    http_prepend_doc_root(fname, req);
   
   fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
   
@@ -2868,10 +3231,10 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
   if ((con->f->fd = io_open_nonblock(fname_cstr)) == -1)
   {
     if (0) { }
-    else if (!req->direct_filename && (errno == EISDIR)) /* don't allow */
-      return (http_req_chk_dir(con, req));
-    else if (errno == EISDIR) /* don't allow */
+    else if (req->direct_filename && (errno == EISDIR)) /* don't allow */
       HTTPD_ERR(req, 404);
+    else if (errno == EISDIR)
+      return (http_req_chk_dir(con, req));
     else if (errno == EACCES)
       HTTPD_ERR(req, 403);
     else if ((errno == ENOENT) ||
@@ -2903,7 +3266,6 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
     HTTPD_ERR_RET(req, 403, http_fin_err_close_req(con, req));
   
   con->f->len = req->f_stat->st_size;
-  req->vary_a = vary_a;
   
   if (req->ver_0_9)
   {
@@ -2929,13 +3291,8 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
            http_ret_code, http_ret_line, con->f->len, con->f->len);
   http_vlg_def(con, req);
   
-  if (req->head_op || req->use_mmap || !con->f->len)
-    httpd_fin_fd_close(con);
-  else if (req->policy->use_posix_fadvise)
-    posix_fadvise64(con->f->fd, con->f->off, con->f->len,POSIX_FADV_SEQUENTIAL);
+  return (http_fin_fd_req(con, req));
   
-  return (http_fin_req(con, req));
-
  malloc_close_err:
   httpd_fin_fd_close(con);
  malloc_err:
@@ -2953,7 +3310,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
   
   assert(VPREFIX(fname, 1, fname->len, "/") ||
          !req->policy->use_vhosts_name ||
-         !req->policy->use_chk_host_err ||
+         !req->policy->use_host_err_chk ||
 	 !req->policy->use_host_err_400 ||
          VEQ(con->evnt->io_r, req->path_pos, req->path_len, "*"));
   
@@ -2996,13 +3353,13 @@ int http_req_op_trace(struct Con *con, Httpd_req_data *req)
   return (http_fin_req(con, req));
 }
 
-/* characters that are valid in a URL _and_ in a filename ...
+/* characters that are valid in a part of a URL _and_ in a file basename ...
  * without encoding */
 #define HTTPD__VALID_CSTR_CHRS_URL_FILENAME \
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"            \
     "abcdefghijklmnopqrstuvwxyz"            \
     "0123456789"                            \
-    ":./-_~"
+    ":.-_~"
 int httpd_valid_url_filename(Vstr_base *s1, size_t pos, size_t len)
 {
   const char *const cstr = HTTPD__VALID_CSTR_CHRS_URL_FILENAME;
@@ -3012,25 +3369,33 @@ int httpd_valid_url_filename(Vstr_base *s1, size_t pos, size_t len)
 int httpd_init_default_hostname(Opt_serv_policy_opts *sopts)
 {
   Httpd_policy_opts *popts = (Httpd_policy_opts *)sopts;
-  Vstr_base *lfn = popts->default_hostname;
+  Vstr_base *nhn = popts->default_hostname;
+  Vstr_base *chn = NULL;
+
+  if (!httpd_valid_url_filename(nhn, 1, nhn->len))
+    vstr_del(nhn, 1, nhn->len);
+
+  if (nhn->len)
+    return (TRUE);
   
-  if (!httpd_valid_url_filename(lfn, 1, lfn->len))
-    vstr_del(lfn, 1, lfn->len);
+  if (sopts != sopts->beg->def_policy)
+    chn = ((Httpd_policy_opts *)sopts->beg->def_policy)->default_hostname;
   
-  if (!lfn->len)
+  if (chn)
+    vstr_add_vstr(nhn, 0, chn, 1, chn->len, VSTR_TYPE_ADD_BUF_REF);
+  else
   {
     char buf[256];
 
     if (gethostname(buf, sizeof(buf)) == -1)
       err(EXIT_FAILURE, "gethostname");
     
-    buf[255] = 0;
-    vstr_add_cstr_buf(lfn, 0, buf);
+    buf[sizeof(buf) - 1] = 0;
+    vstr_add_cstr_buf(nhn, 0, buf);
+    vstr_conv_lowercase(nhn, 1, nhn->len);
   }
 
-  vstr_conv_lowercase(lfn, 1, lfn->len);
-
-  return (!lfn->conf->malloc_bad);
+  return (!nhn->conf->malloc_bad);
 }
 
 static int httpd__chk_vhost(const Httpd_policy_opts *popts,
@@ -3043,23 +3408,22 @@ static int httpd__chk_vhost(const Httpd_policy_opts *popts,
   
   ASSERT(pos);
 
-  if (!popts->use_chk_host_err)
+  if (!popts->use_host_err_chk)
     return (TRUE);
   
   if (vstr_cmp_eq(lfn, pos, len, def_hname, 1, def_hname->len))
     return (TRUE); /* don't do lots of work for nothing */
 
-  vstr_add_cstr_ptr(lfn, pos - 1, "/");
   vstr_add_vstr(lfn, pos - 1, 
 		popts->document_root, 1, popts->document_root->len,
                 VSTR_TYPE_ADD_BUF_PTR);
-  len += popts->document_root->len + 1;
+  len += popts->document_root->len;
   
   if (lfn->conf->malloc_bad || !(vhost = vstr_export_cstr_ptr(lfn, pos, len)))
     return (TRUE); /* dealt with as errmem_req() later */
   
   ret = stat64(vhost, v_stat);
-  vstr_del(lfn, pos, popts->document_root->len + 1);
+  vstr_del(lfn, pos, popts->document_root->len);
 
   if (ret == -1)
     return (FALSE);
@@ -3082,43 +3446,43 @@ static int httpd_serv_add_vhost(struct Con *con, struct Httpd_req_data *req)
   if (!req->policy->use_vhosts_name)
     return (TRUE);
 
-  if (req->policy->use_vhosts_name)
+  if (h_h_len && req->policy->use_canonize_host)
   {
-    if (h_h_len && req->policy->use_canonize_host)
-    {
-      size_t dots = 0;
-      
-      if (VIPREFIX(data, h_h_pos, h_h_len, "www."))
-      { h_h_len -= CLEN("www."); h_h_pos += CLEN("www."); }
-      
-      dots = vstr_spn_cstr_chrs_rev(data, h_h_pos, h_h_len, ".");
-      h_h_len -= dots;
-    }
+    size_t dots = 0;
     
-    orig_len = fname->len;
-    if (!h_h_len)
-      httpd_sc_add_default_hostname(con, req, fname, 0);
-    else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
-                           h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
-    {
-      vstr_conv_lowercase(fname, 1, h_h_len);
-      
-      if (!httpd__chk_vhost(req->policy, fname, 1, h_h_len))
-      {
-        if (req->policy->use_host_err_400)
-          HTTPD_ERR_RET(req, 400, FALSE); /* rfc2616 5.2 */
-        else
-        { /* what everything else does ... *sigh* */
-          if (fname->conf->malloc_bad)
-            return (TRUE);
-          
-          vstr_del(fname, 1, h_h_len);
-          httpd_sc_add_default_hostname(con, req, fname, 0);
-        }  
-      }
-    }
-    vstr_add_cstr_ptr(fname, 0, "/");
+    if (VIPREFIX(data, h_h_pos, h_h_len, "www."))
+    { h_h_len -= CLEN("www."); h_h_pos += CLEN("www."); }
+    
+    dots = vstr_spn_cstr_chrs_rev(data, h_h_pos, h_h_len, ".");
+    h_h_len -= dots;
   }
+  h_h->pos = h_h_pos;
+  h_h->len = h_h_len;
+    
+  orig_len = fname->len;
+  if (!h_h_len)
+    httpd_sc_add_default_hostname(con, req, fname, 0);
+  else if (vstr_add_vstr(fname, 0, data, /* add as buf's, for lowercase op */
+                         h_h_pos, h_h_len, VSTR_TYPE_ADD_DEF))
+  {
+    vstr_conv_lowercase(fname, 1, h_h_len);
+    
+    if (!httpd__chk_vhost(req->policy, fname, 1, h_h_len))
+    {
+      if (req->policy->use_host_err_400)
+        HTTPD_ERR_RET(req, 400, FALSE); /* rfc2616 5.2 */
+      else
+      { /* what everything else does ... *sigh* */
+        if (fname->conf->malloc_bad)
+          return (TRUE);
+
+        h_h->len = 0;
+        vstr_del(fname, 1, h_h_len);
+        httpd_sc_add_default_hostname(con, req, fname, 0);
+      }  
+    }
+  }
+  vstr_add_cstr_ptr(fname, 0, "/");
 
   req->vhost_prefix_len = (fname->len - orig_len);
 
@@ -3351,18 +3715,17 @@ static int http_parse_req(struct Con *con)
       /* Speed hack: Don't even call make_path if it's "OPTIONS * ..."
        * and we don't need to check the Host header */
       if (req->policy->use_vhosts_name &&
-          req->policy->use_chk_host_err && req->policy->use_host_err_400 &&
+          req->policy->use_host_err_chk && req->policy->use_host_err_400 &&
           !VEQ(data, req->path_pos, req->path_len, "*") &&
           !http_req_make_path(con, req))
         return (http_fin_err_req(con, req));
 
       return (http_req_op_opts(con, req));
     }
-    else if (VEQ(data, op_pos, op_len, "TRACE"))
-    {
+    else if (req->policy->use_trace_op && VEQ(data, op_pos, op_len, "TRACE"))
       return (http_req_op_trace(con, req));
-    }
-    else if (VEQ(data, op_pos, op_len, "POST") ||
+    else if (VEQ(data, op_pos, op_len, "TRACE") ||
+             VEQ(data, op_pos, op_len, "POST") ||
              VEQ(data, op_pos, op_len, "PUT") ||
              VEQ(data, op_pos, op_len, "DELETE") ||
              VEQ(data, op_pos, op_len, "CONNECT") ||
@@ -3556,6 +3919,8 @@ int httpd_serv_recv(struct Con *con)
 
 int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
 {
+  int ret = TRUE;
+  
   con->f->fd                 = -1;
   con->f->len                =  0;
   con->vary_star             = FALSE;
@@ -3573,19 +3938,15 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
 
     vlg_info(vlg, "CONF-MAIN-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
              " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
-    goto con_fail;
+    ret = FALSE;
   }
-
-  if (con->evnt->flag_q_closed)
+  else if (con->evnt->flag_q_closed)
   {
     Vstr_base *s1 = con->policy->s->policy_name;
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
              con->evnt->sa, s1);
-    goto con_fail;
+    ret = FALSE;
   }
   
-  return (TRUE);
- con_fail:
-  vstr_ref_del(con->acpt_sa_ref);
-  return (FALSE);  
+  return (ret);
 }
