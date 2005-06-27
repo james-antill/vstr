@@ -50,6 +50,8 @@
 #define HTTPD_CONF_USE_NON_SPC_HDRS TRUE
 #define HTTPD_CONF_ADD_DEF_PORT TRUE
 #define HTTPD_CONF_MAX_REQUESTS           0
+#define HTTPD_CONF_MAX_NEG_A_NODES        8
+#define HTTPD_CONF_MAX_NEG_AL_NODES       0
 #define HTTPD_CONF_MAX_A_NODES          128 /* lynx uses 53 */
 #define HTTPD_CONF_MAX_AC_NODES           8
 #define HTTPD_CONF_MAX_AE_NODES          32
@@ -121,6 +123,9 @@ typedef struct Httpd_policy_opts
  unsigned int max_header_sz;
 
  unsigned int max_requests;
+ 
+ unsigned int max_neg_A_nodes;
+ unsigned int max_neg_AL_nodes;
  
  unsigned int max_A_nodes;
  unsigned int max_AC_nodes;

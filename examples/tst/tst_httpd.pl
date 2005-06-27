@@ -452,6 +452,11 @@ all_none_tsts();
 http_cntl_list_cleanup($list_pid);
 daemon_exit();
 
+daemon_init("ex_httpd", '', "-C $ENV{SRCDIR}/tst/ex_conf_httpd_tst_1");
+$list_pid = http_cntl_list_beg();
+http_cntl_list_cleanup($list_pid);
+daemon_exit();
+
 rmtree($root);
 
 success();

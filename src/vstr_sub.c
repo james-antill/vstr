@@ -1,6 +1,6 @@
 #define VSTR_SUB_C
 /*
- *  Copyright (C) 2001, 2002, 2003, 2004  James Antill
+ *  Copyright (C) 2001, 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -211,11 +211,15 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
   if ((ptr_len <= VSTR_MAX_NODE_ALL) && VSTR__ITER_EQ_ALL_NODE(base, iter))
   {
     Vstr_node_ptr *ptr_node = NULL;
+    Vstr_node_ref *ref_node = NULL;
 
     if (iter->node->type == VSTR_TYPE_NODE_PTR)
       ptr_node = (Vstr_node_ptr *)iter->node;
     else
     {
+      if (iter->node->type == VSTR_TYPE_NODE_REF)
+        ref_node = (Vstr_node_ref *)iter->node;
+      
       if (!vstr_cntl_conf(base->conf,
                           VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_PTR, 1, UINT_MAX))
         return (FALSE);
@@ -236,6 +240,9 @@ int vstr_sub_ptr(Vstr_base *base, size_t pos, size_t len,
 
     ptr_node->s.len = len;
     ptr_node->ptr = (void *)ptr;
+
+    if (ref_node)
+      vstr_ref_del(ref_node->ref);
 
     if (iter->node->type == VSTR_TYPE_NODE_PTR)
       vstr__cache_iovec_reset_node(base, &ptr_node->s, iter->num);
@@ -289,8 +296,6 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
   {
     Vstr_node_ref *ref_node = NULL;
 
-    vstr_ref_add(ref);
-
     if (iter->node->type == VSTR_TYPE_NODE_REF)
       ref_node = (Vstr_node_ref *)iter->node;
     else
@@ -314,6 +319,7 @@ int vstr_sub_ref(Vstr_base *base, size_t pos, size_t len,
       vstr__cache_del(base, pos, diff_len);
     }
 
+    vstr_ref_add(ref);
     vstr_ref_del(ref_node->ref);
 
     ref_node->s.len = len;

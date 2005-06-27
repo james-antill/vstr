@@ -25,10 +25,6 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
 {
   unsigned int dummy;
   
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
   if (0) { }
   else if (OPT_SERV_SYM_EQ("timeout"))
   {
@@ -75,14 +71,12 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
   if (!cur_depth)
     return (FALSE);
   
-  while (conf_token_list_num(token, cur_depth))
-  {
-    conf_parse_token(conf, token);
-    if (conf_token_at_depth(token) != cur_depth)
-      return (FALSE);
-    if (!opt_serv__conf_main_policy_d1(popts, conf, token))
-      return (FALSE);
-  }
+  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  
+  else if (opt_serv__conf_main_policy_d1(popts, conf, token))
+  { }
+
+  CONF_SC_MAKE_CLIST_END();
   
   return (TRUE);
 }
@@ -90,10 +84,6 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
 static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
                              const Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
   if (0){ }
 
   else if (OPT_SERV_SYM_EQ("policy"))
@@ -267,14 +257,12 @@ int opt_serv_conf(struct Opt_serv_opts *opts,
   if (!OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
     return (FALSE);
   
-  while (conf_token_list_num(token, cur_depth))
-  {
-    conf_parse_token(conf, token);
-    if (conf_token_at_depth(token) != cur_depth)
-      return (FALSE);
-    if (!opt_serv__conf_d1(opts, conf, token))
-      return (FALSE);
-  }
+  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  
+  else if (opt_serv__conf_d1(opts, conf, token))
+  { }
+  
+  CONF_SC_MAKE_CLIST_END();
   
   /* And they all live together ... dum dum */
   if (conf->data->conf->malloc_bad)

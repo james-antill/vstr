@@ -5,6 +5,8 @@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst_regression = \
+    regression/tst_regression_sub_ref_ptr \
+    regression/tst_regression_sub_ptr_ref \
     regression/tst_regression_vec1 \
     regression/tst_regression_cstr1 \
     regression/tst_regression_cstr2 \

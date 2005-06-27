@@ -352,6 +352,48 @@ static int httpd__content_location_valid(Httpd_req_data *req,
   return (TRUE);
 }
 
+/* we negotiate a few items, and this is the loop for all of them... */
+#define HTTPD__NEG_BEG(x)                                               \
+    unsigned int depth = token->depth_num;                              \
+    unsigned int max_qual  = 0;                                         \
+    unsigned int qual_num  = 0;                                         \
+    unsigned int neg_count = 0;                                         \
+    Conf_token save;                                                    \
+                                                                        \
+    save = *token;                                                      \
+    while (conf_token_list_num(token, depth) &&                         \
+           (!(x) || (++neg_count <= (x))))                              \
+    {                                                                   \
+      unsigned int qual = 0;                                            \
+      const Vstr_sect_node *val = NULL;                                 \
+                                                                        \
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);    \
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);                  \
+                                                                        \
+      if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||                 \
+            (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||               \
+            (token->type == CONF_TOKEN_TYPE_QUOTE_S) ||                 \
+            (token->type == CONF_TOKEN_TYPE_QUOTE_SSS) ||               \
+            (token->type == CONF_TOKEN_TYPE_SYMBOL)))                   \
+        return (FALSE);                                                 \
+                                                                        \
+      val = conf_token_value(token)
+
+
+#define HTTPD__NEG_END()                        \
+      if (qual > max_qual)                      \
+      {                                         \
+        max_qual = qual;                        \
+        qual_num = token->num - 1;              \
+      }                                         \
+                                                                        \
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);     \
+    }                                                                   \
+    if (neg_count)                                                      \
+      conf_parse_end_token(conf, token, depth);                         \
+    do { } while (FALSE)
+
+
 static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               time_t file_timestamp,
                               Conf_parse *conf, Conf_token *token)
@@ -627,38 +669,13 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     OPT_SERV_X_TOGGLE(req->vary_ua);
   else if (OPT_SERV_SYM_EQ("negotiate-content-type"))
   {
-    unsigned int depth = token->depth_num;
-    unsigned int max_qual = 0;
-    unsigned int qual_num = 0;
-    Conf_token save;
+    if (req->neg_content_type_done)
+      return (FALSE);
+    HTTPD__NEG_BEG(req->policy->max_neg_A_nodes);
+    qual = http_parse_accept(req, conf->data, val->pos, val->len);
+    HTTPD__NEG_END();    
 
-    save = *token;
-    while (conf_token_list_num(token, depth))
-    {
-      unsigned int qual = 0;
-      const Vstr_sect_node *val = NULL;
-
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
-      if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_S) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_SSS) ||
-            (token->type == CONF_TOKEN_TYPE_SYMBOL)))
-        return (FALSE);
-      
-      val = conf_token_value(token);
-      qual = http_parse_accept(req, conf->data, val->pos, val->len);
-      if (qual > max_qual)
-      {
-        max_qual = qual;
-        qual_num = token->num - 1;
-      }
-      
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);
-    }
-
+    req->neg_content_type_done = TRUE;
     req->vary_a = TRUE;
     if (qual_num)
     {
@@ -677,38 +694,13 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
     return (FALSE);
   else if (OPT_SERV_SYM_EQ("negotiate-content-language"))
   {
-    unsigned int depth = token->depth_num;
-    unsigned int max_qual = 0;
-    unsigned int qual_num = 0;
-    Conf_token save;
+    if (req->neg_content_lang_done)
+      return (FALSE);
+    HTTPD__NEG_BEG(req->policy->max_neg_AL_nodes);
+    qual = http_parse_accept_language(req, conf->data, val->pos, val->len);
+    HTTPD__NEG_END();
 
-    save = *token;
-    while (conf_token_list_num(token, depth))
-    {
-      unsigned int qual = 0;
-      const Vstr_sect_node *val = NULL;
-
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
-      if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_S) ||
-            (token->type == CONF_TOKEN_TYPE_QUOTE_SSS) ||
-            (token->type == CONF_TOKEN_TYPE_SYMBOL)))
-        return (FALSE);
-      
-      val = conf_token_value(token);
-      qual = http_parse_accept_language(req, conf->data, val->pos, val->len);
-      if (qual > max_qual)
-      {
-        max_qual = qual;
-        qual_num = token->num - 1;
-      }
-      
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);
-    }
-
+    req->neg_content_lang_done = TRUE;
     req->vary_al = TRUE;
     if (qual_num)
     {
@@ -728,6 +720,8 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
   
   return (TRUE);
 }
+#undef HTTPD__NEG_BEG
+#undef HTTPD__NEG_END
 
 int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
                       time_t timestamp,

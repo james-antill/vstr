@@ -307,3 +307,65 @@ void opt_policy_sc_all_ref_del(Opt_serv_opts *opts)
     scan = scan_next;
   }
 }
+
+int opt_policy_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
+                      int (*tst_func)(Conf_parse *, Conf_token *,
+                                      int *, void *), void *data)
+{
+  if (0) { }
+  
+  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
+  {
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    if (!(*tst_func)(conf, token, matches, data))
+      return (FALSE);
+    *matches = !*matches;
+  }
+  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      int or_matches = TRUE;
+    
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!(*tst_func)(conf, token, &or_matches, data))
+        return (FALSE);
+
+      if (or_matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+
+    *matches = FALSE;
+  }
+  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
+  {
+    unsigned int depth = token->depth_num;
+
+    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+    ++depth;
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!(*tst_func)(conf, token, matches, data))
+        return (FALSE);
+
+      if (!matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+  }
+  
+  else
+    return (FALSE);
+  
+  return (TRUE);
+}

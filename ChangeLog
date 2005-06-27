@@ -1,3 +1,9 @@
+2005-06-23  James Antill  <james@and.org>
+
+	* src/vstr_sub.c (vstr_sub_ptr): Fixed bug when replacing a ref node
+	with a pointer node (reference didn't get deleted).
+	(vstr_sub_ref): Move reference addition to after possible failure.
+
 2005-04-17  James Antill  <james@and.org>
 
 	* include/vstr-switch.h: Added VSTR_COMPILE_BUILTINS switch.

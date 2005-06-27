@@ -252,6 +252,9 @@ Httpd_req_data *http_req_make(struct Con *con)
 
   req->chked_encoded_path = FALSE;
   
+  req->neg_content_type_done = FALSE;
+  req->neg_content_lang_done = FALSE;
+
   req->done_once  = TRUE;
   req->using_req  = TRUE;
 

@@ -138,6 +138,9 @@ typedef struct Httpd_req_data
  unsigned int chk_encoded_slash  : 1;
  unsigned int chk_encoded_dot    : 1;
  
+ unsigned int neg_content_type_done : 1;
+ unsigned int neg_content_lang_done : 1;
+ 
  unsigned int using_req : 1;
  unsigned int done_once : 1;
  

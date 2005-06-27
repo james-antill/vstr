@@ -16,6 +16,18 @@
 #define HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ 5
 #define HTTPD_POLICY_SERVER_IPV4_CIDR_EQ 6
 
+static int httpd__policy_connection_tst_d1(struct Con *,
+                                           Conf_parse *, Conf_token *,
+                                           int *);
+
+static int httpd__policy_connection_tst_op_d1(Conf_parse *conf,
+                                              Conf_token *token,
+                                              int *matches, void *con)
+{
+  return (httpd__policy_connection_tst_d1(con, conf, token, matches));
+}
+
+
 static int httpd__policy_connection_tst_d1(struct Con *con,
                                            Conf_parse *conf, Conf_token *token,
                                            int *matches)
@@ -57,55 +69,6 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     conf_parse_end_token(conf, token, token->depth_num);
   }
   
-  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
-  {
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!httpd__policy_connection_tst_d1(con, conf, token, matches))
-      return (FALSE);
-    *matches = !*matches;
-  }
-  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
-  {
-    unsigned int depth = token->depth_num;
-
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
-    while (conf_token_list_num(token, depth))
-    {
-      int or_matches = TRUE;
-    
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      if (!httpd__policy_connection_tst_d1(con, conf, token, &or_matches))
-        return (FALSE);
-
-      if (or_matches)
-      {
-        conf_parse_end_token(conf, token, depth);
-        return (TRUE);
-      }
-    }
-
-    *matches = FALSE;
-  }
-  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
-  {
-    unsigned int depth = token->depth_num;
-
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      if (!httpd__policy_connection_tst_d1(con, conf, token, matches))
-        return (FALSE);
-
-      if (!matches)
-      {
-        conf_parse_end_token(conf, token, depth);
-        return (TRUE);
-      }
-    }
-  }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (opt_policy_name_eq(conf, token, con->policy->s, matches));
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
@@ -121,7 +84,8 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
   }
   
   else
-    return (FALSE);
+    return (opt_policy_sc_tst(conf, token, matches,
+                              httpd__policy_connection_tst_op_d1, con));
 
   return (TRUE);
 }
@@ -257,8 +221,27 @@ int httpd_policy_connection(struct Con *con,
   return (FALSE);
 }
 
+struct Httpd__policy_req_tst_data
+{
+ struct Con *con;
+ Httpd_req_data *req;
+};
+
+static int httpd__policy_request_tst_d1(struct Con *, Httpd_req_data *,
+                                        Conf_parse *, Conf_token *, int *);
+
+static int httpd__policy_request_tst_op_d1(Conf_parse *conf, Conf_token *token,
+                                           int *matches, void *passed_data)
+{
+  struct Httpd__policy_req_tst_data *data = passed_data;
+  struct Con *con = data->con;
+  Httpd_req_data *req = data->req;
+
+  return (httpd__policy_request_tst_d1(con, req, conf, token, matches));
+}
+
 static int httpd__policy_request_tst_d1(struct Con *con,
-                                        struct Httpd_req_data *req,
+                                        Httpd_req_data *req,
                                         Conf_parse *conf, Conf_token *token,
                                         int *matches)
 {
@@ -336,55 +319,6 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     conf_parse_end_token(conf, token, token->depth_num);
   }
 
-  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
-  {
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!httpd__policy_request_tst_d1(con, req, conf, token, matches))
-      return (FALSE);
-    *matches = !*matches;
-  }
-  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
-  {
-    unsigned int depth = token->depth_num;
-
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
-    while (conf_token_list_num(token, depth))
-    {
-      int or_matches = TRUE;
-    
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      if (!httpd__policy_request_tst_d1(con, req, conf, token, &or_matches))
-        return (FALSE);
-
-      if (or_matches)
-      {
-        conf_parse_end_token(conf, token, depth);
-        return (TRUE);
-      }
-    }
-
-    *matches = FALSE;
-  }
-  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
-  {
-    unsigned int depth = token->depth_num;
-
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      if (!httpd__policy_request_tst_d1(con, req, conf, token, matches))
-        return (FALSE);
-
-      if (!matches)
-      {
-        conf_parse_end_token(conf, token, depth);
-        return (TRUE);
-      }
-    }
-  }
   else if (OPT_SERV_SYM_EQ("policy-eq"))
     return (opt_policy_name_eq(conf, token, req->policy->s, matches));
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
@@ -518,7 +452,14 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     else if (OPT_SERV_SYM_EQ("basename-without-extensions-eq"))
       type = HTTPD_POLICY_REQ_BWES_EQ;
     else
-      return (FALSE);
+    {
+      struct Httpd__policy_req_tst_data data[1];
+
+      data->con = con;
+      data->req = req;
+      return (opt_policy_sc_tst(conf, token, matches,
+                                httpd__policy_request_tst_op_d1, data));
+    }
     
     if (!httpd_policy_path_make(con, req, conf, token, type, &ref))
     {
@@ -682,19 +623,15 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
   { /* token is output of: echo -n foo:bar | openssl enc -base64 */
     /* see it with: echo token | openssl enc -d -base64 && echo */
     unsigned int depth = token->depth_num;
+
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!OPT_SERV_SYM_EQ("basic-encoded")) return (FALSE);
+    CONF_SC_MAKE_CLIST_MID(depth);
 
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-      
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
-      else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
-      else return (FALSE);
-    }
+    else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
+    else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
+    
+    CONF_SC_MAKE_CLIST_END();
   }
   else if (OPT_SERV_SYM_EQ("canonize-host"))
     OPT_SERV_X_TOGGLE(opts->use_canonize_host);
@@ -780,11 +717,8 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
 static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
                                       const Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
   if (0) { }
+  
   else if (OPT_SERV_SYM_EQ("directory-filename"))
     OPT_SERV_X_VSTR(opts->dir_filename);
   else if (OPT_SERV_SYM_EQ("document-root") ||
@@ -841,6 +775,17 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
              OPT_SERV_SYM_EQ("req-conf-size") ||
              OPT_SERV_SYM_EQ("req-conf-sz"))
       OPT_SERV_X_UINT(opts->max_req_conf_sz);
+    else if (OPT_SERV_SYM_EQ("nodes"))
+    {
+      CONF_SC_MAKE_CLIST_BEG(nodes);
+        
+      else if (OPT_SERV_SYM_EQ("Accept:"))
+        OPT_SERV_X_UINT(opts->max_neg_A_nodes);
+      else if (OPT_SERV_SYM_EQ("Accept-Language:"))
+        OPT_SERV_X_UINT(opts->max_neg_AL_nodes);
+
+      CONF_SC_MAKE_CLIST_END();
+    }
     
     CONF_SC_MAKE_CLIST_END();
   }
@@ -864,16 +809,12 @@ static int httpd__conf_main_policy(Httpd_opts *opts,
   if (!cur_depth)
     return (FALSE);
   
-  while (conf_token_list_num(token, cur_depth))
-  {
-    Httpd_policy_opts *hopts = (Httpd_policy_opts *)popts;
-    
-    conf_parse_token(conf, token);
-    if (conf_token_at_depth(token) != cur_depth)
-      return (FALSE);
-    if (!httpd__conf_main_policy_d1(hopts, conf, token))
-      return (FALSE);
-  }
+  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  
+  else if (httpd__conf_main_policy_d1((Httpd_policy_opts *)popts, conf, token))
+  { }
+  
+  CONF_SC_MAKE_CLIST_END();
   
   return (TRUE);
 }
@@ -881,10 +822,6 @@ static int httpd__conf_main_policy(Httpd_opts *opts,
 static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
                                Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
   if (OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
   {
     if (!opt_serv_conf(httpd_opts->s, conf, token))
@@ -956,15 +893,13 @@ int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
   
   if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-main-1.0"))
     return (FALSE);
+
+  CONF_SC_MAKE_CLIST_MID(cur_depth);
+
+  else if (httpd__conf_main_d1(opts, conf, token))
+  { }
   
-  while (conf_token_list_num(token, cur_depth))
-  {
-    conf_parse_token(conf, token);
-    if (conf_token_at_depth(token) != cur_depth)
-      return (FALSE);
-    if (!httpd__conf_main_d1(opts, conf, token))
-      return (FALSE);
-  }
+  CONF_SC_MAKE_CLIST_END();
   
   /* And they all live together ... dum dum */
   if (conf->data->conf->malloc_bad)

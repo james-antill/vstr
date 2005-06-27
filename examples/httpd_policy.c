@@ -462,11 +462,14 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
 
   opts->max_requests       = HTTPD_CONF_MAX_REQUESTS;
 
+  opts->max_neg_A_nodes    = HTTPD_CONF_MAX_NEG_A_NODES;
+  opts->max_neg_AL_nodes   = HTTPD_CONF_MAX_NEG_AL_NODES;
+  
   opts->max_A_nodes        = HTTPD_CONF_MAX_A_NODES;
   opts->max_AC_nodes       = HTTPD_CONF_MAX_AC_NODES;
   opts->max_AE_nodes       = HTTPD_CONF_MAX_AE_NODES;
   opts->max_AL_nodes       = HTTPD_CONF_MAX_AL_NODES;
-
+  
   opts->max_connection_nodes = HTTPD_CONF_MAX_CONNECTION_NODES;
   opts->max_etag_nodes     = HTTPD_CONF_MAX_ETAG_NODES;
 
@@ -572,7 +575,9 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   HTTPD_POLICY_CP_VAL(max_header_sz);
   HTTPD_POLICY_CP_VAL(max_requests);
 
-  HTTPD_POLICY_CP_VAL(max_A_nodes);
+  HTTPD_POLICY_CP_VAL(max_neg_A_nodes);
+  HTTPD_POLICY_CP_VAL(max_neg_AL_nodes);
+  
   HTTPD_POLICY_CP_VAL(max_AC_nodes);
   HTTPD_POLICY_CP_VAL(max_AE_nodes);
   HTTPD_POLICY_CP_VAL(max_AL_nodes);

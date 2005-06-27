@@ -78,15 +78,24 @@
     while (conf_token_list_num(token, conf_sc__depth_ ## x))            \
     {                                                                   \
       CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, conf_sc__depth_ ## x, \
-                                          FALSE);                       \
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);                  \
+                                          0);                           \
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);                      \
                                                                         \
       if (0)
+
+#define CONF_SC_MAKE_CLIST_MID(x)                                       \
+    while (conf_token_list_num(token, x))                               \
+    {                                                                   \
+      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, x, 0);           \
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);                      \
+                                                                        \
+      if (0)
+
 #define CONF_SC_MAKE_CLIST_END()                \
     else                                        \
-      return (FALSE);                           \
+      return (0);                               \
     }                                           \
-    do { } while (FALSE)
+    do { } while (0)
 
 
 typedef struct Conf_parse

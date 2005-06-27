@@ -1,7 +1,8 @@
 
-# These should be std. in /etc/mime.types but fuckwittage prevents
+# These should be std. in /etc/mime.types but fuckwittage prevails
 application/x-bittorrent torrent
-image/x-icon ico
+application/x-zsync      zsync
+image/x-icon             ico
 
 #  These are needed because, unlike apache-httpd, jhttpd doesn't default to
 # text/plain MIME type

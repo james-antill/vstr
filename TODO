@@ -15,6 +15,9 @@ was needed for vstr-1.0.0
   vstr_spn_cstr_buf_rev
   vstr_spn_bmap_fwd -- UCHAR_MAX byte mapping on span or not - fast -.
   vstr_spn_bmap_rev
+     See http://groups-beta.google.com/group/comp.unix.programmer/msg/f92e10e01279f708?hl=en
+
+. VSTR_FLAG_PARSE_NUM_LOC_SEP
 
 . test len=0 on _sc_*()
 
@@ -79,8 +82,6 @@ was needed for vstr-1.0.0
   Memory pools can kind of be done using a Vstr and adding the _REF nodes
  (mmap is hard ... as is sharing across strings).
 
-. VSTR_FLAG_PARSE_NUM_LOC_SEP
-
 . Add vstr_parse_double()/long_double()
 
 . vstr_conv_canon_path() Ie. /foo/bar/../abcd -=> /foo/abcd
@@ -90,7 +91,7 @@ was needed for vstr-1.0.0
 
 . vstr_x_pcre_*
 
-. _Bool ?
+. Use c99 _Bool ? (speed, API breakage)
 
 . {S...:%s} for chopped strings to replace end with "...".
 
@@ -102,13 +103,9 @@ was needed for vstr-1.0.0
 
 . Fast inline parsing of ints when using certain flags.
 
-. Add --with-libc=diet,host,klibc -- put into test framework.
-
 . vstr_add_fmt() internal cleanup to use struct blah {Vstr_fmt ... }
 
 . ASN.1 (International Standard 8824)
-
-. XDR ... rpc
 
 . More locale related stuff, incl. vstr_loc_ functions for cmp/srch/etc.
 

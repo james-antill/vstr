@@ -261,7 +261,9 @@ sub daemon_init
       }
 
     unlink("${cmd}_cntl"); # So we don't try connecting to the old one
-    print "TST: ${cmd} $opts -- $args\n";
+    if ($args ne '')
+      { $args = "-- $args"; }
+    print "TST: ${cmd} $opts $args\n";
 
     $ldaemon_pid = tst_fork();
     if (!defined ($ldaemon_pid))
@@ -269,7 +271,7 @@ sub daemon_init
 
     if (!$ldaemon_pid)
       {
-	if (system("./${cmd} $port $opts $cntl $dbg -- $args $no_out"))
+	if (system("./${cmd} $port $opts $cntl $dbg $args $no_out"))
 	  { failure("daemon($cmd): $!"); }
 	success("daemon($cmd)");
       }

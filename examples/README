@@ -80,7 +80,6 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	man page
-        cleanup match texting
 	conf
          limit location/content-location somehow ?
          Support charset/accept-charset (appended to text/* Content types)

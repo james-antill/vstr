@@ -67,3 +67,20 @@ Accept-Encoding: gzip
 
 
 dillo, snarf == HTTP/1.0
+
+
+           zsync-0.3.3
+           -----------
+
+GET /vstr-1.0.14.tar.zsync HTTP/1.0
+Host: localhost
+Accept-Ranges: bytes
+User-Agent: zsync/0.3.3
+
+
+GET /vstr-1.0.14.tar.gz HTTP/1.1
+User-Agent: zsync/0.3.3
+Host: localhost
+Referer: http://localhost:8008/vstr-1.0.14.tar.zsync
+Accept-Ranges: bytes
+Range: bytes=26-889,181726-181926,185413-198962,201440-204446,214041-214241,228508-230116,304883-305083,333562-334479,336423-336691,337331-337868,339821-340476,342328-342552,344639-362729,363275-363475,364377-364933,369283-386278,386658-387048,388546-388890,393277-393477,409042-409191
