@@ -484,3 +484,14 @@ size_t vstr_srch_vstr_rev(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__srch_vstr_rev_slow(base, pos, len, ndl_base, ndl_pos, ndl_len));
 }
 
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(csrch_chrs_fwd);
+VSTR__SYM_ALIAS(csrch_chrs_rev);
+VSTR__SYM_ALIAS(srch_buf_fwd);
+VSTR__SYM_ALIAS(srch_buf_rev);
+VSTR__SYM_ALIAS(srch_chr_fwd);
+VSTR__SYM_ALIAS(srch_chr_rev);
+VSTR__SYM_ALIAS(srch_chrs_fwd);
+VSTR__SYM_ALIAS(srch_chrs_rev);
+VSTR__SYM_ALIAS(srch_vstr_fwd);
+VSTR__SYM_ALIAS(srch_vstr_rev);

@@ -32,11 +32,12 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
                                            Conf_parse *conf, Conf_token *token,
                                            int *matches)
 {
+  int clist = FALSE;
+  
+  ASSERT(con);  
   ASSERT(matches);
   
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
   if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
   {
@@ -47,15 +48,14 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     {
       case HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ:
       {
-        struct sockaddr *sa = EVNT_SA(con->evnt);
+        struct sockaddr *sa = CON_CEVNT_SA(con);
         *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
       }
       break;
         
       case HTTPD_POLICY_SERVER_IPV4_CIDR_EQ:
       {
-        struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
-        struct sockaddr *sa = (struct sockaddr *)acpt_data->sa;
+        struct sockaddr *sa = CON_SEVNT_SA(con);
         *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
       }
       break;
@@ -74,14 +74,11 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
     return (httpd_policy_ipv4_make(con, NULL, conf, token,
                                    HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ,
-                                   EVNT_SA(con->evnt), matches));
+                                   CON_CEVNT_SA(con), matches));
   else if (OPT_SERV_SYM_EQ("server-ipv4-cidr-eq"))
-  {
-    struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
     return (httpd_policy_ipv4_make(con, NULL, conf, token,
                                    HTTPD_POLICY_SERVER_IPV4_CIDR_EQ,
-                                   (struct sockaddr *)acpt_data->sa, matches));
-  }
+                                   CON_SEVNT_SA(con), matches));
   
   else
     return (opt_policy_sc_tst(conf, token, matches,
@@ -93,17 +90,9 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
 static int httpd__policy_connection_d1(struct Con *con,
                                        Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-  {
-    if (OPT_SERV_SYM_EQ("<close>"))
-    {
-      evnt_close(con->evnt);
-      return (TRUE);
-    }
-    
-    return (FALSE);
-  }
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  int clist = FALSE;
+  
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
   if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
   {
@@ -125,6 +114,11 @@ static int httpd__policy_connection_d1(struct Con *con,
     conf_parse_end_token(conf, token, token->depth_num);
   }
   
+  else if (OPT_SERV_SYM_EQ("<close>"))
+  {
+    evnt_close(con->evnt);
+    return (TRUE);
+  }
   else if (OPT_SERV_SYM_EQ("policy"))
   {
     Opt_serv_policy_opts *policy = NULL;
@@ -246,15 +240,13 @@ static int httpd__policy_request_tst_d1(struct Con *con,
                                         int *matches)
 {
   Vstr_base *http_data = con->evnt->io_r;
+  int clist = FALSE;
   
+  ASSERT(con && req);  
   ASSERT(matches);
   
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
-  ASSERT(con);
-  
   if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
   {
     unsigned int type = token->type - CONF_TOKEN_TYPE_USER_BEG;
@@ -298,15 +290,14 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       
       case HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ:
       {
-        struct sockaddr *sa = EVNT_SA(con->evnt);
+        struct sockaddr *sa = CON_CEVNT_SA(con);
         *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
       }
       break;
         
       case HTTPD_POLICY_SERVER_IPV4_CIDR_EQ:
       {
-        struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
-        struct sockaddr *sa = (struct sockaddr *)acpt_data->sa;
+        struct sockaddr *sa = CON_SEVNT_SA(con);
         *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
       }
         
@@ -324,14 +315,11 @@ static int httpd__policy_request_tst_d1(struct Con *con,
   else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq"))
     return (httpd_policy_ipv4_make(con, req, conf, token,
                                    HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ,
-                                   EVNT_SA(con->evnt), matches));
+                                   CON_CEVNT_SA(con), matches));
   else if (OPT_SERV_SYM_EQ("server-ipv4-cidr-eq"))
-  {
-    struct Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
     return (httpd_policy_ipv4_make(con, req, conf, token,
                                    HTTPD_POLICY_SERVER_IPV4_CIDR_EQ,
-                                   (struct sockaddr *)acpt_data->sa, matches));
-  }
+                                   CON_SEVNT_SA(con), matches));
   else if (OPT_SERV_SYM_EQ("hostname-eq"))
   { /* doesn't do escaping because DNS is ASCII */
     Vstr_sect_node *h_h = req->http_hdrs->hdr_host;
@@ -478,17 +466,9 @@ static int httpd__policy_request_tst_d1(struct Con *con,
 static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
                                     Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-  {
-    if (OPT_SERV_SYM_EQ("<close>"))
-    {
-      evnt_close(con->evnt);
-      return (TRUE);
-    }
-    
-    return (FALSE);
-  }
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  int clist = FALSE;
+  
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
   if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
   {
@@ -510,6 +490,11 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
     conf_parse_end_token(conf, token, token->depth_num);
   }
   
+  else if (OPT_SERV_SYM_EQ("<close>"))
+  {
+    evnt_close(con->evnt);
+    return (TRUE);
+  }
   else if (OPT_SERV_SYM_EQ("policy"))
   {
     const Opt_serv_policy_opts *policy = NULL;
@@ -617,7 +602,9 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
                                            const Conf_parse *conf,
                                            Conf_token *token)
 {
-  CONF_SC_MAKE_CLIST_BEG(http);
+  int clist = FALSE;
+  
+  CONF_SC_MAKE_CLIST_BEG(policy_http_d1, clist);
   
   else if (OPT_SERV_SYM_EQ("authorization") || OPT_SERV_SYM_EQ("auth"))
   { /* token is output of: echo -n foo:bar | openssl enc -base64 */
@@ -626,7 +613,7 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
 
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!OPT_SERV_SYM_EQ("basic-encoded")) return (FALSE);
-    CONF_SC_MAKE_CLIST_MID(depth);
+    CONF_SC_MAKE_CLIST_MID(depth, clist);
 
     else if (OPT_SERV_SYM_EQ("realm")) OPT_SERV_X_VSTR(opts->auth_realm);
     else if (OPT_SERV_SYM_EQ("token")) OPT_SERV_X_VSTR(opts->auth_token);
@@ -678,7 +665,7 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
   
   else if (OPT_SERV_SYM_EQ("limit"))
   {
-    CONF_SC_MAKE_CLIST_BEG(limit);
+    CONF_SC_MAKE_CLIST_BEG(limit, clist);
     
     else if (OPT_SERV_SYM_EQ("header-size") ||
              OPT_SERV_SYM_EQ("header-sz"))
@@ -687,7 +674,7 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
       OPT_SERV_X_UINT(opts->max_requests);
     else if (OPT_SERV_SYM_EQ("nodes"))
     {
-      CONF_SC_MAKE_CLIST_BEG(nodes);
+      CONF_SC_MAKE_CLIST_BEG(nodes, clist);
         
       else if (OPT_SERV_SYM_EQ("Accept:"))
         OPT_SERV_X_UINT(opts->max_A_nodes);
@@ -715,7 +702,8 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
 }
 
 static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
-                                      const Conf_parse *conf, Conf_token *token)
+                                      const Conf_parse *conf, Conf_token *token,
+                                      int clist)
 {
   if (0) { }
   
@@ -768,7 +756,7 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
 
   else if (OPT_SERV_SYM_EQ("limit"))
   {
-    CONF_SC_MAKE_CLIST_BEG(limit);
+    CONF_SC_MAKE_CLIST_BEG(limit, clist);
     
     else if (OPT_SERV_SYM_EQ("request-configuration-size") ||
              OPT_SERV_SYM_EQ("request-configuration-sz") ||
@@ -777,7 +765,7 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
       OPT_SERV_X_UINT(opts->max_req_conf_sz);
     else if (OPT_SERV_SYM_EQ("nodes"))
     {
-      CONF_SC_MAKE_CLIST_BEG(nodes);
+      CONF_SC_MAKE_CLIST_BEG(nodes, clist);
         
       else if (OPT_SERV_SYM_EQ("Accept:"))
         OPT_SERV_X_UINT(opts->max_neg_A_nodes);
@@ -805,13 +793,15 @@ static int httpd__conf_main_policy(Httpd_opts *opts,
   Opt_serv_policy_opts *popts = NULL;
   unsigned int cur_depth = opt_policy_sc_conf_parse(opts->s, conf, token,
                                                     &popts);
-
+  int clist = FALSE;
+  
   if (!cur_depth)
     return (FALSE);
   
-  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  CONF_SC_MAKE_CLIST_MID(cur_depth, clist);
   
-  else if (httpd__conf_main_policy_d1((Httpd_policy_opts *)popts, conf, token))
+  else if (httpd__conf_main_policy_d1((Httpd_policy_opts *)popts, conf, token,
+                                      clist))
   { }
   
   CONF_SC_MAKE_CLIST_END();
@@ -820,8 +810,10 @@ static int httpd__conf_main_policy(Httpd_opts *opts,
 }
 
 static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
-                               Conf_parse *conf, Conf_token *token)
+                               Conf_parse *conf, Conf_token *token, int clist)
 {
+  (void)clist;
+  
   if (OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
   {
     if (!opt_serv_conf(httpd_opts->s, conf, token))
@@ -890,13 +882,14 @@ static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
 int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
 {
   unsigned int cur_depth = token->depth_num;
+  int clist = FALSE;
   
   if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-main-1.0"))
     return (FALSE);
 
-  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  CONF_SC_MAKE_CLIST_MID(cur_depth, clist);
 
-  else if (httpd__conf_main_d1(opts, conf, token))
+  else if (httpd__conf_main_d1(opts, conf, token, clist))
   { }
   
   CONF_SC_MAKE_CLIST_END();
@@ -910,6 +903,7 @@ int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
 
 #define HTTPD_CONF__BEG_APP() do {                                      \
       ASSERT(!opts->conf_num || (conf->state == CONF_PARSE_STATE_END)); \
+      prev_conf_num = conf->sects->num;                                 \
       /* reinit */                                                      \
       conf->state = CONF_PARSE_STATE_BEG;                               \
     } while (FALSE)
@@ -918,18 +912,8 @@ int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
 #define HTTPD_CONF__END_APP() do {                                      \
       if (opts->conf_num)                                               \
       {                                                                 \
-        unsigned int tmp__conf_num = opts->conf_num;                    \
-        while (tmp__conf_num--)                                         \
-        {                                                               \
-          if (!conf_parse_token(conf, token))                           \
-            goto conf_fail;                                             \
-                                                                        \
-          if ((token->type != CONF_TOKEN_TYPE_CLIST) ||                 \
-              (token->depth_num != 1))                                  \
-            goto conf_fail;                                             \
-          if (!conf_parse_end_token(conf, token, token->depth_num))     \
-            goto conf_fail;                                             \
-        }                                                               \
+        conf_parse_token(conf, token);                                  \
+        conf_parse_num_token(conf, token, prev_conf_num);               \
       }                                                                 \
     } while (FALSE)
     
@@ -939,6 +923,7 @@ int httpd_conf_main_parse_cstr(Vstr_base *out,
 {
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
+  unsigned int prev_conf_num = 0;
   size_t pos = 1;
   size_t len = 0;
 
@@ -964,15 +949,16 @@ int httpd_conf_main_parse_cstr(Vstr_base *out,
     goto conf_fail;
 
   HTTPD_CONF__END_APP();
-  
-  conf_parse_token(conf, token);
-  
-  if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
-    goto conf_fail;
 
   if (!conf_parse_token(conf, token))
     goto conf_fail;
+
+  if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
+    goto conf_fail;
     
+  if (!conf_parse_token(conf, token))
+    goto conf_fail;
+
   ASSERT(OPT_SERV_SYM_EQ("org.and.jhttpd-conf-main-1.0"));
   
   if (!httpd_conf_main(opts, conf, token))
@@ -999,11 +985,12 @@ int httpd_conf_main_parse_file(Vstr_base *out,
 {
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
+  unsigned int prev_conf_num = 0;
   size_t pos = 1;
   size_t len = 0;
   
   ASSERT(opts && fname);
-  
+
   if (!conf && !(conf = conf_parse_make(NULL)))
     goto conf_malloc_fail;
 
@@ -1023,15 +1010,23 @@ int httpd_conf_main_parse_file(Vstr_base *out,
   {
     if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
       goto conf_fail;
-
+    
     if (!conf_parse_token(conf, token))
       goto conf_fail;
     
-    if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-main-1.0"))
+    if (OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
+    {
+      if (!opt_serv_conf(opts->s, conf, token))
+        goto conf_fail;
+    }
+    else if (OPT_SERV_SYM_EQ("org.and.jhttpd-conf-main-1.0"))
+    {
+      if (!httpd_conf_main(opts, conf, token))
+        goto conf_fail;
+    }
+    else
       goto conf_fail;
-  
-    if (!httpd_conf_main(opts, conf, token))
-      goto conf_fail;
+    
     opts->conf_num++;
   }
 
@@ -1041,7 +1036,11 @@ int httpd_conf_main_parse_file(Vstr_base *out,
   
  conf_fail:
   conf_parse_backtrace(out, fname, conf, token);
+  errno = 0;
  read_malloc_fail:
+  if (errno && out) /* can't find config. file */
+    vstr_add_fmt(out, out->len, "open(%s): %m", fname);
+  
   conf_parse_free(conf);
  conf_malloc_fail:
   return (FALSE);

@@ -155,3 +155,8 @@ int vstr_add_netstr_end(Vstr_base *base,
 
   return (TRUE);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(add_netstr2_beg);
+VSTR__SYM_ALIAS(add_netstr2_end);
+VSTR__SYM_ALIAS(add_netstr_beg);
+VSTR__SYM_ALIAS(add_netstr_end);

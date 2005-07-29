@@ -485,3 +485,5 @@ int vstr_extern_inline_del(Vstr_base *base, size_t pos, size_t len)
   return (TRUE);
 }
 
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(extern_inline_del);

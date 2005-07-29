@@ -62,6 +62,9 @@
 #define vstr_cmp_eod_cstr_eq vstr_nx_cmp_eod_cstr_eq
 #define vstr_cmp_eod_eq vstr_nx_cmp_eod_eq
 #define vstr_cmp_eq vstr_nx_cmp_eq
+#define vstr_cmp_fast vstr_nx_cmp_fast
+#define vstr_cmp_fast_buf vstr_nx_cmp_fast_buf
+#define vstr_cmp_fast_cstr vstr_nx_cmp_fast_cstr
 #define vstr_cmp_vers vstr_nx_cmp_vers
 #define vstr_cmp_vers_bod vstr_nx_cmp_vers_bod
 #define vstr_cmp_vers_bod_buf vstr_nx_cmp_vers_bod_buf
@@ -89,6 +92,10 @@
 #define vstr_conv_unprintable_chr vstr_nx_conv_unprintable_chr
 #define vstr_conv_unprintable_del vstr_nx_conv_unprintable_del
 #define vstr_conv_uppercase vstr_nx_conv_uppercase
+#define vstr_cspn_bmap_and_fwd vstr_nx_cspn_bmap_and_fwd
+#define vstr_cspn_bmap_and_rev vstr_nx_cspn_bmap_and_rev
+#define vstr_cspn_bmap_eq_fwd vstr_nx_cspn_bmap_eq_fwd
+#define vstr_cspn_bmap_eq_rev vstr_nx_cspn_bmap_eq_rev
 #define vstr_cspn_chrs_fwd vstr_nx_cspn_chrs_fwd
 #define vstr_cspn_chrs_rev vstr_nx_cspn_chrs_rev
 #define vstr_cspn_cstr_chrs_fwd vstr_nx_cspn_cstr_chrs_fwd
@@ -184,6 +191,10 @@
 #define vstr_sc_add_grpbasenum_ref vstr_nx_sc_add_grpbasenum_ref
 #define vstr_sc_add_grpnum_buf vstr_nx_sc_add_grpnum_buf
 #define vstr_sc_basename vstr_nx_sc_basename
+#define vstr_sc_bmap_init_eq_spn_buf vstr_nx_sc_bmap_init_eq_spn_buf
+#define vstr_sc_bmap_init_or_spn_buf vstr_nx_sc_bmap_init_or_spn_buf
+#define vstr_sc_bmap_init_eq_spn_cstr vstr_nx_sc_bmap_init_eq_spn_cstr
+#define vstr_sc_bmap_init_or_spn_cstr vstr_nx_sc_bmap_init_or_spn_cstr
 #define vstr_sc_conv_num10_size vstr_nx_sc_conv_num10_size
 #define vstr_sc_conv_num10_uint vstr_nx_sc_conv_num10_uint
 #define vstr_sc_conv_num10_uintmax vstr_nx_sc_conv_num10_uintmax
@@ -251,6 +262,10 @@
 #define vstr_split_chrs vstr_nx_split_chrs
 #define vstr_split_cstr_buf vstr_nx_split_cstr_buf
 #define vstr_split_cstr_chrs vstr_nx_split_cstr_chrs
+#define vstr_spn_bmap_and_fwd vstr_nx_spn_bmap_and_fwd
+#define vstr_spn_bmap_and_rev vstr_nx_spn_bmap_and_rev
+#define vstr_spn_bmap_eq_fwd vstr_nx_spn_bmap_eq_fwd
+#define vstr_spn_bmap_eq_rev vstr_nx_spn_bmap_eq_rev
 #define vstr_spn_chrs_fwd vstr_nx_spn_chrs_fwd
 #define vstr_spn_chrs_rev vstr_nx_spn_chrs_rev
 #define vstr_spn_cstr_chrs_fwd vstr_nx_spn_cstr_chrs_fwd

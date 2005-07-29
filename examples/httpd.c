@@ -728,6 +728,7 @@ static int http__try_encoded_content(struct Con *con, Httpd_req_data *req,
     else if ((req->policy->use_public_only && !(f_stat->st_mode & S_IROTH)) ||
              (S_ISDIR(f_stat->st_mode)) || (!S_ISREG(f_stat->st_mode)) ||
              (req_f_stat->st_mtime >  f_stat->st_mtime) ||
+             !f_stat->st_size || /* zero sized compressed files aren't valid */
              (req_f_stat->st_size  <= f_stat->st_size))
     { /* ignore the encoded version */ }
     else
@@ -1101,7 +1102,7 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
 
     if (!req->user_return_error_code)
       vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
+               " backtrace: $<vstr.all:%p>\n", CON_CEVNT_SA(con), s1, s2);
     conf_parse_free(conf);
     return (TRUE);
   }
@@ -1111,7 +1112,7 @@ static int http__conf_req(struct Con *con, Httpd_req_data *req)
   {
     Vstr_base *s1 = req->policy->s->policy_name;
     vlg_info(vlg, "CONF-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-             " Has URI.\n", con->evnt->sa, s1);
+             " Has URI.\n", CON_CEVNT_SA(con), s1);
     HTTPD_ERR_RET(req, 503, TRUE);
   }
   
@@ -1234,7 +1235,7 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
   ASSERT(!con->f->len);
   
   vlg_info(vlg, "ERREQ from[$<sa:%p>] err[%03u %s]",
-           con->evnt->sa, req->error_code, req->error_line);
+           CON_CEVNT_SA(con), req->error_code, req->error_line);
   if (req->sects->num >= 2)
     http_vlg_def(con, req);
   else
@@ -1260,6 +1261,16 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
     if (!fname)
       goto fail_custom_err;
 
+    /*
+  req->vary_star = con ? con->vary_star : FALSE;
+  req->vary_a    = FALSE;
+  req->vary_ac   = FALSE;
+  req->vary_ae   = FALSE;
+  req->vary_al   = FALSE;
+  req->vary_rf   = FALSE;
+  req->vary_ua   = FALSE;
+    */
+    
     if (!req->user_return_error_code)
     {
       req->cache_control_vs1 = NULL;
@@ -1475,7 +1486,7 @@ int httpd_sc_add_default_hostname(struct Con *con,
   const Httpd_policy_opts *opts = req->policy;
   const Vstr_base *d_h = opts->default_hostname;
   Acpt_data *acpt_data = con->acpt_sa_ref->ptr;
-  struct sockaddr_in *sinv4 = (struct sockaddr_in *)acpt_data->sa;
+  struct sockaddr_in *sinv4 = ACPT_SA_IN4(acpt_data);
   int ret = FALSE;
   
   ret = vstr_add_vstr(lfn, pos, d_h, 1, d_h->len, VSTR_TYPE_ADD_DEF);
@@ -2352,7 +2363,7 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
       got_transfer_encoding = TRUE;
       http__hdr_fixup(data, &pos, &len, hdr_val_pos);
 
-      if (!VEQ(data, pos, len, "identity"))
+      if (!VEQ(data, pos, len, "identity")) /* should be 501? */
         HTTPD_ERR_RET(req, 413, FALSE);
     }
   }
@@ -3113,7 +3124,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     Vstr_base *s1 = httpd_opts->conf->tmp;
     if (!req->user_return_error_code)
       vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]:"
-               " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1);
+               " backtrace: $<vstr.all:%p>\n", CON_CEVNT_SA(con), s1);
     return (TRUE);
   }
   
@@ -3122,7 +3133,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     Vstr_base *s1 = req->policy->s->policy_name;
     
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
-             con->evnt->sa, s1);
+             CON_CEVNT_SA(con), s1);
     return (FALSE);
   }
 
@@ -3130,7 +3141,7 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
   {
     Vstr_base *s1 = req->policy->s->policy_name;
     vlg_info(vlg, "CONF-MATCH-REQ-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-             " Has URI.\n", con->evnt->sa, s1);
+             " Has URI.\n", CON_CEVNT_SA(con), s1);
     HTTPD_ERR_RET(req, 503, TRUE);
   }
   
@@ -3290,7 +3301,7 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
 
   /* req->head_op is set for 304 returns */
   vlg_info(vlg, "REQ $<vstr.sect:%p%p%u> from[$<sa:%p>] ret[%03u %s]"
-           " sz[${BKMG.ju:%ju}:%ju]", data, req->sects, 1U, con->evnt->sa,
+           " sz[${BKMG.ju:%ju}:%ju]", data, req->sects, 1U, CON_CEVNT_SA(con),
            http_ret_code, http_ret_line, con->f->len, con->f->len);
   http_vlg_def(con, req);
   
@@ -3326,7 +3337,7 @@ int http_req_op_opts(struct Con *con, Httpd_req_data *req)
     goto malloc_err;
   
   vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
-           "OPTIONS", con->evnt->sa, 200, "OK", tmp, tmp);
+           "OPTIONS", CON_CEVNT_SA(con), 200, "OK", tmp, tmp);
   http_vlg_def(con, req);
   
   return (http_fin_req(con, req));
@@ -3350,7 +3361,7 @@ int http_req_op_trace(struct Con *con, Httpd_req_data *req)
 
   tmp = req->len;
   vlg_info(vlg, "REQ %s from[$<sa:%p>] ret[%03u %s] sz[${BKMG.ju:%ju}:%ju]",
-           "TRACE", con->evnt->sa, 200, "OK", tmp, tmp);
+           "TRACE", CON_CEVNT_SA(con), 200, "OK", tmp, tmp);
   http_vlg_def(con, req);
       
   return (http_fin_req(con, req));
@@ -3744,13 +3755,13 @@ static int http_parse_req(struct Con *con)
    if (errno != EPIPE)                                                  \
      vlg_warn(vlg, "send(%s): %m\n", x);                                \
    else                                                                 \
-     vlg_dbg2(vlg, "send(%s): SIGPIPE $<sa:%p>\n", x, con->evnt->sa);   \
+     vlg_dbg2(vlg, "send(%s): SIGPIPE $<sa:%p>\n", x, CON_CEVNT_SA(con)); \
    return (FALSE);                                                      \
  } while (FALSE)
 
 static int httpd_serv_q_send(struct Con *con)
 {
-  vlg_dbg2(vlg, "http Q send $<sa:%p>\n", con->evnt->sa);
+  vlg_dbg2(vlg, "http Q send $<sa:%p>\n", CON_CEVNT_SA(con));
   if (!evnt_send_add(con->evnt, TRUE, HTTPD_CONF_MAX_WAIT_SEND))
     HTTPD__SERV_SEND_ERR("Q");
       
@@ -3817,7 +3828,7 @@ int httpd_serv_send(struct Con *con)
           httpd__disable_sendfile();
         if (errno == EPIPE)
         {
-          vlg_dbg2(vlg, "sendfile: SIGPIPE $<sa:%p>\n", con->evnt->sa);
+          vlg_dbg2(vlg, "sendfile: SIGPIPE $<sa:%p>\n", CON_CEVNT_SA(con));
           return (FALSE);
         }
         else
@@ -3893,7 +3904,7 @@ int httpd_serv_recv(struct Con *con)
   {
     if (ern != VSTR_TYPE_SC_READ_FD_ERR_EOF)
     {
-      vlg_dbg2(vlg, "RECV ERR from[$<sa:%p>]: %u\n", con->evnt->sa, ern);
+      vlg_dbg2(vlg, "RECV ERR from[$<sa:%p>]: %u\n", CON_CEVNT_SA(con), ern);
       goto con_cleanup;
     }
     if (!evnt_shutdown_r(con->evnt, TRUE))
@@ -3940,14 +3951,14 @@ int httpd_con_init(struct Con *con, struct Acpt_listener *acpt_listener)
     Vstr_base *s2 = httpd_opts->conf->tmp;
 
     vlg_info(vlg, "CONF-MAIN-ERR from[$<sa:%p>]: policy $<vstr.all:%p>"
-             " backtrace: $<vstr.all:%p>\n", con->evnt->sa, s1, s2);
+             " backtrace: $<vstr.all:%p>\n", CON_CEVNT_SA(con), s1, s2);
     ret = FALSE;
   }
   else if (con->evnt->flag_q_closed)
   {
     Vstr_base *s1 = con->policy->s->policy_name;
     vlg_info(vlg, "BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
-             con->evnt->sa, s1);
+             CON_CEVNT_SA(con), s1);
     ret = FALSE;
   }
   

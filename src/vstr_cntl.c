@@ -860,3 +860,7 @@ int vstr_cntl_conf(Vstr_conf *passed_conf, int option, ...)
 
   return (ret);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(cntl_base);
+VSTR__SYM_ALIAS(cntl_conf);
+VSTR__SYM_ALIAS(cntl_opt);

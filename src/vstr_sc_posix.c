@@ -835,3 +835,14 @@ int vstr__sc_fmt_add_posix(Vstr_conf *conf)
 
   return (ret);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(sc_fmt_add_ipv4_ptr);
+VSTR__SYM_ALIAS(sc_fmt_add_ipv6_ptr);
+VSTR__SYM_ALIAS(sc_mmap_fd);
+VSTR__SYM_ALIAS(sc_mmap_file);
+VSTR__SYM_ALIAS(sc_read_iov_fd);
+VSTR__SYM_ALIAS(sc_read_iov_file);
+VSTR__SYM_ALIAS(sc_read_len_fd);
+VSTR__SYM_ALIAS(sc_read_len_file);
+VSTR__SYM_ALIAS(sc_write_fd);
+VSTR__SYM_ALIAS(sc_write_file);

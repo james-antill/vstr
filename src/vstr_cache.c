@@ -607,3 +607,9 @@ vstr_extern_inline_make_cache_pos(const Vstr_base *base)
   ASSERT(FALSE);
   return (NULL);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(cache_add);
+VSTR__SYM_ALIAS(cache_cb_free);
+VSTR__SYM_ALIAS(cache_cb_sub);
+VSTR__SYM_ALIAS(cache_set);
+VSTR__SYM_ALIAS(cache_srch);

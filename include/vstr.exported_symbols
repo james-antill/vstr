@@ -61,6 +61,9 @@ cmp_eod_cstr
 cmp_eod_cstr_eq
 cmp_eod_eq
 cmp_eq
+cmp_fast
+cmp_fast_buf
+cmp_fast_cstr
 cmp_vers
 cmp_vers_bod
 cmp_vers_bod_buf
@@ -88,6 +91,10 @@ conv_lowercase
 conv_unprintable_chr
 conv_unprintable_del
 conv_uppercase
+cspn_bmap_and_fwd
+cspn_bmap_and_rev
+cspn_bmap_eq_fwd
+cspn_bmap_eq_rev
 cspn_chrs_fwd
 cspn_chrs_rev
 cspn_cstr_chrs_fwd
@@ -183,6 +190,10 @@ sc_add_grpbasenum_ptr
 sc_add_grpbasenum_ref
 sc_add_grpnum_buf
 sc_basename
+sc_bmap_init_eq_spn_buf
+sc_bmap_init_or_spn_buf
+sc_bmap_init_eq_spn_cstr
+sc_bmap_init_or_spn_cstr
 sc_conv_num10_size
 sc_conv_num10_uint
 sc_conv_num10_uintmax
@@ -250,6 +261,10 @@ split_buf
 split_chrs
 split_cstr_buf
 split_cstr_chrs
+spn_bmap_and_fwd
+spn_bmap_and_rev
+spn_bmap_eq_fwd
+spn_bmap_eq_rev
 spn_chrs_fwd
 spn_chrs_rev
 spn_cstr_chrs_fwd

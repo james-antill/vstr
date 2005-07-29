@@ -1,6 +1,6 @@
 #define VSTR_SPN_C
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -150,7 +150,6 @@ static size_t vstr__spn_chrs_rev_slow(const Vstr_base *base,
 
    next_loop_all_good:
     ret += iter->len;
-
    next_loop_memchr_fail:
     continue;
   } while (vstr_iter_fwd_nxt(iter));
@@ -310,7 +309,6 @@ static size_t vstr__cspn_chrs_rev_slow(const Vstr_base *base,
 
    next_loop_all_good:
     ret += iter->len;
-
    next_loop_memchr_fail:
     continue;
   } while (vstr_iter_fwd_nxt(iter));
@@ -387,3 +385,303 @@ size_t vstr_cspn_chrs_rev(const Vstr_base *base, size_t pos, size_t len,
 
   return (vstr__cspn_chrs_rev_slow(base, pos, len, cspn_chrs, cspn_len));
 }
+
+/* Byte mapping. With inspiration from:
+   http://groups-beta.google.com/group/comp.unix.programmer/msg/f92e10e01279f708?hl=en
+*/
+size_t vstr_spn_bmap_eq_fwd(const Vstr_base *base, size_t pos, size_t len,
+                            const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                            unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      return (ret);
+
+    while (count < iter->len)
+    {
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] != val)
+        return (ret + count);
+      ++count;
+    }
+    assert(count == iter->len);
+
+    ret += iter->len;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+size_t vstr_spn_bmap_eq_rev(const Vstr_base *base, size_t pos, size_t len,
+                            const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                            unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+    {
+      ret = 0;
+      continue;
+    }
+
+    count = iter->len;
+    while (count-- > 0)
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] != val)
+      {
+        ret = ((iter->len - count) - 1);
+        goto next_loop_bmap_fail;
+      }
+
+    ret += iter->len;
+   next_loop_bmap_fail:
+    continue;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+size_t vstr_spn_bmap_and_fwd(const Vstr_base *base, size_t pos, size_t len,
+                             const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                             unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      return (ret);
+
+    while (count < iter->len)
+    {
+      if (!(bmap[0xFF & (unsigned char)iter->ptr[count]] & val))
+        return (ret + count);
+      ++count;
+    }
+    assert(count == iter->len);
+
+    ret += iter->len;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+size_t vstr_spn_bmap_and_rev(const Vstr_base *base, size_t pos, size_t len,
+                             const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                             unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+    {
+      ret = 0;
+      continue;
+    }
+
+    count = iter->len;
+    while (count-- > 0)
+      if (!(bmap[0xFF & (unsigned char)iter->ptr[count]] & val))
+      {
+        ret = ((iter->len - count) - 1);
+        goto next_loop_bmap_fail;
+      }
+
+    ret += iter->len;
+   next_loop_bmap_fail:
+    continue;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+
+size_t vstr_cspn_bmap_eq_fwd(const Vstr_base *base, size_t pos, size_t len,
+                             const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                             unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      goto next_loop_all_good;
+
+    while (count < iter->len)
+    {
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] == val)
+        return (ret + count);
+      ++count;
+    }
+    assert(count == iter->len);
+
+   next_loop_all_good:
+    ret += iter->len;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+size_t vstr_cspn_bmap_eq_rev(const Vstr_base *base, size_t pos, size_t len,
+                             const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                             unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      goto next_loop_all_good;
+
+    count = iter->len;
+    while (count-- > 0)
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] == val)
+      {
+        ret = ((iter->len - count) - 1);
+        goto next_loop_bmap_fail;
+      }
+
+   next_loop_all_good:
+    ret += iter->len;
+   next_loop_bmap_fail:
+    continue;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+size_t vstr_cspn_bmap_and_fwd(const Vstr_base *base, size_t pos, size_t len,
+                              const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                              unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      goto next_loop_all_good;
+
+    while (count < iter->len)
+    {
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] & val)
+        return (ret + count);
+      ++count;
+    }
+    assert(count == iter->len);
+
+   next_loop_all_good:
+    ret += iter->len;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);
+}
+
+size_t vstr_cspn_bmap_and_rev(const Vstr_base *base, size_t pos, size_t len,
+                              const unsigned char bmap[VSTR__COMPILE_STATIC_ARRAY() 256],
+                              unsigned char val)
+{
+  Vstr_iter iter[1];
+  size_t ret = 0;
+
+  ASSERT_RET(base, 0);
+  
+  if (!vstr_iter_fwd_beg(base, pos, len, iter))
+    return (0);
+
+  do
+  {
+    size_t count = 0;
+
+    if (iter->node->type == VSTR_TYPE_NODE_NON)
+      goto next_loop_all_good;
+
+    count = iter->len;
+    while (count-- > 0)
+      if (bmap[0xFF & (unsigned char)iter->ptr[count]] & val)
+      {
+        ret = ((iter->len - count) - 1);
+        goto next_loop_bmap_fail;
+      }
+
+   next_loop_all_good:
+    ret += iter->len;
+   next_loop_bmap_fail:
+    continue;
+  } while (vstr_iter_fwd_nxt(iter));
+
+  return (ret);  
+}
+
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(cspn_bmap_eq_fwd);
+VSTR__SYM_ALIAS(cspn_bmap_eq_rev);
+VSTR__SYM_ALIAS(cspn_bmap_and_fwd);
+VSTR__SYM_ALIAS(cspn_bmap_and_rev);
+VSTR__SYM_ALIAS(cspn_chrs_fwd);
+VSTR__SYM_ALIAS(cspn_chrs_rev);
+VSTR__SYM_ALIAS(spn_bmap_eq_fwd);
+VSTR__SYM_ALIAS(spn_bmap_eq_rev);
+VSTR__SYM_ALIAS(spn_bmap_and_fwd);
+VSTR__SYM_ALIAS(spn_bmap_and_rev);
+VSTR__SYM_ALIAS(spn_chrs_fwd);
+VSTR__SYM_ALIAS(spn_chrs_rev);

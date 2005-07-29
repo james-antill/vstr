@@ -1,33 +1,25 @@
 
-#define VSTR_COMPILE_INCLUDE 1
-#include <vstr.h>
 
-#include <stdio.h>
+#define EX_UTILS_NO_USE_INPUT 1
+#define EX_UTILS_NO_USE_IO_FD 1
+#define EX_UTILS_NO_USE_OPEN  1
+#define EX_UTILS_NO_USE_INIT  1
+#define EX_UTILS_NO_USE_EXIT  1
+#include "ex_utils.h"
+
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <getopt.h>
-#include <string.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-#include <sys/poll.h>
 #include <netdb.h>
 #include <sys/time.h>
 #include <time.h>
 #include <signal.h>
 
-#include <err.h>
-
-
 #include <socket_poll.h>
 #include <timer_q.h>
-
-#define TRUE 1
-#define FALSE 0
 
 #define WAIT_SET_RECV_FLAG 1 /* work around ? */
 
@@ -238,9 +230,9 @@ static struct con *cl_make(const char *server_fname)
   struct con *ret = MK(sizeof(struct con));
 
   if (!ret)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!evnt_make_con_local(ret->ev, server_fname))
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
 
   ret->ev->cbs->cb_func_connect = cl_cb_func_connect;
   ret->ev->cbs->cb_func_recv    = cl_cb_func_recv;
@@ -267,7 +259,7 @@ static void cl_connect(void)
   
     if (!(con->ev->tm_o = timer_q_add_node(cl_timeout_base, con, &tv,
                                            TIMER_Q_FLAG_NODE_DEFAULT)))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -343,20 +335,27 @@ static unsigned int cl_scan_io_fds(unsigned int ready)
   return (ready);
 }
 
-static void usage(const char *program_name, int tst_err)
+static void usage(const char *program_name, int ret, const char *prefix)
 {
-  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-chmtwV] <server name>\n"
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "usage");
+
+  vstr_add_fmt(out, 0, "%s\n"
+          " Format: %s [-chmtwV] <server name>\n"
           " --help -h         - Print this message.\n"
           " --debug -d        - Enable debug info.\n"
           " --clients -c      - Number of connections to make.\n"
           " --nagle -n        - Enable/disable nagle TCP option.\n"
           " --timeout -t      - Timeout (usecs) between each message.\n"
           " --version -V      - Print the version string.\n",
-          program_name);
-  if (tst_err)
-    exit (EXIT_FAILURE);
-  else
-    exit (EXIT_SUCCESS);
+          prefix, program_name);
+  
+  if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
+    err(EXIT_FAILURE, "write");
+  
+  exit (ret);
 }
 
 
@@ -377,21 +376,33 @@ static void cl_cmd_line(int argc, char *argv[])
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "command line");
   
   program_name = opt_program_name(argv[0], "cntl");
 
   while ((optchar = getopt_long(argc, argv, "c:de:hH:nP:Rt:V",
-                                long_options, NULL)) != EOF)
+                                long_options, NULL)) != -1)
   {
     switch (optchar)
     {
-      case '?':
-        fprintf(stderr, " That option is not valid.\n");
-      case 'h':
-        usage(program_name, '?' == optchar);
+      case '?': usage(program_name, EXIT_FAILURE, "");
+      case 'h': usage(program_name, EXIT_SUCCESS, "");
         
       case 'V':
-        printf(" %s version 0.5.1, compiled on %s.\n", program_name, __DATE__);
+          vstr_add_fmt(out, 0,"\
+%s version 1.0.0, compiled on %s.\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+",
+                       program_name, __DATE__);
+
+        if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
+          err(EXIT_FAILURE, "write");
+        
         exit (EXIT_SUCCESS);
 
       case 'c': server_clients      = atoi(optarg); break;
@@ -418,12 +429,13 @@ static void cl_cmd_line(int argc, char *argv[])
         abort();
     }
   }
+  vstr_free_base(out); out = NULL;
 
   argc -= optind;
   argv += optind;
 
   if (argc != 1)
-    usage(program_name, TRUE);
+    usage(program_name, EXIT_FAILURE, "");
 
   server_filename = argv[0];
 }
@@ -458,7 +470,7 @@ static void cl_timer_cli(int type, void *data)
   TIMER_Q_TIMEVAL_ADD_SECS(&tv, (server_timeout - diff) + 1, 0);
   if (!(con->ev->tm_o = timer_q_add_node(cl_timeout_base, con, &tv,
                                          TIMER_Q_FLAG_NODE_DEFAULT)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 }
 
 static void cl_timer_con(int type, void *data)
@@ -488,7 +500,7 @@ static void cl_timer_con(int type, void *data)
     TIMER_Q_TIMEVAL_ADD_SECS(&tv, 1, 0);
     if (!timer_q_add_node(cl_timer_connect_base, NULL, &tv,
                           TIMER_Q_FLAG_NODE_DEFAULT))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -499,9 +511,9 @@ static void cl_init(void)
   cl_timer_connect_base = timer_q_add_base(cl_timer_con,
                                            TIMER_Q_FLAG_BASE_DEFAULT);
   if (!cl_timeout_base)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!cl_timer_connect_base)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vlg_init();
 
@@ -522,13 +534,13 @@ static void cl_beg(void)
     vlg_dbg3(vlg, "cl_beg io_r beg\n");
     evnt_fd__set_nonblock(io_r_fd,  TRUE);
     if (!(io_ind_r = socket_poll_add(io_r_fd)))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
     SOCKET_POLL_INDICATOR(io_ind_r)->events |= POLLIN;
   }
   
   evnt_fd__set_nonblock(io_w_fd, TRUE);
   if (!(io_ind_w = socket_poll_add(io_w_fd)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   while ((server_clients_count < server_clients) && (count < CL_MAX_CONNECT))
   {
@@ -544,7 +556,7 @@ static void cl_beg(void)
     TIMER_Q_TIMEVAL_ADD_SECS(&tv, 1, 0);
     if (!timer_q_add_node(cl_timer_connect_base, NULL, &tv,
                           TIMER_Q_FLAG_NODE_DEFAULT))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -553,7 +565,7 @@ static void cl_signals(void)
   struct sigaction sa;
   
   if (sigemptyset(&sa.sa_mask) == -1)
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
   
   /* don't use SA_RESTART ... */
   sa.sa_flags = 0;
@@ -561,24 +573,24 @@ static void cl_signals(void)
   sa.sa_handler = SIG_IGN;
   
   if (sigaction(SIGPIPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
 }
 
 int main(int argc, char *argv[])
 {
   if (!vstr_init())
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_sc_fmt_add_all(NULL);
   
   if (!(io_r = vstr_make_base(NULL))) /* used in cmd line */
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!(io_w = vstr_make_base(NULL)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   srand(getpid() ^ time(NULL)); /* doesn't need to be secure... just different
                                  * for different runs */
@@ -597,7 +609,7 @@ int main(int argc, char *argv[])
     struct timeval tv;
     
     if ((ready == -1) && (errno != EINTR))
-      err(EXIT_FAILURE, __func__);
+      err(EXIT_FAILURE, "%s", __func__);
     if (ready == -1)
       continue;
 

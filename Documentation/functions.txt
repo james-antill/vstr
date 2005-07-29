@@ -2087,6 +2087,64 @@ Function: vstr_cmp_case_buf()
  (Parameter[4]) and then calling vstr_cmp_case().
 
 
+Function: vstr_cmp_fast()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Vstr string
+ Type[4]: const struct Vstr_base *
+
+ Parameter[5]: Start position in the Vstr string (Parameter[4])
+ Type[5]: size_t
+
+ Parameter[6]: Length in the Vstr string (Parameter[4])
+ Type[6]: size_t
+
+ Explanation:
+
+  This function is like vstr_cmp() but it is meant to provide "fast" results for
+ use in internal comparisons (Ie. output is unlikely to be enjoyed by humans).
+
+ Note:
+
+  Data of type _NON is assumed to have the value -1, and so all data compares
+ as greater than it.
+
+
+Function: vstr_cmp_fast_buf()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Parameter[5]: Length of ASCII C string (Parameter[4])
+ Type[5]: size_t
+
+ Explanation:
+
+  Think of this function as doing a vstr_dup_ptr() on the data array
+ (Parameter[4]) and then calling vstr_cmp_fast().
+
+
 Function: vstr_cmp_vers()
  Returns: Less then zero, zero or greater than zero depending on comparison
  Type: int
@@ -2346,6 +2404,28 @@ Function: vstr_cmp_case_cstr_eq()
   This function returns !vstr_cmp_case_buf(), if both of the length
  values are equal, with the length of the buffer being the value of strlen()
  on the data parameter (Parameter[4]).
+
+
+Function: vstr_cmp_fast_cstr()
+ Returns: Less then zero, zero or greater than zero depending on comparison
+ Type: int
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to ASCII C string
+ Type[4]: const char *
+
+ Explanation:
+
+  This function calls vstr_cmp_fast_buf() with the length of the buffer
+ being the value of strlen() on the data parameter (Parameter[4]).
 
 
 Function: vstr_cmp_vers_eq()

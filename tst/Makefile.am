@@ -60,6 +60,7 @@ xfail_tst_cache =
 tst_cmp = \
     cmp/tst_cmp \
     cmp/tst_cmp_case \
+    cmp/tst_cmp_fast \
     cmp/tst_cmp_vers \
     cmp/tst_cmp_non
 
@@ -230,7 +231,11 @@ xfail_tst_sects = \
 
 tst_spn = \
     spn/tst_spn_chrs \
-    spn/tst_spn_c_chrs
+    spn/tst_spn_c_chrs \
+    spn/tst_spn_bmap_and \
+    spn/tst_spn_bmap_eq \
+    spn/tst_spn_c_bmap_and \
+    spn/tst_spn_c_bmap_eq
 
 xfail_tst_spn = \
     spn/xfail_tst_spn_chrs_fwd_oob_pos \
@@ -379,5 +384,5 @@ TESTS = $(tst) $(F_TST) $(XF_TST)
 
 XFAIL_TESTS = $(XF_TST)
 
-CFLAGS = -I- -I../include -I../../include @CFLAGS@ @WARNS@
+CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
 LDADD = @LOCAL_TST_PROG_LIBS@

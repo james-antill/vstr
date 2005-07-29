@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 2002, 2003, 2004  James Antill
+ *  Copyright (C) 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -809,7 +809,23 @@ extern inline int vstr_sects_add(struct Vstr_sects *sects,
   return (VSTR__TRUE);
 }
 
-/* do inline versions of macro functions */
+extern inline void vstr_sc_bmap_init_eq_spn_buf(unsigned char bmap[256], 
+                                                const char *buf, size_t len,
+                                                unsigned char val)
+{
+  while (len)
+    bmap[0xFF & (unsigned char)buf[--len]] = val;
+}
+
+extern inline void vstr_sc_bmap_init_or_spn_buf(unsigned char bmap[256], 
+                                                const char *buf, size_t len,
+                                                unsigned char val)
+{
+  while (len)
+    bmap[0xFF & (unsigned char)buf[--len]] |= val;
+}
+
+/* do inline versions of macro/simple functions */
 /* cmp */
 extern inline int vstr_cmp_eq(const struct Vstr_base *s1, size_t p1, size_t l1,
                               const struct Vstr_base *s2, size_t p2, size_t l2)
@@ -861,6 +877,23 @@ extern inline int vstr_cmp_vers_cstr(const struct Vstr_base *s1,
 extern inline int vstr_cmp_vers_cstr_eq(const struct Vstr_base *s1,
                                         size_t p1, size_t l1, const char *buf)
 { return (vstr_cmp_vers_buf_eq(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
+
+/* cmp fast */
+extern inline int vstr_cmp_fast(const struct Vstr_base *s1,
+                                size_t p1, size_t l1,
+                                const struct Vstr_base *s2,
+                                size_t p2, size_t l2)
+{ if (l1 != l2) return (l2 - l1);
+  return (-vstr_cmp(s1, p1, l1, s2, p2, l1)); }
+extern inline int vstr_cmp_fast_buf(const struct Vstr_base *s1,
+                                       size_t p1, size_t l1,
+                                       const char *buf, size_t buf_len)
+{ if (l1 != buf_len) return (buf_len - l1);
+  return (-vstr_cmp_buf(s1, p1, l1, buf, l1)); }
+extern inline int vstr_cmp_fast_cstr(const struct Vstr_base *s1,
+                                     size_t p1, size_t l1, const char *buf)
+{ return (vstr_cmp_fast_buf(s1, p1, l1, buf, VSTR__AT_COMPILE_STRLEN(buf))); }
+
 
 /* add */
 extern inline int vstr_add_cstr_buf(struct Vstr_base *s1, size_t pa1,
@@ -1215,6 +1248,14 @@ extern inline int vstr_sc_add_grpnum_buf(struct Vstr_base *s1, size_t p1,
 extern inline int vstr_sc_add_cstr_grpnum_buf(struct Vstr_base *s1, size_t p1,
                                               const char *val)
 { return (vstr_sc_add_grpnum_buf(s1, p1, val, VSTR__AT_COMPILE_STRLEN(val))); }
+extern inline void vstr_sc_bmap_init_eq_spn_cstr(unsigned char bmap[256], 
+                                                 const char *buf,
+                                                 unsigned char val)
+{ vstr_sc_bmap_init_eq_spn_buf(bmap, buf, VSTR__AT_COMPILE_STRLEN(buf), val); }
+extern inline void vstr_sc_bmap_init_or_spn_cstr(unsigned char bmap[256], 
+                                                 const char *buf,
+                                                 unsigned char val)
+{ vstr_sc_bmap_init_or_spn_buf(bmap, buf, VSTR__AT_COMPILE_STRLEN(buf), val); }
 
 /* binary */
 extern inline int vstr_sc_add_b_uint16(struct Vstr_base *s1, size_t p1,

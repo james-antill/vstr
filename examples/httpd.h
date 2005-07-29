@@ -172,6 +172,16 @@ struct Con
  
  unsigned int use_sendfile : 1; 
 };
+#define CON_CEVNT_SA(x)     EVNT_SA((x)->evnt)
+#define CON_CEVNT_SA_IN4(x) EVNT_SA_IN4((x)->evnt)
+#define CON_CEVNT_SA_IN6(x) EVNT_SA_IN6((x)->evnt)
+#define CON_CEVNT_SA_UN(x)  EVNT_SA_UN((x)->evnt)
+
+#define CON_SEVNT_SA(x)     ACPT_SA((Acpt_data *)((x)->acpt_sa_ref->ptr))
+#define CON_SEVNT_SA_IN4(x) ACPT_SA_IN4((Acpt_data *)((x)->acpt_sa_ref->ptr))
+#define CON_SEVNT_SA_IN6(x) ACPT_SA_IN6((Acpt_data *)((x)->acpt_sa_ref->ptr))
+#define CON_SEVNT_SA_UN(x)  ACPT_SA_UN((Acpt_data *)((x)->acpt_sa_ref->ptr))
+
 
 #define HTTP_NON_KEEP_ALIVE 0
 #define HTTP_1_0_KEEP_ALIVE 1

@@ -374,3 +374,6 @@ unsigned int vstr_split_chrs(const Vstr_base *base, size_t pos, size_t len,
   return (vstr__split_hdl_end(pos, len, split_pos, sects, limit, flags, added));
 }
 #undef VSTR__SPLIT_HDL_ERR
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(split_buf);
+VSTR__SYM_ALIAS(split_chrs);

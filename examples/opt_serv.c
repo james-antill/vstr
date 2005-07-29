@@ -10,6 +10,7 @@
 #include "mk.h"
 
 #include <sys/resource.h>
+#include <grp.h>
 #include <signal.h>
 
 /* need better way to test for this */
@@ -21,14 +22,14 @@ static Vlg *vlg = NULL;
 
 static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
                                          const Conf_parse *conf,
-                                         Conf_token *token)
+                                         Conf_token *token, int clist)
 {
   unsigned int dummy;
   
   if (0) { }
   else if (OPT_SERV_SYM_EQ("timeout"))
   {
-    CONF_SC_MAKE_CLIST_BEG(timeout);
+    CONF_SC_MAKE_CLIST_BEG(timeout, clist);
     
     else if (OPT_SERV_SYM_EQ("idle"))
       OPT_SERV_X_UINT(opts->idle_timeout);
@@ -39,7 +40,7 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
   }
   else if (OPT_SERV_SYM_EQ("limit"))
   {
-    CONF_SC_MAKE_CLIST_BEG(limit);
+    CONF_SC_MAKE_CLIST_BEG(limit, clist);
     
     else if (OPT_SERV_SYM_EQ("connections"))
       OPT_SERV_X_UINT(opts->max_connections);
@@ -59,7 +60,6 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
     return (FALSE);
   
   return (TRUE);
-
 }
 
 static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
@@ -67,13 +67,14 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
 {
   Opt_serv_policy_opts *popts = NULL;
   unsigned int cur_depth = opt_policy_sc_conf_parse(opts, conf, token, &popts);
-
+  int clist = FALSE;
+  
   if (!cur_depth)
     return (FALSE);
   
-  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  CONF_SC_MAKE_CLIST_MID(cur_depth, clist);
   
-  else if (opt_serv__conf_main_policy_d1(popts, conf, token))
+  else if (opt_serv__conf_main_policy_d1(popts, conf, token, clist))
   { }
 
   CONF_SC_MAKE_CLIST_END();
@@ -81,8 +82,36 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
   return (TRUE);
 }
 
+#define OPT_SERV__RLIM_VAL(x, y) do {                                   \
+      const Vstr_sect_node *pv = NULL;                                  \
+      unsigned int val = 0;                                             \
+      int ern = 0;                                                      \
+                                                                        \
+      (y) = TRUE;                                                       \
+                                                                        \
+      ern = conf_sc_token_parse_uint(conf, token, &val);                \
+      if (ern && (ern == CONF_SC_TYPE_RET_ERR_PARSE) &&                 \
+          !(pv = conf_token_value(token)))                              \
+        return (FALSE);                                                 \
+                                                                        \
+      if (!pv)                                                          \
+        (x) = val;                                                      \
+      else                                                              \
+      {                                                                 \
+        if (0){ }                                                       \
+        else if (OPT_SERV_SYM_EQ("<infinity>"))  (x) = RLIM_INFINITY;   \
+        else if (OPT_SERV_SYM_EQ("<unlimited>")) (x) = RLIM_INFINITY;   \
+        else if (OPT_SERV_SYM_EQ("<none>"))      (x) = 0;               \
+        else if (OPT_SERV_SYM_EQ("<zero>"))      (x) = 0;               \
+        else if (OPT_SERV_SYM_EQ("<default>"))   (y) = FALSE;           \
+        else return (FALSE);                                            \
+      }                                                                 \
+    }                                                                   \
+    while (FALSE)
+
 static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
-                             const Conf_parse *conf, Conf_token *token)
+                             const Conf_parse *conf, Conf_token *token,
+                             int clist)
 {
   if (0){ }
 
@@ -112,52 +141,39 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
       return (FALSE);
 
     opts->drop_privs = val;
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    CONF_SC_MAKE_CLIST_MID(depth, clist);
 
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("uid"))       OPT_SERV_X_UINT(opts->priv_uid);
-      else if (OPT_SERV_SYM_EQ("usrname"))   OPT_SERV_X_VSTR(opts->vpriv_uid);
-      else if (OPT_SERV_SYM_EQ("username"))  OPT_SERV_X_VSTR(opts->vpriv_uid);
-      else if (OPT_SERV_SYM_EQ("gid"))       OPT_SERV_X_UINT(opts->priv_gid);
-      else if (OPT_SERV_SYM_EQ("grpname"))   OPT_SERV_X_VSTR(opts->vpriv_gid);
-      else if (OPT_SERV_SYM_EQ("groupname")) OPT_SERV_X_VSTR(opts->vpriv_gid);
-      else
-        return (FALSE);
-    }
+    else if (OPT_SERV_SYM_EQ("uid"))       OPT_SERV_X_UINT(opts->priv_uid);
+    else if (OPT_SERV_SYM_EQ("usrname"))   OPT_SERV_X_VSTR(opts->vpriv_uid);
+    else if (OPT_SERV_SYM_EQ("username"))  OPT_SERV_X_VSTR(opts->vpriv_uid);
+    else if (OPT_SERV_SYM_EQ("gid"))       OPT_SERV_X_UINT(opts->priv_gid);
+    else if (OPT_SERV_SYM_EQ("grpname"))   OPT_SERV_X_VSTR(opts->vpriv_gid);
+    else if (OPT_SERV_SYM_EQ("groupname")) OPT_SERV_X_VSTR(opts->vpriv_gid);
+
+    CONF_SC_MAKE_CLIST_END();
   }
   else if (OPT_SERV_SYM_EQ("listen"))
   {
-    unsigned int depth = token->depth_num;
     Opt_serv_addr_opts *addr = opt_serv_make_addr(opts);
+    CONF_SC_MAKE_CLIST_BEG(listen, clist);
 
-    if (!addr)
-      return (FALSE);
+    else if (!addr) return (FALSE);
+    
+    else if (OPT_SERV_SYM_EQ("defer-accept"))
+      OPT_SERV_X_UINT(addr->defer_accept);
+    else if (OPT_SERV_SYM_EQ("port"))
+      OPT_SERV_X_UINT(addr->tcp_port);
+    else if (OPT_SERV_SYM_EQ("address") ||
+             OPT_SERV_SYM_EQ("addr"))
+      OPT_SERV_X_VSTR(addr->ipv4_address);
+    else if (OPT_SERV_SYM_EQ("queue-length"))
+      OPT_SERV_X_UINT(addr->q_listen_len);
+    else if (OPT_SERV_SYM_EQ("filter"))
+      OPT_SERV_X_VSTR(addr->acpt_filter_file);
+    else if (OPT_SERV_SYM_EQ("max-connections"))
+      OPT_SERV_X_UINT(addr->max_connections);
 
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("defer-accept"))
-        OPT_SERV_X_UINT(addr->defer_accept);
-      else if (OPT_SERV_SYM_EQ("port"))
-        OPT_SERV_X_UINT(addr->tcp_port);
-      else if (OPT_SERV_SYM_EQ("address") ||
-               OPT_SERV_SYM_EQ("addr"))
-        OPT_SERV_X_VSTR(addr->ipv4_address);
-      else if (OPT_SERV_SYM_EQ("queue-length"))
-        OPT_SERV_X_UINT(addr->q_listen_len);
-      else if (OPT_SERV_SYM_EQ("filter"))
-        OPT_SERV_X_VSTR(addr->acpt_filter_file);
-      else if (OPT_SERV_SYM_EQ("max-connections"))
-        OPT_SERV_X_UINT(addr->max_connections);
-      else
-        return (FALSE);
-    }
+    CONF_SC_MAKE_CLIST_END();
   }
   else if (OPT_SERV_SYM_EQ("parent-death-signal"))
     OPT_SERV_X_TOGGLE(opts->use_pdeathsig);
@@ -202,43 +218,37 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
     
     opts->num_procs = opt__val;
   }
-  else if (OPT_SERV_SYM_EQ("rlimit"))
+  else if (OPT_SERV_SYM_EQ("resource-limits") ||
+           OPT_SERV_SYM_EQ("rlimit"))
   {
-    unsigned int depth = token->depth_num;
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    CONF_SC_MAKE_CLIST_BEG(rlimit, clist);
 
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("file-num"))
-        OPT_SERV_X_UINT(opts->rlim_file_num);
-      else
-        return (FALSE);
-    }
-  }
-  else if (OPT_SERV_SYM_EQ("resource-limit"))
-  {
-    unsigned int depth = token->depth_num;
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-
-      if (0) { }
-    
-      else if (OPT_SERV_SYM_EQ("spare-vstr-bases"))
-        OPT_SERV_X_UINT(opts->max_spare_bases);
-      else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-buf"))
-        OPT_SERV_X_UINT(opts->max_spare_buf_nodes);
-      else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-ptr"))
-        OPT_SERV_X_UINT(opts->max_spare_ptr_nodes);
-      else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-ref"))
-        OPT_SERV_X_UINT(opts->max_spare_ref_nodes);
+    else if (OPT_SERV_SYM_EQ("CORE") ||
+             OPT_SERV_SYM_EQ("core"))
+      OPT_SERV__RLIM_VAL(opts->rlim_core_num, opts->rlim_core_call);
+    else if (OPT_SERV_SYM_EQ("NOFILE") ||
+             OPT_SERV_SYM_EQ("file-descriptor-number") ||
+             OPT_SERV_SYM_EQ("fd-num"))
+      OPT_SERV__RLIM_VAL(opts->rlim_file_num, opts->rlim_file_call);
       
-      else
-        return (FALSE);
-    }
+    CONF_SC_MAKE_CLIST_END();
+  }
+  /*  else if (OPT_SERV_SYM_EQ("priority"))
+      OPT_SERV_X_UINT(opts->sys_priority); */
+  else if (OPT_SERV_SYM_EQ("cache-limits"))
+  {
+    CONF_SC_MAKE_CLIST_BEG(cache_limits, clist);
+    
+    else if (OPT_SERV_SYM_EQ("spare-vstr-bases"))
+      OPT_SERV_X_UINT(opts->max_spare_bases);
+    else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-buf"))
+      OPT_SERV_X_UINT(opts->max_spare_buf_nodes);
+    else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-ptr"))
+      OPT_SERV_X_UINT(opts->max_spare_ptr_nodes);
+    else if (OPT_SERV_SYM_EQ("spare-vstr-nodes-ref"))
+      OPT_SERV_X_UINT(opts->max_spare_ref_nodes);
+    
+    CONF_SC_MAKE_CLIST_END();
   }
   
   else
@@ -246,20 +256,22 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
   
   return (TRUE);
 }
+#undef OPT_SERV__RLIM_VAL
 
 int opt_serv_conf(struct Opt_serv_opts *opts,
                   const Conf_parse *conf, Conf_token *token)
 {
   unsigned int cur_depth = token->depth_num;
+  int clist = FALSE;
   
   ASSERT(opts && conf && token);
 
   if (!OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
     return (FALSE);
   
-  CONF_SC_MAKE_CLIST_MID(cur_depth);
+  CONF_SC_MAKE_CLIST_MID(cur_depth, clist);
   
-  else if (opt_serv__conf_d1(opts, conf, token))
+  else if (opt_serv__conf_d1(opts, conf, token, clist))
   { }
   
   CONF_SC_MAKE_CLIST_END();
@@ -282,20 +294,33 @@ int opt_serv_conf_parse_cstr(Vstr_base *out,
   if (!conf)
     goto conf_malloc_fail;
   
+  if (!vstr_add_cstr_ptr(conf->data, conf->data->len,
+                         "(org.and.daemon-conf-1.0 "))
+    goto read_malloc_fail;
   if (!vstr_add_cstr_ptr(conf->data, conf->data->len, data))
+    goto read_malloc_fail;
+  if (!vstr_add_cstr_ptr(conf->data, conf->data->len,
+                         ")"))
     goto read_malloc_fail;
 
   if (!conf_parse_lex(conf, 1, conf->data->len))
     goto conf_fail;
 
-  while (conf_parse_token(conf, token))
-  {
-    if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
-      goto conf_fail;
+  if (!conf_parse_token(conf, token))
+    goto conf_fail;
+    
+  if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
+    goto conf_fail;
+    
+  if (!conf_parse_token(conf, token))
+    goto conf_fail;
+
+  ASSERT(OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"));
   
-    if (!opt_serv__conf_d1(opts, conf, token))
-      goto conf_fail;
-  }
+  if (!opt_serv_conf(opts, conf, token))
+    goto conf_fail;
+  if (token->num != conf->sects->num)
+    goto conf_fail;
 
   conf_parse_free(conf);
   return (TRUE);
@@ -345,7 +370,10 @@ int opt_serv_conf_parse_file(Vstr_base *out,
   
  conf_fail:
   conf_parse_backtrace(out, fname, conf, token);
+  errno = 0;
  read_malloc_fail:
+  if (errno && out) /* can't find config. file */
+    vstr_add_fmt(out, out->len, "open(%s): %m", fname);
   conf_parse_free(conf);
  conf_malloc_fail:
   return (FALSE);
@@ -501,22 +529,43 @@ void opt_serv_sc_drop_privs(Opt_serv_opts *opts)
     vlg_err(vlg, EXIT_FAILURE, "setuid(%ld): %m\n", (long)opts->priv_uid);
 }
 
-void opt_serv_sc_rlim_file_num(unsigned int rlim_file_num)
+static void opt_serv__sc_rlim_num(const char *name, int resource,
+                                  unsigned int num)
 {
   struct rlimit rlim[1];
     
-  if (getrlimit(RLIMIT_NOFILE, rlim) == -1)
-    vlg_err(vlg, EXIT_FAILURE, "getrlimit: %m\n");
+  if (getrlimit(resource, rlim) == -1)
+    vlg_err(vlg, EXIT_FAILURE, "getrlimit(%s): %m\n", name);
 
-  if ((rlim_file_num > rlim->rlim_max) && !getuid()) /* if we are privilaged */
-    rlim->rlim_max = rlim_file_num;
+
+  if (num == RLIM_INFINITY) /* only attempt upwards, if we are privilaged */
+  {
+    if ((rlim->rlim_max != RLIM_INFINITY) && !getuid())
+      rlim->rlim_max = num;
+  }
+  else
+  {
+    if ((num > rlim->rlim_max) && !getuid())
+      rlim->rlim_max = num;
   
-  if (rlim_file_num < rlim->rlim_max) /* can always do this ? */
-    rlim->rlim_max = rlim_file_num;
-  rlim->rlim_cur = rlim->rlim_max;
+    if (num < rlim->rlim_max) /* can always do this ? */
+      rlim->rlim_max = num;
+  }
   
-  if (setrlimit(RLIMIT_NOFILE, rlim) == -1)
-    vlg_err(vlg, EXIT_FAILURE, "setrlimit: %m\n");
+  rlim->rlim_cur = rlim->rlim_max; /* upgrade soft to hard */
+  
+  if (setrlimit(resource, rlim) == -1)
+    vlg_err(vlg, EXIT_FAILURE, "setrlimit(%s): %m\n", name);
+}
+
+void opt_serv_sc_rlim_file_num(unsigned int rlim_file_num)
+{
+  opt_serv__sc_rlim_num("NOFILE", RLIMIT_NOFILE, rlim_file_num);
+}
+
+void opt_serv_sc_rlim_core_num(unsigned int rlim_core_num)
+{
+  opt_serv__sc_rlim_num("CORE", RLIMIT_CORE, rlim_core_num);
 }
 
 int opt_serv_sc_acpt_end(const Opt_serv_policy_opts *popts,
@@ -534,11 +583,11 @@ int opt_serv_sc_acpt_end(const Opt_serv_policy_opts *popts,
   if (popts->max_connections && (evnt_num_all() > popts->max_connections))
   {
     vlg_info(vlg, "LIMIT-BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
-             evnt->sa, popts->policy_name);
+             EVNT_SA(evnt), popts->policy_name);
     return (FALSE);
   }
   
-  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", evnt->sa);
+  vlg_info(vlg, "CONNECT from[$<sa:%p>]\n", EVNT_SA(evnt));
   
   return (TRUE);
 }
@@ -567,7 +616,7 @@ void opt_serv_sc_free_beg(struct Evnt *evnt, Vstr_ref *ref)
 
 #define OPT_SERV__SIG_OR_ERR(x)                 \
     if (sigaction(x, &sa, NULL) == -1)          \
-      err(EXIT_FAILURE, "signal(" #x ")")
+      err(EXIT_FAILURE, "signal(%d:%s)", x, strsignal(x))
 
 static void opt_serv__sig_crash(int s_ig_num)
 {

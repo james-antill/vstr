@@ -277,3 +277,9 @@ Vstr_ref *vstr_export_ref(const Vstr_base *base, size_t pos, size_t len,
 
   return (ref);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(export_buf);
+VSTR__SYM_ALIAS(export_iovec_cpy_buf);
+VSTR__SYM_ALIAS(export_iovec_cpy_ptr);
+VSTR__SYM_ALIAS(export_iovec_ptr_all);
+VSTR__SYM_ALIAS(export_ref);

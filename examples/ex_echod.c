@@ -160,7 +160,7 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
     goto sa_fail;
   
-  if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
+  if (!con || !evnt_make_acpt_dup(con->evnt, fd, sa, len))
     goto make_acpt_fail;
 
   con->acpt_sa_ref = vstr_ref_add(acpt_listener->ref);
@@ -187,7 +187,7 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
   
  make_acpt_fail:
   F(con);
-  VLG_WARNNOMEM_RET(NULL, (vlg, __func__));
+  VLG_WARNNOMEM_RET(NULL, (vlg, "%s\n", __func__));
   
  sa_fail:
   F(con);
@@ -340,7 +340,9 @@ static void serv_cmd_line(int argc, char *argv[])
     vlg_daemon(vlg, program_name);
   }
 
-  if (opts->rlim_file_num)
+  if (opts->rlim_core_call)
+    opt_serv_sc_rlim_core_num(opts->rlim_core_num);
+  if (opts->rlim_file_call)
     opt_serv_sc_rlim_file_num(opts->rlim_file_num);
   
   {
@@ -388,7 +390,7 @@ static void serv_cmd_line(int argc, char *argv[])
     
     while (evnt)
     {
-      vlg_info(vlg, "READY [$<sa:%p>]\n", evnt->sa);
+      vlg_info(vlg, "READY [$<sa:%p>]\n", EVNT_SA(evnt));
       evnt = evnt->next;
     }
   }
@@ -406,7 +408,7 @@ static void serv_cmd_line(int argc, char *argv[])
 static void serv_init(void)
 {
   if (!vstr_init())
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   if (!vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE,
                       VSTR_TYPE_CNTL_CONF_GRPALLOC_IOVEC))
@@ -424,7 +426,7 @@ static void serv_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vlg_init();
 
@@ -432,7 +434,7 @@ static void serv_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 
   evnt_logger(vlg);
-  evnt_epoll_init();
+  evnt_poll_init();
   evnt_timeout_init();
   
   opt_serv_logger(vlg);

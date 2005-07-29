@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -141,6 +141,12 @@
 #else
 # define VSTR__AT_COMPILE_CONST_P(x) (0)
 # define VSTR__AT_COMPILE_STRLEN(x) strlen(x)
+#endif
+
+#if 0 /* what test ... autoconf? */
+# define VSTR__COMPILE_STATIC_ARRAY() static
+#else
+# define VSTR__COMPILE_STATIC_ARRAY()
 #endif
 
 #ifdef VSTR_AUTOCONF_NDEBUG

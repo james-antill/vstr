@@ -911,3 +911,15 @@ int vstr_parse_ipv6(const struct Vstr_base *base,
 
   return (TRUE);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(parse_int);
+VSTR__SYM_ALIAS(parse_intmax);
+VSTR__SYM_ALIAS(parse_ipv4);
+VSTR__SYM_ALIAS(parse_ipv6);
+VSTR__SYM_ALIAS(parse_long);
+VSTR__SYM_ALIAS(parse_num);
+VSTR__SYM_ALIAS(parse_short);
+VSTR__SYM_ALIAS(parse_uint);
+VSTR__SYM_ALIAS(parse_uintmax);
+VSTR__SYM_ALIAS(parse_ulong);
+VSTR__SYM_ALIAS(parse_ushort);

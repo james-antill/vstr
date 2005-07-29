@@ -183,9 +183,9 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
   union ex_zcat_lib_decomp_u *u = &ex_zcat_lib_decomp_data;
   struct iovec *io_s2 = NULL;
   struct iovec *io_s1 = NULL;
-  char  *io_r_ptr = NULL;
+  unsigned char  *io_r_ptr = NULL;
   size_t io_r_len = 0;
-  char  *io_w_ptr = NULL;
+  unsigned char  *io_w_ptr = NULL;
   size_t io_w_len = 0;
   size_t bytes_io_r = 0;
   size_t bytes_io_w = 0;
@@ -263,9 +263,9 @@ static int ex_zcat_process(Vstr_base *s1, Vstr_base *s2, int last)
     {
       int ret = BZ_SEQUENCE_ERROR;
 
-      u->bzip2.next_in   = io_r_ptr;
+      u->bzip2.next_in   = (char *)io_r_ptr;
       u->bzip2.avail_in  = io_r_len;
-      u->bzip2.next_out  = io_w_ptr;
+      u->bzip2.next_out  = (char *)io_w_ptr;
       u->bzip2.avail_out = io_w_len;
       ret = BZ2_bzDecompress(&u->bzip2);
       bytes_io_r = io_r_len - u->bzip2.avail_in;

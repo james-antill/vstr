@@ -196,7 +196,7 @@ static void cntl__close(Vstr_base *out)
       return;
 
     cntl__ns_out_cstr_ptr(out, "CLOSE");
-    cntl__ns_out_fmt(out, "from[$<sa:%p>]", evnt->sa);
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", EVNT_SA(evnt));
     cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
                      (unsigned long)evnt->ctime.tv_sec,
                      (unsigned long)evnt->ctime.tv_usec);
@@ -226,7 +226,7 @@ static void cntl__scan_events(Vstr_base *out, const char *tag, struct Evnt *beg)
       return;
 
     cntl__ns_out_fmt(out, "EVNT %s", tag);
-    cntl__ns_out_fmt(out, "from[$<sa:%p>]", ev->sa);
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", EVNT_SA(ev));
     cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
                      (unsigned long)ev->ctime.tv_sec,
                      (unsigned long)ev->ctime.tv_usec);
@@ -258,7 +258,7 @@ static void cntl__status(Vstr_base *out)
       return;
 
     cntl__ns_out_cstr_ptr(out, "STATUS");
-    cntl__ns_out_fmt(out, "from[$<sa:%p>]", evnt->sa);
+    cntl__ns_out_fmt(out, "from[$<sa:%p>]", EVNT_SA(evnt));
     cntl__ns_out_fmt(out, "ctime[%lu:%lu]",
                      (unsigned long)evnt->ctime.tv_sec,
                      (unsigned long)evnt->ctime.tv_usec);
@@ -428,18 +428,21 @@ static struct Evnt *cntl__cb_func_accept(struct Evnt *from_evnt, int fd,
                                          struct sockaddr *sa, socklen_t len)
 {
   struct Evnt *evnt = NULL;
-
+  
   ASSERT(acpt_cntl_evnt);
   ASSERT(acpt_cntl_evnt == from_evnt);
+  ASSERT(from_evnt->sa_ref);
+  ASSERT(len >= 2);
   
   if (sa->sa_family != AF_LOCAL)
     goto make_acpt_fail;
   
-  if (!(evnt = MK(sizeof(struct Evnt))) ||
-      !evnt_make_acpt(evnt, fd, sa, len))
+  if (!(evnt = MK(sizeof(struct Evnt))))
+    goto mk_acpt_fail;
+  if (!evnt_make_acpt_ref(evnt, fd, from_evnt->sa_ref))
     goto make_acpt_fail;
 
-  vlg_info(vlg, "CNTL CONNECT from[$<sa:%p>]\n", evnt->sa);
+  vlg_info(vlg, "CNTL CONNECT from[$<sa:%p>]\n", EVNT_SA(evnt));
 
   evnt->cbs->cb_func_recv = cntl__cb_func_recv;
   evnt->cbs->cb_func_free = cntl__cb_func_free;
@@ -450,8 +453,8 @@ static struct Evnt *cntl__cb_func_accept(struct Evnt *from_evnt, int fd,
  make_acpt_fail:
   F(evnt);
   VLG_WARNNOMEM_RET(NULL, (vlg, "%s: %m\n", "accept"));
-
-  return (NULL);
+ mk_acpt_fail:
+  VLG_WARN_RET(NULL, (vlg, "%s: %m\n", "accept"));
 }
 
 void cntl_make_file(Vlg *passed_vlg, const char *fname)

@@ -2,7 +2,7 @@
 #define VSTR__INTERNAL_HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -60,9 +60,11 @@
 
 # define VSTR__SYM(x) \
  extern __typeof(vstr_nx_ ## x) vstr_nx_ ## x \
-    VSTR__ATTR_H() ; \
- extern __typeof(vstr_nx_ ## x) vstr_ ## x \
-    VSTR__ATTR_A("vstr_nx_" #x ) VSTR__ATTR_D() ;
+    VSTR__ATTR_H() ;
+
+# define VSTR__SYM_ALIAS(x)                             \
+ extern __typeof(vstr_nx_ ## x) vstr_ ## x              \
+    VSTR__ATTR_A("vstr_nx_" #x ) VSTR__ATTR_D()
 
 #else
 # define VSTR__ATTR_H()

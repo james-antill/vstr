@@ -251,3 +251,7 @@ int vstr_fmt_srch(Vstr_conf *passed_conf, const char *name)
   Vstr_conf *conf = passed_conf ? passed_conf : vstr__options.def;
   return (!!vstr__fmt_usr_srch(conf, name));
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(fmt_add);
+VSTR__SYM_ALIAS(fmt_del);
+VSTR__SYM_ALIAS(fmt_srch);

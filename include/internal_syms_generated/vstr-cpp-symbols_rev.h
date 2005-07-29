@@ -62,6 +62,9 @@
 #undef vstr_cmp_eod_cstr_eq
 #undef vstr_cmp_eod_eq
 #undef vstr_cmp_eq
+#undef vstr_cmp_fast
+#undef vstr_cmp_fast_buf
+#undef vstr_cmp_fast_cstr
 #undef vstr_cmp_vers
 #undef vstr_cmp_vers_bod
 #undef vstr_cmp_vers_bod_buf
@@ -89,6 +92,10 @@
 #undef vstr_conv_unprintable_chr
 #undef vstr_conv_unprintable_del
 #undef vstr_conv_uppercase
+#undef vstr_cspn_bmap_and_fwd
+#undef vstr_cspn_bmap_and_rev
+#undef vstr_cspn_bmap_eq_fwd
+#undef vstr_cspn_bmap_eq_rev
 #undef vstr_cspn_chrs_fwd
 #undef vstr_cspn_chrs_rev
 #undef vstr_cspn_cstr_chrs_fwd
@@ -184,6 +191,10 @@
 #undef vstr_sc_add_grpbasenum_ref
 #undef vstr_sc_add_grpnum_buf
 #undef vstr_sc_basename
+#undef vstr_sc_bmap_init_eq_spn_buf
+#undef vstr_sc_bmap_init_or_spn_buf
+#undef vstr_sc_bmap_init_eq_spn_cstr
+#undef vstr_sc_bmap_init_or_spn_cstr
 #undef vstr_sc_conv_num10_size
 #undef vstr_sc_conv_num10_uint
 #undef vstr_sc_conv_num10_uintmax
@@ -251,6 +262,10 @@
 #undef vstr_split_chrs
 #undef vstr_split_cstr_buf
 #undef vstr_split_cstr_chrs
+#undef vstr_spn_bmap_and_fwd
+#undef vstr_spn_bmap_and_rev
+#undef vstr_spn_bmap_eq_fwd
+#undef vstr_spn_bmap_eq_rev
 #undef vstr_spn_chrs_fwd
 #undef vstr_spn_chrs_rev
 #undef vstr_spn_cstr_chrs_fwd

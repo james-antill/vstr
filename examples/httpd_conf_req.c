@@ -201,8 +201,10 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
 
   while (conf_token_list_num(token, depth))
   {
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    int clist = FALSE;
+    
+    CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, TRUE);
+    CONF_SC_TOGGLE_CLIST_VAR(clist);
 
     if (0) { }
     else if (full && (OPT_SERV_SYM_EQ("skip-virtual-hosts") ||
@@ -367,8 +369,8 @@ static int httpd__content_location_valid(Httpd_req_data *req,
       unsigned int qual = 0;                                            \
       const Vstr_sect_node *val = NULL;                                 \
                                                                         \
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, TRUE);    \
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);                  \
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, TRUE);          \
+      CONF_SC_TOGGLE_CLIST_VAR(clist);                                  \
                                                                         \
       if (!((token->type == CONF_TOKEN_TYPE_QUOTE_D) ||                 \
             (token->type == CONF_TOKEN_TYPE_QUOTE_DDD) ||               \
@@ -387,7 +389,7 @@ static int httpd__content_location_valid(Httpd_req_data *req,
         qual_num = token->num - 1;              \
       }                                         \
                                                                         \
-      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth + 1, FALSE);     \
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);                  \
     }                                                                   \
     if (neg_count)                                                      \
       conf_parse_end_token(conf, token, depth);                         \
@@ -398,11 +400,9 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               time_t file_timestamp,
                               Conf_parse *conf, Conf_token *token)
 {
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-    return (FALSE);
-  if (!conf_token_list_num(token, token->depth_num))
-    return (FALSE);
-  conf_parse_token(conf, token);
+  int clist = FALSE;
+  
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
   if (0) { }
   else if (OPT_SERV_SYM_EQ("return"))
@@ -734,7 +734,7 @@ int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
   
   while (conf_token_list_num(token, cur_depth))
   {
-    conf_parse_token(conf, token);
+    CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, cur_depth, FALSE);
     if (!httpd__conf_req_d1(con, req, timestamp, conf, token))
       return (FALSE);
   }
@@ -814,6 +814,15 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
 
   while (conf_parse_token(conf, token))
   {
+    if (!token->depth_num && OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
+    {
+      if (!httpd_conf_req_d0(con, req, cf_stat->st_mtime, conf, token))
+        goto conf_fail;
+      if (token->num != conf->sects->num)
+        goto conf_fail;
+      break;
+    }
+    
     if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
       goto conf_fail;
 

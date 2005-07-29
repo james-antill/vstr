@@ -173,9 +173,9 @@ int opt_policy_ipv4_cidr_eq(Opt_policy_ipv4 *data, struct sockaddr *sa)
   ASSERT(!cidr || (scan < 4));
   
   if (cidr)
-  {
-    cidr = (1 << cidr) - 1; /* x/7 == (1 << 7) - 1 == 0b0111_1111 */
-    if ((tst_ipv4[scan] & cidr) != (data->ipv4[scan] & cidr))
+  { /* x/7 == (1 << 7) - 1 == 0b0111_1111 */
+    unsigned int mask = ((1 << cidr) - 1) << (8 - cidr);
+    if ((tst_ipv4[scan] & mask) != (data->ipv4[scan] & mask))
       return (FALSE);
   }
 
@@ -257,36 +257,30 @@ unsigned int opt_policy_sc_conf_parse(Opt_serv_opts *opts,
     *token = save; /* restore ... */
   else
   { /* allow set of attributes */
-    unsigned int depth = token->depth_num;
-
-    while (conf_token_list_num(token, depth))
-    {
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, 0);
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);
-
-      if (0) { }
-      else if (OPT_SERV_SYM_EQ("inherit"))
-      {
-        const Opt_serv_policy_opts *frm_opts = NULL;
-        CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);
-        if (!(frm_opts = opt_policy_find(opts, conf, token)))
-          return (0);
-        if (created_now && !(*opts->copy_policy)(popts, frm_opts))
-          return (0);
-      }
-      else if (OPT_SERV_SYM_EQ("copy"))
-      {
-        const Opt_serv_policy_opts *frm_opts = NULL;
-        CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);
-        if (!(frm_opts = opt_policy_find(opts, conf, token)))
-          return (0);
-        if (!(*opts->copy_policy)(popts, frm_opts))
-          return (0);
-      }
+    int clist = FALSE;
     
-      else
+    CONF_SC_MAKE_CLIST_BEG(policy, clist);
+
+    else if (OPT_SERV_SYM_EQ("inherit"))
+    {
+      const Opt_serv_policy_opts *frm_opts = NULL;
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);
+      if (!(frm_opts = opt_policy_find(opts, conf, token)))
+        return (0);
+      if (created_now && !(*opts->copy_policy)(popts, frm_opts))
         return (0);
     }
+    else if (OPT_SERV_SYM_EQ("copy"))
+    {
+      const Opt_serv_policy_opts *frm_opts = NULL;
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);
+      if (!(frm_opts = opt_policy_find(opts, conf, token)))
+        return (0);
+      if (!(*opts->copy_policy)(popts, frm_opts))
+        return (0);
+    }
+    
+    CONF_SC_MAKE_CLIST_END();
   }
 
   *ret_popts = popts;
@@ -325,8 +319,6 @@ int opt_policy_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
   {
     unsigned int depth = token->depth_num;
 
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
     while (conf_token_list_num(token, depth))
     {
       int or_matches = TRUE;
@@ -348,15 +340,13 @@ int opt_policy_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
   {
     unsigned int depth = token->depth_num;
 
-    CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
-    ++depth;
     while (conf_token_list_num(token, depth))
     {
       CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
       if (!(*tst_func)(conf, token, matches, data))
         return (FALSE);
 
-      if (!matches)
+      if (!*matches)
       {
         conf_parse_end_token(conf, token, depth);
         return (TRUE);

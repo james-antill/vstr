@@ -431,8 +431,11 @@ static int vlg__fmt__add_vstr_add_sa(Vstr_base *base, size_t pos,
     
     case AF_LOCAL:
     { /* struct sockaddr_un *sun = (void *)sa; */
+      struct sockaddr_un *sun = (void *)sa;
       ptr1 = "local";
       len1 = strlen(ptr1);
+      ptr2 = sun->sun_path;
+      len2 = strlen(ptr2);
     }
     break;
     

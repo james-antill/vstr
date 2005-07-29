@@ -12,7 +12,7 @@ else
 fi
 
 
-CFLAGS="-O2 -march=i386 -mcpu=i686" \
+CFLAGS="-O2 -march=i386 -mtune=i686" \
   $c --enable-wrap-memset --enable-wrap-memcpy --enable-wrap-memchr \
      --enable-wrap-memcmp \
      --enable-linker-script \

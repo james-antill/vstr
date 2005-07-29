@@ -192,3 +192,8 @@ size_t vstr_export_cstr_buf(const Vstr_base *base, size_t pos, size_t len,
 
   return (cpy_len + 1);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(export_cstr_buf);
+VSTR__SYM_ALIAS(export_cstr_malloc);
+VSTR__SYM_ALIAS(export_cstr_ptr);
+VSTR__SYM_ALIAS(export_cstr_ref);

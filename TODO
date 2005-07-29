@@ -7,15 +7,10 @@ was needed for vstr-1.0.0
  Maybe During 1.0.x
  ------------------
 
-. Need to fix symbol hiding due to gcc-4.x braindamage
-
 . ____ make vstr_fmt.c faster ____
 
 . vstr_spn_cstr_buf_fwd
   vstr_spn_cstr_buf_rev
-  vstr_spn_bmap_fwd -- UCHAR_MAX byte mapping on span or not - fast -.
-  vstr_spn_bmap_rev
-     See http://groups-beta.google.com/group/comp.unix.programmer/msg/f92e10e01279f708?hl=en
 
 . VSTR_FLAG_PARSE_NUM_LOC_SEP
 

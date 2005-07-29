@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
   vstr_del(s1, 1, s1->len);
     
-  if (EX_GMP_NUMS_USE_TST)
+#if (EX_GMP_NUMS_USE_TST)
   {
     mpz_abs(bignum, bignum);
     mpz_neg(bignum, bignum);
@@ -254,6 +254,7 @@ int main(int argc, char *argv[])
   } while (mpz_sgn(bignum) > 0);
     mpz_abs(bignum, bignum);
   }
+#endif
   
   if (!(ref = vstr_ref_make_strdup("_")))
     errno = ENOMEM, err(EXIT_FAILURE, "Ref seperator");

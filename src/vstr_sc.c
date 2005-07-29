@@ -1,6 +1,6 @@
 #define VSTR_SC_C
 /*
- *  Copyright (C) 2002, 2003, 2004  James Antill
+ *  Copyright (C) 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -1544,3 +1544,46 @@ size_t vstr_sc_conv_num10_uintmax(char *out, size_t len, uintmax_t val)
   const unsigned int num_base = 10;
   VSTR__SC_CONV_NUM(uintmax_t);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(sc_add_grpbasenum_buf);
+VSTR__SYM_ALIAS(sc_add_grpbasenum_ptr);
+VSTR__SYM_ALIAS(sc_add_grpbasenum_ref);
+VSTR__SYM_ALIAS(sc_basename);
+VSTR__SYM_ALIAS(sc_conv_num10_size);
+VSTR__SYM_ALIAS(sc_conv_num10_uint);
+VSTR__SYM_ALIAS(sc_conv_num10_uintmax);
+VSTR__SYM_ALIAS(sc_conv_num10_ulong);
+VSTR__SYM_ALIAS(sc_conv_num_size);
+VSTR__SYM_ALIAS(sc_conv_num_uint);
+VSTR__SYM_ALIAS(sc_conv_num_uintmax);
+VSTR__SYM_ALIAS(sc_conv_num_ulong);
+VSTR__SYM_ALIAS(sc_dirname);
+VSTR__SYM_ALIAS(sc_fmt_add_all);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_bits_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_bits_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_bit_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_bit_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_Bytes_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_Bytes_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_Byte_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_bkmg_Byte_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_buf);
+VSTR__SYM_ALIAS(sc_fmt_add_ipv4_vec);
+VSTR__SYM_ALIAS(sc_fmt_add_ipv4_vec_cidr);
+VSTR__SYM_ALIAS(sc_fmt_add_ipv6_vec);
+VSTR__SYM_ALIAS(sc_fmt_add_ipv6_vec_cidr);
+VSTR__SYM_ALIAS(sc_fmt_add_lower_base2_size);
+VSTR__SYM_ALIAS(sc_fmt_add_lower_base2_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_lower_base2_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_lower_base2_ulong);
+VSTR__SYM_ALIAS(sc_fmt_add_non);
+VSTR__SYM_ALIAS(sc_fmt_add_ptr);
+VSTR__SYM_ALIAS(sc_fmt_add_ref);
+VSTR__SYM_ALIAS(sc_fmt_add_rep_chr);
+VSTR__SYM_ALIAS(sc_fmt_add_upper_base2_size);
+VSTR__SYM_ALIAS(sc_fmt_add_upper_base2_uint);
+VSTR__SYM_ALIAS(sc_fmt_add_upper_base2_uintmax);
+VSTR__SYM_ALIAS(sc_fmt_add_upper_base2_ulong);
+VSTR__SYM_ALIAS(sc_fmt_add_vstr);
+VSTR__SYM_ALIAS(sc_fmt_cb_beg);
+VSTR__SYM_ALIAS(sc_fmt_cb_end);

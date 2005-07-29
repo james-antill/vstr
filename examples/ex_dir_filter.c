@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <getopt.h>
 
 #include "opt.h"
@@ -185,9 +184,14 @@ static void ex_dir_filter_init(Vstr_base *s1)
     errno = ENOMEM, err(EXIT_FAILURE, "init");
 }
 
-static void usage(const char *program_name, int ret)
+static void usage(const char *program_name, int ret, const char *prefix)
 {
-  fprintf(ret ? stderr : stdout, "\n "
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "usage");
+
+  vstr_add_fmt(out, 0, "%s\n"
           "Usage: %s [-hV] [FILES]\n"
           "   or: %s OPTION\n"
           " --accept-name-eq\n"
@@ -207,7 +211,10 @@ static void usage(const char *program_name, int ret)
           " --deny-all          - Deny everything.\n"
           " --help -h           - Print this message.\n"
           " --version -V        - Print the version string.\n",
-          program_name, program_name);
+          prefix, program_name, program_name);
+  
+  if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
+    err(EXIT_FAILURE, "write");
   
   exit (ret);
 }
@@ -246,6 +253,10 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "command line");
 
   program_name = opt_program_name(argv[0], "jdir_filter");
 
@@ -253,23 +264,25 @@ static void ex_dir_filter_cmd_line(int *passed_argc, char **passed_argv[])
     errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   while ((optchar = getopt_long(argc, argv, "A:D:hV",
-                                long_options, NULL)) != EOF)
+                                long_options, NULL)) != -1)
   {
     switch (optchar)
     {
-      case '?':
-        fprintf(stderr, " That option is not valid.\n");
-      case 'h':
-        usage(program_name, 'h' != optchar);
+      case '?': usage(program_name, EXIT_FAILURE, "");
+      case 'h': usage(program_name, EXIT_SUCCESS, "");
         
       case 'V':
-        printf("\
+        vstr_add_fmt(out, 0,"\
 %s version 1.0.0, compiled on %s.\n\
 Written by James Antill\n\
 \n\
 Uses Vstr string library.\n\
 ",
                program_name, __DATE__);
+        
+        if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
+          err(EXIT_FAILURE, "write");
+        
         exit (EXIT_SUCCESS);
 
       case 'A': bag_add_cstr(filters, "acpt-name-eq",  optarg); break;
@@ -287,6 +300,7 @@ Uses Vstr string library.\n\
         ASSERT(FALSE);
     }
   }
+  vstr_free_base(out); out = NULL;
 
   argc -= optind;
   argv += optind;

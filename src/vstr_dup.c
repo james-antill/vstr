@@ -139,3 +139,10 @@ Vstr_base *vstr_dup_rep_chr(Vstr_conf *conf, char chr, size_t len)
 
   return (NULL);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(dup_buf);
+VSTR__SYM_ALIAS(dup_non);
+VSTR__SYM_ALIAS(dup_ptr);
+VSTR__SYM_ALIAS(dup_ref);
+VSTR__SYM_ALIAS(dup_rep_chr);
+VSTR__SYM_ALIAS(dup_vstr);

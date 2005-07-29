@@ -47,7 +47,7 @@ if test ".`echo dummy $@ | grep help`" = .; then
     T_MD="`$ac_shtool echo -n -e %B 2>/dev/null`"
     T_ME="`$ac_shtool echo -n -e %b 2>/dev/null`"
     echo "Configuring ${T_MD}vstr${T_ME}, (Library)${T_ME}"
-    echo "Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004 James Antill <james@and.org>"
+    echo "Copyright (c) 1999-2005 James Antill <james@and.org>"
     echo "                   See ${T_MD}AUTHORS${T_ME} file for more info."
 
 # Could just del this, but it looks cool and like I know what I'm doing :)
@@ -70,9 +70,9 @@ AC_SUBST(LDFLAGS)
 
 VSTR_MAJOR_VERSION=1
 VSTR_MINOR_VERSION=0
-VSTR_MICRO_VERSION=14
-VSTR_INTERFACE_AGE=1
-VSTR_BINARY_AGE=14
+VSTR_MICRO_VERSION=15
+VSTR_INTERFACE_AGE=2
+VSTR_BINARY_AGE=15
 VSTR_VERSION=$VSTR_MAJOR_VERSION.$VSTR_MINOR_VERSION.$VSTR_MICRO_VERSION
 
 # libtool versioning

@@ -141,3 +141,7 @@ void  vstr_extern_inline_data_set(unsigned int pos, Vstr_ref *ref)
   Vstr_conf *conf = vstr__options.def;
   return (vstr_data_set(conf, pos, ref));
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(data_add);
+VSTR__SYM_ALIAS(data_del);
+VSTR__SYM_ALIAS(data_srch);

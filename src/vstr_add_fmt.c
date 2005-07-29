@@ -1697,3 +1697,8 @@ size_t vstr_add_sysfmt(Vstr_base *base, size_t pos, const char *fmt, ...)
   return (len);
 }
 
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(add_fmt);
+VSTR__SYM_ALIAS(add_sysfmt);
+VSTR__SYM_ALIAS(add_vfmt);
+VSTR__SYM_ALIAS(add_vsysfmt);

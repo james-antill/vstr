@@ -36,7 +36,7 @@
 #define CONF_TOKEN_TYPE_USER_BEG        12
 
 #define CONF_SC_TYPE_RET_OK 0
-#define CONF_SC_TYPE_RET_ERR_TOO_MANY  1
+/* #define CONF_SC_TYPE_RET_ERR_TOO_MANY  1 */
 #define CONF_SC_TYPE_RET_ERR_NO_MATCH  2
 #define CONF_SC_TYPE_RET_ERR_NOT_EXIST 3
 #define CONF_SC_TYPE_RET_ERR_PARSE     4
@@ -73,29 +73,34 @@
       CONF_SC_PARSE_SLIST_DEPTH_TOKEN_RET(c, t, conf_sc__token_depth, ret); \
     } while (0)
 
-#define CONF_SC_MAKE_CLIST_BEG(x)                                       \
-    unsigned int conf_sc__depth_ ## x = token->depth_num;               \
-    while (conf_token_list_num(token, conf_sc__depth_ ## x))            \
+#define CONF_SC_TOGGLE_CLIST_VAR(x)  do {               \
+      if (token->type == CONF_TOKEN_TYPE_CLIST)         \
+      {                                                 \
+        (x) = 1;                                        \
+        CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);    \
+      }                                                 \
+      else                                              \
+        (x) = 0;                                        \
+    } while (0)
+
+#define CONF_SC_MAKE_CLIST_MID(x, y)                                    \
+    while (conf_token_list_num(token, x))                               \
     {                                                                   \
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, conf_sc__depth_ ## x, \
-                                          0);                           \
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);                      \
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, x, 0);                 \
+      CONF_SC_TOGGLE_CLIST_VAR(y);                                      \
                                                                         \
       if (0)
 
-#define CONF_SC_MAKE_CLIST_MID(x)                                       \
-    while (conf_token_list_num(token, x))                               \
-    {                                                                   \
-      CONF_SC_PARSE_CLIST_DEPTH_TOKEN_RET(conf, token, x, 0);           \
-      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, 0);                      \
-                                                                        \
-      if (0)
+#define CONF_SC_MAKE_CLIST_BEG(x, y)                                    \
+    unsigned int conf_sc__depth_ ## x = token->depth_num;               \
+    CONF_SC_MAKE_CLIST_MID(conf_sc__depth_ ## x, y)
 
 #define CONF_SC_MAKE_CLIST_END()                \
     else                                        \
       return (0);                               \
     }                                           \
     do { } while (0)
+
 
 
 typedef struct Conf_parse
@@ -124,7 +129,7 @@ typedef struct Conf_token
  unsigned int type;
  unsigned int num;
  unsigned int depth_num;
- unsigned int depth_nums[CONF_PARSE_LIST_DEPTH_SZ];
+ unsigned int depth_nums[CONF_PARSE_LIST_DEPTH_SZ + 1];
 } Conf_token;
 #define CONF_TOKEN_INIT {{NULL}, CONF_TOKEN_TYPE_ERR, 0, 0, {0}}
 
@@ -223,14 +228,16 @@ extern inline int conf_parse_token(const Conf_parse *conf, Conf_token *token)
   CONF__ASSERT(!conf->depth); /* finished lex */
   CONF__ASSERT(conf->state == CONF_PARSE_STATE_END); /* finished lex */
 
+  if (!token->num)
+    token->depth_nums[0] = conf->sects->num;
+  
   if (token->num >= conf->sects->num)
     return (CONF__FALSE);
   ++token->num;
   
-  while (token->depth_num &&
-         (token->depth_nums[token->depth_num - 1] < token->num))
+  while (token->depth_nums[token->depth_num] < token->num)
   {
-    CONF__ASSERT(token->depth_nums[token->depth_num - 1] == (token->num - 1));
+    CONF__ASSERT(token->depth_nums[token->depth_num] == (token->num - 1));
     --token->depth_num;
   }
 
@@ -242,7 +249,7 @@ extern inline int conf_parse_token(const Conf_parse *conf, Conf_token *token)
            (token->type == CONF_TOKEN_TYPE_SLIST))
   {
     token->u.list_num = VSTR_SECTS_NUM(conf->sects, token->num)->len;
-    token->depth_nums[token->depth_num++] = token->num + token->u.list_num;
+    token->depth_nums[++token->depth_num] = token->num + token->u.list_num;
   }
   else
     token->u.uval_num = VSTR_SECTS_NUM(conf->sects, token->num)->pos;
@@ -254,11 +261,11 @@ extern inline int conf_parse_end_token(const Conf_parse *conf,
                                        Conf_token *token,
                                        unsigned int depth)
 {
-  if (!depth || (depth > token->depth_num))
+  if (depth > token->depth_num)
     return (CONF__FALSE);
 
-  if (token->depth_nums[depth - 1] >= token->num)
-    token->num = token->depth_nums[depth - 1] - 1;
+  if (token->depth_nums[depth] >= token->num)
+    token->num = token->depth_nums[depth] - 1;
 
   return (conf_parse_token(conf, token));
 }
@@ -498,12 +505,12 @@ extern inline unsigned int conf_token_list_num(const Conf_token *token,
 {
   CONF__ASSERT(token);
   
-  if (!depth || (depth > token->depth_num))
+  if (depth > token->depth_num)
     return (CONF__FALSE);
 
-  CONF__ASSERT(token->depth_nums[depth - 1] >= token->num);
+  CONF__ASSERT(token->depth_nums[depth] >= token->num);
   
-  return (token->depth_nums[depth - 1] - token->num);
+  return (token->depth_nums[depth] - token->num);
 }
 
 extern inline int conf_sc_token_parse_toggle(const Conf_parse *conf,
@@ -513,9 +520,6 @@ extern inline int conf_sc_token_parse_toggle(const Conf_parse *conf,
   int ern = CONF_SC_TYPE_RET_OK;
   
   CONF__ASSERT(val);
-  
-  if (num > 1)
-    ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
   
   if (!num)
   {

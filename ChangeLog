@@ -1,3 +1,23 @@
+2005-07-26  James Antill  <james@and.org>
+
+	* include/vstr-inline.h (vstr_cmp_fast): Added function.
+	(vstr_cmp_fast_buf): Added function.
+	(vstr_cmp_fast_cstr): Added function.
+
+	* include/vstr-inline.h (vstr_sc_bmap_init_eq_spn_buf): Added function.
+	(vstr_sc_bmap_init_or_spn_buf): Added function.
+	(vstr_sc_bmap_init_eq_spn_cstr): Added function.
+	(vstr_sc_bmap_init_or_spn_cstr): Added function.
+
+	* src/vstr_spn.c (vstr_spn_bmap_eq_fwd): Added function.
+	(vstr_spn_bmap_eq_rev): Added function.
+	(vstr_spn_bmap_and_fwd): Added function.
+	(vstr_spn_bmap_and_rev): Added function.
+	(vstr_cspn_bmap_eq_fwd): Added function.
+	(vstr_cspn_bmap_eq_rev): Added function.
+	(vstr_cspn_bmap_and_fwd): Added function.
+	(vstr_cspn_bmap_and_rev): Added function.
+
 2005-06-23  James Antill  <james@and.org>
 
 	* src/vstr_sub.c (vstr_sub_ptr): Fixed bug when replacing a ref node

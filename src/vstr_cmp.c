@@ -507,3 +507,10 @@ int vstr_cmp_vers_buf(const Vstr_base *base, size_t pos, size_t len,
   return (-1);
 }
 
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(cmp);
+VSTR__SYM_ALIAS(cmp_buf);
+VSTR__SYM_ALIAS(cmp_case);
+VSTR__SYM_ALIAS(cmp_case_buf);
+VSTR__SYM_ALIAS(cmp_vers);
+VSTR__SYM_ALIAS(cmp_vers_buf);

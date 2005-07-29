@@ -37,81 +37,44 @@ cntl_exe="@sbindir@/jcntl"
 MIME_EXTRAS_FILE="@libdir@/vstr-@VERSION@/examples/data/mime_types_extra.txt"
 
 FILE_BASE="${localstatedir}/run/${prog_name}"
-JHTTPD_NUM=1
-JHTTPD1_CHROOT="${localstatedir}/www"
-JHTTPD1_DIR="html"
-JHTTPD1_ARGS='--drop-privs'
+CNTL_FILE="${FILE_BASE}.cntl"
+PID_FILE="${FILE_BASE}.pid"
+
+JHTTPD_ARGS='--configuration-file /etc/jhttpd/jhttpd.conf'
 [ -r /etc/sysconfig/jhttpd ] && . /etc/sysconfig/jhttpd
 
-PI_ARGS="--priv-uid 444 --priv-gid 444"
-GLOB_I_ARGS="--daemon --mime-types-xtra $MIME_EXTRAS_FILE $PI_ARGS"
-
-function jhttpd_vars()
-{
-          CNTL_FILE="${FILE_BASE}$i.cntl"
-          PID_FILE="${FILE_BASE}$i.pid"
-          U__CALL_CHROOT="JHTTPD${i}_CHROOT"
-          U__CALL_DIR="JHTTPD${i}_DIR"
-	  if [ "x${!U__CALL_CHROOT}" = "x" ]; then
-	    REAL_DIR="${!U__CALL_DIR:-/}"
-	  else
-	    REAL_DIR="${!U__CALL_CHROOT}${!U__CALL_DIR:+/}${!U__CALL_DIR}"
-	  fi
-}
+GLOB_I_ARGS="--daemon --mime-types-xtra $MIME_EXTRAS_FILE"
 
 function start()
 {
-        RETVAL=0
-        i=1
-	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
-        do
-          jhttpd_vars
-          U__CALL_ARGS="JHTTPD${i}_ARGS"
-          I_ARGS="$GLOB_I_ARGS --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
-          U_ARGS="${!U__CALL_ARGS} ${!U__CALL_CHROOT:+--chroot} ${!U__CALL_CHROOT} ${!U__CALL_DIR:-/}"
-          echo -n $"Starting $prog_name(${REAL_DIR}): "
-          daemon --check $prog_name$i $prog_exe $I_ARGS $U_ARGS
-          RETVAL=$?
-          echo
-          i=$(($i + 1))
-        done
+        I_ARGS="${GLOB_I_ARGS} --cntl-file ${CNTL_FILE} --pid-file ${PID_FILE}"
+        echo -n $"Starting $prog_name: "
+        daemon --check $prog_name $prog_exe $I_ARGS $JHTTPD_ARGS
+        RETVAL=$?
+	echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog_name
         return $RETVAL
 }
 
 function stop()
 {
-        RETVAL=0
-        i=1
-	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
-        do
-          jhttpd_vars
-          echo -n $"Shutting down $prog_name(${REAL_DIR}): "
-          killproc $prog_name$i
-          RETVAL=$?
-	  echo
-          i=$(($i + 1))
-        done
+        echo -n $"Shutting down $prog_name: "
+        killproc $prog_name
+        RETVAL=$?
+        echo
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog_name
         return $RETVAL
 }
 
 function softstop()
 {
-        RETVAL=0
-        i=1
-	while [ $RETVAL -eq 0 -a $i -le $JHTTPD_NUM ];
-        do
-          jhttpd_vars
-          echo -n $"Soft shutdown $prog_name(${REAL_DIR}): "
-          $cntl_exe $CNTL_FILE -e close > /dev/null
-          RETVAL=$?
-          [ $RETVAL -eq 0 ] && success $"$prog_name$i soft shutdown" || \
-	     failure $"$prog_name$i soft shutdown"
-          [ $RETVAL -eq 0 ] && rm -- "${PID_FILE}"
-	  echo
-          i=$(($i + 1))
-        done
+        echo -n $"Soft shutdown $prog_name: "
+        $cntl_exe $CNTL_FILE -e close > /dev/null
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && success $"$prog_name soft shutdown" || \
+	     failure $"$prog_name soft shutdown"
+        [ $RETVAL -eq 0 ] && rm -- "${PID_FILE}"
+        echo
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog_name
         return $RETVAL
 }
@@ -126,50 +89,11 @@ function softrestart()
         softstop; start;
 }
 
-function mystatus()
-{
-        # First try "pidof"
-        pids=`pidof -o $$ -o $PPID -o %PPID -x $1`
-        if [ -n "$pids" ]; then
-                if [ -f /var/run/$1$2.pid ] ; then
-                        read pid < /var/run/$1$2.pid
-			for j in $pids; do
-			    if [ "$pid" = "$j" ]; then
-                                echo $"$1$2 (pid $pid) is running..."
-                                return 0
-			    fi
-			done
-                fi
-        fi
- 
-        # Next try "/var/run/*.pid" files
-        if [ -f /var/run/$1$2.pid ] ; then
-                read pid < /var/run/$1$2.pid
-                if [ -n "$pid" ]; then
-                        echo $"$1$2 dead but pid file exists [$pid]"
-			return 1
-                fi
-        fi
-        # See if /var/lock/subsys/${base} exists
-        if [ -f /var/lock/subsys/$1 ]; then
-                echo $"$1$2 dead but subsys locked"
-                return 2
-        fi
-        echo $"$1 is stopped"
-        return 3
-}
-
 function statuses()
 {
-        i=1
-	while [ $i -le $JHTTPD_NUM ];
-        do
-          jhttpd_vars
-          mystatus $prog_name $i
-          RETVAL=$?
-          [ $RETVAL -eq 0 ] && $cntl_exe $CNTL_FILE -e status
-          i=$(($i + 1))
-        done
+        status $prog_name $i
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && $cntl_exe $CNTL_FILE -e status
 }
 
 case "$1" in

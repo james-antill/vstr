@@ -456,3 +456,10 @@ int vstr_conv_decode_uri(Vstr_base *base, size_t pos, size_t len)
   base->conf->malloc_bad = TRUE;
   return (FALSE);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(conv_decode_uri);
+VSTR__SYM_ALIAS(conv_encode_uri);
+VSTR__SYM_ALIAS(conv_lowercase);
+VSTR__SYM_ALIAS(conv_unprintable_chr);
+VSTR__SYM_ALIAS(conv_unprintable_del);
+VSTR__SYM_ALIAS(conv_uppercase);

@@ -15,4 +15,4 @@ fi
 
 $s/autogen.sh
 
-$c --enable-debug --enable-tst-noattr-visibility --enable-tst-noattr-alias --enable-tst-noinline --enable-wrap-memcpy --enable-wrap-memcmp --enable-wrap-memchr --enable-wrap-memrchr --enable-wrap-memset --enable-wrap-memmove --with-fmt-float=glibc $@ && make clean && make check
+$c --enable-debug --enable-tst-noattr-visibility --enable-tst-noattr-alias --enable-tst-noinline --enable-wrap-memcpy --enable-wrap-memcmp --enable-wrap-memchr --enable-wrap-memrchr --enable-wrap-memset --enable-wrap-memmove --with-fmt-float=glibc $@ && make clean && make

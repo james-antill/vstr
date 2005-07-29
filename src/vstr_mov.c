@@ -258,3 +258,5 @@ int vstr_mov(Vstr_base *base, size_t pos,
 
   return (TRUE);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(mov);

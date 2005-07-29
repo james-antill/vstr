@@ -581,9 +581,6 @@ int conf_sc_token_parse_uint(const Conf_parse *conf, Conf_token *token,
 
   if (!num)
     return (CONF_SC_TYPE_RET_ERR_NOT_EXIST);
-  if (num > 1)
-    ern = CONF_SC_TYPE_RET_ERR_TOO_MANY;
-
   conf_parse_token(conf, token);
   if (!(pv = conf_token_value(token)))
     return (CONF_SC_TYPE_RET_ERR_PARSE);

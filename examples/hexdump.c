@@ -199,7 +199,7 @@ int ex_hexdump_process(Vstr_base *s1, size_t apos,
      * the end of a file */
     size_t got = flen;
     size_t missing = CHRS_PER_LINE - flen;
-    const char *ptr = buf;
+    const unsigned char *ptr = buf;
     size_t tmp = 0;
     
     missing -= (missing % 2);

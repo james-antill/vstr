@@ -52,8 +52,11 @@ HTTP/1.1 after implementing a server is
                     statements)
      if-modified-since/if-unmodified-since
      single byte ranges, if-range
-     accept-encoding/content-encoding for gzip (via. pre-generated files)
+     accept-encoding/content-encoding for gzip/bzip2 (via. pre-generated files)
       Also fully obeys identity
+     ETags
+     accept-language negotiation to serve multiple languages
+     
 
     Parses /etc/mime.types file
       plus extensions for disallowing certain file types.
@@ -93,7 +96,6 @@ HTTP/1.1 after implementing a server is
 
       Call any i18n/gettext libc functions (will be fixed).
 
-      Parse or honor the Accept-Language header.
       Parse or honor the Accept-Charset header.
 
       Full date parser (not a problem, string matches work well).
@@ -113,7 +115,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Tue May 31 18:20:44 EDT 2005
+Last modified: Tue Jun 28 00:03:21 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

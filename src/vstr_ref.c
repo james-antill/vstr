@@ -251,3 +251,14 @@ Vstr_ref *vstr__ref_grp_add(Vstr_ref_grp_ptr **parent, const void *ptr)
 }
 #undef VSTR__REF_GRP_CB
 
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(ref_cb_free_nothing);
+VSTR__SYM_ALIAS(ref_cb_free_ptr);
+VSTR__SYM_ALIAS(ref_cb_free_ptr_ref);
+VSTR__SYM_ALIAS(ref_cb_free_ref);
+VSTR__SYM_ALIAS(ref_make_malloc);
+VSTR__SYM_ALIAS(ref_make_memdup);
+VSTR__SYM_ALIAS(ref_make_ptr);
+VSTR__SYM_ALIAS(ref_make_vstr_base);
+VSTR__SYM_ALIAS(ref_make_vstr_conf);
+VSTR__SYM_ALIAS(ref_make_vstr_sects);

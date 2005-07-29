@@ -434,3 +434,10 @@ int vstr_sub_rep_chr(Vstr_base *base, size_t pos, size_t len,
 
   return (ret);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(sub_buf);
+VSTR__SYM_ALIAS(sub_non);
+VSTR__SYM_ALIAS(sub_ptr);
+VSTR__SYM_ALIAS(sub_ref);
+VSTR__SYM_ALIAS(sub_rep_chr);
+VSTR__SYM_ALIAS(sub_vstr);

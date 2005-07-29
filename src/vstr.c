@@ -1506,3 +1506,14 @@ int vstr__chg_node_buf_ref(const Vstr_base *base,
  fail_malloc_nodes:
   return (FALSE);
 }
+
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(exit);
+VSTR__SYM_ALIAS(free_base);
+VSTR__SYM_ALIAS(free_conf);
+VSTR__SYM_ALIAS(free_spare_nodes);
+VSTR__SYM_ALIAS(init);
+VSTR__SYM_ALIAS(make_base);
+VSTR__SYM_ALIAS(make_conf);
+VSTR__SYM_ALIAS(make_spare_nodes);
+VSTR__SYM_ALIAS(swap_conf);

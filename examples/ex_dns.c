@@ -112,7 +112,7 @@ static void cl_parse(struct con *con, size_t msg_len)
                                  VSTR_TYPE_ADD_BUF_PTR);
 
   if (!pkt)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vlg_dbg1(vlg, "\n${rep_chr:%c%zu} recv ${BKMG.u:%u} ${rep_chr:%c%zu}\n",
            '=', 33, msg_len, '=', 33);
@@ -265,9 +265,9 @@ static struct con *cl_make(const char *ipv4_string, short port)
   struct con *ret = malloc(sizeof(struct con));
 
   if (!ret)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!evnt_make_con_ipv4(ret->ev, ipv4_string, port))
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
 
   ret->ev->cbs->cb_func_connect = cl_cb_func_connect;
   ret->ev->cbs->cb_func_recv = cl_cb_func_recv;
@@ -296,7 +296,7 @@ static void cl_connect(void)
   
     if (!(con->ev->tm_o = timer_q_add_node(cl_timeout_base, con, &tv,
                                            TIMER_Q_FLAG_NODE_DEFAULT)))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -501,7 +501,7 @@ static void cl_timer_cli(int type, void *data)
   TIMER_Q_TIMEVAL_ADD_SECS(&tv, (server_timeout - diff) + 1, 0);
   if (!(con->ev->tm_o = timer_q_add_node(cl_timeout_base, con, &tv,
                                          TIMER_Q_FLAG_NODE_DEFAULT)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 }
 
 static void cl_timer_con(int type, void *data)
@@ -531,7 +531,7 @@ static void cl_timer_con(int type, void *data)
     TIMER_Q_TIMEVAL_ADD_SECS(&tv, 1, 0);
     if (!timer_q_add_node(cl_timer_connect_base, NULL, &tv,
                           TIMER_Q_FLAG_NODE_DEFAULT))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -543,9 +543,9 @@ static void cl_init(void)
   cl_timer_connect_base = timer_q_add_base(cl_timer_con,
                                            TIMER_Q_FLAG_BASE_DEFAULT);
   if (!cl_timeout_base)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!cl_timer_connect_base)
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vlg_init();
 
@@ -563,13 +563,13 @@ static void cl_beg(void)
   {
     evnt_fd__set_nonblock(io_r_fd,  TRUE);
     if (!(io_ind_r = socket_poll_add(io_r_fd)))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
     SOCKET_POLL_INDICATOR(io_ind_r)->events |= POLLIN; /* FIXME: */
   }
   
   evnt_fd__set_nonblock(io_w_fd, TRUE);
   if (!(io_ind_w = socket_poll_add(io_w_fd)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   while ((server_clients_count < server_clients) && (count < CL_MAX_CONNECT))
   {
@@ -585,7 +585,7 @@ static void cl_beg(void)
     TIMER_Q_TIMEVAL_ADD_SECS(&tv, 1, 0);
     if (!timer_q_add_node(cl_timer_connect_base, NULL, &tv,
                           TIMER_Q_FLAG_NODE_DEFAULT))
-      errno = ENOMEM, err(EXIT_FAILURE, __func__);
+      errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   }
 }
 
@@ -594,7 +594,7 @@ static void cl_signals(void)
   struct sigaction sa;
   
   if (sigemptyset(&sa.sa_mask) == -1)
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
   
   /* don't use SA_RESTART ... */
   sa.sa_flags = 0;
@@ -602,24 +602,24 @@ static void cl_signals(void)
   sa.sa_handler = SIG_IGN;
   
   if (sigaction(SIGPIPE, &sa, NULL) == -1)
-    err(EXIT_FAILURE, __func__);
+    err(EXIT_FAILURE, "%s", __func__);
 }
 
 int main(int argc, char *argv[])
 {
   if (!vstr_init())
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_FMT_CHAR_ESC, '$');
   vstr_sc_fmt_add_all(NULL);
   
   if (!(io_r = vstr_make_base(NULL))) /* used in cmd line */
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!(io_w = vstr_make_base(NULL)))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   
   if (!socket_poll_init(0, SOCKET_POLL_TYPE_MAP_DIRECT))
-    errno = ENOMEM, err(EXIT_FAILURE, __func__);
+    errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
 
   srand(getpid() ^ time(NULL)); /* doesn't need to be secure... just different
                                  * for different runs */
@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
     struct timeval tv;
     
     if ((ready == -1) && (errno != EINTR))
-      err(EXIT_FAILURE, __func__);
+      err(EXIT_FAILURE, "%s", __func__);
     if (ready == -1)
       continue;
 

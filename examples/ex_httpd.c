@@ -204,7 +204,7 @@ static void serv_init(void)
       errno = ENOMEM, err(EXIT_FAILURE, "init");
   
   evnt_logger(vlg);
-  evnt_epoll_init();
+  evnt_poll_init();
   evnt_timeout_init();
 
   opt_serv_logger(vlg);
@@ -252,7 +252,7 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
   if (sa->sa_family != AF_INET) /* only support IPv4 atm. */
     goto sa_fail;
   
-  if (!con || !evnt_make_acpt(con->evnt, fd, sa, len))
+  if (!con || !evnt_make_acpt_dup(con->evnt, fd, sa, len))
     goto make_acpt_fail;
 
   con->evnt->cbs->cb_func_recv       = serv_cb_func_recv;
@@ -266,7 +266,7 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
                                  con->policy->s->idle_timeout * 1000))
   {
     errno = ENOMEM;
-    vlg_info(vlg, "ERRCON from[$<sa:%p>]: %m\n", con->evnt->sa);
+    vlg_info(vlg, "ERRCON from[$<sa:%p>]: %m\n", EVNT_SA(con->evnt));
     goto evnt_fail;
   }
 
@@ -370,7 +370,7 @@ static void serv_mime_types(const char *program_name)
         err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
   
       if (!mime_types_load_simple(tmp->mime_types, mime_types_xtra))
-        err(EXIT_FAILURE, "load_mime(%s)", mime_types_main);
+        err(EXIT_FAILURE, "load_mime(%s)", mime_types_xtra);
     }
     
     scan = scan->next;
@@ -580,7 +580,9 @@ static void serv_cmd_line(int argc, char *argv[])
     vlg_daemon(vlg, program_name);
   }
 
-  if (httpd_opts->s->rlim_file_num)
+  if (httpd_opts->s->rlim_core_call)
+    opt_serv_sc_rlim_core_num(httpd_opts->s->rlim_core_num);
+  if (httpd_opts->s->rlim_file_call)
     opt_serv_sc_rlim_file_num(httpd_opts->s->rlim_file_num);
   
   {
@@ -643,7 +645,7 @@ static void serv_cmd_line(int argc, char *argv[])
     
     while (evnt)
     {
-      vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", evnt->sa,
+      vlg_info(vlg, "READY [$<sa:%p>]: %s%s%s\n", EVNT_SA(evnt),
                chroot_dir ? chroot_dir : "",
                chroot_dir ?        "/" : "",
                document_root);

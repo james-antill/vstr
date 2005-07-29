@@ -3,8 +3,6 @@
 #include "ex_utils.h"
 #include "opt.h"
 
-#include <stdio.h>
-
 #include <sys/time.h>
 #include <time.h>
 
@@ -16,7 +14,9 @@
 
 #define USE_POPEN 1 /* hacky ... */
 
-#if !USE_POPEN
+#if USE_POPEN
+#include <stdio.h>
+#else
 /* spawn.h doesn't exist on MacOSX ... *sigh*/
 #include <spawn.h>
 #endif
@@ -580,18 +580,25 @@ static void ex_ssi_fin(Vstr_base *s1, time_t timestamp, const char *fname)
                fname, ex_ssi_strftime(timestamp, FALSE));
 }
 
-static void usage(const char *program_name, int tst_err)
+static void usage(const char *program_name, int ret, const char *prefix)
 {
-  fprintf(tst_err ? stderr : stdout, "\n Format: %s [-hV]\n"
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "usage");
+
+  vstr_add_fmt(out, 0, "%s\n"
+          " Format: %s [-hV]\n"
           " --help -h         - Print this message.\n"
           " --prefix-path     - Prefix path with argument.\n"
           " --suffix-path     - Suffix path with argument.\n"
           " --version -V      - Print the version string.\n",
-          program_name);
-  if (tst_err)
-    exit (EXIT_FAILURE);
-  else
-    exit (EXIT_SUCCESS);
+          prefix, program_name);
+  
+  if (io_put_all(out, ret ? STDERR_FILENO : STDOUT_FILENO) == IO_FAIL)
+    err(EXIT_FAILURE, "write");
+  
+  exit (ret);
 }
 
 static void merge_path(const char *beg, const char *end, const char *name)
@@ -626,23 +633,32 @@ static void cl_cmd_line(int *passed_argc, char ***passed_argv)
    {"version", no_argument, NULL, 'V'},
    {NULL, 0, NULL, 0}
   };
+  Vstr_base *out = vstr_make_base(NULL);
+
+  if (!out)
+    errno = ENOMEM, err(EXIT_FAILURE, "command line");
   
   program_name = opt_program_name(argv[0], "jssi");
   
-  while ((optchar = getopt_long(argc, argv, "hV", long_options, NULL)) != EOF)
+  while ((optchar = getopt_long(argc, argv, "hV", long_options, NULL)) != -1)
   {
     switch (optchar)
     {
-      case '?':
-        fprintf(stderr, " That option is not valid.\n");
-      case 'h':
-        usage(program_name, 'h' == optchar);
+      case '?': usage(program_name, EXIT_FAILURE, "");
+      case 'h': usage(program_name, EXIT_SUCCESS, "");
         
       case 'V':
-        printf(" %s version 0.7.1, compiled on %s.\n",
-               program_name,
-               __DATE__);
-        printf(" %s compiled on %s.\n", program_name, __DATE__);
+          vstr_add_fmt(out, 0,"\
+%s version 1.0.0, compiled on %s.\n\
+Written by James Antill\n\
+\n\
+Uses Vstr string library.\n\
+",
+                       program_name, __DATE__);
+
+        if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
+          err(EXIT_FAILURE, "write");
+        
         exit (EXIT_SUCCESS);
 
       case 1:
@@ -657,6 +673,7 @@ static void cl_cmd_line(int *passed_argc, char ***passed_argv)
         abort();
     }
   }
+  vstr_free_base(out); out = NULL;
 
   argc -= optind;
   argv += optind;

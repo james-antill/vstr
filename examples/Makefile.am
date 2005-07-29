@@ -7,11 +7,9 @@ AUTOMAKE_OPTIONS = no-dependencies 1.4
 EX_B_DIR=$(top_builddir)/examples
 EX_INST_DIR=$(libdir)/vstr-$(VERSION)/examples
 
-# GEN__CFLAGS for stupid openssl builds, moron packaging
-GEN__CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
-GEN_CFLAGS = -I- $(GEN__CFLAGS)
+GEN_CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@
 if USE_EX_STATIC_LIBS
-GEN__CFLAGS += -DCONF_FULL_STATIC=1
+GEN_CFLAGS += -DCONF_FULL_STATIC=1
 endif
 
 GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
@@ -167,10 +165,8 @@ ex_sock_filter_DEPENDENCIES = ex_utils.h
 ex_sock_filter_CFLAGS = $(GEN_CFLAGS)
 ex_sock_filter_LDADD  = $(GEN_LDLIBS)
 
-# Note: can't use GEN_CFLAGS because FC[23] use include "" inside openssl system
-# headers, and the obvious fix was refused as "not a bug".
 ex_perf_sgopenssl_DEPENDENCIES = ex_perf.h
-ex_perf_sgopenssl_CFLAGS = $(GEN__CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
+ex_perf_sgopenssl_CFLAGS = $(GEN_CFLAGS) $(OPENSSL_CFLAGS) -Wno-aggregate-return
 ex_perf_sgopenssl_LDADD  = $(GEN_LDLIBS) $(OPENSSL_LDLIBS)
 
 ex_gmp_factorials_DEPENDENCIES = ex_utils.h

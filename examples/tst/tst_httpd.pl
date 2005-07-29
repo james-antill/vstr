@@ -10,6 +10,8 @@ require 'vstr_tst_examples.pl';
 our $root = "ex_httpd_root";
 our $truncate_segv = 0;
 
+my $conf_fc4_die = 0; # 1, Kills fc4 kernels
+
 sub http_cntl_list_beg
   { # FIXME: see if it looks "OK"
     my $list_pid = tst_fork();
@@ -325,7 +327,7 @@ sub setup
     open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
     munge_mtime(44, "$root/foo.example.com/empty");
 
-    system("$ENV{SRCDIR}/gzip-r.pl --type=all $root");
+    system("$ENV{SRCDIR}/gzip-r.pl --force --type=all $root");
     munge_mtime(0, "$root/index.html.gz");
     munge_mtime(0, "$root/index.html.bz2");
     munge_mtime(0, "$root/default/index.html.gz");
@@ -404,8 +406,11 @@ httpd_vhost_tst($args . "--virtual-hosts=true  --mmap=true  --sendfile=false" .
 		" --procs=2");
 $truncate_segv = 0;
 
+my $fc4_doa = '';
+if ($conf_fc4_die)
+  { $fc4_doa = "--accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1";}
 httpd_vhost_tst($args . "--virtual-hosts=true --mmap=false --sendfile=true" .
-		" --accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1");
+		$fc4_doa);
 
 $conf_arg = $conf_args_strict;
 $args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";

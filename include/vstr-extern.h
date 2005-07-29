@@ -3,7 +3,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
+ *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -450,6 +450,17 @@ extern int vstr_cmp_vers_cstr(const struct Vstr_base *,
 extern int vstr_cmp_vers_cstr_eq(const struct Vstr_base *,
                                  size_t, size_t, const char *)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+
+extern int vstr_cmp_fast(const struct Vstr_base *, size_t, size_t,
+                         const struct Vstr_base *, size_t, size_t)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern int vstr_cmp_fast_buf(const struct Vstr_base *, size_t, size_t,
+                             const char *, size_t)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_L((1)) VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern int vstr_cmp_fast_cstr(const struct Vstr_base *, size_t, size_t,
+                              const char *)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+
 extern int vstr_cmp_bod(const struct Vstr_base *, size_t, size_t,
                         const struct Vstr_base *, size_t, size_t)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
@@ -665,6 +676,30 @@ extern size_t vstr_cspn_cstr_chrs_fwd(const struct Vstr_base *, size_t, size_t,
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 extern size_t vstr_cspn_cstr_chrs_rev(const struct Vstr_base *, size_t, size_t,
                                       const char *)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_spn_bmap_eq_fwd(const struct Vstr_base *, size_t, size_t,
+                                   const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_spn_bmap_eq_rev(const struct Vstr_base *, size_t, size_t,
+                                   const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_spn_bmap_and_fwd(const struct Vstr_base *, size_t, size_t,
+                                   const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_spn_bmap_and_rev(const struct Vstr_base *, size_t, size_t,
+                                   const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_cspn_bmap_eq_fwd(const struct Vstr_base *, size_t, size_t,
+                                    const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_cspn_bmap_eq_rev(const struct Vstr_base *, size_t, size_t,
+                                    const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_cspn_bmap_and_fwd(const struct Vstr_base *, size_t, size_t,
+                                    const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
+    VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+extern size_t vstr_cspn_bmap_and_rev(const struct Vstr_base *, size_t, size_t,
+                                    const unsigned char[VSTR__COMPILE_STATIC_ARRAY() 256], unsigned char)
     VSTR__COMPILE_ATTR_PURE() VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 
@@ -1067,6 +1102,21 @@ extern VSTR_AUTOCONF_uint_least16_t vstr_sc_parse_b_uint16(struct Vstr_base *,
 extern VSTR_AUTOCONF_uint_least32_t vstr_sc_parse_b_uint32(struct Vstr_base *,
                                                            size_t)
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
+
+extern void vstr_sc_bmap_init_eq_spn_buf(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
+                                         const char *, size_t,
+                                         unsigned char)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern void vstr_sc_bmap_init_or_spn_buf(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
+                                         const char *, size_t,
+                                         unsigned char)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern void vstr_sc_bmap_init_eq_spn_cstr(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
+                                          const char *, unsigned char)
+    VSTR__COMPILE_ATTR_NONNULL_A();
+extern void vstr_sc_bmap_init_or_spn_cstr(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
+                                          const char *, unsigned char)
+    VSTR__COMPILE_ATTR_NONNULL_A();
 
 
 /* == inline helper functions == */

@@ -430,3 +430,12 @@ int vstr_sects_update_del(const Vstr_base *base,
 
   return (TRUE);
 }
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(extern_inline_sects_add);
+VSTR__SYM_ALIAS(sects_del);
+VSTR__SYM_ALIAS(sects_foreach);
+VSTR__SYM_ALIAS(sects_free);
+VSTR__SYM_ALIAS(sects_make);
+VSTR__SYM_ALIAS(sects_srch);
+VSTR__SYM_ALIAS(sects_update_add);
+VSTR__SYM_ALIAS(sects_update_del);

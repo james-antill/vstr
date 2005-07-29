@@ -1017,3 +1017,13 @@ int vstr_extern_inline_add_rep_chr(Vstr_base *base, size_t pos,
 
   return (TRUE);
 }
+
+#include "internal_syms_generated/vstr-cpp-symbols_rev.h"
+VSTR__SYM_ALIAS(add_iovec_buf_beg);
+VSTR__SYM_ALIAS(add_iovec_buf_end);
+VSTR__SYM_ALIAS(add_non);
+VSTR__SYM_ALIAS(add_ptr);
+VSTR__SYM_ALIAS(add_ref);
+VSTR__SYM_ALIAS(add_vstr);
+VSTR__SYM_ALIAS(extern_inline_add_buf);
+VSTR__SYM_ALIAS(extern_inline_add_rep_chr);

@@ -55,7 +55,7 @@ struct Evnt
  
  unsigned int ind; /* socket poll */
 
- struct sockaddr *sa;
+ Vstr_ref *sa_ref;
  
  Vstr_base *io_r;
  Vstr_base *io_w;
@@ -101,16 +101,21 @@ struct Evnt
  unsigned int io_w_shutdown    : 1;
 };
 
-#define EVNT_SA(x)    (                      (x)->sa)
-#define EVNT_SA_IN(x) ((struct sockaddr_in *)(x)->sa)
-#define EVNT_SA_UN(x) ((struct sockaddr_un *)(x)->sa)
+#define EVNT_SA(x)     ((struct sockaddr     *)(x)->sa_ref->ptr)
+#define EVNT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa_ref->ptr)
+#define EVNT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa_ref->ptr)
+#define EVNT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa_ref->ptr)
 
 /* FIXME: bad namespace */
 typedef struct Acpt_data
 {
  struct Evnt *evnt;
- struct sockaddr_storage sa[1];
+ Vstr_ref *sa;
 } Acpt_data;
+#define ACPT_SA(x)     ((struct sockaddr     *)(x)->sa->ptr)
+#define ACPT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa->ptr)
+#define ACPT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa->ptr)
+#define ACPT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa->ptr)
 
 typedef struct Acpt_listener
 {
@@ -145,8 +150,9 @@ extern int evnt_make_con_ipv4(struct Evnt *, const char *, short);
 extern int evnt_make_con_local(struct Evnt *, const char *);
 extern int evnt_make_bind_ipv4(struct Evnt *, const char *, short,unsigned int);
 extern int evnt_make_bind_local(struct Evnt *, const char *, unsigned int);
-extern int evnt_make_acpt(struct Evnt *, int, struct sockaddr *, socklen_t);
-extern int evnt_make_custom(struct Evnt *, int, socklen_t, int);
+extern int evnt_make_acpt_ref(struct Evnt *, int, Vstr_ref *);
+extern int evnt_make_acpt_dup(struct Evnt *, int, struct sockaddr *, socklen_t);
+extern int evnt_make_custom(struct Evnt *, int, Vstr_ref *, int);
 
 extern void evnt_free(struct Evnt *);
 extern void evnt_close(struct Evnt *);
@@ -201,8 +207,9 @@ extern struct Evnt *evnt_sc_serv_make_bind(const char *, unsigned short,
 
 extern void evnt_vlg_stats_info(struct Evnt *, const char *);
 
-extern int evnt_epoll_init(void);
-extern int evnt_epoll_enabled(void);
+extern int evnt_poll_init(void);
+extern int evnt_poll_direct_enabled(void);
+extern int evnt_poll_child_init(void);
 
 extern unsigned int evnt_poll_add(struct Evnt *, int);
 extern void evnt_poll_del(struct Evnt *);

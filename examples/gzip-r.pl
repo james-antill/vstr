@@ -13,15 +13,16 @@ my $have_perl_cmpstat = 0;
 
 #  Might want to add .iso or some .mov type exts ... however non-trivial savings
 # are often on those files.
-my $filter_exts_re = qr/(?:
-			[.]gz  |
-			[.]bz2 |
-			[.]rpm |
-			[.]zip |
-			[.]tmp |
-			~      |
-			\#
-		       )$/x;
+my $filter_re = qr/(?:
+		   ^[.]nfs. |
+		   [.]gz$  |
+		   [.]bz2$ |
+		   [.]rpm$ |
+		   [.]zip$ |
+		   [.]tmp$ |
+		   ~$      |
+		   \#$
+		  )/x;
 
 use Getopt::Long;
 use Pod::Usage;
@@ -31,12 +32,14 @@ my $help = 0;
 
 my $tidy_compress = 0;
 my $force_compress = 0;
+my $re_compress = 0;
 my $chown_compress = 0;
 my $verbose_compress = 0;
 my $type_compress = "gzip";
 
 pod2usage(0) if !
 GetOptions ("force!"   => \$force_compress,
+	    "all!"     => \$re_compress,
 	    "chown!"   => \$chown_compress,
 	    "tidy!"    => \$tidy_compress,
 	    "type|t=s" => \$type_compress,
@@ -50,9 +53,9 @@ if (($type_compress ne "gzip") && ($type_compress ne "bzip2") &&
     ($type_compress ne "all"))
   { pod2usage(-exitstatus => 1); }
 
-sub filter_no_gzip
-  { # Don't compress compressed files...
-    grep(!/$filter_exts_re/,  @_)
+sub grep_files
+  { # Don't compress compressed files, or nfs...
+    grep(!/$filter_re/,  @_)
   }
 
 our $out;
@@ -72,6 +75,17 @@ sub p95
   }
 
 
+sub cleanup
+  {
+    my $in = shift;
+
+    close($in);
+    if (defined ($out))   { close($out);    $out   = undef; }
+    if (defined ($fname)) { unlink($fname); $fname = undef; }
+
+    return shift;
+  }
+
 sub zip__file
   {
     my $name   = shift;
@@ -89,7 +103,7 @@ sub zip__file
 	defined($dst) || die "Can't readlink $name: $!";
 
 	my $dst_gz = $dst . $ext_compress;
-	if (($dst !~ /$filter_exts_re/) && -f $dst_gz)
+	if (($dst !~ /$filter_re/) && -f $dst_gz)
 	  {
 	    unlink($namegz);
 	    print STDOUT "Symlink: $name => $dst\n" if ($verbose_compress > 1);
@@ -98,13 +112,15 @@ sub zip__file
 	return 0;
       }
 
-    if (! -f _)
+    if (! -f _ || ! -r _)
       {
 	return 0;
       }
 
     my @st_name   = stat _;
-    if (!$force_compress)
+    if (!$other_sz)
+      { $other_sz = $st_name[7]; }
+    if (!$re_compress)
       {
 	if (-f $namegz)
 	  { # If .gz file is already newer, skip it...
@@ -113,58 +129,67 @@ sub zip__file
 	    if ($st_name[9] < $st_namegz[9])
 	      {
 		if ($tidy_compress && # remove old
-		    (($st_namegz[7] >= p95($st_name[7])) ||
-		     ($other_sz && ($st_namegz[7] >= p95($other_sz)))))
+		    (($st_namegz[7] >= p95($other_sz))))
 		  {
 		    unlink($namegz);
-		    if ($other_sz)
-		      { return $other_sz; }
-		    return $st_name[7];
+		    return $other_sz;
 		  }
 		return $st_namegz[7];
 	      }
 	  }
       }
 
-    eval {
-      ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
-    };
-    return $st_name[7] if ($@);
+    if (!$force_compress)
+      { # This will error out...
+	($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
+      }
+    else
+      {
+	eval {
+	  ($out, $fname) = tempfile("gzip-r.XXXXXXXX", SUFFIX => ".tmp");
+	};
+	return $other_sz if ($@);
+      }
     binmode $out;
 
     print STDOUT "Compress: $name\n" if ($verbose_compress > 0);
 
-    open(IN, "-|", @$cmd_compress_args, "--", $name) || 
-      die("Can't $type_compress: $!");
-    binmode IN;
+    my $in = undef;
+    if (!$force_compress)
+      {
+	open($in, "-|", @$cmd_compress_args, "--", $name) ||
+	  die("Can't $type_compress: $!");
+      }
+    else
+      {
+	open($in, "-|", @$cmd_compress_args, "--", $name) ||
+	  return cleanup(undef, $other_sz);
+      }
+    binmode $in;
 
     my $bs = 1024 * 8; # Do IO in 8k blocks
     $/ = \$bs;
 
-    while (<IN>) { $out->print($_); }
+    while (<$in>) { $out->print($_); }
 
     # If the the gzip file is 95% of the original, delete it
     # Or we are doing bzip2 and we already have a gzip file that is smaller
     $out->autoflush(1);
     my @st_namegz = stat $out;
-    if (($st_namegz[7] >= p95($st_name[7])) ||
-	($other_sz && ($st_namegz[7] >= p95($other_sz))))
+    if ($st_namegz[7] >= p95($other_sz))
       {
-	close(IN);
-	close($out);
-	unlink($fname);
-	$out = undef;
-	return $other_sz;
+	return cleanup($in, $other_sz);
       }
+    close($in) || die "Failed closing input: $!";
 
-    close(IN)   || die "Failed closing input: $!";
-
-    rename($fname, $namegz)             || die "Can't rename($namegz): $!";
-    if ($have_perl_cmpstat) {
-    File::Temp::cmpstat($out, $namegz)  || die "File moved $namegz: $!";
-    }
-    close($out)                         || die "Failed closing output: $!";
+    rename($fname, $namegz)                 || die "Can't rename($namegz): $!";
+    if ($have_perl_cmpstat)
+      {
+	File::Temp::cmpstat($out, $namegz)  || die "File moved $namegz: $!";
+      }
+    close($out)                             || die "Failed closing output: $!";
     $out = undef;
+
     # No stupid fchmod/fchown in perl, Grr....
     chmod($st_name[2] & 0777, $namegz);
     if ($chown_compress)
@@ -177,6 +202,15 @@ sub zip_file
     my $name = $_;
     my $other_sz = 0;
 
+    my ($dev,$ino,$mode,$nlink,$uid,$gid);
+
+    if ((($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($name)) &&
+	($dev != $File::Find::topdev))
+      {
+	$File::Find::prune = 1;
+	return;
+      }
+
     $other_sz = zip__file($name, "gzip", ".gz",
 			  ["gzip", "--to-stdout", "--no-name", "--best"], 0)
       if (($type_compress eq "gzip")  || ($type_compress eq "all"));
@@ -186,10 +220,10 @@ sub zip_file
       if (($type_compress eq "bzip2") || ($type_compress eq "all"));
   }
 
-find({ preprocess => \&filter_no_gzip, wanted => \&zip_file }, @ARGV);
+find({ preprocess => \&grep_files, wanted => \&zip_file }, @ARGV);
 
 END {
-  if (defined($out))
+  if (defined($out) && defined($fname))
     {
       File::Temp::unlink0($out, $fname) || die "Can't unlink($fname): $!"; $?;
     }
@@ -208,7 +242,8 @@ gzip-r.pl [options] [dirs|files ...]
  Options:
   --help -?         brief help message
   --man             full documentation
-  --force           force recompression
+  --force           force mode
+  --all             compress files that already have a compressed version
   --tidy            tidy unused files
   --verbose         print filenames
   --chown           chown gzip files
@@ -228,7 +263,12 @@ Prints the manual page and exits.
 
 =item B<--force>
 
-Recompresses files even when they are newer than their source.
+Carry on compressing even if errors are encountered during tempfile creation.
+
+=item B<--all>
+
+Recompresses files even when the compressed versions are newer than their
+source.
 
 =item B<--chown>
 

@@ -47,6 +47,6 @@ sudo rpmbuild -ta --define 'chk 1' vstr-$v.tar.gz
 echo "/usr/src/redhat/RPMS/*/vstr*-$v-*"
 echo "/usr/src/redhat/SRPMS/vstr*-$v-*"
 
-ls -aslF /usr/src/redhat/RPMS/*/vstr*-$v-*
-ls -aslF /usr/src/redhat/SRPMS/vstr*-$v-*
+ls -aslhF /usr/src/redhat/RPMS/*/vstr*-$v-*
+ls -aslhF /usr/src/redhat/SRPMS/vstr*-$v-*
 

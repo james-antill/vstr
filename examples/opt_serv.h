@@ -11,6 +11,8 @@
 #define OPT_SERV_CONF_USE_DAEMON FALSE
 #define OPT_SERV_CONF_USE_DROP_PRIVS FALSE
 #define OPT_SERV_CONF_USE_PDEATHSIG FALSE
+#define OPT_SERV_CONF_DEF_RLIM_CORE_CALL FALSE
+#define OPT_SERV_CONF_DEF_RLIM_FILE_CALL FALSE
 #define OPT_SERV_CONF_DEF_TCP_DEFER_ACCEPT 8 /* HC usage txt */
 #define OPT_SERV_CONF_DEF_PRIV_UID 60001
 #define OPT_SERV_CONF_DEF_PRIV_GID 60001
@@ -18,6 +20,7 @@
 #define OPT_SERV_CONF_DEF_IDLE_TIMEOUT (2 * 60)
 #define OPT_SERV_CONF_DEF_Q_LISTEN_LEN 128
 #define OPT_SERV_CONF_DEF_MAX_CONNECTIONS 0
+#define OPT_SERV_CONF_DEF_RLIM_CORE_NUM 0
 #define OPT_SERV_CONF_DEF_RLIM_FILE_NUM 0
 
 typedef struct Opt_serv_policy_opts
@@ -55,6 +58,8 @@ typedef struct Opt_serv_opts
  unsigned int drop_privs : 1;
  unsigned int use_pdeathsig : 1;
  unsigned int no_conf_listen : 1;
+ unsigned int rlim_core_call : 1;
+ unsigned int rlim_file_call : 1;
 
  Vstr_base *pid_file;
  Vstr_base *cntl_file;
@@ -66,6 +71,7 @@ typedef struct Opt_serv_opts
  gid_t priv_gid;
  unsigned int num_procs;
 
+ unsigned int rlim_core_num;
  unsigned int rlim_file_num;
 
  unsigned int max_spare_bases;
@@ -86,10 +92,13 @@ typedef struct Opt_serv_opts
     OPT_SERV_CONF_USE_DROP_PRIVS,                                       \
     OPT_SERV_CONF_USE_PDEATHSIG,                                        \
     FALSE,                                                              \
+    OPT_SERV_CONF_DEF_RLIM_CORE_CALL,                                   \
+    OPT_SERV_CONF_DEF_RLIM_FILE_CALL,                                   \
     NULL, NULL, NULL,                                                   \
     NULL, OPT_SERV_CONF_DEF_PRIV_UID,                                   \
     NULL, OPT_SERV_CONF_DEF_PRIV_GID,                                   \
     OPT_SERV_CONF_DEF_NUM_PROCS,                                        \
+    OPT_SERV_CONF_DEF_RLIM_CORE_NUM,                                    \
     OPT_SERV_CONF_DEF_RLIM_FILE_NUM,                                    \
     4,                                                                  \
     (OPT_SERV_CONF_MEM_PREALLOC_MAX / OPT_SERV_CONF_BUF_SZ),            \
@@ -113,6 +122,7 @@ extern void opt_serv_logger(Vlg *);
 
 extern void opt_serv_sc_drop_privs(Opt_serv_opts *);
 extern void opt_serv_sc_rlim_file_num(unsigned int);
+extern void opt_serv_sc_rlim_core_num(unsigned int);
 extern int  opt_serv_sc_acpt_end(const Opt_serv_policy_opts *,
                                  struct Evnt *, struct Evnt *);
 extern void opt_serv_sc_free_beg(struct Evnt *, struct Vstr_ref *);

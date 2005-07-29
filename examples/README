@@ -8,8 +8,6 @@ happily work on win32 etc.
 
  NEW
 
-  ex_dir_list2webdav -- WebDAV is even more retarded than HTTP, so maybe not
-
   ex_dnsd
 
   ex_relay
@@ -27,6 +25,8 @@ happily work on win32 etc.
   evnt
 
 	allow groups, make Evnt smaller (moveout cb's/conf to group data)
+	have enumeration bind, Ie. bind to each IP address ... 
+          helps for testing recv socket.
 
 
   cntl
@@ -36,17 +36,14 @@ happily work on win32 etc.
 
   vlg
 	syslog restart ... tst.
+	localtime() keeps looking at /etc/localtime now
+	  Have option to spew /etc/localtime into TZ at startup?
+	  Or just remove chroot() pre-localtime hack?
 
 
   ex_sock_filter
 
 	All asm calls should have names
-
-
-  ex_dir_list_sort
-
-	Sort by verscmp
-
 
 
   ex_dir_list2html
@@ -71,8 +68,9 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
-	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
-         C-z fg
+	SECURITY = stat() to check for directory redirects to 404s
+	Redirect for non-canonical URLs (Ie. %61 used) -- like %2e/%2f fixup
+	userdirs?
 	mime_types speed, by having explicit filename/ext matches
         nice()
 	public/symlinks path checking
@@ -80,12 +78,16 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	man page
+	multipart/byteranges -- needed for zsync
 	conf
+	 Delta encoding: http://www.ietf.org/rfc/rfc3229.txt
+	  http://bobwyman.pubsub.com/main/2004/09/implementations.html
          limit location/content-location somehow ?
          Support charset/accept-charset (appended to text/* Content types)
 	  Support default
-	  Support per file. [w3/chips]
+	  Support per file. -- http://www.w3.org/TR/chips/
          Random extra headers
+	 406 error file per. request
          Have more match types, so we can change policy for early parts of
           request processing.
          Allow req_conf to change to a defined set of policies
@@ -94,6 +96,9 @@ http://www.sans.org/top20/#u2
          Allow policy limiting of what "commands" req_conf can do.
          Allow custom error-code pages, for the non-trivial codes like 406 and
           the 30[1237] redirects.
+	IP_TOS && IP_RECVTOS
+	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
+         C-z fg
 	jhttpd -> vstr-httpd?
 	ipv6
 	edge triggered events
