@@ -125,27 +125,27 @@ sub conv_A_refs
     my $params = shift;
 
     s{(\W|^)(Vstr configuration)(\W|$)}
-      {$1<a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">$2</a>$3}g;
+      {$1<a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">$2</a>$3}g;
     s{(\W|^)(Vstr string)(\W|$)}
-      {$1<a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">$2</a>$3}g;
+      {$1<a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">$2</a>$3}g;
     s{(\W|^)(Vstr sections)(\W|$)}
-      {$1<a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">$2</a>$3}g;
+      {$1<a href="structs#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">$2</a>$3}g;
     s{(\W|^)(Vstr iteration)(\W|$)}
-      {$1<a href="structs.html#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">$2</a>$3}g;
+      {$1<a href="structs#struct%20Vstr_iter%20%28aka%2e%20Vstr%20iterator%29">$2</a>$3}g;
 
     s{([^#"_0-9a-z])vstr_([_0-9a-z]+)\(\)}
-      {$1<a href="functions.html#vstr_$2%28%29">vstr_$2()</a>}g;
+      {$1<a href="functions#vstr_$2%28%29">vstr_$2()</a>}g;
     s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+)\(\)}
-      {$1<a href="functions.html#VSTR_$2%28%29">VSTR_$2()</a>}g;
+      {$1<a href="functions#VSTR_$2%28%29">VSTR_$2()</a>}g;
 
     if ($params && defined($current_function))
       {
 	s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+[*])}
-	  {$1<a href="constants.html#$current_function">VSTR_$2</a>}g;
+	  {$1<a href="constants#$current_function">VSTR_$2</a>}g;
       }
 
     s{([^#"_0-9A-Z])VSTR_([_0-9A-Z]+)([^_0-9A-Z(*])}
-      {$1<a href="constants.html#VSTR_$2">VSTR_$2</a>$3}g;
+      {$1<a href="constants#VSTR_$2">VSTR_$2</a>$3}g;
   }
 
 sub convert()

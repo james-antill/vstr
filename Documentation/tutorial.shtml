@@ -11,9 +11,9 @@
     <h1>Tutorial</h1>
 
 <p>
- <a href="overview.html">Vstr</a> is a string library designed to work
+ <a href="overview">Vstr</a> is a string library designed to work
 easily and efficiently in network applications. This means that it is
-<a href="design.html"> designed </a>
+<a href="design"> designed </a>
 to perform IO operations in a non-blocking fashion, and allow the programer to
 take data from various places and join them in an IO operation without having
 to do any copies.
@@ -48,7 +48,7 @@ application.
 <li><a href="#ex_gmp_factorials">factorials</a>: Using GMP and custom
 formatters, a real life example of creating your own custom formatters and
 the benifits of doing so. </li>
-<li><a href="overview.html#examples">Other examples</a>: Other examples. </li>
+<li><a href="overview#examples">Other examples</a>: Other examples. </li>
 <li><a href="#cstrvstr">Convertion table</a>: From std. C functions to Vstr functions. </li>
 <li><a href="#cppstrvstr">Convertion table</a>: From std. C++ std::string functions to Vstr functions. </li>
 </ul>
@@ -86,7 +86,7 @@ descriptor (doesn't work well with non-blocking mode file descriptors).</li>
 <!-- #exec cmd="ex_highlight ../examples/ex_hello_world.h"-->
 <blockquote>
 This example is available 
-<a href="examples/ex_hello_world.h.html">here</a>
+<a href="examples/ex_hello_world.h">here</a>
 (<!--#fsize file="../examples/ex_hello_world.h" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hello_world.h" --></span>).
 </blockquote>
@@ -194,7 +194,7 @@ objects.</li>
 <!-- #exec cmd="ex_highlight ../examples/ex_utils.h"-->
 <blockquote>
 This example is available 
-<a href="examples/ex_utils.h.html">here</a>
+<a href="examples/ex_utils.h">here</a>
 (<!--#fsize file="../examples/ex_utils.h" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_utils.h" --></span>).
 </blockquote>
@@ -232,7 +232,7 @@ it's data.
 </p><p>
 The LAD version also doesn't open() any files, which is significant
 functionality. So after fixing those bugs we
-<a href="basic_cat.c.html">get something</a> that
+<a href="basic_cat.c">get something</a> that
 is much closer to 
 the Vstr version <b>and it still suffers from performance problems</b>
 due to the need to
@@ -262,7 +262,7 @@ a reference is created and shared between the two strings.
 
 <!-- #exec cmd="ex_highlight ../examples/ex_nl.c"-->
 <blockquote>
-This example is available <a href="examples/ex_nl.c.html">here</a>
+This example is available <a href="examples/ex_nl.c">here</a>
 (<!--#fsize file="../examples/ex_nl.c" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_nl.c" --></span>).
 </blockquote>
@@ -289,14 +289,14 @@ if it was a reference on input (Ie. mmap()ed).
 </p>
 <p>
  One other thing that is new in the hexdump command is the use of the
-<a href="functions.html#VSTR_FLAGXX()">VSTR_FLAGXX()</a> macro fucntion, this
+<a href="functions#VSTR_FLAGXX()">VSTR_FLAGXX()</a> macro fucntion, this
 is a convienience feature for when you need to specify multiple flags at once.
 </p>
 
 <!-- #exec cmd="ex_highlight ../examples/ex_hexdump.c"-->
 
 <blockquote>
-This example is available <a href="examples/ex_hexdump.c.html">here</a>
+This example is available <a href="examples/ex_hexdump.c">here</a>
 (<!--#fsize file="../examples/ex_hexdump.c" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_hexdump.c" --></span>).
 </blockquote>
@@ -309,7 +309,7 @@ This example is available <a href="examples/ex_hexdump.c.html">here</a>
 </a>
 
 <p>
- <a href="overview.html#cust-fmt">Custom formatters</a> are an exteremly useful
+ <a href="overview#cust-fmt">Custom formatters</a> are an exteremly useful
 feature of the Vstr string library, allowing you to safely implement one or
 more methods of printing a pointer to an arbitrary object. The most
 simple uses are to use the builtin custom formatters.
@@ -319,13 +319,13 @@ then use how you can use them.
 
 <p>
  This example also includes
-<a href="functions.html#vstr_sc_basename()">vstr_sc_basename()</a> which acts
+<a href="functions#vstr_sc_basename()">vstr_sc_basename()</a> which acts
 in a similar way to the POSIX basename function.
 </p>
 
 <!-- #exec cmd="ex_highlight ../examples/ex_lookup_ip.c"-->
 <blockquote>
-This example is available <a href="examples/ex_lookup_ip.c.html">here</a>
+This example is available <a href="examples/ex_lookup_ip.c">here</a>
 (<!--#fsize file="../examples/ex_lookup_ip.c" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_lookup_ip.c" --></span>).
 
@@ -426,7 +426,7 @@ but <b>also implements grouping</b>.
 
 <!-- #exec cmd="ex_highlight ../examples/ex_gmp_factorials.c"-->
 <blockquote>
-This example is available <a href="examples/ex_gmp_factorials.c.html">here</a>
+This example is available <a href="examples/ex_gmp_factorials.c">here</a>
 (<!--#fsize file="../examples/ex_gmp_factorials.c" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_gmp_factorials.c" --></span>).
 </blockquote>
@@ -441,7 +441,7 @@ three...
 <!-- #exec cmd="ex_highlight ../examples/ex_gmp_nums.c"-->
 <blockquote>
 This example is available 
-<a href="examples/ex_gmp_nums.c.html">here</a>
+<a href="examples/ex_gmp_nums.c">here</a>
 (<!--#fsize file="../examples/ex_gmp_nums.c" -->,
 <span class="lastmod">Last modified: <!--#flastmod file="../examples/ex_gmp_nums.c" --></span>).
 </blockquote>
@@ -544,10 +544,10 @@ Vstr string functions...
 </table>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Sat Aug  3 15:35:00 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Sun Sep 19 22:13:01 EDT 2004
+Last modified: Sun Jul 31 00:37:45 EDT 2005
 <!-- hhmts end -->
 <!--#config timefmt="%a %b %d %H:%M:%S %Z %Y" -->
 <BR>Last regenerated: <!--#echo encoding="none" var="DATE_LOCAL"-->

@@ -119,6 +119,10 @@ extern int prctl(int, unsigned long, unsigned long,
 # define UIO_MAXIOV 1
 #endif
 
+#ifndef HAVE_STRERROR_R
+# define strerror_r(x, y, z) (errno = ENOSYS, -1)
+#endif
+
 #ifndef HAVE_VA_COPY
 # ifdef HAVE___VA_COPY
 #  define HAVE_VA_COPY 1

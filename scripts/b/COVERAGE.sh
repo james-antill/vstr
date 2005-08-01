@@ -24,4 +24,6 @@ $c \
   --enable-wrap-memrchr \
   --enable-wrap-memset \
   --enable-wrap-memmove \
+  --enable-static \
+  --disable-shared \
     $@ && make clean && make check

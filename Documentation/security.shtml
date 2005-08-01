@@ -14,7 +14,7 @@
 <span class="blk">
  If you are writing a program in C without a a real string API
 then it is likely your program 
-<a href="security_problems.html">will end up on a list like this</a>, and all
+<a href="security_problems">will end up on a list like this</a>, and all
 programs need to care about security and/or reliability. As a somewhat
 graphic example of this, consider the following two groups of programs found
 on many Linux machines...
@@ -60,7 +60,7 @@ but ...
 they still missed one</a>, and in neither case was it "obvious" by looking
 at the code that there would be a problem. For a list of recent security bugs
 against Red Hat Linux, and an indication of how many wouldn't exist with a
-string API see <a href="security_problems.html">this page</a>.
+string API see <a href="security_problems">this page</a>.
 </p><p>
       Humans just don't do that well with repeated tasks, in fact I'd say that
 given a formula of "do X marginally difficult thing Y times"
@@ -75,12 +75,12 @@ to the API (which is a lot so Y is big), X is zero.
 </p><p>
       So given that you want a good string API, then the quickest/safest way to
 get one is just to reuse one that is known to do what you want.
-There is a good list <a href="comparison.html">on
+There is a good list <a href="comparison">on
 this page</a>. However there are certain things that you should look for when
 evaluating which library to choose (or possibly writing your own, although
 I'd heavily recommend against that).
 Note that, as I said on the
-<a href="comparison.html">string library API comparison page</a> security is
+<a href="comparison">string library API comparison page</a> security is
 somewhat subjective so you must think about <b>your situation</b>.
 It's possible that <a href="#io">IO</a> is much less important to you than
 having a simple <a href="#sprintf">sprintf</a> that always aborts() on '%n'.
@@ -88,7 +88,7 @@ Or that <a href="#sprintf">sprintf</a> won't be used, and so that important
 to you.
 </p><p>
       The speed argument is discounted pretty well by the information
-<a href="speed.html">here</a>.
+<a href="speed">here</a>.
 </p>
 
 
@@ -178,7 +178,7 @@ fail horribly on the "corner cases".
 <p>
 	  It's also worth noting that fixed size buffer APIs often use more
 memory to store the same amount of data (and with a clever allocating API like
-<a href="design.html">Vstr</a> it is pretty much guaranteed that they'll take
+<a href="design">Vstr</a> it is pretty much guaranteed that they'll take
 much more space).
 </p>
 
@@ -303,7 +303,7 @@ callback functions to format user supplied data.
 The biggest obstacle here is static format checkers, like gcc, which will give
 an error on the above code due to %{ not being a recognized format. The common
 solution to this is to ignore it, which makes the feature very hard to use.
-<a href="overview.html#cust-fmt">Vstr uses a system</a>
+<a href="overview#cust-fmt">Vstr uses a system</a>
  that lets the static checker into skipping over the bits it doesn't
 understand, which while
 not perfect (you can still typo the formatter name) at least makes sure that
@@ -532,7 +532,7 @@ following code "ret" is 14 (Fourteen)...
   Ah, you say "it follows the ISO 9899:1999 behaviour" so the value of ret
 must be 14 (Fourteen). However, you'd be wrong, the value returned is
 -1 (Minus one) on Linux if you are in a UTF-8 locale due to the
- <a href="printf_comparison.html#glibc">multibyte "issue"</a>. More generally
+ <a href="printf_comparison#glibc">multibyte "issue"</a>. More generally
 ISO 9899:1999 says:
 </p>
 <blockquote type="cite" cite="http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=29237">
@@ -549,17 +549,17 @@ point of view.
 <p>
       You also have to remember that there is no way to tell what version of
 a sprintf() routine you are going to be using, or if it is as bad a quality as
-say the <a href="printf_comparison.html#dietlibc">dietlibc implementation</a>.
+say the <a href="printf_comparison#dietlibc">dietlibc implementation</a>.
 So you have all of the problems that other string APIs have with
 <a>re-implementing a printf like function</a>, but no way to tell which you
 are using (and test against them) when you write it.
 </p>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Thu Dec  2 19:38:43 EST 2004
+Last modified: Sun Jul 31 00:37:39 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

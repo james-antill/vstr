@@ -308,7 +308,7 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = 
+CFLAGS = @CFLAGS@
 CHMOD_PATH = @CHMOD_PATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -476,7 +476,7 @@ EX_B_DIR = $(top_builddir)/examples
 EX_INST_DIR = $(libdir)/vstr-$(VERSION)/examples
 GEN_CFLAGS = -I../include -I../../include @CFLAGS@ @WARNS@ \
 	$(am__append_1)
-GEN_LDLIBS = @LOCAL_EX_PROG_LIBS@
+GEN_LDLIBS = @LDFLAGS@ @LOCAL_EX_PROG_LIBS@
 ex_cat_DEPENDENCIES = ex_utils.h
 ex_cat_CFLAGS = $(GEN_CFLAGS)
 ex_cat_LDADD = $(GEN_LDLIBS)

@@ -42,13 +42,13 @@
 One of the biggest advantages of using a string library in C is the better
  security that it can provide. However I've tried to not talk about that
  directly below, as it is somewhat subjective and comprised of a few factors. On
- <a href="security.html">this page</a> I give an outline of which things you should look for, to
+ <a href="security">this page</a> I give an outline of which things you should look for, to
 make an informed opinion about the security of all of the libraries.
 </p><p>
  It's probably worth noting that I wrote one of the string library, <a href="#vstr">Vstr</a>. However I have a part section for links to replies if you feel
 that you want to say something I've failed to, or just refute what I've said.
       For a comparison of printf() like functions see
-      <a href="printf_comparison.html">this page</a>.
+      <a href="printf_comparison">this page</a>.
     </p>
 
 <br>
@@ -59,7 +59,7 @@ that you want to say something I've failed to, or just refute what I've said.
   <!-- BEG OF string libraries -->
 <table class="ent"> <tr> <td class="sn">Name:</td> <td class="sl">
 <a id="vstring"></a> <!-- avoid confusion -->
-<a id="vstr" href="overview.html">Vstr string library</a>
+<a id="vstr" href="overview">Vstr string library</a>
 </td> </tr><tr> <td class="sn">Language:</td> <td class="sv">C
 </td> </tr><tr> <td class="sn">Type:</td> <td class="sv">String library
 </td> </tr><tr> <td class="sn">Model:</td> <td class="sv">
@@ -157,7 +157,7 @@ Pointer, length and size (expansion of length/pointer is done to the nearest pow
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Needs entire glib API, so mostly self contained namespace of "g_" on everything but members of structs (a couple of exceptions are made for things like the MAX() macro).
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad. But writing non-blocking is non-trivial.
 Can add/delete any binary data, but only has an equal function so no generic comparison/search functions. No <a href="http://cr.yp.to/proto/netstrings.txt">netstring</a> functions.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
@@ -246,7 +246,7 @@ are copied ... so lots of small strings, or lots of references to a large piece 
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Self contained namespace of "safestr_".
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad ... however the "request" function "safestr_truncate"
 memset()'s the requested extra space (for safety), in theory you can call the
 internal function safestr_resize(). Writing non-blocking is non-trivial.
@@ -307,7 +307,7 @@ Pointer, length and size (reallocates in powers of 2) -- uses a negative size to
 Self contained namespace of "b", however there are a few somewhat gratuitiuos
 exceptions.
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad. But writing non-blocking is non-trivial.
 Some nice helper functions for blocking IO.
 Deals with any binary data. No <a href="http://cr.yp.to/proto/netstrings.txt">netstring</a> support.
@@ -390,7 +390,7 @@ Pointer, length and size (expansion of length/pointer is done to exact size need
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Self contained namespace of "str_" on all functions and "mystr" and "str_" for structure tag, structure members are in private namespace of "PRIVATE_HANDS_OFF_".
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad. But writing non-blocking is non-trivial.
 Internally the program uses blocking IO.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
@@ -813,7 +813,7 @@ namespace of *_t and there are preprocessing symbols in the system
 namespace __*. Has exceptions for `TRUE', `FALSE', `NUL', and `CRLF'
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
 Has a few different IO functions, all designed for sync. c_buffer can but used
-for <a href="req_trunc_io.html">request/truncate</a>, but it is very simple and
+for <a href="req_trunc_io">request/truncate</a>, but it is very simple and
 you can't convert that into something more useful. C_dstring_load can
 overflow memory.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
@@ -880,7 +880,7 @@ Pointer, length and size
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Needs entire libast API, so terrible ... namespace is all over the place for large parts of the library, although strings tend to stay in spif_str_*() ... but there is no way to get just those functions.
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad -- however as of 0.5 the set_len() function which is the only way of truncating in the API prints a message on stderr saying you are a moron.
 writing non-blocking is non-trivial. Blocking read functions are in the API for file descriptors and ISO C FILE objects. Can deal with binary data as input, but
 a lot of the utility functions assume C-style strings.
@@ -935,7 +935,7 @@ C Style strings (so embedded NIL characters aren't allowed)
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Self contained namespace of "librock_".
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-<a href="req_trunc_io.html">Has request/truncate functions</a>, so appending
+<a href="req_trunc_io">Has request/truncate functions</a>, so appending
 reads aren't bad. But writing non-blocking is non-trivial.
 Some nice helper functions for blocking IO.
 Binary data with NIL values will screw up the representation of the string.
@@ -975,7 +975,7 @@ Requires a lot of baggage. Weird API names, and large function prefix.
 </td> </tr><tr> <td class="sn">Namespace:</td> <td class="sv">
 Self contained namespace of "kns_".
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
-Implementing the <a href="req_trunc_io.html">request/truncate functions</a>, so appending reads aren't bad, isn't too hard ... and within the API.
+Implementing the <a href="req_trunc_io">request/truncate functions</a>, so appending reads aren't bad, isn't too hard ... and within the API.
 But writing non-blocking is non-trivial.
 Some nice helper functions for blocking IO.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
@@ -1054,7 +1054,7 @@ Mostly confined to namespace of "firestring_", however types are in the POSIX
 namespace of *_t and there are two "ESTR_" namespaced macros.
 </td> </tr><tr> <td class="sn">IO:</td> <td class="sv">
 Although it doesn't have a direct API for
-<a href="req_trunc_io.html">request/truncate functions</a>, it seems like you
+<a href="req_trunc_io">request/truncate functions</a>, it seems like you
 should be able to alter the structure manually. Also it has a read function
 that is just as efficient as a request/truncate API.
 </td> </tr><tr> <td class="sn">Testing:</td> <td class="sv">
@@ -1080,7 +1080,7 @@ itself. Failure to allocate memory calls abort().
       It provides functions to operate on C-style strings, with the advantage
 that they are broken everywhere that honours restrict. Functions which operate
 on real dynamically sized strings and ones that take the same type that
-<a href="security.html#alloc">just limit the length of strings</a>. This
+<a href="security#alloc">just limit the length of strings</a>. This
 may well lead to consufion, for instance there
 is a function called "firestring_estr_chug()" which would corrupt data data
 when used with a dynamically allocated freistring (and could lead to a remote
@@ -1291,10 +1291,10 @@ now and again when I might have looked at them.
       me at the address below </p>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Sep  2 15:43:34 EDT 2002 -->
 <!-- hhmts start -->
-Last modified: Wed Dec 29 14:09:45 EST 2004
+Last modified: Sun Jul 31 00:39:57 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

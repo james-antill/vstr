@@ -42,24 +42,19 @@ function del()
 
 function linkup()
 {
-  for dir in src examples; do
+  for dir in src examples include; do
   cd $dir
 
   lndir ../$s/../$dir
 
-# Newer GCCs put them in the $srcdir
-  if [ ! -f ex_httpd-ex_httpd.da -a -f ex_httpd -a ! -f vstr.da ]; then
-    for i in .libs/*.da; do
-      ln -f $i; rm -f $i
-    done
-  fi
+## 4.0 does everything different, again.
+### Newer GCCs put them in the $srcdir
+ ## if [ ! -f ex_httpd-ex_httpd.da -a -f ex_httpd -a ! -f vstr.da ]; then
+ ##   for i in .libs/*.da; do
+ ##     ln -f $i; rm -f $i
+ ##   done
+ ## fi
 
-  cd ..
-  done
-
-  for dir in include; do
-  cd $dir
-  lndir ../$s/../$dir
   cd ..
   done
 }

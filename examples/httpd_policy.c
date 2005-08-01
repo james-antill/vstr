@@ -70,9 +70,7 @@ static int httpd_policy__build_parent_path(Vstr_base *s1, Vstr_base *s2)
   }
       
   len = vstr_sc_posdiff(1, pos);
-  if (len > 1)
-    --len;
-  HTTPD_APP_REF_VSTR(s1, s2, pos, len);
+  HTTPD_APP_REF_VSTR(s1, s2, 1, len);
 
   return (TRUE);
 }

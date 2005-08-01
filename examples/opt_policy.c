@@ -134,10 +134,7 @@ int opt_policy_ipv4_make(Conf_parse *conf, Conf_token *token,
   
   vstr_ref_del(ref);
 
-  if (!ret)
-    return (FALSE);
-  
-  return (TRUE);
+  return (!!ret);
 }
 
 int opt_policy_ipv4_cidr_eq(Opt_policy_ipv4 *data, struct sockaddr *sa)

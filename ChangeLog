@@ -1,3 +1,8 @@
+2005-07-31  James Antill  <james@and.org>
+
+	* src/vstr_add_fmt.c (vstr__fmt_write_spec): Use strerror_r() if
+	available.
+
 2005-07-26  James Antill  <james@and.org>
 
 	* include/vstr-inline.h (vstr_cmp_fast): Added function.

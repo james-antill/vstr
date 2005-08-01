@@ -12,7 +12,7 @@
 
 <p> This page is an advanced tutorial looking at the costs of the different
 Vstr calls, given different data.
-For a <a href="tutorial.html">simpler starting tutorial see this page</a>. </p>
+For a <a href="tutorial">simpler starting tutorial see this page</a>. </p>
 
 
 <h2>Adding data to a Vstr_base object</h2>
@@ -20,19 +20,19 @@ For a <a href="tutorial.html">simpler starting tutorial see this page</a>. </p>
 <p> There are four basic methods of adding data to a Vstr:  </p>
 
 <ul>
-<li><b><a href="functions.html#vstr_add_buf()">vstr_add_buf</a>()</b>
+<li><b><a href="functions#vstr_add_buf()">vstr_add_buf</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_add_non()">vstr_add_non</a>()</b>
+<li><b><a href="functions#vstr_add_non()">vstr_add_non</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_add_ptr()">vstr_add_ptr</a>()</b>
+<li><b><a href="functions#vstr_add_ptr()">vstr_add_ptr</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_add_ref()">vstr_add_ref</a>()</b>
+<li><b><a href="functions#vstr_add_ref()">vstr_add_ref</a>()</b>
 </li>
 </ul>
 
 <p> Each adds a specific type of node in the VSTR_TYPE_NODE prefix,
-<a href="functions.html#vstr_add_buf()">vstr_add_buf</a> adding _BUF nodes
-<a href="functions.html#vstr_add_ptr()">vstr_add_ptr</a> adding _PTR nodes etc.
+<a href="functions#vstr_add_buf()">vstr_add_buf</a> adding _BUF nodes
+<a href="functions#vstr_add_ptr()">vstr_add_ptr</a> adding _PTR nodes etc.
  Nodes of different type cannot be merged, so if you have 512 byte sized _BUF
 nodes and write code like...
 </p>
@@ -51,18 +51,18 @@ wasted in the first node, and still 508 in the third (second _BUF) node.
 <p>
  Note that there are many functions that are built on these four primatives,
 from the simple like
-<a href="functions.html#vstr_add_cstr_buf()">vstr_add_cstr_buf</a>() which just
+<a href="functions#vstr_add_cstr_buf()">vstr_add_cstr_buf</a>() which just
 automatically works out the length, to
-<a href="functions.html#vstr_add_rep_chr()">vstr_add_rep_chr</a>() which works
+<a href="functions#vstr_add_rep_chr()">vstr_add_rep_chr</a>() which works
 "as though" you called
-<a href="functions.html#vstr_add_buf()">vstr_add_buf</a>() after calling
+<a href="functions#vstr_add_buf()">vstr_add_buf</a>() after calling
 memset() on a buffer, without having to double copy and then there are the
 more complicated functions like
-<a href="functions.html#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg</a>()
+<a href="functions#vstr_add_iovec_buf_beg()">vstr_add_iovec_buf_beg</a>()
 and
-<a href="functions.html#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end</a>()
+<a href="functions#vstr_add_iovec_buf_end()">vstr_add_iovec_buf_end</a>()
 which work as though you called
-<a href="functions.html#vstr_add_buf()">vstr_add_buf</a> but they use an iovec
+<a href="functions#vstr_add_buf()">vstr_add_buf</a> but they use an iovec
 scatter gather list.
 </p>
 
@@ -72,26 +72,26 @@ scatter gather list.
 by ust replacing the _add_ name with _sub_: </p>
 
 <ul>
-<li><b><a href="functions.html#vstr_sub_buf()">vstr_sub_buf</a>()</b>
+<li><b><a href="functions#vstr_sub_buf()">vstr_sub_buf</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_sub_non()">vstr_sub_non</a>()</b>
+<li><b><a href="functions#vstr_sub_non()">vstr_sub_non</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_sub_ptr()">vstr_sub_ptr</a>()</b>
+<li><b><a href="functions#vstr_sub_ptr()">vstr_sub_ptr</a>()</b>
 </li>
-<li><b><a href="functions.html#vstr_sub_ref()">vstr_sub_ref</a>()</b>
+<li><b><a href="functions#vstr_sub_ref()">vstr_sub_ref</a>()</b>
 </li>
 </ul>
 
 <p> These functions can all be thought of as doing a delete, followed by the
 coresponding add function. However they are much faster, in many conditions,
 and they are
-<a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS">atomic</a>
+<a href="constants#VSTR_CNTL_CONF_GET_FLAG_ATOMIC_OPS">atomic</a>
 by default. Specifically when substituting via.
-<a href="functions.html#vstr_sub_buf()">vstr_sub_buf</a>() into a _BUF
+<a href="functions#vstr_sub_buf()">vstr_sub_buf</a>() into a _BUF
 node the original data is overwritten with the new data, note that _BUF is the
 only writeable node all other nodes are read-only. And when using either
-<a href="functions.html#vstr_sub_ptr()">vstr_sub_ptr</a>() or
-<a href="functions.html#vstr_sub_ref()">vstr_sub_ref</a>() to replace an entire
+<a href="functions#vstr_sub_ptr()">vstr_sub_ptr</a>() or
+<a href="functions#vstr_sub_ref()">vstr_sub_ref</a>() to replace an entire
 node then the nodes are just swapped in place. For instance:
 </p>
 
@@ -113,14 +113,14 @@ first four of which need to be followed by a delete to remove the data from
 the source. The last one, however, does this in one operation:  </p>
 
 <ul>
-<li><b><a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants.html#VSTR_TYPE_ADD_DEF">VSTR_TYPE_ADD_DEF</a>)</b>:
+<li><b><a href="functions#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants#VSTR_TYPE_ADD_DEF">VSTR_TYPE_ADD_DEF</a>)</b>:
  This is the generic way
 to add data, doing the obvious of copying all nodes. Ie. _BUF in the source
  becomes copied _BUF data in the dfestination, _NON, _PTR and _REF data makes a
 new node with the _NON length, the pointer or the reference. To move data the
 data you'd need to delete it from the source afterwards.
 </li>
-<li><b><a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants.html#VSTR_TYPE_ADD_BUF_REF">VSTR_TYPE_ADD_BUF_REF</a>)</b>: This converts all _BUF
+<li><b><a href="functions#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants#VSTR_TYPE_ADD_BUF_REF">VSTR_TYPE_ADD_BUF_REF</a>)</b>: This converts all _BUF
 nodes to _REF nodes, in the source. Then works the same way as
 VSTR_TYPE_ADD_DEF. This means that you have to use a _REF node and a Vstr_ref
 for each _BUF node in the source, the custom allocation policies in the
@@ -128,15 +128,15 @@ Vstr_conf help here. However it also means that all data becomes read-only,
 and any alterations will require more _BUF nodes to be allocated in the source
 or destination. To move data the
 data you'd need to delete it from the source afterwards.</li>
-<li><b><a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants.html#VSTR_TYPE_ADD_BUF_PTR">VSTR_TYPE_ADD_BUF_PTR</a>)</b>: This is like
+<li><b><a href="functions#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants#VSTR_TYPE_ADD_BUF_PTR">VSTR_TYPE_ADD_BUF_PTR</a>)</b>: This is like
 VSTR_TYPE_ADD_BUF_REF, except that _BUF nodes in the source stay _BUF nodes
 (so alterations are unaffected there) and Vstr_ref nodes are not used.  However
 it also means that the source should not be altered before the destination has
 been deleted, or the data in the destination may be altered or even invalid
 memory. </li>
-<li><b><a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants.html#VSTR_TYPE_ADD_ALL_BUF">VSTR_TYPE_ADD_ALL_BUF</a>)</b>: This option converts
+<li><b><a href="functions#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants#VSTR_TYPE_ADD_ALL_BUF">VSTR_TYPE_ADD_ALL_BUF</a>)</b>: This option converts
 all _PTR and _REF nodes into _BUF nodes, by copying the data in them. </li>
-<li><b><a href="functions.html#vstr_mov()">vstr_mov()</a></b>: This function tried to move the data from the
+<li><b><a href="functions#vstr_mov()">vstr_mov()</a></b>: This function tried to move the data from the
 source to the destionation. This means that if you move <b>entire</b> nodes
 of data, and you haven't deleted data from the begining of a _BUF node that is
 at the begining of the Vstr (or aren't moving that node) and the node sizes for
@@ -148,7 +148,7 @@ as possible to just doing the pointer assingments. However the somewhat common
 case of moving a partial amount of data from a single _BUF node requres copying
 the data in the source so it is in three seperate _BUF nodes, and then moving
 the middle node to the destination. This can often require copying more data
-than if the simple <a href="functions.html#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants.html#VSTR_TYPE_ADD_DEF">VSTR_TYPE_ADD_DEF</a>)
+than if the simple <a href="functions#vstr_add_vstr()">vstr_add_vstr</a>( ..., <a href="constants#VSTR_TYPE_ADD_DEF">VSTR_TYPE_ADD_DEF</a>)
  had been used.</li>
 </ul>
 <p>
@@ -160,9 +160,9 @@ Other methods can be built upon those foundations such as...
 <h2>Deleting data from a Vstr_base object</h2>
 
 <p> There is only a single call to delete data from a Vstr,
- <a href="functions.html#vstr_del()">vstr_del()</a>, however it has different
+ <a href="functions#vstr_del()">vstr_del()</a>, however it has different
 speed characteristics depending on what it needs to delete. Much like
-<a href="functions.html#vstr_mov()">vstr_mov()</a> the worst case is dealing
+<a href="functions#vstr_mov()">vstr_mov()</a> the worst case is dealing
 with data that doesn't go to the end of a _BUF node, with a single exception.
 This requires a single memmove() of all the later data in the node to the start
 of the deletion in that node. All node types can delete data from the end of
@@ -179,17 +179,17 @@ from the begining).
 doing a delete to the end of the node and then doing an add of the data at
 the end of th node . That means that this kind of delete
 <b>requires an allocation</b>, which is why
-<a href="functions.html#vstr_del()">vstr_del()</a>
+<a href="functions#vstr_del()">vstr_del()</a>
 returns a SUCCESS or FAILURE. This also applies to _BUF nodes when the
-<a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT">VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT</a>
+<a href="constants#VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT">VSTR_CNTL_CONF_GET_FLAG_DEL_SPLIT</a>
 attribute is set in the configuration.
  </p>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 26 03:10:51 EST 2004 -->
 <!-- hhmts start -->
-Last modified: Sun Sep 19 21:54:32 EDT 2004
+Last modified: Sun Jul 31 00:36:26 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

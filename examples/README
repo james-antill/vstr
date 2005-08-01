@@ -73,6 +73,7 @@ http://www.sans.org/top20/#u2
 	userdirs?
 	mime_types speed, by having explicit filename/ext matches
         nice()
+        compiling and no brackets doesn't work ... need to skip to num
 	public/symlinks path checking
          allowdev - http://www.arctic.org/~dean/apache/1.3/mod_allowdev.c
 	 fd cache

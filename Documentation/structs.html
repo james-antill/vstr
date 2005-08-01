@@ -108,29 +108,29 @@
 </p><p>  When this reaches the value 0, you are free to call the func member.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  It is safest to only change this by calling either <a href="functions.html#vstr_ref_add_ref%28%29">vstr_ref_add_ref()</a> or
- <a href="functions.html#vstr_ref_del_ref%28%29">vstr_ref_del_ref()</a>. These will automatically call the cleanup function when
+</p><p>  It is safest to only change this by calling either <a href="functions#vstr_ref_add_ref%28%29">vstr_ref_add_ref()</a> or
+ <a href="functions#vstr_ref_del_ref%28%29">vstr_ref_del_ref()</a>. These will automatically call the cleanup function when
  the reference reaches zero.
 
 
-</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">struct Vstr_conf (aka. <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>)</a></h2>
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">struct Vstr_conf (aka. <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>)</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Member: </strong> malloc_bad
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This is a bitflag which is set to TRUE by any function which does an
- allocation on a <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> or <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> that fails, this allows the
+ allocation on a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> or <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> that fails, this allows the
  programmer to call multiple allocation functions and then do a single test.
 
 
-</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">struct Vstr_base (aka. <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>)</a></h2>
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">struct Vstr_base (aka. <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>)</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Member: </strong> len
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This is the length of the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+</p><p>  This is the length of the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">

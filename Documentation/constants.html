@@ -384,8 +384,8 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This only includes the macro  functions which also have real function
- replacements. For example <a href="functions.html#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a> won't be defined because there
- is a <a href="functions.html#vstr_add_cstr_buf%28%29">vstr_add_cstr_buf()</a> function, but <a href="functions.html#VSTR_FMT_CB_ARG_PTR%28%29">VSTR_FMT_CB_ARG_PTR()</a> will always be
+ replacements. For example <a href="functions#VSTR_ADD_CSTR_BUF%28%29">VSTR_ADD_CSTR_BUF()</a> won't be defined because there
+ is a <a href="functions#vstr_add_cstr_buf%28%29">vstr_add_cstr_buf()</a> function, but <a href="functions#VSTR_FMT_CB_ARG_PTR%28%29">VSTR_FMT_CB_ARG_PTR()</a> will always be
  defined.
 
 
@@ -407,7 +407,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This is the largest size a node can be, if you pass values greater than this
- to <a href="functions.html#vstr_add_ptr%28%29">vstr_add_ptr()</a> etc. then multiple nodes will be allocated.
+ to <a href="functions#vstr_add_ptr%28%29">vstr_add_ptr()</a> etc. then multiple nodes will be allocated.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -415,14 +415,14 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This is the largest size a node _BUF type can be, if you pass values greater
- than this to <a href="functions.html#vstr_add_buf%28%29">vstr_add_buf()</a> etc. then multiple nodes will be allocated.
+ than this to <a href="functions#vstr_add_buf%28%29">vstr_add_buf()</a> etc. then multiple nodes will be allocated.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_make_spare_nodes%28%29%20and%20vstr_free_spare_nodes%28%29">Constants passed to
-			 	<a id="vstr_make_spare_nodes()"><a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a></a>
+			 	<a id="vstr_make_spare_nodes()"><a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a></a>
 
 		       and
-			 	<a id="vstr_free_spare_nodes()"><a href="functions.html#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a></a>
+			 	<a id="vstr_free_spare_nodes()"><a href="functions#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a></a>
 
 		      </a></h2>
 
@@ -430,13 +430,13 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_NODE_BUF">VSTR_TYPE_NODE_BUF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to <a href="functions.html#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _BUF,
+</p><p>  This type when passed to <a href="functions#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _BUF,
  which are the only nodes that can be "written" to. These nodes are added into
- a <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> by the <a href="functions.html#vstr_add_buf%28%29">vstr_add_buf()</a> function and the vstr_add_iovec_buf_*()
+ a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> by the <a href="functions#vstr_add_buf%28%29">vstr_add_buf()</a> function and the vstr_add_iovec_buf_*()
  functions.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  A call to <a href="functions.html#vstr_sub_buf%28%29">vstr_sub_buf()</a> with a <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisting of _BUF nodes means
+</p><p>  A call to <a href="functions#vstr_sub_buf%28%29">vstr_sub_buf()</a> with a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisting of _BUF nodes means
  that data will be substituted inplace.
 
 
@@ -444,16 +444,16 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_NODE_NON">VSTR_TYPE_NODE_NON</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to <a href="functions.html#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _NON,
+</p><p>  This type when passed to <a href="functions#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _NON,
  which are nodes that contain "nothing". These nodes can be used as placeholders
- for data, and are added into a <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> by the <a href="functions.html#vstr_add_non%28%29">vstr_add_non()</a> function.
+ for data, and are added into a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> by the <a href="functions#vstr_add_non%28%29">vstr_add_non()</a> function.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_NODE_PTR">VSTR_TYPE_NODE_PTR</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to <a href="functions.html#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _PTR,
+</p><p>  This type when passed to <a href="functions#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _PTR,
  which are nodes that contain a memory pointer to an area of memory.
 
 
@@ -461,15 +461,15 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_NODE_REF">VSTR_TYPE_NODE_REF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to <a href="functions.html#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _REF,
+</p><p>  This type when passed to <a href="functions#vstr_make_space_nodes%28%29">vstr_make_space_nodes()</a> specifies nodes of type _REF,
  which are nodes that contain a Vstr memory reference.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_add_vstr%28%29%20and%20vstr_sub_vstr%28%29">Constants passed to
-			 	<a id="vstr_add_vstr()"><a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a></a>
+			 	<a id="vstr_add_vstr()"><a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a></a>
 
 		       and
-			 	<a id="vstr_sub_vstr()"><a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a></a>
+			 	<a id="vstr_sub_vstr()"><a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a></a>
 
 		      </a></h2>
 
@@ -478,7 +478,7 @@
 <br><strong>Constant: </strong> <a id="VSTR_TYPE_SUB_DEF">VSTR_TYPE_SUB_DEF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to either <a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
+</p><p>  This type when passed to either <a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
  that all types of nodes are added as their respective type.
 
 
@@ -487,11 +487,11 @@
 <br><strong>Constant: </strong> <a id="VSTR_TYPE_SUB_BUF_PTR">VSTR_TYPE_SUB_BUF_PTR</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to either <a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
+</p><p>  This type when passed to either <a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
  that all nodes of type _BUF are added as type _PTR.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If you add/del/sub data in the original <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> then because the added
+</p><p>  If you add/del/sub data in the original <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> then because the added
  data is only pointers to the old data, life may become interesting for you.
 
 
@@ -500,14 +500,14 @@
 <br><strong>Constant: </strong> <a id="VSTR_TYPE_SUB_BUF_REF">VSTR_TYPE_SUB_BUF_REF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to either <a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
+</p><p>  This type when passed to either <a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
  that all nodes of type _BUF are converted to type _REF before being added.
 
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This means that if you do a substitution on the original <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> it will
+</p><p>  This means that if you do a substitution on the original <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> it will
  now be less efficient, as the _REF nodes cannot have data substituted in place.
-</p><p>  The _BUF nodes will not go back to the pool in the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> as
+</p><p>  The _BUF nodes will not go back to the pool in the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> as
  happens if you deleted them.
 
 
@@ -516,9 +516,9 @@
 <br><strong>Constant: </strong> <a id="VSTR_TYPE_SUB_ALL_REF">VSTR_TYPE_SUB_ALL_REF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to either <a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
- that the data should be taken as though <a href="functions.html#vstr_export_ref%28%29">vstr_export_ref()</a> was called on the
- original <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+</p><p>  This type when passed to either <a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
+ that the data should be taken as though <a href="functions#vstr_export_ref%28%29">vstr_export_ref()</a> was called on the
+ original <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -526,12 +526,12 @@
 <br><strong>Constant: </strong> <a id="VSTR_TYPE_SUB_ALL_BUF">VSTR_TYPE_SUB_ALL_BUF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type when passed to either <a href="functions.html#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions.html#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
- that the data should all be added via. <a href="functions.html#vstr_add_buf%28%29">vstr_add_buf()</a>.
+</p><p>  This type when passed to either <a href="functions#vstr_sub_vstr%28%29">vstr_sub_vstr()</a> or <a href="functions#vstr_add_vstr%28%29">vstr_add_vstr()</a> specifies
+ that the data should all be added via. <a href="functions#vstr_add_buf%28%29">vstr_add_buf()</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_fmt_add%28%29">Constants passed to
-			 	<a id="vstr_fmt_add()"><a href="functions.html#vstr_fmt_add%28%29">vstr_fmt_add()</a></a>
+			 	<a id="vstr_fmt_add()"><a href="functions#vstr_fmt_add%28%29">vstr_fmt_add()</a></a>
 
 		      </a></h2>
 
@@ -544,7 +544,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Because you can have multiple arguments associated with one custom &quot;fmt&quot;
  specification this has to be the last argument to every call to
- <a href="functions.html#vstr_fmt_add%28%29">vstr_fmt_add()</a>.
+ <a href="functions#vstr_fmt_add%28%29">vstr_fmt_add()</a>.
 </p><p>  Just specifying this type means that there are no arguments used, by the
  custom "fmt" specification.
 
@@ -553,7 +553,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_INT">VSTR_TYPE_FMT_INT</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;int&quot; type from
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;int&quot; type from
  the argument list passed to it
 
 
@@ -561,7 +561,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_UINT">VSTR_TYPE_FMT_UINT</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned int&quot; type from
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned int&quot; type from
  the argument list passed to it
 
 
@@ -569,7 +569,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_LONG">VSTR_TYPE_FMT_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long&quot; type from
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long&quot; type from
  the argument list passed to it
 
 
@@ -577,7 +577,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_ULONG">VSTR_TYPE_FMT_ULONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned long&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned long&quot; type
  from the argument list passed to it
 
 
@@ -585,7 +585,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_LONG_LONG">VSTR_TYPE_FMT_LONG_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long long&quot; type from
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long long&quot; type from
  the argument list passed to it
 
 
@@ -593,7 +593,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_ULONG_LONG">VSTR_TYPE_FMT_ULONG_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned long long&quot;
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;unsigned long long&quot;
  type from the argument list passed to it
 
 
@@ -601,7 +601,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_SSIZE_T">VSTR_TYPE_FMT_SSIZE_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;ssize_t&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;ssize_t&quot; type
  from the argument list passed to it
 
 
@@ -609,7 +609,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_SIZE_T">VSTR_TYPE_FMT_SIZE_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;size_t&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;size_t&quot; type
  from the argument list passed to it
 
 
@@ -617,7 +617,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTRDIFF_T">VSTR_TYPE_FMT_PTRDIFF_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;ptrdiff_t&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;ptrdiff_t&quot; type
  from the argument list passed to it
 
 
@@ -625,7 +625,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_INTMAX_T">VSTR_TYPE_FMT_INTMAX_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;intmax_t&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;intmax_t&quot; type
  from the argument list passed to it
 
 
@@ -633,7 +633,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_UINTMAX_T">VSTR_TYPE_FMT_UINTMAX_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;uintmax_t&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;uintmax_t&quot; type
  from the argument list passed to it
 
 
@@ -641,7 +641,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_DOUBLE">VSTR_TYPE_FMT_DOUBLE</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;double&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;double&quot; type
  from the argument list passed to it
 
 
@@ -649,7 +649,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_DOUBLE_LONG">VSTR_TYPE_FMT_DOUBLE_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long double&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;long double&quot; type
  from the argument list passed to it
 
 
@@ -657,7 +657,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_VOID">VSTR_TYPE_FMT_PTR_VOID</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;void *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;void *&quot; type
  from the argument list passed to it
 
 
@@ -665,7 +665,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_CHAR">VSTR_TYPE_FMT_PTR_CHAR</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;char *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;char *&quot; type
  from the argument list passed to it
 
 
@@ -673,7 +673,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_WCHAR_T">VSTR_TYPE_FMT_PTR_WCHAR_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;wchar_t *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect a &quot;wchar_t *&quot; type
  from the argument list passed to it
 
 
@@ -681,7 +681,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_INT">VSTR_TYPE_FMT_PTR_INT</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;int *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;int *&quot; type
  from the argument list passed to it
 
 
@@ -689,7 +689,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_INTMAX_T">VSTR_TYPE_FMT_PTR_INTMAX_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;intmax_t *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;intmax_t *&quot; type
  from the argument list passed to it
 
 
@@ -697,7 +697,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_LONG">VSTR_TYPE_FMT_PTR_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long *&quot; type
  from the argument list passed to it
 
 
@@ -705,7 +705,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_LONG_LONG">VSTR_TYPE_FMT_PTR_LONG_LONG</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long long *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;long long *&quot; type
  from the argument list passed to it
 
 
@@ -713,7 +713,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_PTRDIFF_T">VSTR_TYPE_FMT_PTR_PTRDIFF_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ptrdiff_t *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ptrdiff_t *&quot; type
  from the argument list passed to it
 
 
@@ -721,7 +721,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SHORT">VSTR_TYPE_FMT_PTR_SHORT</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;short *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;short *&quot; type
  from the argument list passed to it
 
 
@@ -729,7 +729,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SIGNED_CHAR">VSTR_TYPE_FMT_PTR_SIGNED_CHAR</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;signed char *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;signed char *&quot; type
  from the argument list passed to it
 
 
@@ -737,7 +737,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_PTR_SSIZE_T">VSTR_TYPE_FMT_PTR_SSIZE_T</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ssize_t *&quot; type
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should expect an &quot;ssize_t *&quot; type
  from the argument list passed to it
 
 
@@ -745,9 +745,9 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_FMT_ERRNO">VSTR_TYPE_FMT_ERRNO</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag means that <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should not expect any arguments passed,
+</p><p>  This flag means that <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> should not expect any arguments passed,
  but should set the value of errno, just before calling the user callback, to
- the value upon entering <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>.
+ the value upon entering <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20returned%20from%20vstr_iter_fwd_%2a%28%29">Constants returned from vstr_iter_fwd_*()</a></h2>
@@ -773,11 +773,11 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This return flag means that the data is actually from within a node of type
- <a href="constants.html#VSTR_TYPE_NODE_NON">VSTR_TYPE_NODE_NON</a>.
+ <a href="constants#VSTR_TYPE_NODE_NON">VSTR_TYPE_NODE_NON</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sc_fmt_cb_beg%28%29">Constants passed to
-			 	<a id="vstr_sc_fmt_cb_beg()"><a href="functions.html#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a></a>
+			 	<a id="vstr_sc_fmt_cb_beg()"><a href="functions#vstr_sc_fmt_cb_beg%28%29">vstr_sc_fmt_cb_beg()</a></a>
 
 		      </a></h2>
 
@@ -785,7 +785,7 @@
 <strong>Constant: </strong> <a id="VSTR_FLAG_SC_FMT_CB_BEG_DEF">VSTR_FLAG_SC_FMT_CB_BEG_DEF</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag is the same as just specifying <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR</a>.
+</p><p>  This flag is the same as just specifying <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_STR</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -822,7 +822,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as negative number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -831,7 +831,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as an uppercase hexadecimal (base 16) number. This flag has no meaning
- if <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ if <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -840,7 +840,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as a lowercase hexadecimal (base 16) number. This flag has no meaning
- if <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ if <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -849,7 +849,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as octal (base 8) number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -858,7 +858,7 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as an uppercase base 2 number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -867,14 +867,14 @@
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag indicates that the number object you are printing should be
  treated as a lowercase base 2 number. This flag has no meaning if
- <a href="constants.html#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
+ <a href="constants#VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM">VSTR_FLAG_SC_FMT_CB_BEG_OBJ_NUM</a> is not set.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_conv_unprintable_del%28%29%20and%20vstr_conv_unprintable_chr%28%29">Constants passed to
-			 	<a id="vstr_conv_unprintable_del()"><a href="functions.html#vstr_conv_unprintable_del%28%29">vstr_conv_unprintable_del()</a></a>
+			 	<a id="vstr_conv_unprintable_del()"><a href="functions#vstr_conv_unprintable_del%28%29">vstr_conv_unprintable_del()</a></a>
 
 		       and
-			 	<a id="vstr_conv_unprintable_chr()"><a href="functions.html#vstr_conv_unprintable_chr%28%29">vstr_conv_unprintable_chr()</a></a>
+			 	<a id="vstr_conv_unprintable_chr()"><a href="functions#vstr_conv_unprintable_chr%28%29">vstr_conv_unprintable_chr()</a></a>
 
 		      </a></h2>
 
@@ -888,7 +888,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  Because it is sometimes hard are to notice certain characters, they are
  classified as "unprintable" by default, the value
- <a href="constants.html#VSTR_FLAG_CONV_UNPRINTABLE_DEF">VSTR_FLAG_CONV_UNPRINTABLE_DEF</a> is a default that is what most people would
+ <a href="constants#VSTR_FLAG_CONV_UNPRINTABLE_DEF">VSTR_FLAG_CONV_UNPRINTABLE_DEF</a> is a default that is what most people would
  expect to be classified as unprintable.
 
 
@@ -1037,7 +1037,7 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_num%28%29%20etc%2e">Constants passed to
-			 	<a id="vstr_parse_num()"><a href="functions.html#vstr_parse_num%28%29">vstr_parse_num()</a></a>
+			 	<a id="vstr_parse_num()"><a href="functions#vstr_parse_num%28%29">vstr_parse_num()</a></a>
 
 		       etc.</a></h2>
 
@@ -1046,21 +1046,21 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred parsing the
- number from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ number from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_ONLY_S">VSTR_TYPE_PARSE_NUM_ERR_ONLY_S</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only of spaces.
+</p><p>  This error code means that the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only of spaces.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM">VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPM</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only spaces, and a plus
+</p><p>  This error code means that the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only spaces, and a plus
  or minus sign.
 
 
@@ -1068,7 +1068,7 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX">VSTR_TYPE_PARSE_NUM_ERR_ONLY_SPMX</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only spaces, a plus
+</p><p>  This error code means that the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> consisted only spaces, a plus
  or minus sign and a "0x" base 16 prefix.
 
 
@@ -1076,11 +1076,11 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_OOB">VSTR_TYPE_PARSE_NUM_ERR_OOB</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> had characters in it that where
+</p><p>  This error code means that the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> had characters in it that where
  out of bounds from the working set.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This out of bounds includes the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> &quot;++&quot; as well as &quot;4A&quot;, when
+</p><p>  This out of bounds includes the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> &quot;++&quot; as well as &quot;4A&quot;, when
  parsing in a base less than 11.
 
 
@@ -1088,16 +1088,16 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW">VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the number parsed from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> would
+</p><p>  This error code means that the number parsed from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> would
  overflow the type it is being parsed into, this is only returned when the
- <a href="constants.html#VSTR_FLAG_PARSE_NUM_OVERFLOW">VSTR_FLAG_PARSE_NUM_OVERFLOW</a> flag was passed to the parse function.
+ <a href="constants#VSTR_FLAG_PARSE_NUM_OVERFLOW">VSTR_FLAG_PARSE_NUM_OVERFLOW</a> flag was passed to the parse function.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE">VSTR_TYPE_PARSE_NUM_ERR_NEGATIVE</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the number parsed from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> starts
+</p><p>  This error code means that the number parsed from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> starts
  with a '-' (Hyphen) character when it is supposed to be an unsigned type.
 
 
@@ -1105,8 +1105,8 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO">VSTR_TYPE_PARSE_NUM_ERR_BEG_ZERO</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the number parsed from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> starts
- with a '0' (Digit Zero) character, when the <a href="constants.html#VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO">VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO</a>
+</p><p>  This error code means that the number parsed from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> starts
+ with a '0' (Digit Zero) character, when the <a href="constants#VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO">VSTR_FLAG_PARSE_NUM_NO_BEG_ZERO</a>
  flag was passed to the parse function.
 
 
@@ -1145,11 +1145,11 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag turns on the overflow checking, in other words without it
- <a href="constants.html#VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW">VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW</a> will never be returned as an error code.
+ <a href="constants#VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW">VSTR_TYPE_PARSE_NUM_ERR_OVERFLOW</a> will never be returned as an error code.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The return value with this set is the highest number that can be parsed from
- the beginning of the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>, while the value without this flag would be
+ the beginning of the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>, while the value without this flag would be
  the parsed number modulo the highest number of the type.
 </p><p>  For example given a type that had a maximum of 10, then parsing &quot;64&quot; would
  give you 6 with the flag, and 4 without.
@@ -1184,12 +1184,12 @@
 </p><p>  This flag disallows negative values.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  While this flag can be passed to <a href="functions.html#vstr_parse_int%28%29">vstr_parse_int()</a> etc. it is most useful when
- passed to the generic function <a href="functions.html#vstr_parse_num%28%29">vstr_parse_num()</a>.
+</p><p>  While this flag can be passed to <a href="functions#vstr_parse_int%28%29">vstr_parse_int()</a> etc. it is most useful when
+ passed to the generic function <a href="functions#vstr_parse_num%28%29">vstr_parse_num()</a>.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_ipv4%28%29">Constants passed to
-			 	<a id="vstr_parse_ipv4()"><a href="functions.html#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a></a>
+			 	<a id="vstr_parse_ipv4()"><a href="functions#vstr_parse_ipv4%28%29">vstr_parse_ipv4()</a></a>
 
 		      </a></h2>
 
@@ -1198,7 +1198,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred parsing the
- ipv4 address from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ ipv4 address from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1206,7 +1206,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the numbers for the ipv4 address in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1222,7 +1222,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the ipv4 address, and option mask, wasn't the only
- thing in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ thing in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  When this error code is returned, the ip address is still parsed out and as
@@ -1234,7 +1234,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the numbers for the ipv4 CIDR mask in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1250,14 +1250,14 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the numbers for the ipv4 netmask in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL">VSTR_TYPE_PARSE_IPV4_ERR_NETMASK_FULL</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This error code means that the ipv4 CIDR mask wasn't full (Ie.
+</p><p>  This error code means that the ipv4 NETMASK mask wasn't full (Ie.
  127.0.0.1/255.0 is an ipv4 address with a non full ipv4 netmask).
 
 
@@ -1318,9 +1318,9 @@
 </p><p>  This flag allows the parsing out of a ipv4 netmask, if one is present.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If both this and the <a href="constants.html#VSTR_FLAG_PARSE_IPV4_CIDR">VSTR_FLAG_PARSE_IPV4_CIDR</a> flag is given, then either
- masking interface will be parsed out as no valid CIDR value is a valid netmask
- prefix.
+</p><p>  If both this and the <a href="constants#VSTR_FLAG_PARSE_IPV4_CIDR">VSTR_FLAG_PARSE_IPV4_CIDR</a> flag is given, then either
+ masking interface will be parsed out (it will try a CIDR mask first and if
+ that filas, fall back to a netmask prefix).
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1328,7 +1328,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag changes the parsing so that the function will return an error if a
- non full ipv4 CIDR mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non
+ non full ipv4 NETMASK mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non
  full ipv4 netmask). If this flag isn't given the missing numbers are assumed to
  be zero.
 
@@ -1346,7 +1346,7 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_parse_ipv6%28%29">Constants passed to
-			 	<a id="vstr_parse_ipv6()"><a href="functions.html#vstr_parse_ipv6%28%29">vstr_parse_ipv6()</a></a>
+			 	<a id="vstr_parse_ipv6()"><a href="functions#vstr_parse_ipv6%28%29">vstr_parse_ipv6()</a></a>
 
 		      </a></h2>
 
@@ -1355,7 +1355,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred parsing the
- ipv6 address from the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ ipv6 address from the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1363,7 +1363,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the numbers for the ipv6 address in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1379,7 +1379,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the ipv6 address, and option mask, wasn't the only
- thing in the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ thing in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  When this error code is returned, the ip address is still parsed out and as
@@ -1391,7 +1391,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the numbers for the ipv6 CIDR mask in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> where out of bounds.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1492,7 +1492,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag outputs the ipv6 address in the same way as
- <a href="constants.html#VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED">VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED</a>, except that the last 2 groups of hexadecimal
+ <a href="constants#VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED">VSTR_TYPE_SC_FMT_CB_IPV6_ALIGNED</a>, except that the last 2 groups of hexadecimal
  values (the last 4 octets) are replaced with an ipv4 address.
 
 
@@ -1501,7 +1501,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag outputs the ipv6 address in the same way as
- <a href="constants.html#VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT">VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT</a>, except that the last 2 groups of hexadecimal
+ <a href="constants#VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT">VSTR_TYPE_SC_FMT_CB_IPV6_COMPACT</a>, except that the last 2 groups of hexadecimal
  values (the last 4 octets) are replaced with an ipv4 address.
 
 
@@ -1510,23 +1510,23 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This flag outputs the ipv6 address in the same way as
- <a href="constants.html#VSTR_TYPE_SC_FMT_CB_IPV6_STD">VSTR_TYPE_SC_FMT_CB_IPV6_STD</a>, except that the last 2 groups of hexadecimal
+ <a href="constants#VSTR_TYPE_SC_FMT_CB_IPV6_STD">VSTR_TYPE_SC_FMT_CB_IPV6_STD</a>, except that the last 2 groups of hexadecimal
  values (the last 4 octets) are replaced with an ipv4 address.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_split_buf%28%29%2c%20vstr_split_cstr_buf%28%29%2c%20VSTR_SPLIT_CSTR_BUF%28%29%2c%20vstr_split_chrs%28%29%2c%20vstr_split_cstr_chrs%28%29%20and%20VSTR_SPLIT_CSTR_CHRS%28%29">Constants passed to
-			 	<a id="vstr_split_buf()"><a href="functions.html#vstr_split_buf%28%29">vstr_split_buf()</a></a>
+			 	<a id="vstr_split_buf()"><a href="functions#vstr_split_buf%28%29">vstr_split_buf()</a></a>
 
 		      ,
-			 	<a id="vstr_split_cstr_buf()"><a href="functions.html#vstr_split_cstr_buf%28%29">vstr_split_cstr_buf()</a></a>
+			 	<a id="vstr_split_cstr_buf()"><a href="functions#vstr_split_cstr_buf%28%29">vstr_split_cstr_buf()</a></a>
 
-		      , <a href="functions.html#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>,
-			 	<a id="vstr_split_chrs()"><a href="functions.html#vstr_split_chrs%28%29">vstr_split_chrs()</a></a>
+		      , <a href="functions#VSTR_SPLIT_CSTR_BUF%28%29">VSTR_SPLIT_CSTR_BUF()</a>,
+			 	<a id="vstr_split_chrs()"><a href="functions#vstr_split_chrs%28%29">vstr_split_chrs()</a></a>
 
 		      ,
-			 	<a id="vstr_split_cstr_chrs()"><a href="functions.html#vstr_split_cstr_chrs%28%29">vstr_split_cstr_chrs()</a></a>
+			 	<a id="vstr_split_cstr_chrs()"><a href="functions#vstr_split_cstr_chrs%28%29">vstr_split_cstr_chrs()</a></a>
 
-		       and <a href="functions.html#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a></a></h2>
+		       and <a href="functions#VSTR_SPLIT_CSTR_CHRS%28%29">VSTR_SPLIT_CSTR_CHRS()</a></a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_FLAG_SPLIT_DEF">VSTR_FLAG_SPLIT_DEF</a>
@@ -1582,10 +1582,10 @@
 <strong>Constant: </strong> <a id="VSTR_FLAG_SPLIT_NO_RET">VSTR_FLAG_SPLIT_NO_RET</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This flag allows the split functions to return 1, when the <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a>
+</p><p>  This flag allows the split functions to return 1, when the <a href="structs#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a>
  doesn't have any more room. Without the flag the split functions would
  calculate the number of splits that would have been added if there was room
- in the <a href="structs.html#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a>.
+ in the <a href="structs#struct%20Vstr_sects%20%28aka%2e%20Vstr%20sections%29">Vstr sections</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1597,7 +1597,7 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sects_foreach%28%29">Constants passed to
-			 	<a id="vstr_sects_foreach()"><a href="functions.html#vstr_sects_foreach%28%29">vstr_sects_foreach()</a></a>
+			 	<a id="vstr_sects_foreach()"><a href="functions#vstr_sects_foreach%28%29">vstr_sects_foreach()</a></a>
 
 		      </a></h2>
 
@@ -1650,13 +1650,13 @@
  the same thing as a break statement in a C for loop.
 
 
-</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20used%20with%20the%20callback%20from%20vstr_cache_add_cb%28%29">Constants used with the callback from <a href="functions.html#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a></a></h2>
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20used%20with%20the%20callback%20from%20vstr_cache_add_cb%28%29">Constants used with the callback from <a href="functions#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a></a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_CACHE_ADD">VSTR_TYPE_CACHE_ADD</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type means that an add operation has just happened on the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>,
+</p><p>  This type means that an add operation has just happened on the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>,
  the position and length arguments are as taken from one of the vstr_add_*
  functions.
 
@@ -1665,8 +1665,8 @@
 <strong>Constant: </strong> <a id="VSTR_TYPE_CACHE_DEL">VSTR_TYPE_CACHE_DEL</a>
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This type means that a delete operation has just happened on the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>,
- the position and length arguments are as taken from the <a href="functions.html#vstr_del%28%29">vstr_del()</a> function.
+</p><p>  This type means that a delete operation has just happened on the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>,
+ the position and length arguments are as taken from the <a href="functions#vstr_del%28%29">vstr_del()</a> function.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1674,7 +1674,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This type means that a substitute operation has just happened on the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>, the position and length arguments are as taken from one of the
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>, the position and length arguments are as taken from one of the
  vstr_sub_* functions.
 
 
@@ -1688,10 +1688,10 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sc_mmap_fd%28%29%20and%20vstr_sc_mmap_file%28%29">Constants passed to
-			 	<a id="vstr_sc_mmap_fd()"><a href="functions.html#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a></a>
+			 	<a id="vstr_sc_mmap_fd()"><a href="functions#vstr_sc_mmap_fd%28%29">vstr_sc_mmap_fd()</a></a>
 
 		       and
-			 	<a id="vstr_sc_mmap_file()"><a href="functions.html#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a></a>
+			 	<a id="vstr_sc_mmap_file()"><a href="functions#vstr_sc_mmap_file%28%29">vstr_sc_mmap_file()</a></a>
 
 		      </a></h2>
 
@@ -1701,7 +1701,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred adding the
- mapping into the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ mapping into the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1758,7 +1758,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the memory mapping was too big to fit in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (with LFS extensions files are 63 bits, while on a 32 bit
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (with LFS extensions files are 63 bits, while on a 32 bit
  computer memory space is still only 32 bits so this isn't a corner case).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -1766,16 +1766,16 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sc_read_iov_fd%28%29%2c%20vstr_sc_read_len_fd%28%29%2c%20vstr_sc_read_iov_file%28%29%20and%20vstr_sc_read_len_file%28%29">Constants passed to
-			 	<a id="vstr_sc_read_iov_fd()"><a href="functions.html#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a></a>
+			 	<a id="vstr_sc_read_iov_fd()"><a href="functions#vstr_sc_read_iov_fd%28%29">vstr_sc_read_iov_fd()</a></a>
 
 		      ,
-			 	<a id="vstr_sc_read_len_fd()"><a href="functions.html#vstr_sc_read_len_fd%28%29">vstr_sc_read_len_fd()</a></a>
+			 	<a id="vstr_sc_read_len_fd()"><a href="functions#vstr_sc_read_len_fd%28%29">vstr_sc_read_len_fd()</a></a>
 
 		      ,
-			 	<a id="vstr_sc_read_iov_file()"><a href="functions.html#vstr_sc_read_iov_file%28%29">vstr_sc_read_iov_file()</a></a>
+			 	<a id="vstr_sc_read_iov_file()"><a href="functions#vstr_sc_read_iov_file%28%29">vstr_sc_read_iov_file()</a></a>
 
 		       and
-			 	<a id="vstr_sc_read_len_file()"><a href="functions.html#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a></a>
+			 	<a id="vstr_sc_read_len_file()"><a href="functions#vstr_sc_read_len_file%28%29">vstr_sc_read_len_file()</a></a>
 
 		      </a></h2>
 
@@ -1785,7 +1785,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred adding the
- read() data into the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ read() data into the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1862,7 +1862,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code means that the memory mapping was too big to fit in the
- <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (with LFS extensions files are 63 bits, while on a 32 bit
+ <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (with LFS extensions files are 63 bits, while on a 32 bit
  computer memory space is still hard limited to 32 bits so this isn't a
  corner case).
 
@@ -1871,10 +1871,10 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_sc_write_fd%28%29%20and%20vstr_sc_write_file%28%29">Constants passed to
-			 	<a id="vstr_sc_write_fd()"><a href="functions.html#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a></a>
+			 	<a id="vstr_sc_write_fd()"><a href="functions#vstr_sc_write_fd%28%29">vstr_sc_write_fd()</a></a>
 
 		       and
-			 	<a id="vstr_sc_write_file()"><a href="functions.html#vstr_sc_write_file%28%29">vstr_sc_write_file()</a></a>
+			 	<a id="vstr_sc_write_file()"><a href="functions#vstr_sc_write_file%28%29">vstr_sc_write_file()</a></a>
 
 		      </a></h2>
 
@@ -1884,7 +1884,7 @@
 
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This error code has the value 0, and means that no error occurred adding the
- read() data into the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+ read() data into the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1935,32 +1935,32 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_cntl_base%28%29">Constants passed to
-			 	<a id="vstr_cntl_base()"><a href="functions.html#vstr_cntl_base%28%29">vstr_cntl_base()</a></a>
+			 	<a id="vstr_cntl_base()"><a href="functions#vstr_cntl_base%28%29">vstr_cntl_base()</a></a>
 
 		      </a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_CNTL_BASE_GET_CONF">VSTR_CNTL_BASE_GET_CONF</a>
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Return <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Return <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will get the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> for the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>
+</p><p>  This option will get the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> for the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_CNTL_BASE_SET_CONF">VSTR_CNTL_BASE_SET_CONF</a>
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will set the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> for the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+</p><p>  This option will set the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> for the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This will only return successfully if either the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> is empty, or
+</p><p>  This will only return successfully if either the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> is empty, or
  the Vstr configurations have the same value for the _NUM_BUF_SZ attribute and
- the new configuration has the same caches registered. See <a href="functions.html#vstr_swap_cache%28%29">vstr_swap_cache()</a>
+ the new configuration has the same caches registered. See <a href="functions#vstr_swap_cache%28%29">vstr_swap_cache()</a>
  for a function that tries to do what you want.
-</p><p>  If the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> (Parameter[1]) is NULL, then the default
- <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> will be used.
+</p><p>  If the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> (Parameter[1]) is NULL, then the default
+ <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> will be used.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -1968,8 +1968,8 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of flag<br>Type<strong>[1]</strong>: int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option lets you know if the <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> can cache data, this can only
- be controlled using the <a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> flag before
+</p><p>  This option lets you know if the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> can cache data, this can only
+ be controlled using the <a href="constants#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> flag before
  allocation.
 
 
@@ -1979,12 +1979,12 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will get the type of the group allocation for the Vstr base,
- this can only be controlled using the <a href="constants.html#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a>
+ this can only be controlled using the <a href="constants#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a>
  type before allocation.
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_cntl_conf%28%29">Constants passed to
-			 	<a id="vstr_cntl_conf()"><a href="functions.html#vstr_cntl_conf%28%29">vstr_cntl_conf()</a></a>
+			 	<a id="vstr_cntl_conf()"><a href="functions#vstr_cntl_conf%28%29">vstr_cntl_conf()</a></a>
 
 		      </a></h2>
 
@@ -2012,8 +2012,8 @@
 </p><p>  This option will set the size of the allocated portion of a _BUF type node.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This will fail if Vstr strings are using the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
-</p><p>  The value cannot be higher than <a href="constants.html#VSTR_MAX_NODE_BUF">VSTR_MAX_NODE_BUF</a>.
+</p><p>  This will fail if Vstr strings are using the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
+</p><p>  The value cannot be higher than <a href="constants#VSTR_MAX_NODE_BUF">VSTR_MAX_NODE_BUF</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2055,7 +2055,7 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns number of references<br>Type<strong>[1]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will get the number of references to the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
+</p><p>  This option will get the number of references to the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2063,7 +2063,7 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Name of system LC_NUMERIC locale<br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will set the LC_NUMERIC variables in the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to be
+</p><p>  This option will set the LC_NUMERIC variables in the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to be
  those specified in the system locale (Parameter[1]).
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2081,7 +2081,7 @@
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC">VSTR_CNTL_CONF_SET_LOC_CSTR_NAME_NUMERIC</a>
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of LC_NUMERIC locale in <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Name of LC_NUMERIC locale in <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: const char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will set the name of the LC_NUMERIC locale.
 
@@ -2190,12 +2190,12 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Value of flag<br>Type<strong>[1]</strong>: int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will allow the Vstr strings made from the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to
+</p><p>  This option will allow the Vstr strings made from the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to
  cache data.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If this option is turned off <a href="functions.html#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a> will not work on Vstr strings
- made from the the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>. However each <a href="structs.html#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> will become
+</p><p>  If this option is turned off <a href="functions#vstr_cache_add_cb%28%29">vstr_cache_add_cb()</a> will not work on Vstr strings
+ made from the the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>. However each <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> will become
  smaller due to the lack of cache.
 
 
@@ -2205,7 +2205,7 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns value of escape character for custom format specifiers<br>Type<strong>[1]</strong>: char *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will return the character used for specifying custom format
- specifiers in the <a href="functions.html#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> function.
+ specifiers in the <a href="functions#vstr_add_vfmt%28%29">vstr_add_vfmt()</a> function.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2213,12 +2213,12 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Value of escape character for custom format specifiers<br>Type<strong>[1]</strong>: int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will allow the Vstr strings using the <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to
- use custom format specifiers in the <a href="functions.html#vstr_fmt_vfmt%28%29">vstr_fmt_vfmt()</a> function.
+</p><p>  This option will allow the Vstr strings using the <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a> to
+ use custom format specifiers in the <a href="functions#vstr_fmt_vfmt%28%29">vstr_fmt_vfmt()</a> function.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  If this option is set to 0 ('\0') then <a href="functions.html#vstr_fmt_vfmt%28%29">vstr_fmt_vfmt()</a> acts like
- <a href="functions.html#vstr_fmt_vsysfmt%28%29">vstr_fmt_vsysfmt()</a>.
+</p><p>  If this option is set to 0 ('\0') then <a href="functions#vstr_fmt_vfmt%28%29">vstr_fmt_vfmt()</a> acts like
+ <a href="functions#vstr_fmt_vsysfmt%28%29">vstr_fmt_vsysfmt()</a>.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2241,12 +2241,12 @@
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Number of spare nodes to have for the specified type<br>Type<strong>[1]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option is will set the number of spare nodes of the specified type,
- by calling either <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> or <a href="functions.html#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>.
+ by calling either <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> or <a href="functions#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  When the value specified is higher and it calls <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> then
+</p><p>  When the value specified is higher and it calls <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> then
  a return value of FALSE means that there was a malloc error, just as if you
- called <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> directly.
+ called <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> directly.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2257,7 +2257,7 @@
 </p><p>  This option will return the status of the flag that makes the vstr functions
  do atomic alterations to the string data. If the flag is set then all functions
  will either return successfully, or not alter the data of the vstr from the
- point of view of <a href="functions.html#vstr_cmp%28%29">vstr_cmp()</a>.
+ point of view of <a href="functions#vstr_cmp%28%29">vstr_cmp()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This is mainly a speedup to the vstr_sub_*() functions and the functions that
@@ -2273,7 +2273,7 @@
 </p><p>  This option will set the status of the flag that makes the vstr functions
  do atomic alterations to the string data. If the flag is set then all functions
  will either return successfully, or not alter the data of the vstr from the
- point of view of <a href="functions.html#vstr_cmp%28%29">vstr_cmp()</a>.
+ point of view of <a href="functions#vstr_cmp%28%29">vstr_cmp()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This is mainly a speedup to the vstr_sub_*() functions and the functions that
@@ -2291,13 +2291,13 @@
 </td></tr><tr><td>Parameter<strong>[2]</strong>: Maximum number of spare nodes to have for the specified type<br>Type<strong>[2]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This option will make the number of spare nodes of the specified type fit
- into the range given, by calling either <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> or
- <a href="functions.html#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>.
+ into the range given, by calling either <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> or
+ <a href="functions#vstr_free_spare_nodes%28%29">vstr_free_spare_nodes()</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  When the value specified is higher it calls <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> at which
+</p><p>  When the value specified is higher it calls <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> at which
  point a return value of FALSE means that there was a malloc error, just as if
- you called <a href="functions.html#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> directly.
+ you called <a href="functions#vstr_make_spare_nodes%28%29">vstr_make_spare_nodes()</a> directly.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2318,7 +2318,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  When the value specified is higher it has to create spare base objects
  at which point a return value of FALSE means that there was a malloc error,
- just as if you called <a href="functions.html#vstr_make_base%28%29">vstr_make_base()</a> directly and that had to create them.
+ just as if you called <a href="functions#vstr_make_base%28%29">vstr_make_base()</a> directly and that had to create them.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2333,7 +2333,7 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  When the value specified is higher it has to creates spare base objects
  at which point a return value of FALSE means that there was a malloc error,
- just as if you called <a href="functions.html#vstr_make_base%28%29">vstr_make_base()</a> directly and that had to create them.
+ just as if you called <a href="functions#vstr_make_base%28%29">vstr_make_base()</a> directly and that had to create them.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2341,7 +2341,7 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Returns type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will get the type of the group allocation that a <a href="functions.html#vstr_make_base%28%29">vstr_make_base()</a>
+</p><p>  This option will get the type of the group allocation that a <a href="functions#vstr_make_base%28%29">vstr_make_base()</a>
  will create with this configuration.
 
 
@@ -2350,7 +2350,7 @@
 
 </td></tr><tr><td>Parameter<strong>[1]</strong>: Type of group malloc (VSTR_TYPE_CNTL_CONF_GRPALLOC_*)<br>Type<strong>[1]</strong>: unsigned int
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will set the type of the group allocation that a <a href="functions.html#vstr_make_base%28%29">vstr_make_base()</a>
+</p><p>  This option will set the type of the group allocation that a <a href="functions#vstr_make_base%28%29">vstr_make_base()</a>
  will create with this configuration.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
@@ -2484,35 +2484,35 @@
 
 
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_cntl_opt%28%29">Constants passed to
-			 	<a id="vstr_cntl_opt()"><a href="functions.html#vstr_cntl_opt%28%29">vstr_cntl_opt()</a></a>
+			 	<a id="vstr_cntl_opt()"><a href="functions#vstr_cntl_opt%28%29">vstr_cntl_opt()</a></a>
 
 		      </a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_CNTL_OPT_GET_CONF">VSTR_CNTL_OPT_GET_CONF</a>
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf **
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Returns <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf **
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will get the default <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
+</p><p>  This option will get the default <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This adds a reference to the configuration, so when you are finished with it
- you'll have to call <a href="functions.html#vstr_freee_conf%28%29">vstr_freee_conf()</a> on it.
+ you'll have to call <a href="functions#vstr_freee_conf%28%29">vstr_freee_conf()</a> on it.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_CNTL_OPT_SET_CONF">VSTR_CNTL_OPT_SET_CONF</a>
 
-</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a><br>Type<strong>[1]</strong>: struct Vstr_conf *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This option will set the default <a href="structs.html#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
+</p><p>  This option will set the default <a href="structs#struct%20Vstr_conf%20%28aka%2e%20Vstr%20configuration%29">Vstr configuration</a>.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  This is one of the few functions that take a configuration, but cannot take a
  NULL pointer instead.
 
 
-</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_cntl_conf%28%2e%2e%2e%2c%20VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">Constants passed to vstr_cntl_conf(..., <a href="constants.html#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a></a></h2>
+</td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Constants%20passed%20to%20vstr_cntl_conf%28%2e%2e%2e%2c%20VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">Constants passed to vstr_cntl_conf(..., <a href="constants#VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE">VSTR_CNTL_CONF_SET_TYPE_GRPALLOC_CACHE</a></a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Constant: </strong> <a id="VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE">VSTR_TYPE_CNTL_CONF_GRPALLOC_NONE</a>
@@ -2522,7 +2522,7 @@
  allocating a cache.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
-</p><p>  This is type will mean that <a href="constants.html#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> is FALSE.
+</p><p>  This is type will mean that <a href="constants#VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE">VSTR_CNTL_CONF_GET_FLAG_ALLOC_CACHE</a> is FALSE.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -2542,7 +2542,7 @@
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  The only way to guarantee that you have an iovec available immediately after
- calling <a href="functions.html#vstr_make_base%28%29">vstr_make_base()</a> is to have at least this group allocation
+ calling <a href="functions#vstr_make_base%28%29">vstr_make_base()</a> is to have at least this group allocation
  configuration.
 
 

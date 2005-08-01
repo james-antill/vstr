@@ -12,14 +12,14 @@ overhead
 <a href="http://groups.google.com/groups?frame=right&rnum=41&thl=1072576581,1072221362,0&seekm=57b29eef.0305211542.7311e84a%40posting.google.com#link41">in practice</a> it depends a lot on the implemention use of the string API.
  A real string API will often work well in the <a href="http://groups.google.com/groups?frame=right&rnum=41&thl=1072576581,1072221362,0&seekm=57b29eef.0305211542.7311e84a%40posting.google.com#link41">weird corner cases as well</a>. Note
 that in the above the original "fast" C string style version had <b>4
-<a href="security.html">security flaws</a></b> and was about
+<a href="security">security flaws</a></b> and was about
 <b>2.0 times slower</b> than the Vstr version, the hand
 optimized goto based version was about 0.7 of the Vstr speed ... but if you
 needed it to be that fast, I'm sure the Vstr version would be very close if you
 used the same "design".
  However, saying all that, I have done some "theoretical" benchmarks...
 
-<p> The thing to understand is that Vstr is <a href="design.html">designed</a>
+<p> The thing to understand is that Vstr is <a href="design">designed</a>
 for use cases where you have N connections to the internet,
 and are getting/sending data to M of them in a non-blocking fashion at once.
 In this case Vstr can share all the
@@ -31,15 +31,15 @@ always allocated.
 memory is moved into the string API. They were configured in a number of ways.
 First is the size of each _BUF node in the Vstr, second is the "extra" ammount
 of malloc() activity, all iteractions were done with number of iteractions = 4096 and each config. was done twice in case one got a weird result for some
-reason. <a href="ex_perf_nodesize_foreach.c">Here</a> is the code for the
-benchmark, and <a href="ex_perf.h">here</a> is the header.
+reason. <a href="examples/ex_perf_nodesize_foreach.c">Here</a> is the code for the
+benchmark, and <a href="examples/ex_perf.h">here</a> is the header.
 </p>
 
 <h3>key</h3>
  Top file (red): Vstr using copy semantics, but with memory from the cache.<br>
  2nd file (green): memcpy() without allocation.<br>
  3rd file (blue): Glib GString type, uses single block of memory but rounds allocations uptp power of two.<br>
- 4th file (purple): Vstr using <a href="functions.html#vstr_add_ptr()">copy pointer</a> semantics.<br>
+ 4th file (purple): Vstr using <a href="functions#vstr_add_ptr()">copy pointer</a> semantics.<br>
  5th file (yellow/cyan): Direct calls to realloc(), always for exactly the right ammount of memory needed.<br>
  6th file (brown/yellow): Vstr using copy semantics, Ie. all memory allocated.<br>
 <br><br>
@@ -150,10 +150,10 @@ plot "cpy-4096_0_488_A.csv" using 1:2, \
 </pre>
 
     <hr>
-    <address><a href="mailto:james@and.org">James Antill</a></address>
+    <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jul 28 19:59:20 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Fri Aug  8 12:16:06 EDT 2003
+Last modified: Sun Jul 31 00:25:36 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

@@ -93,6 +93,8 @@
 
 #undef HAVE_ASPRINTF
 
+#undef HAVE_STRERROR_R
+
 
 #undef HAVE_OPEN64
 

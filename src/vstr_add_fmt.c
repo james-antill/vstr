@@ -831,7 +831,8 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
   struct Vstr__fmt_spec *const beg  = base->conf->vstr__fmt_spec_list_beg;
   struct Vstr__fmt_spec *const end  = base->conf->vstr__fmt_spec_list_end;
   struct Vstr__fmt_spec *      spec = base->conf->vstr__fmt_spec_list_beg;
-
+  char buf_errno[2048];
+  
   if (!end) /* invalid format... */
     return (TRUE);
   
@@ -862,7 +863,10 @@ static int vstr__fmt_write_spec(Vstr_base *base, size_t pos_diff,
         break;
 
       case 'm':
-        spec->u.data_ptr = strerror(sve_errno);
+        if (!strerror_r(sve_errno, buf_errno, sizeof(buf_errno)))
+          spec->u.data_ptr = buf_errno;
+        else
+          spec->u.data_ptr = strerror(sve_errno);
       case 's':
         if (!vstr__add_fmt_cstr(base, pos_diff, spec))
           goto failed_alloc;

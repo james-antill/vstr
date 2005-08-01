@@ -66,7 +66,7 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     }
 
     vstr_ref_del(ref);
-    conf_parse_end_token(conf, token, token->depth_num);
+    conf_parse_token(conf, token);
   }
   
   else if (OPT_SERV_SYM_EQ("policy-eq"))
@@ -111,7 +111,7 @@ static int httpd__policy_connection_d1(struct Con *con,
     }
 
     vstr_ref_del(ref);
-    conf_parse_end_token(conf, token, token->depth_num);
+    conf_parse_token(conf, token);
   }
   
   else if (OPT_SERV_SYM_EQ("<close>"))
@@ -291,14 +291,14 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       case HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ:
       {
         struct sockaddr *sa = CON_CEVNT_SA(con);
-        *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
+        *matches = httpd_policy_ipv4_cidr_eq(con, req, ref->ptr, sa);
       }
       break;
         
       case HTTPD_POLICY_SERVER_IPV4_CIDR_EQ:
       {
         struct sockaddr *sa = CON_SEVNT_SA(con);
-        *matches = httpd_policy_ipv4_cidr_eq(con, NULL, ref->ptr, sa);
+        *matches = httpd_policy_ipv4_cidr_eq(con, req, ref->ptr, sa);
       }
         
       default:
@@ -307,7 +307,7 @@ static int httpd__policy_request_tst_d1(struct Con *con,
     }
 
     vstr_ref_del(ref);
-    conf_parse_end_token(conf, token, token->depth_num);
+    conf_parse_token(conf, token);
   }
 
   else if (OPT_SERV_SYM_EQ("policy-eq"))
@@ -487,7 +487,7 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
     }
 
     vstr_ref_del(ref);
-    conf_parse_end_token(conf, token, token->depth_num);
+    conf_parse_token(conf, token);
   }
   
   else if (OPT_SERV_SYM_EQ("<close>"))

@@ -69,6 +69,7 @@
 #else
 # define VSTR__ATTR_H()
 # define VSTR__ATTR_I()
+# define VSTR__SYM_ALIAS(x) extern int vstr__does_not_exist(void)
 #endif
 
 #define VSTR_TYPE_FMT_UCHAR 1

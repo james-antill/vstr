@@ -1617,12 +1617,6 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *lfn = req->fname;
   
-  ASSERT(lfn->len && (vstr_export_chr(lfn, 1) != '/') &&
-         (vstr_export_chr(lfn, lfn->len) != '/'));
-  
-  assert(!VSUFFIX(lfn, 1, lfn->len, "/..") &&
-         !VEQ(lfn, 1, lfn->len, ".."));
-  
   vstr_del(lfn, 1, lfn->len);
   httpd_req_absolute_uri(con, req, lfn, 1, lfn->len);
   
@@ -3145,8 +3139,8 @@ static int http__policy_req(struct Con *con, Httpd_req_data *req)
     HTTPD_ERR_RET(req, 503, TRUE);
   }
   
-  if (req->policy->auth_token->len)
-  { /* they need auth */
+  if (req->policy->auth_token->len) /* they need rfc2617 auth */
+  {
     Vstr_base *data = con->evnt->io_r;
     size_t pos = req->http_hdrs->hdr_authorization->pos;
     size_t len = req->http_hdrs->hdr_authorization->len;
