@@ -91,6 +91,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
   vstr_del(conf->tmp, 1, conf->tmp->len);
   while (conf_token_list_num(token, cur_depth))
   {
+    OPT_SERV_PRIME_SYM_EQ_DECL();
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     
     if (0) { }
@@ -156,7 +157,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
       
       *used_req = TRUE;
       httpd_policy_path_mod_dirn(req->fname, &pos, &len);
-      HTTPD_APP_REF_VSTR(conf->tmp, req->fname, 1, len);
+      HTTPD_APP_REF_VSTR(conf->tmp, req->fname, pos, len);
     }
     else if (OPT_SERV_SYM_EQ("<url-dirname>"))
     {
@@ -172,7 +173,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     {
       Vstr_base *s1 = req->policy->document_root;
       *used_policy = TRUE;
-      HTTPD_APP_REF_VSTR(conf->tmp, s1, 1, s1->len);
+      HTTPD_APP_REF_ALLVSTR(conf->tmp, s1);
     }
     else if (OPT_SERV_SYM_EQ("<document-root/..>") ||
              OPT_SERV_SYM_EQ("<doc-root/..>"))
@@ -235,7 +236,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     {
       Vstr_base *s1 = req->policy->req_conf_dir;
       *used_policy = TRUE;
-      HTTPD_APP_REF_VSTR(conf->tmp, s1, 1, s1->len);
+      HTTPD_APP_REF_ALLVSTR(conf->tmp, s1);
     }
     else if (OPT_SERV_SYM_EQ("<request-configuration-directory/..>") ||
              OPT_SERV_SYM_EQ("<req-conf-dir/..>"))
@@ -250,7 +251,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     {
       Vstr_base *s1 = req->policy->req_err_dir;
       *used_policy = TRUE;
-      HTTPD_APP_REF_VSTR(conf->tmp, s1, 1, s1->len);
+      HTTPD_APP_REF_ALLVSTR(conf->tmp, s1);
     }
     else if (OPT_SERV_SYM_EQ("<request-error-directory/..>") ||
              OPT_SERV_SYM_EQ("<req-err-dir/..>"))
@@ -262,7 +263,7 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
     else if (OPT_SERV_SYM_EQ("<file-path>") || OPT_SERV_SYM_EQ("<path>"))
     {
       *used_req = TRUE;
-      HTTPD_APP_REF_VSTR(conf->tmp, req->fname, 1, req->fname->len);
+      HTTPD_APP_REF_ALLVSTR(conf->tmp, req->fname);
     }
     else if (OPT_SERV_SYM_EQ("<url-path>"))
     {
@@ -331,6 +332,7 @@ int httpd_policy_path_make(struct Con *con, Httpd_req_data *req,
 
   if (token->type == CONF_TOKEN_TYPE_CLIST)
   {
+    OPT_SERV_PRIME_SYM_EQ_DECL();
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!OPT_SERV_SYM_EQ("assign") && !OPT_SERV_SYM_EQ("="))
       return (FALSE);
@@ -352,7 +354,7 @@ int httpd_policy_path_make(struct Con *con, Httpd_req_data *req,
 
   ret = httpd__policy_path_init(ref->ptr, conf->tmp, 1, conf->tmp->len, ref);
   if (ret && !(used_pol || used_req))
-    ret = conf_token_set_user_value(conf, &save, type, ref);
+    ret = conf_token_set_user_value(conf, &save, type, ref, token->num);
   
   if (ret)
     *ret_ref = ref;
@@ -471,6 +473,8 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->max_connection_nodes = HTTPD_CONF_MAX_CONNECTION_NODES;
   opts->max_etag_nodes     = HTTPD_CONF_MAX_ETAG_NODES;
 
+  opts->max_range_nodes    = HTTPD_CONF_MAX_RANGE_NODES;
+  
   opts->max_req_conf_sz    = HTTPD_CONF_REQ_CONF_MAXSZ;
   
   return (TRUE);
@@ -582,6 +586,8 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   
   HTTPD_POLICY_CP_VAL(max_connection_nodes);
   HTTPD_POLICY_CP_VAL(max_etag_nodes);
+
+  HTTPD_POLICY_CP_VAL(max_range_nodes);
 
   HTTPD_POLICY_CP_VAL(max_req_conf_sz);
 

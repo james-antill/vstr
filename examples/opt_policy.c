@@ -129,7 +129,7 @@ int opt_policy_ipv4_make(Conf_parse *conf, Conf_token *token,
   {
     *matches = opt_policy_ipv4_cidr_eq(data, sa);
     
-    ret = conf_token_set_user_value(conf, &save, type, ref);
+    ret = conf_token_set_user_value(conf, &save, type, ref, token->num);
   }
   
   vstr_ref_del(ref);
@@ -254,6 +254,7 @@ unsigned int opt_policy_sc_conf_parse(Opt_serv_opts *opts,
     *token = save; /* restore ... */
   else
   { /* allow set of attributes */
+    OPT_SERV_PRIME_SYM_EQ_DECL();
     int clist = FALSE;
     
     CONF_SC_MAKE_CLIST_BEG(policy, clist);
@@ -303,6 +304,8 @@ int opt_policy_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
                       int (*tst_func)(Conf_parse *, Conf_token *,
                                       int *, void *), void *data)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
+  
   if (0) { }
   
   else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))

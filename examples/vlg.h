@@ -5,12 +5,21 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#include "date.h"
+
+#define VLG__TM_SYSLOG_SZ 128
+
 typedef struct Vlg
 {
  struct Vstr_base *out_vstr;
  struct Vstr_base *sig_out_vstr;
  const char *prog_name;
  int syslog_fd;
+
+ time_t tm_time;
+ char tm_data[VLG__TM_SYSLOG_SZ];
+
+ time_t (*tm_get)(void);
  
  unsigned int syslog_stream : 1;
  unsigned int log_pid : 1;
@@ -29,8 +38,9 @@ extern void vlg_daemon(Vlg *, const char *);
 extern void vlg_debug(Vlg *);
 extern void vlg_undbg(Vlg *);
 
-extern int vlg_pid_set(Vlg *, int);
-extern int vlg_prefix_set(Vlg *, int);
+extern int  vlg_pid_set(Vlg *, int);
+extern int  vlg_prefix_set(Vlg *, int);
+extern void vlg_time_set(Vlg *vlg, time_t (*func)(void));
 
 extern void vlg_pid_file(Vlg *, const char *);
 

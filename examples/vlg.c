@@ -21,6 +21,7 @@
 
 #define CONF_USE_HEXDUMP TRUE
 
+#define _GNU_SOURCE 1
 
 #include <vstr.h>
 
@@ -42,8 +43,6 @@
 
 #include <signal.h>
 
-
-#include "date.h"
 
 #define VLG_COMPILE_INLINE 0
 #include "vlg.h"
@@ -150,9 +149,16 @@ static void vlg__syslog_close(Vlg *vlg)
 static void vlg__flush(Vlg *vlg, int type, int out_err)
 {
   Vstr_base *dlg = vlg->out_vstr;
-
+  time_t now = (*vlg->tm_get)();
+  
   ASSERT(vstr_export_chr(dlg, dlg->len) == '\n');
 
+  if (now != vlg->tm_time)
+  {
+    vlg->tm_time = now;
+    date_syslog(vlg->tm_time, vlg->tm_data, sizeof(vlg->tm_data));
+  }
+  
   if (vlg->daemon_mode)
   {
     if (!vlg__syslog_con(vlg, 0))
@@ -169,9 +175,9 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
       pid_t pid = getpid();
       int fd = vlg->syslog_fd;
       size_t beg_len = 0;
-      
+
       vstr_add_fmt(dlg, 0, "<%u>%s %s[%lu]: ", type | LOG_DAEMON,
-                   date_syslog(time(NULL)), vlg->prog_name, (unsigned long)pid);
+                   vlg->tm_data, vlg->prog_name, (unsigned long)pid);
       
       if (vlg->syslog_stream)
         vstr_sub_buf(dlg, dlg->len, 1, "", 1);
@@ -201,8 +207,6 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
     
     if (vlg->log_prefix_console)
     {
-      const char *tm = date_syslog(time(NULL));
-
       /* Note: we add the begining backwards, it's easier that way */
       if ((type == LOG_WARNING) && !vstr_add_cstr_ptr(dlg, 0, "WARN: "))
         errno = ENOMEM, err(EXIT_FAILURE, "warn");
@@ -224,7 +228,7 @@ static void vlg__flush(Vlg *vlg, int type, int out_err)
           errno = ENOMEM, err(EXIT_FAILURE, "prefix");
       }
       
-      if (!vstr_add_cstr_ptr(dlg, 0, tm) ||
+      if (!vstr_add_cstr_ptr(dlg, 0, vlg->tm_data) ||
           !vstr_add_cstr_ptr(dlg, 0, "["))
         errno = ENOMEM, err(EXIT_FAILURE, "prefix");      
     }
@@ -576,6 +580,11 @@ void vlg_exit(void)
   vstr_free_conf(vlg__sig_conf); vlg__sig_conf = NULL;
 }
 
+static time_t vlg__tm_get(void)
+{
+  return time(NULL);
+}
+
 Vlg *vlg_make(void)
 {
   Vlg *vlg = malloc(sizeof(Vlg));
@@ -591,6 +600,9 @@ Vlg *vlg_make(void)
   
   vlg->prog_name          = NULL;
   vlg->syslog_fd          = -1;
+  
+  vlg->tm_time            = -1;
+  vlg->tm_get             = vlg__tm_get;
   
   vlg->syslog_stream      = FALSE;
   vlg->log_pid            = FALSE;
@@ -657,6 +669,11 @@ int vlg_prefix_set(Vlg *vlg, int prefix)
   vlg->log_prefix_console = prefix;
 
   return (old);
+}
+
+void vlg_time_set(Vlg *vlg, time_t (*func)(void))
+{
+  vlg->tm_get = func;
 }
 
 void vlg_pid_file(Vlg *vlg, const char *pid_file)

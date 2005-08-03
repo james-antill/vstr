@@ -7,6 +7,7 @@
 
 #include "opt_serv.h"
 #include "mime_types.h"
+#include "date.h"
 
 /* **** defaults for runtime conf **** */
 #define HTTPD_CONF_VERSION "0.9.100"
@@ -58,6 +59,7 @@
 #define HTTPD_CONF_MAX_AL_NODES          16
 #define HTTPD_CONF_MAX_CONNECTION_NODES  64
 #define HTTPD_CONF_MAX_ETAG_NODES        16
+#define HTTPD_CONF_MAX_RANGE_NODES        1 /* zsync needs more */
 #define HTTPD_CONF_REQ_CONF_MAXSZ (16 * 1024)
 
 /* this is configurable, but is much higher than EX_MAX_R_DATA_INCORE due to
@@ -135,6 +137,8 @@ typedef struct Httpd_policy_opts
  unsigned int max_connection_nodes;
  unsigned int max_etag_nodes;
  
+ unsigned int max_range_nodes;
+ 
  unsigned int max_req_conf_sz;
 } Httpd_policy_opts; /* NOTE: remember to copy changes to
                       * httpd_policy.c:httpd_policy_init
@@ -146,6 +150,8 @@ typedef struct Httpd_opts
 
  time_t beg_time;
 
+ Date_store *date;
+ 
  Conf_parse *conf;
  unsigned int conf_num;
 
@@ -159,6 +165,7 @@ typedef struct Httpd_opts
      {                                                          \
       {{OPT_SERV_CONF_INIT_OPTS()}},                            \
       (time_t)-1,                                               \
+      NULL,                                                     \
       NULL,                                                     \
       0,                                                        \
       {CONF_TOKEN_INIT},                                        \

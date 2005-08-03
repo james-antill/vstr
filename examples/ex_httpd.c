@@ -207,6 +207,8 @@ static void serv_init(void)
   evnt_poll_init();
   evnt_timeout_init();
 
+  vlg_time_set(vlg, evnt_sc_time);
+  
   opt_serv_logger(vlg);
 
   httpd_init(vlg);
@@ -239,7 +241,19 @@ static void serv_cb_func_free(struct Evnt *evnt)
   httpd_fin_fd_close(con);
 
   opt_serv_sc_free_beg(evnt, con->acpt_sa_ref);
+
+  ASSERT(con->fs && !con->fs_num && !con->fs_off && (con->fs->fd == -1));
+
+  vstr_free_base(con->mpbr_ct);
   
+  if (con->fs_sz > 1)
+  {
+    ASSERT(con->fs != con->fs_store);
+    F(con->fs);
+  }
+  else
+    ASSERT(con->fs == con->fs_store);
+
   F(con);
 }
 
@@ -611,14 +625,9 @@ static void serv_cmd_line(int argc, char *argv[])
                        "document root");
     
     serv_mime_types(program_name);
-  
+    
     if (chroot_dir)
-    { /* preload locale info. so syslog can log in localtime */
-      time_t now = time(NULL);
-      (void)localtime(&now);
-      
-      vlg_sc_bind_mount(chroot_dir);  
-    }
+      vlg_sc_bind_mount(chroot_dir);
   
     /* after daemon so syslog works */
     if (chroot_dir && ((chroot(chroot_dir) == -1) || (chdir("/") == -1)))

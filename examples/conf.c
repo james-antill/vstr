@@ -77,7 +77,7 @@ void conf_parse_free(Conf_parse *conf)
   vstr_free_base(conf->tmp);
 
   while (conf->uvals_num)
-    vstr_ref_del(conf->uvals_ptr[--conf->uvals_num]);
+    vstr_ref_del(conf->uvals_ptr[--conf->uvals_num].ref);
   F(conf->uvals_ptr);
   
   F(conf);  
@@ -699,7 +699,8 @@ int conf_sc_conv_unesc(Vstr_base *s1, size_t pos, size_t len,
 #undef SUB
 
 int conf_token_set_user_value(Conf_parse *conf, Conf_token *token,
-                              unsigned int type, Vstr_ref *ref)
+                              unsigned int type,
+                              Vstr_ref *uval, unsigned int nxt)
 {
   Vstr_ref *oref = NULL;
   
@@ -712,20 +713,21 @@ int conf_token_set_user_value(Conf_parse *conf, Conf_token *token,
     return (FALSE);
 
   if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
-    oref = conf->uvals_ptr[token->u.uval_num];
+    oref = conf->uvals_ptr[token->u.uval_num].ref;
   else
   {
     if (conf->uvals_sz <= conf->uvals_num)
     {
       unsigned int num = (conf->uvals_sz << 1) + 1;
-      Vstr_ref **refs  = NULL;
+      Conf__uval_store *uvals  = NULL;
 
       if (num <= conf->uvals_sz)
         return (FALSE);
       
-      if (!conf->uvals_sz && !(conf->uvals_ptr = MK(sizeof(Vstr_ref *) * num)))
+      if (!conf->uvals_sz &&
+          !(conf->uvals_ptr = MK(sizeof(Conf__uval_store) * num)))
         return (FALSE);
-      else if (!MV(conf->uvals_ptr, refs, sizeof(Vstr_ref *) * num))
+      else if (!MV(conf->uvals_ptr, uvals, sizeof(Conf__uval_store) * num))
         return (FALSE);
       
       conf->uvals_sz  = num; 
@@ -738,10 +740,11 @@ int conf_token_set_user_value(Conf_parse *conf, Conf_token *token,
   
   token->type = CONF_TOKEN_TYPE_USER_BEG + type;
 
-  conf->types_ptr[token->num - 1]    = token->type;
-  conf->uvals_ptr[token->u.uval_num] = NULL;
-  if (ref)
-    conf->uvals_ptr[token->u.uval_num] = vstr_ref_add(ref);
+  conf->types_ptr[token->num - 1]        = token->type;
+  conf->uvals_ptr[token->u.uval_num].ref = NULL;
+  conf->uvals_ptr[token->u.uval_num].nxt = nxt;
+  if (uval)
+    conf->uvals_ptr[token->u.uval_num].ref = vstr_ref_add(uval);
   
   vstr_ref_del(oref);
   

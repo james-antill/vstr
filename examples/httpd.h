@@ -106,7 +106,6 @@ typedef struct Httpd_req_data
  
  unsigned int ver_0_9 : 1;
  unsigned int ver_1_1 : 1;
- unsigned int use_mmap : 1;
  unsigned int head_op : 1;
 
  unsigned int content_encoding_gzip  : 1;
@@ -162,7 +161,13 @@ struct Con
  
  const Httpd_policy_opts *policy;
 
- struct File_sect f[1];
+ Vstr_base *mpbr_ct; /* multipart/byterange */
+ VSTR_AUTOCONF_uintmax_t mpbr_fs_len;
+ unsigned int fs_off;
+ unsigned int fs_num;
+ unsigned int fs_sz;
+ struct File_sect *fs;
+ struct File_sect fs_store[1];
 
  unsigned int io_limit_num : 8;
  
@@ -170,7 +175,10 @@ struct Con
  unsigned int parsed_method_ver_1_0 : 1;
  unsigned int keep_alive : 3;
  
+ unsigned int use_mmap : 1;
  unsigned int use_sendfile : 1; 
+ unsigned int use_posix_fadvise : 1; 
+ unsigned int use_mpbr : 1; 
 };
 #define CON_CEVNT_SA(x)     EVNT_SA((x)->evnt)
 #define CON_CEVNT_SA_IN4(x) EVNT_SA_IN4((x)->evnt)
@@ -212,6 +220,8 @@ struct Con
 
 #define HTTPD_APP_REF_VSTR(x, s2, p2, l2)                               \
     vstr_add_vstr(x, (x)->len, s2, p2, l2, VSTR_TYPE_ADD_BUF_REF)
+#define HTTPD_APP_REF_ALLVSTR(x, s2)                                    \
+    vstr_add_vstr(x, (x)->len, s2, 1, (s2)->len, VSTR_TYPE_ADD_BUF_REF)
 
 #ifdef HTTPD_HAVE_GLOBAL_OPTS
 extern Httpd_opts httpd_opts[1]; /* hacky ... */

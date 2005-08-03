@@ -141,8 +141,9 @@ extern int httpd_policy_copy(Opt_serv_policy_opts *,
 extern inline void httpd_policy_change_con(struct Con *con,
                                            const Httpd_policy_opts *policy)
 {
-  con->use_sendfile          = policy->use_sendfile;
-  con->policy                = policy;
+  con->use_sendfile      = policy->use_sendfile;
+  con->use_posix_fadvise = policy->use_posix_fadvise;
+  con->policy            = policy;
 }
 
 extern inline void httpd_policy_change_req(Httpd_req_data *req,

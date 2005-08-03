@@ -2,8 +2,6 @@
 #include "httpd.h"
 #include "httpd_policy.h"
 
-#include "date.h"
-
 #include <err.h>
 
 #define EX_UTILS_NO_USE_INIT  1
@@ -70,10 +68,12 @@ static void httpd__conf_req_reset_expires(struct Httpd_req_data *req,
   Vstr_base *s1 = req->xtra_content;
   size_t pos = req->expires_pos;
   size_t len = req->expires_len;
+  Opt_serv_opts *opts = req->policy->s->beg;
+  Httpd_opts *hopts = (Httpd_opts *)opts;
   
   ASSERT(vstr_sc_poslast(pos, len) == s1->len);
   
-  if (vstr_sub_cstr_buf(s1, pos, len, date_rfc1123(now)))
+  if (vstr_sub_cstr_buf(s1, pos, len, date_rfc1123(hopts->date, now)))
     req->expires_len = vstr_sc_posdiff(pos, s1->len);
 }
 
@@ -100,7 +100,9 @@ static int httpd__build_path(struct Con *con, Httpd_req_data *req,
                              unsigned int lim, int full, Vstr_ref *ref,
                              int uri_fname, int *type)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   int dummy_type;
+  int clist = FALSE;
 
   if (!type) type = &dummy_type;
   *type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_SKIP;
@@ -138,22 +140,10 @@ static int httpd__build_path(struct Con *con, Httpd_req_data *req,
       vstr_del(req->fname, 1, vhost_len);
       req->vhost_prefix_len = 0;
     }
-  }    
+  }
   *type = HTTPD_CONF_REQ__TYPE_BUILD_PATH_ASSIGN;
   
-  if (token->type != CONF_TOKEN_TYPE_CLIST)
-  {
-    const Vstr_sect_node *pv = conf_token_value(token);
-      
-    if (!pv || !vstr_sub_vstr(s1, pos, len, conf->data, pv->pos, pv->len,
-                              VSTR_TYPE_SUB_BUF_REF))
-      return (FALSE);
-    OPT_SERV_X__ESC_VSTR(s1, pos, pv->len);
-
-    goto fin_overwrite;
-  }    
-
-  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
   
   if (0) { }
   
@@ -177,6 +167,17 @@ static int httpd__build_path(struct Con *con, Httpd_req_data *req,
     return (vstr_add_vstr(s1, vstr_sc_poslast(pos, len),
                           conf->tmp, 1, conf->tmp->len, VSTR_TYPE_ADD_BUF_REF));
   }
+  else if (!clist)
+  {
+    const Vstr_sect_node *pv = conf_token_value(token);
+      
+    if (!pv || !vstr_sub_vstr(s1, pos, len, conf->data, pv->pos, pv->len,
+                              VSTR_TYPE_SUB_BUF_REF))
+      return (FALSE);
+    OPT_SERV_X__ESC_VSTR(s1, pos, pv->len);
+
+    goto fin_overwrite;
+  }    
   else
     return (FALSE);
 
@@ -192,6 +193,7 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
                                   int *full,
                                   unsigned int *lim, Vstr_ref **ret_ref)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int depth = token->depth_num;
 
   ASSERT(ret_ref && !*ret_ref);
@@ -220,7 +222,8 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
       if (token->type >= CONF_TOKEN_TYPE_USER_BEG)
       {
         unsigned int type = token->type - CONF_TOKEN_TYPE_USER_BEG;
-        Vstr_ref *ref = conf_token_get_user_value(conf, token);
+        unsigned int nxt = 0;
+        Vstr_ref *ref = conf_token_get_user_value(conf, token, &nxt);
     
         switch (type)
         {
@@ -255,7 +258,8 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
             return (FALSE);
         }
         *ret_ref = ref;
-        conf_parse_end_token(conf, token, token->depth_num);
+        if (nxt)
+          return (conf_parse_num_token(conf, token, nxt));
       }
   
       else if (OPT_SERV_SYM_EQ("<none>"))
@@ -281,37 +285,43 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
           type = HTTPD_POLICY_REQ_PATH_BEG;
         else if (OPT_SERV_SYM_EQ("<path>-end"))
           type = HTTPD_POLICY_REQ_PATH_END;
-        else if (OPT_SERV_SYM_EQ("<path>-eq"))
+        else if (OPT_SERV_SYM_EQ("<path>-eq") || OPT_SERV_SYM_EQ("<path>=="))
           type = HTTPD_POLICY_REQ_PATH_EQ;
-        else if (OPT_SERV_SYM_EQ("<basename>-beg"))
+        else if (OPT_SERV_SYM_EQ("<basename>-beg") ||
+                 OPT_SERV_SYM_EQ("<basename>=="))
           type = HTTPD_POLICY_REQ_NAME_BEG;
         else if (OPT_SERV_SYM_EQ("<basename>-end"))
           type = HTTPD_POLICY_REQ_NAME_END;
-        else if (OPT_SERV_SYM_EQ("<basename>-eq"))
+        else if (OPT_SERV_SYM_EQ("<basename>-eq") ||
+                 OPT_SERV_SYM_EQ("<basename>=="))
           type = HTTPD_POLICY_REQ_NAME_EQ;
         else if (OPT_SERV_SYM_EQ("<extension>-beg"))
           type = HTTPD_POLICY_REQ_EXTN_BEG;
         else if (OPT_SERV_SYM_EQ("<extension>-end"))
           type = HTTPD_POLICY_REQ_EXTN_END;
-        else if (OPT_SERV_SYM_EQ("<extension>-eq"))
+        else if (OPT_SERV_SYM_EQ("<extension>-eq") ||
+                 OPT_SERV_SYM_EQ("<extension>=="))
           type = HTTPD_POLICY_REQ_EXTN_EQ;
         else if (OPT_SERV_SYM_EQ("<extensions>-beg"))
           type = HTTPD_POLICY_REQ_EXTS_BEG;
         else if (OPT_SERV_SYM_EQ("<extensions>-end"))
           type = HTTPD_POLICY_REQ_EXTS_END;
-        else if (OPT_SERV_SYM_EQ("<extensions>-eq"))
+        else if (OPT_SERV_SYM_EQ("<extensions>-eq") ||
+                 OPT_SERV_SYM_EQ("<extensions>=="))
           type = HTTPD_POLICY_REQ_EXTS_EQ;
         else if (OPT_SERV_SYM_EQ("<basename-without-extension>-beg"))
           type = HTTPD_POLICY_REQ_BWEN_BEG;
         else if (OPT_SERV_SYM_EQ("<basename-without-extension>-end"))
           type = HTTPD_POLICY_REQ_BWEN_END;
-        else if (OPT_SERV_SYM_EQ("<basename-without-extension>-eq"))
+        else if (OPT_SERV_SYM_EQ("<basename-without-extension>-eq") ||
+                 OPT_SERV_SYM_EQ("<basename-without-extension>=="))
           type = HTTPD_POLICY_REQ_BWEN_EQ;
         else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-beg"))
           type = HTTPD_POLICY_REQ_BWES_BEG;
         else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-end"))
           type = HTTPD_POLICY_REQ_BWES_END;
-        else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-eq"))
+        else if (OPT_SERV_SYM_EQ("<basename-without-extensions>-eq") ||
+                 OPT_SERV_SYM_EQ("<basename-without-extensions>=="))
           type = HTTPD_POLICY_REQ_BWES_EQ;
         else
           return (FALSE);
@@ -400,6 +410,7 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               time_t file_timestamp,
                               Conf_parse *conf, Conf_token *token)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   CONF_SC_TOGGLE_CLIST_VAR(clist);
@@ -727,6 +738,7 @@ int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
                       time_t timestamp,
                       Conf_parse *conf, Conf_token *token)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int cur_depth = token->depth_num;
   
   if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
@@ -772,7 +784,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
     return (TRUE);
   
   s1 = conf->data;
-  HTTPD_APP_REF_VSTR(s1, dir, 1, dir->len);
+  HTTPD_APP_REF_ALLVSTR(s1, dir);
   ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
   ASSERT((fname->len >= 1) && vstr_cmp_cstr_eq(fname,        1, 1, "/"));
   HTTPD_APP_REF_VSTR(s1, fname, 2, fname->len - 1);
@@ -814,22 +826,13 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
 
   while (conf_parse_token(conf, token))
   {
-    if (!token->depth_num && OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
-    {
-      if (!httpd_conf_req_d0(con, req, cf_stat->st_mtime, conf, token))
-        goto conf_fail;
-      if (token->num != conf->sects->num)
-        goto conf_fail;
-      break;
-    }
-    
     if ((token->type != CONF_TOKEN_TYPE_CLIST) || (token->depth_num != 1))
       goto conf_fail;
 
     if (!conf_parse_token(conf, token))
       goto conf_fail;
     
-    if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
+    if (!conf_token_cmp_sym_cstr_eq(conf, token, "org.and.jhttpd-conf-req-1.0"))
       goto conf_fail;
   
     if (!httpd_conf_req_d0(con, req, cf_stat->st_mtime, conf, token))

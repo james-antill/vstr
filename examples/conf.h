@@ -102,6 +102,11 @@
     do { } while (0)
 
 
+typedef struct Conf__uval_store
+{
+ Vstr_ref *ref;
+ unsigned int nxt;
+} Conf__uval_store;
 
 typedef struct Conf_parse
 {
@@ -110,9 +115,9 @@ typedef struct Conf_parse
  Vstr_base *tmp;
  unsigned int  types_sz;
  unsigned int *types_ptr;
- unsigned int  uvals_sz;
- unsigned int  uvals_num;
- Vstr_ref    **uvals_ptr;
+ unsigned int      uvals_sz;
+ unsigned int      uvals_num;
+ Conf__uval_store *uvals_ptr;
  unsigned int state;
  unsigned int depth;
 } Conf_parse;
@@ -153,9 +158,9 @@ extern const char *conf_token_name(const Conf_token *);
 extern const Vstr_sect_node *conf_token_value(const Conf_token *);
 
 extern Vstr_ref *conf_token_get_user_value(const Conf_parse *,
-                                           const Conf_token *);
+                                           const Conf_token *, unsigned int *);
 extern int conf_token_set_user_value(Conf_parse *, Conf_token *,
-                                     unsigned int, Vstr_ref *);
+                                     unsigned int, Vstr_ref *, unsigned int);
 
 extern int conf_token_cmp_val_eq(const Conf_parse *, const Conf_token *,
                                  const Vstr_base *, size_t, size_t);
@@ -184,8 +189,8 @@ extern int conf_token_cmp_case_sym_cstr_eq(const Conf_parse *,
                                            const Conf_token *,
                                            const char *);
 
-extern int conf_token_srch_val(const Conf_parse *, const Conf_token *,
-                               const Vstr_base *, size_t, size_t);
+extern int conf_token_srch_case_val(const Conf_parse *, const Conf_token *,
+                                    const Vstr_base *, size_t, size_t);
 
 extern unsigned int conf_token_list_num(const Conf_token *, unsigned int);
 
@@ -328,22 +333,29 @@ extern inline const Vstr_sect_node *conf_token_value(const Conf_token *token)
 }
 
 extern inline Vstr_ref *conf_token_get_user_value(const Conf_parse *conf,
-                                                  const Conf_token *token)
+                                                  const Conf_token *token,
+                                                  unsigned int *nxt)
 {
+  unsigned int dummy;
+  
   CONF__ASSERT(conf && token);
+
+  if (!nxt) nxt = &dummy;
+  *nxt = 0;
   
   if (token->type <= CONF_TOKEN_TYPE_SYMBOL)
     return (NULL);
 
   if (token->u.uval_num >= conf->uvals_sz)
     return (NULL);
-  
+
   CONF__ASSERT(conf->uvals_sz);
 
-  if (!conf->uvals_ptr[token->u.uval_num])
+  *nxt = conf->uvals_ptr[token->u.uval_num].nxt;
+  if (!conf->uvals_ptr[token->u.uval_num].ref)
     return (NULL);
   
-  return (vstr_ref_add(conf->uvals_ptr[token->u.uval_num]));
+  return (vstr_ref_add(conf->uvals_ptr[token->u.uval_num].ref));
 }
 
 extern inline int conf_token_cmp_val_eq(const Conf_parse *conf,
@@ -486,10 +498,10 @@ extern inline int conf_token_cmp_case_sym_cstr_eq(const Conf_parse *conf,
   return (CONF__FALSE);
 }
 
-extern inline int conf_token_srch_val(const Conf_parse *conf,
-                                      const Conf_token *token,
-                                      const Vstr_base *s1,
-                                      size_t pos, size_t len)
+extern inline int conf_token_srch_case_val(const Conf_parse *conf,
+                                           const Conf_token *token,
+                                           const Vstr_base *s1,
+                                           size_t pos, size_t len)
 {
   const Vstr_sect_node *val = conf_token_value(token);
   
@@ -497,7 +509,8 @@ extern inline int conf_token_srch_val(const Conf_parse *conf,
   
   if (!val) return (CONF__FALSE);
 
-  return (vstr_srch_vstr_fwd(conf->data, val->pos, val->len, s1, pos, len));
+  return (vstr_srch_case_vstr_fwd(conf->data, val->pos, val->len,
+                                  s1, pos, len));
 }
 
 extern inline unsigned int conf_token_list_num(const Conf_token *token,

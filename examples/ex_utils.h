@@ -4,6 +4,7 @@
 /* ************************************************************************** */
 /* headers: Vstr (and all supporting system headers), plus extra ones we need */
 /* ************************************************************************** */
+#define _GNU_SOURCE 1 /* for posix_fadvice etc. */
 #define VSTR_COMPILE_INCLUDE 1 /* make Vstr include it's system headers */
 #include <vstr.h>
 

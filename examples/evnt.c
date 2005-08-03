@@ -1152,7 +1152,7 @@ int evnt_send(struct Evnt *evnt)
   return (TRUE);
 }
 
-#ifdef VSTR_AUTOCONF_lseek64
+#ifdef VSTR_AUTOCONF_lseek64 /* lseek64 doesn't exist */
 # define sendfile64 sendfile
 #endif
 
@@ -1167,17 +1167,7 @@ int evnt_sendfile(struct Evnt *evnt, int ffd, VSTR_AUTOCONF_uintmax_t *f_off,
   
   ASSERT(evnt__valid(evnt));
 
-  if (evnt->io_w->len)
-  {
-    if (!evnt__call_send(evnt, ern))
-      return (FALSE);
-
-    EVNT__COPY_TV(&evnt->mtime);
-    
-    return (TRUE);
-  }
-  
-  ASSERT(evnt__valid(evnt));
+  ASSERT(!evnt->io_w->len);
 
   if (*f_len > SSIZE_MAX)
     tmp_len =  SSIZE_MAX;

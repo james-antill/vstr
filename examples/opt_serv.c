@@ -24,6 +24,7 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
                                          const Conf_parse *conf,
                                          Conf_token *token, int clist)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int dummy;
   
   if (0) { }
@@ -113,6 +114,8 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
                              const Conf_parse *conf, Conf_token *token,
                              int clist)
 {
+  OPT_SERV_PRIME_SYM_EQ_DECL();
+  
   if (0){ }
 
   else if (OPT_SERV_SYM_EQ("policy"))
@@ -266,7 +269,7 @@ int opt_serv_conf(struct Opt_serv_opts *opts,
   
   ASSERT(opts && conf && token);
 
-  if (!OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
+  if (!conf_token_cmp_sym_cstr_eq(conf, token, "org.and.daemon-conf-1.0"))
     return (FALSE);
   
   CONF_SC_MAKE_CLIST_MID(cur_depth, clist);
@@ -315,7 +318,7 @@ int opt_serv_conf_parse_cstr(Vstr_base *out,
   if (!conf_parse_token(conf, token))
     goto conf_fail;
 
-  ASSERT(OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"));
+  ASSERT(conf_token_cmp_sym_cstr_eq(conf, token, "org.and.daemon-conf-1.0"));
   
   if (!opt_serv_conf(opts, conf, token))
     goto conf_fail;
@@ -358,7 +361,7 @@ int opt_serv_conf_parse_file(Vstr_base *out,
     if (!conf_parse_token(conf, token))
       goto conf_fail;
     
-    if (!OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
+    if (!conf_token_cmp_sym_cstr_eq(conf, token, "org.and.daemon-conf-1.0"))
       goto conf_fail;
   
     if (!opt_serv_conf(opts, conf, token))
@@ -726,3 +729,4 @@ void opt_serv_sc_cntl_resources(const Opt_serv_opts *opts)
   vstr_cntl_conf(NULL, VSTR_CNTL_CONF_SET_NUM_RANGE_SPARE_REF,
                  0, opts->max_spare_ref_nodes);
 }
+

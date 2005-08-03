@@ -437,6 +437,8 @@ static void serv_init(void)
   evnt_poll_init();
   evnt_timeout_init();
   
+  vlg_time_set(vlg, evnt_sc_time);
+  
   opt_serv_logger(vlg);
 
   opt_serv_sc_signals();
