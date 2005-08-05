@@ -78,8 +78,8 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	man page
-	multipart/byteranges -- needed for zsync
 	conf
+         auth token-file cdb /path - allows multiple user/pass
          Content-Disposition -- rfc2183
 	 Delta encoding: http://www.ietf.org/rfc/rfc3229.txt
 	  http://bobwyman.pubsub.com/main/2004/09/implementations.html

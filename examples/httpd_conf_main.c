@@ -771,6 +771,8 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
   else if (OPT_SERV_SYM_EQ("server-name"))
     OPT_SERV_X_VSTR(opts->server_name);
 
+  else if (OPT_SERV_SYM_EQ("secure-directory-filename"))
+    OPT_SERV_X_TOGGLE(opts->use_secure_dirs);
   else if (OPT_SERV_SYM_EQ("mmap"))
     OPT_SERV_X_TOGGLE(opts->use_mmap);
   else if (OPT_SERV_SYM_EQ("sendfile"))

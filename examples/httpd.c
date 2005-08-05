@@ -1266,7 +1266,7 @@ static void http_app_err_file(struct Con *con, Httpd_req_data *req,
   dir = req->policy->req_err_dir;
   ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,          1, 1, "/"));
   ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
-  vstr_add_vstr(fname, fname->len, dir, 1, dir->len, VSTR_TYPE_ADD_BUF_REF);
+  HTTPD_APP_REF_ALLVSTR(fname, dir);
   
   vstr_add_fmt(fname, fname->len, "%u", req->error_code);
   
@@ -1348,8 +1348,7 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
 
     if (req->user_return_error_code && req->direct_filename)
     {
-      vstr_add_vstr(fname, fname->len, req->fname, 1,
-                    req->fname->len, VSTR_TYPE_ADD_BUF_REF);
+      HTTPD_APP_REF_ALLVSTR(fname, req->fname);
       if (!req->skip_document_root)
         http_prepend_doc_root(fname, req);
     }
@@ -1570,10 +1569,7 @@ int httpd_sc_add_default_hostname(struct Con *con,
 static void httpd_sc_add_default_filename(Httpd_req_data *req, Vstr_base *fname)
 {
   if (vstr_export_chr(fname, fname->len) == '/')
-  {
-    Vstr_base *tmp = req->policy->dir_filename;
-    vstr_add_vstr(fname, fname->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
-  }
+    HTTPD_APP_REF_ALLVSTR(fname, req->policy->dir_filename);
 }                                  
 
 /* turn //foo//bar// into /foo/bar/ */
@@ -1683,10 +1679,36 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
 */
 int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
 {
-  Vstr_base *lfn = req->fname;
+  Vstr_base *fname = req->fname;
+  Vstr_base *dir_fname = req->policy->dir_filename;
+  struct stat64 d_stat[1];
+  int ret = -1;
   
-  vstr_del(lfn, 1, lfn->len);
-  httpd_req_absolute_uri(con, req, lfn, 1, lfn->len);
+  /* fname == what was just passed to open() */
+  ASSERT(fname->len);
+
+  if (req->policy->use_secure_dirs)
+  {
+    const char *fname_cstr = NULL;
+  
+    vstr_add_cstr_buf(fname, fname->len, "/");
+    HTTPD_APP_REF_ALLVSTR(fname, dir_fname);
+    
+    fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
+    if (fname->conf->malloc_bad)
+      return (http_fin_errmem_req(con, req));
+
+    ret = stat64(fname_cstr, d_stat);
+  }
+  
+  vstr_del(fname, 1, fname->len);
+
+  if (req->policy->use_secure_dirs)
+    /* FIXME: need to check conf. too? */
+    if ((ret == -1) || !S_ISREG(d_stat->st_mode))
+      HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
+
+  httpd_req_absolute_uri(con, req, fname, 1, fname->len);
   
   /* we got:       http://foo/bar/
    * and so tried: http://foo/bar/index.html
@@ -1694,15 +1716,15 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
    * but foo/bar/index.html is a directory (fun), so redirect to:
    *               http://foo/bar/index.html/
    */
-  if (lfn->len && (vstr_export_chr(lfn, lfn->len) == '/'))
-  {
-    Vstr_base *tmp = req->policy->dir_filename;
-    vstr_add_vstr(lfn, lfn->len, tmp, 1, tmp->len, VSTR_TYPE_ADD_BUF_REF);
-  }
+  if (fname->len && (vstr_export_chr(fname, fname->len) == '/'))
+    HTTPD_APP_REF_ALLVSTR(fname, dir_fname);
   
-  vstr_add_cstr_buf(lfn, lfn->len, "/");
+  vstr_add_cstr_buf(fname, fname->len, "/");
   
   HTTPD_ERR_301(req);
+  
+  if (fname->conf->malloc_bad)
+    return (http_fin_errmem_req(con, req));
   
   return (http_fin_err_req(con, req));
 }
@@ -3404,7 +3426,7 @@ int httpd_init_default_hostname(Opt_serv_policy_opts *sopts)
     chn = ((Httpd_policy_opts *)sopts->beg->def_policy)->default_hostname;
   
   if (chn)
-    vstr_add_vstr(nhn, 0, chn, 1, chn->len, VSTR_TYPE_ADD_BUF_REF);
+    HTTPD_APP_REF_ALLVSTR(nhn, chn);
   else
   {
     char buf[256];

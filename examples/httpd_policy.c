@@ -441,6 +441,7 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->use_trace_op       = HTTPD_CONF_USE_TRACE_OP;
   opts->remove_url_frag    = HTTPD_CONF_USE_REMOVE_FRAG;
   opts->remove_url_query   = HTTPD_CONF_USE_REMOVE_QUERY;
+  opts->use_secure_dirs    = HTTPD_CONF_USE_SECURE_DIRS;
   
   opts->use_posix_fadvise  = HTTPD_CONF_USE_POSIX_FADVISE;
   opts->use_tcp_cork       = HTTPD_CONF_USE_TCP_CORK;
@@ -562,6 +563,7 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   HTTPD_POLICY_CP_VAL(use_trace_op);
   HTTPD_POLICY_CP_VAL(remove_url_frag);
   HTTPD_POLICY_CP_VAL(remove_url_query);
+  HTTPD_POLICY_CP_VAL(use_secure_dirs);
   HTTPD_POLICY_CP_VAL(use_posix_fadvise);
   HTTPD_POLICY_CP_VAL(use_tcp_cork);
   HTTPD_POLICY_CP_VAL(use_req_conf);

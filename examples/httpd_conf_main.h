@@ -40,6 +40,7 @@
 #define HTTPD_CONF_USE_TRACE_OP TRUE
 #define HTTPD_CONF_USE_REMOVE_FRAG TRUE
 #define HTTPD_CONF_USE_REMOVE_QUERY FALSE
+#define HTTPD_CONF_USE_SECURE_DIRS TRUE
 #define HTTPD_CONF_USE_POSIX_FADVISE TRUE /* NOTE that this SEGV's on FC1 */
 #define HTTPD_CONF_USE_TCP_CORK TRUE
 #define HTTPD_CONF_USE_REQ_CONF TRUE
@@ -105,6 +106,7 @@ typedef struct Httpd_policy_opts
  unsigned int use_trace_op : 1;
  unsigned int remove_url_frag : 1;
  unsigned int remove_url_query : 1;
+ unsigned int use_secure_dirs : 1;
 
  unsigned int use_posix_fadvise : 1;
  unsigned int use_tcp_cork : 1;

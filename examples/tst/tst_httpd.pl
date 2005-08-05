@@ -385,8 +385,8 @@ setup();
 run_tst("ex_httpd", "ex_httpd_help", "--help");
 run_tst("ex_httpd", "ex_httpd_version", "--version");
 
-my $conf_args_nonstrict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off) (HTTP (header-names-strict false)))'";
-my $conf_args_strict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off))'";
+my $conf_args_nonstrict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off) (secure-directory-filename no) (HTTP (header-names-strict false)))'";
+my $conf_args_strict = "--configuration-data-jhttpd '(policy <default> (secure-directory-filename no) (unspecified-hostname-append-port off))'";
 my $conf_arg = $conf_args_nonstrict;
 my $args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
 
