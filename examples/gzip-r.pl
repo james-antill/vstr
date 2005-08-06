@@ -35,6 +35,7 @@ my $force_compress = 0;
 my $re_compress = 0;
 my $chown_compress = 0;
 my $verbose_compress = 0;
+my $zero_compress = 0;
 my $type_compress = "gzip";
 
 pod2usage(0) if !
@@ -42,6 +43,7 @@ GetOptions ("force!"   => \$force_compress,
 	    "all!"     => \$re_compress,
 	    "chown!"   => \$chown_compress,
 	    "tidy!"    => \$tidy_compress,
+	    "zero!"    => \$zero_compress,
 	    "type|t=s" => \$type_compress,
 	    "verbose+" => \$verbose_compress,
 	    "help|?"   => \$help,
@@ -178,7 +180,15 @@ sub zip__file
     my @st_namegz = stat $out;
     if ($st_namegz[7] >= p95($other_sz))
       {
-	return cleanup($in, $other_sz);
+	if ($zero_compress)
+	  {
+	    $st_namegz[7] = p95($other_sz);
+	    truncate($out, 0);
+	  }
+	else
+	  {
+	    return cleanup($in, $other_sz);
+	  }
       }
     close($in) || die "Failed closing input: $!";
 

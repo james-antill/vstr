@@ -512,6 +512,11 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
       httpd__conf_req_reset_cache_control(req, (60 * 60 * 24 * 365));
     HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(cache_control);
   }
+  else if (OPT_SERV_SYM_EQ("Content-Disposition:"))
+  {
+    HTTPD_CONF_REQ__X_CONTENT_VSTR(content_disposition);
+    HTTPD_CONF_REQ__X_CONTENT_HDR_CHK(content_disposition);
+  }
   else if (OPT_SERV_SYM_EQ("Content-Language:"))
   {
     HTTPD_CONF_REQ__X_CONTENT_VSTR(content_language);
@@ -783,7 +788,7 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
       !req->policy->use_req_conf || req->skip_document_root)
     return (TRUE);
   
-  s1 = conf->data;
+  s1 = conf->tmp;
   HTTPD_APP_REF_ALLVSTR(s1, dir);
   ASSERT((dir->len   >= 1) && vstr_cmp_cstr_eq(dir,   dir->len, 1, "/"));
   ASSERT((fname->len >= 1) && vstr_cmp_cstr_eq(fname,        1, 1, "/"));
@@ -791,32 +796,44 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
 
   if (s1->conf->malloc_bad ||
       !(fname_cstr = vstr_export_cstr_ptr(s1, 1, s1->len)))
-    goto read_malloc_fail;
+    goto read_fail;
   
-  if ((fd = io_open_nonblock(fname_cstr)) == -1)
-    goto fin_ok; /* ignore missing req config file */
-  vstr_del(s1, 1, s1->len); fname_cstr = NULL;
+  fd = io_open_nonblock(fname_cstr);
+  if ((fd == -1) && (errno == EISDIR))
+    goto fin_dir;
 
-  if ((fstat64(fd, cf_stat) == -1) ||
-      S_ISDIR(cf_stat->st_mode) ||
-      (cf_stat->st_size < strlen("org.and.jhttpd-conf-req-1.0")) ||
+  if ((fd == -1) &&
+      ((errno == ENOENT) ||
+       (errno == ENOTDIR) || /* part of path was not a dir */
+       (errno == ENAMETOOLONG)))
+    goto fin_ok; /* ignore these errors, not local users fault */
+
+  if (fd == -1)
+    goto read_fail; /* this is "bad" */
+  
+  if (fstat64(fd, cf_stat) == -1)
+    goto close_read_fail; /* this is "bad" */
+  
+  if (S_ISDIR(cf_stat->st_mode))
+    goto fin_close_dir; /* ignore */
+  
+  if (!S_ISREG(cf_stat->st_mode))
+    goto close_read_fail; /* this is "bad" */
+
+  if ((cf_stat->st_size < strlen("org.and.jhttpd-conf-req-1.0")) ||
       (cf_stat->st_size > req->policy->max_req_conf_sz))
-  {
-    close(fd);
-    goto fin_ok; /* ignore */
-  }
+    goto close_read_fail; /* this is "bad" */
 
-  conf->data = s1;
+  s1 = conf->data;
+  vstr_del(conf->tmp,  1, conf->tmp->len); /* filename */
+
   while (cf_stat->st_size > s1->len)
   {
     size_t len = cf_stat->st_size - s1->len;
     
     if (!vstr_sc_read_len_fd(s1, s1->len, fd, len, NULL) ||
         (len == (cf_stat->st_size - s1->len)))
-    {
-      close(fd);
-      goto read_malloc_fail;
-    }
+      goto close_read_fail;
   }
   
   close(fd);
@@ -841,17 +858,44 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
 
   /* And they all live together ... dum dum */
   if (conf->data->conf->malloc_bad)
-    goto read_malloc_fail;
-  
- fin_ok:
+    goto read_fail;
+
   return (TRUE);
+
+ fin_close_dir:
+  close(fd);
+ fin_dir:
+  if (req->policy->use_secure_dirs)
+  { /* check if conf file exists, so we can re-direct without leaking info. */
+    struct stat64 d_stat[1];
+    
+    vstr_add_cstr_buf(s1, s1->len, "/");
+    HTTPD_APP_REF_ALLVSTR(s1, req->policy->dir_filename);
+    
+    fname_cstr = vstr_export_cstr_ptr(s1, 1, s1->len);
+    if (s1->conf->malloc_bad)
+      goto read_fail;
+    if ((stat64(fname_cstr, d_stat) != -1) && S_ISREG(d_stat->st_mode))
+      req->conf_secure_dirs = TRUE;
+  }
+ fin_ok:
+  ASSERT(s1 == conf->tmp);
+  vstr_del(s1, 1, s1->len);
+  return (TRUE);
+
+ close_read_fail:
+  vstr_del(conf->data, 1, conf->data->len);
+  vstr_del(conf->tmp,  1, conf->tmp->len);
+  close(fd);
+  goto read_fail;
   
  conf_fail:
-  vstr_del(conf->tmp, 1, conf->tmp->len);
+  vstr_del(conf->tmp,  1, conf->tmp->len);
   if (!req->user_return_error_code)
     conf_parse_backtrace(conf->tmp, "<conf-request>", conf, token);
- read_malloc_fail:
+ read_fail:
   if (!req->user_return_error_code)
     HTTPD_ERR(req, 503);
+  conf->data->conf->malloc_bad = FALSE;
   return (FALSE);
 }

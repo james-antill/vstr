@@ -74,7 +74,8 @@ typedef struct Httpd_req_data
  size_t orig_io_w_len;
  Vstr_base *f_mmap;
  Vstr_base *xtra_content;
- HTTPD__DECL_XTRA_HDR(content_type);
+ HTTPD__DECL_XTRA_HDR(cache_control);
+ HTTPD__DECL_XTRA_HDR(content_disposition);
  HTTPD__DECL_XTRA_HDR(content_language);
  HTTPD__DECL_XTRA_HDR(content_location);
  HTTPD__DECL_XTRA_HDR(content_md5); /* Note this is valid for range */
@@ -83,7 +84,7 @@ typedef struct Httpd_req_data
  time_t               gzip_content_md5_time;
  HTTPD__DECL_XTRA_HDR(bzip2_content_md5);
  time_t               bzip2_content_md5_time;
- HTTPD__DECL_XTRA_HDR(cache_control);
+ HTTPD__DECL_XTRA_HDR(content_type);
  HTTPD__DECL_XTRA_HDR(etag);
  time_t               etag_time;
  HTTPD__DECL_XTRA_HDR(gzip_etag);
@@ -92,11 +93,11 @@ typedef struct Httpd_req_data
  time_t               bzip2_etag_time;
  HTTPD__DECL_XTRA_HDR(expires);
  time_t               expires_time;
- HTTPD__DECL_XTRA_HDR(link);
- HTTPD__DECL_XTRA_HDR(p3p);
  HTTPD__DECL_XTRA_HDR(ext_vary_a);
  HTTPD__DECL_XTRA_HDR(ext_vary_ac);
  HTTPD__DECL_XTRA_HDR(ext_vary_al);
+ HTTPD__DECL_XTRA_HDR(link);
+ HTTPD__DECL_XTRA_HDR(p3p);
 
  time_t encoded_mtime;
  
@@ -139,6 +140,8 @@ typedef struct Httpd_req_data
  
  unsigned int neg_content_type_done : 1;
  unsigned int neg_content_lang_done : 1;
+ 
+ unsigned int conf_secure_dirs : 1;
  
  unsigned int using_req : 1;
  unsigned int done_once : 1;

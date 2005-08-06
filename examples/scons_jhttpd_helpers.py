@@ -82,7 +82,8 @@ def gen_sam_idx(env, data, x, rec=False):
                 files.append(env.Dir(name))
             else:
                 files.append(name)
-        data.append([f1, env.Dir(f2), files])
+        if len(files):
+            data.append([f1, env.Dir(f2), files])
         
         if not rec:
             return
@@ -121,3 +122,46 @@ def apply_sam_examples_idx(data, env, Make_ex_indx):
         for j in glob.glob(name + "/" + src[1]):
             env.Depends(abcd, j)
         env.Ignore(abcd, env.Dir(name))
+
+# Apply over directories
+def gen_files_sam_ext(env, data, x, rec=False):
+    subdir = x
+    def gen__name(x, ext_in=".shtml", ext_out=".html"):
+        indx = conf['GENERATE_INDEX_NAME']
+        f2 = conf['ROOT_DIR'] + subdir + '/' + x + '/'
+        # all this is needed due to bug#1185284
+        files = []
+        for name in glob.glob(f2 + '*' + ext_in):
+            if os.path.basename(name) == indx:
+                continue
+            if os.path.basename(name) == indx + ".gz":
+                continue
+            if os.path.basename(name) == indx + ".bz2":
+                continue
+			
+            if os.path.islink(name) and not os.path.isfile(name):
+                continue # recursion bug#1185293
+            if os.path.getsize(name) > (1000 * 1000 * 1000):
+                continue # string error bug#1185299
+
+            out_name = name[:-len(ext_in)] + ext_out
+            files.append([out_name, name])
+        if len(files):
+            data.append([ext_in, ext_out, files])
+        
+        if not rec:
+            return
+		
+        for y in glob.glob(f2 + '*'):
+            if os.path.islink(y) or not os.path.isdir(y):
+                continue
+            gen__name(x + '/' + os.path.basename(y))
+		
+    return gen__name
+
+def apply_sam_ssi(data, SSI):
+    for i in data:
+        ext_in  = i[0]
+        ext_out = i[1]
+        for fname in i[2]:
+            SSI(fname[0], fname[1])

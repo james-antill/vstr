@@ -147,6 +147,7 @@ static void http__clear_xtra(struct Httpd_req_data *req)
     vstr_del(req->xtra_content, 1, req->xtra_content->len);
 
   HTTP__XTRA_HDR_INIT(content_type);
+  HTTP__XTRA_HDR_INIT(content_disposition);
   HTTP__XTRA_HDR_INIT(content_language);
   HTTP__XTRA_HDR_INIT(content_location);
   HTTP__XTRA_HDR_INIT(content_md5);
@@ -255,6 +256,8 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->neg_content_type_done = FALSE;
   req->neg_content_lang_done = FALSE;
 
+  req->conf_secure_dirs = FALSE;
+  
   req->done_once  = TRUE;
   req->using_req  = TRUE;
 
@@ -1189,6 +1192,9 @@ static void http_app_hdrs_file(struct Con *con, Httpd_req_data *req)
   time_t mtime     = req->f_stat->st_mtime;
   time_t enc_mtime = req->encoded_mtime;
   
+  if (req->content_disposition_vs1)
+    http_app_hdr_vstr_def(out, "Content-Disposition",
+                          HTTP__XTRA_HDR_PARAMS(req, content_disposition));
   if (req->content_language_vs1)
     http_app_hdr_vstr_def(out, "Content-Language",
                           HTTP__XTRA_HDR_PARAMS(req, content_language));
@@ -1680,33 +1686,29 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
 int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *fname = req->fname;
-  Vstr_base *dir_fname = req->policy->dir_filename;
-  struct stat64 d_stat[1];
-  int ret = -1;
   
   /* fname == what was just passed to open() */
   ASSERT(fname->len);
 
-  if (req->policy->use_secure_dirs)
-  {
+  if (!req->policy->use_secure_dirs || req->conf_secure_dirs)
+    vstr_del(fname, 1, fname->len);
+  else
+  { /* check if file exists before redirecting without leaking info. */
     const char *fname_cstr = NULL;
+    struct stat64 d_stat[1];
   
     vstr_add_cstr_buf(fname, fname->len, "/");
-    HTTPD_APP_REF_ALLVSTR(fname, dir_fname);
+    HTTPD_APP_REF_ALLVSTR(fname, req->policy->dir_filename);
     
     fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
     if (fname->conf->malloc_bad)
       return (http_fin_errmem_req(con, req));
 
-    ret = stat64(fname_cstr, d_stat);
-  }
-  
-  vstr_del(fname, 1, fname->len);
-
-  if (req->policy->use_secure_dirs)
-    /* FIXME: need to check conf. too? */
-    if ((ret == -1) || !S_ISREG(d_stat->st_mode))
+    if ((stat64(fname_cstr, d_stat) == -1) || !S_ISREG(d_stat->st_mode))
       HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
+    
+    vstr_del(fname, 1, fname->len);
+  }
 
   httpd_req_absolute_uri(con, req, fname, 1, fname->len);
   
@@ -1717,7 +1719,7 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
    *               http://foo/bar/index.html/
    */
   if (fname->len && (vstr_export_chr(fname, fname->len) == '/'))
-    HTTPD_APP_REF_ALLVSTR(fname, dir_fname);
+    HTTPD_APP_REF_ALLVSTR(fname, req->policy->dir_filename);
   
   vstr_add_cstr_buf(fname, fname->len, "/");
   
@@ -3282,10 +3284,10 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
     else if (errno == EACCES)
       HTTPD_ERR(req, 403);
     else if ((errno == ENOENT) ||
-             (errno == ENODEV) ||
-             (errno == ENXIO) ||
-             (errno == ELOOP) ||
-             (errno == ENOTDIR) ||
+             (errno == ENODEV) || /* device file, with no driver */
+             (errno == ENXIO) || /* device file, with no driver */
+             (errno == ELOOP) || /* symlinks */
+             (errno == ENOTDIR) || /* part of path was not a dir */
              (errno == ENAMETOOLONG) || /* 414 ? */
              FALSE)
       HTTPD_ERR(req, 404);

@@ -36,9 +36,6 @@ happily work on win32 etc.
 
   vlg
 	syslog restart ... tst.
-	localtime() keeps looking at /etc/localtime now
-	  Have option to spew /etc/localtime into TZ at startup?
-	  Or just remove chroot() pre-localtime hack?
 
 
   ex_sock_filter
@@ -64,13 +61,12 @@ happily work on win32 etc.
 	    not to easy to do multi proc. ... need to pass data/connections
 	    Already fucked with limit connections
 
+
   ex_httpd
 
 http://www.sans.org/top20/#u2
 
-	SECURITY = stat() to check for directory redirects to 404s
 	Redirect for non-canonical URLs (Ie. %61 used) -- like %2e/%2f fixup
-	userdirs?
 	mime_types speed, by having explicit filename/ext matches
         nice()
 	public/symlinks path checking
@@ -79,8 +75,8 @@ http://www.sans.org/top20/#u2
 	 stat cache
 	man page
 	conf
+	 memory allocation errors == 503 for conf?
          auth token-file cdb /path - allows multiple user/pass
-         Content-Disposition -- rfc2183
 	 Delta encoding: http://www.ietf.org/rfc/rfc3229.txt
 	  http://bobwyman.pubsub.com/main/2004/09/implementations.html
          limit location/content-location somehow ?
@@ -97,6 +93,7 @@ http://www.sans.org/top20/#u2
          Allow policy limiting of what "commands" req_conf can do.
          Allow custom error-code pages, for the non-trivial codes like 406 and
           the 30[1237] redirects.
+	 userdirs?
 	IP_TOS && IP_RECVTOS
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
          C-z fg

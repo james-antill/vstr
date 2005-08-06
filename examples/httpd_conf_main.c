@@ -192,7 +192,6 @@ int httpd_policy_connection(struct Con *con,
 {
   Conf_token token[1];
   unsigned int num = 0;
-  Vstr_ref *ref = NULL;
   
   if (!beg_token->num) /* not been parsed */
     return (TRUE);
@@ -200,7 +199,8 @@ int httpd_policy_connection(struct Con *con,
   *token = *beg_token;
 
   num = token->num;
-  do {
+  while (num)
+  {
     if (!conf_parse_num_token(conf, token, num))
       goto conf_fail;
     
@@ -210,7 +210,7 @@ int httpd_policy_connection(struct Con *con,
     
     if (!httpd__policy_connection_d0(con, conf, token))
       goto conf_fail;
-  } while (ref);
+  }
 
   vstr_del(conf->tmp, 1, conf->tmp->len);
   return (TRUE);
@@ -600,7 +600,6 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
 {
   Conf_token token[1];
   unsigned int num = 0;
-  Vstr_ref *ref = NULL;
   
   if (!beg_token->num) /* not been parsed */
     return (TRUE);
@@ -608,7 +607,8 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
   *token = *beg_token;
 
   num = token->num;
-  do {
+  while (num)
+  {
     if (!conf_parse_num_token(conf, token, num))
       goto conf_fail;
     
@@ -617,9 +617,8 @@ int httpd_policy_request(struct Con *con, struct Httpd_req_data *req,
     conf_token_get_user_value(conf, token, &num);
 
     if (!httpd__policy_request_d0(con, req, conf, token))
-      goto conf_fail;
-    
-  } while (ref);
+      goto conf_fail;    
+  }
 
   vstr_del(conf->tmp, 1, conf->tmp->len);
   return (TRUE);
