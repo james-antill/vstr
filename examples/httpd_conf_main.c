@@ -86,8 +86,8 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
                                    CON_SEVNT_SA(con), matches));
   
   else
-    return (opt_policy_sc_tst(conf, token, matches,
-                              httpd__policy_connection_tst_op_d1, con));
+    return (opt_serv_sc_tst(conf, token, matches,
+                            httpd__policy_connection_tst_op_d1, con));
 
   return (TRUE);
 }
@@ -479,8 +479,8 @@ static int httpd__policy_request_tst_d1(struct Con *con,
 
       data->con = con;
       data->req = req;
-      return (opt_policy_sc_tst(conf, token, matches,
-                                httpd__policy_request_tst_op_d1, data));
+      return (opt_serv_sc_tst(conf, token, matches,
+                              httpd__policy_request_tst_op_d1, data));
     }
     
     if (!httpd_policy_path_make(con, req, conf, token, type, &ref))
@@ -740,12 +740,17 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
 }
 
 static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
-                                      const Conf_parse *conf, Conf_token *token,
+                                      Conf_parse *conf, Conf_token *token,
                                       int clist)
 {
   OPT_SERV_PRIME_SYM_EQ_DECL();
   
   if (0) { }
+  
+  else if (OPT_SERV_SYM_EQ("match-init"))
+    OPT_SERV_SC_MATCH_INIT(opts->s->beg,
+                           httpd__conf_main_policy_d1(opts, conf, token,
+                                                      clist));
   
   else if (OPT_SERV_SYM_EQ("directory-filename"))
     OPT_SERV_X_VSTR(opts->dir_filename);
@@ -772,6 +777,8 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
 
   else if (OPT_SERV_SYM_EQ("secure-directory-filename"))
     OPT_SERV_X_TOGGLE(opts->use_secure_dirs);
+  else if (OPT_SERV_SYM_EQ("redirect-filename-directory"))
+    OPT_SERV_X_TOGGLE(opts->use_friendly_dirs);
   else if (OPT_SERV_SYM_EQ("mmap"))
     OPT_SERV_X_TOGGLE(opts->use_mmap);
   else if (OPT_SERV_SYM_EQ("sendfile"))
@@ -830,7 +837,7 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
 }
 
 static int httpd__conf_main_policy(Httpd_opts *opts,
-                                   const Conf_parse *conf, Conf_token *token)
+                                   Conf_parse *conf, Conf_token *token)
 {
   Opt_serv_policy_opts *popts = NULL;
   unsigned int cur_depth = opt_policy_sc_conf_parse(opts->s, conf, token,
@@ -856,13 +863,15 @@ static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
 {
   OPT_SERV_PRIME_SYM_EQ_DECL();
   
-  (void)clist;
-  
   if (OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
   {
     if (!opt_serv_conf(httpd_opts->s, conf, token))
       return (FALSE);
   }
+  
+  else if (OPT_SERV_SYM_EQ("match-init"))
+    OPT_SERV_SC_MATCH_INIT(httpd_opts->s,
+                           httpd__conf_main_d1(httpd_opts, conf, token, clist));
   
   else if (OPT_SERV_SYM_EQ("policy"))
   {

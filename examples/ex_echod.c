@@ -68,6 +68,9 @@
 
 MALLOC_CHECK_DECL();
 
+#define CONF_NAME "jechod"
+#define CONF_VERSION "0.99.1"
+
 #define CONF_SERV_DEF_PORT    7
 
 #define CONF_BUF_SZ (128 - sizeof(Vstr_node_buf))
@@ -88,7 +91,7 @@ struct Con
  Opt_serv_policy_opts *policy;
 };
 
-static OPT_SERV_CONF_DECL_OPTS(opts);
+static OPT_SERV_CONF_DECL_OPTS(opts, CONF_NAME, CONF_VERSION);
 
 static Vlg *vlg = NULL;
 
@@ -284,8 +287,10 @@ static void serv_cmd_line(int argc, char *argv[])
 
   evnt_opt_nagle = TRUE;
   
-  program_name = opt_program_name(argv[0], "jechod");
-
+  program_name = opt_program_name(argv[0], CONF_NAME);
+  opts->name_cstr = program_name;
+  opts->name_len  = strlen(program_name);
+  
   if (!opt_serv_conf_init(opts))
     errno = ENOMEM, err(EXIT_FAILURE, "options");
   
@@ -304,7 +309,7 @@ static void serv_cmd_line(int argc, char *argv[])
         if (!out)
           errno = ENOMEM, err(EXIT_FAILURE, "version");
 
-        vstr_add_fmt(out, 0, " %s version %s.\n", program_name, "0.9.9");
+        vstr_add_fmt(out, 0, " %s version %s.\n", program_name, CONF_VERSION);
 
         if (io_put_all(out, STDOUT_FILENO) == IO_FAIL)
           err(EXIT_FAILURE, "write");

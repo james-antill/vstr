@@ -89,7 +89,7 @@ This file describes all the services the server is to make available to clients\
 This is the default location of the file to start the jhttpd service\&.
 
 .TP
-\fI/etc/jhttpd/conf\&.d
+\fI/etc/jhttpd/conf\&.d\fR
 This is the default location for extra \fBjhttpd\&.conf\fR(5) server configuration files\&. All files placed in this directory ending with \&.conf will be loaded by the default init\&.d startup file\&.
 
 .SH "VERSION"
@@ -101,6 +101,37 @@ This man page is correct for version 1\&.0\&.0 of the jhttpd server\&.
 
 .PP
 Diagnostics issued by the server are logged either to stderr, or if \-\-daemon has been specified (and daemon mode has been started) logged to the /dev/log (aka. syslogd) service\&.
+
+.PP
+Each diagnostic starts with a single word, identifying what that diagnostic is for:
+
+.TP
+\fICONNECT\fR
+This means a connection was established\&.
+
+.TP
+\fIFREE\fR
+This means a connection was terminated\&.
+
+.TP
+\fIREQ\fR
+This means a request was processed, this is followed by the operation name (Ie\&. GET, HEAD, TRACE)\&.
+
+.TP
+\fIERREQ\fR
+This means an "error" request was processed, note that this can mean that the other side did something wrong (Ie\&. a malformed request) or not (Ie\&. a redirect)\&.
+
+.TP
+\fIBLOCKED\fR
+This means a request was blocked, this can happen at either the connection or the request level\&.
+
+.TP
+\fICONF-*\fR
+This means an error was encountered when processing the configuration, this can happen at either the connection or the request level\&.
+
+.TP
+\fIREADY\fR
+This means the server has finished initializing and is now ready to serve requests\&.
 
 .SH "SIGNALS"
 

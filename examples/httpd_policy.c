@@ -150,6 +150,12 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
       httpd_policy_path_mod_bwes(con->evnt->io_r, &pos, &len);
       HTTPD_APP_REF_VSTR(conf->tmp, con->evnt->io_r, pos, len);
     }
+    else if (OPT_SERV_SYM_EQ("<directory-filename>"))
+    {
+      Vstr_base *s1 = req->policy->dir_filename;
+      *used_policy = TRUE;
+      HTTPD_APP_REF_ALLVSTR(conf->tmp, s1);
+    }
     else if (OPT_SERV_SYM_EQ("<dirname>"))
     {
       size_t pos = 1;
@@ -324,21 +330,22 @@ int httpd_policy_path_make(struct Con *con, Httpd_req_data *req,
   int ret = FALSE;
   int used_pol = FALSE;
   int used_req = FALSE;
+  int clist = FALSE;
+  OPT_SERV_PRIME_SYM_EQ_DECL();
   
   ASSERT(ret_ref);
   *ret_ref     = NULL;
 
   CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
 
-  if (token->type == CONF_TOKEN_TYPE_CLIST)
+  if (OPT_SERV_SYM_EQ("assign") || OPT_SERV_SYM_EQ("="))
   {
-    OPT_SERV_PRIME_SYM_EQ_DECL();
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!OPT_SERV_SYM_EQ("assign") && !OPT_SERV_SYM_EQ("="))
-      return (FALSE);
     if (!httpd_policy_build_path(con, req, conf, token, &used_pol, &used_req))
       return (FALSE);
   }
+  else if (clist)
+    return (FALSE);
   else
   {
     const Vstr_sect_node *pv = conf_token_value(token);
@@ -442,6 +449,7 @@ int httpd_policy_init(Httpd_opts *beg, Httpd_policy_opts *opts)
   opts->remove_url_frag    = HTTPD_CONF_USE_REMOVE_FRAG;
   opts->remove_url_query   = HTTPD_CONF_USE_REMOVE_QUERY;
   opts->use_secure_dirs    = HTTPD_CONF_USE_SECURE_DIRS;
+  opts->use_friendly_dirs  = HTTPD_CONF_USE_FRIENDLY_DIRS;
   
   opts->use_posix_fadvise  = HTTPD_CONF_USE_POSIX_FADVISE;
   opts->use_tcp_cork       = HTTPD_CONF_USE_TCP_CORK;
@@ -564,6 +572,7 @@ int httpd_policy_copy(Opt_serv_policy_opts *sdst,
   HTTPD_POLICY_CP_VAL(remove_url_frag);
   HTTPD_POLICY_CP_VAL(remove_url_query);
   HTTPD_POLICY_CP_VAL(use_secure_dirs);
+  HTTPD_POLICY_CP_VAL(use_friendly_dirs);
   HTTPD_POLICY_CP_VAL(use_posix_fadvise);
   HTTPD_POLICY_CP_VAL(use_tcp_cork);
   HTTPD_POLICY_CP_VAL(use_req_conf);

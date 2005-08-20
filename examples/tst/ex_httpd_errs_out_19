@@ -1,6 +1,6 @@
 HTTP/1.1 412 Precondition Failed
 Date:
-Server: jhttpd/0.9.100 (Vstr)
+Server: jhttpd/0.99.1 (Vstr)
 Last-Modified:
 Accept-Ranges: bytes
 Vary: Accept-Encoding
@@ -21,7 +21,7 @@ Content-Length: 403
 </html>
 HTTP/1.1 412 Precondition Failed
 Date:
-Server: jhttpd/0.9.100 (Vstr)
+Server: jhttpd/0.99.1 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes

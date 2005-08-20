@@ -256,7 +256,8 @@ Httpd_req_data *http_req_make(struct Con *con)
   req->neg_content_type_done = FALSE;
   req->neg_content_lang_done = FALSE;
 
-  req->conf_secure_dirs = FALSE;
+  req->conf_secure_dirs   = FALSE;
+  req->conf_friendly_dirs = FALSE;
   
   req->done_once  = TRUE;
   req->using_req  = TRUE;
@@ -1297,6 +1298,8 @@ static int http_fin_err_req(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *out = con->evnt->io_w;
   int use_cust_err_msg = FALSE;
+
+  ASSERT(req->error_code);
   
   req->content_encoding_gzip  = FALSE;
   req->content_encoding_bzip2 = FALSE;
@@ -1631,15 +1634,24 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
     has_schema = FALSE;
     if (!VPREFIX(lfn, pos, len, "/")) /* relative pathname */
     {
-      while (VPREFIX(lfn, pos, len, "../"))
+      if (VPREFIX(lfn, pos, len, "./"))
       {
-        ++prev_num;
-        vstr_del(lfn, pos, CLEN("../")); len -= CLEN("../");
-      }
-      if (prev_num)
+        has_data = TRUE;
+        vstr_del(lfn, pos, CLEN("./")); len -= CLEN("./");
         alen = lfn->len;
+      }
       else
-        has_data = !!lfn->len;
+      {
+        while (VPREFIX(lfn, pos, len, "../"))
+        {
+          ++prev_num;
+          vstr_del(lfn, pos, CLEN("../")); len -= CLEN("../");
+        }
+        if (prev_num)
+          alen = lfn->len;
+        else
+          has_data = !!lfn->len;
+      }
       
       has_abs_path = FALSE;
     }
@@ -1681,18 +1693,16 @@ void httpd_req_absolute_uri(struct Con *con, Httpd_req_data *req,
 /* doing http://www.example.com/foo/bar where bar is a dir is bad
    because all relative links will be relative to foo, not bar.
    Also note that location must be "http://www.example.com/foo/bar/" or maybe
-   "http:/foo/bar/"
+   "http:/foo/bar/" (but we don't use the later anymore)
 */
-int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
+static int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *fname = req->fname;
   
   /* fname == what was just passed to open() */
   ASSERT(fname->len);
 
-  if (!req->policy->use_secure_dirs || req->conf_secure_dirs)
-    vstr_del(fname, 1, fname->len);
-  else
+  if (req->policy->use_secure_dirs && !req->conf_secure_dirs)
   { /* check if file exists before redirecting without leaking info. */
     const char *fname_cstr = NULL;
     struct stat64 d_stat[1];
@@ -1706,10 +1716,9 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
 
     if ((stat64(fname_cstr, d_stat) == -1) || !S_ISREG(d_stat->st_mode))
       HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
-    
-    vstr_del(fname, 1, fname->len);
   }
-
+  
+  vstr_del(fname, 1, fname->len);
   httpd_req_absolute_uri(con, req, fname, 1, fname->len);
   
   /* we got:       http://foo/bar/
@@ -1723,6 +1732,51 @@ int http_req_chk_dir(struct Con *con, Httpd_req_data *req)
   
   vstr_add_cstr_buf(fname, fname->len, "/");
   
+  HTTPD_ERR_301(req);
+  
+  if (fname->conf->malloc_bad)
+    return (http_fin_errmem_req(con, req));
+  
+  return (http_fin_err_req(con, req));
+}
+
+/* doing http://www.example.com/foo/bar/ when url is really
+   http://www.example.com/foo/bar is a very simple mistake, so we almost
+   certainly don't want a 404 */
+static int http_req_chk_file(struct Con *con, Httpd_req_data *req)
+{
+  Vstr_base *fname = req->fname;
+  size_t len = 0;
+  
+  /* fname == what was just passed to open() */
+  ASSERT(fname->len);
+
+  if (!req->policy->use_friendly_dirs)
+    HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
+  else if (!req->conf_friendly_dirs)
+  { /* check if file exists before redirecting without leaking info. */
+    const char *fname_cstr = NULL;
+    struct stat64 d_stat[1];
+    len = vstr_cspn_cstr_chrs_rev(fname, 1, fname->len, "/") + 1;
+
+    /* must be a filename, can't be toplevel */
+    if ((len <= 1) || (len >= (fname->len - req->vhost_prefix_len)))
+      HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
+
+    vstr_sc_reduce(fname, 1, fname->len, len);
+    
+    fname_cstr = vstr_export_cstr_ptr(fname, 1, fname->len);
+    if (fname->conf->malloc_bad)
+      return (http_fin_errmem_req(con, req));    
+    if ((stat64(fname_cstr, d_stat) == -1) && !S_ISREG(d_stat->st_mode))
+      HTTPD_ERR_RET(req, 404, http_fin_err_req(con, req));
+  }
+  
+  vstr_sub_cstr_ptr(fname, 1, fname->len, "./");
+  httpd_req_absolute_uri(con, req, fname, 1, fname->len);
+  assert(VSUFFIX(fname, 1, fname->len, "/"));
+  vstr_sc_reduce(fname, 1, fname->len, strlen("/"));
+
   HTTPD_ERR_301(req);
   
   if (fname->conf->malloc_bad)
@@ -3281,14 +3335,17 @@ int http_req_op_get(struct Con *con, Httpd_req_data *req)
       HTTPD_ERR(req, 404);
     else if (errno == EISDIR)
       return (http_req_chk_dir(con, req));
+    else if (((errno == ENOENT) && req->conf_friendly_dirs) ||
+             (errno == ENOTDIR) || /* part of path was not a dir */
+             (errno == ENAMETOOLONG) || /* 414 ? */
+             FALSE)
+      return (http_req_chk_file(con, req));
     else if (errno == EACCES)
       HTTPD_ERR(req, 403);
     else if ((errno == ENOENT) ||
              (errno == ENODEV) || /* device file, with no driver */
              (errno == ENXIO) || /* device file, with no driver */
              (errno == ELOOP) || /* symlinks */
-             (errno == ENOTDIR) || /* part of path was not a dir */
-             (errno == ENAMETOOLONG) || /* 414 ? */
              FALSE)
       HTTPD_ERR(req, 404);
     else

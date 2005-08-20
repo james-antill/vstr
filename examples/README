@@ -66,6 +66,10 @@ happily work on win32 etc.
 
 http://www.sans.org/top20/#u2
 
+	man page
+         Allow req_conf to have matches (maybe (match-allow [] ...) ?)
+          Match needed for different ETags for content neg.
+
 	Redirect for non-canonical URLs (Ie. %61 used) -- like %2e/%2f fixup
 	mime_types speed, by having explicit filename/ext matches
         nice()
@@ -73,8 +77,8 @@ http://www.sans.org/top20/#u2
          allowdev - http://www.arctic.org/~dean/apache/1.3/mod_allowdev.c
 	 fd cache
 	 stat cache
-	man page
 	conf
+         Location: + custom error files?
 	 memory allocation errors == 503 for conf?
          auth token-file cdb /path - allows multiple user/pass
 	 Delta encoding: http://www.ietf.org/rfc/rfc3229.txt
@@ -88,12 +92,8 @@ http://www.sans.org/top20/#u2
          Have more match types, so we can change policy for early parts of
           request processing.
          Allow req_conf to change to a defined set of policies
-         Allow req_conf to have matches (maybe (match-allow [] ...) ?)
-          Match needed for different ETags for content neg.
          Allow policy limiting of what "commands" req_conf can do.
-         Allow custom error-code pages, for the non-trivial codes like 406 and
-          the 30[1237] redirects.
-	 userdirs?
+	 userdirs? - problem due to getpwnam() braindamage
 	IP_TOS && IP_RECVTOS
 	Child dies in --procs, when sent SIGCONT after SIGTSTP or SIGSTOP
          C-z fg

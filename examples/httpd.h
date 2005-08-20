@@ -142,6 +142,7 @@ typedef struct Httpd_req_data
  unsigned int neg_content_lang_done : 1;
  
  unsigned int conf_secure_dirs : 1;
+ unsigned int conf_friendly_dirs : 1;
  
  unsigned int using_req : 1;
  unsigned int done_once : 1;
@@ -251,7 +252,6 @@ extern int httpd_canon_abs_dir_path(Vstr_base *);
 extern void httpd_req_absolute_uri(struct Con *, Httpd_req_data *,
                                    Vstr_base *, size_t, size_t);
 
-extern int http_req_chk_dir(struct Con *, Httpd_req_data *);
 extern int http_req_content_type(Httpd_req_data *);
 
 extern unsigned int http_parse_accept(Httpd_req_data *,

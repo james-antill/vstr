@@ -1,6 +1,6 @@
 HTTP/1.1 413 Request Entity Too Large
 Date:
-Server: jhttpd/0.9.100 (Vstr)
+Server: jhttpd/0.99.1 (Vstr)
 Last-Modified:
 Connection: close
 Accept-Ranges: bytes

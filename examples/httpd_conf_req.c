@@ -258,8 +258,8 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
             return (FALSE);
         }
         *ret_ref = ref;
-        if (nxt)
-          return (conf_parse_num_token(conf, token, nxt));
+        if (nxt && !conf_parse_num_token(conf, token, nxt))
+          return (FALSE);
       }
   
       else if (OPT_SERV_SYM_EQ("<none>"))
@@ -408,14 +408,17 @@ static int httpd__content_location_valid(Httpd_req_data *req,
 
 static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               time_t file_timestamp,
-                              Conf_parse *conf, Conf_token *token)
+                              Conf_parse *conf, Conf_token *token, int clist)
 {
   OPT_SERV_PRIME_SYM_EQ_DECL();
-  int clist = FALSE;
   
-  CONF_SC_TOGGLE_CLIST_VAR(clist);
-
   if (0) { }
+
+  else if (OPT_SERV_SYM_EQ("match-init"))
+    OPT_SERV_SC_MATCH_INIT(req->policy->s->beg,
+                           httpd__conf_req_d1(con, req, file_timestamp,
+                                              conf, token, clist));
+  
   else if (OPT_SERV_SYM_EQ("return"))
   {
     unsigned int code = 0;
@@ -751,8 +754,12 @@ int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
   
   while (conf_token_list_num(token, cur_depth))
   {
+    int clist = FALSE;
+    
     CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, cur_depth, FALSE);
-    if (!httpd__conf_req_d1(con, req, timestamp, conf, token))
+    CONF_SC_TOGGLE_CLIST_VAR(clist);
+
+    if (!httpd__conf_req_d1(con, req, timestamp, conf, token, clist))
       return (FALSE);
   }
 
@@ -803,9 +810,11 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
     goto fin_dir;
 
   if ((fd == -1) &&
-      ((errno == ENOENT) ||
-       (errno == ENOTDIR) || /* part of path was not a dir */
+      ((errno == ENOTDIR) || /* part of path was not a dir */
        (errno == ENAMETOOLONG)))
+    goto fin_file; /* ignore these errors, not local users fault */
+
+  if ((fd == -1) && (errno == ENOENT))
     goto fin_ok; /* ignore these errors, not local users fault */
 
   if (fd == -1)
@@ -866,7 +875,8 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
   close(fd);
  fin_dir:
   if (req->policy->use_secure_dirs)
-  { /* check if conf file exists, so we can re-direct without leaking info. */
+  { /* check if conf file exists inside the directory given,
+     * so we can re-direct without leaking info. */
     struct stat64 d_stat[1];
     
     vstr_add_cstr_buf(s1, s1->len, "/");
@@ -878,6 +888,29 @@ int httpd_conf_req_parse_file(Conf_parse *conf,
     if ((stat64(fname_cstr, d_stat) != -1) && S_ISREG(d_stat->st_mode))
       req->conf_secure_dirs = TRUE;
   }
+
+  ASSERT(s1 == conf->tmp);
+  vstr_del(s1, 1, s1->len);
+  return (TRUE);
+  
+ fin_file:
+  if (req->policy->use_friendly_dirs)
+  { /* check if conf file exists as a file, so we can re-direct backwards */
+    struct stat64 d_stat[1];
+    size_t len = vstr_cspn_cstr_chrs_rev(s1, 1, s1->len, "/") + 1;
+
+    if ((len > 1) && (len < (s1->len - req->vhost_prefix_len)))
+    { /* must be a filename, can't be toplevel */
+      vstr_sc_reduce(s1, 1, s1->len, len);
+    
+      fname_cstr = vstr_export_cstr_ptr(s1, 1, s1->len);
+      if (s1->conf->malloc_bad)
+        goto read_fail;
+      if ((stat64(fname_cstr, d_stat) != -1) && S_ISREG(d_stat->st_mode))
+        req->conf_friendly_dirs = TRUE;
+    }
+  }
+  
  fin_ok:
   ASSERT(s1 == conf->tmp);
   vstr_del(s1, 1, s1->len);

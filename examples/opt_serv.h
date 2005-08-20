@@ -53,6 +53,12 @@ typedef struct Opt_serv_opts
  Opt_serv_policy_opts *(*make_policy)(struct Opt_serv_opts *);
  int                   (*copy_policy)(struct Opt_serv_policy_opts *,
                                       const struct Opt_serv_policy_opts *);
+
+ const char  *vers_cstr;
+ const size_t vers_len;
+ 
+ const char  *name_cstr;
+       size_t name_len;
  
  unsigned int become_daemon : 1;
  unsigned int drop_privs : 1;
@@ -84,10 +90,14 @@ typedef struct Opt_serv_opts
 } Opt_serv_opts;
     
 /* uid/gid default to NFS nobody */
-#define OPT_SERV_CONF_INIT_OPTS()                                       \
+#define OPT_SERV_CONF_INIT_OPTS(x, y)                                   \
     NULL,                                                               \
     opt_policy_make,                                                    \
     opt_policy_copy,                                                    \
+    x,                                                                  \
+    sizeof(x) - 1,                                                      \
+    y,                                                                  \
+    sizeof(y) - 1,                                                      \
     OPT_SERV_CONF_USE_DAEMON,                                           \
     OPT_SERV_CONF_USE_DROP_PRIVS,                                       \
     OPT_SERV_CONF_USE_PDEATHSIG,                                        \
@@ -106,19 +116,26 @@ typedef struct Opt_serv_opts
     (OPT_SERV_CONF_MEM_PREALLOC_MAX / OPT_SERV_CONF_BUF_SZ),            \
     NULL
 
-#define OPT_SERV_CONF_DECL_OPTS(N)                      \
-    Opt_serv_opts N[1] = {{OPT_SERV_CONF_INIT_OPTS()}}
+#define OPT_SERV_CONF_DECL_OPTS(N, x, y)                \
+    Opt_serv_opts N[1] = {{OPT_SERV_CONF_INIT_OPTS(x, y)}}
 
 extern void opt_serv_conf_free(Opt_serv_opts *);
 extern int  opt_serv_conf_init(Opt_serv_opts *);
 
 extern Opt_serv_addr_opts *opt_serv_make_addr(Opt_serv_opts *);
 
-extern int opt_serv_conf(Opt_serv_opts *, const Conf_parse *, Conf_token *);
+extern int opt_serv_conf(Opt_serv_opts *, Conf_parse *, Conf_token *);
 extern int opt_serv_conf_parse_cstr(Vstr_base *, Opt_serv_opts *, const char *);
 extern int opt_serv_conf_parse_file(Vstr_base *, Opt_serv_opts *, const char *);
 
 extern void opt_serv_logger(Vlg *);
+
+extern int opt_serv_sc_tst(Conf_parse *, Conf_token *, int *,
+                           int (*tst_func)(Conf_parse *, Conf_token *,
+                                           int *, void *), void *);
+    
+extern int opt_serv_match_init(struct Opt_serv_opts *,
+                               Conf_parse *, Conf_token *, int *);
 
 extern void opt_serv_sc_drop_privs(Opt_serv_opts *);
 extern void opt_serv_sc_rlim_file_num(unsigned int);
@@ -184,12 +201,11 @@ extern void opt_serv_sc_cntl_resources(const Opt_serv_opts *);
 
 
 /* simple typer for EQ */
-#if 0 /* speed hacks agogo */
-# define OPT_SERV_PRIME_SYM_EQ_DECL()                   \
-    const Vstr_sect_node *opt_serv__sym_cmp_val = NULL
+#if 1
+# define OPT_SERV_PRIME_SYM_EQ_DECL()
 # define OPT_SERV_SYM_EQ(x)                     \
-    conf_token_cmp_sym_cstr_eq(conf, token, x))
-#else
+    conf_token_cmp_sym_cstr_eq(conf, token, x)
+#else /* speed hacks agogo */
 # define OPT_SERV_PRIME_SYM_EQ_DECL()                   \
     unsigned int          opt_serv__sym_cmp_tok = 0;    \
     const Vstr_sect_node *opt_serv__sym_cmp_val = NULL
@@ -241,5 +257,24 @@ extern void opt_serv_sc_cntl_resources(const Opt_serv_opts *);
     } while (FALSE)
 
 #define OPT_SERV_X_VSTR(x) OPT_SERV_X__VSTR(x, 1, (x)->len)
+
+#define OPT_SERV_SC_MATCH_INIT(x, y) do {                               \
+      unsigned int match_init__depth = token->depth_num;                \
+      int match_init__matches = TRUE;                                   \
+                                                                        \
+      if (!opt_serv_match_init(x, conf, token, &match_init__matches))   \
+        return (FALSE);                                                 \
+                                                                        \
+      if (!match_init__matches)                                         \
+        conf_parse_end_token(conf, token, match_init__depth);           \
+                                                                        \
+      while (conf_token_list_num(token, match_init__depth))             \
+      {                                                                 \
+        CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, match_init__depth, FALSE); \
+        CONF_SC_TOGGLE_CLIST_VAR(clist);                                \
+        if (!(y))                                                       \
+          return (FALSE);                                               \
+      }                                                                 \
+    } while (FALSE)
 
 #endif

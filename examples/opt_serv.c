@@ -20,14 +20,83 @@
 
 static Vlg *vlg = NULL;
 
+int opt_serv_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
+                    int (*tst_func)(Conf_parse *, Conf_token *,
+                                    int *, void *), void *data)
+{
+  if (0) { }
+  
+  else if (OPT_SERV_SYM_EQ("true")  || OPT_SERV_SYM_EQ("TRUE"))
+    *matches = TRUE;
+  else if (OPT_SERV_SYM_EQ("false") || OPT_SERV_SYM_EQ("FALSE"))
+    *matches = FALSE;
+  
+  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
+  {
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    if (!(*tst_func)(conf, token, matches, data))
+      return (FALSE);
+    *matches = !*matches;
+  }
+  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
+  {
+    unsigned int depth = token->depth_num;
+
+    while (conf_token_list_num(token, depth))
+    {
+      int or_matches = TRUE;
+    
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!(*tst_func)(conf, token, &or_matches, data))
+        return (FALSE);
+
+      if (or_matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+
+    *matches = FALSE;
+  }
+  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
+  {
+    unsigned int depth = token->depth_num;
+
+    while (conf_token_list_num(token, depth))
+    {
+      CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+      if (!(*tst_func)(conf, token, matches, data))
+        return (FALSE);
+
+      if (!*matches)
+      {
+        conf_parse_end_token(conf, token, depth);
+        return (TRUE);
+      }
+    }
+  }
+  
+  else
+    return (FALSE);
+  
+  return (TRUE);
+}
+
+
 static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
-                                         const Conf_parse *conf,
-                                         Conf_token *token, int clist)
+                                         Conf_parse *conf, Conf_token *token,
+                                         int clist)
 {
   OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int dummy;
   
   if (0) { }
+  else if (OPT_SERV_SYM_EQ("match-init"))
+    OPT_SERV_SC_MATCH_INIT(opts->beg,
+                           opt_serv__conf_main_policy_d1(opts, conf, token,
+                                                         clist));
+  
   else if (OPT_SERV_SYM_EQ("timeout"))
   {
     CONF_SC_MAKE_CLIST_BEG(timeout, clist);
@@ -64,7 +133,7 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
 }
 
 static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
-                                      const Conf_parse *conf, Conf_token *token)
+                                      Conf_parse *conf, Conf_token *token)
 {
   Opt_serv_policy_opts *popts = NULL;
   unsigned int cur_depth = opt_policy_sc_conf_parse(opts, conf, token, &popts);
@@ -80,6 +149,107 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
 
   CONF_SC_MAKE_CLIST_END();
   
+  return (TRUE);
+}
+
+static int opt_serv__match_init_tst_d1(struct Opt_serv_opts *opts,
+                                       Conf_parse *conf, Conf_token *token,
+                                       int *matches);
+static int opt_serv__match_init_tst_op_d1(Conf_parse *conf, Conf_token *token,
+                                          int *matches, void *passed_data)
+{
+  struct Opt_serv_opts *opts = passed_data;
+
+  return (opt_serv__match_init_tst_d1(opts, conf, token, matches));
+}
+
+static int opt_serv__match_init_tst_d1(struct Opt_serv_opts *opts,
+                                       Conf_parse *conf, Conf_token *token,
+                                       int *matches)
+{
+  OPT_SERV_PRIME_SYM_EQ_DECL();
+  int clist = FALSE;
+  
+  ASSERT(matches);
+  
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
+
+  if (0) {}
+
+  else if (OPT_SERV_SYM_EQ("version-compare<=") ||
+           OPT_SERV_SYM_EQ("vers-cmp<="))
+  {
+    OPT_SERV_X_VSTR(conf->tmp);
+    *matches = (vstr_cmp_vers_buf(conf->tmp, 1, conf->tmp->len,
+                                  opts->vers_cstr, opts->vers_len) >= 0);
+  }
+  else if (OPT_SERV_SYM_EQ("version-compare>=") ||
+           OPT_SERV_SYM_EQ("vers-cmp>="))
+  {
+    OPT_SERV_X_VSTR(conf->tmp);
+    *matches = (vstr_cmp_vers_buf(conf->tmp, 1, conf->tmp->len,
+                                  opts->vers_cstr, opts->vers_len) <= 0);
+  }
+  else if (OPT_SERV_SYM_EQ("version-compare-eq") ||
+           OPT_SERV_SYM_EQ("vers-cmp=="))
+  {
+    OPT_SERV_X_VSTR(conf->tmp);
+    *matches = (vstr_cmp_vers_buf(conf->tmp, 1, conf->tmp->len,
+                                  opts->vers_cstr, opts->vers_len) == 0);
+  }
+
+  else if (OPT_SERV_SYM_EQ("name-compare-eq") ||
+           OPT_SERV_SYM_EQ("name-cmp=="))
+  {
+    OPT_SERV_X_VSTR(conf->tmp);
+    *matches = vstr_cmp_buf_eq(conf->tmp, 1, conf->tmp->len,
+                               opts->name_cstr, opts->name_len);
+  }
+
+  else if (OPT_SERV_SYM_EQ("uid-compare-eq") ||
+           OPT_SERV_SYM_EQ("uid-cmp=="))
+  {
+    unsigned int dummy = 0;
+    OPT_SERV_X_UINT(dummy);
+    *matches = (dummy == getuid());
+  }
+  else if (OPT_SERV_SYM_EQ("euid-compare-eq") ||
+           OPT_SERV_SYM_EQ("euid-cmp=="))
+  {
+    unsigned int dummy = 0;
+    OPT_SERV_X_UINT(dummy);
+    *matches = (dummy == geteuid());
+  }
+
+  else
+    return (opt_serv_sc_tst(conf, token, matches,
+                            opt_serv__match_init_tst_op_d1, opts));
+
+  return (TRUE);
+}
+
+int opt_serv_match_init(struct Opt_serv_opts *opts,
+                        Conf_parse *conf, Conf_token *token, int *matches)
+{
+  unsigned int depth = token->depth_num;
+
+  ASSERT(matches);
+  
+  *matches = TRUE;
+  
+  CONF_SC_PARSE_SLIST_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+  ++depth;
+  while (conf_token_list_num(token, depth))
+  {
+    CONF_SC_PARSE_DEPTH_TOKEN_RET(conf, token, depth, FALSE);
+
+    if (!opt_serv__match_init_tst_d1(opts, conf, token, matches))
+      return (FALSE);
+
+    if (!*matches)
+      return (TRUE);
+  }
+
   return (TRUE);
 }
 
@@ -111,13 +281,16 @@ static int opt_serv__conf_main_policy(Opt_serv_opts *opts,
     while (FALSE)
 
 static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
-                             const Conf_parse *conf, Conf_token *token,
+                             Conf_parse *conf, Conf_token *token,
                              int clist)
 {
   OPT_SERV_PRIME_SYM_EQ_DECL();
   
   if (0){ }
 
+  else if (OPT_SERV_SYM_EQ("match-init"))
+    OPT_SERV_SC_MATCH_INIT(opts, opt_serv__conf_d1(opts, conf, token, clist));
+  
   else if (OPT_SERV_SYM_EQ("policy"))
   {
     if (!opt_serv__conf_main_policy(opts, conf, token))
@@ -262,7 +435,7 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
 #undef OPT_SERV__RLIM_VAL
 
 int opt_serv_conf(struct Opt_serv_opts *opts,
-                  const Conf_parse *conf, Conf_token *token)
+                  Conf_parse *conf, Conf_token *token)
 {
   unsigned int cur_depth = token->depth_num;
   int clist = FALSE;

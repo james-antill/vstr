@@ -10,7 +10,7 @@
 #include "date.h"
 
 /* **** defaults for runtime conf **** */
-#define HTTPD_CONF_VERSION "0.9.100"
+#define HTTPD_CONF_VERSION "0.99.1"
 
 /* note that the strings are assigned in httpd_main_conf.c */
 
@@ -41,6 +41,7 @@
 #define HTTPD_CONF_USE_REMOVE_FRAG TRUE
 #define HTTPD_CONF_USE_REMOVE_QUERY FALSE
 #define HTTPD_CONF_USE_SECURE_DIRS TRUE
+#define HTTPD_CONF_USE_FRIENDLY_DIRS TRUE
 #define HTTPD_CONF_USE_POSIX_FADVISE TRUE /* NOTE that this SEGV's on FC1 */
 #define HTTPD_CONF_USE_TCP_CORK TRUE
 #define HTTPD_CONF_USE_REQ_CONF TRUE
@@ -107,6 +108,7 @@ typedef struct Httpd_policy_opts
  unsigned int remove_url_frag : 1;
  unsigned int remove_url_query : 1;
  unsigned int use_secure_dirs : 1;
+ unsigned int use_friendly_dirs : 1;
 
  unsigned int use_posix_fadvise : 1;
  unsigned int use_tcp_cork : 1;
@@ -165,7 +167,7 @@ typedef struct Httpd_opts
 #define HTTPD_CONF_MAIN_DECL_OPTS(N)                            \
     Httpd_opts N[1] = {                                         \
      {                                                          \
-      {{OPT_SERV_CONF_INIT_OPTS()}},                            \
+      {{OPT_SERV_CONF_INIT_OPTS(HTTPD_CONF_PROG_NAME, HTTPD_CONF_VERSION)}}, \
       (time_t)-1,                                               \
       NULL,                                                     \
       NULL,                                                     \

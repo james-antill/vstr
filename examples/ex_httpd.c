@@ -278,11 +278,7 @@ static struct Evnt *serv_cb_func_accept(struct Evnt *from_evnt, int fd,
 
   if (!evnt_sc_timeout_via_mtime(con->evnt,
                                  con->policy->s->idle_timeout * 1000))
-  {
-    errno = ENOMEM;
-    vlg_info(vlg, "ERRCON from[$<sa:%p>]: %m\n", EVNT_SA(con->evnt));
-    goto evnt_fail;
-  }
+    VLG_WARNNOMEM_GOTO(evnt_fail, (vlg, "timeout: %m\n"));
 
   if (!opt_serv_sc_acpt_end(con->policy->s, from_evnt, con->evnt))
     goto evnt_fail;
@@ -496,6 +492,8 @@ static void serv_cmd_line(int argc, char *argv[])
   evnt_opt_nagle = TRUE;
   
   program_name = opt_program_name(argv[0], HTTPD_CONF_PROG_NAME);
+  httpd_opts->s->name_cstr = program_name;
+  httpd_opts->s->name_len  = strlen(program_name);
 
   httpd_opts->s->make_policy = httpd_policy_make;
   httpd_opts->s->copy_policy = httpd_policy_copy;

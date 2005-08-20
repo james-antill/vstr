@@ -41,10 +41,6 @@ extern unsigned int opt_policy_sc_conf_parse(Opt_serv_opts *,
                                              Opt_serv_policy_opts **);
 extern void opt_policy_sc_all_ref_del(Opt_serv_opts *);
 
-extern int opt_policy_sc_tst(Conf_parse *, Conf_token *, int *,
-                             int (*)(Conf_parse *, Conf_token *,
-                                     int *, void *), void *);
-
 
 #if !defined(OPT_POLICY_COMPILE_INLINE)
 # ifdef VSTR_AUTOCONF_NDEBUG
