@@ -254,7 +254,6 @@ unsigned int opt_policy_sc_conf_parse(Opt_serv_opts *opts,
     *token = save; /* restore ... */
   else
   { /* allow set of attributes */
-    OPT_SERV_PRIME_SYM_EQ_DECL();
     int clist = FALSE;
     
     CONF_SC_MAKE_CLIST_BEG(policy, clist);

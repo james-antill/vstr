@@ -6,18 +6,28 @@
 #define CONF_PARSE_ERR 0
 #define CONF_PARSE_FIN 1
 
-#define CONF_PARSE_STATE_BEG             0
-#define CONF_PARSE_STATE_WS              1
-#define CONF_PARSE_STATE_LIST_END_OR_WS  2
-#define CONF_PARSE_STATE_CHOOSE          3
-#define CONF_PARSE_STATE_QUOTE_D_BEG     4
-#define CONF_PARSE_STATE_QUOTE_S_BEG     5
-#define CONF_PARSE_STATE_QUOTE_D_END     6
-#define CONF_PARSE_STATE_QUOTE_DDD_END   7
-#define CONF_PARSE_STATE_QUOTE_S_END     8
-#define CONF_PARSE_STATE_QUOTE_SSS_END   9
-#define CONF_PARSE_STATE_SYMBOL_END     10
-#define CONF_PARSE_STATE_END            11
+#define CONF_PARSE_STATE_BEG              0
+#define CONF_PARSE_STATE_WS               1
+#define CONF_PARSE_STATE_LIST_END_OR_WS   2
+#define CONF_PARSE_STATE_CHOOSE           3
+#define CONF_PARSE_STATE_QUOTE_D_BEG      4
+#define CONF_PARSE_STATE_QUOTE_S_BEG      5
+#define CONF_PARSE_STATE_UNQUOTE_BEG      6
+#define CONF_PARSE_STATE_QUOTE_D_END      7
+#define CONF_PARSE_STATE_QUOTE_DDD_END    8
+#define CONF_PARSE_STATE_QUOTE_S_END      9
+#define CONF_PARSE_STATE_QUOTE_SSS_END   10
+#define CONF_PARSE_STATE_UNQUOTE_D_END   11 /* unescaped quoted */
+#define CONF_PARSE_STATE_UNQUOTE_DDD_END 12
+#define CONF_PARSE_STATE_UNQUOTE_S_END   13
+#define CONF_PARSE_STATE_UNQUOTE_SSS_END 14
+#define CONF_PARSE_STATE_SYMBOL_END      15
+#define CONF_PARSE_STATE_END             16
+
+#define CONF_PARSE_STATE_QUOTE_X2XXX                                    \
+    (CONF_PARSE_STATE_QUOTE_DDD_END - CONF_PARSE_STATE_QUOTE_D_END)
+#define CONF_PARSE_STATE_QUOTE2UNQUOTE_END                              \
+    (CONF_PARSE_STATE_UNQUOTE_D_END - CONF_PARSE_STATE_QUOTE_D_END)
 
 #define CONF_PARSE_LIST_DEPTH_SZ 64
 
@@ -34,6 +44,9 @@
 #define CONF_TOKEN_TYPE_QUOTE_ESC_SSS   10
 #define CONF_TOKEN_TYPE_SYMBOL          11
 #define CONF_TOKEN_TYPE_USER_BEG        12
+
+#define CONF_TOKEN_TYPE_2ESC                                    \
+    (CONF_TOKEN_TYPE_QUOTE_ESC_D - CONF_TOKEN_TYPE_QUOTE_D)
 
 #define CONF_SC_TYPE_RET_OK 0
 /* #define CONF_SC_TYPE_RET_ERR_TOO_MANY  1 */
@@ -542,14 +555,20 @@ extern inline int conf_sc_token_parse_toggle(const Conf_parse *conf,
 
   conf_parse_token(conf, token);
   if (0) { }
-  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "on") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "true") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "yes") ||
+  else if (conf_token_cmp_val_cstr_eq(conf, token, "on") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "true") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "yes") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "ON") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "TRUE") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "YES") ||
            conf_token_cmp_val_cstr_eq(conf, token, "1"))
     *val = CONF__TRUE;
-  else if (conf_token_cmp_case_val_cstr_eq(conf, token, "off") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "false") ||
-           conf_token_cmp_case_val_cstr_eq(conf, token, "no") ||
+  else if (conf_token_cmp_val_cstr_eq(conf, token, "off") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "false") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "no") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "OFF") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "FALSE") ||
+           conf_token_cmp_val_cstr_eq(conf, token, "NO") ||
            conf_token_cmp_val_cstr_eq(conf, token, "0"))
     *val = CONF__FALSE;
   else

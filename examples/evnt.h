@@ -19,6 +19,20 @@
 # define PROC_CNTL_PDEATHSIG(x1) (-1)
 #endif
 
+#ifdef __GNUC__
+# define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define EVNT__ATTR_UNUSED(x) /*@unused@*/ vstr__UNUSED_ ## x
+#else
+# define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x
+#endif
+
+#ifdef __GNUC__
+# define EVNT__ATTR_USED() __attribute__((used))
+#else
+# define EVNT__ATTR_USED() 
+#endif
+
 #ifndef EVNT_COMPILE_INLINE
 #define EVNT_COMPILE_INLINE 1
 #endif
@@ -101,10 +115,48 @@ struct Evnt
  unsigned int io_w_shutdown    : 1;
 };
 
-#define EVNT_SA(x)     ((struct sockaddr     *)(x)->sa_ref->ptr)
-#define EVNT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa_ref->ptr)
-#define EVNT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa_ref->ptr)
-#define EVNT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa_ref->ptr)
+#if 1 /* ndef VSTR_AUTOCONF_NDEBUG */
+# define EVNT_SA(x)     ((struct sockaddr     *)(x)->sa_ref->ptr)
+# define EVNT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa_ref->ptr)
+# define EVNT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa_ref->ptr)
+# define EVNT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa_ref->ptr)
+#else
+static struct sockaddr *evnt___chk_sa(void *ptr)
+{
+  struct sockaddr *sa = ptr;
+  if ((sa->sa_family != AF_INET) &&
+      (sa->sa_family != AF_INET6) &&
+      (sa->sa_family != AF_LOCAL))
+    abort();
+  return (sa);
+}
+static struct sockaddr *evnt___chk_in(void *ptr)
+{
+  struct sockaddr_in *sa = ptr;
+  if (sa->sin_family != AF_INET)
+    abort();
+  return (sa);
+}
+static struct sockaddr *evnt___chk_in6(void *ptr)
+{
+  struct sockaddr_in6 *sa = ptr;
+  if (sa->sin6_family != AF_INET6)
+    abort();
+  return (sa);
+}
+static struct sockaddr *evnt___chk_un(void *ptr)
+{
+  struct sockaddr_un *sa = ptr;
+  if (sa->sun_family != AF_LOCAL)
+    abort();
+  return (sa);
+}
+
+# define EVNT_SA(x)     evnt___chk_sa((x)->sa_ref->ptr)
+# define EVNT_SA_IN4(x) evnt___chk_in((x)->sa_ref->ptr)
+# define EVNT_SA_IN6(x) evnt___chk_in6((x)->sa_ref->ptr)
+# define EVNT_SA_UN(x)  evnt___chk_un((x)->sa_ref->ptr)
+#endif
 
 /* FIXME: bad namespace */
 typedef struct Acpt_data
@@ -112,10 +164,17 @@ typedef struct Acpt_data
  struct Evnt *evnt;
  Vstr_ref *sa;
 } Acpt_data;
-#define ACPT_SA(x)     ((struct sockaddr     *)(x)->sa->ptr)
-#define ACPT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa->ptr)
-#define ACPT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa->ptr)
-#define ACPT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa->ptr)
+#if 1 /* ndef VSTR_AUTOCONF_NDEBUG */
+# define ACPT_SA(x)     ((struct sockaddr     *)(x)->sa->ptr)
+# define ACPT_SA_IN4(x) ((struct sockaddr_in  *)(x)->sa->ptr)
+# define ACPT_SA_IN6(x) ((struct sockaddr_in6 *)(x)->sa->ptr)
+# define ACPT_SA_UN(x)  ((struct sockaddr_un  *)(x)->sa->ptr)
+#else
+# define ACPT_SA(x)     evnt___chk_sa((x)->sa->ptr)
+# define ACPT_SA_IN4(x) evnt___chk_in((x)->sa->ptr)
+# define ACPT_SA_IN6(x) evnt___chk_in6((x)->sa->ptr)
+# define ACPT_SA_UN(x)  evnt___chk_un((x)->sa->ptr)
+#endif
 
 typedef struct Acpt_listener
 {

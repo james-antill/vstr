@@ -123,11 +123,15 @@ static size_t conf__parse_comment(Conf_parse *conf, size_t pos, size_t len)
   
   node = VSTR_SECTS_NUM(conf->sects, conf->sects->num);
               
-  if (node->len == 1)
+  if (node->len >= 1)
   {
-    int byte = vstr_export_chr(conf->data, node->pos);
+    Vstr_base *data = conf->data;
+    int byte = vstr_export_chr(data, node->pos);
+    size_t p = node->pos;
+    size_t l = node->len;
     
-    if ((byte == ';') || (byte == '#'))
+    if (((byte == ';') && (vstr_spn_cstr_chrs_fwd(data, p, l, ";") == l)) ||
+        ((byte == '#') && (vstr_spn_cstr_chrs_fwd(data, p, l, "#") == l)))
     {
       vstr_sects_del(conf->sects, conf->sects->num);
       conf->state = CONF_PARSE_STATE_CHOOSE;
@@ -229,13 +233,71 @@ static void conf__parse_beg_quote_xxx(Conf_parse *conf, unsigned int *list_nums,
   if (three)
   {
     mv_pos = 3;
-    ++state;
+    state += CONF_PARSE_STATE_QUOTE_X2XXX;
     conf->types_ptr[depth_beg_num - 1] += 2;
   }
   
   VSTR_SECTS_NUM(sects, depth_beg_num)->pos += mv_pos;
   
   conf->state = state;
+}
+
+static size_t conf__parse_beg_unquote(Conf_parse *conf, size_t pos, size_t len,
+                                      unsigned int *list_nums)
+{
+  size_t plen = 1;
+  int d   = FALSE;
+  int xxx = FALSE;
+  
+  if (FALSE) { }
+  else if (VPREFIX(conf->data, pos, len, "\"\"\""))
+  {
+    d   = TRUE;
+    xxx = TRUE;
+  }
+  else if (VPREFIX(conf->data, pos, len, "\""))
+  {
+    d   = TRUE;
+    xxx = FALSE;
+  }
+  else if (VPREFIX(conf->data, pos, len, "'''"))
+  {
+    d   = FALSE;
+    xxx = TRUE;
+  }
+  else if (VPREFIX(conf->data, pos, len, "'"))
+  {
+    d   = FALSE;
+    xxx = FALSE;
+  }
+  else
+    return (0);
+
+  if (d)
+    conf__parse_beg_quote_d(conf, pos, list_nums);
+  else
+    conf__parse_beg_quote_s(conf, pos, list_nums);
+
+  if (!xxx)
+    conf__parse_beg_quote_xxx(conf, list_nums, FALSE);
+  else
+  {
+    plen = 3;
+    conf__parse_beg_quote_xxx(conf, list_nums, TRUE);
+  }
+
+  conf->state += CONF_PARSE_STATE_QUOTE2UNQUOTE_END;
+  
+  len -= plen; pos += plen;
+  if (VPREFIX(conf->data, pos, len, "\\\n")) /* allow first line */
+  {
+    unsigned int depth_beg_num = list_nums[conf->depth - 1];
+
+    VSTR_SECTS_NUM(conf->sects, depth_beg_num)->pos += CLEN("\\\n");
+    plen                                            += CLEN("\\\n");
+  }
+  
+  return (plen);
 }
 
 static void conf__parse_end_quote_xxx(Conf_parse *conf, size_t pos,
@@ -270,22 +332,66 @@ static int conf__parse_esc_quote(Conf_parse *conf, unsigned int *list_nums,
   if ((pos == VSTR_SECTS_NUM(sects, depth_beg_num)->pos) &&
       vstr_cmp_cstr_eq(conf->data, pos, CLEN("\\\n"), "\\\n"))
   {
-    VSTR_SECTS_NUM(sects, depth_beg_num)->pos += 2;
+    VSTR_SECTS_NUM(sects, depth_beg_num)->pos += CLEN("\\\n");
     return (TRUE);
   }
   
   if (conf->types_ptr[depth_beg_num - 1] == type)
-    ++conf->types_ptr[depth_beg_num - 1];
+    conf->types_ptr[depth_beg_num - 1] += CONF_TOKEN_TYPE_2ESC;
 
   return (TRUE);
 }
 #define CONF__SC_PARSE_ESC_QUOTE(x) do {                                \
       ASSERT(vstr_export_chr(data, pos) == '\\');                       \
                                                                         \
-      if (!conf__parse_esc_quote(conf, list_nums, pos, len,             \
-                                 CONF_TOKEN_TYPE_QUOTE_ ## x))          \
+      if (!conf__parse_esc_quote(conf, list_nums, pos, len, x))         \
         return (CONF_PARSE_ERR);                                        \
       plen = 2;                                                         \
+    } while (FALSE)
+
+#define CONF__SC_PARSE_QUOTE_X_BEG(x) do {                           \
+      if (!VPREFIX(data, pos, len, x))                               \
+        conf__parse_beg_quote_xxx(conf, list_nums, FALSE);           \
+      else                                                           \
+      {                                                              \
+        plen = 2;                                                    \
+        conf__parse_beg_quote_xxx(conf, list_nums, TRUE);            \
+      }                                                              \
+    } while (FALSE)
+
+#define CONF__SC_PARSE_QUOTE_XXX_END(x, y, z) do {                      \
+      if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, x)))         \
+      {                                                                 \
+        plen = 3;                                                       \
+        if (VPREFIX(data, pos, len, y))                                 \
+          conf__parse_end_quote_xxx(conf, pos, list_nums);              \
+        else if (vstr_export_chr(data, pos) != '\\')                    \
+          plen = 1;                                                     \
+        else /* \x */                                                   \
+          CONF__SC_PARSE_ESC_QUOTE(CONF_TOKEN_TYPE_QUOTE_ ## z);        \
+      }                                                                 \
+    } while (FALSE)
+
+#define CONF__SC_PARSE_QUOTE_X_END(x, y, z) do {                        \
+      if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, x)))         \
+      {                                                                 \
+        plen = 1;                                                       \
+        if (vstr_export_chr(data, pos) == y)                            \
+          conf__parse_end_quote_xxx(conf, pos, list_nums);              \
+        else /* \x */                                                   \
+          CONF__SC_PARSE_ESC_QUOTE(CONF_TOKEN_TYPE_QUOTE_ ## z);        \
+      }                                                                 \
+    } while (FALSE)
+
+#define CONF__SC_PARSE_UNQUOTE_END(x) do {                           \
+      if (!(plen = vstr_srch_cstr_buf_fwd(data, pos, len, x)))       \
+        plen = len;                                                  \
+      else                                                           \
+      {                                                              \
+        conf__parse_end_quote_xxx(conf, plen, list_nums);            \
+        plen -= pos;                                                 \
+        plen += CLEN(x);                                             \
+      }                                                              \
     } while (FALSE)
 
 int conf_parse_lex(Conf_parse *conf, size_t pos, size_t len)
@@ -373,13 +479,25 @@ int conf_parse_lex(Conf_parse *conf, size_t pos, size_t len)
             if (!conf__parse_beg_list(conf, pos, list_nums))
               return (CONF_PARSE_ERR);
             break;
-            
+
           case '"':
             conf__parse_beg_quote_d(conf, pos, list_nums);
             break;
           case '\'':
             conf__parse_beg_quote_s(conf, pos, list_nums);
             break;
+            
+          case '@': /* allow "raw" strings, for backslashes, @ == C# */
+          case 'r': /* allow "raw" strings, for backslashes, r == python */
+            if (len > 1)
+            {
+              char tmp = vstr_export_chr(data, pos + 1);
+              if ((tmp == '"') || (tmp == '\''))
+              {
+                conf->state = CONF_PARSE_STATE_UNQUOTE_BEG;
+                break;
+              }
+            }
             
           default:
             plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, " \t\v\r\n\"'()[]");
@@ -392,77 +510,48 @@ int conf_parse_lex(Conf_parse *conf, size_t pos, size_t len)
       break;
         
       case CONF_PARSE_STATE_QUOTE_D_BEG:
-      {
-        static const char dd[] = {'"', '"', 0};
+        CONF__SC_PARSE_QUOTE_X_BEG("\"\"");
+        break;
         
-        if (!VPREFIX(data, pos, len, dd))
-          conf__parse_beg_quote_xxx(conf, list_nums, FALSE);
-        else
-        {
-          plen = 2;
-          conf__parse_beg_quote_xxx(conf, list_nums, TRUE);
-        }
-      }
-      break;
-      
       case CONF_PARSE_STATE_QUOTE_S_BEG:
-        if (!VPREFIX(data, pos, len, "''"))
-          conf__parse_beg_quote_xxx(conf, list_nums, FALSE);
-        else
-        {
-          plen = 2;
-          conf__parse_beg_quote_xxx(conf, list_nums, TRUE);
-        }
+        CONF__SC_PARSE_QUOTE_X_BEG("''");
       break;
+        
+      case CONF_PARSE_STATE_UNQUOTE_BEG:
+        if (!(plen = conf__parse_beg_unquote(conf, pos, len, list_nums)))
+          return (CONF_PARSE_ERR);
+        break;
         
       case CONF_PARSE_STATE_QUOTE_D_END:
-        if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "\"\\")))
-        {
-          plen = 1;
-          if (vstr_export_chr(data, pos) == '"')
-            conf__parse_end_quote_xxx(conf, pos, list_nums);
-          else /* \x */
-            CONF__SC_PARSE_ESC_QUOTE(D);
-        }
+        CONF__SC_PARSE_QUOTE_X_END("\"\\", '"', D);
         break;
         
       case CONF_PARSE_STATE_QUOTE_DDD_END:
-        if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "\"\\")))
-        {
-          static const char ddd[] = {'"', '"', '"', 0};
-          
-          plen = 3;
-          if (VPREFIX(data, pos, len, ddd))
-            conf__parse_end_quote_xxx(conf, pos, list_nums);
-          else if (vstr_export_chr(data, pos) != '\\')
-            plen = 1;
-          else /* \x */
-            CONF__SC_PARSE_ESC_QUOTE(DDD);
-        }
+        CONF__SC_PARSE_QUOTE_XXX_END("\"\\", "\"\"\"", DDD);
         break;
         
       case CONF_PARSE_STATE_QUOTE_S_END:
-        if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "'\\")))
-        {
-          plen = 1;
-          if (vstr_export_chr(data, pos) == '\'')
-            conf__parse_end_quote_xxx(conf, pos, list_nums);
-          else
-            CONF__SC_PARSE_ESC_QUOTE(S);
-        }
+        CONF__SC_PARSE_QUOTE_X_END("'\\", '\'', S);
         break;
         
       case CONF_PARSE_STATE_QUOTE_SSS_END:
-        if (!(plen = vstr_cspn_cstr_chrs_fwd(data, pos, len, "'\\")))
-        {
-          plen = 3;
-          if (VPREFIX(data, pos, len, "'''"))
-            conf__parse_end_quote_xxx(conf, pos, list_nums);
-          else if (vstr_export_chr(data, pos) != '\\')
-            plen = 1;
-          else
-            CONF__SC_PARSE_ESC_QUOTE(SSS);
-        }
+        CONF__SC_PARSE_QUOTE_XXX_END("'\\", "'''", SSS);
+        break;
+        
+      case CONF_PARSE_STATE_UNQUOTE_DDD_END:
+        CONF__SC_PARSE_UNQUOTE_END("\"\"\"");
+        break;
+        
+      case CONF_PARSE_STATE_UNQUOTE_D_END:
+        CONF__SC_PARSE_UNQUOTE_END("\"");
+        break;
+        
+      case CONF_PARSE_STATE_UNQUOTE_SSS_END:
+        CONF__SC_PARSE_UNQUOTE_END("'''");
+        break;
+        
+      case CONF_PARSE_STATE_UNQUOTE_S_END:
+        CONF__SC_PARSE_UNQUOTE_END("'");
         break;
         
       case CONF_PARSE_STATE_SYMBOL_END:
@@ -524,6 +613,11 @@ int conf_parse_lex(Conf_parse *conf, size_t pos, size_t len)
   conf->state = CONF_PARSE_STATE_END;
   return (CONF_PARSE_FIN);
 }
+#undef CONF__SC_PARSE_ESC_QUOTE
+#undef CONF__SC_PARSE_QUOTE_X_BEG
+#undef CONF__SC_PARSE_QUOTE_XXX_END
+#undef CONF__SC_PARSE_QUOTE_X_END
+#undef CONF__SC_PARSE_UNQUOTE_END
 
 Conf_token *conf_token_make(void)
 {
@@ -547,13 +641,13 @@ static const char *conf__token_name_map[] = {
  "<** Error **>",
  "Circular bracket list",
  "Square bracket list",
- "Quoted string (double)",
+ "Quoted string (double, RAW)",
  "Quoted string (double, with Escaping)",
- "Quoted string (3x double)",
+ "Quoted string (3x double, RAW)",
  "Quoted string (3x double, with Escaping)",
- "Quoted string (single)",
+ "Quoted string (single, RAW)",
  "Quoted string (single, with Escaping)",
- "Quoted string (3x single)",
+ "Quoted string (3x single, RAW)",
  "Quoted string (3x single, with Escaping)",
  "Symbol"
 };

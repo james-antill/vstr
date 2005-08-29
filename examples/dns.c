@@ -41,7 +41,7 @@
 #include <time.h>
 #include <signal.h>
 
-/* #define NDEBUG 1 -- done via. ./configure */
+/* #define NDEBUG 1 -- not done via. configure atm. */
 #include <assert.h>
 
 #include <err.h>

@@ -238,7 +238,7 @@ int mime_types_match(const Mime_types *pmime,
 
 void mime_types_exit(Mime_types *pmime)
 {
-  ASSERT(pmime && pmime->ref && (pmime->ref->ref >= 1));
+  ASSERT(pmime && pmime->ref);
   vstr_ref_del(pmime->ref);       pmime->ref = NULL;
 }
 

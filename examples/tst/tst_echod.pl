@@ -28,7 +28,7 @@ sub all_tsts()
 
 if (@ARGV)
   {
-    daemon_status(shift);
+    daemon_status(shift, shift);
     all_tsts();
     success();
   }

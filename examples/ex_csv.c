@@ -10,7 +10,7 @@
 
 
 #if !(USE_DEBUG)
-# define NDEBUG 1
+# define NDEBUG 1 /* go backwards for traditional macro */
 #endif
 
 #define VSTR_COMPILE_INCLUDE 1

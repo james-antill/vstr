@@ -2388,8 +2388,8 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
       got_transfer_encoding = TRUE;
       http__hdr_fixup(data, &pos, &len, hdr_val_pos);
 
-      if (!VEQ(data, pos, len, "identity")) /* should be 501? */
-        HTTPD_ERR_RET(req, 413, FALSE);
+      if (!VEQ(data, pos, len, "identity")) /* 3.6 says 501 */
+        HTTPD_ERR_RET(req, 501, FALSE);
     }
   }
 
@@ -2491,7 +2491,7 @@ static void http__parse_connection(struct Con *con, struct Httpd_req_data *req)
 
     ++num;
     if (req->ver_1_1)
-    { /* this is all we have to do for HTTP/1.1 ... proxies understnad it */
+    { /* this is all we have to do for HTTP/1.1 ... proxies understand it */
       if (VIEQ(data, pos, tmp, "close"))
         con->keep_alive = HTTP_NON_KEEP_ALIVE;
     }
@@ -2922,7 +2922,9 @@ static int http_req_1_x(struct Con *con, Httpd_req_data *req,
   
   http_app_end_hdrs(out);
 
-  if (h_r->pos && con->use_mpbr)
+  if (req->head_op)
+    con->use_mpbr = FALSE;
+  else if (h_r->pos && con->use_mpbr)
   {
     con->mpbr_fs_len = req->f_stat->st_size;
     http_app_hdrs_mpbr(con, con->fs);
@@ -3051,7 +3053,7 @@ unsigned int http_parse_accept(Httpd_req_data *req,
     HTTP_SKIP_LWS(data, pos, len);
     
     if (req->policy->max_A_nodes && (num >= req->policy->max_A_nodes))
-      return (FALSE);
+      return (1);
   }
 
   ASSERT(quality <= 1001);
@@ -3140,7 +3142,7 @@ unsigned int http_parse_accept_language(Httpd_req_data *req,
     HTTP_SKIP_LWS(data, pos, len);
     
     if (req->policy->max_AL_nodes && (num >= req->policy->max_AL_nodes))
-      return (FALSE);
+      return (1);
   }
 
   ASSERT(quality <= 1001);
@@ -3488,13 +3490,7 @@ int httpd_init_default_hostname(Opt_serv_policy_opts *sopts)
     HTTPD_APP_REF_ALLVSTR(nhn, chn);
   else
   {
-    char buf[256];
-
-    if (gethostname(buf, sizeof(buf)) == -1)
-      err(EXIT_FAILURE, "gethostname");
-    
-    buf[sizeof(buf) - 1] = 0;
-    vstr_add_cstr_buf(nhn, 0, buf);
+    opt_serv_sc_append_hostname(nhn, 0);
     vstr_conv_lowercase(nhn, 1, nhn->len);
   }
 
@@ -3655,7 +3651,9 @@ static int http_parse_wait_io_r(struct Con *con)
   if (con->evnt->io_r_shutdown)
     return (!!con->evnt->io_w->len);
 
+  evnt_wait_cntl_add(con->evnt, POLLIN);
   evnt_fd_set_cork(con->evnt, FALSE);
+  
   return (TRUE);
 }
 
@@ -3763,9 +3761,9 @@ static int http_parse_req(struct Con *con)
 
     if (HTTP_CONF_SAFE_PRINT_REQ)
       vlg_dbg3(vlg, "REQ:\n$<vstr.hexdump:%p%zu%zu>",
-               data, (size_t)1, data->len);
+               data, (size_t)1, req->len);
     else
-      vlg_dbg3(vlg, "REQ:\n$<vstr.all:%p>", data);
+      vlg_dbg3(vlg, "REQ:\n$<vstr:%p%zu%zu>", data, (size_t)1, req->len);
     
     assert(((req->sects->num >= 3) && !req->ver_0_9) || (req->sects->num == 2));
     

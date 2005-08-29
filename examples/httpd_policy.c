@@ -91,7 +91,6 @@ int httpd_policy_build_path(struct Con *con, Httpd_req_data *req,
   vstr_del(conf->tmp, 1, conf->tmp->len);
   while (conf_token_list_num(token, cur_depth))
   {
-    OPT_SERV_PRIME_SYM_EQ_DECL();
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     
     if (0) { }
@@ -331,7 +330,6 @@ int httpd_policy_path_make(struct Con *con, Httpd_req_data *req,
   int used_pol = FALSE;
   int used_req = FALSE;
   int clist = FALSE;
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   
   ASSERT(ret_ref);
   *ret_ref     = NULL;

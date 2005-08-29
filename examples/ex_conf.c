@@ -31,7 +31,10 @@ int main(int argc, char *argv[])
     errx(EXIT_FAILURE, "read(%s)", argv[1]);
 
   if (!conf_parse_lex(conf, 1, conf->data->len))
+  {
     conf_parse_backtrace(out, argv[1], conf, token);
+    vstr_add_cstr_ptr(out, out->len, "\n");
+  }
   else
   while (conf_parse_token(conf, token))
   {

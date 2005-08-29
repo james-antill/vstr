@@ -69,7 +69,13 @@ http://www.sans.org/top20/#u2
 	man page
          Allow req_conf to have matches (maybe (match-allow [] ...) ?)
           Match needed for different ETags for content neg.
+         allow turn off shutdown()
+        Fix req_conf_err (full pathname, uses 404 for conf and 404.html)
+        test neg - conf_5_tst 3
+        test secure dirs, conf + main
+        test useable dirs, conf + main
 
+        Allow none 
 	Redirect for non-canonical URLs (Ie. %61 used) -- like %2e/%2f fixup
 	mime_types speed, by having explicit filename/ext matches
         nice()
@@ -78,6 +84,7 @@ http://www.sans.org/top20/#u2
 	 fd cache
 	 stat cache
 	conf
+         allow setting socket options?
          Location: + custom error files?
 	 memory allocation errors == 503 for conf?
          auth token-file cdb /path - allows multiple user/pass

@@ -32,7 +32,6 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
                                            Conf_parse *conf, Conf_token *token,
                                            int *matches)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   ASSERT(con);  
@@ -84,6 +83,22 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
     return (httpd_policy_ipv4_make(con, NULL, conf, token,
                                    HTTPD_POLICY_SERVER_IPV4_CIDR_EQ,
                                    CON_SEVNT_SA(con), matches));
+  else if (OPT_SERV_SYM_EQ("server-ipv4-port-eq") ||
+           OPT_SERV_SYM_EQ("server-ipv4-port=="))
+  {
+    struct sockaddr *sa   = CON_SEVNT_SA(con);
+    unsigned int tst_port = 0;
+
+    OPT_SERV_X_UINT(tst_port);
+
+    if (sa->sa_family != AF_INET)
+      *matches = FALSE;
+    else
+    {
+      struct sockaddr_in *sin = CON_SEVNT_SA_IN4(con);
+      *matches = tst_port == ntohs(sin->sin_port);
+    }
+  }
   
   else
     return (opt_serv_sc_tst(conf, token, matches,
@@ -92,10 +107,30 @@ static int httpd__policy_connection_tst_d1(struct Con *con,
   return (TRUE);
 }
 
+static const Httpd_policy_opts *httpd__policy_build(struct Con *con,
+                                                    Conf_parse *conf,
+                                                    Conf_token *token,
+                                                    unsigned int utype)
+{
+  Opt_serv_policy_opts *policy = NULL;
+  Vstr_ref *ref = NULL;
+  Conf_token save;
+
+  save = *token;
+  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  if (!(policy = opt_policy_find(con->policy->s->beg, conf, token)))
+    return (NULL);
+  
+  ref = policy->ref;
+  if (!conf_token_set_user_value(conf, &save, utype, ref, token->num))
+    return (NULL);
+  
+  return ((const Httpd_policy_opts *)policy);
+}
+
 static int httpd__policy_connection_d1(struct Con *con,
                                        Conf_parse *conf, Conf_token *token)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   CONF_SC_TOGGLE_CLIST_VAR(clist);
@@ -129,21 +164,10 @@ static int httpd__policy_connection_d1(struct Con *con,
   }
   else if (OPT_SERV_SYM_EQ("policy"))
   {
-    Opt_serv_policy_opts *policy = NULL;
-    Vstr_ref *ref = NULL;
-    Conf_token save;
+    const Httpd_policy_opts *policy = NULL;
 
-    save = *token;
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!(policy = opt_policy_find(con->policy->s->beg, conf, token)))
-      return (FALSE);
-
-    ref = policy->ref;
-    if (!conf_token_set_user_value(conf, &save, HTTPD_POLICY_CON_POLICY,
-                                   ref, token->num))
-      return (FALSE);
-    
-    httpd_policy_change_con(con, (Httpd_policy_opts *)policy);
+    policy = httpd__policy_build(con, conf, token, HTTPD_POLICY_CON_POLICY);
+    httpd_policy_change_con(con, policy);
   }
   else if (OPT_SERV_SYM_EQ("Vary:_*"))
     OPT_SERV_X_TOGGLE(con->vary_star);
@@ -245,7 +269,6 @@ static int httpd__policy_request_tst_d1(struct Con *con,
                                         Conf_parse *conf, Conf_token *token,
                                         int *matches)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   Vstr_base *http_data = con->evnt->io_r;
   int clist = FALSE;
   
@@ -321,11 +344,13 @@ static int httpd__policy_request_tst_d1(struct Con *con,
 
   else if (OPT_SERV_SYM_EQ("policy-eq") || OPT_SERV_SYM_EQ("policy=="))
     return (opt_policy_name_eq(conf, token, req->policy->s, matches));
-  else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq") || OPT_SERV_SYM_EQ("client-ipv4-cidr=="))
+  else if (OPT_SERV_SYM_EQ("client-ipv4-cidr-eq") ||
+           OPT_SERV_SYM_EQ("client-ipv4-cidr=="))
     return (httpd_policy_ipv4_make(con, req, conf, token,
                                    HTTPD_POLICY_CLIENT_IPV4_CIDR_EQ,
                                    CON_CEVNT_SA(con), matches));
-  else if (OPT_SERV_SYM_EQ("server-ipv4-cidr-eq") || OPT_SERV_SYM_EQ("server-ipv4-cidr=="))
+  else if (OPT_SERV_SYM_EQ("server-ipv4-cidr-eq") ||
+           OPT_SERV_SYM_EQ("server-ipv4-cidr=="))
     return (httpd_policy_ipv4_make(con, req, conf, token,
                                    HTTPD_POLICY_SERVER_IPV4_CIDR_EQ,
                                    CON_SEVNT_SA(con), matches));
@@ -342,7 +367,8 @@ static int httpd__policy_request_tst_d1(struct Con *con,
       *matches = conf_token_cmp_case_val_eq(conf, token,
                                             d_h, 1, d_h->len);
   }
-  else if (OPT_SERV_SYM_EQ("user-agent-eq") || OPT_SERV_SYM_EQ("UA-eq") || OPT_SERV_SYM_EQ("user-agent==") || OPT_SERV_SYM_EQ("UA=="))
+  else if (OPT_SERV_SYM_EQ("user-agent-eq") || OPT_SERV_SYM_EQ("UA-eq") ||
+           OPT_SERV_SYM_EQ("user-agent==") || OPT_SERV_SYM_EQ("UA=="))
   { /* doesn't do escaping because URLs are ASCII */
     Vstr_sect_node *h_ua = req->http_hdrs->hdr_ua;
 
@@ -500,7 +526,6 @@ static int httpd__policy_request_tst_d1(struct Con *con,
 static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
                                     Conf_parse *conf, Conf_token *token)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   CONF_SC_TOGGLE_CLIST_VAR(clist);
@@ -513,6 +538,10 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
     
     switch (type)
     {
+      case HTTPD_POLICY_CON_POLICY:
+        httpd_policy_change_con(con, ref->ptr);
+        break;
+        
       case HTTPD_POLICY_REQ_POLICY:
         httpd_policy_change_req(req, ref->ptr);
         break;
@@ -532,23 +561,19 @@ static int httpd__policy_request_d1(struct Con *con, struct Httpd_req_data *req,
     evnt_close(con->evnt);
     return (TRUE);
   }
+  else if (OPT_SERV_SYM_EQ("connection-policy"))
+  {
+    const Httpd_policy_opts *policy = NULL;
+
+    policy = httpd__policy_build(con, conf, token, HTTPD_POLICY_CON_POLICY);
+    httpd_policy_change_con(con, policy);
+  }
   else if (OPT_SERV_SYM_EQ("policy"))
   {
-    const Opt_serv_policy_opts *policy = NULL;
-    Vstr_ref *ref = NULL;
-    Conf_token save;
+    const Httpd_policy_opts *policy = NULL;
 
-    save = *token;
-    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
-    if (!(policy = opt_policy_find(req->policy->s->beg, conf, token)))
-      return (FALSE);
-
-    ref = policy->ref;
-    if (!conf_token_set_user_value(conf, &save, HTTPD_POLICY_REQ_POLICY,
-                                   ref, token->num))
-      return (FALSE);
-    
-    httpd_policy_change_req(req, (const Httpd_policy_opts *)policy);
+    policy = httpd__policy_build(con, conf, token, HTTPD_POLICY_REQ_POLICY);
+    httpd_policy_change_req(req, policy);
   }
   else if (OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))
   {
@@ -637,7 +662,6 @@ static int httpd__conf_main_policy_http_d1(Httpd_policy_opts *opts,
                                            const Conf_parse *conf,
                                            Conf_token *token)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   CONF_SC_MAKE_CLIST_BEG(policy_http_d1, clist);
@@ -743,8 +767,6 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
                                       Conf_parse *conf, Conf_token *token,
                                       int clist)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
-  
   if (0) { }
   
   else if (OPT_SERV_SYM_EQ("match-init"))
@@ -753,25 +775,31 @@ static int httpd__conf_main_policy_d1(Httpd_policy_opts *opts,
                                                       clist));
   
   else if (OPT_SERV_SYM_EQ("directory-filename"))
-    OPT_SERV_X_VSTR(opts->dir_filename);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->dir_filename));
   else if (OPT_SERV_SYM_EQ("document-root") ||
            OPT_SERV_SYM_EQ("doc-root"))
-    OPT_SERV_X_VSTR(opts->document_root);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->document_root));
   else if (OPT_SERV_SYM_EQ("unspecified-hostname"))
     OPT_SERV_X_VSTR(opts->default_hostname);
   else if (OPT_SERV_SYM_EQ("MIME/types-default-type"))
     OPT_SERV_X_VSTR(opts->mime_types_def_ct);
   else if (OPT_SERV_SYM_EQ("MIME/types-filename-main"))
-    OPT_SERV_X_VSTR(opts->mime_types_main);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->mime_types_main));
   else if (OPT_SERV_SYM_EQ("MIME/types-filename-extra") ||
            OPT_SERV_SYM_EQ("MIME/types-filename-xtra"))
-    OPT_SERV_X_VSTR(opts->mime_types_xtra);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->mime_types_xtra));
   else if (OPT_SERV_SYM_EQ("request-configuration-directory") ||
            OPT_SERV_SYM_EQ("req-conf-dir"))
-    OPT_SERV_X_VSTR(opts->req_conf_dir);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->req_conf_dir));
   else if (OPT_SERV_SYM_EQ("request-error-directory") ||
            OPT_SERV_SYM_EQ("req-err-dir"))
-    OPT_SERV_X_VSTR(opts->req_err_dir);
+    return (opt_serv_sc_make_static_path(opts->s->beg, conf, token,
+                                         opts->req_err_dir));
   else if (OPT_SERV_SYM_EQ("server-name"))
     OPT_SERV_X_VSTR(opts->server_name);
 
@@ -861,8 +889,6 @@ static int httpd__conf_main_policy(Httpd_opts *opts,
 static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
                                Conf_parse *conf, Conf_token *token, int clist)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
-  
   if (OPT_SERV_SYM_EQ("org.and.daemon-conf-1.0"))
   {
     if (!opt_serv_conf(httpd_opts->s, conf, token))
@@ -918,7 +944,6 @@ static int httpd__conf_main_d1(Httpd_opts *httpd_opts,
 
 int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int cur_depth = token->depth_num;
   int clist = FALSE;
   
@@ -959,7 +984,6 @@ int httpd_conf_main(Httpd_opts *opts, Conf_parse *conf, Conf_token *token)
 int httpd_conf_main_parse_cstr(Vstr_base *out,
                                Httpd_opts *opts, const char *data)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
   unsigned int prev_conf_num = 0;
@@ -1022,7 +1046,6 @@ int httpd_conf_main_parse_cstr(Vstr_base *out,
 int httpd_conf_main_parse_file(Vstr_base *out,
                                Httpd_opts *opts, const char *fname)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   Conf_parse *conf    = opts->conf;
   Conf_token token[1] = {CONF_TOKEN_INIT};
   unsigned int prev_conf_num = 0;

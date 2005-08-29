@@ -522,17 +522,17 @@ they're length is assumed by looking for a NIL terminator.
  sprintf(my_str, "%d", num);
 	  </pre>
 	<p>
-	  ...and to do the same in a Vstr string it's a simple API change to...
+	  ...and to append the same to a Vstr string it's a simple API change to...
 	</p>
 	  <pre>
-<a href="functions#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, "%d", num);
+<a href="functions#vstr_add_fmt()">vstr_add_fmt</a>(my_vstr, my_vstr->len, "%d", num);
 	  </pre>
 	<p>
 	  ...however if you want to write an IPv4 addres, a Vstr
 	  string or any other type that isn't in ISO 9899:1999 to a string
 	  you have to resort to doing to by hand. And if you want to format that
 	  output you have to either convert it to a C style string and use the
-	  "%s" option to the printf() like function, or do all the formatting
+	  "%s" option to the *printf() like function, or do all the formatting
 	  yourself. This is all pretty ugly, often unreliable, slow
 	  and takes significant programer resources.
 	</p><p>
@@ -560,13 +560,15 @@ struct in_addr ipv4;
 	  </pre>
 	  <p>...all normal printf() like formatting options work, as you would
 	  expect them to including being able to use i18n format specifiers to
-	  change the order. <b>However</b> if you try the above, you'll note that all
+	  easily change the orde4r of output for different locales.
+         <b>However</b> if you try the above, you'll note that all
 	  of the calls to <a href="functions#vstr_add_fmt()">vstr_add_fmt()</a>
 	  will produce warnings with gcc, because "%{" isn't the start of a
 	  valid formatting character under gcc's static printf() parsing rules.
 	  <b>This deficiency makes custom formatters as used above mostly useless</b>,
-	    as you
-	  have to either turn warnings off or see at least one warning for every
+          as you
+	  have to either turn warnings off for format strings (which is
+          basically insanity in C) or see at least one warning for every
 	  usage of a custom formatter.
 	  </p><p>
 	    To deal with this, the Vstr custom formatter code allows you to
@@ -592,15 +594,15 @@ struct in_addr ipv4;
              (void *)my_vstr, (size_t)1, my_vstr->len, VSTR_TYPE_ADD_DEF);
 	  </pre>
 	  <p>
-	  ...which isn't as good as true support for customer formatters in
-	    static analyzers like gcc it does,
-	  however, make sure that custom
-	  formatters will not crash, provides complete protection for
-	  non-custom formatter using calls and doesn't produce spurious
-	    warnings.
+	  ...which although it isn't quite as nice as true support for
+          customer formating in static analyzers like gcc it does
+	  make sure that custom
+	  formatters will not do anything obviously stupid (without
+          producing spurious warnings) and provides
+          complete protection for non-custom formatter calls.
 	  <b>One final note</b> is that in all sane environments you don't
-	  need the cast to (void *), however it is in theory required in
-	  standard ISO 9899:1999 C.
+	  need the cast to (void *), however it is "in theory" required to
+          be conforming ISO 9899:1999 C.
 	  </p><p>
 	    You may also want to look at the tutorial section on
  <a href="tutorial#cust-fmt">creating custom formatters</a>.
@@ -747,7 +749,7 @@ designed for a traditional String API model.
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Sun Oct 14 20:53:50 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Sun Jul 31 00:34:04 EDT 2005
+Last modified: Tue Aug 23 19:35:13 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

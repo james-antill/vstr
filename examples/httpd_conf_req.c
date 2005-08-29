@@ -100,7 +100,6 @@ static int httpd__build_path(struct Con *con, Httpd_req_data *req,
                              unsigned int lim, int full, Vstr_ref *ref,
                              int uri_fname, int *type)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int dummy_type;
   int clist = FALSE;
 
@@ -152,8 +151,7 @@ static int httpd__build_path(struct Con *con, Httpd_req_data *req,
     if (!httpd_policy_build_path(con, req, conf, token, NULL, NULL))
       return (FALSE);
 
-    if (!conf->tmp->conf->malloc_bad &&
-        !vstr_sub_vstr(s1, pos, len,
+    if (!vstr_sub_vstr(s1, pos, len,
                        conf->tmp, 1, conf->tmp->len, VSTR_TYPE_SUB_BUF_REF))
       return (FALSE);
   }
@@ -193,7 +191,6 @@ static int httpd__meta_build_path(struct Con *con, Httpd_req_data *req,
                                   int *full,
                                   unsigned int *lim, Vstr_ref **ret_ref)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int depth = token->depth_num;
 
   ASSERT(ret_ref && !*ret_ref);
@@ -410,8 +407,6 @@ static int httpd__conf_req_d1(struct Con *con, struct Httpd_req_data *req,
                               time_t file_timestamp,
                               Conf_parse *conf, Conf_token *token, int clist)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
-  
   if (0) { }
 
   else if (OPT_SERV_SYM_EQ("match-init"))
@@ -746,7 +741,6 @@ int httpd_conf_req_d0(struct Con *con, Httpd_req_data *req,
                       time_t timestamp,
                       Conf_parse *conf, Conf_token *token)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int cur_depth = token->depth_num;
   
   if (!OPT_SERV_SYM_EQ("org.and.jhttpd-conf-req-1.0"))

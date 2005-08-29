@@ -31,14 +31,16 @@ int opt_serv_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
   else if (OPT_SERV_SYM_EQ("false") || OPT_SERV_SYM_EQ("FALSE"))
     *matches = FALSE;
   
-  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("!"))
+  else if (OPT_SERV_SYM_EQ("not") || OPT_SERV_SYM_EQ("NOT") ||
+           OPT_SERV_SYM_EQ("!"))
   {
     CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
     if (!(*tst_func)(conf, token, matches, data))
       return (FALSE);
     *matches = !*matches;
   }
-  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("||"))
+  else if (OPT_SERV_SYM_EQ("or") || OPT_SERV_SYM_EQ("OR") ||
+           OPT_SERV_SYM_EQ("||"))
   {
     unsigned int depth = token->depth_num;
 
@@ -59,7 +61,8 @@ int opt_serv_sc_tst(Conf_parse *conf, Conf_token *token, int *matches,
 
     *matches = FALSE;
   }
-  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("&&"))
+  else if (OPT_SERV_SYM_EQ("and") || OPT_SERV_SYM_EQ("AND") ||
+           OPT_SERV_SYM_EQ("&&"))
   {
     unsigned int depth = token->depth_num;
 
@@ -88,7 +91,6 @@ static int opt_serv__conf_main_policy_d1(Opt_serv_policy_opts *opts,
                                          Conf_parse *conf, Conf_token *token,
                                          int clist)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   unsigned int dummy;
   
   if (0) { }
@@ -167,7 +169,6 @@ static int opt_serv__match_init_tst_d1(struct Opt_serv_opts *opts,
                                        Conf_parse *conf, Conf_token *token,
                                        int *matches)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
   int clist = FALSE;
   
   ASSERT(matches);
@@ -284,9 +285,7 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
                              Conf_parse *conf, Conf_token *token,
                              int clist)
 {
-  OPT_SERV_PRIME_SYM_EQ_DECL();
-  
-  if (0){ }
+  if (0) { }
 
   else if (OPT_SERV_SYM_EQ("match-init"))
     OPT_SERV_SC_MATCH_INIT(opts, opt_serv__conf_d1(opts, conf, token, clist));
@@ -298,10 +297,10 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
   }
   
   else if (OPT_SERV_SYM_EQ("chroot"))
-    OPT_SERV_X_VSTR(opts->chroot_dir);
+    return (opt_serv_sc_make_static_path(opts, conf, token, opts->chroot_dir));
   else if (OPT_SERV_SYM_EQ("cntl-file") ||
            OPT_SERV_SYM_EQ("control-file"))
-    OPT_SERV_X_VSTR(opts->cntl_file);
+    return (opt_serv_sc_make_static_path(opts, conf, token, opts->cntl_file));
   else if (OPT_SERV_SYM_EQ("daemonize"))
     OPT_SERV_X_TOGGLE(opts->become_daemon);
   else if (OPT_SERV_SYM_EQ("drop-privs"))
@@ -345,7 +344,11 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
     else if (OPT_SERV_SYM_EQ("queue-length"))
       OPT_SERV_X_UINT(addr->q_listen_len);
     else if (OPT_SERV_SYM_EQ("filter"))
-      OPT_SERV_X_VSTR(addr->acpt_filter_file);
+    {
+      if (!opt_serv_sc_make_static_path(opts, conf, token,
+                                        addr->acpt_filter_file))
+        return (FALSE);
+    }
     else if (OPT_SERV_SYM_EQ("max-connections"))
       OPT_SERV_X_UINT(addr->max_connections);
 
@@ -354,7 +357,7 @@ static int opt_serv__conf_d1(struct Opt_serv_opts *opts,
   else if (OPT_SERV_SYM_EQ("parent-death-signal"))
     OPT_SERV_X_TOGGLE(opts->use_pdeathsig);
   else if (OPT_SERV_SYM_EQ("pid-file"))
-    OPT_SERV_X_VSTR(opts->pid_file);
+    return (opt_serv_sc_make_static_path(opts, conf, token, opts->pid_file));
   else if (OPT_SERV_SYM_EQ("processes") ||
            OPT_SERV_SYM_EQ("procs"))
   {
@@ -674,8 +677,8 @@ Opt_serv_addr_opts *opt_serv_make_addr(Opt_serv_opts *opts)
   
   addr->tcp_port        = opts->addr_beg->tcp_port;
   addr->defer_accept    = opts->addr_beg->defer_accept;
-  addr->q_listen_len    = opts->addr_beg->defer_accept;
-  addr->max_connections = opts->addr_beg->defer_accept;
+  addr->q_listen_len    = opts->addr_beg->q_listen_len;
+  addr->max_connections = opts->addr_beg->max_connections;
 
   addr->next = opts->addr_beg;
   opts->addr_beg = addr;
@@ -754,8 +757,12 @@ int opt_serv_sc_acpt_end(const Opt_serv_policy_opts *popts,
   vlg_dbg1(vlg, "acpt: %u/%u\n", acpt_num, acpt_max);
   
   if (acpt_max && (acpt_num >= acpt_max))
+  {
+    vlg_dbg1(vlg, "ACPT DEL ($<sa:%p>,%u,%u)\n", EVNT_SA(from_evnt),
+             acpt_num, acpt_max);
     evnt_wait_cntl_del(from_evnt, POLLIN);
-
+  }
+  
   if (popts->max_connections && (evnt_num_all() > popts->max_connections))
   {
     vlg_info(vlg, "LIMIT-BLOCKED from[$<sa:%p>]: policy $<vstr.all:%p>\n",
@@ -779,7 +786,11 @@ void opt_serv_sc_free_beg(struct Evnt *evnt, Vstr_ref *ref)
     unsigned int acpt_max = acpt_listener->max_connections;
   
     if (acpt_max && (acpt_num <= acpt_max)) /* note that we are going to -1 */
+    {
+      vlg_dbg1(vlg, "ACPT ADD ($<sa:%p>,%u,%u)\n", EVNT_SA(acpt_data->evnt),
+               acpt_num, acpt_max);
       evnt_wait_cntl_add(acpt_data->evnt, POLLIN);
+    }
     
     evnt_stats_add(acpt_data->evnt, evnt);
   }
@@ -903,3 +914,134 @@ void opt_serv_sc_cntl_resources(const Opt_serv_opts *opts)
                  0, opts->max_spare_ref_nodes);
 }
 
+int opt_serv_sc_append_hostname(Vstr_base *s1, size_t pos)
+{
+  char buf[256];
+  
+  if (gethostname(buf, sizeof(buf)) == -1)
+    err(EXIT_FAILURE, "gethostname");
+  
+  buf[sizeof(buf) - 1] = 0;
+  return (vstr_add_cstr_buf(s1, pos, buf));
+}
+
+int opt_serv_sc_append_cwd(Vstr_base *s1, size_t pos)
+{
+  size_t sz = PATH_MAX;
+  char *ptr = MK(sz);
+  char *tmp = NULL;
+  int ret = FALSE;
+
+  if (ptr)
+    tmp = getcwd(ptr, sz);
+  while (!tmp && (errno == ERANGE))
+  {
+    sz += PATH_MAX;
+    if (!MV(ptr, tmp, sz))
+      break;
+    tmp = getcwd(ptr, sz);
+  }
+  
+  if (!tmp) 
+    ret = vstr_add_cstr_ptr(s1, pos, "/");
+  else
+    ret = vstr_add_cstr_buf(s1, pos, tmp);
+  F(ptr);
+  
+  return (ret);
+}
+
+/* into conf->tmp */
+static int opt_serv__build_static_path(struct Opt_serv_opts *
+                                       EVNT__ATTR_UNUSED(opts),
+                                       Conf_parse *conf, Conf_token *token)
+{
+  unsigned int cur_depth = token->depth_num;
+  int clist = FALSE;
+  
+  vstr_del(conf->tmp, 1, conf->tmp->len);
+  while (conf_token_list_num(token, cur_depth))
+  {
+    CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+    CONF_SC_TOGGLE_CLIST_VAR(clist);
+    
+    if (0) { }
+    
+    else if (OPT_SERV_SYM_EQ("ENV") || OPT_SERV_SYM_EQ("ENVIRONMENT"))
+    {
+      const Vstr_sect_node *pv = NULL;
+      const char *env_name = NULL;
+      const char *env_data = NULL;
+      
+      CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+      pv = conf_token_value(token);
+      if (!(env_name = vstr_export_cstr_ptr(conf->data, pv->pos, pv->len)))
+        return (FALSE);
+      
+      env_data = getenv(env_name);
+      if (!env_data) env_data = "";
+
+      vstr_add_cstr_buf(conf->tmp, conf->tmp->len, env_data);
+    }
+    else if (OPT_SERV_SYM_EQ("<hostname>"))
+      opt_serv_sc_append_hostname(conf->tmp, conf->tmp->len);
+    else if (OPT_SERV_SYM_EQ("<cwd>"))
+      opt_serv_sc_append_cwd(conf->tmp, conf->tmp->len);
+    else if (!clist)
+    { /* unknown symbol or string */
+      size_t pos = conf->tmp->len + 1;
+      const Vstr_sect_node *pv = conf_token_value(token);
+      
+      if (!pv || !vstr_add_vstr(conf->tmp, conf->tmp->len,
+                                conf->data, pv->pos, pv->len,
+                                VSTR_TYPE_ADD_BUF_REF))
+        return (FALSE);
+      
+      OPT_SERV_X__ESC_VSTR(conf->tmp, pos, pv->len);
+    }
+    else
+      return (FALSE);
+  }
+  
+  return (TRUE);
+}
+
+int opt_serv_sc_make_static_path(struct Opt_serv_opts *opts,
+                                 Conf_parse *conf, Conf_token *token,
+                                 Vstr_base *s1)
+{
+  int clist = FALSE;
+  
+  CONF_SC_PARSE_TOP_TOKEN_RET(conf, token, FALSE);
+  CONF_SC_TOGGLE_CLIST_VAR(clist);
+  
+  if (OPT_SERV_SYM_EQ("assign") || OPT_SERV_SYM_EQ("="))
+  {
+    if (!opt_serv__build_static_path(opts, conf, token))
+      return (FALSE);
+    
+    return (vstr_sub_vstr(s1, 1, s1->len,
+                          conf->tmp, 1, conf->tmp->len, VSTR_TYPE_SUB_BUF_REF));
+  }
+  else if (OPT_SERV_SYM_EQ("append") || OPT_SERV_SYM_EQ("+="))
+  {
+    if (!opt_serv__build_static_path(opts, conf, token))
+      return (FALSE);
+
+    return (vstr_add_vstr(s1, s1->len,
+                          conf->tmp, 1, conf->tmp->len, VSTR_TYPE_ADD_BUF_REF));
+  }
+  else if (!clist)
+  {
+    const Vstr_sect_node *pv = conf_token_value(token);
+      
+    if (!pv || !vstr_sub_vstr(s1, 1, s1->len, conf->data, pv->pos, pv->len,
+                              VSTR_TYPE_SUB_BUF_REF))
+      return (FALSE);
+    OPT_SERV_X__ESC_VSTR(s1, 1, pv->len);
+
+    return (TRUE);
+  }
+
+  return (FALSE);
+}

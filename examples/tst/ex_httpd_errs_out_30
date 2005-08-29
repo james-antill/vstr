@@ -1,20 +1,20 @@
-HTTP/1.1 413 Request Entity Too Large
+HTTP/1.1 501 Not Implemented
 Date:
 Server: jhttpd/0.99.1 (Vstr)
 Last-Modified:
 Connection: close
-Accept-Ranges: bytes
 Content-Type: text/html
-Content-Length: 501
+Content-Length: 347
+Allow: GET, HEAD, OPTIONS, TRACE
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
-    <title>413 Request Entity Too Large</title>
+    <title>501 Not Implemented</title>
   </head>
   <body>
-    <h1>413 Request Entity Too Large</h1>
-    <p>The server does not accept any requests with Content (In other words if either a Content-Length or a Transfer-Encoding header is passed to the server, the request will fail).</p>
+    <h1>501 Not Implemented</h1>
+    <p>The request method is not implemented.</p>
   <hr>
   Generated using the <a href="http://www.and.org/vstr/httpd">Vstr httpd example Web Server</a>.
   </body>

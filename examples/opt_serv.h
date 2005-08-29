@@ -146,6 +146,11 @@ extern void opt_serv_sc_free_beg(struct Evnt *, struct Vstr_ref *);
 extern void opt_serv_sc_signals(void);
 extern void opt_serv_sc_check_children(void);
 extern void opt_serv_sc_cntl_resources(const Opt_serv_opts *);
+extern int opt_serv_sc_append_hostname(Vstr_base *, size_t);
+extern int opt_serv_sc_append_cwd(Vstr_base *, size_t);
+extern int opt_serv_sc_make_static_path(struct Opt_serv_opts *,
+                                        Conf_parse *, Conf_token *,
+                                        Vstr_base *);
 
 
 #define OPT_SERV_DECL_GETOPTS()                         \
@@ -201,24 +206,8 @@ extern void opt_serv_sc_cntl_resources(const Opt_serv_opts *);
 
 
 /* simple typer for EQ */
-#if 1
-# define OPT_SERV_PRIME_SYM_EQ_DECL()
-# define OPT_SERV_SYM_EQ(x)                     \
+#define OPT_SERV_SYM_EQ(x)                      \
     conf_token_cmp_sym_cstr_eq(conf, token, x)
-#else /* speed hacks agogo */
-# define OPT_SERV_PRIME_SYM_EQ_DECL()                   \
-    unsigned int          opt_serv__sym_cmp_tok = 0;    \
-    const Vstr_sect_node *opt_serv__sym_cmp_val = NULL
-# define OPT_SERV_SYM_EQ(x) (                                           \
-    (((opt_serv__sym_cmp_tok == token->num) && opt_serv__sym_cmp_val) || \
-     ((token->type == CONF_TOKEN_TYPE_SYMBOL) &&                        \
-      (opt_serv__sym_cmp_val = conf_token_value(token)) &&              \
-      (opt_serv__sym_cmp_tok = token->num))) &&                         \
-    (opt_serv__sym_cmp_val->len == strlen(x)) &&                        \
-    !vstr_cmp_buf(conf->data,                                           \
-                  opt_serv__sym_cmp_val->pos,                           \
-                  opt_serv__sym_cmp_val->len, (x), opt_serv__sym_cmp_val->len))
-#endif
 
 /* eXport data from configuration file to structs... */
 #define OPT_SERV_X_TOGGLE(x) do {                               \

@@ -1,4 +1,3 @@
-#! /usr/bin/perl -w
 
 use strict;
 use File::Path;
@@ -10,23 +9,15 @@ require 'vstr_tst_examples.pl';
 our $root = "ex_httpd_root";
 our $truncate_segv = 0;
 
-my $conf_fc4_die = 0; # 1, Kills fc4 kernels
-
-sub http_cntl_list_beg
+sub http_cntl_list
   { # FIXME: see if it looks "OK"
-    my $list_pid = tst_fork();
-    if (defined ($list_pid) && !$list_pid) {
+    my $list_pid = tst_proc_fork();
+    if (!$list_pid) {
       sleep(2);
       system("./ex_cntl -e list ex_httpd_cntl > /dev/null");
       _exit(0);
     }
     return $list_pid;
-  }
-sub http_cntl_list_cleanup
-  {
-    my $list_pid = shift;
-    if (defined($list_pid))
-      { waitpid($list_pid, 0); }
   }
 
 sub httpd__munge_ret
@@ -125,7 +116,7 @@ sub gen_tst_trunc
     my $vhosts = shift;
     my $pid = 0;
 
-    if (!($pid = tst_fork()) && defined($pid))
+    if (!($pid = tst_proc_fork()))
       {
 	if (1)
 	  {
@@ -134,15 +125,15 @@ sub gen_tst_trunc
 	    open(STDERR, "> /dev/null") || failure("open(2): $!");
 	  }
 
-	my $fname = "$main::root/foo.example.com/4mb_2_2mb";
+	my $fname = "$main::root/foo.example.com/4mb_2_2mb_$$";
 
 	if (!$vhosts)
 	  {
-	    $fname = "$main::root/4mb_2_2mb";
+	    $fname = "$main::root/4mb_2_2mb_$$";
 	  }
 
-	if (($pid = fork()) || !defined($pid))
-	  { # Parent goes
+	if (!($pid = tst_proc_fork()))
+	  { # Child goes
 	    sleep(4);
 	    truncate($fname, 2_000_000);
 	    success();
@@ -156,7 +147,7 @@ sub gen_tst_trunc
 	  sleep(1);
 	  my $pad = "x" x 64_000;
 	  my $data = <<EOL;
-GET http://foo.example.com/4mb_2_2mb HTTP/1.1\r
+GET http://foo.example.com/4mb_2_2mb_$$ HTTP/1.1\r
 Host: $pad\r
 \r
 EOL
@@ -172,6 +163,7 @@ EOL
 	sub_tst(\&httpd_gen_tst, "ex_httpd_null",
 		{gen_input => $gen_cb, gen_output => $gen_out_cb,
 		 shutdown_w => 0});
+	success();
       }
   }
 
@@ -257,6 +249,17 @@ sub all_none_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
+sub all_conf_5_tsts()
+  {
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_5");
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_5",
+	    {shutdown_w => 0});
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_5",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_5",
+	    {shutdown_w => 0, slow_write => 1});
+  }
+
 sub munge_mtime
   {
     my $num   = shift;
@@ -270,14 +273,34 @@ sub munge_mtime
     utime $atime, $mtime, $fname;
   }
 
+sub make_data
+  {
+    my $num   = shift;
+    my $data  = shift;
+    my $fname = shift;
+
+    open(OUT, "> $fname") || failure("open $fname: $!");
+    print OUT $data;
+    close(OUT) || failure("close");
+
+    munge_mtime($num, $fname);
+  }
+
+sub make_line
+  {
+    my $num   = shift;
+    my $data  = shift;
+    my $fname = shift;
+    make_data($num, $data . "\n", $fname);
+  }
+
 sub make_html
   {
     my $num   = shift;
     my $val   = shift;
     my $fname = shift;
 
-    open(OUT, "> $fname") || failure("open $fname: $!");
-    print OUT <<EOL;
+    my $data = <<EOL;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
   <head>
@@ -288,9 +311,7 @@ sub make_html
   </body>
 </html>
 EOL
-    close(OUT) || failure("close");
-
-    munge_mtime($num, $fname);
+    make_data($num, $data, $fname);
   }
 
 sub setup
@@ -307,6 +328,7 @@ sub setup
 	    $root . "/blah",
 	    $root . "/foo.example.com/nxt",
 	    $root . "/foo.example.com/corner/index.html",
+	    $root . "/foo.example.com/there",
 	    $root . "/foo.example.com:1234"]);
 
     make_html(1, "root",    "$root/index.html");
@@ -323,6 +345,23 @@ sub setup
     make_html(9, "welcome", "$root/default/welcome.txt");
     make_html(0, "",        "$root/default/noprivs.html");
     make_html(0, "privs",   "$root/default/noallprivs.html");
+    make_line(10, "a none", "$root/foo.example.com/there/5.2-neg-CT");
+    make_line(10, "a txt",  "$root/foo.example.com/there/5.2-neg-CT.txt");
+    make_line(10, "a html", "$root/foo.example.com/there/5.2-neg-CT.html");
+    make_line(10, "b none", "$root/foo.example.com/there/5.2-neg-AL");
+    make_line(10, "b def",  "$root/foo.example.com/there/5.2-neg-AL.txt");
+    make_line(10, "b jpfb", "$root/foo.example.com/there/5.2-neg-AL.jpfb.txt");
+    make_line(10, "b jp",   "$root/foo.example.com/there/5.2-neg-AL.jp.txt");
+    make_line(10, "b fr",   "$root/foo.example.com/there/5.2-neg-AL.fr.txt");
+    make_line(10, "c none", "$root/foo.example.com/there/5.2-neg");
+    make_line(10, "c deft", "$root/foo.example.com/there/5.2-neg.txt");
+    make_line(10, "c defh", "$root/foo.example.com/there/5.2-neg.html");
+    make_line(10, "c jpbt", "$root/foo.example.com/there/5.2-neg.jpfb.txt");
+    make_line(10, "c jpbh", "$root/foo.example.com/there/5.2-neg.jpfb.html");
+    make_line(10, "c jpt",  "$root/foo.example.com/there/5.2-neg.jp.txt");
+    make_line(10, "c jph",  "$root/foo.example.com/there/5.2-neg.jp.html");
+    make_line(10, "c frt",  "$root/foo.example.com/there/5.2-neg.fr.txt");
+    make_line(10, "c frh",  "$root/foo.example.com/there/5.2-neg.fr.html");
 
     open(OUT,     "> $root/foo.example.com/empty") || failure("open empty: $!");
     munge_mtime(44, "$root/foo.example.com/empty");
@@ -353,118 +392,107 @@ my $clean_on_exit = 1;
 if (@ARGV)
   {
     $clean_on_exit = 0;
-    daemon_status(shift);
+    my $cntl_file = shift;
+    my $bind_addr = undef;
+
+    daemon_status($cntl_file);
 
     while (@ARGV)
       {
 	my $arg = shift;
+	my $y = 0;
 
 	if ($arg eq "setup")
 	  { setup(); }
 	elsif ($arg eq "trunc")
 	  { $truncate_segv = !$truncate_segv; }
+	elsif ($arg eq "cntl")
+	  { $cntl_file = shift; daemon_status($cntl_file, $bind_addr); }
+	elsif ($arg eq "addr")
+	  { $bind_addr = shift; daemon_status($cntl_file, $bind_addr); }
 	elsif ($arg eq "cleanup")
 	  { $clean_on_exit = !$clean_on_exit; }
 	elsif (($arg eq "virtual-hosts") || ($arg eq "vhosts"))
-	  { all_vhost_tsts(); }
+	  { all_vhost_tsts(); $y = 1; }
 	elsif ($arg eq "public")
-	  { all_public_only_tsts(); }
+	  { all_public_only_tsts(); $y = 1; }
 	elsif ($arg eq "none")
-	  { all_none_tsts(); }
+	  { all_none_tsts(); $y = 1; }
+	elsif ($arg eq "conf_5")
+	  { all_conf_5_tsts(); $y = 1; }
 	elsif (($arg eq "non-virtual-hosts") || ($arg eq "non-vhosts"))
-	  { all_nonvhost_tsts(); }
+	  { all_nonvhost_tsts(); $y = 1; }
 
-	print "-" x 78 . "\n";
+	print "-" x 78 . "\n" if ($y);
       }
 
     success();
   }
 
-setup();
-
-run_tst("ex_httpd", "ex_httpd_help", "--help");
-run_tst("ex_httpd", "ex_httpd_version", "--version");
-
-my $conf_args_nonstrict = "--configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off) (secure-directory-filename no) (HTTP (header-names-strict false)))'";
-my $conf_args_strict = "--configuration-data-jhttpd '(policy <default> (secure-directory-filename no) (unspecified-hostname-append-port off))'";
-my $conf_arg = $conf_args_nonstrict;
-my $args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+our $conf_args_nonstrict = " --configuration-data-jhttpd '(policy <default> (unspecified-hostname-append-port off) (secure-directory-filename no) (HTTP (header-names-strict false)))'";
+our $conf_args_strict = " --configuration-data-jhttpd '(policy <default> (secure-directory-filename no) (unspecified-hostname-append-port off))'";
 
 sub httpd_vhost_tst
   {
     daemon_init("ex_httpd", $root, shift);
     system("cat > $root/default/fifo &");
-    my $list_pid = http_cntl_list_beg();
+    http_cntl_list();
     all_vhost_tsts();
-    http_cntl_list_cleanup($list_pid);
     daemon_exit();
   }
 
-httpd_vhost_tst($args . "--virtual-hosts=true  --mmap=false --sendfile=false");
-$truncate_segv = 1;
-httpd_vhost_tst($args . "--virtual-hosts=true  --mmap=true  --sendfile=false" .
-		" --procs=2");
-$truncate_segv = 0;
+sub conf_tsts
+  {
+    my $beg = shift;
+    my $end = shift;
+    my $args = '';
 
-my $fc4_doa = '';
-if ($conf_fc4_die)
-  { $fc4_doa = "--accept-filter-file=$ENV{SRCDIR}/tst/ex_sock_filter_out_1";}
-httpd_vhost_tst($args . "--virtual-hosts=true --mmap=false --sendfile=true" .
-		$fc4_doa);
+    for ($beg..$end)
+      { $args .= " -C $ENV{SRCDIR}/tst/ex_conf_httpd_tst_$_"; }
 
-$conf_arg = $conf_args_strict;
-$args = $conf_arg . " --unspecified-hostname=default --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
+    daemon_init("ex_httpd", $root, $args);
+    my $list_pid = http_cntl_list();
 
-my $largs = $conf_arg . " --mime-types-xtra=$ENV{SRCDIR}/mime_types_extra.txt ";
-daemon_init("ex_httpd", $root, $largs . "-d -d -d --virtual-hosts=true  --public-only=true");
-all_public_only_tsts("no gen tsts");
-daemon_exit();
+    for ($beg..$end)
+      {
+	if (0) {}
+	elsif ($_ == 1)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.0.1");
+	    all_vhost_tsts();
+	    my $old_trunc = $truncate_segv;
+	    $truncate_segv = 1;
+	    daemon_status("ex_httpd_cntl", "127.0.0.2");
+	    all_vhost_tsts();
+	    $truncate_segv = $old_trunc;
+	    daemon_status("ex_httpd_cntl", "127.0.0.3");
+	    all_vhost_tsts();
+	  }
+	elsif ($_ == 2)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.1.1");
+	    all_public_only_tsts("no gen tsts");
+	  }
+	elsif ($_ == 3)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.2.1");
+	    all_nonvhost_tsts();
+	  }
+	elsif ($_ == 4)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.3.1");
+	    all_none_tsts();
+	  }
+	elsif ($_ == 5)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.4.1");
+	    all_conf_5_tsts();
+	  }
+      }
 
-daemon_init("ex_httpd", $root, $args . "--virtual-hosts=false --pid-file=$root/abcd");
-my $abcd = daemon_get_io_r("$root/abcd");
-chomp $abcd;
-if (daemon_pid() != $abcd) { failure("pid doesn't match pid-file"); }
-all_nonvhost_tsts();
-daemon_exit();
+    daemon_exit();
+  }
 
-my $nargs  = $conf_arg . " --unspecified-hostname=default ";
-   $nargs .= "--mime-types-main=$ENV{SRCDIR}/mime_types_extra.txt ";
-   $nargs .= "--mime-types-xtra=$ENV{SRCDIR}/tst/ex_httpd_bad_mime ";
-   $nargs .= "--virtual-hosts=true ";
-   $nargs .= "--keep-alive=false ";
-   $nargs .= "--range=false ";
-   $nargs .= "--gzip-content-replacement=false ";
-   $nargs .= "--error-406=false ";
-   $nargs .= "--defer-accept=1 ";
-   $nargs .= "--max-connections=32 ";
-   $nargs .= "--max-header-sz=2048 ";
-   $nargs .= "--nagle=true ";
-   $nargs .= "--host=127.0.0.2 ";
-   $nargs .= "--idle-timeout=16 ";
-   $nargs .= "--dir-filename=welcome.html ";
-   $nargs .= "--accept-filter-file=$ENV{SRCDIR}/tst/ex_httpd_null_tst_1 ";
-   $nargs .= "--server-name='Apache/2.0.40 (Red Hat Linux)' ";
-   $nargs .= "--canonize-host=true ";
-   $nargs .= "--error-host-400=false ";
-
-   $nargs .= "--configuration-data-jhttpd";
-   $nargs .= " '(policy <default> (MIME/types-default-type bar/baz))' ";
-
-daemon_init("ex_httpd", $root, $nargs);
-tst_proc_limit(30);
-my $list_pid = http_cntl_list_beg();
-all_none_tsts();
-http_cntl_list_cleanup($list_pid);
-daemon_exit();
-
-daemon_init("ex_httpd", '', "-C $ENV{SRCDIR}/tst/ex_conf_httpd_tst_1");
-$list_pid = http_cntl_list_beg();
-http_cntl_list_cleanup($list_pid);
-daemon_exit();
-
-rmtree($root);
-
-success();
 
 END {
   my $save_exit_code = $?;
@@ -472,3 +500,5 @@ END {
     { daemon_cleanup(); }
   $? = $save_exit_code;
 }
+
+1;

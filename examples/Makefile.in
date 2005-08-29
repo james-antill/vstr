@@ -658,7 +658,12 @@ examplesdir = $(EX_INST_DIR)
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_sock_filter.pl tst/tst_conf.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl tst/tst_httpd.pl
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_cmd.pl tst/tst_httpd_conf.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_pubonly.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_none.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_nonvhosts.pl \
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_vhosts.pl
 
 example_code_html = \
   html/app.h.html \

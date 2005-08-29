@@ -108,20 +108,6 @@ struct sock_fprog
 
 #define CSTREQ(x,y) (!strcmp(x,y))
 
-#ifdef __GNUC__
-# define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x __attribute__((unused))
-#elif defined(__LCLINT__)
-# define EVNT__ATTR_UNUSED(x) /*@unused@*/ vstr__UNUSED_ ## x
-#else
-# define EVNT__ATTR_UNUSED(x) vstr__UNUSED_ ## x
-#endif
-
-#ifdef __GNUC__
-# define EVNT__ATTR_USED() __attribute__((used))
-#else
-# define EVNT__ATTR_USED() 
-#endif
-
 volatile sig_atomic_t evnt_child_exited = FALSE;
 
 int evnt_opt_nagle = EVNT_CONF_NAGLE;
@@ -1338,9 +1324,6 @@ void evnt_scan_fds(unsigned int ready, size_t max_sz)
       }
       else
       {
-        SOCKET_POLL_INDICATOR(scan->ind)->events  = 0;
-        SOCKET_POLL_INDICATOR(scan->ind)->revents = 0;
-        
         evnt_del(&q_connect, scan); scan->flag_q_connect = FALSE;
         evnt_add(&q_none,    scan); scan->flag_q_none    = TRUE;
         evnt_wait_cntl_del(scan, POLLOUT);
@@ -2316,7 +2299,7 @@ static int evnt__epoll_readd(struct Evnt *evnt)
 }
 
 int evnt_poll_child_init(void)
-{ /* Spurious 0 events happen when you share epoll() fd's between tasks ... */
+{ /* Can't share epoll() fd's between tasks ... */
   if (CONF_EVNT_DUP_EPOLL && evnt_poll_direct_enabled())
   {
     close(evnt__epoll_fd);
@@ -2506,18 +2489,13 @@ int evnt_poll(void)
     struct Evnt *evnt  = NULL;
     unsigned int flags = 0;
     
-    if (!(flags = events[scan].events))
-    { /* for spurious events when sharing epoll() fd's */
-      vlg_dbg1(vlg, "epoll_wait_zero(%p)\n", events[scan].data.ptr);
-      continue;
-    }
-    
+    flags = events[scan].events;
     evnt  = events[scan].data.ptr;
 
     ASSERT(evnt__valid(evnt));
     
-    vlg_dbg2(vlg, "epoll_wait(%p,%d)\n", evnt, flags);
-    vlg_dbg2(vlg, "epoll_wait[flags]=a=%d|r=%d\n",
+    vlg_dbg2(vlg, "epoll_wait(%p,%u)\n", evnt, flags);
+    vlg_dbg2(vlg, "epoll_wait[flags]=a=%u|r=%u\n",
              evnt->flag_q_accept, evnt->flag_q_recv);
 
     assert(((SOCKET_POLL_INDICATOR(evnt->ind)->events & flags) == flags) ||

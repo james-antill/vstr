@@ -8,7 +8,10 @@ beg   ; simple symbol
 (abcd "foo" ; Not so simple list
  [ xyz """\
 zoom \a foo
-""" blah]) # See if stuff works again, now...
+""" ;zoom
+          r"raw str\" r'''\
+\
+one at beg''' blah]) # See if stuff works again, now...
 
 (bart baz)  # simple list 2
 [foo 'bar'] # simple list 3
@@ -17,11 +20,15 @@ zoom \a foo
 [ ]
 
 """\
-line on it's own ... unquoted
+line on it's own ... unescaped
 """
 
 <> # Some symbols
 {}
+
+@blah
+
+ready ; testing raw string parsing...
 
 #no-comment;here# 
 -end-

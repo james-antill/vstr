@@ -9,15 +9,25 @@ use POSIX;
 use IO::Socket;
 use IO::Handle;
 
-my $tst_DBG    = $ENV{VSTR_TST_DBG};
-   $tst_DBG    = 0 if (!defined ($tst_DBG));
+my $tst_DBG      = $ENV{VSTR_TST_DBG};
+   $tst_DBG      =  0 if (!defined ($tst_DBG));
 
-my $tst_mp     = $ENV{VSTR_TST_MP};
-   $tst_mp     = 1 if (!defined ($tst_mp));
-my $tst_num_mp = $ENV{VSTR_TST_NUM_MP};
-   $tst_num_mp = 2 if (!defined ($tst_num_mp));
+my $tst_mp       = $ENV{VSTR_TST_MP};
+   $tst_mp       =  1 if (!defined ($tst_mp));
+my $tst_num_mp   = $ENV{VSTR_TST_NUM_MP};
+   $tst_num_mp   =  2 if (!defined ($tst_num_mp));
+   $tst_num_mp   =  1 if ($tst_num_mp < 1);
+   $tst_num_mp   =  1 if ($tst_mp == 0);
+my $tst_proc_lim = $ENV{VSTR_TST_PROC_LIM};
+   $tst_proc_lim = 32 if (!defined ($tst_proc_lim));
+   $tst_proc_lim =  2 if ($tst_proc_lim < 2);
 
-my $child_no_cleanup = 0;
+my $tst_tmout    = $ENV{VSTR_TST_TMOUT};
+   $tst_tmout    = (1 * $tst_proc_lim) if (!defined ($tst_tmout));
+my $tst_tmtry    = $ENV{VSTR_TST_TMTRY};
+   $tst_tmtry    = 2 if (!defined ($tst_tmtry));
+
+my $child_proc = 0;
 
 my $xit_success = 0;
 my $xit_failure = 1;
@@ -26,12 +36,13 @@ my $xit_fail_ok = 77;
 STDOUT->autoflush(1);
 STDERR->autoflush(1);
 
+
 sub failure
   {
     my $txt = shift;
 
     warn("FAILURE($$) $0: $txt\n");
-    if ($child_no_cleanup)
+    if ($child_proc)
       { _exit($xit_failure); }
     else
       { exit($xit_failure); }
@@ -39,33 +50,34 @@ sub failure
 
 sub success
   {
-    if ($child_no_cleanup)
+    tst_proc_waitall();
+    if ($child_proc)
       { _exit($xit_success); }
     else
       { exit($xit_success); }
   }
 
+my @TST__PROCS = ();
 sub tst_fork()
   {
     my $pid = fork();
     if (defined($pid) && !$pid)
-      { $child_no_cleanup = 1; }
+      {	
+	$child_proc   = 1;
+	$tst_mp       = 0;
+	$tst_num_mp   = 1;
+	$tst_proc_lim = 1;
+	@TST__PROCS = ();
+      }
 
     return $pid;
   }
 
-my $tst__proc_limit = 150;
-
-sub tst_proc_limit
-  {
-    $tst__proc_limit = shift;
-  }
-my @TST__PROCS = ();
 sub tst_proc_wait()
   {
-    print "DBG($$): BEG wait() = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
-
     my $pid = shift @TST__PROCS;
+
+    print "DBG($$): wait() = $pid\n" if ($tst_DBG > 0);
 
     if (waitpid($pid, 0) <= 0)
       { failure("waitpid($pid): $!"); }
@@ -73,12 +85,33 @@ sub tst_proc_wait()
     # 13 seems to be some weird perl error code.
     if (($code != $xit_success) && ($code != 13))
       { failure("waitpid($pid) == $code"); }
-    print "DBG($$): END wait($pid) = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
   }
+sub tst_proc_waittry()
+  {
+    my @TMP__PROCS = @TST__PROCS; @TST__PROCS = ();
+    for my $pid (@TMP__PROCS)
+      {
+	if (waitpid($pid, WNOHANG) <= 0)
+	  { push @TST__PROCS, $pid; next; }
 
+	print "DBG($$): wait() = $pid\n" if ($tst_DBG > 0);
+
+	my $code = $?;
+	# 13 seems to be some weird perl error code.
+	if (($code != $xit_success) && ($code != 13))
+	  { failure("waitpid($pid) == $code"); }
+      }
+  }
+sub tst_proc_waitall()
+  {
+    while (@TST__PROCS > 0)
+      { tst_proc_wait(); }
+  }
 sub tst_proc_fork()
   {
-    if (@TST__PROCS >= $tst__proc_limit)
+    if (@TST__PROCS >= $tst_proc_lim)
+      {	tst_proc_waittry(); }
+    while (@TST__PROCS >= $tst_proc_lim)
       {
 	tst_proc_wait();
       }
@@ -91,8 +124,10 @@ sub tst_proc_fork()
 
     if ($pid)
       {
+	print "DBG($$): fork() = $pid\n" if ($tst_DBG > 0);
 	push @TST__PROCS, $pid;
-	print "DBG($$): END fork($pid) = [" . @TST__PROCS . "]\n" if ($tst_DBG > 2);
+	print "DBG($$): END fork($pid) = [" . @TST__PROCS . "]\n"
+	  if ($tst_DBG > 2);
       }
     return $pid;
   }
@@ -118,7 +153,8 @@ sub sub_tst
     for my $num (1..($sz * $tst_num_mp))
       {
 	--$num; $num %= $sz; ++$num;
-	if ($tst_mp)
+	my $loc_tst_mp = $tst_mp;
+	if ($loc_tst_mp)
 	  {
 	    my $pid = tst_proc_fork();
 	    next    if ($pid);
@@ -143,14 +179,10 @@ sub sub_tst
 	  }
 	unlink("${prefix}_tmp_${num}_$$");
 
-	if ($tst_mp)
+	if ($loc_tst_mp)
 	  { success(); }
       }
-
-    while (@TST__PROCS)
-      {
-	tst_proc_wait();
-      }
+    tst_proc_waittry();
   }
 
 sub run_tst
@@ -208,6 +240,7 @@ sub run_simple_tst
   }
 
 {
+my $pdaemon_pid = undef;
 my $ldaemon_pid = undef;
 my $daemon_pid  = undef;
 my $daemon_addr = undef;
@@ -216,6 +249,7 @@ my $daemon_cntl = undef;
 sub daemon_status
   {
     $daemon_cntl = shift;
+    my $daemon_laddr = shift;
 
     open(INFO, "./ex_cntl -e status ${daemon_cntl} |") ||
       failure("Can't open control ${daemon_cntl}.");
@@ -227,6 +261,9 @@ sub daemon_status
 	($daemon_addr, $daemon_port) = ($1, $2);
 	/pid\[(\d+)\]$/ || next;
 	$daemon_pid = $1;
+
+	if (defined ($daemon_laddr) && ($daemon_addr ne $daemon_laddr))
+	  { next; }
 
 	if ($daemon_addr eq '0.0.0.0')
 	  {
@@ -250,13 +287,13 @@ sub daemon_init
 
     my $dbg = "";
     my $no_out = ">/dev/null  2> /dev/null";
-    if ($tst_DBG)
+    if ($tst_DBG > 1)
       {
 	$no_out = '';
 	$dbg    = '-d';
-	if ($tst_DBG > 1)
-	  { $dbg    = '-d -d'; }
 	if ($tst_DBG > 2)
+	  { $dbg    = '-d -d'; }
+	if ($tst_DBG > 3)
 	  { $dbg    = '-d -d -d'; }
       }
 
@@ -270,11 +307,12 @@ sub daemon_init
       { failure("fork($daemon_pid): $!"); }
 
     if (!$ldaemon_pid)
-      {
+      { # Child
 	if (system("./${cmd} $port $opts $cntl $dbg $args $no_out"))
 	  { failure("daemon($cmd): $!"); }
 	success("daemon($cmd)");
       }
+    $pdaemon_pid = $$;
 
     # Wait for it...
     my $num = 0;
@@ -324,14 +362,31 @@ sub nonblock {
 }
 sub daemon_connect_tcp
   {
+    my $try = shift || 1;
+
+    my $beg = time;
     my $sock = new IO::Socket::INET->new(PeerAddr => daemon_addr(),
 					 PeerPort => daemon_port(),
 					 Proto    => "tcp",
 					 Type     => SOCK_STREAM,
-					 Timeout  => (8 * $tst_num_mp)) ||
-					   failure("connect: $!");
+					 Timeout  => $tst_tmout);
+    my $end = time;
+    $end -= $beg;
+    printf("DBG($$): connect (%s:%s) took %us\n",
+	   daemon_addr(), daemon_port(), $end) if (!$sock || ($tst_DBG > 1));
+
+    if (!$sock && ($try < $tst_tmtry))
+      { return daemon_connect_tcp($try + 1); }
+    if (!$sock)
+      { failure("connect: $@"); }
+
     nonblock($sock);
     print "DBG($$): created sock " . $sock->fileno . "\n" if ($tst_DBG > 2);
+
+    if ($child_proc)
+      { # connection is the only thing with a timeout, so help out the scheduler
+	POSIX::nice(40);
+      }
     return $sock;
   }
 
@@ -378,14 +433,13 @@ sub daemon_io
       {
 	if ($len)
 	  {
-	    # Block...
-	    {
+	    { # Block, kind of...
 	      my $rin = '';
 	      my $win = '';
 	      vec($rin,fileno($sock),1) = 1;
 	      vec($win,fileno($sock),1) = 1;
 	      my $ein = $rin | $win;
-	      select($rin, $win, $ein, undef);
+	      select($rin, $win, $ein, 0.25);
 	    }
 
 	    my $wret = $len;
@@ -428,6 +482,7 @@ sub daemon_io
 	$output .= $buff;
       }
 
+    print "DBG($$): closed sock " . $sock->fileno . "\n" if ($tst_DBG > 2);
     $sock->close();
 
     return $output;
@@ -435,6 +490,9 @@ sub daemon_io
 
 sub daemon_exit
   {
+    tst_proc_waitall();
+    return if ($$ != $pdaemon_pid);
+
     if (system("./ex_cntl -e close $daemon_cntl > /dev/null"))
       { warn "cntl close: $!\n"; }
     unlink($daemon_cntl);

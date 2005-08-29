@@ -43,7 +43,7 @@ HTTP/1.1 after implementing a server is
      socket filters
      IP binding
 
-    Is HTTP/1.1 compliant, as far as I know.
+    Is HTTP/1.1 conditionally compliant, as far as I know.
     Supports optional HTTP/1.1 features:
      Accept header for Content-Type.
      0.9 HTTP compatability support
@@ -51,7 +51,9 @@ HTTP/1.1 after implementing a server is
      virtual hosts (via. prefix directories and explicit configuration
                     statements)
      if-modified-since/if-unmodified-since
-     single byte ranges, if-range
+     byte ranges (single and multipart/byteranges)
+       if-range
+       multipart/byteranges can also be limited to prevent DOS attacks.
      accept-encoding/content-encoding for gzip/bzip2 (via. pre-generated files)
       Also fully obeys identity
      ETags
@@ -65,7 +67,7 @@ HTTP/1.1 after implementing a server is
      Also has optional "per request" configuration files (using the same code, 
      and thus layout, as the main configuration files), allowing you to:
       Generate explicit Content-Types.
-       Generate negotiated Content-Types for requests with multiple tupes.
+       Generate negotiated Content-Types for requests with multiple types.
        Eg. http://www.and.org/vstr/examples/httpd.c
          is available as text/plain and text/html
       Generate Content-MD5 data.
@@ -115,7 +117,7 @@ match http m|^HTTP/1\.1 \d\d\d .*\r\nServer: jhttpd| v/jhttpd///
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Mon Jan 17 18:09:46 EST 2005 -->
 <!-- hhmts start -->
-Last modified: Tue Jun 28 00:03:21 EDT 2005
+Last modified: Tue Aug 23 19:35:09 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>
