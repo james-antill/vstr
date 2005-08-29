@@ -16,7 +16,11 @@
 
      procs 1)
 
-  (match-request [OR false
+  (match-request [(OR
+                   policy-eq conf-httpd-tst-5.1
+                   policy-eq conf-httpd-tst-5.2
+                   policy-eq conf-httpd-tst-5.3)
+                  OR false
                   path-end = / <directory-filename>]
     org.and.jhttpd-conf-req-1.0
       Location: [limit <path>-end (= <directory-filename>)] r''

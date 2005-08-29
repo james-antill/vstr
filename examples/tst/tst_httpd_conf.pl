@@ -15,8 +15,10 @@ $truncate_segv = $ENV{VSTR_TST_HTTP_TRUNC_SEGV};
 $truncate_segv = 1 if (!defined ($truncate_segv));
 
 # quick tests...
+if (0) {
 conf_tsts(5, 5);
 success();
+}
 
 my $old_truncate_segv = $truncate_segv;
 $truncate_segv = 1; # Stop gen tests to save time...
