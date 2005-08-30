@@ -260,6 +260,17 @@ sub all_conf_5_tsts()
 	    {shutdown_w => 0, slow_write => 1});
   }
 
+sub all_conf_6_tsts()
+  {
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_6");
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_6",
+	    {shutdown_w => 0});
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_6",
+	    {                 slow_write => 1});
+    sub_tst(\&httpd_file_tst, "ex_httpd_conf_6",
+	    {shutdown_w => 0, slow_write => 1});
+  }
+
 sub munge_mtime
   {
     my $num   = shift;
@@ -420,6 +431,8 @@ if (@ARGV)
 	  { all_none_tsts(); $y = 1; }
 	elsif ($arg eq "conf_5")
 	  { all_conf_5_tsts(); $y = 1; }
+	elsif ($arg eq "conf_6")
+	  { all_conf_6_tsts(); $y = 1; }
 	elsif (($arg eq "non-virtual-hosts") || ($arg eq "non-vhosts"))
 	  { all_nonvhost_tsts(); $y = 1; }
 
@@ -487,6 +500,11 @@ sub conf_tsts
 	  {
 	    daemon_status("ex_httpd_cntl", "127.0.4.1");
 	    all_conf_5_tsts();
+	  }
+	elsif ($_ == 6)
+	  {
+	    daemon_status("ex_httpd_cntl", "127.0.5.1");
+	    all_conf_6_tsts();
 	  }
       }
 

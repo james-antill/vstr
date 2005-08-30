@@ -909,6 +909,7 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
   unsigned int bzip2_val    = 1001;
   unsigned int identity_val = 1001;
   unsigned int star_val     = 1001;
+  unsigned int dummy_val    = 1001;
   
   pos = req->http_hdrs->multi->hdr_accept_encoding->pos;
   len = req->http_hdrs->multi->hdr_accept_encoding->len;
@@ -966,11 +967,10 @@ static int http_parse_accept_encoding(struct Httpd_req_data *req)
     else
     {
       len -= tmp; pos += tmp;
+      if (!http_parse_quality(data, &pos, &len, FALSE, &dummy_val))
+        return (FALSE);
     }
     
-    /* skip to end, or after next ',' */
-    tmp = vstr_cspn_cstr_chrs_fwd(data, pos, len, ",");    
-    len -= tmp; pos += tmp;
     if (!len)
       break;
     assert(VPREFIX(data, pos, len, ","));
@@ -2326,7 +2326,7 @@ static void http__hdr_fixup(Vstr_base *data, size_t *pos, size_t *len,
       }                                                                 \
     } while (FALSE)
 
-static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
+static int http__parse_hdrs(struct Con *con, Httpd_req_data *req)
 {
   Vstr_base *data = con->evnt->io_r;
   struct Http_hdrs *http_hdrs = req->http_hdrs;
@@ -2390,6 +2390,21 @@ static int http__parse_hdrs(struct Con *con, struct Httpd_req_data *req)
 
       if (!VEQ(data, pos, len, "identity")) /* 3.6 says 501 */
         HTTPD_ERR_RET(req, 501, FALSE);
+    }
+    else
+    {
+      size_t tmp = 0;
+
+      /* all headers _must_ contain a ':' */
+      tmp = vstr_srch_chr_fwd(data, pos, len, ':');
+      if (!tmp)
+        HTTPD_ERR_RET(req, 400, FALSE);
+
+      /* make sure unknown header is whitespace "valid" */
+      tmp = vstr_sc_posdiff(pos, tmp);
+      if (req->policy->use_non_spc_hdrs &&
+          (vstr_cspn_cstr_chrs_fwd(data, pos, tmp, HTTP_LWS) != tmp))
+        HTTPD_ERR_RET(req, 400, FALSE);
     }
   }
 
@@ -2988,6 +3003,7 @@ unsigned int http_parse_accept(Httpd_req_data *req,
   size_t len = 0;
   unsigned int num = 0;
   unsigned int quality = 1001;
+  unsigned int dummy   = 1001;
   int done_sub_type = FALSE;
   size_t ct_sub_len = 0;
   
@@ -3040,7 +3056,8 @@ unsigned int http_parse_accept(Httpd_req_data *req,
     else
     {
       len -= tmp; pos += tmp;
-      HTTP_SKIP_LWS(data, pos, len);
+      if (!http_parse_quality(data, &pos, &len, TRUE, &dummy))
+        return (1);
     }
 
     if (!http__skip_parameters(data, &pos, &len))
@@ -3071,10 +3088,10 @@ static int http__cmp_lang_eq(const Vstr_base *s1, size_t p1, size_t l1,
   
   if (l1 > l2)
     return ((vstr_export_chr(s1, p1 + l2) == '-') &&
-            vstr_cmp_eq(s1, p1, l2, s2, p2, l2));
+            vstr_cmp_case_eq(s1, p1, l2, s2, p2, l2));
 
   return ((vstr_export_chr(s2, p2 + l1) == '-') &&
-          vstr_cmp_eq(s1, p1, l1, s2, p2, l1));
+          vstr_cmp_case_eq(s1, p1, l1, s2, p2, l1));
 }
 
 unsigned int http_parse_accept_language(Httpd_req_data *req,
@@ -3086,6 +3103,7 @@ unsigned int http_parse_accept_language(Httpd_req_data *req,
   size_t len = 0;
   unsigned int num = 0;
   unsigned int quality = 1001;
+  unsigned int dummy   = 1001;
   size_t done_sub_type = 0;
   
   pos = req->http_hdrs->multi->hdr_accept_language->pos;
@@ -3103,35 +3121,44 @@ unsigned int http_parse_accept_language(Httpd_req_data *req,
     ++num;
     
     if (0) { }
-    else if (vstr_cmp_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
+    else if (vstr_cmp_case_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
     { /* full match */
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+      if (!http_parse_quality(data, &pos, &len, FALSE, &quality))
         return (1);
       return (quality);
     }
-    else if ((!done_sub_type || (done_sub_type >= tmp)) &&
+    else if ((tmp >= done_sub_type) &&
              http__cmp_lang_eq(data, pos, tmp, ct_vs1, ct_pos, ct_len))
-    { /* sub match - can be x-y-A;q=0, x-y-B, x-y */
+    { /* sub match - can be x-y-A;q=0, x-y-B, x-y
+         rfc2616#14.4
+         The language quality factor assigned to a language-tag by the
+         Accept-Language field is the quality value of the longest
+         language-range in the field that matches the language-tag.
+      */
       unsigned int sub_type_qual = 0;
+      
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, TRUE, &sub_type_qual))
+      if (!http_parse_quality(data, &pos, &len, FALSE, &sub_type_qual))
         return (1);
+      
       ASSERT(sub_type_qual <= 1000);
-      if (!done_sub_type || (done_sub_type > tmp) || (sub_type_qual > quality))
+      if ((tmp > done_sub_type) || (sub_type_qual > quality))
         quality = sub_type_qual;
+      
       done_sub_type = tmp;
     }
     else if (!done_sub_type && VEQ(data, pos, tmp, "*"))
     {
       len -= tmp; pos += tmp;
-      if (!http_parse_quality(data, &pos, &len, TRUE, &quality))
+      if (!http_parse_quality(data, &pos, &len, FALSE, &quality))
         return (1);
     }
     else
     {
       len -= tmp; pos += tmp;
-      HTTP_SKIP_LWS(data, pos, len);
+      if (!http_parse_quality(data, &pos, &len, FALSE, &dummy))
+        return (1);
     }
     
     if (!len)
