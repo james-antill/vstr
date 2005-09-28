@@ -126,7 +126,7 @@ the functions separately, this creates some great code like...
 <p>
 ...which looks OK at first glance, but of course the middle add didn't add
 strlen(external_data) it added strlen(external_data) or l1 ... whichever
-was smaller. So, do to underflow, you get the same affect as just having
+was smaller. So, due to underflow, you get the same affect as just having
 no limit at all.
 </p><p>
 
@@ -559,7 +559,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Sun Jul 31 00:37:39 EDT 2005
+Last modified: Mon Sep 19 15:19:41 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

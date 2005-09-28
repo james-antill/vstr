@@ -71,7 +71,6 @@ http://www.sans.org/top20/#u2
           Match needed for different ETags for content neg.
          allow turn off shutdown()
         Fix req_conf_err (full pathname, uses 404 for conf and 404.html)
-        test neg - conf_5_tst 3
         test secure dirs, conf + main
         test useable dirs, conf + main
 

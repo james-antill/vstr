@@ -1,6 +1,6 @@
 #define VSTR_SC_POSIX_C
 /*
- *  Copyright (C) 2002, 2003, 2004  James Antill
+ *  Copyright (C) 2002, 2003, 2004, 2005  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,13 @@
  */
 /* functions which are shortcuts */
 #include "main.h"
+
+/* Linux gives EINVAL on x86 > SSIZE_MAX, but gives same on > 2GB for
+ * x86-64 etc. ... Ie. INT_MAX limit, in theory this stops signed overflow
+ * problems in the kernel, however they don't have a constant so we have
+ * to assume INT_MAX ... retards. */
+#define VSTR__UIO_MAXDATA INT_MAX
+
 
 #if !(USE_FD_CLOSE_CHECK) /* hack to test code path on close error */
 # define VSTR__POSIX_OPEN3(x, y, z) open64(x, y, z)
@@ -355,6 +362,9 @@ int vstr_sc_read_iov_fd(Vstr_base *base, size_t pos, int fd,
   if (!min)
     return (TRUE);
 
+  if (min > ((VSTR__UIO_MAXDATA / base->conf->buf_sz) / 2))
+    min = ((VSTR__UIO_MAXDATA / base->conf->buf_sz) / 2);
+  
   if (!base->cache_available)
     return (vstr__sc_read_slow_len_fd(base, pos, fd,
                                       min * base->conf->buf_sz, err));
@@ -642,18 +652,20 @@ int vstr_sc_write_fd(Vstr_base *base, size_t pos, size_t len, int fd,
       num = UIO_MAXIOV;
     }
 
-    /* Linux just gives EINVAL on size > SSIZE_MAX */
-    if (clen > SSIZE_MAX)
+    /* cap so we don't get EINVAL */
+    if (clen > VSTR__UIO_MAXDATA)
     {
       unsigned int scan = num;
 
-      ASSERT(VSTR_MAX_NODE_ALL <= SSIZE_MAX);
+      ASSERT(VSTR_MAX_NODE_ALL <= VSTR__UIO_MAXDATA);
       
-      while (clen > SSIZE_MAX)
+      while (clen > VSTR__UIO_MAXDATA)
       {
         ASSERT(scan >= 1);
         clen -= vec[--scan].iov_len;
       }
+
+      ASSERT(clen && scan);
       
       num = scan;
     }

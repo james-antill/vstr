@@ -37,7 +37,7 @@
 (defconst conf-font-lock-keywords-3
   (append conf-font-lock-keywords-2
 	  (list
-	   '("\\<\\(org.and.daemon-conf-1.0\\|org.and.jhttpd-conf-main-1.0\\|org.and.jhttpd-conf-req-1.0\\)\\>" . font-lock-function-name-face)))
+	   '("\\<\\(org.and.daemon-conf-1.0\\|org.and.httpd-conf-main-1.0\\|org.and.httpd-conf-req-1.0\\)\\>" . font-lock-function-name-face)))
   "Level 3 Keywords to highlight in Conf mode")
 
 (defconst conf-font-lock-keywords-4

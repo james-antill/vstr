@@ -154,7 +154,9 @@ int tst(void)
   TST_B_TST(ret, 25, !vstr_sc_write_file(s1, 1, 0, "/dev/null", 0, 0, 0, NULL));
 
   vstr_del(s1, 1, s1->len);
-  {
+
+  if (SSIZE_MAX < (1000u * 1000u * 1000u * 3u))
+  { /* don't do this for 64bit */
     Vstr_ref *ref = vstr_ref_make_malloc(VSTR_MAX_NODE_ALL);
 
     if (!ref)

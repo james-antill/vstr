@@ -1,4 +1,4 @@
-* broken example */
+/* broken example */
 char  *s1;
 size_t l1;
 ...
