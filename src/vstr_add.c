@@ -414,14 +414,21 @@ static int vstr__convert_buf_ref(Vstr_base *base, size_t pos, size_t len)
   --pos;
 
   len += pos;
-  len -= base->used;
 
+  if (*scan == base->beg)
+  { /* if we are on the first node, the conversion will remove the
+     * base->used before we get to the (*scan)->len compare */
+    ASSERT(((*scan)->type == VSTR_TYPE_NODE_BUF) || !base->used);
+    len -= base->used;
+  }
+  
   while (*scan)
   {
     if ((*scan)->type == VSTR_TYPE_NODE_BUF)
     {
       if (!vstr__chg_node_buf_ref(base, scan, num))
         return (FALSE);
+      ASSERT((*scan != base->beg) || !base->used);
     }
 
     if (len <= (*scan)->len)

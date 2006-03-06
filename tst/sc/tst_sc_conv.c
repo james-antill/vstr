@@ -34,14 +34,17 @@ int tst(void)
   TST_B_TST(ret, 12, !!strcmp(buf, "4321"));
   
   len = sprintf(buf2, "%jx", UINTMAX_MAX);
-  TST_B_TST(ret, 13, vstr_sc_conv_num_uintmax(buf, len + 1, UINTMAX_MAX,
-                                              "0123456789abcdef", 16) != len);
-  TST_B_TST(ret, 14, !!strcmp(buf, buf2));
+  if (strcmp("jx", buf2)) /* Solaris POS */
+  {
+    TST_B_TST(ret, 13, vstr_sc_conv_num_uintmax(buf, len + 1, UINTMAX_MAX,
+                                                "0123456789abcdef", 16) != len);
+    TST_B_TST(ret, 14, !!strcmp(buf, buf2));
   
-  len = sprintf(buf2, "%ju", UINTMAX_MAX);
-  TST_B_TST(ret, 15, vstr_sc_conv_num10_uintmax(buf, len + 1,
-                                                UINTMAX_MAX) != len);
-  TST_B_TST(ret, 16, !!strcmp(buf, buf2));
+    len = sprintf(buf2, "%ju", UINTMAX_MAX);
+    TST_B_TST(ret, 15, vstr_sc_conv_num10_uintmax(buf, len + 1,
+                                                  UINTMAX_MAX) != len);
+    TST_B_TST(ret, 16, !!strcmp(buf, buf2));
+  }
   
   TST_B_TST(ret, 17, vstr_sc_conv_num10_uintmax(buf, 5, 1234) != 4);
   TST_B_TST(ret, 18, !!strcmp(buf, "1234"));

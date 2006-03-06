@@ -2,7 +2,7 @@
 #define VSTR__INTERNAL_HEADER_H
 
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  James Antill
+ *  Copyright (C) 1999-2006  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -92,6 +92,7 @@
 #define VSTR__TO_ASCII_LOWER(x) (VSTR__UC(x) + 0x20) /* must be IS_ASCII_U */
 #define VSTR__TO_ASCII_UPPER(x) (VSTR__UC(x) - 0x20) /* must be IS_ASCII_L */
 
+#define VSTR__ASCII_DIGIT_a() (0x61)
 #define VSTR__ASCII_DIGIT_0() (0x30)
 #define VSTR__ASCII_COLON()   (0x3A)
 #define VSTR__ASCII_COMMA()   (0x2C)

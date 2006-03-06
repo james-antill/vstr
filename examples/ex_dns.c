@@ -473,17 +473,22 @@ static void cl_cmd_line(int argc, char *argv[])
 
 static void cl_timer_cli(int type, void *data)
 {
-  struct con *con = NULL;
+  struct con *con = data;
   struct timeval tv;
   unsigned long diff = 0;
   
-  if (!data)
+  if (!con)
     return;
   
-  if (type == TIMER_Q_TYPE_CALL_DEL)
+  ASSERT(evnt_fd(con->ev) != -1);
+  
+  if (type == TIMER_Q_TYPE_CALL_RUN_ALL)
     return;
 
-  con = data;
+  con->ev->tm_o = NULL;
+
+  if (type == TIMER_Q_TYPE_CALL_DEL)
+    return;
 
   gettimeofday(&tv, NULL);
   diff = timer_q_timeval_udiff_secs(&tv, &con->ev->mtime);
@@ -507,9 +512,6 @@ static void cl_timer_cli(int type, void *data)
 static void cl_timer_con(int type, void *data)
 {
   int count = 0;
-
-  if (!data)
-    return;
   
   if (type == TIMER_Q_TYPE_CALL_DEL)
     return;
@@ -546,6 +548,12 @@ static void cl_init(void)
     errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
   if (!cl_timer_connect_base)
     errno = ENOMEM, err(EXIT_FAILURE, "%s", __func__);
+
+  /* FIXME: massive hack 1.0.5 is broken */
+  timer_q_cntl_base(cl_timeout_base,
+                    TIMER_Q_CNTL_BASE_SET_FLAG_INSERT_FROM_END, FALSE);
+  timer_q_cntl_base(cl_timer_connect_base,
+                    TIMER_Q_CNTL_BASE_SET_FLAG_INSERT_FROM_END, FALSE);
 
   vlg_init();
 

@@ -29,7 +29,7 @@
   (append conf-font-lock-keywords-1
 	  (list
 	   '("[][()]" . font-lock-keyword-face)
-	   '("\\<\\(TRUE\\|true\\|FALSE\\|false\\)\\>" . 
+	   '("\\<\\(TRUE\\|true\\|FALSE\\|false\\|ELSE\\|else\\)\\>" . 
 	     font-lock-constant-face)))
   "Level 2 Keywords to highlight in Conf mode")
 

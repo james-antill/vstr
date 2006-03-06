@@ -73,17 +73,17 @@
 #define VSTR__FMT_ADD_GRPBASENUM(x, NB, y, z) \
  vstr_sc_add_grpbasenum_buf((x), ((x)->len - pos_diff), NB, y, z)
 
-/* deals well with INT_MIN */
+/* deals with signed integer overflow */
 #define VSTR__FMT_S2U_NUM(unum, snum) do { \
-   ++snum; unum = -snum; ++unum; \
-} while (FALSE)
-#define VSTR__FMT_ABS_NUM(unum, snum) do { \
- if (snum < 0) { \
-   spec->flags |= NUM_IS_NEGATIVE; \
-   VSTR__FMT_S2U_NUM(unum, snum); \
- } else \
-   unum = snum; \
-} while (FALSE)
+      unum = snum; unum = -unum;           \
+    } while (FALSE)
+#define VSTR__FMT_ABS_NUM(unum, snum) do {      \
+      if (snum < 0) {                           \
+        spec->flags |= NUM_IS_NEGATIVE;         \
+        VSTR__FMT_S2U_NUM(unum, snum);          \
+      } else                                    \
+        unum = snum;                            \
+    } while (FALSE)
 
 
 /* functions for outputing thousands grouping ... */
@@ -372,7 +372,8 @@ static int vstr__add_fmt_number(Vstr_base *base, size_t pos_diff,
 void vstr__add_fmt_free_conf(Vstr_conf *conf)
 {
   struct Vstr__fmt_spec *scan = conf->vstr__fmt_spec_make;
-
+  unsigned int num = 0;
+  
   assert(!conf->vstr__fmt_spec_list_beg && !conf->vstr__fmt_spec_list_beg);
 
   while (scan)
@@ -381,14 +382,25 @@ void vstr__add_fmt_free_conf(Vstr_conf *conf)
     VSTR__F(scan);
     scan = scan_next;
   }
-
   conf->vstr__fmt_spec_make = NULL;
 
+  /* slow ... but who cares? */
   while (conf->fmt_usr_names)
   {
     Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_names;
 
     vstr_fmt_del(conf, tmp->name_str);
+  }
+
+  while (num < 37)
+  {
+    while (conf->fmt_usr_name_hash[num])
+    {
+      Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_name_hash[num];
+
+      vstr_fmt_del(conf, tmp->name_str);
+    }
+    ++num;
   }
 }
 

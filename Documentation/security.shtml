@@ -25,7 +25,7 @@ on many Linux machines...
 <td class="ent1">vsftpd</td>  <td class="ent2">wu-ftpd</td> </tr><tr>
 <td class="ent1">postfix</td> <td class="ent2">sendmail</td> </tr><tr>
 <td class="ent1">djbdns</td>  <td class="ent2">bind</td> </tr><tr>
-<td class="ent1"></td>        <td class="ent2">LPRng</td> </tr><tr>
+<td class="ent1">And-httpd</td><td class="ent2">LPRng</td> </tr><tr>
 <td class="ent1"></td>        <td class="ent2">cups</td> </tr><tr>
 <td class="ent1"></td>        <td class="ent2">nfs</td> </tr><tr>
 <td class="ent1"></td>        <td class="ent2">vixie-cron</td> </tr><tr>
@@ -36,7 +36,9 @@ on many Linux machines...
 
 <p>
      ...the left column all have had <b>zero remote buffer overflow</b>
-attacks, and they all consistently use a <b>dynamic string API</b>.
+attacks, three of the four have had "security guarantees" where the authors
+were so sure they were secure money was offered for anyone who could prove
+otherwise. They all consistently use a <b>dynamic string API</b>.
 </p><p>
  While the right column have all had
 <b>at least one remote buffer overflow</b> and try to use just the
@@ -559,7 +561,7 @@ are using (and test against them) when you write it.
     <address><a href="mailto:james-web@and.org">James Antill</a></address>
 <!-- Created: Fri Jul 11 19:38:53 EDT 2003 -->
 <!-- hhmts start -->
-Last modified: Mon Sep 19 15:19:41 EDT 2005
+Last modified: Fri Oct 21 19:26:20 EDT 2005
 <!-- hhmts end -->
   </body>
 </html>

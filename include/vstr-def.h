@@ -2,7 +2,7 @@
 # error " You must _just_ #include <vstr.h>"
 #endif
 /*
- *  Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  James Antill
+ *  Copyright (C) 1999-2004, 2006  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -212,6 +212,8 @@ VSTR__DECL_TYPEDEF1(struct Vstr_conf)
 
   struct Vstr_ref_grp_ptr *ref_grp_ptr; /* private */
   struct Vstr_ref_grp_ptr *ref_grp_buf2ref; /* private */
+  
+  struct Vstr__fmt_usr_name_node *fmt_usr_name_hash[37]; /* private */
 } VSTR__DECL_TYPEDEF2(Vstr_conf);
 
 VSTR__DECL_TYPEDEF1(struct Vstr_base)

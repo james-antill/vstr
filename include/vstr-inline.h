@@ -810,19 +810,23 @@ extern inline int vstr_sects_add(struct Vstr_sects *sects,
 }
 
 extern inline void vstr_sc_bmap_init_eq_spn_buf(unsigned char bmap[256], 
-                                                const char *buf, size_t len,
+                                                const void *pbuf, size_t len,
                                                 unsigned char val)
 {
+  const unsigned char *buf = pbuf;
+  
   while (len)
-    bmap[0xFF & (unsigned char)buf[--len]] = val;
+    bmap[0xFF & buf[--len]] = val;
 }
 
 extern inline void vstr_sc_bmap_init_or_spn_buf(unsigned char bmap[256], 
-                                                const char *buf, size_t len,
+                                                const void *pbuf, size_t len,
                                                 unsigned char val)
 {
+  const unsigned char *buf = pbuf;
+  
   while (len)
-    bmap[0xFF & (unsigned char)buf[--len]] |= val;
+    bmap[0xFF & buf[--len]] |= val;
 }
 
 /* do inline versions of macro/simple functions */

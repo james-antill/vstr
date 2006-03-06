@@ -5,6 +5,7 @@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
 
 tst_regression = \
+    regression/tst_regression_add_vstr_buf_ref \
     regression/tst_regression_sub_ref_ptr \
     regression/tst_regression_sub_ptr_ref \
     regression/tst_regression_vec1 \
@@ -204,6 +205,7 @@ tst_sc = \
     sc/tst_sc_b
 
 xfail_tst_sc = \
+    sc/xfail_tst_sc_mmap_fd_NULL \
     sc/xfail_tst_sc_write_fd_oob_pos \
     sc/xfail_tst_sc_write_fd_oob_len \
     sc/xfail_tst_sc_write_fd_NULL \

@@ -288,10 +288,54 @@ vstr__loc_num_srch(Vstr_locale *loc, unsigned int num_base, int clone)
   return (def);
 }
 
-static int vstr__make_conf_loc_def_numeric(Vstr_conf *conf)
+static int vstr__make_conf_loc_vals(Vstr_locale *loc,
+                                    const char *name, const char *grp,
+                                    const char *thou, const char *deci)
 {
+  size_t name_len = strlen(name);
+  size_t grp_len  = vstr__loc_thou_grp_strlen(grp);
+  size_t thou_len = strlen(thou);
+  size_t deci_len = strlen(deci);
   Vstr_ref *ref = NULL;
   
+  if (!(ref = vstr_ref_make_memdup(name, name_len + 1)))
+    goto fail_numeric;
+  loc->name_lc_numeric_ref        = ref;
+  loc->name_lc_numeric_len        = name_len;
+  
+  if (!(ref = vstr_ref_make_malloc(grp_len + 1)))
+    goto fail_grp;
+  loc->num_beg->grouping          = ref;
+
+  /* Grouping is different we have to make sure it is 0 terminated */
+  if (grp_len)
+    vstr_wrap_memcpy(loc->num_beg->grouping->ptr, grp, grp_len);
+  ((char *)loc->num_beg->grouping->ptr)[grp_len] = 0;
+  
+  if (!(ref = vstr_ref_make_memdup(thou, thou_len + 1)))
+    goto fail_thou;
+  loc->num_beg->thousands_sep_ref = ref;
+  loc->num_beg->thousands_sep_len = thou_len;
+  
+  if (!(ref = vstr_ref_make_memdup(deci, deci_len + 1)))
+    goto fail_deci;
+  loc->num_beg->decimal_point_ref = ref;
+  loc->num_beg->decimal_point_len = deci_len;
+  
+  return (TRUE);
+  
+ fail_deci:
+  vstr_ref_del(loc->num_beg->thousands_sep_ref);
+ fail_thou:
+  vstr_ref_del(loc->num_beg->grouping);
+ fail_grp:
+  vstr_ref_del(loc->name_lc_numeric_ref);
+ fail_numeric:
+  return (FALSE);
+}
+
+static int vstr__make_conf_loc_def_numeric(Vstr_conf *conf)
+{
   ASSERT(conf);
   ASSERT(conf->loc);
   ASSERT(conf->loc->num_beg);
@@ -299,36 +343,19 @@ static int vstr__make_conf_loc_def_numeric(Vstr_conf *conf)
   conf->loc->num_beg->num_base                = 0;
   conf->loc->num_beg->next                    = NULL;
 
-  if (!(conf->loc->name_lc_numeric_ref        = vstr_ref_make_strdup("C")))
-    goto fail_numeric;
-
-  if (!(ref = conf->loc->num_beg->grouping    = vstr_ref_make_strdup("")))
-    goto fail_grp;
-
-  conf->loc->num_beg->thousands_sep_ref       = vstr_ref_add(ref);
-
-  if (!(conf->loc->num_beg->decimal_point_ref = vstr_ref_make_strdup(".")))
-    goto fail_deci;
-
   if (!(conf->loc->null_ref                   = vstr_ref_make_strdup("(null)")))
     goto fail_null;
-
-  conf->loc->name_lc_numeric_len              = 1;
-  conf->loc->num_beg->thousands_sep_len       = 0;
-  conf->loc->num_beg->decimal_point_len       = 1;
   conf->loc->null_len                         = strlen("(null)");
+  
+  if (!vstr__make_conf_loc_vals(conf->loc, "C", "", "", "."))
+    goto fail_numeric;
 
   return (TRUE);
 
   /* vstr_ref_del(conf->loc->null_ref); */
- fail_null:
-  vstr_ref_del(conf->loc->num_beg->decimal_point_ref);
- fail_deci:
-  vstr_ref_del(conf->loc->num_beg->thousands_sep_ref);
-  vstr_ref_del(conf->loc->num_beg->grouping);
- fail_grp:
-  vstr_ref_del(conf->loc->name_lc_numeric_ref);
  fail_numeric:
+  vstr_ref_del(conf->loc->null_ref);
+ fail_null:
 
   return (FALSE);
 }
@@ -354,42 +381,15 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
   else
   {
     const char *name_numeric = NULL;
-    size_t numeric_len = 0;
-    size_t grp_len  = vstr__loc_thou_grp_strlen(SYS_LOC(grouping));
-    size_t thou_len =                    strlen(SYS_LOC(thousands_sep));
-    size_t deci_len =                    strlen(SYS_LOC(decimal_point));
-    Vstr_ref *ref = NULL;
     
     if (MALLOC_CHECK_DEC() ||
         !(name_numeric = setlocale(LC_NUMERIC, NULL))) /* name for "name" */
       name_numeric = "C";
-    numeric_len = strlen(name_numeric);
     
-    if (!(ref = vstr_ref_make_strdup(name_numeric)))
+    if (!vstr__make_conf_loc_vals(loc, name_numeric,
+                                  SYS_LOC(grouping), SYS_LOC(thousands_sep),
+                                  SYS_LOC(decimal_point)))
       goto fail_numeric;
-    loc->name_lc_numeric_ref        = ref;
-    
-    if (!(ref = vstr_ref_make_malloc(grp_len + 1)))
-      goto fail_grp;
-    loc->num_beg->grouping          = ref;
-
-    if (!(ref = vstr_ref_make_strdup(SYS_LOC(thousands_sep))))
-      goto fail_thou;
-    loc->num_beg->thousands_sep_ref = ref;
-
-    if (!(ref = vstr_ref_make_strdup(SYS_LOC(decimal_point))))
-      goto fail_deci;
-    loc->num_beg->decimal_point_ref = ref;
-
-    loc->name_lc_numeric_len = numeric_len;
-
-    /* Grouping is different we have to make sure it is 0 terminated */
-    if (grp_len)
-      vstr_wrap_memcpy(loc->num_beg->grouping->ptr, SYS_LOC(grouping), grp_len);
-    ((char *)loc->num_beg->grouping->ptr)[grp_len] = 0;
-
-    loc->num_beg->thousands_sep_len = thou_len;
-    loc->num_beg->decimal_point_len = deci_len;
   }
 
   while (TRUE)
@@ -425,12 +425,6 @@ int vstr__make_conf_loc_numeric(Vstr_conf *conf, const char *name)
 
   return (TRUE);
 
- fail_deci:
-  vstr_ref_del(loc->num_beg->thousands_sep_ref);
- fail_thou:
-  vstr_ref_del(loc->num_beg->grouping);
- fail_grp:
-  vstr_ref_del(loc->name_lc_numeric_ref);
  fail_numeric:
 
   if (tmp)
@@ -478,9 +472,14 @@ Vstr_conf *vstr_make_conf(void)
 
   conf->buf_sz = 64 - (sizeof(Vstr_node_buf) + 8);
 
-  conf->fmt_usr_names = 0;
+  conf->fmt_usr_names = NULL;
   conf->fmt_usr_escape = 0;
-
+  {
+    unsigned int tmp = 0;
+    while (tmp < 37)
+      conf->fmt_usr_name_hash[tmp++] = NULL;
+  }
+  
   conf->vstr__fmt_spec_make = NULL;
   conf->vstr__fmt_spec_list_beg = NULL;
   conf->vstr__fmt_spec_list_end = NULL;

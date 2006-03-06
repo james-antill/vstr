@@ -1,26 +1,28 @@
 #! /bin/bash -e
 
-if [ ! -r VERSION -o ! -r vstr.spec -o ! -r configure ]; then
+pkg=vstr
+
+if [ ! -r VERSION -o ! -r $pkg.spec -o ! -r configure ]; then
   if [ -r configure ]; then
-    ./scripts/b/DOCS.sh
+#    ./scripts/b/DOCS.sh
+    ./scripts/b/def-debug.sh
   else
-    echo "No VERSION, vstr.spec or configure file." &>2
+    echo "No VERSION, $pkg.spec or configure file." &>2
     exit 1
   fi
 fi
 
 v="`cat VERSION`"
 s="`pwd`"
-cd ../build/vstr
+cd ../build/$pkg
 
-rm -rf vstr-$v
-cp -a $s ./vstr-$v
-cd ./vstr-$v
+rm -rf $pkg-$v
+cp -a $s ./$pkg-$v
+cd ./$pkg-$v
 
 ./scripts/clean.sh full
 
-# Perf output...
-rm -rf ./examples/perf*
+rm -rf tmp
 
 # Backup files...
 find . \
@@ -32,21 +34,43 @@ rm -rf ./{arch}
 find . -name .arch-ids -type d -print0 | xargs -0 rm -rf
 
 # Create tarballs/RPMS
-cp $s/vstr.spec .
+cp $s/$pkg.spec .
 
 cd ..
 
-tar -cf vstr-$v.tar vstr-$v
-bzip2 -9f vstr-$v.tar
+chk=1
+rel=1
+if [ "x$1" = "xnochk" ]; then
+echo Not doing checking.
+chk=0
+shift
+else
+echo Doing checking.
+args="$args  --define \"chk 1\""
+fi
 
-tar -cf vstr-$v.tar vstr-$v
-gzip -9f vstr-$v.tar
+if [ "x$1" = "xrel" ]; then
+shift
+echo Using custom release $1.
+rel=$1
+shift
+else
+echo Using normal release of 1.
+fi
 
-sudo rpmbuild -ta --define 'chk 1' vstr-$v.tar.gz
+perl -i -pe "s/^Release: 1/Release: $rel/" $pkg-$v/$pkg.spec
 
-echo "/usr/src/redhat/RPMS/*/vstr*-$v-*"
-echo "/usr/src/redhat/SRPMS/vstr*-$v-*"
+tar -cf   $pkg-$v.tar $pkg-$v
+bzip2 -9f $pkg-$v.tar
 
-ls -aslhF /usr/src/redhat/RPMS/*/vstr*-$v-*
-ls -aslhF /usr/src/redhat/SRPMS/vstr*-$v-*
+tar -cf   $pkg-$v.tar $pkg-$v
+gzip -9f  $pkg-$v.tar
+
+sudo rpmbuild -ta --define "chk $chk" $pkg-$v.tar.gz
+
+echo "/usr/src/redhat/RPMS/*/$pkg*-$v-$rel*"
+echo "/usr/src/redhat/SRPMS/$pkg*-$v-$rel*"
+
+ls -ahslF /usr/src/redhat/RPMS/*/$pkg*-$v-$rel*
+ls -ahslF /usr/src/redhat/SRPMS/$pkg*-$v-$rel*
 

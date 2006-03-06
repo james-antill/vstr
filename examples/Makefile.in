@@ -19,7 +19,7 @@
 
 
 
-SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) $(ex_conf_SOURCES) ex_csv.c $(ex_dir_filter_SOURCES) ex_dir_list.c ex_dir_list2html.c $(ex_dir_sort_SOURCES) $(ex_dns_SOURCES) $(ex_echod_SOURCES) ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c ex_hello_world_x.c $(ex_hexdump_SOURCES) ex_highlight.c $(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) ex_sock_filter.c $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
+SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) $(ex_conf_SOURCES) ex_csv.c $(ex_dir_filter_SOURCES) ex_dir_list.c ex_dir_list2html.c $(ex_dir_sort_SOURCES) $(ex_dns_SOURCES) $(ex_echod_SOURCES) ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c ex_hello_world_x.c $(ex_hexdump_SOURCES) ex_highlight.c ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) ex_sock_filter.c $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -60,7 +60,8 @@ examples_PROGRAMS = ex_netstr$(EXEEXT) $(am__EXEEXT_1) $(am__EXEEXT_3) \
 @HAVE_POSIX_HOST_TRUE@  ex_ssi ex_rainbow ex_changelog_diff ex_ccount ex_sock_filter ex_conf
 
 @HAVE_POSIX_HOST_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_4 = ex_slowcat
-@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_5 = ex_cntl ex_dns ex_echod ex_httpd
+@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@am__append_5 = ex_cntl ex_dns ex_echod
+#examples_PROGRAMS += ex_httpd
 #examples_PROGRAMS += ex_ypservd
 # Timer_q
 @BZ2_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@ZLIB_AVAIL_TRUE@am__append_6 = ex_zcat
@@ -103,8 +104,7 @@ CONFIG_CLEAN_FILES =
 @HAVE_POSIX_HOST_TRUE@@TIMER_Q_AVAIL_TRUE@	ex_slowcat$(EXEEXT)
 @HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@am__EXEEXT_5 = ex_cntl$(EXEEXT) \
 @HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@	ex_dns$(EXEEXT) \
-@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@	ex_echod$(EXEEXT) \
-@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@	ex_httpd$(EXEEXT)
+@HAVE_POSIX_HOST_TRUE@@SOCKET_POLL_AVAIL_TRUE@@TIMER_Q_AVAIL_TRUE@	ex_echod$(EXEEXT)
 @BZ2_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@@ZLIB_AVAIL_TRUE@am__EXEEXT_6 = ex_zcat$(EXEEXT)
 @GMP_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@am__EXEEXT_7 = ex_gmp_factorials$(EXEEXT) \
 @GMP_AVAIL_TRUE@@HAVE_POSIX_HOST_TRUE@	ex_gmp_nums$(EXEEXT) \
@@ -189,20 +189,6 @@ am_ex_hexdump_OBJECTS = ex_hexdump-hexdump.$(OBJEXT) \
 ex_hexdump_OBJECTS = $(am_ex_hexdump_OBJECTS)
 ex_highlight_SOURCES = ex_highlight.c
 ex_highlight_OBJECTS = ex_highlight-ex_highlight.$(OBJEXT)
-am__objects_4 = ex_httpd-bag.$(OBJEXT) ex_httpd-conf.$(OBJEXT) \
-	ex_httpd-cntl.$(OBJEXT) ex_httpd-date.$(OBJEXT) \
-	ex_httpd-evnt.$(OBJEXT) ex_httpd-hexdump.$(OBJEXT) \
-	ex_httpd-opt.$(OBJEXT) ex_httpd-opt_policy.$(OBJEXT) \
-	ex_httpd-opt_serv.$(OBJEXT) ex_httpd-vlg.$(OBJEXT) \
-	ex_httpd-conf_inline.$(OBJEXT) \
-	ex_httpd-opt_policy_inline.$(OBJEXT)
-am_ex_httpd_OBJECTS = ex_httpd-mime_types.$(OBJEXT) \
-	ex_httpd-httpd_conf_main.$(OBJEXT) \
-	ex_httpd-httpd_conf_req.$(OBJEXT) \
-	ex_httpd-httpd_policy.$(OBJEXT) \
-	ex_httpd-httpd_policy_inline.$(OBJEXT) $(am__objects_4) \
-	ex_httpd-httpd.$(OBJEXT) ex_httpd-ex_httpd.$(OBJEXT)
-ex_httpd_OBJECTS = $(am_ex_httpd_OBJECTS)
 ex_lookup_ip_SOURCES = ex_lookup_ip.c
 ex_lookup_ip_OBJECTS = ex_lookup_ip-ex_lookup_ip.$(OBJEXT)
 ex_mon_cp_SOURCES = ex_mon_cp.c
@@ -259,11 +245,11 @@ SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c $(ex_cntl_SOURCES) \
 	ex_gmp_num_roman.c ex_gmp_num_words.c ex_gmp_nums.c \
 	ex_hello_world.c ex_hello_world_m.c ex_hello_world_s.c \
 	ex_hello_world_x.c $(ex_hexdump_SOURCES) ex_highlight.c \
-	$(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c ex_netstr.c \
-	ex_nl.c ex_perf_add.c ex_perf_nodesize.c \
-	ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c \
-	ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) \
-	ex_sock_filter.c $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
+	ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c ex_perf_add.c \
+	ex_perf_nodesize.c ex_perf_nodesize_foreach.c \
+	ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c \
+	$(ex_slowcat_SOURCES) ex_sock_filter.c $(ex_ssi_SOURCES) \
+	ex_yes.c ex_zcat.c
 DIST_SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c \
 	$(ex_cntl_SOURCES) $(ex_conf_SOURCES) ex_csv.c \
 	$(ex_dir_filter_SOURCES) ex_dir_list.c ex_dir_list2html.c \
@@ -271,11 +257,11 @@ DIST_SOURCES = ex_cat.c ex_ccount.c ex_changelog_diff.c \
 	ex_gmp_factorials.c ex_gmp_num_roman.c ex_gmp_num_words.c \
 	ex_gmp_nums.c ex_hello_world.c ex_hello_world_m.c \
 	ex_hello_world_s.c ex_hello_world_x.c $(ex_hexdump_SOURCES) \
-	ex_highlight.c $(ex_httpd_SOURCES) ex_lookup_ip.c ex_mon_cp.c \
-	ex_netstr.c ex_nl.c ex_perf_add.c ex_perf_nodesize.c \
-	ex_perf_nodesize_foreach.c ex_perf_sgopenssl.c \
-	ex_phone_names.c ex_rainbow.c ex_rot13.c $(ex_slowcat_SOURCES) \
-	ex_sock_filter.c $(ex_ssi_SOURCES) ex_yes.c ex_zcat.c
+	ex_highlight.c ex_lookup_ip.c ex_mon_cp.c ex_netstr.c ex_nl.c \
+	ex_perf_add.c ex_perf_nodesize.c ex_perf_nodesize_foreach.c \
+	ex_perf_sgopenssl.c ex_phone_names.c ex_rainbow.c ex_rot13.c \
+	$(ex_slowcat_SOURCES) ex_sock_filter.c $(ex_ssi_SOURCES) \
+	ex_yes.c ex_zcat.c
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -406,6 +392,8 @@ TIMER_Q_LDLIBS = @TIMER_Q_LDLIBS@
 TRUE_PATH = @TRUE_PATH@
 USE_ASSERT_LOOP_FALSE = @USE_ASSERT_LOOP_FALSE@
 USE_ASSERT_LOOP_TRUE = @USE_ASSERT_LOOP_TRUE@
+USE_COMPILE_EXAMPLES_FALSE = @USE_COMPILE_EXAMPLES_FALSE@
+USE_COMPILE_EXAMPLES_TRUE = @USE_COMPILE_EXAMPLES_TRUE@
 USE_EX_STATIC_LIBS_FALSE = @USE_EX_STATIC_LIBS_FALSE@
 USE_EX_STATIC_LIBS_TRUE = @USE_EX_STATIC_LIBS_TRUE@
 USE_WRAP_MEMCHR_FALSE = @USE_WRAP_MEMCHR_FALSE@
@@ -632,6 +620,11 @@ ex_tdns_LDADD = $(GEN_LDLIBS)
 ex_tdns_LDFLAGS = -pthread
 # END: Not a Vstr app.
 examplesdir = $(EX_INST_DIR)
+#TESTS += tst/tst_httpd_cmd.pl tst/tst_httpd_conf.pl
+#TESTS += tst/tst_httpd_pubonly.pl
+#TESTS += tst/tst_httpd_none.pl
+#TESTS += tst/tst_httpd_nonvhosts.pl
+#TESTS += tst/tst_httpd_vhosts.pl
 
 # !HAVE_POSIX_HOST
 
@@ -658,12 +651,7 @@ examplesdir = $(EX_INST_DIR)
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
 @HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_sock_filter.pl tst/tst_conf.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_cmd.pl tst/tst_httpd_conf.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_pubonly.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_none.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_nonvhosts.pl \
-@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_httpd_vhosts.pl
+@HAVE_POSIX_HOST_TRUE@@PERL_USR_BIN_AVAIL_TRUE@        tst/tst_echod.pl
 
 example_code_html = \
   html/app.h.html \
@@ -906,9 +894,6 @@ ex_hexdump$(EXEEXT): $(ex_hexdump_OBJECTS) $(ex_hexdump_DEPENDENCIES)
 ex_highlight$(EXEEXT): $(ex_highlight_OBJECTS) $(ex_highlight_DEPENDENCIES) 
 	@rm -f ex_highlight$(EXEEXT)
 	$(LINK) $(ex_highlight_LDFLAGS) $(ex_highlight_OBJECTS) $(ex_highlight_LDADD) $(LIBS)
-ex_httpd$(EXEEXT): $(ex_httpd_OBJECTS) $(ex_httpd_DEPENDENCIES) 
-	@rm -f ex_httpd$(EXEEXT)
-	$(LINK) $(ex_httpd_LDFLAGS) $(ex_httpd_OBJECTS) $(ex_httpd_LDADD) $(LIBS)
 ex_lookup_ip$(EXEEXT): $(ex_lookup_ip_OBJECTS) $(ex_lookup_ip_DEPENDENCIES) 
 	@rm -f ex_lookup_ip$(EXEEXT)
 	$(LINK) $(ex_lookup_ip_LDFLAGS) $(ex_lookup_ip_OBJECTS) $(ex_lookup_ip_LDADD) $(LIBS)
@@ -1303,120 +1288,6 @@ ex_highlight-ex_highlight.o: ex_highlight.c
 
 ex_highlight-ex_highlight.obj: ex_highlight.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_highlight_CFLAGS) $(CFLAGS) -c -o ex_highlight-ex_highlight.obj `if test -f 'ex_highlight.c'; then $(CYGPATH_W) 'ex_highlight.c'; else $(CYGPATH_W) '$(srcdir)/ex_highlight.c'; fi`
-
-ex_httpd-mime_types.o: mime_types.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.o `test -f 'mime_types.c' || echo '$(srcdir)/'`mime_types.c
-
-ex_httpd-mime_types.obj: mime_types.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-mime_types.obj `if test -f 'mime_types.c'; then $(CYGPATH_W) 'mime_types.c'; else $(CYGPATH_W) '$(srcdir)/mime_types.c'; fi`
-
-ex_httpd-httpd_conf_main.o: httpd_conf_main.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_main.o `test -f 'httpd_conf_main.c' || echo '$(srcdir)/'`httpd_conf_main.c
-
-ex_httpd-httpd_conf_main.obj: httpd_conf_main.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_main.obj `if test -f 'httpd_conf_main.c'; then $(CYGPATH_W) 'httpd_conf_main.c'; else $(CYGPATH_W) '$(srcdir)/httpd_conf_main.c'; fi`
-
-ex_httpd-httpd_conf_req.o: httpd_conf_req.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.o `test -f 'httpd_conf_req.c' || echo '$(srcdir)/'`httpd_conf_req.c
-
-ex_httpd-httpd_conf_req.obj: httpd_conf_req.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_conf_req.obj `if test -f 'httpd_conf_req.c'; then $(CYGPATH_W) 'httpd_conf_req.c'; else $(CYGPATH_W) '$(srcdir)/httpd_conf_req.c'; fi`
-
-ex_httpd-httpd_policy.o: httpd_policy.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy.o `test -f 'httpd_policy.c' || echo '$(srcdir)/'`httpd_policy.c
-
-ex_httpd-httpd_policy.obj: httpd_policy.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy.obj `if test -f 'httpd_policy.c'; then $(CYGPATH_W) 'httpd_policy.c'; else $(CYGPATH_W) '$(srcdir)/httpd_policy.c'; fi`
-
-ex_httpd-httpd_policy_inline.o: httpd_policy_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy_inline.o `test -f 'httpd_policy_inline.c' || echo '$(srcdir)/'`httpd_policy_inline.c
-
-ex_httpd-httpd_policy_inline.obj: httpd_policy_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd_policy_inline.obj `if test -f 'httpd_policy_inline.c'; then $(CYGPATH_W) 'httpd_policy_inline.c'; else $(CYGPATH_W) '$(srcdir)/httpd_policy_inline.c'; fi`
-
-ex_httpd-bag.o: bag.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-bag.o `test -f 'bag.c' || echo '$(srcdir)/'`bag.c
-
-ex_httpd-bag.obj: bag.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-bag.obj `if test -f 'bag.c'; then $(CYGPATH_W) 'bag.c'; else $(CYGPATH_W) '$(srcdir)/bag.c'; fi`
-
-ex_httpd-conf.o: conf.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf.o `test -f 'conf.c' || echo '$(srcdir)/'`conf.c
-
-ex_httpd-conf.obj: conf.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf.obj `if test -f 'conf.c'; then $(CYGPATH_W) 'conf.c'; else $(CYGPATH_W) '$(srcdir)/conf.c'; fi`
-
-ex_httpd-cntl.o: cntl.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-cntl.o `test -f 'cntl.c' || echo '$(srcdir)/'`cntl.c
-
-ex_httpd-cntl.obj: cntl.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-cntl.obj `if test -f 'cntl.c'; then $(CYGPATH_W) 'cntl.c'; else $(CYGPATH_W) '$(srcdir)/cntl.c'; fi`
-
-ex_httpd-date.o: date.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.o `test -f 'date.c' || echo '$(srcdir)/'`date.c
-
-ex_httpd-date.obj: date.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-date.obj `if test -f 'date.c'; then $(CYGPATH_W) 'date.c'; else $(CYGPATH_W) '$(srcdir)/date.c'; fi`
-
-ex_httpd-evnt.o: evnt.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-evnt.o `test -f 'evnt.c' || echo '$(srcdir)/'`evnt.c
-
-ex_httpd-evnt.obj: evnt.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-evnt.obj `if test -f 'evnt.c'; then $(CYGPATH_W) 'evnt.c'; else $(CYGPATH_W) '$(srcdir)/evnt.c'; fi`
-
-ex_httpd-hexdump.o: hexdump.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-hexdump.o `test -f 'hexdump.c' || echo '$(srcdir)/'`hexdump.c
-
-ex_httpd-hexdump.obj: hexdump.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-hexdump.obj `if test -f 'hexdump.c'; then $(CYGPATH_W) 'hexdump.c'; else $(CYGPATH_W) '$(srcdir)/hexdump.c'; fi`
-
-ex_httpd-opt.o: opt.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.o `test -f 'opt.c' || echo '$(srcdir)/'`opt.c
-
-ex_httpd-opt.obj: opt.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt.obj `if test -f 'opt.c'; then $(CYGPATH_W) 'opt.c'; else $(CYGPATH_W) '$(srcdir)/opt.c'; fi`
-
-ex_httpd-opt_policy.o: opt_policy.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy.o `test -f 'opt_policy.c' || echo '$(srcdir)/'`opt_policy.c
-
-ex_httpd-opt_policy.obj: opt_policy.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy.obj `if test -f 'opt_policy.c'; then $(CYGPATH_W) 'opt_policy.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy.c'; fi`
-
-ex_httpd-opt_serv.o: opt_serv.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.o `test -f 'opt_serv.c' || echo '$(srcdir)/'`opt_serv.c
-
-ex_httpd-opt_serv.obj: opt_serv.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_serv.obj `if test -f 'opt_serv.c'; then $(CYGPATH_W) 'opt_serv.c'; else $(CYGPATH_W) '$(srcdir)/opt_serv.c'; fi`
-
-ex_httpd-vlg.o: vlg.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.o `test -f 'vlg.c' || echo '$(srcdir)/'`vlg.c
-
-ex_httpd-vlg.obj: vlg.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-vlg.obj `if test -f 'vlg.c'; then $(CYGPATH_W) 'vlg.c'; else $(CYGPATH_W) '$(srcdir)/vlg.c'; fi`
-
-ex_httpd-conf_inline.o: conf_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.o `test -f 'conf_inline.c' || echo '$(srcdir)/'`conf_inline.c
-
-ex_httpd-conf_inline.obj: conf_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-conf_inline.obj `if test -f 'conf_inline.c'; then $(CYGPATH_W) 'conf_inline.c'; else $(CYGPATH_W) '$(srcdir)/conf_inline.c'; fi`
-
-ex_httpd-opt_policy_inline.o: opt_policy_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy_inline.o `test -f 'opt_policy_inline.c' || echo '$(srcdir)/'`opt_policy_inline.c
-
-ex_httpd-opt_policy_inline.obj: opt_policy_inline.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-opt_policy_inline.obj `if test -f 'opt_policy_inline.c'; then $(CYGPATH_W) 'opt_policy_inline.c'; else $(CYGPATH_W) '$(srcdir)/opt_policy_inline.c'; fi`
-
-ex_httpd-httpd.o: httpd.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.o `test -f 'httpd.c' || echo '$(srcdir)/'`httpd.c
-
-ex_httpd-httpd.obj: httpd.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-httpd.obj `if test -f 'httpd.c'; then $(CYGPATH_W) 'httpd.c'; else $(CYGPATH_W) '$(srcdir)/httpd.c'; fi`
-
-ex_httpd-ex_httpd.o: ex_httpd.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-ex_httpd.o `test -f 'ex_httpd.c' || echo '$(srcdir)/'`ex_httpd.c
-
-ex_httpd-ex_httpd.obj: ex_httpd.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_httpd_CFLAGS) $(CFLAGS) -c -o ex_httpd-ex_httpd.obj `if test -f 'ex_httpd.c'; then $(CYGPATH_W) 'ex_httpd.c'; else $(CYGPATH_W) '$(srcdir)/ex_httpd.c'; fi`
 
 ex_lookup_ip-ex_lookup_ip.o: ex_lookup_ip.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ex_lookup_ip_CFLAGS) $(CFLAGS) -c -o ex_lookup_ip-ex_lookup_ip.o `test -f 'ex_lookup_ip.c' || echo '$(srcdir)/'`ex_lookup_ip.c

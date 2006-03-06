@@ -107,10 +107,20 @@ functions.3: functions.txt txt2man.pl
 constants.3: constants.txt txt2man.pl
 		$(srcdir)/txt2man.pl
 
+if USE_COMPILE_EXAMPLES
+
 if HAVE_POSIX_HOST
 
 ssi_DEP = ../examples/ex_ssi
 ssi_APP = ../examples/ex_ssi --prefix-path="`pwd`/../examples"
+
+else
+
+# can't use jssi, because it calls ex_highlight inline
+ssi_DEP =
+ssi_APP = cat
+
+endif
 
 else
 

@@ -11,6 +11,7 @@ else
   exit 1;
 fi
 
-$c --enable-debug  --enable-linker-script --enable-tst-noinline \
+$c --enable-debug --enable-examples \
+   --enable-linker-script --enable-tst-noinline \
    --enable-tst-noassert-loop --enable-examples-static \
    --with-fmt-float=glibc $@ && make clean && make check

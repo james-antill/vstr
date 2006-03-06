@@ -249,11 +249,13 @@ int FIX_SYMBOL(vsnprintf)(char *str, size_t size, const char *fmt, va_list ap)
 int FIX_SYMBOL(asprintf)(char **ret, const char *fmt, ... )
 {
  int sz = 0;
+ char solaris_hack[2]; /* Solaris braindamage:
+                        * http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=4894857 */
  va_list ap;
 
  va_start(ap, fmt);
 
- sz = vsnprintf(NULL, 0, fmt, ap);
+ sz = vsnprintf(solaris_hack, sizeof(solaris_hack), fmt, ap);
 
  va_end(ap);
 

@@ -1,6 +1,6 @@
 #define VSTR_ADD_FMT_C
 /*
- *  Copyright (C) 2002, 2003, 2004  James Antill
+ *  Copyright (C) 2002, 2003, 2004, 2006  James Antill
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,31 @@
 #include "main.h"
 
 
+static Vstr__fmt_usr_name_node **vstr__fmt_beg(Vstr_conf *conf, char pval)
+{
+  unsigned char val = pval;
+  
+  ASSERT(conf->fmt_usr_curly_braces);
+  
+  if (VSTR__IS_ASCII_DIGIT(val))
+    return &conf->fmt_usr_name_hash[val - VSTR__ASCII_DIGIT_0()];
+
+  if (!VSTR__IS_ASCII_ALPHA(val))
+    return &conf->fmt_usr_name_hash[36];
+
+  if (VSTR__IS_ASCII_UPPER(val))
+    val = VSTR__TO_ASCII_LOWER(val);
+  
+  return &conf->fmt_usr_name_hash[10 + val - VSTR__ASCII_DIGIT_a()];
+}
+
+#define VSTR__FMT_ADD_Q(name, len, b1, b2)                      \
+    (((name)[0] == (b1)) &&                                     \
+     ((name)[(len) - 1] == (b2)) &&                             \
+     (((len) == 2) || (((len) > 2) &&                           \
+                       !memchr((name) + 1, (b1), (len) - 2) &&  \
+                       !memchr((name) + 1, (b2), (len) - 2))))
+
 static
 Vstr__fmt_usr_name_node **
 vstr__fmt_usr_srch(Vstr_conf *conf, const char *name)
@@ -29,6 +54,19 @@ vstr__fmt_usr_srch(Vstr_conf *conf, const char *name)
   Vstr__fmt_usr_name_node **scan = &conf->fmt_usr_names;
   size_t len = strlen(name);
 
+  if (conf->fmt_usr_curly_braces)
+  {
+    ASSERT(!*scan);
+    
+    if (!VSTR__FMT_ADD_Q(name, len, '{', '}') &&
+        !VSTR__FMT_ADD_Q(name, len, '[', ']') &&
+        !VSTR__FMT_ADD_Q(name, len, '<', '>') &&
+        !VSTR__FMT_ADD_Q(name, len, '(', ')'))
+      return (NULL);
+
+    scan = vstr__fmt_beg(conf, name[1]);
+  }
+  
   while (*scan)
   {
     assert(!(*scan)->next || ((*scan)->name_len <= (*scan)->next->name_len));
@@ -41,6 +79,48 @@ vstr__fmt_usr_srch(Vstr_conf *conf, const char *name)
   }
 
   return (NULL);
+}
+
+static void vstr__fmt_insert(Vstr__fmt_usr_name_node **scan,
+                             Vstr__fmt_usr_name_node *node)
+{
+  while (*scan)
+  {
+    if ((*scan)->name_len >= node->name_len)
+      break;
+
+    scan = &(*scan)->next;
+  }
+
+  node->next = *scan;
+  *scan = node;
+}
+
+static void vstr__fmt_flatten_hash(Vstr_conf *conf)
+{
+  unsigned int num = 0;
+
+  ASSERT(!conf->fmt_usr_names);
+  
+  while (num < 37)
+  {
+    Vstr__fmt_usr_name_node *tmp = conf->fmt_usr_name_hash[num];
+
+    conf->fmt_usr_name_hash[num] = NULL;
+
+    while (tmp)
+    {
+      Vstr__fmt_usr_name_node *tmp_next = tmp->next;
+
+      tmp->next = NULL;
+      
+      vstr__fmt_insert(&conf->fmt_usr_names, tmp);
+
+      tmp = tmp_next;
+    }
+
+    ++num;
+  }
 }
 
 /* like srch, but matches in a format (Ie. not zero terminated) */
@@ -58,7 +138,9 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
      * so we can find the length */
     char *ptr = NULL;
     size_t len = 0;
-
+    
+    ASSERT(!scan);
+    
     switch (*fmt)
     {
       case '{': ptr = strchr(fmt, '}'); break;
@@ -71,6 +153,8 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
     if (!ptr)
       return (NULL);
 
+    scan = *vstr__fmt_beg(conf, fmt[1]);
+    
     len = (ptr - fmt) + 1;
     while (scan)
     {
@@ -115,14 +199,6 @@ Vstr__fmt_usr_name_node *vstr__fmt_usr_match(Vstr_conf *conf, const char *fmt)
   return (NULL);
 }
 
-#define VSTR__FMT_ADD_Q(name, len, b1, b2) ( \
-  ((name)[0] == (b1)) && \
-  ((name)[(len) - 1] == (b2)) && \
-  (((len) == 2) || ((len) > 2)) && \
-  !memchr((name) + 1, (b1), (len) - 2) && \
-  !memchr((name) + 1, (b2), (len) - 2) \
- )
-
 int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
                  int (*func)(Vstr_base *, size_t, Vstr_fmt_spec *), ...)
 {
@@ -154,8 +230,17 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
       !VSTR__FMT_ADD_Q(name, node->name_len, '[', ']') &&
       !VSTR__FMT_ADD_Q(name, node->name_len, '<', '>') &&
       !VSTR__FMT_ADD_Q(name, node->name_len, '(', ')'))
+  {
     conf->fmt_usr_curly_braces = FALSE;
+    vstr__fmt_flatten_hash(conf);
+  }
 
+  if (conf->fmt_usr_curly_braces)
+  {
+    ASSERT(!*scan);
+    scan = vstr__fmt_beg(conf, name[1]);
+  }
+  
   va_start(ap, func);
   while ((scan_type = va_arg(ap, unsigned int)))
   {
@@ -210,18 +295,9 @@ int vstr_fmt_add(Vstr_conf *passed_conf, const char *name,
   if (!*scan || (conf->fmt_name_max && (conf->fmt_name_max < node->name_len)))
     conf->fmt_name_max = node->name_len;
 
-  while (*scan)
-  {
-    if ((*scan)->name_len >= node->name_len)
-      break;
+  vstr__fmt_insert(scan, node);
 
-    scan = &(*scan)->next;
-  }
-
-  node->next = *scan;
-  *scan = node;
-
-  assert(vstr__fmt_usr_srch(conf, name));
+  ASSERT(vstr__fmt_usr_srch(conf, name));
 
   return (TRUE);
 }
@@ -244,6 +320,9 @@ void vstr_fmt_del(Vstr_conf *passed_conf, const char *name)
 
     VSTR__F(tmp);
   }
+
+  if (!conf->fmt_usr_curly_braces && !conf->fmt_usr_names)
+    conf->fmt_usr_curly_braces = TRUE;
 }
 
 int vstr_fmt_srch(Vstr_conf *passed_conf, const char *name)

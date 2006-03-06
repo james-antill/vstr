@@ -39,6 +39,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@USE_COMPILE_EXAMPLES_TRUE@am__append_1 = examples
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/VERSION.in \
 	$(srcdir)/vstr-debug.pc.in $(srcdir)/vstr.pc.in \
@@ -79,7 +80,7 @@ pkgconfigDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(pkgconfig_DATA)
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = src include tst examples Documentation
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -208,6 +209,8 @@ TIMER_Q_LDLIBS = @TIMER_Q_LDLIBS@
 TRUE_PATH = @TRUE_PATH@
 USE_ASSERT_LOOP_FALSE = @USE_ASSERT_LOOP_FALSE@
 USE_ASSERT_LOOP_TRUE = @USE_ASSERT_LOOP_TRUE@
+USE_COMPILE_EXAMPLES_FALSE = @USE_COMPILE_EXAMPLES_FALSE@
+USE_COMPILE_EXAMPLES_TRUE = @USE_COMPILE_EXAMPLES_TRUE@
 USE_EX_STATIC_LIBS_FALSE = @USE_EX_STATIC_LIBS_FALSE@
 USE_EX_STATIC_LIBS_TRUE = @USE_EX_STATIC_LIBS_TRUE@
 USE_WRAP_MEMCHR_FALSE = @USE_WRAP_MEMCHR_FALSE@
@@ -272,7 +275,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = no-dependencies 1.4
-SUBDIRS = src include tst examples Documentation
+
+# uses examples to generate docs.
+SUBDIRS = src include tst $(am__append_1) Documentation
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = vstr.pc
 all: all-recursive

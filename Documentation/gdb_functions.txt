@@ -53,14 +53,14 @@ define pvstr
      if $__node->type == 1
        set $__buf = (char *)((Vstr_node_buf *)$__node)->buf
      end
-     if $__node->type == 2
+     if $__node->type == 3
        set $__buf = (char *)((Vstr_node_ptr *)$__node)->ptr
      end
-     if $__node->type == 3
-       set $__ref = ((Vstr_node_ref *)$__node)->ref
-       set $__buf = (char *)$__ref->ptr + $__ref->off
-     end
      if $__node->type == 4
+       set $__ref = ((Vstr_node_ref *)$__node)
+       set $__buf = (char *)$__ref->ref->ptr + $__ref->off
+     end
+     if $__node->type == 2
        printf "\n<none:%d>\n", $__len
      else
        set $__buf = $__buf + $__off
@@ -112,14 +112,14 @@ define pvstr_info
      if $__node->type == 1
        set $__buf = (char *)((Vstr_node_buf *)$__node)->buf
      end
-     if $__node->type == 2
+     if $__node->type == 3
        set $__buf = (char *)((Vstr_node_ptr *)$__node)->ptr
      end
-     if $__node->type == 3
-       set $__ref = ((Vstr_node_ref *)$__node)->ref
-       set $__buf = (char *)$__ref->ptr + $__ref->off
-     end
      if $__node->type == 4
+       set $__ref = ((Vstr_node_ref *)$__node)
+       set $__buf = (char *)$__ref->ref->ptr + $__ref->off
+     end
+     if $__node->type == 2
        printf "  %u. <none:%d>\n", $__num, $__len
      else
        set $__buf = $__buf + $__off
@@ -138,5 +138,5 @@ end
 
 # Simple wrapper for pvstr_info, to print all of a Vstr
 define pvstrall_info
-  pvstr $arg0 1 $arg0->len
+  pvstr_info $arg0 1 $arg0->len
 end

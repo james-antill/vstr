@@ -244,7 +244,8 @@ if TIMER_Q_AVAIL
 examples_PROGRAMS += ex_slowcat
 
 if SOCKET_POLL_AVAIL
-examples_PROGRAMS += ex_cntl ex_dns ex_echod ex_httpd
+examples_PROGRAMS += ex_cntl ex_dns ex_echod
+#examples_PROGRAMS += ex_httpd
 #examples_PROGRAMS += ex_ypservd
 endif
 # Timer_q
@@ -278,12 +279,12 @@ if PERL_USR_BIN_AVAIL
 TESTS_ENVIRONMENT = SRCDIR="$(srcdir)"
 TESTS = tst/tst_cat.pl tst/tst_hexdump.pl tst/tst_nl.pl tst/tst_rot13.pl \
         tst/tst_sock_filter.pl tst/tst_conf.pl \
-        tst/tst_echod.pl \
-        tst/tst_httpd_cmd.pl tst/tst_httpd_conf.pl \
-        tst/tst_httpd_pubonly.pl \
-        tst/tst_httpd_none.pl \
-        tst/tst_httpd_nonvhosts.pl \
-        tst/tst_httpd_vhosts.pl
+        tst/tst_echod.pl
+#TESTS += tst/tst_httpd_cmd.pl tst/tst_httpd_conf.pl
+#TESTS += tst/tst_httpd_pubonly.pl
+#TESTS += tst/tst_httpd_none.pl
+#TESTS += tst/tst_httpd_nonvhosts.pl
+#TESTS += tst/tst_httpd_vhosts.pl
 endif
 
 else

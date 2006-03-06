@@ -1,3 +1,26 @@
+2006-03-05  James Antill  <james@and.org>
+
+	* src/vstr_fmt.c (vstr__fmt_beg): Create a simple hash for the custom
+	format names.
+
+	* Documentation/functions.txt: Document vstr_sc_bmap_init_eq_spn_buf,
+	vstr_sc_bmap_init_or_spn_buf, vstr_sc_bmap_init_eq_spn_cstr,
+	vstr_sc_bmap_init_or_spn_cstr.
+
+	* src/vstr_fmt.c (vstr_fmt_del): Minor possible speedup, by reenabling
+	bracketed speedups when empty.
+
+	* Documentation/functions.txt: Document vstr_spn_bmap_eq_fwd,
+	vstr_spn_bmap_eq_rev, vstr_spn_bmap_and_fwd, vstr_spn_bmap_and_rev.
+	
+	* Documentation/functions.txt: Document vstr_cspn_bmap_eq_fwd,
+	vstr_cspn_bmap_eq_rev, vstr_cspn_bmap_and_fwd, vstr_cspn_bmap_and_rev.
+
+2006-03-02  James Antill  <james@and.org>
+
+	* src/vstr_add.c (vstr__convert_buf_ref): Fix integer overflow bug
+	(mostly harmless in non-debug mode).
+
 2005-09-15  James Antill  <james@and.org>
 
 	* src/vstr_sc_posix.c (VSTR__UIO_MAXDATA): Add work around for moron

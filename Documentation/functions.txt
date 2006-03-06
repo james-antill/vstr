@@ -3767,7 +3767,7 @@ Function: vstr_srch_chr_rev()
 
  Explanation:
 
-  This function is used to search backward for a character in a Vstr string.
+  This function is used to search reverse for a character in a Vstr string.
   Think of this function as doing a vstr_export_cstr_ptr() on the Vstr string,
  and then a call to memrchr() (although it doesn't allocate anything).
   If the function can detect that the values of parameters are in error the
@@ -3824,7 +3824,7 @@ Function: vstr_srch_chrs_rev()
 
  Explanation:
 
-  This function is used to search backward for any of the characters in the
+  This function is used to search reverse for any of the characters in the
  data array (Parameter[4]) in a Vstr string.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -3880,7 +3880,7 @@ Function: vstr_csrch_chrs_rev()
 
  Explanation:
 
-  This function is used to search backward for any of the characters not in the
+  This function is used to search reverse for any of the characters not in the
  data array (Parameter[4]) in a Vstr string.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -3944,7 +3944,7 @@ Function: vstr_srch_buf_rev()
 
  Explanation:
 
-  This function is used to search backward for the data in the data array
+  This function is used to search reverse for the data in the data array
  (Parameter[4]) in a Vstr string.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -4014,7 +4014,7 @@ Function: vstr_srch_vstr_rev()
 
  Explanation:
 
-  This function is used to search backward for the data in the Vstr string
+  This function is used to search reverse for the data in the Vstr string
  (Parameter[4]) in the Vstr string (Parameter[1]).
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -4535,6 +4535,114 @@ Function: VSTR_SRCH_CASE_CSTR_BUF_REV()
 
 Section: Span of data calculation functions
 
+Function: vstr_spn_bmap_eq_fwd()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Value to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the forward span of bytes, that have the
+ value (Parameter[5]) in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_spn_bmap_eq_rev()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Value to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the reverse span of bytes, that have the
+ value (Parameter[5]) in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_spn_bmap_and_fwd()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Bits to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the forward span of bytes, that have any
+ bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_spn_bmap_and_rev()
+ Returns: Number of characters in the span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Bits to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the reverse span of bytes, that have any
+ bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
 Function: vstr_spn_chrs_fwd()
  Returns: Number of characters in the span
  Type: size_t
@@ -4591,7 +4699,7 @@ Function: vstr_spn_chrs_rev()
 
  Explanation:
 
-  This function is used to calculate the forward span of characters in the
+  This function is used to calculate the reverse span of characters in the
  Vstr string that are in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -4600,6 +4708,114 @@ Function: vstr_spn_chrs_rev()
 
   If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
  will be looked for in the span.
+
+
+Function: vstr_cspn_bmap_eq_fwd()
+ Returns: Number of characters in the complement span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Value to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the forward complement span of bytes, that
+ have the value (Parameter[5]) in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_cspn_bmap_eq_rev()
+ Returns: Number of characters in the complement span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Value to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the reverse complement span of bytes, that
+ have the value (Parameter[5]) in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_cspn_bmap_and_fwd()
+ Returns: Number of characters in the complement span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Bits to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the forward complement span of bytes, that
+ have any bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+Function: vstr_cspn_bmap_and_rev()
+ Returns: Number of characters in the complement span
+ Type: size_t
+
+ Parameter[1]: Vstr string
+ Type[1]: const struct Vstr_base *
+
+ Parameter[2]: Start position in the Vstr string (Parameter[1])
+ Type[2]: size_t
+
+ Parameter[3]: Length in the Vstr string (Parameter[1])
+ Type[3]: size_t
+
+ Parameter[4]: Pointer to bytemap
+ Type[4]: const unsigned char[256]
+
+ Parameter[5]: Bits to compare against in bytemap (Parameter[4])
+ Type[5]: unsigned char
+
+ Explanation:
+
+  This function is used to calculate the reverse complement span of bytes, that
+ have any bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
 
 
 Function: vstr_cspn_chrs_fwd()
@@ -4658,7 +4874,7 @@ Function: vstr_cspn_chrs_rev()
 
  Explanation:
 
-  This function is used to calculate the backward span of characters in the
+  This function is used to calculate the reverse span of characters in the
  Vstr string that are in the compliment of those in the data array.
   If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -6035,15 +6251,98 @@ Function: VSTR_FMT_CB_ARG_VAL()
 
 Section: Short cut helper functions
 
+Function: vstr_sc_bmap_init_eq_spn_buf()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Pointer to bytemap
+ Type[1]: const unsigned char[256]
+
+ Parameter[2]: Pointer to data
+ Type[2]: const void *
+
+ Parameter[3]: Length of a data (Parameter[2])
+ Type[3]: size_t
+
+ Parameter[4]: Value to set in bytemap (Parameter[4])
+ Type[4]: unsigned char
+
+ Explanation:
+
+  This function is used to set all the bytes in the data (Parameter[2]), to the
+ value (Parameter[4]) in the bytemap (Parameter[1]).
+
+
+Function: vstr_sc_bmap_init_eq_spn_cstr()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Pointer to bytemap
+ Type[1]: const unsigned char[256]
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Parameter[3]: Value to set in bytemap (Parameter[4])
+ Type[3]: unsigned char
+
+ Explanation:
+
+  This function calls vstr_sc_bmap_init_eq_spn_buf() with the length being
+ the value of strlen() on the data parameter (Parameter[2]).
+
+
+Function: vstr_sc_bmap_init_or_spn_buf()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Pointer to bytemap
+ Type[1]: const unsigned char[256]
+
+ Parameter[2]: Pointer to data
+ Type[2]: const void *
+
+ Parameter[3]: Length of a data (Parameter[2])
+ Type[3]: size_t
+
+ Parameter[4]: Value of bits to set in bytemap (Parameter[1])
+ Type[4]: unsigned char
+
+ Explanation:
+
+  This function is used to set all the bytes in the data (Parameter[2]), to the
+ value (Parameter[4]) combined with the original value, in the
+ bytemap (Parameter[1]).
+
+
+Function: vstr_sc_bmap_init_or_spn_cstr()
+ Returns: Nothing
+ Type: void
+
+ Parameter[1]: Pointer to bytemap
+ Type[1]: const unsigned char[256]
+
+ Parameter[2]: Pointer to data
+ Type[2]: const char *
+
+ Parameter[3]: Value of bits to set in bytemap (Parameter[1])
+ Type[3]: unsigned char
+
+ Explanation:
+
+  This function calls vstr_sc_bmap_init_or_spn_buf() with the length being
+ the value of strlen() on the data parameter (Parameter[2]).
+
+
 Function: vstr_sc_posdiff()
  Returns: Length of difference between two positions
  Type: size_t
 
- Parameter[2]: Start position in a Vstr string
- Type[2]: size_t
+ Parameter[1]: Start position in a Vstr string
+ Type[1]: size_t
 
- Parameter[3]: End position in a Vstr string
- Type[3]: size_t
+ Parameter[2]: End position in a Vstr string
+ Type[2]: size_t
 
  Explanation:
 
@@ -6054,11 +6353,11 @@ Function: VSTR_SC_POSDIFF()
  Returns: Length of difference between two positions
  Type: size_t
 
- Parameter[2]: Start position in a Vstr string
- Type[2]: size_t
+ Parameter[1]: Start position in a Vstr string
+ Type[1]: size_t
 
- Parameter[3]: End position in a Vstr string
- Type[3]: size_t
+ Parameter[2]: End position in a Vstr string
+ Type[2]: size_t
 
  Explanation:
 
@@ -6070,11 +6369,11 @@ Function: vstr_sc_poslast()
  Returns: Last position of the given start and length
  Type: size_t
 
- Parameter[2]: Start position in a Vstr string
- Type[2]: size_t
+ Parameter[1]: Start position in a Vstr string
+ Type[1]: size_t
 
- Parameter[3]: Length of a Vstr string
- Type[3]: size_t
+ Parameter[2]: Length of a Vstr string
+ Type[2]: size_t
 
  Explanation:
 
@@ -6086,11 +6385,11 @@ Function: VSTR_SC_POSLAST()
  Returns: Last position of the given start and length
  Type: size_t
 
- Parameter[2]: Start position in a Vstr string
- Type[2]: size_t
+ Parameter[1]: Start position in a Vstr string
+ Type[1]: size_t
 
- Parameter[3]: Length of a Vstr string
- Type[3]: size_t
+ Parameter[2]: Length of a Vstr string
+ Type[2]: size_t
 
  Explanation:
 
@@ -7854,7 +8153,9 @@ Function: vstr_sc_write_fd()
  Explanation:
 
   This function is used to take data from a Vstr string and write it to a
- file descriptor.
+ file descriptor. Specifically this means that after the call any data written
+ will be removed from the Vstr (Parameter[1]), making write analogous to
+ read which fills in the data.
 
  Note:
 

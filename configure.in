@@ -263,6 +263,8 @@ case x$local_cv_linker_use_wrap_memmove in
 xtrue) AC_DEFINE(USE_WRAP_MEMMOVE) ;;
 esac
 
+AC_ARG_ENABLE(examples, [  --enable-examples   turn on compilation of example program binaries [[default=no]]], AM_CONDITIONAL(USE_COMPILE_EXAMPLES, true),AM_CONDITIONAL(USE_COMPILE_EXAMPLES, false))
+
 LOCAL_EX_PROG_LIBS="-L../src -lvstr"
 AC_ARG_ENABLE(examples-static, [  --enable-examples-static   turn on static compilation of example program binaries [[default=no]]], local_cv_ex_static=true,local_cv_ex_static=false)
 AM_CONDITIONAL(USE_EX_STATIC_LIBS, $local_cv_ex_static)
@@ -277,7 +279,6 @@ case x$local_cv_tst_static in
 xtrue) LOCAL_TST_PROG_LIBS="../src/.libs/libvstr.a" ;;
 esac
 AC_SUBST(LOCAL_TST_PROG_LIBS)
-
 
 AC_ARG_WITH(fmt-float, [  --with-fmt-float=TYPE   float conversion (glibc,none,host) [[default=host]]], local_cv_fmt_float=$withval,local_cv_fmt_float=host)
 case x$local_cv_fmt_float in

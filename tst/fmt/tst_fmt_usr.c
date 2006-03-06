@@ -339,6 +339,51 @@ int tst(void)
 
   ASSERT(vstr_fmt_srch(s1->conf, "(VSTR:%p%u)"));
   ASSERT(s1->conf->fmt_usr_curly_braces);
+  
+  vstr_fmt_add(s1->conf, "(0)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(1)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(2)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(3)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(6)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(7)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(8)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(9)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(a)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(b)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(c)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(d)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(e)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(f)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(g)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(h)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(i)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(j)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(k)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(l)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(m)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(n)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(o)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(p)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(q)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(r)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(s)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(t)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(u)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(v)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(w)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(x)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(y)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(z)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(!)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(@)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(#)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "($)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(%)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(^)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "(*)", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+  vstr_fmt_add(s1->conf, "([]<>{})", tst_usr_pid_cb, VSTR_TYPE_FMT_END);
+
+  ASSERT(s1->conf->fmt_usr_curly_braces);
 
   vstr_fmt_add(s1->conf, "{TST_ALL}", tst_usr_all_cb,
                VSTR_TYPE_FMT_DOUBLE,

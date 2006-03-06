@@ -205,6 +205,11 @@ int tst(void)
   TST_B_TST(ret, 28, vstr_sc_read_iov_file(s1, s1->len, "/dev/stdin",
                                            1, 4, 4, &err));
   TST_B_TST(ret, 29, (err != VSTR_TYPE_SC_READ_FILE_ERR_SEEK_ERRNO));
+
+  vstr_del(s1, 1, s1->len);
+  ASSERT(vstr_sc_read_iov_file(s1, s1->len, "/proc/self/maps",
+                               1, 4, 4, &err));
+  ASSERT(s1->len);
 #endif
 
   TST_B_TST(ret, 30, !vstr_sc_read_iov_fd(s1, s1->len, -1, 0, 0, NULL));

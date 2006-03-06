@@ -1104,11 +1104,11 @@ extern VSTR_AUTOCONF_uint_least32_t vstr_sc_parse_b_uint32(struct Vstr_base *,
     VSTR__COMPILE_ATTR_NONNULL_A() VSTR__COMPILE_ATTR_WARN_UNUSED_RET();
 
 extern void vstr_sc_bmap_init_eq_spn_buf(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
-                                         const char *, size_t,
+                                         const void *, size_t,
                                          unsigned char)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern void vstr_sc_bmap_init_or_spn_buf(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 
-                                         const char *, size_t,
+                                         const void *, size_t,
                                          unsigned char)
     VSTR__COMPILE_ATTR_NONNULL_A();
 extern void vstr_sc_bmap_init_eq_spn_cstr(unsigned char [VSTR__COMPILE_STATIC_ARRAY() 256], 

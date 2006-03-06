@@ -68,18 +68,18 @@ function cov()
   $s/lcov.sh $type
 }
 
-cov dbg --enable-debug
-cov opt
+cov dbg --enable-debug --enable-examples
+cov opt --enable-examples
 
 if $tst_quick; then
  echo Doing quick coverage test...
 else
-cov noopt --enable-tst-noopt
+cov noopt --enable-tst-noopt --enable-examples
 cov ansi --enable-noposix-host \
          --enable-tst-noattr-visibility \
          --enable-tst-noattr-alias \
          --enable-tst-nosyscall-asm
-CFLAGS="-DUSE_RESTRICTED_HEADERS=1" cov small-libc
+CFLAGS="-DUSE_RESTRICTED_HEADERS=1" cov small-libc --enable-examples
 fi
 
 
@@ -89,6 +89,6 @@ fi
 if $tst_klibc; then
   export LDFLAGS="-nodefaultlibs /usr/lib/klibc/crt0.o `gcc --print-libgcc` /usr/lib/klibc/libc.a"
   export CFLAGS="-nostdinc -iwithprefix include -I/usr/include/klibc -I/usr/include/klibc/kernel"
-  cov klibc
+  cov klibc --enable-examples
 fi
 
