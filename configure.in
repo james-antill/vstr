@@ -1559,7 +1559,6 @@ AC_OUTPUT([Makefile
            tst/Makefile
            examples/Makefile
            examples/init.d/jechod
-           examples/init.d/jhttpd
            src/vstr_version.c
            vstr.spec
            VERSION

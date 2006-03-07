@@ -392,9 +392,7 @@ html_DATA = \
 
 examplesscriptsdir = $(EX_INST_DIR)/scripts
 examplesscripts_DATA = \
-  gzip-r.pl \
   highlight2style.pl \
-  jhttpd-syslog2apache-httpd-log.pl \
   nodesize_plots.pl \
   nodesize_split.pl
 
@@ -411,8 +409,7 @@ extradata_DATA = \
 
 initddir = $(sysconfdir)/init.d
 initd_SCRIPTS = \
-  init.d/jechod \
-  init.d/jhttpd
+  init.d/jechod
 
 
 CLEANFILES=$(html_DATA) html

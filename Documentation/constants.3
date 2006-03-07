@@ -1,4 +1,4 @@
-.TH vstr_const 3 "09-Jan-2005" "Vstr 1.0.14" "Vstr String Library"
+.TH vstr_const 3 "06-Mar-2006" "Vstr 1.0.15" "Vstr String Library"
 .SH "SYNOPSIS"
 .in \w'  'u
 #include <vstr.h>
@@ -1739,7 +1739,7 @@
 \fBExplanation:\fR
 
 .br
-  This error code means that the ipv4 CIDR mask wasn't full (Ie. 127.0.0.1/255.0 is an ipv4 address with a non full ipv4 netmask).
+  This error code means that the ipv4 NETMASK mask wasn't full (Ie. 127.0.0.1/255.0 is an ipv4 address with a non full ipv4 netmask).
 
 .br
 \fBConstant: \fR VSTR_FLAG_PARSE_IPV4_DEF
@@ -1807,7 +1807,7 @@
 \fBNote:\fR
 
 .br
-  If both this and the VSTR_FLAG_PARSE_IPV4_CIDR flag is given, then either masking interface will be parsed out as no valid CIDR value is a valid netmask prefix.
+  If both this and the VSTR_FLAG_PARSE_IPV4_CIDR flag is given, then either masking interface will be parsed out (it will try a CIDR mask first and if that filas, fall back to a netmask prefix).
 
 .br
 \fBConstant: \fR VSTR_FLAG_PARSE_IPV4_NETMASK_FULL
@@ -1816,7 +1816,7 @@
 \fBExplanation:\fR
 
 .br
-  This flag changes the parsing so that the function will return an error if a non full ipv4 CIDR mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non full ipv4 netmask). If this flag isn't given the missing numbers are assumed to be zero.
+  This flag changes the parsing so that the function will return an error if a non full ipv4 NETMASK mask is given (Ie. 127.0.0.1/255.0 is an ipv4 with a non full ipv4 netmask). If this flag isn't given the missing numbers are assumed to be zero.
 
 .br
 \fBConstant: \fR VSTR_FLAG_PARSE_IPV4_ONLY

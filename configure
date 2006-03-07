@@ -32962,7 +32962,7 @@ echo "$as_me:$LINENO: result: ${T_MD}Output Substitution:${T_ME}" >&5
 echo "${ECHO_T}${T_MD}Output Substitution:${T_ME}" >&6
 
 
-                                                                                                                                  ac_config_files="$ac_config_files Makefile vstr.pc vstr-debug.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile examples/Makefile examples/init.d/jechod examples/init.d/jhttpd src/vstr_version.c vstr.spec VERSION"
+                                                                                                                        ac_config_files="$ac_config_files Makefile vstr.pc vstr-debug.pc src/Makefile include/Makefile Documentation/Makefile tst/Makefile examples/Makefile examples/init.d/jechod src/vstr_version.c vstr.spec VERSION"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -33836,7 +33836,6 @@ do
   "tst/Makefile" ) CONFIG_FILES="$CONFIG_FILES tst/Makefile" ;;
   "examples/Makefile" ) CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
   "examples/init.d/jechod" ) CONFIG_FILES="$CONFIG_FILES examples/init.d/jechod" ;;
-  "examples/init.d/jhttpd" ) CONFIG_FILES="$CONFIG_FILES examples/init.d/jhttpd" ;;
   "src/vstr_version.c" ) CONFIG_FILES="$CONFIG_FILES src/vstr_version.c" ;;
   "vstr.spec" ) CONFIG_FILES="$CONFIG_FILES vstr.spec" ;;
   "VERSION" ) CONFIG_FILES="$CONFIG_FILES VERSION" ;;

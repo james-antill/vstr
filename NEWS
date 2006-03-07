@@ -1,3 +1,9 @@
+2006-02-06: Version 1.0.15 ... Added bytemap functions to parse
+faster. Speedup custom formatters, with a hash. Work around hidden
+Linux UIO 2GB limit. Work around gcc-4.x symbol aliasing
+braindamge. Solaris build fixes. Fix loading zero sized files with
+vstr_sc_*_file(), two other minor fixes.
+
 2005-01-09: Version 1.0.14 ... Couple of corner case bug fixes. In
 vstr_sc_*file_ no use O_NONBLOCK on open() to stop hangs on FIFOs, also repeat
 read() request until all file is read or have error. Encoded more characters in

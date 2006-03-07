@@ -4,7 +4,7 @@
 %define RELEASE %{real_release_num}
 %define rel     %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 %define prefix    /usr
-%define varprefix
+%define varprefix %nil
 %define vardir %{varprefix}/var
 %define wwwdir %{vardir}/www
 %define name    vstr
@@ -36,7 +36,7 @@ Source: ftp://ftp.and.org/pub/james/%{name}/%{ver}/%{name}-%{ver}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{PACKAGE_VERSION}-root
 Packager: James Antill <james@and.org>
 BuildRequires: pkgconfig >= 0.8, gcc, make, glibc-devel
-Conflicts: vstr-debuginfo <> %{ver}
+# Conflicts: vstr-debuginfo <> %{ver}
 URL: http://www.and.org/%{name}/
 
 %description
@@ -224,18 +224,14 @@ rm -rf $RPM_BUILD_ROOT
 # Add the user id's
 /usr/sbin/useradd -c "jECHOd" -u %{jechod_uid} \
         -s /sbin/nologin -r -d %{vardir}/empty/jechod jechod 2> /dev/null || :
-/usr/sbin/useradd -c "jHTTPd" -u %{jhttpd_uid} \
-        -s /sbin/nologin -r -d %{wwwdir}              jhttpd 2> /dev/null || :
 
 %post initd
 
 if [ $1 = 1 ]; then
-    /sbin/chkconfig --add jhttpd
     /sbin/chkconfig --add jechod
 fi
 if [ $1 = 2 ]; then
     /sbin/service jechod condrestart > /dev/null 2>&1
-    /sbin/service jhttpd condrestart > /dev/null 2>&1
 fi
 
 %preun initd
@@ -243,9 +239,6 @@ fi
 if [ $1 = 0 ]; then
     /sbin/service jechod stop > /dev/null 2>&1
     /sbin/chkconfig --del jechod
-
-    /sbin/service jhttpd stop > /dev/null 2>&1
-    /sbin/chkconfig --del jhttpd
 fi
 
 %postun -p /sbin/ldconfig

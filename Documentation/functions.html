@@ -25,7 +25,7 @@
 
   </head>
   <body>
-<table width="100%"><tr><td class="title"><h1>Vstr documentation -- functions (333)</h1>
+<table width="100%"><tr><td class="title"><h1>Vstr documentation -- functions (345)</h1>
 </td></tr></table><table width="90%"><tr><td>
 <h2 class="ind">Index of sections</h2>
 <ul>
@@ -37,13 +37,13 @@
 <li><a href="#indx-Substitution%20of%20data%20functions">Substitution of data functions (12)</a>
 <li><a href="#indx-Comparison%20of%20data%20functions">Comparison of data functions (69)</a>
 <li><a href="#indx-Searching%20for%20data%20functions">Searching for data functions (32)</a>
-<li><a href="#indx-Span%20of%20data%20calculation%20functions">Span of data calculation functions (12)</a>
+<li><a href="#indx-Span%20of%20data%20calculation%20functions">Span of data calculation functions (20)</a>
 <li><a href="#indx-Convertion%20of%20data%20functions">Convertion of data functions (6)</a>
 <li><a href="#indx-Section%20of%20Vstr%20string%20functions">Section of Vstr string functions (13)</a>
 <li><a href="#indx-Splitting%20data%20into%20sections%20functions">Splitting data into sections functions (6)</a>
 <li><a href="#indx-Parsing%20data%20functions">Parsing data functions (13)</a>
 <li><a href="#indx-Custom%20formatter%20functions">Custom formatter functions (5)</a>
-<li><a href="#indx-Short%20cut%20helper%20functions">Short cut helper functions (73)</a>
+<li><a href="#indx-Short%20cut%20helper%20functions">Short cut helper functions (77)</a>
 <li><a href="#indx-Interator%20functions">Interator functions (7)</a>
 <li><a href="#indx-Miscellaneous%20functions">Miscellaneous functions (17)</a></ul>
 <h2 class="ind">Index of sections, and their contents</h2>
@@ -247,8 +247,16 @@
 <li class="obj"><a href="#VSTR_SRCH_CASE_CSTR_BUF_REV%28%29">VSTR_SRCH_CASE_CSTR_BUF_REV()</a>
 </ul><li><a id="indx-Span%20of%20data%20calculation%20functions" href="#Span%20of%20data%20calculation%20functions">Span of data calculation functions</a>
 <ul>
+<li class="obj"><a href="#vstr_spn_bmap_eq_fwd%28%29">vstr_spn_bmap_eq_fwd()</a>
+<li class="obj"><a href="#vstr_spn_bmap_eq_rev%28%29">vstr_spn_bmap_eq_rev()</a>
+<li class="obj"><a href="#vstr_spn_bmap_and_fwd%28%29">vstr_spn_bmap_and_fwd()</a>
+<li class="obj"><a href="#vstr_spn_bmap_and_rev%28%29">vstr_spn_bmap_and_rev()</a>
 <li class="obj"><a href="#vstr_spn_chrs_fwd%28%29">vstr_spn_chrs_fwd()</a>
 <li class="obj"><a href="#vstr_spn_chrs_rev%28%29">vstr_spn_chrs_rev()</a>
+<li class="obj"><a href="#vstr_cspn_bmap_eq_fwd%28%29">vstr_cspn_bmap_eq_fwd()</a>
+<li class="obj"><a href="#vstr_cspn_bmap_eq_rev%28%29">vstr_cspn_bmap_eq_rev()</a>
+<li class="obj"><a href="#vstr_cspn_bmap_and_fwd%28%29">vstr_cspn_bmap_and_fwd()</a>
+<li class="obj"><a href="#vstr_cspn_bmap_and_rev%28%29">vstr_cspn_bmap_and_rev()</a>
 <li class="obj"><a href="#vstr_cspn_chrs_fwd%28%29">vstr_cspn_chrs_fwd()</a>
 <li class="obj"><a href="#vstr_cspn_chrs_rev%28%29">vstr_cspn_chrs_rev()</a>
 <li class="obj"><a href="#vstr_spn_cstr_chrs_fwd%28%29">vstr_spn_cstr_chrs_fwd()</a>
@@ -314,6 +322,10 @@
 <li class="obj"><a href="#VSTR_FMT_CB_ARG_VAL%28%29">VSTR_FMT_CB_ARG_VAL()</a>
 </ul><li><a id="indx-Short%20cut%20helper%20functions" href="#Short%20cut%20helper%20functions">Short cut helper functions</a>
 <ul>
+<li class="obj"><a href="#vstr_sc_bmap_init_eq_spn_buf%28%29">vstr_sc_bmap_init_eq_spn_buf()</a>
+<li class="obj"><a href="#vstr_sc_bmap_init_eq_spn_cstr%28%29">vstr_sc_bmap_init_eq_spn_cstr()</a>
+<li class="obj"><a href="#vstr_sc_bmap_init_or_spn_buf%28%29">vstr_sc_bmap_init_or_spn_buf()</a>
+<li class="obj"><a href="#vstr_sc_bmap_init_or_spn_cstr%28%29">vstr_sc_bmap_init_or_spn_cstr()</a>
 <li class="obj"><a href="#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
 <li class="obj"><a href="#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
 <li class="obj"><a href="#vstr_sc_poslast%28%29">vstr_sc_poslast()</a>
@@ -2650,7 +2662,7 @@
 </td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Character<br>Type<strong>[4]</strong>: char
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backward for a character in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
+</p><p>  This function is used to search reverse for a character in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 </p><p>  Think of this function as doing a <a href="functions#vstr_export_cstr_ptr%28%29">vstr_export_cstr_ptr()</a> on the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>,
  and then a call to memrchr() (although it doesn't allocate anything).
 </p><p>  If the function can detect that the values of parameters are in error the
@@ -2683,7 +2695,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backward for any of the characters in the
+</p><p>  This function is used to search reverse for any of the characters in the
  data array (Parameter[4]) in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2715,7 +2727,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backward for any of the characters not in the
+</p><p>  This function is used to search reverse for any of the characters not in the
  data array (Parameter[4]) in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2754,7 +2766,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to data<br>Type<strong>[4]</strong>: const void *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of data (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backward for the data in the data array
+</p><p>  This function is used to search reverse for the data in the data array
  (Parameter[4]) in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -2795,7 +2807,7 @@
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td>Parameter<strong>[6]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[4])<br>Type<strong>[6]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to search backward for the data in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>
+</p><p>  This function is used to search reverse for the data in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a>
  (Parameter[4]) in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1]).
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -3083,6 +3095,66 @@
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Span%20of%20data%20calculation%20functions">Span of data calculation functions</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_spn_bmap_eq_fwd%28%29">vstr_spn_bmap_eq_fwd()</a>
+<br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Value to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the forward span of bytes, that have the
+ value (Parameter[5]) in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_spn_bmap_eq_rev%28%29">vstr_spn_bmap_eq_rev()</a>
+<br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Value to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the reverse span of bytes, that have the
+ value (Parameter[5]) in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_spn_bmap_and_fwd%28%29">vstr_spn_bmap_and_fwd()</a>
+<br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Bits to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the forward span of bytes, that have any
+ bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_spn_bmap_and_rev%28%29">vstr_spn_bmap_and_rev()</a>
+<br>Returns: Number of characters in the span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Bits to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the reverse span of bytes, that have any
+ bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_spn_chrs_fwd%28%29">vstr_spn_chrs_fwd()</a>
 <br>Returns: Number of characters in the span<br>Type: size_t
 </td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
@@ -3113,7 +3185,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to calculate the forward span of characters in the
+</p><p>  This function is used to calculate the reverse span of characters in the
  <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> that are in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -3121,6 +3193,66 @@
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the pointer to data (Parameter[4]) is NULL then _NON data of the size 1
  will be looked for in the span.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_cspn_bmap_eq_fwd%28%29">vstr_cspn_bmap_eq_fwd()</a>
+<br>Returns: Number of characters in the complement span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Value to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the forward complement span of bytes, that
+ have the value (Parameter[5]) in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_cspn_bmap_eq_rev%28%29">vstr_cspn_bmap_eq_rev()</a>
+<br>Returns: Number of characters in the complement span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Value to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the reverse complement span of bytes, that
+ have the value (Parameter[5]) in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_cspn_bmap_and_fwd%28%29">vstr_cspn_bmap_and_fwd()</a>
+<br>Returns: Number of characters in the complement span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Bits to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the forward complement span of bytes, that
+ have any bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_cspn_bmap_and_rev%28%29">vstr_cspn_bmap_and_rev()</a>
+<br>Returns: Number of characters in the complement span<br>Type: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: const struct Vstr_base *
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[2]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length in the <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> (Parameter[1])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to bytemap<br>Type<strong>[4]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[5]</strong>: Bits to compare against in bytemap (Parameter[4])<br>Type<strong>[5]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to calculate the reverse complement span of bytes, that
+ have any bit set, in the value (Parameter[5]), in the bytemap (Parameter[4]).
+</p><p>  If the function can detect that the values of parameters are in error the
+ function will return 0 to indicate an error.
 
 
 </td></tr></table><table width="80%"><tr><td class="obj">
@@ -3154,7 +3286,7 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Pointer to spanning characters<br>Type<strong>[4]</strong>: const char *
 </td></tr><tr><td>Parameter<strong>[5]</strong>: Length of spanning characters (Parameter[4])<br>Type<strong>[5]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
-</p><p>  This function is used to calculate the backward span of characters in the
+</p><p>  This function is used to calculate the reverse span of characters in the
  <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> that are in the compliment of those in the data array.
 </p><p>  If the function can detect that the values of parameters are in error the
  function will return 0 to indicate an error.
@@ -3966,10 +4098,57 @@
 </td></tr></table><table width="90%"><tr><td class="sect"><h2><a id="Short%20cut%20helper%20functions">Short cut helper functions</a></h2>
 
 </td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_bmap_init_eq_spn_buf%28%29">vstr_sc_bmap_init_eq_spn_buf()</a>
+<br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to bytemap<br>Type<strong>[1]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Value to set in bytemap (Parameter[4])<br>Type<strong>[4]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to set all the bytes in the data (Parameter[2]), to the
+ value (Parameter[4]) in the bytemap (Parameter[1]).
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_bmap_init_eq_spn_cstr%28%29">vstr_sc_bmap_init_eq_spn_cstr()</a>
+<br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to bytemap<br>Type<strong>[1]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Value to set in bytemap (Parameter[4])<br>Type<strong>[3]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions#vstr_sc_bmap_init_eq_spn_buf%28%29">vstr_sc_bmap_init_eq_spn_buf()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[2]).
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_bmap_init_or_spn_buf%28%29">vstr_sc_bmap_init_or_spn_buf()</a>
+<br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to bytemap<br>Type<strong>[1]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const void *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a data (Parameter[2])<br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[4]</strong>: Value of bits to set in bytemap (Parameter[1])<br>Type<strong>[4]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function is used to set all the bytes in the data (Parameter[2]), to the
+ value (Parameter[4]) combined with the original value, in the
+ bytemap (Parameter[1]).
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
+<strong>Function: </strong> <a id="vstr_sc_bmap_init_or_spn_cstr%28%29">vstr_sc_bmap_init_or_spn_cstr()</a>
+<br>Returns: Nothing<br>Type: void
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Pointer to bytemap<br>Type<strong>[1]</strong>: const unsigned char[256]
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Pointer to data<br>Type<strong>[2]</strong>: const char *
+</td></tr><tr><td>Parameter<strong>[3]</strong>: Value of bits to set in bytemap (Parameter[1])<br>Type<strong>[3]</strong>: unsigned char
+</td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
+</p><p>  This function calls <a href="functions#vstr_sc_bmap_init_or_spn_buf%28%29">vstr_sc_bmap_init_or_spn_buf()</a> with the length being
+ the value of strlen() on the data parameter (Parameter[2]).
+
+
+</td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>
 <br>Returns: Length of difference between two positions<br>Type: size_t
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: End position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: End position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to find the length between two positions inclusive.
 
@@ -3977,8 +4156,8 @@
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>
 <br>Returns: Length of difference between two positions<br>Type: size_t
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: End position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: End position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function is used to find the length between two positions
  inclusive.
@@ -3987,8 +4166,8 @@
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="vstr_sc_poslast%28%29">vstr_sc_poslast()</a>
 <br>Returns: Last position of the given start and length<br>Type: size_t
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to find the last poition, given a position and a length
  (it's basically the oposite of <a href="functions#vstr_sc_posdiff%28%29">vstr_sc_posdiff()</a>).
@@ -3997,8 +4176,8 @@
 </td></tr></table><table width="80%"><tr><td class="obj">
 <strong>Function: </strong> <a id="VSTR_SC_POSLAST%28%29">VSTR_SC_POSLAST()</a>
 <br>Returns: Last position of the given start and length<br>Type: size_t
-</td></tr><tr><td>Parameter<strong>[2]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
-</td></tr><tr><td>Parameter<strong>[3]</strong>: Length of a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[3]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[1]</strong>: Start position in a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[1]</strong>: size_t
+</td></tr><tr><td>Parameter<strong>[2]</strong>: Length of a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a><br>Type<strong>[2]</strong>: size_t
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This macro function is used to find the last poition, given a position and
  a length (it's basically the oposite of <a href="functions#VSTR_SC_POSDIFF%28%29">VSTR_SC_POSDIFF()</a>).
@@ -5177,7 +5356,9 @@
 </td></tr><tr><td>Parameter<strong>[4]</strong>: Returns error code starting VSTR_TYPE_SC_WRITE_FD_ERR_<br>Type<strong>[4]</strong>: unsigned int *
 </td></tr><tr><td><strong>Explanation:</strong></td></tr><tr><td><p>
 </p><p>  This function is used to take data from a <a href="structs#struct%20Vstr_base%20%28aka%2e%20Vstr%20string%29">Vstr string</a> and write it to a
- file descriptor.
+ file descriptor. Specifically this means that after the call any data written
+ will be removed from the Vstr (Parameter[1]), making write analogous to
+ read which fills in the data.
 
 </td></tr><tr><td><strong>Note:</strong></td></tr><tr><td><p>
 </p><p>  If the start position is 1, the length is (Parameter[1])-&gt;len and caching is

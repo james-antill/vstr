@@ -44,8 +44,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/VERSION.in \
 	$(srcdir)/vstr-debug.pc.in $(srcdir)/vstr.pc.in \
 	$(srcdir)/vstr.spec.in $(top_srcdir)/configure \
-	$(top_srcdir)/examples/init.d/jechod.in \
-	$(top_srcdir)/examples/init.d/jhttpd.in AUTHORS COPYING \
+	$(top_srcdir)/examples/init.d/jechod.in AUTHORS COPYING \
 	ChangeLog INSTALL NEWS THANKS TODO compile config.guess \
 	config.sub install-sh ltconfig ltmain.sh missing mkinstalldirs
 subdir = .
@@ -58,7 +57,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/autoconf.h
 CONFIG_CLEAN_FILES = vstr.pc vstr-debug.pc examples/init.d/jechod \
-	examples/init.d/jhttpd vstr.spec VERSION
+	vstr.spec VERSION
 depcomp =
 am__depfiles_maybe =
 SOURCES =
@@ -321,8 +320,6 @@ vstr.pc: $(top_builddir)/config.status $(srcdir)/vstr.pc.in
 vstr-debug.pc: $(top_builddir)/config.status $(srcdir)/vstr-debug.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 examples/init.d/jechod: $(top_builddir)/config.status $(top_srcdir)/examples/init.d/jechod.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-examples/init.d/jhttpd: $(top_builddir)/config.status $(top_srcdir)/examples/init.d/jhttpd.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 vstr.spec: $(top_builddir)/config.status $(srcdir)/vstr.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
